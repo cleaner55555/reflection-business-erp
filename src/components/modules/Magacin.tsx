@@ -34,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft } from 'lucide-react'
+import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
@@ -135,6 +135,20 @@ interface PriceLineItem {
 let tempIdCounter = 0
 function nextTempId() {
   return `temp_${++tempIdCounter}_${Date.now()}`
+}
+
+// ==================== COMPANY INFO ====================
+
+const COMPANY = {
+  name: 'Reflection Business',
+  address: 'Bulevar Mihajla Pupina 10a',
+  city: 'Beograd, 11070',
+  pib: '123456789',
+  maticniBr: '21012345',
+  account: '265-12345678-12',
+  bank: 'Banca Intesa Beograd',
+  phone: '+381 11 123 4567',
+  email: 'office@reflectionbusiness.rs',
 }
 
 // ==================== MAIN COMPONENT ====================
@@ -716,9 +730,11 @@ function OtpremniceTab() {
   const [products, setProducts] = useState<Product[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'form' | 'print'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<DeliveryNote | null>(null)
+  const [printNote, setPrintNote] = useState<DeliveryNote | null>(null)
+  const [printLoading, setPrintLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -802,6 +818,26 @@ function OtpremniceTab() {
   const handleCancel = () => {
     setViewMode('list')
     setEditing(null)
+    setPrintNote(null)
+  }
+
+  const handlePrint = async (note: DeliveryNote) => {
+    setPrintLoading(true)
+    setViewMode('print')
+    try {
+      const res = await fetch(`/api/delivery-notes/${note.id}`)
+      if (!res.ok) { toast.error('Greška pri učitavanju otpremnice'); return }
+      const data: DeliveryNote = await res.json()
+      setPrintNote(data)
+    } catch {
+      toast.error('Greška pri učitavanju otpremnice')
+    } finally {
+      setPrintLoading(false)
+    }
+  }
+
+  const doPrint = () => {
+    window.print()
   }
 
   const handleSubmit = async () => {
@@ -884,6 +920,22 @@ function OtpremniceTab() {
               </CardTitle>
             </div>
           </div>
+        ) : viewMode === 'print' ? (
+          <div className="flex items-center gap-3 no-print">
+            <Button variant="ghost" size="icon" onClick={handleCancel}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle className="text-base font-semibold">
+                Pregled Otpremnice {printNote?.number || ''}
+              </CardTitle>
+            </div>
+            <div className="ml-auto">
+              <Button size="sm" className="gap-2" onClick={doPrint}>
+                <Printer className="h-4 w-4" /> Štampaj
+              </Button>
+            </div>
+          </div>
         ) : (
           <>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -923,7 +975,111 @@ function OtpremniceTab() {
         )}
       </CardHeader>
       <CardContent>
-        {viewMode === 'form' ? (
+        {viewMode === 'print' && (
+          printLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Skeleton className="h-[600px] w-full max-w-4xl" />
+            </div>
+          ) : printNote ? (
+            <div className="invoice-print-area bg-white rounded-lg border p-6 max-w-4xl mx-auto text-sm">
+              {/* Company Header */}
+              <div className="flex justify-between items-start mb-8">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight">{COMPANY.name}</h1>
+                  <p className="text-xs text-gray-500 mt-1">{COMPANY.address}</p>
+                  <p className="text-xs text-gray-500">{COMPANY.city}</p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                    <span className="text-[10px] text-gray-500">PIB: {COMPANY.pib}</span>
+                    <span className="text-[10px] text-gray-500">MB: {COMPANY.maticniBr}</span>
+                    <span className="text-[10px] text-gray-500">{COMPANY.account}</span>
+                    <span className="text-[10px] text-gray-500">{COMPANY.bank}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold uppercase tracking-wide">Otpremnica</p>
+                  <p className="text-xs text-gray-500 mt-1">Broj: <span className="font-mono font-medium text-gray-800">{printNote.number}</span></p>
+                  <p className="text-xs text-gray-500">Datum: {formatDate(printNote.date)}</p>
+                  <p className="text-xs text-gray-500">Mesto: Beograd</p>
+                </div>
+              </div>
+
+              {/* Partner Info */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Primalac</p>
+                <p className="text-sm font-semibold">{printNote.partner?.name || '-'}</p>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                  {printNote.partner?.pib && (
+                    <span className="text-[10px] text-gray-500">PIB: {printNote.partner.pib}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <table className="w-full text-xs mb-6">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-300 px-2 py-2 text-center w-10">R.br</th>
+                    <th className="border border-gray-300 px-2 py-2">Naziv</th>
+                    <th className="border border-gray-300 px-2 py-2 text-center w-16">Količina</th>
+                    <th className="border border-gray-300 px-2 py-2 text-right w-24">Cena</th>
+                    <th className="border border-gray-300 px-2 py-2 text-right w-24">Iznos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {printNote.items.map((item, idx) => (
+                    <tr key={item.id}>
+                      <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
+                      <td className="border border-gray-300 px-2 py-1.5">{item.productName}</td>
+                      <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
+                      <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
+                      <td className="border border-gray-300 px-2 py-1.5 text-right font-medium">{formatRSD(item.quantity * item.unitPrice)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Total */}
+              <div className="flex justify-end mb-6">
+                <div className="w-48 space-y-1">
+                  <div className="flex justify-between text-sm py-2 px-2 bg-gray-100 rounded font-bold border">
+                    <span>UKUPNO:</span>
+                    <span>{formatRSD(printNote.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {printNote.notes && (
+                <div className="mb-4 text-xs">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Napomene</p>
+                  <p className="text-gray-600">{printNote.notes}</p>
+                </div>
+              )}
+
+              {/* Invoice Number Reference */}
+              {printNote.invoiceNumber && (
+                <div className="mb-6 text-xs">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Referenca fakture</p>
+                  <p className="text-gray-600">Faktura br: {printNote.invoiceNumber}</p>
+                </div>
+              )}
+
+              {/* Signatures */}
+              <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
+                <div className="text-center">
+                  <div className="border-b border-gray-300 mb-1 pb-8"></div>
+                  <p className="text-[10px] text-gray-400">Potpis izdavaoca</p>
+                </div>
+                <div className="text-center">
+                  <div className="border-b border-gray-300 mb-1 pb-8"></div>
+                  <p className="text-[10px] text-gray-400">Potpis primanja</p>
+                </div>
+              </div>
+            </div>
+          ) : null
+        )}
+
+        {viewMode === 'form' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1029,14 +1185,17 @@ function OtpremniceTab() {
               <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
             </div>
           </div>
-        ) : loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="max-h-[500px] overflow-y-auto">
+        )}
+
+        {viewMode !== 'form' && viewMode !== 'print' && (
+          loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="max-h-[500px] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -1071,6 +1230,9 @@ function OtpremniceTab() {
                       <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes || '-'}</TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(dn)} title="Štampaj">
+                            <Printer className="h-3.5 w-3.5" />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(dn)}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
@@ -1085,7 +1247,7 @@ function OtpremniceTab() {
               </TableBody>
             </Table>
           </div>
-        )}
+        ))}
       </CardContent>
 
       {/* Delete Confirmation Dialog */}
