@@ -8,15 +8,16 @@ import {
   useCallback,
   type ReactNode,
 } from 'react'
-import { translations, DEFAULT_LOCALE, type Locale, type TranslationMap } from './translations'
+import { translations, DEFAULT_LOCALE, type TranslationMap } from './translations'
+import { LANGUAGES_BY_CODE } from './languages'
 
 // ============ TYPES ============
 
 interface I18nContextValue {
   /** Current locale */
-  locale: Locale
+  locale: string
   /** Change the active locale (also persists to settings API) */
-  setLocale: (locale: Locale) => void
+  setLocale: (locale: string) => void
   /** Translate a key using dot notation: t('common.save') */
   t: (key: string, params?: Record<string, string | number>) => string
   /** Translation map for the current locale */
@@ -30,12 +31,12 @@ const I18nContext = createContext<I18nContextValue | null>(null)
 interface I18nProviderProps {
   children: ReactNode
   /** Override the initial locale (useful for testing) */
-  initialLocale?: Locale
+  initialLocale?: string
 }
 
 export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
   const hasInitialLocale = !!initialLocale
-  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? DEFAULT_LOCALE)
+  const [locale, setLocaleState] = useState<string>(initialLocale ?? DEFAULT_LOCALE)
   const [isLoaded, setIsLoaded] = useState(hasInitialLocale)
 
   // Load saved locale from settings API on mount
@@ -55,8 +56,8 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
         if (cancelled) return
         if (data && Array.isArray(data)) {
           const langSetting = data.find((s: { key: string; value: string }) => s.key === 'language')
-          if (langSetting?.value && ['sr', 'sr-latn', 'en'].includes(langSetting.value)) {
-            setLocaleState(langSetting.value as Locale)
+          if (langSetting?.value && LANGUAGES_BY_CODE[langSetting.value]) {
+            setLocaleState(langSetting.value)
           }
         }
       })
@@ -75,7 +76,7 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
   }, [hasInitialLocale])
 
   // Persist locale to settings API
-  const setLocale = useCallback((newLocale: Locale) => {
+  const setLocale = useCallback((newLocale: string) => {
     setLocaleState(newLocale)
 
     // Persist to settings API (fire and forget)

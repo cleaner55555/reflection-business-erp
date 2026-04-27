@@ -2133,7 +2133,7 @@ export const translations: Record<string, TranslationMap> = {
 }
 
 // Supported locales
-export type Locale = 'sr' | 'sr-latn' | 'en'
+export type Locale = string
 
 export const LOCALE_NAMES: Record<Locale, string> = {
   sr: 'Српски (Ћирилица)',

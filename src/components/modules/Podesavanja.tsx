@@ -10,10 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon } from 'lucide-react'
+import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
 import { useThemeStore, DEFAULT_THEME } from '@/lib/theme'
 import { themePresets } from '@/lib/theme-presets'
 import type { ThemeSettings } from '@/lib/theme'
@@ -104,6 +104,131 @@ interface AppSettingResponse {
   label: string | null
   type: string
   group: string
+}
+
+// ============ LANGUAGE SEARCH SELECT COMPONENT ============
+
+function LanguageSearchSelect({ value, onChange }: { value: string; onChange: (code: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const { t } = useTranslation()
+
+  const selectedLang = ALL_LANGUAGES.find((l) => l.code === value)
+
+  const filtered = search.length > 0
+    ? ALL_LANGUAGES.filter(
+        (l) =>
+          l.nativeName.toLowerCase().includes(search.toLowerCase()) ||
+          l.englishName.toLowerCase().includes(search.toLowerCase()) ||
+          l.code.toLowerCase().includes(search.toLowerCase())
+      )
+    : ALL_LANGUAGES
+
+  // Group by region
+  const groups: Record<string, typeof ALL_LANGUAGES> = {}
+  const regionOrder = ['EUROPE', 'ASIA', 'AFRICA', 'AMERICAS', 'OCEANIA', 'CONSTRUCTED / OTHER']
+  filtered.forEach((lang) => {
+    // Determine region from the ALL_LANGUAGES ordering
+    const idx = ALL_LANGUAGES.indexOf(lang)
+    let region = 'OTHER'
+    if (idx >= 0 && idx < 46) region = 'EUROPE'
+    else if (idx >= 46 && idx < 72) region = 'ASIA'
+    else if (idx >= 72 && idx < 80) region = 'AFRICA'
+    else if (idx >= 80 && idx < 86) region = 'AMERICAS'
+    else if (idx >= 86 && idx < 90) region = 'OCEANIA'
+    else region = 'CONSTRUCTED / OTHER'
+    if (!groups[region]) groups[region] = []
+    groups[region].push(lang)
+  })
+
+  const regionLabels: Record<string, string> = {
+    EUROPE: t('settings.languageEurope') || 'Evropa',
+    ASIA: t('settings.languageAsia') || 'Azija',
+    AFRICA: t('settings.languageAfrica') || 'Afrika',
+    AMERICAS: t('settings.languageAmericas') || 'Amerike',
+    'OCEANIA': t('settings.languageOceania') || 'Okeanija',
+    'CONSTRUCTED / OTHER': t('settings.languageOther') || 'Ostalo',
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      >
+        {selectedLang ? (
+          <span className="flex items-center gap-2">
+            <span>{selectedLang.flag}</span>
+            <span>{selectedLang.nativeName}</span>
+            <span className="text-muted-foreground text-xs">({selectedLang.englishName})</span>
+          </span>
+        ) : (
+          <span className="text-muted-foreground">{t('common.select')}</span>
+        )}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); setSearch('') }} />
+          <div className="absolute z-50 mt-1 w-full max-h-80 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
+            <div className="p-2 border-b">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t('common.search') || 'Pretraga...'}
+                  className="flex h-8 w-full rounded-md border border-input bg-background pl-8 pr-3 py-1 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="overflow-y-auto max-h-64 p-1">
+              {filtered.length === 0 && (
+                <div className="py-6 text-center text-sm text-muted-foreground">
+                  {t('common.noResults')}
+                </div>
+              )}
+              {regionOrder
+                .filter((r) => groups[r] && groups[r].length > 0)
+                .map((region) => (
+                  <div key={region}>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {regionLabels[region] || region}
+                    </div>
+                    {groups[region].map((lang) => (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => {
+                          onChange(lang.code)
+                          setOpen(false)
+                          setSearch('')
+                        }}
+                        className={cn(
+                          'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors',
+                          lang.code === value && 'bg-accent'
+                        )}
+                      >
+                        <span className="shrink-0">{lang.flag}</span>
+                        <span className="truncate">{lang.nativeName}</span>
+                        <span className="ml-auto text-xs text-muted-foreground shrink-0">
+                          {lang.englishName}
+                        </span>
+                        {lang.code === value && (
+                          <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 // ============ MAIN COMPONENT ============
@@ -305,9 +430,7 @@ export function Podesavanja() {
       })
       if (!res.ok) throw new Error('Greška')
       // Also update locale if language changed
-      if (['sr', 'sr-latn', 'en'].includes(general.language)) {
-        setLocale(general.language as 'sr' | 'sr-latn' | 'en')
-      }
+      setLocale(general.language)
       toast.success(t('settings.generalSaved'))
     } catch {
       toast.error(t('settings.generalSaveError'))
@@ -675,14 +798,10 @@ export function Podesavanja() {
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="language">{t('settings.language')}</Label>
-                      <Select value={general.language} onValueChange={(val) => setGeneral((prev) => ({ ...prev, language: val }))}>
-                        <SelectTrigger id="language" className="sm:max-w-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sr">Srpski (Cyrillica)</SelectItem>
-                          <SelectItem value="sr-latn">Srpski (Latinica)</SelectItem>
-                          <SelectItem value="en">English</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <LanguageSearchSelect
+                        value={general.language}
+                        onChange={(val) => setGeneral((prev) => ({ ...prev, language: val }))}
+                      />
                     </div>
                   </div>
                 </CardContent>

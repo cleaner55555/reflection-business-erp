@@ -29,15 +29,8 @@ import { AIAssistant } from '@/components/modules/AIAssistant'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { useAppStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
-import { I18nProvider, useTranslation, LOCALE_NAMES } from '@/lib/i18n'
+import { I18nProvider, useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
 import { Separator } from '@/components/ui/separator'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Languages } from 'lucide-react'
 
@@ -119,20 +112,22 @@ function AppContent() {
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              {/* Language Switcher */}
-              <Select value={locale} onValueChange={(val) => setLocale(val as 'sr' | 'sr-latn' | 'en')}>
-                <SelectTrigger className="h-8 w-[130px] text-xs">
-                  <Languages className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(LOCALE_NAMES).map(([code, name]) => (
-                    <SelectItem key={code} value={code} className="text-xs">
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Language Switcher - shows flag and native name of current locale */}
+              <button
+                onClick={() => {
+                  const currentIdx = ALL_LANGUAGES.findIndex((l) => l.code === locale)
+                  const nextIdx = (currentIdx + 1) % ALL_LANGUAGES.length
+                  setLocale(ALL_LANGUAGES[nextIdx].code)
+                }}
+                className="flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
+                title={ALL_LANGUAGES.find((l) => l.code === locale)?.englishName || locale}
+              >
+                <span>{ALL_LANGUAGES.find((l) => l.code === locale)?.flag || '🌐'}</span>
+                <Languages className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="max-w-[70px] truncate">
+                  {ALL_LANGUAGES.find((l) => l.code === locale)?.nativeName || locale}
+                </span>
+              </button>
               <ThemeToggle />
             </div>
           </header>
