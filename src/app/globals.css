@@ -143,3 +143,49 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.45 0.02 155);
 }
+
+/* ========== PRINT STYLES ========== */
+@media print {
+  /* Hide everything except the invoice */
+  body * {
+    visibility: hidden;
+  }
+  .invoice-print-area,
+  .invoice-print-area * {
+    visibility: visible !important;
+  }
+  .invoice-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+    padding: 15mm 20mm;
+  }
+  .invoice-print-area table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .invoice-print-area th,
+  .invoice-print-area td {
+    border: 1px solid #333 !important;
+    padding: 4pt 6pt;
+    text-align: left;
+  }
+  .invoice-print-area th {
+    background: #f0f0f0 !important;
+    font-weight: 600;
+  }
+  .invoice-print-area .no-print {
+    display: none !important;
+  }
+  .invoice-print-area .print-footer {
+    margin-top: 40pt;
+  }
+  @page {
+    size: A4;
+    margin: 5mm;
+  }
+}
