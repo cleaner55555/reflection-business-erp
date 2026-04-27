@@ -14,13 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -30,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { Plus, Search, Users, Pencil, Trash2, Eye, Building2, Phone, Mail, MapPin, Landmark, CreditCard } from 'lucide-react'
+import { Plus, Search, Users, Pencil, Trash2, Eye, Building2, Phone, Mail, MapPin, Landmark, CreditCard, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
@@ -99,12 +92,11 @@ export function Partneri() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form' | 'analytics'>('list')
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   // Analytics state
-  const [analyticsOpen, setAnalyticsOpen] = useState(false)
   const [analyticsPartner, setAnalyticsPartner] = useState<Partner | null>(null)
   const [analyticsData, setAnalyticsData] = useState<PartnerAnalytics | null>(null)
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
@@ -124,9 +116,19 @@ export function Partneri() {
     fetchPartners()
   }, [fetchPartners])
 
+  const handleNew = () => {
+    setEditingPartner(null)
+    setViewMode('form')
+  }
+
   const handleEdit = (partner: Partner) => {
     setEditingPartner(partner)
-    setDialogOpen(true)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditingPartner(null)
   }
 
   const handleDelete = async (id: string) => {
@@ -177,7 +179,7 @@ export function Partneri() {
         return
       }
       toast.success(isEditing ? 'Partner uspešno ažuriran' : 'Partner uspešno kreiran')
-      setDialogOpen(false)
+      setViewMode('list')
       setEditingPartner(null)
       fetchPartners()
     } catch {
@@ -189,7 +191,7 @@ export function Partneri() {
 
   const handleOpenAnalytics = async (partner: Partner) => {
     setAnalyticsPartner(partner)
-    setAnalyticsOpen(true)
+    setViewMode('analytics')
     setAnalyticsLoading(true)
     setAnalyticsData(null)
     try {
@@ -207,6 +209,12 @@ export function Partneri() {
     }
   }
 
+  const handleBackFromAnalytics = () => {
+    setViewMode('list')
+    setAnalyticsPartner(null)
+    setAnalyticsData(null)
+  }
+
   const typeColors: Record<string, string> = {
     kupac: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     dobavljac: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -216,200 +224,134 @@ export function Partneri() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-base font-semibold">Partneri</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">{partners.length} partnera</p>
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle className="text-base font-semibold">
+                {editingPartner ? 'Izmeni Partnera' : 'Novi Partner'}
+              </CardTitle>
+            </div>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={(open) => {
-            setDialogOpen(open)
-            if (!open) setEditingPartner(null)
-          }}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
-                <Plus className="h-4 w-4" /> Novi Partner
-              </Button>
-            </DialogTrigger>
-            <DialogContent key={editingPartner?.id || 'new'} className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingPartner ? 'Izmeni Partnera' : 'Novi Partner'}</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Naziv *</Label>
-                    <Input name="name" placeholder="Naziv firme" required defaultValue={editingPartner?.name || ''} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">PIB *</Label>
-                    <Input name="pib" placeholder="123456789" required defaultValue={editingPartner?.pib || ''} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Matični broj</Label>
-                    <Input name="maticniBr" placeholder="12345678" defaultValue={editingPartner?.maticniBr || ''} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Tip</Label>
-                    <Select name="type" defaultValue={editingPartner?.type || 'kupac'}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kupac">Kupac</SelectItem>
-                        <SelectItem value="dobavljac">Dobavljač</SelectItem>
-                        <SelectItem value="partner">Partner</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Grad</Label>
-                    <Input name="city" placeholder="Beograd" defaultValue={editingPartner?.city || ''} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Adresa</Label>
-                  <Input name="address" placeholder="Ulica i broj" defaultValue={editingPartner?.address || ''} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Telefon</Label>
-                    <Input name="phone" placeholder="+381 11 123 4567" defaultValue={editingPartner?.phone || ''} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Email</Label>
-                    <Input name="email" type="email" placeholder="info@firma.rs" defaultValue={editingPartner?.email || ''} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Tekući račun</Label>
-                    <Input name="account" placeholder="265-00000000-00" defaultValue={editingPartner?.account || ''} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Banka</Label>
-                    <Input name="bank" placeholder="Naziv banke" defaultValue={editingPartner?.bank || ''} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Napomene</Label>
-                  <Input name="notes" placeholder="Napomene" defaultValue={editingPartner?.notes || ''} />
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : editingPartner ? 'Sačuvaj Izmene' : 'Kreiraj Partnera'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Pretraži partnere..."
-              className="pl-8 h-9"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="w-[150px] h-9">
-              <SelectValue placeholder="Svi tipovi" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Svi tipovi</SelectItem>
-              <SelectItem value="kupac">Kupac</SelectItem>
-              <SelectItem value="dobavljac">Dobavljač</SelectItem>
-              <SelectItem value="partner">Partner</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
+        ) : viewMode === 'analytics' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleBackFromAnalytics}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle className="text-base font-semibold">Analitička Kartica</CardTitle>
+            </div>
           </div>
         ) : (
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">Naziv</TableHead>
-                  <TableHead className="text-xs">PIB</TableHead>
-                  <TableHead className="text-xs">Tip</TableHead>
-                  <TableHead className="text-xs">Grad</TableHead>
-                  <TableHead className="text-xs">Telefon</TableHead>
-                  <TableHead className="text-xs">Email</TableHead>
-                  <TableHead className="text-xs text-center">Fakture</TableHead>
-                  <TableHead className="text-xs text-center">Narudžbine</TableHead>
-                  <TableHead className="text-xs text-right">Akcije</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {partners.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema partnera za prikaz
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  partners.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="text-xs font-medium">{p.name}</TableCell>
-                      <TableCell className="text-xs font-mono">{p.pib}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeColors[p.type] || ''}`}>
-                          {getStatusLabel(p.type)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs">{p.city || '-'}</TableCell>
-                      <TableCell className="text-xs">{p.phone || '-'}</TableCell>
-                      <TableCell className="text-xs">{p.email || '-'}</TableCell>
-                      <TableCell className="text-xs text-center">
-                        <Badge variant="secondary" className="text-[10px] px-2 py-0">
-                          {p._count.invoices}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-center">
-                        <Badge variant="secondary" className="text-[10px] px-2 py-0">
-                          {p._count.purchaseOrders}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenAnalytics(p)} title="Analitička kartica">
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(p)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(p.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
+          <>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Partneri</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{partners.length} partnera</p>
+              </div>
+              <Button size="sm" className="gap-2" onClick={handleNew}>
+                <Plus className="h-4 w-4" /> Novi Partner
+              </Button>
+            </div>
 
-      {/* Analytics Dialog */}
-      <Dialog open={analyticsOpen} onOpenChange={(open) => {
-        setAnalyticsOpen(open)
-        if (!open) {
-          setAnalyticsPartner(null)
-          setAnalyticsData(null)
-        }
-      }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          {analyticsLoading ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pretraži partnere..."
+                  className="pl-8 h-9"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
+                <SelectTrigger className="w-[150px] h-9">
+                  <SelectValue placeholder="Svi tipovi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Svi tipovi</SelectItem>
+                  <SelectItem value="kupac">Kupac</SelectItem>
+                  <SelectItem value="dobavljac">Dobavljač</SelectItem>
+                  <SelectItem value="partner">Partner</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+      </CardHeader>
+      <CardContent>
+        {viewMode === 'form' ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Naziv *</Label>
+                <Input name="name" placeholder="Naziv firme" required defaultValue={editingPartner?.name || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">PIB *</Label>
+                <Input name="pib" placeholder="123456789" required defaultValue={editingPartner?.pib || ''} />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Matični broj</Label>
+                <Input name="maticniBr" placeholder="12345678" defaultValue={editingPartner?.maticniBr || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Tip</Label>
+                <Select name="type" defaultValue={editingPartner?.type || 'kupac'}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kupac">Kupac</SelectItem>
+                    <SelectItem value="dobavljac">Dobavljač</SelectItem>
+                    <SelectItem value="partner">Partner</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Grad</Label>
+                <Input name="city" placeholder="Beograd" defaultValue={editingPartner?.city || ''} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Adresa</Label>
+              <Input name="address" placeholder="Ulica i broj" defaultValue={editingPartner?.address || ''} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Telefon</Label>
+                <Input name="phone" placeholder="+381 11 123 4567" defaultValue={editingPartner?.phone || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Email</Label>
+                <Input name="email" type="email" placeholder="info@firma.rs" defaultValue={editingPartner?.email || ''} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Tekući račun</Label>
+                <Input name="account" placeholder="265-00000000-00" defaultValue={editingPartner?.account || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Banka</Label>
+                <Input name="bank" placeholder="Naziv banke" defaultValue={editingPartner?.bank || ''} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Napomene</Label>
+              <Input name="notes" placeholder="Napomene" defaultValue={editingPartner?.notes || ''} />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Čuvanje...' : editingPartner ? 'Sačuvaj Izmene' : 'Kreiraj Partnera'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+            </div>
+          </form>
+        ) : viewMode === 'analytics' ? (
+          analyticsLoading ? (
             <div className="space-y-4 py-6">
               <Skeleton className="h-8 w-64" />
               <Skeleton className="h-4 w-40" />
@@ -422,22 +364,19 @@ export function Partneri() {
             </div>
           ) : analyticsData ? (
             <>
-              <DialogHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <DialogTitle className="text-lg flex items-center gap-2">
-                      <Building2 className="h-5 w-5 text-muted-foreground" />
-                      {analyticsData.partner.name}
-                    </DialogTitle>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-sm font-mono text-muted-foreground">PIB: {analyticsData.partner.pib}</span>
-                      <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeColors[analyticsData.partner.type] || ''}`}>
-                        {getStatusLabel(analyticsData.partner.type)}
-                      </Badge>
-                    </div>
-                  </div>
+              {/* Partner Info Header */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-lg font-semibold">{analyticsData.partner.name}</span>
                 </div>
-              </DialogHeader>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-sm font-mono text-muted-foreground">PIB: {analyticsData.partner.pib}</span>
+                  <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeColors[analyticsData.partner.type] || ''}`}>
+                    {getStatusLabel(analyticsData.partner.type)}
+                  </Badge>
+                </div>
+              </div>
 
               {/* Contact info */}
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground py-1">
@@ -573,9 +512,82 @@ export function Partneri() {
                 )}
               </div>
             </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+          ) : null
+        ) : (
+          loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="max-h-[500px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Naziv</TableHead>
+                    <TableHead className="text-xs">PIB</TableHead>
+                    <TableHead className="text-xs">Tip</TableHead>
+                    <TableHead className="text-xs">Grad</TableHead>
+                    <TableHead className="text-xs">Telefon</TableHead>
+                    <TableHead className="text-xs">Email</TableHead>
+                    <TableHead className="text-xs text-center">Fakture</TableHead>
+                    <TableHead className="text-xs text-center">Narudžbine</TableHead>
+                    <TableHead className="text-xs text-right">Akcije</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {partners.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-sm">
+                        Nema partnera za prikaz
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    partners.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="text-xs font-medium">{p.name}</TableCell>
+                        <TableCell className="text-xs font-mono">{p.pib}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeColors[p.type] || ''}`}>
+                            {getStatusLabel(p.type)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">{p.city || '-'}</TableCell>
+                        <TableCell className="text-xs">{p.phone || '-'}</TableCell>
+                        <TableCell className="text-xs">{p.email || '-'}</TableCell>
+                        <TableCell className="text-xs text-center">
+                          <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                            {p._count.invoices}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-center">
+                          <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                            {p._count.purchaseOrders}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenAnalytics(p)} title="Analitička kartica">
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(p)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(p.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )
+        )}
+      </CardContent>
     </Card>
   )
 }

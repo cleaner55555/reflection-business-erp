@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -16,6 +15,7 @@ import {
   Car, Plus, Pencil, Trash2, Fuel, Gauge, Users, Snowflake, Navigation,
   DollarSign, CalendarDays, CheckCircle, XCircle, PlayCircle, Eye,
   CarFront, ClipboardList, MapPin, CreditCard, User, Phone, Mail, FileText,
+  ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
@@ -151,15 +151,16 @@ export function RentACar() {
   const [submitting, setSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState('vozila')
 
-  // Vehicle dialog state
-  const [vehicleDialogOpen, setVehicleDialogOpen] = useState(false)
+  // View mode state (replaces Dialog state)
+  const [viewMode, setViewMode] = useState<'list' | 'vehicle-form' | 'rental-form'>('list')
+
+  // Vehicle editing state
   const [editingVehicle, setEditingVehicle] = useState<RentalVehicleFull | null>(null)
 
   // Vehicle filter state
   const [vehicleStatusFilter, setVehicleStatusFilter] = useState('all')
 
-  // Rental dialog state
-  const [rentalDialogOpen, setRentalDialogOpen] = useState(false)
+  // Rental editing state
   const [editingRental, setEditingRental] = useState<Rental | null>(null)
   const [rentalFormVehicle, setRentalFormVehicle] = useState('')
   const [rentalFormDailyRate, setRentalFormDailyRate] = useState(0)
@@ -276,7 +277,7 @@ export function RentACar() {
         throw new Error(err.error || 'Greška')
       }
       toast.success(editingVehicle ? 'Vozilo ažurirano' : 'Vozilo kreirano')
-      setVehicleDialogOpen(false)
+      setViewMode('list')
       setEditingVehicle(null)
       fetchVehicles()
     } catch (err: unknown) {
@@ -305,12 +306,12 @@ export function RentACar() {
 
   const openEditVehicle = (vehicle: RentalVehicleFull) => {
     setEditingVehicle(vehicle)
-    setVehicleDialogOpen(true)
+    setViewMode('vehicle-form')
   }
 
   const openNewVehicle = () => {
     setEditingVehicle(null)
-    setVehicleDialogOpen(true)
+    setViewMode('vehicle-form')
   }
 
   // ============ RENTAL HANDLERS ============
@@ -321,7 +322,7 @@ export function RentACar() {
     setRentalFormDailyRate(0)
     setRentalFormStartDate('')
     setRentalFormEndDate('')
-    setRentalDialogOpen(true)
+    setViewMode('rental-form')
   }
 
   const handleVehicleSelectForRental = (vehicleId: string) => {
@@ -384,7 +385,7 @@ export function RentACar() {
         }
         toast.success('Rezervacija kreirana')
       }
-      setRentalDialogOpen(false)
+      setViewMode('list')
       setEditingRental(null)
       fetchRentals()
       fetchVehicles()
@@ -433,7 +434,14 @@ export function RentACar() {
     setRentalFormDailyRate(v?.dailyRate || rental.dailyRate)
     setRentalFormStartDate(rental.startDate.split('T')[0])
     setRentalFormEndDate(rental.endDate.split('T')[0])
-    setRentalDialogOpen(true)
+    setViewMode('rental-form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditingVehicle(null)
+    setEditingRental(null)
+    setRentalFormVehicle('')
   }
 
   const generateRentalNumber = () => {
@@ -493,7 +501,7 @@ export function RentACar() {
       </div>
 
       {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleCancel() }}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <TabsList>
             <TabsTrigger value="vozila" className="gap-1.5">
@@ -509,28 +517,15 @@ export function RentACar() {
 
         {/* ========== VOZILA TAB ========== */}
         <TabsContent value="vozila" className="space-y-4 mt-4">
-          {/* Vehicle Filter + Add */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Tabs value={vehicleStatusFilter} onValueChange={setVehicleStatusFilter}>
-              <TabsList>
-                <TabsTrigger value="all">Sva</TabsTrigger>
-                <TabsTrigger value="dostupno">Dostupna</TabsTrigger>
-                <TabsTrigger value="iznajmljeno">Iznajmljena</TabsTrigger>
-                <TabsTrigger value="rezervisano">Rezervisana</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <Dialog open={vehicleDialogOpen} onOpenChange={(o) => { setVehicleDialogOpen(o); if (!o) setEditingVehicle(null) }}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2" onClick={openNewVehicle}>
-                  <Plus className="h-4 w-4" />
-                  Novo Vozilo
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingVehicle ? 'Izmeni' : 'Novo'} Vozilo</DialogTitle>
-                </DialogHeader>
+          {viewMode === 'vehicle-form' ? (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+                  <div><CardTitle>{editingVehicle ? 'Izmeni' : 'Novo'} Vozilo</CardTitle></div>
+                </div>
+              </CardHeader>
+              <CardContent>
                 <form onSubmit={handleVehicleSubmit} key={editingVehicle?.id || 'new'} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -650,159 +645,167 @@ export function RentACar() {
                     <Label className="text-xs">Napomene</Label>
                     <Textarea name="notes" defaultValue={editingVehicle?.notes || ''} placeholder="Dodatne napomene..." rows={3} />
                   </div>
-                  <Button type="submit" className="w-full" disabled={submitting}>
-                    {submitting ? 'Čuvanje...' : 'Sačuvaj'}
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* Vehicle Grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Card key={i} className="p-4">
-                  <Skeleton className="h-5 w-3/4 mb-3" />
-                  <Skeleton className="h-4 w-1/2 mb-2" />
-                  <Skeleton className="h-4 w-2/3 mb-4" />
                   <div className="flex gap-2">
-                    <Skeleton className="h-6 w-16 rounded-full" />
-                    <Skeleton className="h-6 w-16 rounded-full" />
+                    <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">Otkaži</Button>
+                    <Button type="submit" className="flex-1" disabled={submitting}>
+                      {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                    </Button>
                   </div>
-                </Card>
-              ))}
-            </div>
-          ) : filteredVehicles.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Car className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground">Nema vozila za prikaz</p>
+                </form>
+              </CardContent>
             </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredVehicles.map((vehicle) => (
-                <Card key={vehicle.id} className="p-4 transition-all hover:shadow-md">
-                  {/* Header */}
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm truncate">{vehicle.name}</h3>
-                      <p className="text-xs text-muted-foreground font-mono mt-0.5">{vehicle.registration}</p>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => openEditVehicle(vehicle as unknown as RentalVehicleFull)}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-red-500"
-                        onClick={() => handleDeleteVehicle(vehicle.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+          ) : viewMode === 'rental-form' ? null : (
+            <>
+              {/* Vehicle Filter + Add */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Tabs value={vehicleStatusFilter} onValueChange={setVehicleStatusFilter}>
+                  <TabsList>
+                    <TabsTrigger value="all">Sva</TabsTrigger>
+                    <TabsTrigger value="dostupno">Dostupna</TabsTrigger>
+                    <TabsTrigger value="iznajmljeno">Iznajmljena</TabsTrigger>
+                    <TabsTrigger value="rezervisano">Rezervisana</TabsTrigger>
+                  </TabsList>
+                </Tabs>
 
-                  {/* Badges */}
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <Badge variant="outline" className={`text-[10px] ${VEHICLE_STATUS_BADGES[vehicle.status] || ''}`}>
-                      {VEHICLE_STATUS_LABELS[vehicle.status] || vehicle.status}
-                    </Badge>
-                    <Badge variant="outline" className={`text-[10px] ${FUEL_TYPE_BADGES[vehicle.fuelType] || ''}`}>
-                      <Fuel className="h-2.5 w-2.5 mr-0.5" />
-                      {FUEL_TYPE_LABELS[vehicle.fuelType] || vehicle.fuelType}
-                    </Badge>
-                    <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200">
-                      {TRANSMISSION_LABELS[vehicle.transmission] || vehicle.transmission}
-                    </Badge>
-                  </div>
+                <Button size="sm" className="gap-2" onClick={openNewVehicle}>
+                  <Plus className="h-4 w-4" />
+                  Novo Vozilo
+                </Button>
+              </div>
 
-                  {/* Details Grid */}
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-muted-foreground mb-3">
-                    <span className="flex items-center gap-1">
-                      <Car className="h-3 w-3" />
-                      {vehicle.year}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Gauge className="h-3 w-3" />
-                      {vehicle.mileage.toLocaleString('sr-RS')} km
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      {vehicle.seats} sedišta
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <CreditCard className="h-3 w-3" />
-                      {formatRSD(vehicle.dailyRate)}/dan
-                    </span>
-                    {vehicle.ac && (
-                      <span className="flex items-center gap-1 text-emerald-600">
-                        <Snowflake className="h-3 w-3" />
-                        Klima
-                      </span>
-                    )}
-                    {vehicle.gps && (
-                      <span className="flex items-center gap-1 text-blue-600">
-                        <Navigation className="h-3 w-3" />
-                        GPS
-                      </span>
-                    )}
-                    <span className="flex items-center gap-1 col-span-2">
-                      <MapPin className="h-3 w-3" />
-                      {vehicle._count?.rentals || 0} iznajmljivanja
-                    </span>
-                  </div>
-
-                  {/* Weekly/Monthly rates */}
-                  {(vehicle.weeklyRate || vehicle.monthlyRate) && (
-                    <>
-                      <Separator className="my-2" />
-                      <div className="flex gap-3 text-[10px] text-muted-foreground">
-                        {vehicle.weeklyRate && (
-                          <span>Nedeljno: <span className="font-medium text-foreground">{formatRSD(vehicle.weeklyRate)}</span></span>
-                        )}
-                        {vehicle.monthlyRate && (
-                          <span>Mesečno: <span className="font-medium text-foreground">{formatRSD(vehicle.monthlyRate)}</span></span>
-                        )}
+              {/* Vehicle Grid */}
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="p-4">
+                      <Skeleton className="h-5 w-3/4 mb-3" />
+                      <Skeleton className="h-4 w-1/2 mb-2" />
+                      <Skeleton className="h-4 w-2/3 mb-4" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                        <Skeleton className="h-6 w-16 rounded-full" />
                       </div>
-                    </>
-                  )}
+                    </Card>
+                  ))}
+                </div>
+              ) : filteredVehicles.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <Car className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+                  <p className="text-sm text-muted-foreground">Nema vozila za prikaz</p>
                 </Card>
-              ))}
-            </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredVehicles.map((vehicle) => (
+                    <Card key={vehicle.id} className="p-4 transition-all hover:shadow-md">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm truncate">{vehicle.name}</h3>
+                          <p className="text-xs text-muted-foreground font-mono mt-0.5">{vehicle.registration}</p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => openEditVehicle(vehicle as unknown as RentalVehicleFull)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-red-500"
+                            onClick={() => handleDeleteVehicle(vehicle.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Badges */}
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <Badge variant="outline" className={`text-[10px] ${VEHICLE_STATUS_BADGES[vehicle.status] || ''}`}>
+                          {VEHICLE_STATUS_LABELS[vehicle.status] || vehicle.status}
+                        </Badge>
+                        <Badge variant="outline" className={`text-[10px] ${FUEL_TYPE_BADGES[vehicle.fuelType] || ''}`}>
+                          <Fuel className="h-2.5 w-2.5 mr-0.5" />
+                          {FUEL_TYPE_LABELS[vehicle.fuelType] || vehicle.fuelType}
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200">
+                          {TRANSMISSION_LABELS[vehicle.transmission] || vehicle.transmission}
+                        </Badge>
+                      </div>
+
+                      {/* Details Grid */}
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-muted-foreground mb-3">
+                        <span className="flex items-center gap-1">
+                          <Car className="h-3 w-3" />
+                          {vehicle.year}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Gauge className="h-3 w-3" />
+                          {vehicle.mileage.toLocaleString('sr-RS')} km
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {vehicle.seats} sedišta
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <CreditCard className="h-3 w-3" />
+                          {formatRSD(vehicle.dailyRate)}/dan
+                        </span>
+                        {vehicle.ac && (
+                          <span className="flex items-center gap-1 text-emerald-600">
+                            <Snowflake className="h-3 w-3" />
+                            Klima
+                          </span>
+                        )}
+                        {vehicle.gps && (
+                          <span className="flex items-center gap-1 text-blue-600">
+                            <Navigation className="h-3 w-3" />
+                            GPS
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1 col-span-2">
+                          <MapPin className="h-3 w-3" />
+                          {vehicle._count?.rentals || 0} iznajmljivanja
+                        </span>
+                      </div>
+
+                      {/* Weekly/Monthly rates */}
+                      {(vehicle.weeklyRate || vehicle.monthlyRate) && (
+                        <>
+                          <Separator className="my-2" />
+                          <div className="flex gap-3 text-[10px] text-muted-foreground">
+                            {vehicle.weeklyRate && (
+                              <span>Nedeljno: <span className="font-medium text-foreground">{formatRSD(vehicle.weeklyRate)}</span></span>
+                            )}
+                            {vehicle.monthlyRate && (
+                              <span>Mesečno: <span className="font-medium text-foreground">{formatRSD(vehicle.monthlyRate)}</span></span>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
         {/* ========== REZERVACIJE TAB ========== */}
         <TabsContent value="rezervacije" className="space-y-4 mt-4">
-          {/* Rental Filter + Add */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Tabs value={rentalStatusFilter} onValueChange={setRentalStatusFilter}>
-              <TabsList>
-                <TabsTrigger value="all">Sve</TabsTrigger>
-                <TabsTrigger value="rezervacija">Rezervacije</TabsTrigger>
-                <TabsTrigger value="aktivna">Aktivne</TabsTrigger>
-                <TabsTrigger value="zavrsena">Završene</TabsTrigger>
-                <TabsTrigger value="otkazana">Otkazane</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <Dialog open={rentalDialogOpen} onOpenChange={(o) => { setRentalDialogOpen(o); if (!o) { setEditingRental(null); setRentalFormVehicle('') } }}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2" onClick={openNewRental}>
-                  <Plus className="h-4 w-4" />
-                  Nova Rezervacija
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingRental ? 'Izmeni' : 'Nova'} Rezervacija</DialogTitle>
-                </DialogHeader>
+          {viewMode === 'rental-form' ? (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+                  <div><CardTitle>{editingRental ? 'Izmeni' : 'Nova'} Rezervacija</CardTitle></div>
+                </div>
+              </CardHeader>
+              <CardContent>
                 <form onSubmit={handleRentalSubmit} key={editingRental?.id || 'new'} className="space-y-4">
                   {/* Rental number + Vehicle */}
                   <div className="grid grid-cols-2 gap-4">
@@ -919,182 +922,205 @@ export function RentACar() {
                     <Textarea name="notes" defaultValue={editingRental?.notes || ''} placeholder="Dodatne napomene o rezervaciji..." rows={3} />
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={submitting}>
-                    {submitting ? 'Čuvanje...' : 'Sačuvaj rezervaciju'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">Otkaži</Button>
+                    <Button type="submit" className="flex-1" disabled={submitting}>
+                      {submitting ? 'Čuvanje...' : 'Sačuvaj rezervaciju'}
+                    </Button>
+                  </div>
                 </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* Rental List */}
-          {rentalsLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} className="p-4">
-                  <Skeleton className="h-5 w-1/3 mb-3" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-2/3" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : filteredRentals.length === 0 ? (
-            <Card className="p-12 text-center">
-              <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground">Nema rezervacija za prikaz</p>
+              </CardContent>
             </Card>
-          ) : (
-            <div className="space-y-3">
-              {filteredRentals.map((rental) => (
-                <Card key={rental.id} className="p-4 transition-all hover:shadow-md">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    {/* Left: Info */}
-                    <div className="flex-1 min-w-0 space-y-3">
-                      {/* Top row: number + status */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-sm">{rental.number}</h3>
-                        <Badge variant="outline" className={`text-[10px] ${RENTAL_STATUS_BADGES[rental.status] || ''}`}>
-                          {RENTAL_STATUS_LABELS[rental.status] || rental.status}
-                        </Badge>
+          ) : viewMode === 'vehicle-form' ? null : (
+            <>
+              {/* Rental Filter + Add */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Tabs value={rentalStatusFilter} onValueChange={setRentalStatusFilter}>
+                  <TabsList>
+                    <TabsTrigger value="all">Sve</TabsTrigger>
+                    <TabsTrigger value="rezervacija">Rezervacije</TabsTrigger>
+                    <TabsTrigger value="aktivna">Aktivne</TabsTrigger>
+                    <TabsTrigger value="zavrsena">Završene</TabsTrigger>
+                    <TabsTrigger value="otkazana">Otkazane</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                <Button size="sm" className="gap-2" onClick={openNewRental}>
+                  <Plus className="h-4 w-4" />
+                  Nova Rezervacija
+                </Button>
+              </div>
+
+              {/* Rental List */}
+              {rentalsLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Card key={i} className="p-4">
+                      <Skeleton className="h-5 w-1/3 mb-3" />
+                      <div className="grid grid-cols-2 gap-3">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                        <Skeleton className="h-4 w-1/2" />
                       </div>
-
-                      {/* Client info */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                          <User className="h-3 w-3 shrink-0" />
-                          <span className="truncate font-medium text-foreground">{rental.clientName}</span>
-                        </span>
-                        {rental.clientPhone && (
-                          <span className="flex items-center gap-1.5">
-                            <Phone className="h-3 w-3 shrink-0" />
-                            {rental.clientPhone}
-                          </span>
-                        )}
-                        {rental.clientEmail && (
-                          <span className="flex items-center gap-1.5">
-                            <Mail className="h-3 w-3 shrink-0" />
-                            <span className="truncate">{rental.clientEmail}</span>
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1.5">
-                          <Car className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{rental.vehicle?.name || 'Nepoznato vozilo'}</span>
-                          {rental.vehicle?.registration && (
-                            <span className="font-mono text-[10px]">({rental.vehicle.registration})</span>
-                          )}
-                        </span>
-                      </div>
-
-                      {/* Dates + Mileage */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <CalendarDays className="h-3 w-3" />
-                          {formatDate(rental.startDate)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3" />
-                          {formatDate(rental.endDate)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {rental.totalDays} dana
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Gauge className="h-3 w-3" />
-                          {rental.pickupMileage.toLocaleString('sr-RS')} km
-                        </span>
-                      </div>
-
-                      {/* Amounts */}
-                      <div className="flex flex-wrap gap-4 text-xs">
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="h-3 w-3 text-emerald-500" />
-                          <span className="text-muted-foreground">Iznos:</span>
-                          <span className="font-bold text-sm text-emerald-600">{formatRSD(rental.totalAmount)}</span>
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <CreditCard className="h-3 w-3 text-amber-500" />
-                          <span className="text-muted-foreground">Depozit:</span>
-                          <span className="font-medium">{formatRSD(rental.deposit)}</span>
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-muted-foreground">Dnevna:</span>
-                          <span className="font-medium">{formatRSD(rental.dailyRate)}</span>
-                        </span>
-                      </div>
-
-                      {rental.notes && (
-                        <p className="text-xs text-muted-foreground italic">{rental.notes}</p>
-                      )}
-                    </div>
-
-                    {/* Right: Actions */}
-                    <div className="flex items-center gap-1 shrink-0 sm:flex-col sm:gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => openEditRental(rental)}
-                        title="Izmeni"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-
-                      {rental.status === 'rezervacija' && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-emerald-600 hover:text-emerald-700"
-                          onClick={() => handleUpdateRentalStatus(rental, 'aktivna')}
-                          title="Aktiviraj"
-                        >
-                          <PlayCircle className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-
-                      {rental.status === 'aktivna' && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-blue-600 hover:text-blue-700"
-                          onClick={() => handleUpdateRentalStatus(rental, 'zavrsena')}
-                          title="Završi"
-                        >
-                          <CheckCircle className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-
-                      {rental.status !== 'otkazana' && rental.status !== 'zavrsena' && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-red-500 hover:text-red-600"
-                          onClick={() => handleUpdateRentalStatus(rental, 'otkazana')}
-                          title="Otkaži"
-                        >
-                          <XCircle className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-red-500"
-                        onClick={() => handleDeleteRental(rental.id)}
-                        title="Obriši"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : filteredRentals.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+                  <p className="text-sm text-muted-foreground">Nema rezervacija za prikaz</p>
                 </Card>
-              ))}
-            </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredRentals.map((rental) => (
+                    <Card key={rental.id} className="p-4 transition-all hover:shadow-md">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        {/* Left: Info */}
+                        <div className="flex-1 min-w-0 space-y-3">
+                          {/* Top row: number + status */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-sm">{rental.number}</h3>
+                            <Badge variant="outline" className={`text-[10px] ${RENTAL_STATUS_BADGES[rental.status] || ''}`}>
+                              {RENTAL_STATUS_LABELS[rental.status] || rental.status}
+                            </Badge>
+                          </div>
+
+                          {/* Client info */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1.5">
+                              <User className="h-3 w-3 shrink-0" />
+                              <span className="truncate font-medium text-foreground">{rental.clientName}</span>
+                            </span>
+                            {rental.clientPhone && (
+                              <span className="flex items-center gap-1.5">
+                                <Phone className="h-3 w-3 shrink-0" />
+                                {rental.clientPhone}
+                              </span>
+                            )}
+                            {rental.clientEmail && (
+                              <span className="flex items-center gap-1.5">
+                                <Mail className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{rental.clientEmail}</span>
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1.5">
+                              <Car className="h-3 w-3 shrink-0" />
+                              <span className="truncate">{rental.vehicle?.name || 'Nepoznato vozilo'}</span>
+                              {rental.vehicle?.registration && (
+                                <span className="font-mono text-[10px]">({rental.vehicle.registration})</span>
+                              )}
+                            </span>
+                          </div>
+
+                          {/* Dates + Mileage */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <CalendarDays className="h-3 w-3" />
+                              {formatDate(rental.startDate)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3" />
+                              {formatDate(rental.endDate)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Eye className="h-3 w-3" />
+                              {rental.totalDays} dana
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Gauge className="h-3 w-3" />
+                              {rental.pickupMileage.toLocaleString('sr-RS')} km
+                            </span>
+                          </div>
+
+                          {/* Amounts */}
+                          <div className="flex flex-wrap gap-4 text-xs">
+                            <span className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3 text-emerald-500" />
+                              <span className="text-muted-foreground">Iznos:</span>
+                              <span className="font-bold text-sm text-emerald-600">{formatRSD(rental.totalAmount)}</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <CreditCard className="h-3 w-3 text-amber-500" />
+                              <span className="text-muted-foreground">Depozit:</span>
+                              <span className="font-medium">{formatRSD(rental.deposit)}</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <FileText className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-muted-foreground">Dnevna:</span>
+                              <span className="font-medium">{formatRSD(rental.dailyRate)}</span>
+                            </span>
+                          </div>
+
+                          {rental.notes && (
+                            <p className="text-xs text-muted-foreground italic">{rental.notes}</p>
+                          )}
+                        </div>
+
+                        {/* Right: Actions */}
+                        <div className="flex items-center gap-1 shrink-0 sm:flex-col sm:gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => openEditRental(rental)}
+                            title="Izmeni"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+
+                          {rental.status === 'rezervacija' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-emerald-600 hover:text-emerald-700"
+                              onClick={() => handleUpdateRentalStatus(rental, 'aktivna')}
+                              title="Aktiviraj"
+                            >
+                              <PlayCircle className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+
+                          {rental.status === 'aktivna' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-blue-600 hover:text-blue-700"
+                              onClick={() => handleUpdateRentalStatus(rental, 'zavrsena')}
+                              title="Završi"
+                            >
+                              <CheckCircle className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+
+                          {rental.status !== 'otkazana' && rental.status !== 'zavrsena' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-red-500 hover:text-red-600"
+                              onClick={() => handleUpdateRentalStatus(rental, 'otkazana')}
+                              title="Otkaži"
+                            >
+                              <XCircle className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-red-500"
+                            onClick={() => handleDeleteRental(rental.id)}
+                            title="Obriši"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
       </Tabs>

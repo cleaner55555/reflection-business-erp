@@ -13,9 +13,6 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from '@/components/ui/dialog'
-import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
@@ -24,7 +21,7 @@ import {
 } from '@/components/ui/select'
 import {
   Plus, Search, Pencil, Trash2, Mail, Inbox, Send, AlertTriangle,
-  FileCheck, Filter,
+  FileCheck, Filter, ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
@@ -104,8 +101,8 @@ export function Protokol() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
 
-  // Dialog state
-  const [dialogOpen, setDialogOpen] = useState(false)
+  // View mode state
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<ProtocolEntry | null>(null)
   const [form, setForm] = useState<FormData>({ ...EMPTY_FORM })
@@ -163,7 +160,7 @@ export function Protokol() {
   const openCreate = () => {
     setEditing(null)
     setForm({ ...EMPTY_FORM, direction: activeTab === 'izlaz' ? 'izlaz' : 'ulaz' })
-    setDialogOpen(true)
+    setViewMode('form')
   }
 
   const openEdit = (entry: ProtocolEntry) => {
@@ -181,11 +178,11 @@ export function Protokol() {
       priority: entry.priority,
       notes: entry.notes || '',
     })
-    setDialogOpen(true)
+    setViewMode('form')
   }
 
-  const closeDialog = () => {
-    setDialogOpen(false)
+  const handleCancel = () => {
+    setViewMode('list')
     setEditing(null)
     setForm({ ...EMPTY_FORM })
   }
@@ -210,7 +207,7 @@ export function Protokol() {
       })
       if (!res.ok) throw new Error()
       toast.success(editing ? 'Dopis ažuriran' : 'Dopis kreiran')
-      closeDialog()
+      handleCancel()
       fetchEntries()
     } catch {
       toast.error('Greška pri čuvanju')
@@ -294,344 +291,350 @@ export function Protokol() {
       {/* Main Card */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Registar dopisa
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {filtered.length} od {totalCount} zapisa
-              </p>
+          {viewMode === 'form' ? (
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle className="text-base font-semibold">
+                  {editing ? 'Izmeni dopis' : 'Novi dopis'}
+                </CardTitle>
+              </div>
             </div>
-            <Button size="sm" className="gap-2" onClick={openCreate}>
-              <Plus className="h-4 w-4" />
-              Novi dopis
-            </Button>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Registar dopisa
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {filtered.length} od {totalCount} zapisa
+                </p>
+              </div>
+              <Button size="sm" className="gap-2" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Novi dopis
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full sm:w-auto">
-              <TabsTrigger value="ulaz" className="gap-1.5 text-xs">
-                <Inbox className="h-3.5 w-3.5" /> Ulazni dopisi
-              </TabsTrigger>
-              <TabsTrigger value="izlaz" className="gap-1.5 text-xs">
-                <Send className="h-3.5 w-3.5" /> Izlazni dopisi
-              </TabsTrigger>
-              <TabsTrigger value="sve" className="gap-1.5 text-xs">
-                <FileCheck className="h-3.5 w-3.5" /> Svi
-              </TabsTrigger>
-            </TabsList>
+          {viewMode === 'form' ? (
+            /* ─── Inline Create / Edit Form ───────────────────────────────── */
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Direction */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Smer *</Label>
+                  <Select value={form.direction} onValueChange={v => updateField('direction', v)}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ulaz">
+                        <span className="flex items-center gap-1.5"><Inbox className="h-3.5 w-3.5" /> Ulazni</span>
+                      </SelectItem>
+                      <SelectItem value="izlaz">
+                        <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> Izlazni</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Filters */}
-            <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pretraži dopise..."
-                  className="pl-9 h-9 text-sm"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
+                {/* Document type */}
+                <div className="space-y-2">
+                  <Label className="text-xs">Tip dokumenta</Label>
+                  <Select value={form.documentType} onValueChange={v => updateField('documentType', v)}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Izaberite" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(DOC_TYPES).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="h-9 w-[140px] text-xs">
-                    <Filter className="mr-1.5 h-3 w-3 text-muted-foreground" />
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Svi statusi</SelectItem>
-                    {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={filterPriority} onValueChange={setFilterPriority}>
-                  <SelectTrigger className="h-9 w-[140px] text-xs">
-                    <Filter className="mr-1.5 h-3 w-3 text-muted-foreground" />
-                    <SelectValue placeholder="Prioritet" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Svi prioriteti</SelectItem>
-                    {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            {/* Table - same for all tabs, data filtered by activeTab fetch */}
-            <TabsContent value={activeTab} className="mt-0">
-              {loading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-10 w-full" />
-                  ))}
+              {/* Sender / Recipient — conditional on direction */}
+              {form.direction === 'ulaz' ? (
+                <div className="space-y-2">
+                  <Label className="text-xs">Pošiljalac</Label>
+                  <Input
+                    className="h-9 text-sm"
+                    placeholder="Ko šalje dopis..."
+                    value={form.sender}
+                    onChange={e => updateField('sender', e.target.value)}
+                  />
                 </div>
               ) : (
-                <div className="max-h-[500px] overflow-y-auto rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs w-[110px]">Broj</TableHead>
-                        <TableHead className="text-xs w-[100px]">Datum</TableHead>
-                        <TableHead className="text-xs">Od / Za</TableHead>
-                        <TableHead className="text-xs min-w-[180px]">Predmet</TableHead>
-                        <TableHead className="text-xs w-[100px]">Tip dok.</TableHead>
-                        <TableHead className="text-xs w-[120px]">Odgov. lice</TableHead>
-                        <TableHead className="text-xs w-[90px]">Rok</TableHead>
-                        <TableHead className="text-xs w-[100px]">Status</TableHead>
-                        <TableHead className="text-xs w-[80px]">Prioritet</TableHead>
-                        <TableHead className="text-xs w-[80px] text-right">Akcije</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filtered.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={10} className="text-center py-12 text-muted-foreground text-sm">
-                            <Mail className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                            Nema dopisa za prikaz
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        filtered.map(entry => (
-                          <TableRow key={entry.id} className="group">
-                            <TableCell className="text-xs font-mono font-medium">
-                              {entry.number}
-                            </TableCell>
-                            <TableCell className="text-xs whitespace-nowrap">
-                              {formatDate(entry.date)}
-                            </TableCell>
-                            <TableCell className="text-xs max-w-[160px] truncate">
-                              {entry.direction === 'ulaz'
-                                ? (entry.sender || '-')
-                                : (entry.recipient || '-')}
-                            </TableCell>
-                            <TableCell className="text-xs font-medium">
-                              <span className="line-clamp-1">{entry.subject}</span>
-                            </TableCell>
-                            <TableCell className="text-xs">
-                              {entry.documentType
-                                ? <Badge variant="secondary" className="text-[10px] font-normal">
-                                    {DOC_TYPES[entry.documentType] || entry.documentType}
-                                  </Badge>
-                                : <span className="text-muted-foreground">-</span>
-                              }
-                            </TableCell>
-                            <TableCell className="text-xs max-w-[110px] truncate">
-                              {entry.responsible || '-'}
-                            </TableCell>
-                            <TableCell className="text-xs whitespace-nowrap">
-                              {entry.dueDate ? formatDate(entry.dueDate) : '-'}
-                            </TableCell>
-                            <TableCell>{statusBadge(entry.status)}</TableCell>
-                            <TableCell>{priorityBadge(entry.priority)}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => openEdit(entry)}
-                                  title="Izmeni"
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-red-500 hover:text-red-600"
-                                  onClick={() => setDeleteTarget(entry)}
-                                  title="Obriši"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                <div className="space-y-2">
+                  <Label className="text-xs">Primalac</Label>
+                  <Input
+                    className="h-9 text-sm"
+                    placeholder="Kom se šalje dopis..."
+                    value={form.recipient}
+                    onChange={e => updateField('recipient', e.target.value)}
+                  />
                 </div>
               )}
-            </TabsContent>
-          </Tabs>
+
+              {/* Subject */}
+              <div className="space-y-2">
+                <Label className="text-xs">Predmet *</Label>
+                <Input
+                  className="h-9 text-sm"
+                  placeholder="Predmet dopisa..."
+                  value={form.subject}
+                  onChange={e => updateField('subject', e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label className="text-xs">Opis</Label>
+                <Textarea
+                  className="text-sm min-h-[70px] resize-none"
+                  placeholder="Detaljan opis..."
+                  value={form.description}
+                  onChange={e => updateField('description', e.target.value)}
+                />
+              </div>
+
+              {/* Status / Priority */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Status</Label>
+                  <Select value={form.status} onValueChange={v => updateField('status', v)}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Prioritet</Label>
+                  <Select value={form.priority} onValueChange={v => updateField('priority', v)}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Due date / Responsible */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Rok</Label>
+                  <Input
+                    type="date"
+                    className="h-9 text-sm"
+                    value={form.dueDate}
+                    onChange={e => updateField('dueDate', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Odgovorno lice</Label>
+                  <Input
+                    className="h-9 text-sm"
+                    placeholder="Ime zaposlenog..."
+                    value={form.responsible}
+                    onChange={e => updateField('responsible', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label className="text-xs">Napomene</Label>
+                <Input
+                  className="h-9 text-sm"
+                  placeholder="Dodatne napomene..."
+                  value={form.notes}
+                  onChange={e => updateField('notes', e.target.value)}
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>
+                  Otkaži
+                </Button>
+                <Button type="submit" className="flex-1" disabled={submitting}>
+                  {submitting ? 'Čuvanje...' : editing ? 'Ažuriraj' : 'Kreiraj'}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            /* ─── List View with Tabs & Filters ───────────────────────────── */
+            <>
+              {/* Tabs */}
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="w-full sm:w-auto">
+                  <TabsTrigger value="ulaz" className="gap-1.5 text-xs">
+                    <Inbox className="h-3.5 w-3.5" /> Ulazni dopisi
+                  </TabsTrigger>
+                  <TabsTrigger value="izlaz" className="gap-1.5 text-xs">
+                    <Send className="h-3.5 w-3.5" /> Izlazni dopisi
+                  </TabsTrigger>
+                  <TabsTrigger value="sve" className="gap-1.5 text-xs">
+                    <FileCheck className="h-3.5 w-3.5" /> Svi
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Filters */}
+                <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Pretraži dopise..."
+                      className="pl-9 h-9 text-sm"
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger className="h-9 w-[140px] text-xs">
+                        <Filter className="mr-1.5 h-3 w-3 text-muted-foreground" />
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Svi statusi</SelectItem>
+                        {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterPriority} onValueChange={setFilterPriority}>
+                      <SelectTrigger className="h-9 w-[140px] text-xs">
+                        <Filter className="mr-1.5 h-3 w-3 text-muted-foreground" />
+                        <SelectValue placeholder="Prioritet" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Svi prioriteti</SelectItem>
+                        {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Table */}
+                <TabsContent value={activeTab} className="mt-0">
+                  {loading ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <Skeleton key={i} className="h-10 w-full" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="max-h-[500px] overflow-y-auto rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-xs w-[110px]">Broj</TableHead>
+                            <TableHead className="text-xs w-[100px]">Datum</TableHead>
+                            <TableHead className="text-xs">Od / Za</TableHead>
+                            <TableHead className="text-xs min-w-[180px]">Predmet</TableHead>
+                            <TableHead className="text-xs w-[100px]">Tip dok.</TableHead>
+                            <TableHead className="text-xs w-[120px]">Odgov. lice</TableHead>
+                            <TableHead className="text-xs w-[90px]">Rok</TableHead>
+                            <TableHead className="text-xs w-[100px]">Status</TableHead>
+                            <TableHead className="text-xs w-[80px]">Prioritet</TableHead>
+                            <TableHead className="text-xs w-[80px] text-right">Akcije</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filtered.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={10} className="text-center py-12 text-muted-foreground text-sm">
+                                <Mail className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                                Nema dopisa za prikaz
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filtered.map(entry => (
+                              <TableRow key={entry.id} className="group">
+                                <TableCell className="text-xs font-mono font-medium">
+                                  {entry.number}
+                                </TableCell>
+                                <TableCell className="text-xs whitespace-nowrap">
+                                  {formatDate(entry.date)}
+                                </TableCell>
+                                <TableCell className="text-xs max-w-[160px] truncate">
+                                  {entry.direction === 'ulaz'
+                                    ? (entry.sender || '-')
+                                    : (entry.recipient || '-')}
+                                </TableCell>
+                                <TableCell className="text-xs font-medium">
+                                  <span className="line-clamp-1">{entry.subject}</span>
+                                </TableCell>
+                                <TableCell className="text-xs">
+                                  {entry.documentType
+                                    ? <Badge variant="secondary" className="text-[10px] font-normal">
+                                        {DOC_TYPES[entry.documentType] || entry.documentType}
+                                      </Badge>
+                                    : <span className="text-muted-foreground">-</span>
+                                  }
+                                </TableCell>
+                                <TableCell className="text-xs max-w-[110px] truncate">
+                                  {entry.responsible || '-'}
+                                </TableCell>
+                                <TableCell className="text-xs whitespace-nowrap">
+                                  {entry.dueDate ? formatDate(entry.dueDate) : '-'}
+                                </TableCell>
+                                <TableCell>{statusBadge(entry.status)}</TableCell>
+                                <TableCell>{priorityBadge(entry.priority)}</TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      onClick={() => openEdit(entry)}
+                                      title="Izmeni"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-red-500 hover:text-red-600"
+                                      onClick={() => setDeleteTarget(entry)}
+                                      title="Obriši"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
         </CardContent>
       </Card>
 
-      {/* ─── Create / Edit Dialog ──────────────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); else setDialogOpen(true) }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editing ? 'Izmeni dopis' : 'Novi dopis'}
-            </DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Direction */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Smer *</Label>
-                <Select value={form.direction} onValueChange={v => updateField('direction', v)}>
-                  <SelectTrigger className="h-9 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ulaz">
-                      <span className="flex items-center gap-1.5"><Inbox className="h-3.5 w-3.5" /> Ulazni</span>
-                    </SelectItem>
-                    <SelectItem value="izlaz">
-                      <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> Izlazni</span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Document type */}
-              <div className="space-y-2">
-                <Label className="text-xs">Tip dokumenta</Label>
-                <Select value={form.documentType} onValueChange={v => updateField('documentType', v)}>
-                  <SelectTrigger className="h-9 text-sm">
-                    <SelectValue placeholder="Izaberite" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(DOC_TYPES).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Sender / Recipient — conditional on direction */}
-            {form.direction === 'ulaz' ? (
-              <div className="space-y-2">
-                <Label className="text-xs">Pošiljalac</Label>
-                <Input
-                  className="h-9 text-sm"
-                  placeholder="Ko šalje dopis..."
-                  value={form.sender}
-                  onChange={e => updateField('sender', e.target.value)}
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label className="text-xs">Primalac</Label>
-                <Input
-                  className="h-9 text-sm"
-                  placeholder="Kom se šalje dopis..."
-                  value={form.recipient}
-                  onChange={e => updateField('recipient', e.target.value)}
-                />
-              </div>
-            )}
-
-            {/* Subject */}
-            <div className="space-y-2">
-              <Label className="text-xs">Predmet *</Label>
-              <Input
-                className="h-9 text-sm"
-                placeholder="Predmet dopisa..."
-                value={form.subject}
-                onChange={e => updateField('subject', e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Label className="text-xs">Opis</Label>
-              <Textarea
-                className="text-sm min-h-[70px] resize-none"
-                placeholder="Detaljan opis..."
-                value={form.description}
-                onChange={e => updateField('description', e.target.value)}
-              />
-            </div>
-
-            {/* Status / Priority */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Status</Label>
-                <Select value={form.status} onValueChange={v => updateField('status', v)}>
-                  <SelectTrigger className="h-9 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Prioritet</Label>
-                <Select value={form.priority} onValueChange={v => updateField('priority', v)}>
-                  <SelectTrigger className="h-9 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Due date / Responsible */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Rok</Label>
-                <Input
-                  type="date"
-                  className="h-9 text-sm"
-                  value={form.dueDate}
-                  onChange={e => updateField('dueDate', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Odgovorno lice</Label>
-                <Input
-                  className="h-9 text-sm"
-                  placeholder="Ime zaposlenog..."
-                  value={form.responsible}
-                  onChange={e => updateField('responsible', e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label className="text-xs">Napomene</Label>
-              <Input
-                className="h-9 text-sm"
-                placeholder="Dodatne napomene..."
-                value={form.notes}
-                onChange={e => updateField('notes', e.target.value)}
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-2 pt-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={closeDialog}>
-                Otkaži
-              </Button>
-              <Button type="submit" className="flex-1" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : editing ? 'Ažuriraj' : 'Kreiraj'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Delete Confirmation ───────────────────────────────────────────── */}
+      {/* ─── Delete Confirmation (AlertDialog) ────────────────────────────── */}
       <AlertDialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>

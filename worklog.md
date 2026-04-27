@@ -51,3 +51,101 @@ Stage Summary:
 - Chat uses z-40, Dialogs use z-50 — no more z-index conflicts
 - Chat panel is placed outside SidebarProvider — no more layout/overflow interference
 - Editing on all module pages should work correctly alongside the AI chat
+
+---
+Task ID: 2-a
+Agent: full-stack-developer
+Task: Convert Partneri, Magacin, Fakture, Nabavka from Dialog to inline editing
+
+Work Log:
+- Read all 4 module files to understand existing Dialog patterns
+- Replaced Dialog-based create/edit with inline form view using viewMode state
+- Added viewMode state ('list' | 'form' | 'analytics' for Partneri)
+- Removed Dialog/DialogContent/DialogHeader/DialogTitle/DialogTrigger imports
+- Kept AlertDialog imports for delete confirmations in Magacin
+- Added ArrowLeft back button for form views
+- Added Cancel button ("Otkaži") next to Submit in all forms
+- All search/filter controls only show in list mode
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- Partneri: Dialog → inline edit + inline analytics view (3 viewMode states)
+- Magacin: All 4 tabs (Artikli, Kretanja, Otpremnici, Cenovnici) converted to inline
+- Fakture: Dialog → inline edit
+- Nabavka: Dialog → inline edit
+
+---
+Task ID: 2-b
+Agent: full-stack-developer
+Task: Convert Finansije, CRM, Zaposleni, Projekti from Dialog to inline editing
+
+Work Log:
+- Read all 4 module files to understand existing Dialog patterns
+- Replaced Dialog-based create/edit with inline form view using viewMode state
+- Added viewMode state ('list' | 'form') to each sub-component
+- Removed Dialog/DialogContent/DialogHeader/DialogTitle/DialogTrigger imports
+- Kept AlertDialog imports for delete confirmations (none in these 4 files - they use window.confirm)
+- Added ArrowLeft back button for form views
+- Added Cancel button ("Otkaži") next to Submit in all forms
+- All search/filter controls only show in list mode
+- Projekti: converted both project Dialog and task Dialog to inline (task form renders inside expanded project)
+- Fixed ternary chain parsing error in Projekti.tsx
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- Finansije: Dialog → inline edit (TransakcijeTab, KasaTab; DnevnikTab had no Dialog)
+- CRM: Dialog → inline edit (PipelineTab, KontaktiTab, AktivnostiTab)
+- Zaposleni: Dialog → inline edit (ZaposleniListTab; PlateTab and PrisustvoTab had no Dialog)
+- Projekti: Dialog → inline edit (project form + inline task creation within expanded project)
+
+---
+Task ID: 2-c
+Agent: full-stack-developer
+Task: Convert Sredstva, Dokumenta, Knjigovodstvo, Protokol from Dialog to inline editing
+
+Work Log:
+- Read all 4 module files to understand existing Dialog patterns
+- Replaced Dialog-based create/edit with inline form view using viewMode state
+- Added viewMode state ('list' | 'form') to each component/sub-component
+- Removed Dialog/DialogContent/DialogHeader/DialogTitle/DialogTrigger imports from all 4 files
+- Kept AlertDialog imports for delete confirmations in Protokol
+- Converted KontniPlanTab delete Dialog to AlertDialog in Knjigovodstvo
+- Added ArrowLeft back button for form views
+- Added Cancel button ("Otkaži") next to Submit in all forms
+- All search/filter controls only show in list mode
+- Knjigovodstvo: converted both GlavnaKnjigaTab and KontniPlanTab; NalogTab had no Dialog
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- Sredstva: Dialog → inline edit
+- Dokumenta: Dialog → inline edit
+- Knjigovodstvo: Dialog → inline edit (GlavnaKnjigaTab, KontniPlanTab)
+- Protokol: Dialog → inline edit (AlertDialog preserved for delete confirmation)
+
+---
+Task ID: 2-d
+Agent: Main Coordinator
+Task: Convert RentACar, Edukacija, VozniPark, KafeRestoran, MailerLite, Podesavanja from Dialog to inline editing
+
+Work Log:
+- Read all 6 module files to identify Dialog usage
+- Found that 4 files (Edukacija, VozniPark, KafeRestoran, MailerLite) were already converted by previous tasks
+- Podesavanja.tsx had no Dialog imports or usage — skipped as instructed
+- Only RentACar.tsx still used Dialog (2 Dialogs: vehicle form and rental form)
+- Converted RentACar.tsx: removed Dialog/DialogContent/DialogHeader/DialogTitle/DialogTrigger imports
+- Added ArrowLeft icon import from lucide-react
+- Replaced vehicleDialogOpen and rentalDialogOpen states with single viewMode state ('list' | 'vehicle-form' | 'rental-form')
+- Converted both vehicle and rental Dialog forms to inline Card-based forms
+- Added ArrowLeft back button, Cancel button ("Otkaži") next to Submit in both forms
+- Tab switching now resets viewMode to 'list' via handleCancel
+- All form fields, types, interfaces, API calls kept exactly the same
+- All table/grid rendering kept exactly the same
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- Edukacija.tsx: Already converted ✅ (no changes needed)
+- VozniPark.tsx: Already converted ✅ (no changes needed)
+- KafeRestoran.tsx: Already converted ✅ (no changes needed)
+- MailerLite.tsx: Already converted ✅ (no changes needed)
+- Podesavanja.tsx: No Dialogs found — skipped ✅
+- RentACar.tsx: 2 Dialogs → 2 inline Card forms (vehicle form + rental form)

@@ -16,14 +16,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -44,6 +45,7 @@ import {
   AlertCircle,
   CheckCircle2,
   X,
+  ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
@@ -143,7 +145,7 @@ function GlavnaKnjigaTab() {
   const [accountFilter, setAccountFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null)
   const [accounts, setAccounts] = useState<Account[]>([])
@@ -178,9 +180,19 @@ function GlavnaKnjigaTab() {
   const totalDebit = entries.reduce((acc, e) => acc + (e.debit || 0), 0)
   const totalCredit = entries.reduce((acc, e) => acc + (e.credit || 0), 0)
 
+  const handleNew = () => {
+    setEditingEntry(null)
+    setViewMode('form')
+  }
+
   const handleEdit = (entry: JournalEntry) => {
     setEditingEntry(entry)
-    setDialogOpen(true)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditingEntry(null)
   }
 
   const handleDelete = async (id: string) => {
@@ -232,7 +244,7 @@ function GlavnaKnjigaTab() {
         return
       }
       toast.success(isEditing ? 'Stavka ažurirana' : 'Stavka kreirana')
-      setDialogOpen(false)
+      setViewMode('list')
       setEditingEntry(null)
       fetchEntries()
     } catch {
@@ -247,166 +259,166 @@ function GlavnaKnjigaTab() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Glavna knjiga
-            </CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Dnevnik knjiženja — sve knjigovodstvene stavke
-            </p>
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base font-semibold">
+                {editingEntry ? 'Izmeni stavku' : 'Nova stavka knjiženja'}
+              </CardTitle>
+            </div>
           </div>
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={(open) => {
-              setDialogOpen(open)
-              if (!open) setEditingEntry(null)
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Glavna knjiga
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Dnevnik knjiženja — sve knjigovodstvene stavke
+                </p>
+              </div>
+              <Button size="sm" className="gap-2" onClick={handleNew}>
                 <Plus className="h-4 w-4" /> Nova stavka
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingEntry ? 'Izmeni stavku' : 'Nova stavka knjiženja'}
-                </DialogTitle>
-              </DialogHeader>
-              <form
-                onSubmit={handleSubmit}
-                key={editingEntry?.id || 'new'}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Datum</Label>
-                    <Input
-                      name="date"
-                      type="date"
-                      required
-                      defaultValue={editingEntry ? editingEntry.date.split('T')[0] : today}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Konto</Label>
-                    <Select
-                      name="accountCode"
-                      defaultValue={editingEntry?.accountCode || ''}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Izaberi konto" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {accounts.map((acc) => (
-                          <SelectItem key={acc.code} value={acc.code}>
-                            {acc.code} — {acc.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Duguje (RSD)</Label>
-                    <Input
-                      name="debit"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      defaultValue={editingEntry?.debit || ''}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Potražuje (RSD)</Label>
-                    <Input
-                      name="credit"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      defaultValue={editingEntry?.credit || ''}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Opis</Label>
-                  <Input
-                    name="description"
-                    placeholder="Opis stavke"
-                    required
-                    defaultValue={editingEntry?.description || ''}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Dokument (opciono)</Label>
-                  <Input
-                    name="documentRef"
-                    placeholder="Broj dokumenta"
-                    defaultValue={editingEntry?.documentRef || ''}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting
-                    ? 'Čuvanje...'
-                    : editingEntry
-                      ? 'Sačuvaj izmene'
-                      : 'Kreiraj stavku'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+            </div>
 
-        {/* Filters */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Pretraži po opisu ili dokumentu..."
-              className="pl-8 h-9"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Select
-            value={accountFilter || 'all'}
-            onValueChange={(v) => setAccountFilter(v === 'all' ? '' : v)}
-          >
-            <SelectTrigger className="w-[200px] h-9">
-              <SelectValue placeholder="Svi konti" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Svi konti</SelectItem>
-              {accounts.map((acc) => (
-                <SelectItem key={acc.code} value={acc.code}>
-                  {acc.code} — {acc.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Input
-            type="date"
-            className="w-[150px] h-9"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            placeholder="Od"
-          />
-          <Input
-            type="date"
-            className="w-[150px] h-9"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            placeholder="Do"
-          />
-        </div>
+            {/* Filters */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pretraži po opisu ili dokumentu..."
+                  className="pl-8 h-9"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Select
+                value={accountFilter || 'all'}
+                onValueChange={(v) => setAccountFilter(v === 'all' ? '' : v)}
+              >
+                <SelectTrigger className="w-[200px] h-9">
+                  <SelectValue placeholder="Svi konti" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Svi konti</SelectItem>
+                  {accounts.map((acc) => (
+                    <SelectItem key={acc.code} value={acc.code}>
+                      {acc.code} — {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                type="date"
+                className="w-[150px] h-9"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                placeholder="Od"
+              />
+              <Input
+                type="date"
+                className="w-[150px] h-9"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                placeholder="Do"
+              />
+            </div>
+          </>
+        )}
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {viewMode === 'form' ? (
+          <form
+            onSubmit={handleSubmit}
+            key={editingEntry?.id || 'new'}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Datum</Label>
+                <Input
+                  name="date"
+                  type="date"
+                  required
+                  defaultValue={editingEntry ? editingEntry.date.split('T')[0] : today}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Konto</Label>
+                <Select
+                  name="accountCode"
+                  defaultValue={editingEntry?.accountCode || ''}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Izaberi konto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((acc) => (
+                      <SelectItem key={acc.code} value={acc.code}>
+                        {acc.code} — {acc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Duguje (RSD)</Label>
+                <Input
+                  name="debit"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  defaultValue={editingEntry?.debit || ''}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Potražuje (RSD)</Label>
+                <Input
+                  name="credit"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  defaultValue={editingEntry?.credit || ''}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Opis</Label>
+              <Input
+                name="description"
+                placeholder="Opis stavke"
+                required
+                defaultValue={editingEntry?.description || ''}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Dokument (opciono)</Label>
+              <Input
+                name="documentRef"
+                placeholder="Broj dokumenta"
+                defaultValue={editingEntry?.documentRef || ''}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>Otkaži</Button>
+              <Button type="submit" className="flex-1" disabled={submitting}>
+                {submitting
+                  ? 'Čuvanje...'
+                  : editingEntry
+                    ? 'Sačuvaj izmene'
+                    : 'Kreiraj stavku'}
+              </Button>
+            </div>
+          </form>
+        ) : loading ? (
           <div className="space-y-3">
             {Array.from({ length: 8 }).map((_, i) => (
               <Skeleton key={i} className="h-10 w-full" />
@@ -530,7 +542,7 @@ function KontniPlanTab() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -557,9 +569,19 @@ function KontniPlanTab() {
     return matchSearch && matchType
   })
 
+  const handleNew = () => {
+    setEditingAccount(null)
+    setViewMode('form')
+  }
+
   const handleEdit = (acc: Account) => {
     setEditingAccount(acc)
-    setDialogOpen(true)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditingAccount(null)
   }
 
   const handleDeleteClick = (acc: Account) => {
@@ -623,7 +645,7 @@ function KontniPlanTab() {
           ? `Konto ${body.code} ažuriran`
           : `Konto ${body.code} kreiran`
       )
-      setDialogOpen(false)
+      setViewMode('list')
       setEditingAccount(null)
       fetchAccounts()
     } catch {
@@ -637,140 +659,140 @@ function KontniPlanTab() {
     <>
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Landmark className="h-4 w-4" />
-                Kontni plan
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Pregled i upravljanje svim kontima
-              </p>
+          {viewMode === 'form' ? (
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle className="text-base font-semibold">
+                  {editingAccount ? 'Izmeni konto' : 'Novi konto'}
+                </CardTitle>
+              </div>
             </div>
-            <Dialog
-              open={dialogOpen}
-              onOpenChange={(open) => {
-                setDialogOpen(open)
-                if (!open) setEditingAccount(null)
-              }}
-            >
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2">
+          ) : (
+            <>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <Landmark className="h-4 w-4" />
+                    Kontni plan
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Pregled i upravljanje svim kontima
+                  </p>
+                </div>
+                <Button size="sm" className="gap-2" onClick={handleNew}>
                   <Plus className="h-4 w-4" /> Novi konto
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingAccount ? 'Izmeni konto' : 'Novi konto'}
-                  </DialogTitle>
-                </DialogHeader>
-                <form
-                  onSubmit={handleSubmit}
-                  key={editingAccount?.id || 'new'}
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs">Šifra konta</Label>
-                      <Input
-                        name="code"
-                        placeholder="npr. 020, 110, 200"
-                        required
-                        defaultValue={editingAccount?.code || ''}
-                        disabled={!!editingAccount}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs">Tip konta</Label>
-                      <Select
-                        name="type"
-                        defaultValue={editingAccount?.type || 'aktivna'}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ACCOUNT_TYPES.map((t) => (
-                            <SelectItem key={t.value} value={t.value}>
-                              {t.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Naziv konta</Label>
-                    <Input
-                      name="name"
-                      placeholder="Naziv konta"
-                      required
-                      defaultValue={editingAccount?.name || ''}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Nadređeni konto (opciono)</Label>
-                    <Input
-                      name="parentCode"
-                      placeholder="Šifra nadređenog konta"
-                      defaultValue={editingAccount?.parentCode || ''}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Opis (opciono)</Label>
-                    <Input
-                      name="description"
-                      placeholder="Opis konta"
-                      defaultValue={editingAccount?.description || ''}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={submitting}>
-                    {submitting
-                      ? 'Čuvanje...'
-                      : editingAccount
-                        ? 'Sačuvaj izmene'
-                        : 'Kreiraj konto'}
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
+              </div>
 
-          {/* Filters */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Pretraži konta..."
-                className="pl-8 h-9"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <Select
-              value={typeFilter || 'all'}
-              onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}
-            >
-              <SelectTrigger className="w-[150px] h-9">
-                <SelectValue placeholder="Svi tipovi" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi tipovi</SelectItem>
-                {ACCOUNT_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Badge variant="outline" className="text-xs h-9 px-3 flex items-center">
-              Ukupno: {filtered.length} konta
-            </Badge>
-          </div>
+              {/* Filters */}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Pretraži konta..."
+                    className="pl-8 h-9"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <Select
+                  value={typeFilter || 'all'}
+                  onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}
+                >
+                  <SelectTrigger className="w-[150px] h-9">
+                    <SelectValue placeholder="Svi tipovi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi tipovi</SelectItem>
+                    {ACCOUNT_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Badge variant="outline" className="text-xs h-9 px-3 flex items-center">
+                  Ukupno: {filtered.length} konta
+                </Badge>
+              </div>
+            </>
+          )}
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {viewMode === 'form' ? (
+            <form
+              onSubmit={handleSubmit}
+              key={editingAccount?.id || 'new'}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Šifra konta</Label>
+                  <Input
+                    name="code"
+                    placeholder="npr. 020, 110, 200"
+                    required
+                    defaultValue={editingAccount?.code || ''}
+                    disabled={!!editingAccount}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Tip konta</Label>
+                  <Select
+                    name="type"
+                    defaultValue={editingAccount?.type || 'aktivna'}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACCOUNT_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Naziv konta</Label>
+                <Input
+                  name="name"
+                  placeholder="Naziv konta"
+                  required
+                  defaultValue={editingAccount?.name || ''}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Nadređeni konto (opciono)</Label>
+                <Input
+                  name="parentCode"
+                  placeholder="Šifra nadređenog konta"
+                  defaultValue={editingAccount?.parentCode || ''}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Opis (opciono)</Label>
+                <Input
+                  name="description"
+                  placeholder="Opis konta"
+                  defaultValue={editingAccount?.description || ''}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>Otkaži</Button>
+                <Button type="submit" className="flex-1" disabled={submitting}>
+                  {submitting
+                    ? 'Čuvanje...'
+                    : editingAccount
+                      ? 'Sačuvaj izmene'
+                      : 'Kreiraj konto'}
+                </Button>
+              </div>
+            </form>
+          ) : loading ? (
             <div className="space-y-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 w-full" />
@@ -864,36 +886,34 @@ function KontniPlanTab() {
         </CardContent>
       </Card>
 
-      {/* Delete confirmation dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
+      {/* Delete confirmation AlertDialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-5 w-5" />
               Potvrda brisanja
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Da li ste sigurni da želite da obrišete konto{' '}
-            <span className="font-semibold text-foreground">
-              {deleteTarget?.code} — {deleteTarget?.name}
-            </span>
-            ?<br />
-            Ova akcija ne može se poništiti.
-          </p>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <DialogClose asChild>
-              <Button variant="outline">Otkaži</Button>
-            </DialogClose>
-            <Button
-              variant="destructive"
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Da li ste sigurni da želite da obrišete konto{' '}
+              <span className="font-semibold text-foreground">
+                {deleteTarget?.code} — {deleteTarget?.name}
+              </span>
+              ?<br />
+              Ova akcija ne može se poništiti.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel>Otkaži</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
               Obriši konto
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

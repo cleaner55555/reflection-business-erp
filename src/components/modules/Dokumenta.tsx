@@ -7,10 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Search, Pencil, Trash2, Files, FileText } from 'lucide-react'
+import { Plus, Pencil, Trash2, FileText, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate, getStatusColor } from '@/lib/helpers'
 
@@ -25,7 +24,7 @@ const TYPE_LABELS: Record<string, string> = { faktura: 'Faktura', ugovor: 'Ugovo
 export function Dokumenta() {
   const [docs, setDocs] = useState<Doc[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<Doc | null>(null)
 
@@ -37,6 +36,21 @@ export function Dokumenta() {
   }, [])
 
   useEffect(() => { fetchDocs() }, [fetchDocs])
+
+  const handleNew = () => {
+    setEditing(null)
+    setViewMode('form')
+  }
+
+  const handleEdit = (item: Doc) => {
+    setEditing(item)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditing(null)
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Obrisati dokument?')) return
@@ -51,7 +65,7 @@ export function Dokumenta() {
       const url = editing ? `/api/documents/${editing.id}` : '/api/documents'
       const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { toast.error('Greška'); return }
-      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setDialogOpen(false); setEditing(null); fetchDocs()
+      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setViewMode('list'); setEditing(null); fetchDocs()
     } catch { toast.error('Greška') } finally { setSubmitting(false) }
   }
 
@@ -64,35 +78,45 @@ export function Dokumenta() {
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div><CardTitle className="text-base font-semibold">Dokumenta</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{docs.length} dokumenata</p></div>
-            <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null) }}>
-              <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Novi Dokument</Button></DialogTrigger>
-              <DialogContent key={editing?.id || 'new'} className="max-w-lg">
-                <DialogHeader><DialogTitle>{editing ? 'Izmeni' : 'Novi'} Dokument</DialogTitle></DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" defaultValue={editing?.title || ''} required /></div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label className="text-xs">Tip</Label>
-                      <Select name="type" defaultValue={editing?.type || ''}><SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger><SelectContent>
-                        <SelectItem value="faktura">Faktura</SelectItem><SelectItem value="ugovor">Ugovor</SelectItem><SelectItem value="ponuda">Ponuda</SelectItem><SelectItem value="izvestaj">Izveštaj</SelectItem><SelectItem value="ostalo">Ostalo</SelectItem>
-                      </SelectContent></Select>
-                    </div>
-                    <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Input name="category" defaultValue={editing?.category || ''} /></div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label className="text-xs">Fajl</Label><Input name="fileName" defaultValue={editing?.fileName || ''} /></div>
-                    <div className="space-y-2"><Label className="text-xs">Ističe</Label><Input name="expiresAt" type="date" defaultValue={editing?.expiresAt?.split('T')[0] || ''} /></div>
-                  </div>
-                  <div className="space-y-2"><Label className="text-xs">Napomene</Label><Input name="notes" defaultValue={editing?.notes || ''} /></div>
-                  <Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
+          {viewMode === 'form' ? (
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle className="text-base font-semibold">{editing ? 'Izmeni' : 'Novi'} Dokument</CardTitle>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div><CardTitle className="text-base font-semibold">Dokumenta</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{docs.length} dokumenata</p></div>
+              <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi Dokument</Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
-          {loading ? <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div> : (
+          {viewMode === 'form' ? (
+            <form onSubmit={handleSubmit} className="space-y-4" key={editing?.id || 'new'}>
+              <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" defaultValue={editing?.title || ''} required /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="text-xs">Tip</Label>
+                  <Select name="type" defaultValue={editing?.type || ''}><SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger><SelectContent>
+                    <SelectItem value="faktura">Faktura</SelectItem><SelectItem value="ugovor">Ugovor</SelectItem><SelectItem value="ponuda">Ponuda</SelectItem><SelectItem value="izvestaj">Izveštaj</SelectItem><SelectItem value="ostalo">Ostalo</SelectItem>
+                  </SelectContent></Select>
+                </div>
+                <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Input name="category" defaultValue={editing?.category || ''} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="text-xs">Fajl</Label><Input name="fileName" defaultValue={editing?.fileName || ''} /></div>
+                <div className="space-y-2"><Label className="text-xs">Ističe</Label><Input name="expiresAt" type="date" defaultValue={editing?.expiresAt?.split('T')[0] || ''} /></div>
+              </div>
+              <div className="space-y-2"><Label className="text-xs">Napomene</Label><Input name="notes" defaultValue={editing?.notes || ''} /></div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>Otkaži</Button>
+                <Button type="submit" className="flex-1" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
+              </div>
+            </form>
+          ) : loading ? (
+            <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+          ) : (
             <div className="max-h-[500px] overflow-y-auto">
               <Table><TableHeader><TableRow>
                 <TableHead className="text-xs">Naslov</TableHead><TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Kategorija</TableHead><TableHead className="text-xs">Datum</TableHead><TableHead className="text-xs">Ističe</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-[80px]">Akcije</TableHead>
@@ -106,7 +130,7 @@ export function Dokumenta() {
                     <TableCell className="text-xs">{formatDate(d.createdAt)}</TableCell>
                     <TableCell className="text-xs">{d.expiresAt ? formatDate(d.expiresAt) : '-'}</TableCell>
                     <TableCell><Badge variant="outline" className={`text-[10px] ${getStatusColor(d.status)}`}>{d.status}</Badge></TableCell>
-                    <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(d); setDialogOpen(true) }}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(d.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
+                    <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(d)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(d.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
                   </TableRow>
                 ))}
               </TableBody></Table>

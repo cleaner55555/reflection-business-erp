@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, CalendarDays, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -25,7 +24,7 @@ export function Kalendar() {
   const [events, setEvents] = useState<CalEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'calendar' | 'form'>('calendar')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<CalEvent | null>(null)
 
@@ -41,6 +40,10 @@ export function Kalendar() {
 
   useEffect(() => { fetchEvents() }, [fetchEvents])
 
+  const handleNew = () => { setEditing(null); setViewMode('form') }
+  const handleEdit = (ev: CalEvent) => { setEditing(ev); setViewMode('form') }
+  const handleCancel = () => { setViewMode('calendar'); setEditing(null) }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setSubmitting(true)
     const fd = new FormData(e.currentTarget)
@@ -49,7 +52,7 @@ export function Kalendar() {
       const url = editing ? `/api/calendar/${editing.id}` : '/api/calendar'
       const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { toast.error('Greška'); return }
-      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setDialogOpen(false); setEditing(null); fetchEvents()
+      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setViewMode('calendar'); setEditing(null); fetchEvents()
     } catch { toast.error('Greška') } finally { setSubmitting(false) }
   }
 
@@ -90,47 +93,61 @@ export function Kalendar() {
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
-              <div className="text-center">
-                <h3 className="text-base font-semibold">{MONTHS[month]} {year}</h3>
+          {viewMode === 'form' ? (
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={handleCancel}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <CardTitle className="text-base font-semibold">{editing ? 'Izmeni' : 'Novi'} Događaj</CardTitle>
               </div>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="sm" onClick={goToday}>Danas</Button>
             </div>
-            <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null) }}>
-              <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Novi Događaj</Button></DialogTrigger>
-              <DialogContent key={editing?.id || 'new'} className="max-w-lg">
-                <DialogHeader><DialogTitle>{editing ? 'Izmeni' : 'Novi'} Događaj</DialogTitle></DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" defaultValue={editing?.title || ''} required /></div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label className="text-xs">Tip</Label>
-                      <Select name="type" defaultValue={editing?.type || 'sastanak'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-                        <SelectItem value="sastanak">Sastanak</SelectItem><SelectItem value="rok">Rok</SelectItem><SelectItem value="task">Task</SelectItem><SelectItem value="podsetnik">Podsetnik</SelectItem>
-                      </SelectContent></Select>
-                    </div>
-                    <div className="space-y-2"><Label className="text-xs">Boja</Label>
-                      <Select name="color" defaultValue={editing?.color || 'primary'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-                        <SelectItem value="primary">Plava</SelectItem><SelectItem value="red">Crvena</SelectItem><SelectItem value="green">Zelena</SelectItem><SelectItem value="orange">Narandžasta</SelectItem><SelectItem value="purple">Ljubičasta</SelectItem>
-                      </SelectContent></Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label className="text-xs">Početak *</Label><Input name="startTime" type="datetime-local" defaultValue={editing?.startTime?.slice(0, 16) || ''} required /></div>
-                    <div className="space-y-2"><Label className="text-xs">Kraj</Label><Input name="endTime" type="datetime-local" defaultValue={editing?.endTime?.slice(0, 16) || ''} /></div>
-                  </div>
-                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="allDay" defaultChecked={editing?.allDay || false} /> Celi dan</label>
-                  <div className="space-y-2"><Label className="text-xs">Opis</Label><Input name="description" defaultValue={editing?.description || ''} /></div>
-                  <Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
+                <div className="text-center">
+                  <h3 className="text-base font-semibold">{MONTHS[month]} {year}</h3>
+                </div>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="sm" onClick={goToday}>Danas</Button>
+              </div>
+              <Button size="sm" className="gap-2" onClick={handleNew}>
+                <Plus className="h-4 w-4" /> Novi Događaj
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
-          {loading ? <Skeleton className="h-[500px] w-full" /> : (
+          {viewMode === 'form' ? (
+            <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
+              <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" defaultValue={editing?.title || ''} required /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="text-xs">Tip</Label>
+                  <Select name="type" defaultValue={editing?.type || 'sastanak'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+                    <SelectItem value="sastanak">Sastanak</SelectItem><SelectItem value="rok">Rok</SelectItem><SelectItem value="task">Task</SelectItem><SelectItem value="podsetnik">Podsetnik</SelectItem>
+                  </SelectContent></Select>
+                </div>
+                <div className="space-y-2"><Label className="text-xs">Boja</Label>
+                  <Select name="color" defaultValue={editing?.color || 'primary'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+                    <SelectItem value="primary">Plava</SelectItem><SelectItem value="red">Crvena</SelectItem><SelectItem value="green">Zelena</SelectItem><SelectItem value="orange">Narandžasta</SelectItem><SelectItem value="purple">Ljubičasta</SelectItem>
+                  </SelectContent></Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="text-xs">Početak *</Label><Input name="startTime" type="datetime-local" defaultValue={editing?.startTime?.slice(0, 16) || ''} required /></div>
+                <div className="space-y-2"><Label className="text-xs">Kraj</Label><Input name="endTime" type="datetime-local" defaultValue={editing?.endTime?.slice(0, 16) || ''} /></div>
+              </div>
+              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="allDay" defaultChecked={editing?.allDay || false} /> Celi dan</label>
+              <div className="space-y-2"><Label className="text-xs">Opis</Label><Input name="description" defaultValue={editing?.description || ''} /></div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
+                <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              </div>
+            </form>
+          ) : loading ? (
+            <Skeleton className="h-[500px] w-full" />
+          ) : (
             <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
               {DAYS.map(d => <div key={d} className="bg-muted p-2 text-center text-xs font-medium">{d}</div>)}
               {days.map((day, i) => {
@@ -142,7 +159,7 @@ export function Kalendar() {
                     <div className="space-y-0.5 mt-0.5">
                       {dayEvents.slice(0, 3).map(ev => (
                         <button key={ev.id} className={`w-full text-left text-[10px] px-1 py-0.5 rounded truncate border ${COLORS[ev.color] || COLORS.primary}`}
-                          onClick={() => { setEditing(ev); setDialogOpen(true) }}
+                          onClick={() => handleEdit(ev)}
                           onContextMenu={(e) => { e.preventDefault(); handleDelete(ev.id) }}>
                           {ev.allDay ? '🗓 ' : ''}{ev.title}
                         </button>

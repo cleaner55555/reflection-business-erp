@@ -17,13 +17,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -41,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag } from 'lucide-react'
+import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
@@ -193,14 +186,14 @@ export function Magacin() {
   )
 }
 
-// ==================== ARTIKLI TAB (unchanged) ====================
+// ==================== ARTIKLI TAB ====================
 
 function ArtikliTab() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
@@ -221,9 +214,19 @@ function ArtikliTab() {
 
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
 
+  const handleNew = () => {
+    setEditingProduct(null)
+    setViewMode('form')
+  }
+
   const handleEdit = (product: Product) => {
     setEditingProduct(product)
-    setDialogOpen(true)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditingProduct(null)
   }
 
   const handleDelete = async (id: string) => {
@@ -265,7 +268,7 @@ function ArtikliTab() {
         return
       }
       toast.success(isEditing ? 'Artikal uspešno ažuriran' : 'Artikal uspešno kreiran')
-      setDialogOpen(false)
+      setViewMode('list')
       setEditingProduct(null)
       fetchProducts()
     } catch {
@@ -278,106 +281,116 @@ function ArtikliTab() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-base font-semibold">Artikli</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">{products.length} artikala</p>
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle className="text-base font-semibold">
+                {editingProduct ? 'Izmeni Artikal' : 'Novi Artikal'}
+              </CardTitle>
+            </div>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingProduct(null) }}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Artikli</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{products.length} artikala</p>
+              </div>
+              <Button size="sm" className="gap-2" onClick={handleNew}>
                 <Plus className="h-4 w-4" /> Novi Artikal
               </Button>
-            </DialogTrigger>
-            <DialogContent key={editingProduct?.id || 'new'} className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingProduct ? 'Izmeni Artikal' : 'Novi Artikal'}</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Naziv *</Label>
-                    <Input name="name" placeholder="Naziv artikla" defaultValue={editingProduct?.name || ''} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Šifra (SKU) *</Label>
-                    <Input name="sku" placeholder="SKU-001" defaultValue={editingProduct?.sku || ''} required />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Barkod</Label>
-                    <Input name="barcode" placeholder="8600000000000" defaultValue={editingProduct?.barcode || ''} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Kategorija</Label>
-                    <Input name="category" placeholder="Kategorija" defaultValue={editingProduct?.category || ''} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Jedinica mere</Label>
-                    <Select name="unit" defaultValue={editingProduct?.unit || 'kom'}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kom">kom</SelectItem>
-                        <SelectItem value="kg">kg</SelectItem>
-                        <SelectItem value="l">l</SelectItem>
-                        <SelectItem value="m">m</SelectItem>
-                        <SelectItem value="pak">pak</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Nabavna cena *</Label>
-                    <Input name="purchasePrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.purchasePrice || '')} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Prodajna cena *</Label>
-                    <Input name="sellingPrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.sellingPrice || '')} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Minimalna zaliha</Label>
-                    <Input name="minStock" type="number" placeholder="0" defaultValue={String(editingProduct?.minStock || '')} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Trenutna zaliha</Label>
-                    <Input name="currentStock" type="number" placeholder="0" defaultValue={String(editingProduct?.currentStock || '')} />
-                  </div>
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : editingProduct ? 'Sačuvaj Izmene' : 'Kreiraj Artikal'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+            </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Pretraži artikle..."
-              className="pl-8 h-9"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="w-[160px] h-9">
-              <SelectValue placeholder="Sve kategorije" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Sve kategorije</SelectItem>
-              {categories.map((c) => (
-                <SelectItem key={c} value={c || ''}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pretraži artikle..."
+                  className="pl-8 h-9"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v === 'all' ? '' : v)}>
+                <SelectTrigger className="w-[160px] h-9">
+                  <SelectValue placeholder="Sve kategorije" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Sve kategorije</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c} value={c || ''}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {viewMode === 'form' ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Naziv *</Label>
+                <Input name="name" placeholder="Naziv artikla" defaultValue={editingProduct?.name || ''} required />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Šifra (SKU) *</Label>
+                <Input name="sku" placeholder="SKU-001" defaultValue={editingProduct?.sku || ''} required />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Barkod</Label>
+                <Input name="barcode" placeholder="8600000000000" defaultValue={editingProduct?.barcode || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Kategorija</Label>
+                <Input name="category" placeholder="Kategorija" defaultValue={editingProduct?.category || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Jedinica mere</Label>
+                <Select name="unit" defaultValue={editingProduct?.unit || 'kom'}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kom">kom</SelectItem>
+                    <SelectItem value="kg">kg</SelectItem>
+                    <SelectItem value="l">l</SelectItem>
+                    <SelectItem value="m">m</SelectItem>
+                    <SelectItem value="pak">pak</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Nabavna cena *</Label>
+                <Input name="purchasePrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.purchasePrice || '')} required />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Prodajna cena *</Label>
+                <Input name="sellingPrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.sellingPrice || '')} required />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Minimalna zaliha</Label>
+                <Input name="minStock" type="number" placeholder="0" defaultValue={String(editingProduct?.minStock || '')} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Trenutna zaliha</Label>
+                <Input name="currentStock" type="number" placeholder="0" defaultValue={String(editingProduct?.currentStock || '')} />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Čuvanje...' : editingProduct ? 'Sačuvaj Izmene' : 'Kreiraj Artikal'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+            </div>
+          </form>
+        ) : loading ? (
           <div className="space-y-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="h-10 w-full" />
@@ -450,13 +463,13 @@ function ArtikliTab() {
   )
 }
 
-// ==================== KRETANJA ZALIHA TAB (with delete) ====================
+// ==================== KRETANJA ZALIHA TAB ====================
 
 function KretanjaTab() {
   const [movements, setMovements] = useState<StockMovement[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -473,6 +486,14 @@ function KretanjaTab() {
     fetchMovements()
     fetch('/api/products').then((r) => r.json()).then(setProducts)
   }, [fetchMovements])
+
+  const handleNew = () => {
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -497,7 +518,7 @@ function KretanjaTab() {
         return
       }
       toast.success('Kretanje zaliha uspešno kreirano')
-      setDialogOpen(false)
+      setViewMode('list')
       fetchMovements()
     } catch {
       toast.error('Greška pri kreiranju kretanja')
@@ -529,69 +550,75 @@ function KretanjaTab() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-base font-semibold">Kretanja Zaliha</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Istorija prijema i izdavanja robe</p>
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle className="text-base font-semibold">Novo Kretanje Zaliha</CardTitle>
+            </div>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
-                <Plus className="h-4 w-4" /> Novo Kretanje
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Novo Kretanje Zaliha</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Artikal *</Label>
-                    <Select name="productId" required>
-                      <SelectTrigger><SelectValue placeholder="Izaberite artikal" /></SelectTrigger>
-                      <SelectContent>
-                        {products.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Tip *</Label>
-                    <Select name="type" defaultValue="prijem">
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="prijem">Priem</SelectItem>
-                        <SelectItem value="izdavanje">Izdavanje</SelectItem>
-                        <SelectItem value="inventura">Inventura</SelectItem>
-                        <SelectItem value="korekcija">Korekcija</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Količina *</Label>
-                  <Input name="quantity" type="number" step="0.01" placeholder="0" required />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Dokument</Label>
-                  <Input name="documentRef" placeholder="Broj dokumenta" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Napomene</Label>
-                  <Input name="notes" placeholder="Napomene" />
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Kreiraj Kretanje'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold">Kretanja Zaliha</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">Istorija prijema i izdavanja robe</p>
+            </div>
+            <Button size="sm" className="gap-2" onClick={handleNew}>
+              <Plus className="h-4 w-4" /> Novo Kretanje
+            </Button>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {viewMode === 'form' ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Artikal *</Label>
+                <Select name="productId" required>
+                  <SelectTrigger><SelectValue placeholder="Izaberite artikal" /></SelectTrigger>
+                  <SelectContent>
+                    {products.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Tip *</Label>
+                <Select name="type" defaultValue="prijem">
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="prijem">Priem</SelectItem>
+                    <SelectItem value="izdavanje">Izdavanje</SelectItem>
+                    <SelectItem value="inventura">Inventura</SelectItem>
+                    <SelectItem value="korekcija">Korekcija</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Količina *</Label>
+              <Input name="quantity" type="number" step="0.01" placeholder="0" required />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Dokument</Label>
+              <Input name="documentRef" placeholder="Broj dokumenta" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Napomene</Label>
+              <Input name="notes" placeholder="Napomene" />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Čuvanje...' : 'Kreiraj Kretanje'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+            </div>
+          </form>
+        ) : loading ? (
           <div className="space-y-3">
             {Array.from({ length: 8 }).map((_, i) => (
               <Skeleton key={i} className="h-10 w-full" />
@@ -689,7 +716,7 @@ function OtpremniceTab() {
   const [products, setProducts] = useState<Product[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<DeliveryNote | null>(null)
   const [search, setSearch] = useState('')
@@ -746,17 +773,17 @@ function OtpremniceTab() {
     }))
   }
 
-  const openCreateDialog = () => {
+  const openCreate = () => {
     setEditing(null)
     setLineItems([{ tempId: nextTempId(), productId: '', productName: '', quantity: '1', unitPrice: '0' }])
     setFormStatus('nacrt')
     setFormPartnerId('')
     setFormInvoiceNumber('')
     setFormNotes('')
-    setDialogOpen(true)
+    setViewMode('form')
   }
 
-  const openEditDialog = (note: DeliveryNote) => {
+  const openEdit = (note: DeliveryNote) => {
     setEditing(note)
     setFormStatus(note.status)
     setFormPartnerId(note.partnerId)
@@ -769,7 +796,12 @@ function OtpremniceTab() {
       quantity: String(item.quantity),
       unitPrice: String(item.unitPrice),
     })))
-    setDialogOpen(true)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditing(null)
   }
 
   const handleSubmit = async () => {
@@ -808,7 +840,8 @@ function OtpremniceTab() {
         return
       }
       toast.success(isEditing ? 'Otpremnica uspešno ažurirana' : 'Otpremnica uspešno kreirana')
-      setDialogOpen(false)
+      setViewMode('list')
+      setEditing(null)
       fetchDeliveryNotes()
     } catch {
       toast.error('Greška pri čuvanju')
@@ -840,106 +873,57 @@ function OtpremniceTab() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-base font-semibold">Otpremnice</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">{deliveryNotes.length} otpremnica</p>
-          </div>
-          <Button size="sm" className="gap-2" onClick={openCreateDialog}>
-            <Plus className="h-4 w-4" /> Nova Otpremnica
-          </Button>
-        </div>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Pretraži otpremnice..."
-              className="pl-8 h-9"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="w-[160px] h-9">
-              <SelectValue placeholder="Svi statusi" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Svi statusi</SelectItem>
-              <SelectItem value="nacrt">Načrt</SelectItem>
-              <SelectItem value="pripremljena">Pripremljena</SelectItem>
-              <SelectItem value="otpremljena">Otpremljena</SelectItem>
-              <SelectItem value="stornirana">Stornirana</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle className="text-base font-semibold">
+                {editing ? 'Izmeni Otpremnicu' : 'Nova Otpremnica'}
+              </CardTitle>
+            </div>
           </div>
         ) : (
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">Broj</TableHead>
-                  <TableHead className="text-xs">Partner</TableHead>
-                  <TableHead className="text-xs">Datum</TableHead>
-                  <TableHead className="text-xs">Status</TableHead>
-                  <TableHead className="text-xs">Faktura</TableHead>
-                  <TableHead className="text-xs">Napomene</TableHead>
-                  <TableHead className="text-xs text-center">Akcije</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {deliveryNotes.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema otpremnica za prikaz
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  deliveryNotes.map((dn) => (
-                    <TableRow key={dn.id}>
-                      <TableCell className="text-xs font-mono font-medium">{dn.number}</TableCell>
-                      <TableCell className="text-xs font-medium">{dn.partner?.name}</TableCell>
-                      <TableCell className="text-xs">{formatDate(dn.date)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(dn.status)}`}>
-                          {getStatusLabel(dn.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{dn.invoiceNumber || '-'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes || '-'}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(dn)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(dn.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
+          <>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Otpremnice</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{deliveryNotes.length} otpremnica</p>
+              </div>
+              <Button size="sm" className="gap-2" onClick={openCreate}>
+                <Plus className="h-4 w-4" /> Nova Otpremnica
+              </Button>
+            </div>
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditing(null) }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Izmeni Otpremnicu' : 'Nova Otpremnica'}</DialogTitle>
-          </DialogHeader>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pretraži otpremnice..."
+                  className="pl-8 h-9"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+                <SelectTrigger className="w-[160px] h-9">
+                  <SelectValue placeholder="Svi statusi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Svi statusi</SelectItem>
+                  <SelectItem value="nacrt">Načrt</SelectItem>
+                  <SelectItem value="pripremljena">Pripremljena</SelectItem>
+                  <SelectItem value="otpremljena">Otpremljena</SelectItem>
+                  <SelectItem value="stornirana">Stornirana</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+      </CardHeader>
+      <CardContent>
+        {viewMode === 'form' ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1038,12 +1022,71 @@ function OtpremniceTab() {
               </div>
             </div>
 
-            <Button className="w-full" disabled={submitting} onClick={handleSubmit}>
-              {submitting ? 'Čuvanje...' : editing ? 'Sačuvaj Izmene' : 'Kreiraj Otpremnicu'}
-            </Button>
+            <div className="flex gap-2">
+              <Button disabled={submitting} onClick={handleSubmit}>
+                {submitting ? 'Čuvanje...' : editing ? 'Sačuvaj Izmene' : 'Kreiraj Otpremnicu'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        ) : loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : (
+          <div className="max-h-[500px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Broj</TableHead>
+                  <TableHead className="text-xs">Partner</TableHead>
+                  <TableHead className="text-xs">Datum</TableHead>
+                  <TableHead className="text-xs">Status</TableHead>
+                  <TableHead className="text-xs">Faktura</TableHead>
+                  <TableHead className="text-xs">Napomene</TableHead>
+                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {deliveryNotes.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                      Nema otpremnica za prikaz
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  deliveryNotes.map((dn) => (
+                    <TableRow key={dn.id}>
+                      <TableCell className="text-xs font-mono font-medium">{dn.number}</TableCell>
+                      <TableCell className="text-xs font-medium">{dn.partner?.name}</TableCell>
+                      <TableCell className="text-xs">{formatDate(dn.date)}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(dn.status)}`}>
+                          {getStatusLabel(dn.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{dn.invoiceNumber || '-'}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes || '-'}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(dn)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(dn.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
@@ -1076,7 +1119,7 @@ function CenovniciTab() {
   const [priceLists, setPriceLists] = useState<PriceList[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<PriceList | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -1124,17 +1167,17 @@ function CenovniciTab() {
     }))
   }
 
-  const openCreateDialog = () => {
+  const openCreate = () => {
     setEditing(null)
     setFormName('')
     setFormDescription('')
     setFormValidFrom('')
     setFormValidTo('')
     setLineItems([{ tempId: nextTempId(), productId: '', price: '0', discountPct: '0' }])
-    setDialogOpen(true)
+    setViewMode('form')
   }
 
-  const openEditDialog = (pl: PriceList) => {
+  const openEdit = (pl: PriceList) => {
     setEditing(pl)
     setFormName(pl.name)
     setFormDescription(pl.description || '')
@@ -1146,7 +1189,12 @@ function CenovniciTab() {
       price: String(item.price),
       discountPct: String(item.discountPct),
     })))
-    setDialogOpen(true)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditing(null)
   }
 
   const handleSubmit = async () => {
@@ -1185,7 +1233,8 @@ function CenovniciTab() {
         return
       }
       toast.success(isEditing ? 'Cenovnik uspešno ažuriran' : 'Cenovnik uspešno kreiran')
-      setDialogOpen(false)
+      setViewMode('list')
+      setEditing(null)
       fetchPriceLists()
     } catch {
       toast.error('Greška pri čuvanju')
@@ -1217,88 +1266,31 @@ function CenovniciTab() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-base font-semibold">Cenovnici</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">{priceLists.length} cenovnika</p>
-          </div>
-          <Button size="sm" className="gap-2" onClick={openCreateDialog}>
-            <Plus className="h-4 w-4" /> Novi Cenovnik
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle className="text-base font-semibold">
+                {editing ? 'Izmeni Cenovnik' : 'Novi Cenovnik'}
+              </CardTitle>
+            </div>
           </div>
         ) : (
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">Naziv</TableHead>
-                  <TableHead className="text-xs">Opis</TableHead>
-                  <TableHead className="text-xs text-center">Stavki</TableHead>
-                  <TableHead className="text-xs">Važi od</TableHead>
-                  <TableHead className="text-xs">Važi do</TableHead>
-                  <TableHead className="text-xs text-center">Status</TableHead>
-                  <TableHead className="text-xs text-center">Akcije</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {priceLists.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema cenovnika za prikaz
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  priceLists.map((pl) => (
-                    <TableRow key={pl.id}>
-                      <TableCell className="text-xs font-medium">{pl.name}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{pl.description || '-'}</TableCell>
-                      <TableCell className="text-xs text-center">
-                        <Badge variant="secondary" className="text-[10px] px-2 py-0">
-                          {pl._count?.items ?? pl.items?.length ?? 0}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs">{pl.validFrom ? formatDate(pl.validFrom) : '-'}</TableCell>
-                      <TableCell className="text-xs">{pl.validTo ? formatDate(pl.validTo) : '-'}</TableCell>
-                      <TableCell className="text-center">
-                        {pl.isActive ? (
-                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-2 py-0">Aktivan</Badge>
-                        ) : (
-                          <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-[10px] px-2 py-0">Neaktivan</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(pl)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(pl.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold">Cenovnici</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{priceLists.length} cenovnika</p>
+            </div>
+            <Button size="sm" className="gap-2" onClick={openCreate}>
+              <Plus className="h-4 w-4" /> Novi Cenovnik
+            </Button>
           </div>
         )}
-      </CardContent>
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditing(null) }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Izmeni Cenovnik' : 'Novi Cenovnik'}</DialogTitle>
-          </DialogHeader>
+      </CardHeader>
+      <CardContent>
+        {viewMode === 'form' ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1384,12 +1376,77 @@ function CenovniciTab() {
               </div>
             </div>
 
-            <Button className="w-full" disabled={submitting} onClick={handleSubmit}>
-              {submitting ? 'Čuvanje...' : editing ? 'Sačuvaj Izmene' : 'Kreiraj Cenovnik'}
-            </Button>
+            <div className="flex gap-2">
+              <Button disabled={submitting} onClick={handleSubmit}>
+                {submitting ? 'Čuvanje...' : editing ? 'Sačuvaj Izmene' : 'Kreiraj Cenovnik'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        ) : loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : (
+          <div className="max-h-[500px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Naziv</TableHead>
+                  <TableHead className="text-xs">Opis</TableHead>
+                  <TableHead className="text-xs text-center">Stavki</TableHead>
+                  <TableHead className="text-xs">Važi od</TableHead>
+                  <TableHead className="text-xs">Važi do</TableHead>
+                  <TableHead className="text-xs text-center">Status</TableHead>
+                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {priceLists.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                      Nema cenovnika za prikaz
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  priceLists.map((pl) => (
+                    <TableRow key={pl.id}>
+                      <TableCell className="text-xs font-medium">{pl.name}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{pl.description || '-'}</TableCell>
+                      <TableCell className="text-xs text-center">
+                        <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                          {pl._count?.items ?? pl.items?.length ?? 0}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">{pl.validFrom ? formatDate(pl.validFrom) : '-'}</TableCell>
+                      <TableCell className="text-xs">{pl.validTo ? formatDate(pl.validTo) : '-'}</TableCell>
+                      <TableCell className="text-center">
+                        {pl.isActive ? (
+                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-2 py-0">Aktivan</Badge>
+                        ) : (
+                          <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-[10px] px-2 py-0">Neaktivan</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(pl)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(pl.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>

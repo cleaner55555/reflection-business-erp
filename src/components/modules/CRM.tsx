@@ -8,10 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Search, Pencil, Trash2, HeartHandshake, Phone, Mail, Building2, CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, HeartHandshake, Phone, Mail, Building2, CheckCircle2, Clock, XCircle, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
@@ -66,7 +65,7 @@ export function CRM() {
 function PipelineTab() {
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null)
 
@@ -91,6 +90,21 @@ function PipelineTab() {
     try { await fetch(`/api/deals/${id}`, { method: 'DELETE' }); toast.success('Obrisano'); fetchDeals() } catch { toast.error('Greška') }
   }
 
+  const handleNew = () => {
+    setEditingDeal(null)
+    setViewMode('form')
+  }
+
+  const handleEdit = (deal: Deal) => {
+    setEditingDeal(deal)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditingDeal(null)
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setSubmitting(true)
     const fd = new FormData(e.currentTarget)
@@ -100,7 +114,7 @@ function PipelineTab() {
       const res = await fetch(url, { method: editingDeal ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
       toast.success(editingDeal ? 'Ažurirano' : 'Kreirano')
-      setDialogOpen(false); setEditingDeal(null); fetchDeals()
+      setViewMode('list'); setEditingDeal(null); fetchDeals()
     } catch { toast.error('Greška') } finally { setSubmitting(false) }
   }
 
@@ -114,15 +128,15 @@ function PipelineTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-3">
-          <div className="rounded-lg bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">Dobijeno: {formatRSD(totalValue)}</div>
-          <div className="rounded-lg bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">Pipeline: {formatRSD(pipelineValue)}</div>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditingDeal(null) }}>
-          <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Nova Prilika</Button></DialogTrigger>
-          <DialogContent key={editingDeal?.id || 'new'} className="max-w-lg">
-            <DialogHeader><DialogTitle>{editingDeal ? 'Izmeni' : 'Nova'} Priliku</DialogTitle></DialogHeader>
+      {viewMode === 'form' ? (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+              <div><CardTitle className="text-base font-semibold">{editingDeal ? 'Izmeni' : 'Nova'} Priliku</CardTitle></div>
+            </div>
+          </CardHeader>
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" defaultValue={editingDeal?.title || ''} required /></div>
               <div className="grid grid-cols-2 gap-4">
@@ -139,52 +153,65 @@ function PipelineTab() {
                 <div className="space-y-2"><Label className="text-xs">Rok zatvaranja</Label><Input name="closeDate" type="date" defaultValue={editingDeal?.closeDate?.split('T')[0] || ''} /></div>
               </div>
               <div className="space-y-2"><Label className="text-xs">Napomene</Label><Input name="notes" defaultValue={editingDeal?.notes || ''} /></div>
-              <Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {loading ? <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}</div> : (
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {STAGES.map((stage) => {
-            const stageDeals = deals.filter(d => d.stage === stage)
-            const stageTotal = stageDeals.reduce((s, d) => s + d.value, 0)
-            return (
-              <div key={stage} className={`min-w-[260px] w-[260px] flex-shrink-0 rounded-xl border-2 p-3 ${STAGE_COLORS[stage]}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold">{STAGE_LABELS[stage]}</h3>
-                  <Badge variant="secondary" className="text-[10px]">{stageDeals.length}</Badge>
-                </div>
-                <p className="text-[10px] text-muted-foreground mb-3">{formatRSD(stageTotal)}</p>
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {stageDeals.map((deal) => (
-                    <Card key={deal.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setEditingDeal(deal); setDialogOpen(true) }}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{deal.title}</p>
-                          <p className="text-xs text-muted-foreground">{formatRSD(deal.value)}</p>
-                          <p className="text-[10px] text-muted-foreground">{deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : deal.assignedTo || ''}</p>
-                        </div>
-                        <div className="flex gap-1 ml-1">
-                          {nextStage(stage) && (
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); moveDeal(deal.id, nextStage(stage)!) }}>
-                              <span className="text-xs">→</span>
-                            </Button>
-                          )}
-                          <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={(e) => { e.stopPropagation(); handleDelete(deal.id) }}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                  {stageDeals.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-4">Nema prilika</p>}
-                </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
+                <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
               </div>
-            )
-          })}
-        </div>
+            </form>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
+              <div className="rounded-lg bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">Dobijeno: {formatRSD(totalValue)}</div>
+              <div className="rounded-lg bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">Pipeline: {formatRSD(pipelineValue)}</div>
+            </div>
+            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Nova Prilika</Button>
+          </div>
+
+          {loading ? <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}</div> : (
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {STAGES.map((stage) => {
+                const stageDeals = deals.filter(d => d.stage === stage)
+                const stageTotal = stageDeals.reduce((s, d) => s + d.value, 0)
+                return (
+                  <div key={stage} className={`min-w-[260px] w-[260px] flex-shrink-0 rounded-xl border-2 p-3 ${STAGE_COLORS[stage]}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-xs font-bold">{STAGE_LABELS[stage]}</h3>
+                      <Badge variant="secondary" className="text-[10px]">{stageDeals.length}</Badge>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mb-3">{formatRSD(stageTotal)}</p>
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                      {stageDeals.map((deal) => (
+                        <Card key={deal.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleEdit(deal)}>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate">{deal.title}</p>
+                              <p className="text-xs text-muted-foreground">{formatRSD(deal.value)}</p>
+                              <p className="text-[10px] text-muted-foreground">{deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : deal.assignedTo || ''}</p>
+                            </div>
+                            <div className="flex gap-1 ml-1">
+                              {nextStage(stage) && (
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); moveDeal(deal.id, nextStage(stage)!) }}>
+                                  <span className="text-xs">→</span>
+                                </Button>
+                              )}
+                              <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={(e) => { e.stopPropagation(); handleDelete(deal.id) }}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                      {stageDeals.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-4">Nema prilika</p>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   )
@@ -195,7 +222,7 @@ function KontaktiTab() {
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<Contact | null>(null)
 
@@ -210,6 +237,21 @@ function KontaktiTab() {
 
   useEffect(() => { fetchContacts() }, [fetchContacts])
 
+  const handleNew = () => {
+    setEditing(null)
+    setViewMode('form')
+  }
+
+  const handleEdit = (c: Contact) => {
+    setEditing(c)
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+    setEditing(null)
+  }
+
   const handleDelete = async (id: string) => {
     if (!confirm('Obrisati kontakt?')) return
     try { await fetch(`/api/contacts/${id}`, { method: 'DELETE' }); toast.success('Obrisano'); fetchContacts() } catch { toast.error('Greška') }
@@ -223,48 +265,58 @@ function KontaktiTab() {
       const url = editing ? `/api/contacts/${editing.id}` : '/api/contacts'
       const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setDialogOpen(false); setEditing(null); fetchContacts()
+      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setViewMode('list'); setEditing(null); fetchContacts()
     } catch { toast.error('Greška') } finally { setSubmitting(false) }
   }
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><CardTitle className="text-base font-semibold">Kontakti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{contacts.length} kontakata</p></div>
-          <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null) }}>
-            <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Novi Kontakt</Button></DialogTrigger>
-            <DialogContent key={editing?.id || 'new'} className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>{editing ? 'Izmeni' : 'Novi'} Kontakt</DialogTitle></DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-xs">Ime *</Label><Input name="firstName" defaultValue={editing?.firstName || ''} required /></div>
-                  <div className="space-y-2"><Label className="text-xs">Prezime *</Label><Input name="lastName" defaultValue={editing?.lastName || ''} required /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-xs">Email</Label><Input name="email" type="email" defaultValue={editing?.email || ''} /></div>
-                  <div className="space-y-2"><Label className="text-xs">Telefon</Label><Input name="phone" defaultValue={editing?.phone || ''} /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-xs">Pozicija</Label><Input name="position" defaultValue={editing?.position || ''} /></div>
-                  <div className="space-y-2"><Label className="text-xs">Firma</Label><Input name="company" defaultValue={editing?.company || ''} /></div>
-                </div>
-                <div className="space-y-2"><Label className="text-xs">Tagovi (zarez)</Label><Input name="tags" placeholder="vip, IT, konsalting" defaultValue={editing?.tags || ''} /></div>
-                <div className="space-y-2"><Label className="text-xs">Napomene</Label><Input name="notes" defaultValue={editing?.notes || ''} /></div>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isLead" defaultChecked={editing?.isLead ?? true} /> Lead</label>
-                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isClient" defaultChecked={editing?.isClient ?? false} /> Klijent</label>
-                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isSupplier" defaultChecked={editing?.isSupplier ?? false} /> Dobavljač</label>
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <div className="relative max-w-sm mt-4"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži kontakte..." className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base font-semibold">{editing ? 'Izmeni' : 'Novi'} Kontakt</CardTitle></div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div><CardTitle className="text-base font-semibold">Kontakti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{contacts.length} kontakata</p></div>
+            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi Kontakt</Button>
+          </div>
+        )}
+        {viewMode === 'list' && (
+          <div className="relative max-w-sm mt-4"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži kontakte..." className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        )}
       </CardHeader>
       <CardContent>
-        {loading ? <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div> : (
+        {viewMode === 'form' ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label className="text-xs">Ime *</Label><Input name="firstName" defaultValue={editing?.firstName || ''} required /></div>
+              <div className="space-y-2"><Label className="text-xs">Prezime *</Label><Input name="lastName" defaultValue={editing?.lastName || ''} required /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label className="text-xs">Email</Label><Input name="email" type="email" defaultValue={editing?.email || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">Telefon</Label><Input name="phone" defaultValue={editing?.phone || ''} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label className="text-xs">Pozicija</Label><Input name="position" defaultValue={editing?.position || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">Firma</Label><Input name="company" defaultValue={editing?.company || ''} /></div>
+            </div>
+            <div className="space-y-2"><Label className="text-xs">Tagovi (zarez)</Label><Input name="tags" placeholder="vip, IT, konsalting" defaultValue={editing?.tags || ''} /></div>
+            <div className="space-y-2"><Label className="text-xs">Napomene</Label><Input name="notes" defaultValue={editing?.notes || ''} /></div>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isLead" defaultChecked={editing?.isLead ?? true} /> Lead</label>
+              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isClient" defaultChecked={editing?.isClient ?? false} /> Klijent</label>
+              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isSupplier" defaultChecked={editing?.isSupplier ?? false} /> Dobavljač</label>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+            </div>
+          </form>
+        ) : loading ? (
+          <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+        ) : (
           <div className="max-h-[500px] overflow-y-auto">
             <Table><TableHeader><TableRow>
               <TableHead className="text-xs">Ime</TableHead><TableHead className="text-xs">Firma</TableHead><TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Telefon</TableHead><TableHead className="text-xs">Email</TableHead><TableHead className="text-xs w-[80px]">Akcije</TableHead>
@@ -277,7 +329,7 @@ function KontaktiTab() {
                   <TableCell><div className="flex gap-1 flex-wrap">{c.isLead && <Badge variant="outline" className="text-[10px] bg-amber-50 border-amber-200">Lead</Badge>}{c.isClient && <Badge variant="outline" className="text-[10px] bg-emerald-50 border-emerald-200">Klijent</Badge>}{c.isSupplier && <Badge variant="outline" className="text-[10px] bg-blue-50 border-blue-200">Dobavljač</Badge>}</div></TableCell>
                   <TableCell className="text-xs">{c.phone || '-'}</TableCell>
                   <TableCell className="text-xs">{c.email || '-'}</TableCell>
-                  <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(c); setDialogOpen(true) }}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(c.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
+                  <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(c)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(c.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
                 </TableRow>
               ))}
             </TableBody></Table>
@@ -292,7 +344,7 @@ function KontaktiTab() {
 function AktivnostiTab() {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
 
   const fetchActivities = useCallback(async () => {
@@ -303,6 +355,14 @@ function AktivnostiTab() {
   }, [])
 
   useEffect(() => { fetchActivities() }, [fetchActivities])
+
+  const handleNew = () => {
+    setViewMode('form')
+  }
+
+  const handleCancel = () => {
+    setViewMode('list')
+  }
 
   const toggleComplete = async (id: string, completed: boolean) => {
     try { await fetch(`/api/crm-activities/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ completed: !completed }) }); fetchActivities() } catch { toast.error('Greška') }
@@ -319,7 +379,7 @@ function AktivnostiTab() {
     try {
       const res = await fetch('/api/crm-activities', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success('Kreirano'); setDialogOpen(false); fetchActivities()
+      toast.success('Kreirano'); setViewMode('list'); fetchActivities()
     } catch { toast.error('Greška') } finally { setSubmitting(false) }
   }
 
@@ -328,31 +388,39 @@ function AktivnostiTab() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><CardTitle className="text-base font-semibold">Aktivnosti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{activities.filter(a => !a.completed).length} aktivnih</p></div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Nova Aktivnost</Button></DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader><DialogTitle>Nova Aktivnost</DialogTitle></DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-xs">Tip</Label>
-                    <Select name="type" defaultValue="napomena"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-                      <SelectItem value="poziv">📞 Poziv</SelectItem><SelectItem value="sastanak">🤝 Sastanak</SelectItem><SelectItem value="email">✉️ Email</SelectItem><SelectItem value="task">✅ Task</SelectItem><SelectItem value="napomena">📝 Napomena</SelectItem>
-                    </SelectContent></Select>
-                  </div>
-                  <div className="space-y-2"><Label className="text-xs">Rok</Label><Input name="dueDate" type="date" /></div>
-                </div>
-                <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" required /></div>
-                <div className="space-y-2"><Label className="text-xs">Opis</Label><Input name="description" /></div>
-                <Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Kreiraj'}</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base font-semibold">Nova Aktivnost</CardTitle></div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div><CardTitle className="text-base font-semibold">Aktivnosti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{activities.filter(a => !a.completed).length} aktivnih</p></div>
+            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Nova Aktivnost</Button>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
-        {loading ? <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div> : (
+        {viewMode === 'form' ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label className="text-xs">Tip</Label>
+                <Select name="type" defaultValue="napomena"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+                  <SelectItem value="poziv">📞 Poziv</SelectItem><SelectItem value="sastanak">🤝 Sastanak</SelectItem><SelectItem value="email">✉️ Email</SelectItem><SelectItem value="task">✅ Task</SelectItem><SelectItem value="napomena">📝 Napomena</SelectItem>
+                </SelectContent></Select>
+              </div>
+              <div className="space-y-2"><Label className="text-xs">Rok</Label><Input name="dueDate" type="date" /></div>
+            </div>
+            <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" required /></div>
+            <div className="space-y-2"><Label className="text-xs">Opis</Label><Input name="description" /></div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Kreiraj'}</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+            </div>
+          </form>
+        ) : loading ? (
+          <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+        ) : (
           <div className="max-h-[500px] overflow-y-auto">
             <Table><TableHeader><TableRow>
               <TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Naslov</TableHead><TableHead className="text-xs">Kontakt</TableHead><TableHead className="text-xs">Rok</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-[60px]"></TableHead>
