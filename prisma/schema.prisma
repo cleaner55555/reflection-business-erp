@@ -735,6 +735,26 @@ model EmailTemplate {
   updatedAt     DateTime @updatedAt
 }
 
+// ============ INTEGRACIJE ============
+
+model IntegrationJob {
+  id            String   @id @default(cuid())
+  type          String   // import, export
+  entityType    String   // partners, products, transactions, contacts, invoices, stock
+  source        String   @default("custom") // biznis_navigator, pantheon, minimax, eFakture, custom
+  status        String   @default("pending") // pending, processing, completed, failed, partial
+  totalRows     Int      @default(0)
+  successRows   Int      @default(0)
+  failedRows    Int      @default(0)
+  errors        String?  // JSON array of error details
+  fileName      String?
+  mapping       String?  // JSON: { sourceCol: targetField }
+  options       String?  // JSON: skipDuplicates, updateExisting, etc.
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 // ============ SETTINGS ============
 
 model AppSetting {

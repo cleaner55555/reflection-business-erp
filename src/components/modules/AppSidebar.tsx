@@ -36,8 +36,7 @@ import {
   CarFront,
   UtensilsCrossed,
   Settings,
-  Compass,
-  Image,
+  Plug,
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -80,7 +79,8 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
   },
   {
     labelKey: 'sidebar.group_analytics',
-    items: [{ module: 'izvestaji', icon: BarChart3, labelKey: 'sidebar.reports' }],
+    items: [{ module: 'izvestaji', icon: BarChart3, labelKey: 'sidebar.reports' },
+      { module: 'integracije', icon: Plug, labelKey: 'sidebar.integrations' }],
   },
   {
     labelKey: 'sidebar.group_system',
@@ -114,7 +114,7 @@ export function AppSidebar() {
             </div>
           ) : (
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-primary-foreground">
-              <Compass className="h-5 w-5" />
+              <Plug className="h-5 w-5" />
             </div>
           )}
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">

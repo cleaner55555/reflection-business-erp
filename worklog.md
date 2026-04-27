@@ -326,3 +326,50 @@ Stage Summary:
 - Content translation system: MyMemory API (free, no AI), 3-tier caching, batch debouncing
 - All user-entered content auto-translates on language switch
 - Forms show original text for data integrity
+
+---
+Task ID: 4
+Agent: fullstack-developer
+Task: Build Integracije.tsx frontend component
+
+Work Log:
+- Created src/components/modules/Integracije.tsx with full 3-tab UI
+- Tab 1 (Import): 3-step wizard with drag-and-drop CSV upload, column mapping with AI auto-map, preview table, import options
+- Tab 2 (Export): Entity type selector, column checkboxes, include headers option, CSV download
+- Tab 3 (History): Jobs table with color-coded status badges, delete/clear actions
+- Fixed data type mismatches between component and existing API responses (ParsedFile rows as Record<string, string>[], ImportResult type, IntegrationJob type)
+- Updated parse-csv API to return all rows (not just preview 5) for proper import flow
+- Registered module in store.ts (ModuleType), page.tsx (modules map + label keys), AppSidebar.tsx (Plug icon, analytics group)
+- All lint checks pass cleanly
+
+Stage Summary:
+- Full-featured integration module component created
+- 3 tabs: Import wizard (upload → map → preview & import), Export (select & download CSV), History (jobs table)
+- AI-assisted column mapping via /api/integrations/ai-map
+- Drag-and-drop CSV upload with visual feedback
+- Color-coded status badges (completed/partial/failed/processing/pending)
+- All i18n keys used for internationalization
+
+---
+Task ID: 3
+Agent: fullstack-developer
+Task: Build integrations API routes for ERP data import/export module
+
+Work Log:
+- Created /api/integrations/templates/route.ts (GET) — Returns 12 predefined templates for Biznis Navigator, Pantheon, Minimax, eFakture, and Custom CSV across partners, products, transactions, and contacts entity types
+- Created /api/integrations/parse-csv/route.ts (POST) — Accepts multipart CSV upload, auto-detects delimiter (comma/semicolon/tab), handles quoted fields, returns columns + 5-row preview + totalRows + fileName
+- Created /api/integrations/ai-map/route.ts (POST) — Uses z-ai-web-dev-sdk LLM to suggest column mappings from source CSV headers to target entity fields, with field descriptions and validation
+- Created /api/integrations/import/route.ts (POST) — Full import pipeline: creates IntegrationJob record, maps rows via per-entity mapper functions, validates required fields, handles duplicates (skip/update), returns job result with error details
+- Created /api/integrations/export/route.ts (POST) — Queries Prisma data for partners/products/transactions/contacts, generates CSV with proper escaping, returns as downloadable response with Content-Disposition header, also creates IntegrationJob record
+- Created /api/integrations/jobs/route.ts (GET + DELETE) — GET returns all jobs sorted by createdAt desc; DELETE supports single id or array of ids, validates existence before deleting
+- All lint checks pass with zero errors
+- No compilation errors in dev.log
+
+Stage Summary:
+- All 6 integrations API routes created and functional
+- Templates: 12 predefined mappings for 5 ERP systems (Biznis Navigator, Pantheon, Minimax, eFakture, Custom)
+- CSV Parser: Auto-delimiter detection, quoted field support, 5-row preview
+- AI Mapping: LLM-powered column suggestion with validation and temperature 0.1
+- Import: Full pipeline with IntegrationJob tracking, duplicate handling (skip/update), per-entity validation
+- Export: CSV generation with proper escaping, downloadable response, job tracking
+- Jobs: List and delete integration job history

@@ -25,6 +25,7 @@ import { KafeRestoran } from '@/components/modules/KafeRestoran'
 import { MailerLite } from '@/components/modules/MailerLite'
 import { RentACar } from '@/components/modules/RentACar'
 import { Podesavanja } from '@/components/modules/Podesavanja'
+import { Integracije } from '@/components/modules/Integracije'
 import { AIAssistant } from '@/components/modules/AIAssistant'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { useAppStore } from '@/lib/store'
@@ -69,6 +70,7 @@ const modules: Record<string, React.ReactNode> = {
   'rent-a-car': <RentACar />,
   izvestaji: <Izvestaji />,
   podesavanja: <Podesavanja />,
+  integracije: <Integracije />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -94,6 +96,7 @@ const moduleLabelKeys: Record<string, string> = {
   'email-marketing': 'sidebar.emailMarketing',
   'rent-a-car': 'sidebar.rentACar',
   izvestaji: 'sidebar.reports',
+  integracije: 'sidebar.integrations',
   podesavanja: 'sidebar.settings',
 }
 
