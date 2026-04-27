@@ -150,19 +150,14 @@ function AppContent() {
               {/* Language Switcher - dropdown with active languages only */}
               {headerLanguages.length > 1 ? (
                 <Select value={locale} onValueChange={(val) => setLocale(val)}>
-                  <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs">
-                    <span className="flex items-center gap-1.5 truncate">
-                      <span>{ALL_LANGUAGES.find((l) => l.code === locale)?.flag || '🌐'}</span>
-                      <span className="truncate">
-                        {ALL_LANGUAGES.find((l) => l.code === locale)?.nativeName || locale}
-                      </span>
-                    </span>
+                  <SelectTrigger className="h-8 w-auto min-w-[130px] text-xs">
+                    <Languages className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {headerLanguages.map((lang) => (
                       <SelectItem key={lang.code} value={lang.code} className="text-xs">
-                        <span className="mr-1.5">{lang.flag}</span>
-                        {lang.nativeName}
+                        {lang.flag} {lang.nativeName}
                       </SelectItem>
                     ))}
                   </SelectContent>
