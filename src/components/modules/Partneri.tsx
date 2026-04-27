@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, Users } from 'lucide-react'
+import { Plus, Search, Users, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getStatusLabel } from '@/lib/helpers'
 
@@ -55,6 +55,7 @@ export function Partneri() {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const fetchPartners = useCallback(async () => {
@@ -71,6 +72,27 @@ export function Partneri() {
   useEffect(() => {
     fetchPartners()
   }, [fetchPartners])
+
+  const handleEdit = (partner: Partner) => {
+    setEditingPartner(partner)
+    setDialogOpen(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Da li ste sigurni da želite da obrišete ovog partnera?')) return
+    try {
+      const res = await fetch(`/api/partners/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Greška pri brisanju')
+        return
+      }
+      toast.success('Partner uspešno obrisan')
+      fetchPartners()
+    } catch {
+      toast.error('Greška pri brisanju partnera')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -91,21 +113,24 @@ export function Partneri() {
       notes: fd.get('notes') as string,
     }
     try {
-      const res = await fetch('/api/partners', {
-        method: 'POST',
+      const isEditing = !!editingPartner
+      const url = isEditing ? `/api/partners/${editingPartner.id}` : '/api/partners'
+      const res = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri kreiranju')
+        toast.error(err.error || 'Greška')
         return
       }
-      toast.success('Partner uspešno kreiran')
+      toast.success(isEditing ? 'Partner uspešno ažuriran' : 'Partner uspešno kreiran')
       setDialogOpen(false)
+      setEditingPartner(null)
       fetchPartners()
     } catch {
-      toast.error('Greška pri kreiranju partnera')
+      toast.error('Greška')
     } finally {
       setSubmitting(false)
     }
@@ -125,7 +150,10 @@ export function Partneri() {
             <CardTitle className="text-base font-semibold">Partneri</CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">{partners.length} partnera</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => {
+            setDialogOpen(open)
+            if (!open) setEditingPartner(null)
+          }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">
                 <Plus className="h-4 w-4" /> Novi Partner
@@ -133,27 +161,27 @@ export function Partneri() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Novi Partner</DialogTitle>
+                <DialogTitle>{editingPartner ? 'Izmeni Partnera' : 'Novi Partner'}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Naziv *</Label>
-                    <Input name="name" placeholder="Naziv firme" required />
+                    <Input name="name" placeholder="Naziv firme" required defaultValue={editingPartner?.name || ''} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">PIB *</Label>
-                    <Input name="pib" placeholder="123456789" required />
+                    <Input name="pib" placeholder="123456789" required defaultValue={editingPartner?.pib || ''} />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Matični broj</Label>
-                    <Input name="maticniBr" placeholder="12345678" />
+                    <Input name="maticniBr" placeholder="12345678" defaultValue={editingPartner?.maticniBr || ''} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Tip</Label>
-                    <Select name="type" defaultValue="kupac">
+                    <Select name="type" defaultValue={editingPartner?.type || 'kupac'}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="kupac">Kupac</SelectItem>
@@ -164,39 +192,39 @@ export function Partneri() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Grad</Label>
-                    <Input name="city" placeholder="Beograd" />
+                    <Input name="city" placeholder="Beograd" defaultValue={editingPartner?.city || ''} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Adresa</Label>
-                  <Input name="address" placeholder="Ulica i broj" />
+                  <Input name="address" placeholder="Ulica i broj" defaultValue={editingPartner?.address || ''} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Telefon</Label>
-                    <Input name="phone" placeholder="+381 11 123 4567" />
+                    <Input name="phone" placeholder="+381 11 123 4567" defaultValue={editingPartner?.phone || ''} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Email</Label>
-                    <Input name="email" type="email" placeholder="info@firma.rs" />
+                    <Input name="email" type="email" placeholder="info@firma.rs" defaultValue={editingPartner?.email || ''} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Tekući račun</Label>
-                    <Input name="account" placeholder="265-00000000-00" />
+                    <Input name="account" placeholder="265-00000000-00" defaultValue={editingPartner?.account || ''} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Banka</Label>
-                    <Input name="bank" placeholder="Naziv banke" />
+                    <Input name="bank" placeholder="Naziv banke" defaultValue={editingPartner?.bank || ''} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Napomene</Label>
-                  <Input name="notes" placeholder="Napomene" />
+                  <Input name="notes" placeholder="Napomene" defaultValue={editingPartner?.notes || ''} />
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Kreiraj Partnera'}
+                  {submitting ? 'Čuvanje...' : editingPartner ? 'Sačuvaj Izmene' : 'Kreiraj Partnera'}
                 </Button>
               </form>
             </DialogContent>
@@ -246,12 +274,13 @@ export function Partneri() {
                   <TableHead className="text-xs">Email</TableHead>
                   <TableHead className="text-xs text-center">Fakture</TableHead>
                   <TableHead className="text-xs text-center">Narudžbine</TableHead>
+                  <TableHead className="text-xs text-right">Akcije</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {partners.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-sm">
                       Nema partnera za prikaz
                     </TableCell>
                   </TableRow>
@@ -277,6 +306,16 @@ export function Partneri() {
                         <Badge variant="secondary" className="text-[10px] px-2 py-0">
                           {p._count.purchaseOrders}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(p)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(p.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
