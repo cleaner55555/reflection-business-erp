@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress'
 import { Mail, Plus, Pencil, Trash2, Users, Send, Clock, Eye, MousePointer, FileText, Copy, Upload, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 // ==================== TYPES ====================
 interface EmailList {
@@ -69,25 +70,25 @@ interface EmailTemplate {
 }
 
 // ==================== CONSTANTS ====================
-const CAMPAIGN_STATUS: Record<string, { label: string; color: string }> = {
-  nacrt: { label: 'Načrt', color: 'bg-slate-100 text-slate-700 border-slate-200' },
-  poslata: { label: 'Poslata', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  zakazana: { label: 'Zakazana', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  u_toku: { label: 'U toku', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  zavrsena: { label: 'Završena', color: 'bg-slate-100 text-slate-600 border-slate-300' },
-}
+const getCampaignStatuses = (t: (key: string) => string): Record<string, { label: string; color: string }> => ({
+  nacrt: { label: t('common.nacrt'), color: 'bg-slate-100 text-slate-700 border-slate-200' },
+  poslata: { label: t('common.poslata'), color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  zakazana: { label: t('common.zakazana'), color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  u_toku: { label: t('emailMarketing.inProgress'), color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  zavrsena: { label: t('common.zavrsena_mail'), color: 'bg-slate-100 text-slate-600 border-slate-300' },
+})
 
-const SUBSCRIBER_STATUS: Record<string, { label: string; color: string }> = {
-  aktivan: { label: 'Aktivan', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  neaktivan: { label: 'Neaktivan', color: 'bg-slate-100 text-slate-600 border-slate-200' },
-  otkazan: { label: 'Otkazan', color: 'bg-red-50 text-red-700 border-red-200' },
-}
+const getSubscriberStatuses = (t: (key: string) => string): Record<string, { label: string; color: string }> => ({
+  aktivan: { label: t('common.aktivan_sub'), color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  neaktivan: { label: t('common.neaktivan'), color: 'bg-slate-100 text-slate-600 border-slate-200' },
+  otkazan: { label: t('common.otkazan'), color: 'bg-red-50 text-red-700 border-red-200' },
+})
 
-const TEMPLATE_CATEGORIES: Record<string, string> = {
-  promotivno: 'Promotivno',
-  transakciono: 'Transakciono',
-  obavestenje: 'Obaveštenje',
-}
+const getTemplateCategories = (t: (key: string) => string): Record<string, string> => ({
+  promotivno: t('emailMarketing.promotional'),
+  transakciono: t('emailMarketing.transactional'),
+  obavestenje: t('emailMarketing.notification'),
+})
 
 // ==================== MAIN COMPONENT ====================
 export function MailerLite() {
@@ -96,6 +97,9 @@ export function MailerLite() {
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([])
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
+
+  const CAMPAIGN_STATUS = getCampaignStatuses(t)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -111,7 +115,7 @@ export function MailerLite() {
       setCampaigns(await campsRes.json())
       setTemplates(await tempsRes.json())
     } catch {
-      toast.error('Greška pri učitavanju podataka')
+      toast.error(t('emailMarketing.loadError'))
     } finally {
       setLoading(false)
     }
@@ -127,10 +131,10 @@ export function MailerLite() {
   const activeLists = lists.filter(l => l._count && l._count.subscribers > 0).length
 
   const stats = [
-    { label: 'Ukupno kampanja', value: totalCampaigns, icon: Mail, color: 'text-emerald-600 bg-emerald-50' },
-    { label: 'Ukupno pretplatnika', value: totalSubscribers, icon: Users, color: 'text-blue-600 bg-blue-50' },
-    { label: 'Prosečna stopa otvaranja', value: `${avgOpenRate.toFixed(1)}%`, icon: Eye, color: 'text-amber-600 bg-amber-50' },
-    { label: 'Aktivne liste', value: activeLists, icon: FileText, color: 'text-violet-600 bg-violet-50' },
+    { label: t('emailMarketing.totalCampaigns'), value: totalCampaigns, icon: Mail, color: 'text-emerald-600 bg-emerald-50' },
+    { label: t('emailMarketing.totalSubscribers'), value: totalSubscribers, icon: Users, color: 'text-blue-600 bg-blue-50' },
+    { label: t('emailMarketing.avgOpenRate'), value: `${avgOpenRate.toFixed(1)}%`, icon: Eye, color: 'text-amber-600 bg-amber-50' },
+    { label: t('emailMarketing.activeLists'), value: activeLists, icon: FileText, color: 'text-violet-600 bg-violet-50' },
   ]
 
   return (
@@ -142,8 +146,8 @@ export function MailerLite() {
             <Mail className="h-5 w-5 text-emerald-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Email Marketing</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">Kampanje, liste i šablone za email marketing</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t('emailMarketing.title')}</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">{t('emailMarketing.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -180,19 +184,19 @@ export function MailerLite() {
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="kampanje" className="gap-1.5">
             <Mail className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Kampanje</span>
+            <span className="hidden sm:inline">{t('emailMarketing.campaigns')}</span>
           </TabsTrigger>
           <TabsTrigger value="pretplatnici" className="gap-1.5">
             <Users className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Pretplatnici</span>
+            <span className="hidden sm:inline">{t('emailMarketing.subscribers')}</span>
           </TabsTrigger>
           <TabsTrigger value="liste" className="gap-1.5">
             <FileText className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Liste</span>
+            <span className="hidden sm:inline">{t('emailMarketing.lists')}</span>
           </TabsTrigger>
           <TabsTrigger value="sabloni" className="gap-1.5">
             <Copy className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Šablone</span>
+            <span className="hidden sm:inline">{t('emailMarketing.templates')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -223,14 +227,17 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<EmailCampaign | null>(null)
+  const { t } = useTranslation()
+
+  const CAMPAIGN_STATUS = getCampaignStatuses(t)
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Obrisati kampanju?')) return
+    if (!confirm(t('emailMarketing.confirmDeleteCampaign'))) return
     try {
       await fetch(`/api/email-campaigns/${id}`, { method: 'DELETE' })
-      toast.success('Kampanja obrisana')
+      toast.success(t('emailMarketing.campaignDeleted'))
       onRefresh()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -240,10 +247,10 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, sentAt: status === 'poslata' ? new Date().toISOString() : undefined }),
       })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success(`Status: ${CAMPAIGN_STATUS[status]?.label || status}`)
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(`${t('common.status')}: ${CAMPAIGN_STATUS[status]?.label || status}`)
       onRefresh()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleDuplicate = async (campaign: EmailCampaign) => {
@@ -252,7 +259,7 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: `${campaign.name} (kopija)`,
+          name: `${campaign.name} ${t('emailMarketing.copy')}`,
           subject: campaign.subject,
           preheader: campaign.preheader,
           content: campaign.content,
@@ -260,10 +267,10 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
           status: 'nacrt',
         }),
       })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success('Kampanja duplicirana')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(t('emailMarketing.campaignDuplicated'))
       onRefresh()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -284,12 +291,12 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success(editing ? 'Kampanja ažurirana' : 'Kampanja kreirana')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(editing ? t('emailMarketing.campaignUpdated') : t('emailMarketing.campaignCreated'))
       setViewMode('list')
       setEditing(null)
       onRefresh()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   return (
@@ -298,16 +305,16 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
         {viewMode === 'form' ? (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => { setViewMode('list'); setEditing(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle>{editing ? 'Izmeni' : 'Nova'} Kampanju</CardTitle></div>
+            <div><CardTitle>{editing ? t('common.edit') : t('emailMarketing.new')} {t('emailMarketing.campaignAcc')}</CardTitle></div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Kampanje</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{campaigns.length} kampanja</p>
+              <CardTitle className="text-base font-semibold">{t('emailMarketing.campaigns')}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{campaigns.length} {t('emailMarketing.campaignsCount')}</p>
             </div>
             <Button size="sm" className="gap-2" onClick={() => { setEditing(null); setViewMode('form') }}>
-              <Plus className="h-4 w-4" /> Nova Kampanja
+              <Plus className="h-4 w-4" /> {t('emailMarketing.newCampaign')}
             </Button>
           </div>
         )}
@@ -316,23 +323,23 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
         {viewMode === 'form' ? (
           <form onSubmit={handleSubmit} key={editing?.id || 'new'} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs">Naziv kampanje *</Label>
+              <Label className="text-xs">{t('emailMarketing.campaignName')} *</Label>
               <Input name="name" defaultValue={editing?.name || ''} required placeholder="npr. Novogodišnja promocija" />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Predmet (Subject) *</Label>
+              <Label className="text-xs">{t('emailMarketing.subject')} *</Label>
               <Input name="subject" defaultValue={editing?.subject || ''} required placeholder="Predmet emaila" />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Preheader</Label>
-              <Input name="preheader" defaultValue={editing?.preheader || ''} placeholder="Kratak tekst ispred naslova" />
+              <Label className="text-xs">{t('emailMarketing.preheader')}</Label>
+              <Input name="preheader" defaultValue={editing?.preheader || ''} placeholder={t('emailMarketing.preheaderPlaceholder')} />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Lista</Label>
+              <Label className="text-xs">{t('emailMarketing.list')}</Label>
               <Select name="listId" defaultValue={editing?.listId || ''}>
-                <SelectTrigger><SelectValue placeholder="Izaberi listu" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('emailMarketing.selectList')} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Bez liste</SelectItem>
+                  <SelectItem value="none">{t('emailMarketing.noList')}</SelectItem>
                   {lists.map(l => (
                     <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
                   ))}
@@ -340,13 +347,13 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Sadržaj (HTML) *</Label>
+              <Label className="text-xs">{t('emailMarketing.contentHtml')} *</Label>
               <Textarea name="content" defaultValue={editing?.content || ''} required rows={6} placeholder="<h1>Pozdrav!</h1><p>Vaš sadržaj ovde...</p>" className="font-mono text-xs" />
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => { setViewMode('list'); setEditing(null) }} className="flex-1">Otkaži</Button>
+              <Button type="button" variant="outline" onClick={() => { setViewMode('list'); setEditing(null) }} className="flex-1">{t('common.cancel')}</Button>
               <Button type="submit" className="flex-1" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                {submitting ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </form>
@@ -359,8 +366,8 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
             ) : campaigns.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                 <Mail className="h-12 w-12 mb-3 opacity-30" />
-                <p className="text-sm">Nema kampanja</p>
-                <p className="text-xs mt-1">Kreirajte prvu email kampanju</p>
+                <p className="text-sm">{t('emailMarketing.noCampaigns')}</p>
+                <p className="text-xs mt-1">{t('emailMarketing.createFirstCampaign')}</p>
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -386,15 +393,15 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="text-center">
                           <p className="text-xs font-bold">{c.sentCount}</p>
-                          <p className="text-[10px] text-muted-foreground">Poslato</p>
+                          <p className="text-[10px] text-muted-foreground">{t('emailMarketing.sentCount')}</p>
                         </div>
                         <div className="text-center">
                           <p className="text-xs font-bold text-emerald-600">{c.openRate?.toFixed(1)}%</p>
-                          <p className="text-[10px] text-muted-foreground">Otvaranja</p>
+                          <p className="text-[10px] text-muted-foreground">{t('emailMarketing.openings')}</p>
                         </div>
                         <div className="text-center">
                           <p className="text-xs font-bold text-blue-600">{c.clickRate?.toFixed(1)}%</p>
-                          <p className="text-[10px] text-muted-foreground">Klikovi</p>
+                          <p className="text-[10px] text-muted-foreground">{t('emailMarketing.clicks')}</p>
                         </div>
                       </div>
 
@@ -410,18 +417,18 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
                       </div>
 
                       <p className="text-[10px] text-muted-foreground mb-3">
-                        {c.sentAt ? `Poslata: ${formatDate(c.sentAt)}` : c.scheduledAt ? `Zakazana: ${formatDate(c.scheduledAt)}` : `Kreirana: ${formatDate(c.createdAt)}`}
+                        {c.sentAt ? `${t('emailMarketing.sent')}: ${formatDate(c.sentAt)}` : c.scheduledAt ? `${t('emailMarketing.scheduled')}: ${formatDate(c.scheduledAt)}` : `${t('emailMarketing.created')}: ${formatDate(c.createdAt)}`}
                       </p>
 
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {c.status === 'nacrt' && (
                           <Button variant="ghost" size="sm" className="h-7 gap-1 text-[10px] text-emerald-600" onClick={() => handleStatusChange(c.id, 'poslata')}>
-                            <Send className="h-3 w-3" /> Pošalji
+                            <Send className="h-3 w-3" /> {t('emailMarketing.send')}
                           </Button>
                         )}
                         {c.status === 'nacrt' && (
                           <Button variant="ghost" size="sm" className="h-7 gap-1 text-[10px] text-blue-600" onClick={() => handleStatusChange(c.id, 'zakazana')}>
-                            <Clock className="h-3 w-3" /> Zakaži
+                            <Clock className="h-3 w-3" /> {t('emailMarketing.schedule')}
                           </Button>
                         )}
                         <Button variant="ghost" size="sm" className="h-7 gap-1 text-[10px]" onClick={() => handleDuplicate(c)}>
@@ -458,6 +465,9 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
   const [editing, setEditing] = useState<EmailSubscriber | null>(null)
   const [filterList, setFilterList] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
+  const { t } = useTranslation()
+
+  const SUBSCRIBER_STATUS = getSubscriberStatuses(t)
 
   const filtered = subscribers.filter(s => {
     if (filterList && filterList !== 'all' && s.listId !== filterList) return false
@@ -466,12 +476,12 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
   })
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Obrisati pretplatnika?')) return
+    if (!confirm(t('emailMarketing.confirmDeleteSubscriber'))) return
     try {
       await fetch(`/api/email-subscribers/${id}`, { method: 'DELETE' })
-      toast.success('Pretplatnik obrisan')
+      toast.success(t('emailMarketing.subscriberDeleted'))
       onRefresh()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -492,12 +502,12 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success(editing ? 'Pretplatnik ažuriran' : 'Pretplatnik dodat')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(editing ? t('emailMarketing.subscriberUpdated') : t('emailMarketing.subscriberAdded'))
       setViewMode('list')
       setEditing(null)
       onRefresh()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   return (
@@ -506,20 +516,20 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
         {viewMode === 'form' ? (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => { setViewMode('list'); setEditing(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle>{editing ? 'Izmeni' : 'Dodaj'} Pretplatnika</CardTitle></div>
+            <div><CardTitle>{editing ? t('common.edit') : t('common.add')} {t('emailMarketing.subscriberAcc')}</CardTitle></div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Pretplatnici</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{filtered.length} pretplatnika</p>
+              <CardTitle className="text-base font-semibold">{t('emailMarketing.subscribers')}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{filtered.length} {t('emailMarketing.subscribersCount')}</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info('Uvoz pretplatnika - funkcija u pripremi')}>
-                <Upload className="h-4 w-4" /> Uvoz
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info(t('emailMarketing.importSubscribersInfo'))}>
+                <Upload className="h-4 w-4" /> {t('emailMarketing.import')}
               </Button>
               <Button size="sm" className="gap-2" onClick={() => { setEditing(null); setViewMode('form') }}>
-                <Plus className="h-4 w-4" /> Dodaj
+                <Plus className="h-4 w-4" /> {t('common.add')}
               </Button>
             </div>
           </div>
@@ -530,10 +540,10 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
           <div className="flex flex-col gap-2 sm:flex-row sm:gap-3 mt-4">
             <Select value={filterList || 'all'} onValueChange={setFilterList}>
               <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs">
-                <SelectValue placeholder="Sve liste" />
+                <SelectValue placeholder={t('emailMarketing.allLists')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Sve liste</SelectItem>
+                <SelectItem value="all">{t('emailMarketing.allLists')}</SelectItem>
                 {lists.map(l => (
                   <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
                 ))}
@@ -541,13 +551,13 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
             </Select>
             <Select value={filterStatus || 'all'} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs">
-                <SelectValue placeholder="Svi statusi" />
+                <SelectValue placeholder={t('emailMarketing.allStatuses')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Svi statusi</SelectItem>
-                <SelectItem value="aktivan">Aktivan</SelectItem>
-                <SelectItem value="neaktivan">Neaktivan</SelectItem>
-                <SelectItem value="otkazan">Otkazan</SelectItem>
+                <SelectItem value="all">{t('emailMarketing.allStatuses')}</SelectItem>
+                <SelectItem value="aktivan">{t('common.aktivan_sub')}</SelectItem>
+                <SelectItem value="neaktivan">{t('common.neaktivan')}</SelectItem>
+                <SelectItem value="otkazan">{t('common.otkazan')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -562,20 +572,20 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Ime</Label>
-                <Input name="firstName" defaultValue={editing?.firstName || ''} placeholder="Ime" />
+                <Label className="text-xs">{t('emailMarketing.firstName')}</Label>
+                <Input name="firstName" defaultValue={editing?.firstName || ''} placeholder={t('emailMarketing.firstName')} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Prezime</Label>
-                <Input name="lastName" defaultValue={editing?.lastName || ''} placeholder="Prezime" />
+                <Label className="text-xs">{t('emailMarketing.lastName')}</Label>
+                <Input name="lastName" defaultValue={editing?.lastName || ''} placeholder={t('emailMarketing.lastName')} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Lista</Label>
+              <Label className="text-xs">{t('emailMarketing.list')}</Label>
               <Select name="listId" defaultValue={editing?.listId || ''}>
-                <SelectTrigger><SelectValue placeholder="Izaberi listu" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('emailMarketing.selectList')} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Bez liste</SelectItem>
+                  <SelectItem value="none">{t('emailMarketing.noList')}</SelectItem>
                   {lists.map(l => (
                     <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
                   ))}
@@ -583,9 +593,9 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
               </Select>
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => { setViewMode('list'); setEditing(null) }} className="flex-1">Otkaži</Button>
+              <Button type="button" variant="outline" onClick={() => { setViewMode('list'); setEditing(null) }} className="flex-1">{t('common.cancel')}</Button>
               <Button type="submit" className="flex-1" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                {submitting ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </form>
@@ -600,18 +610,18 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-xs">Email</TableHead>
-                    <TableHead className="text-xs hidden sm:table-cell">Ime</TableHead>
-                    <TableHead className="text-xs hidden md:table-cell">Lista</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs hidden lg:table-cell">Izvor</TableHead>
-                    <TableHead className="text-xs hidden lg:table-cell">Datum</TableHead>
-                    <TableHead className="text-xs w-[80px]">Akcije</TableHead>
+                    <TableHead className="text-xs hidden sm:table-cell">{t('emailMarketing.firstName')}</TableHead>
+                    <TableHead className="text-xs hidden md:table-cell">{t('emailMarketing.list')}</TableHead>
+                    <TableHead className="text-xs">{t('common.status')}</TableHead>
+                    <TableHead className="text-xs hidden lg:table-cell">{t('emailMarketing.source')}</TableHead>
+                    <TableHead className="text-xs hidden lg:table-cell">{t('common.date')}</TableHead>
+                    <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema pretplatnika</TableCell>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">{t('emailMarketing.noSubscribers')}</TableCell>
                     </TableRow>
                   ) : (
                     filtered.map((s) => (
@@ -660,14 +670,15 @@ function ListeTab({ lists, loading, onRefresh }: {
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<EmailList | null>(null)
+  const { t } = useTranslation()
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Obrisati listu? Obrisani će biti i svi povezani pretplatnici i kampanje.')) return
+    if (!confirm(t('emailMarketing.confirmDeleteList'))) return
     try {
       await fetch(`/api/email-lists/${id}`, { method: 'DELETE' })
-      toast.success('Lista obrisana')
+      toast.success(t('emailMarketing.listDeleted'))
       onRefresh()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -685,12 +696,12 @@ function ListeTab({ lists, loading, onRefresh }: {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success(editing ? 'Lista ažurirana' : 'Lista kreirana')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(editing ? t('emailMarketing.listUpdated') : t('emailMarketing.listCreated'))
       setViewMode('list')
       setEditing(null)
       onRefresh()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   return (
@@ -699,16 +710,16 @@ function ListeTab({ lists, loading, onRefresh }: {
         {viewMode === 'form' ? (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => { setViewMode('list'); setEditing(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle>{editing ? 'Izmeni' : 'Nova'} Listu</CardTitle></div>
+            <div><CardTitle>{editing ? t('common.edit') : t('emailMarketing.new')} {t('emailMarketing.listAcc')}</CardTitle></div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Email Liste</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{lists.length} lista</p>
+              <CardTitle className="text-base font-semibold">{t('emailMarketing.emailLists')}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{lists.length} {t('emailMarketing.listsCount')}</p>
             </div>
             <Button size="sm" className="gap-2" onClick={() => { setEditing(null); setViewMode('form') }}>
-              <Plus className="h-4 w-4" /> Nova Lista
+              <Plus className="h-4 w-4" /> {t('emailMarketing.newList')}
             </Button>
           </div>
         )}
@@ -717,17 +728,17 @@ function ListeTab({ lists, loading, onRefresh }: {
         {viewMode === 'form' ? (
           <form onSubmit={handleSubmit} key={editing?.id || 'new'} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs">Naziv liste *</Label>
+              <Label className="text-xs">{t('emailMarketing.listName')} *</Label>
               <Input name="name" defaultValue={editing?.name || ''} required placeholder="npr. Novosti, Newsletter" />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Opis</Label>
-              <Textarea name="description" defaultValue={editing?.description || ''} rows={3} placeholder="Opis liste..." />
+              <Label className="text-xs">{t('common.description')}</Label>
+              <Textarea name="description" defaultValue={editing?.description || ''} rows={3} placeholder={t('emailMarketing.listDescriptionPlaceholder')} />
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => { setViewMode('list'); setEditing(null) }} className="flex-1">Otkaži</Button>
+              <Button type="button" variant="outline" onClick={() => { setViewMode('list'); setEditing(null) }} className="flex-1">{t('common.cancel')}</Button>
               <Button type="submit" className="flex-1" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                {submitting ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </form>
@@ -740,8 +751,8 @@ function ListeTab({ lists, loading, onRefresh }: {
             ) : lists.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                 <FileText className="h-12 w-12 mb-3 opacity-30" />
-                <p className="text-sm">Nema listi</p>
-                <p className="text-xs mt-1">Kreirajte prvu email listu</p>
+                <p className="text-sm">{t('emailMarketing.noLists')}</p>
+                <p className="text-xs mt-1">{t('emailMarketing.createFirstList')}</p>
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -755,7 +766,7 @@ function ListeTab({ lists, loading, onRefresh }: {
                           </div>
                           <div>
                             <h3 className="text-sm font-semibold">{l.name}</h3>
-                            <p className="text-[10px] text-muted-foreground">Kreirana: {formatDate(l.createdAt)}</p>
+                            <p className="text-[10px] text-muted-foreground">{t('emailMarketing.created')}: {formatDate(l.createdAt)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -774,12 +785,12 @@ function ListeTab({ lists, loading, onRefresh }: {
                         <div className="flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-xs font-medium">{l._count?.subscribers || 0}</span>
-                          <span className="text-[10px] text-muted-foreground">pretplatnika</span>
+                          <span className="text-[10px] text-muted-foreground">{t('emailMarketing.subscribersCount')}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-xs font-medium">{l._count?.campaigns || 0}</span>
-                          <span className="text-[10px] text-muted-foreground">kampanja</span>
+                          <span className="text-[10px] text-muted-foreground">{t('emailMarketing.campaignsCount')}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -803,14 +814,17 @@ function SabloniTab({ templates, loading, onRefresh }: {
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<EmailTemplate | null>(null)
+  const { t } = useTranslation()
+
+  const TEMPLATE_CATEGORIES = getTemplateCategories(t)
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Obrisati šablon?')) return
+    if (!confirm(t('emailMarketing.confirmDeleteTemplate'))) return
     try {
       await fetch(`/api/email-templates/${id}`, { method: 'DELETE' })
-      toast.success('Šablon obrisan')
+      toast.success(t('emailMarketing.templateDeleted'))
       onRefresh()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -830,12 +844,12 @@ function SabloniTab({ templates, loading, onRefresh }: {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success(editing ? 'Šablon ažuriran' : 'Šablon kreiran')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(editing ? t('emailMarketing.templateUpdated') : t('emailMarketing.templateCreated'))
       setViewMode('list')
       setEditing(null)
       onRefresh()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   const getCategoryColor = (cat: string | null) => {
@@ -853,16 +867,16 @@ function SabloniTab({ templates, loading, onRefresh }: {
         {viewMode === 'form' ? (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => { setViewMode('list'); setEditing(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle>{editing ? 'Izmeni' : 'Novi'} Šablon</CardTitle></div>
+            <div><CardTitle>{editing ? t('common.edit') : t('emailMarketing.newM')} {t('emailMarketing.template')}</CardTitle></div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Šablone</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{templates.length} šablona</p>
+              <CardTitle className="text-base font-semibold">{t('emailMarketing.templates')}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{templates.length} {t('emailMarketing.templatesCount')}</p>
             </div>
             <Button size="sm" className="gap-2" onClick={() => { setEditing(null); setViewMode('form') }}>
-              <Plus className="h-4 w-4" /> Novi Šablon
+              <Plus className="h-4 w-4" /> {t('emailMarketing.newTemplate')}
             </Button>
           </div>
         )}
@@ -872,34 +886,34 @@ function SabloniTab({ templates, loading, onRefresh }: {
           <form onSubmit={handleSubmit} key={editing?.id || 'new'} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Naziv *</Label>
-                <Input name="name" defaultValue={editing?.name || ''} required placeholder="Naziv šablona" />
+                <Label className="text-xs">{t('common.name')} *</Label>
+                <Input name="name" defaultValue={editing?.name || ''} required placeholder={t('emailMarketing.templateNamePlaceholder')} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Predmet *</Label>
+                <Label className="text-xs">{t('emailMarketing.subject')} *</Label>
                 <Input name="subject" defaultValue={editing?.subject || ''} required placeholder="Predmet emaila" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Kategorija</Label>
+              <Label className="text-xs">{t('emailMarketing.category')}</Label>
               <Select name="category" defaultValue={editing?.category || ''}>
-                <SelectTrigger><SelectValue placeholder="Izaberi kategoriju" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('emailMarketing.selectCategory')} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Bez kategorije</SelectItem>
-                  <SelectItem value="promotivno">Promotivno</SelectItem>
-                  <SelectItem value="transakciono">Transakciono</SelectItem>
-                  <SelectItem value="obavestenje">Obaveštenje</SelectItem>
+                  <SelectItem value="none">{t('emailMarketing.noCategory')}</SelectItem>
+                  <SelectItem value="promotivno">{t('emailMarketing.promotional')}</SelectItem>
+                  <SelectItem value="transakciono">{t('emailMarketing.transactional')}</SelectItem>
+                  <SelectItem value="obavestenje">{t('emailMarketing.notification')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Sadržaj (HTML) *</Label>
+              <Label className="text-xs">{t('emailMarketing.contentHtml')} *</Label>
               <Textarea name="content" defaultValue={editing?.content || ''} required rows={8} placeholder="<h1>Pozdrav {{ime}},</h1><p>Vaš sadržaj ovde...</p>" className="font-mono text-xs" />
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => { setViewMode('list'); setEditing(null) }} className="flex-1">Otkaži</Button>
+              <Button type="button" variant="outline" onClick={() => { setViewMode('list'); setEditing(null) }} className="flex-1">{t('common.cancel')}</Button>
               <Button type="submit" className="flex-1" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                {submitting ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </form>
@@ -912,13 +926,13 @@ function SabloniTab({ templates, loading, onRefresh }: {
             ) : templates.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                 <Copy className="h-12 w-12 mb-3 opacity-30" />
-                <p className="text-sm">Nema šablona</p>
-                <p className="text-xs mt-1">Kreirajte prvu email šablonu</p>
+                <p className="text-sm">{t('emailMarketing.noTemplates')}</p>
+                <p className="text-xs mt-1">{t('emailMarketing.createFirstTemplate')}</p>
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {templates.map((t) => (
-                  <Card key={t.id} className="hover:shadow-md transition-shadow group">
+                {templates.map((tmpl) => (
+                  <Card key={tmpl.id} className="hover:shadow-md transition-shadow group">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -926,34 +940,34 @@ function SabloniTab({ templates, loading, onRefresh }: {
                             <Copy className="h-4 w-4 text-emerald-600" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-semibold truncate">{t.name}</h3>
-                            <p className="text-xs text-muted-foreground truncate">{t.subject}</p>
+                            <h3 className="text-sm font-semibold truncate">{tmpl.name}</h3>
+                            <p className="text-xs text-muted-foreground truncate">{tmpl.subject}</p>
                           </div>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(t); setViewMode('form') }}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(tmpl); setViewMode('form') }}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(t.id)}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(tmpl.id)}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       </div>
 
-                      {t.category && (
-                        <Badge variant="outline" className={`text-[10px] mb-3 ${getCategoryColor(t.category)}`}>
-                          {TEMPLATE_CATEGORIES[t.category] || t.category}
+                      {tmpl.category && (
+                        <Badge variant="outline" className={`text-[10px] mb-3 ${getCategoryColor(tmpl.category)}`}>
+                          {TEMPLATE_CATEGORIES[tmpl.category] || tmpl.category}
                         </Badge>
                       )}
 
                       <div className="mt-2 rounded-md bg-muted/50 border p-2 max-h-16 overflow-hidden">
                         <p className="text-[10px] text-muted-foreground line-clamp-3 font-mono whitespace-pre-wrap break-all">
-                          {t.content.replace(/<[^>]*>/g, '').substring(0, 120) || 'HTML sadržaj...'}
+                          {tmpl.content.replace(/<[^>]*>/g, '').substring(0, 120) || t('emailMarketing.htmlContent')}
                         </p>
                       </div>
 
                       <p className="text-[10px] text-muted-foreground mt-2">
-                        Kreirana: {formatDate(t.createdAt)}
+                        {t('emailMarketing.created')}: {formatDate(tmpl.createdAt)}
                       </p>
                     </CardContent>
                   </Card>

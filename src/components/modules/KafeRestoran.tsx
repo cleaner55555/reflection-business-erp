@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 // ==================== TYPES ====================
 
@@ -192,6 +193,8 @@ export function KafeRestoran() {
   // Order detail expand state
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
 
+  const { t } = useTranslation()
+
   // ==================== DATA FETCHING ====================
 
   const fetchCategories = useCallback(async () => {
@@ -201,7 +204,7 @@ export function KafeRestoran() {
       const data = await res.json()
       setCategories(data)
     } catch {
-      toast.error('Greška pri učitavanju kategorija')
+      toast.error(t('cafeRestaurant.loadCategoriesError'))
     }
   }, [])
 
@@ -212,7 +215,7 @@ export function KafeRestoran() {
       const data = await res.json()
       setMenuItems(data)
     } catch {
-      toast.error('Greška pri učitavanju menija')
+      toast.error(t('cafeRestaurant.loadMenuError'))
     }
   }, [])
 
@@ -223,7 +226,7 @@ export function KafeRestoran() {
       const data = await res.json()
       setTables(data)
     } catch {
-      toast.error('Greška pri učitavanju stolova')
+      toast.error(t('cafeRestaurant.loadTablesError'))
     }
   }, [])
 
@@ -234,7 +237,7 @@ export function KafeRestoran() {
       const data = await res.json()
       setOrders(data)
     } catch {
-      toast.error('Greška pri učitavanju narudžbina')
+      toast.error(t('cafeRestaurant.loadOrdersError'))
     }
   }, [])
 
@@ -288,28 +291,28 @@ export function KafeRestoran() {
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error || 'Greška')
+        throw new Error(err.error || t('common.error'))
       }
-      toast.success(editingTable ? 'Sto ažuriran' : 'Sto kreiran')
+      toast.success(editingTable ? t('cafeRestaurant.tableUpdated') : t('cafeRestaurant.tableCreated'))
       setStoloviViewMode('list')
       setEditingTable(null)
       fetchTables()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Greška pri čuvanju')
+      toast.error(err instanceof Error ? err.message : t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDeleteTable = async (id: string) => {
-    if (!confirm('Obrisati sto?')) return
+    if (!confirm(t('cafeRestaurant.confirmDeleteTable'))) return
     try {
       const res = await fetch(`/api/resto-tables/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Sto obrisan')
+      toast.success(t('cafeRestaurant.tableDeleted'))
       fetchTables()
     } catch {
-      toast.error('Greška pri brisanju stola')
+      toast.error(t('cafeRestaurant.deleteTableError'))
     }
   }
 
@@ -337,27 +340,27 @@ export function KafeRestoran() {
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error()
-      toast.success(editingCategory ? 'Kategorija ažurirana' : 'Kategorija kreirana')
+      toast.success(editingCategory ? t('cafeRestaurant.categoryUpdated') : t('cafeRestaurant.categoryCreated'))
       setMeniViewMode('list')
       setEditingCategory(null)
       fetchCategories()
     } catch {
-      toast.error('Greška pri čuvanju kategorije')
+      toast.error(t('cafeRestaurant.saveCategoryError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm('Obrisati kategoriju? Sve stavke menija u ovoj kategoriji će biti obrisane.')) return
+    if (!confirm(t('cafeRestaurant.confirmDeleteCategory'))) return
     try {
       const res = await fetch(`/api/resto-categories/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Kategorija obrisana')
+      toast.success(t('cafeRestaurant.categoryDeleted'))
       fetchCategories()
       fetchMenuItems()
     } catch {
-      toast.error('Greška pri brisanju kategorije')
+      toast.error(t('cafeRestaurant.deleteCategoryError'))
     }
   }
 
@@ -398,13 +401,13 @@ export function KafeRestoran() {
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error()
-      toast.success(editingMenuItem ? 'Stavka menija ažurirana' : 'Stavka menija kreirana')
+      toast.success(editingMenuItem ? t('cafeRestaurant.menuItemUpdated') : t('cafeRestaurant.menuItemCreated'))
       setMeniViewMode('list')
       setEditingMenuItem(null)
       setMenuItemCategoryId('')
       fetchMenuItems()
     } catch {
-      toast.error('Greška pri čuvanju stavke menija')
+      toast.error(t('cafeRestaurant.saveMenuItemError'))
     } finally {
       setSubmitting(false)
     }
@@ -418,22 +421,22 @@ export function KafeRestoran() {
         body: JSON.stringify({ isAvailable: !item.isAvailable }),
       })
       if (!res.ok) throw new Error()
-      toast.success(item.isAvailable ? 'Stavka deaktivirana' : 'Stavka aktivirana')
+      toast.success(item.isAvailable ? t('cafeRestaurant.menuItemDeactivated') : t('cafeRestaurant.menuItemActivated'))
       fetchMenuItems()
     } catch {
-      toast.error('Greška pri ažuriranju stavke')
+      toast.error(t('cafeRestaurant.updateMenuItemError'))
     }
   }
 
   const handleDeleteMenuItem = async (id: string) => {
-    if (!confirm('Obrisati stavku menija?')) return
+    if (!confirm(t('cafeRestaurant.confirmDeleteMenuItem'))) return
     try {
       const res = await fetch(`/api/resto-menu-items/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Stavka menija obrisana')
+      toast.success(t('cafeRestaurant.menuItemDeleted'))
       fetchMenuItems()
     } catch {
-      toast.error('Greška pri brisanju stavke menija')
+      toast.error(t('cafeRestaurant.deleteMenuItemError'))
     }
   }
 
@@ -454,7 +457,7 @@ export function KafeRestoran() {
   const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (orderItems.length === 0) {
-      toast.error('Dodajte barem jednu stavku u narudžbinu')
+      toast.error(t('cafeRestaurant.addAtLeastOneItem'))
       return
     }
     setSubmitting(true)
@@ -480,16 +483,16 @@ export function KafeRestoran() {
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error || 'Greška')
+        throw new Error(err.error || t('common.error'))
       }
-      toast.success('Narudžbina kreirana')
+      toast.success(t('cafeRestaurant.orderCreated'))
       setNarudzbineViewMode('list')
       setOrderItems([])
       setMenuSearch('')
       fetchOrders()
       fetchTables()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Greška pri kreiranju narudžbine')
+      toast.error(err instanceof Error ? err.message : t('cafeRestaurant.createOrderError'))
     } finally {
       setSubmitting(false)
     }
@@ -506,20 +509,20 @@ export function KafeRestoran() {
       toast.success(`Status: ${ORDER_STATUS_LABEL[newStatus] || newStatus}`)
       fetchOrders()
     } catch {
-      toast.error('Greška pri ažuriranju statusa')
+      toast.error(t('cafeRestaurant.updateStatusError'))
     }
   }
 
   const handleDeleteOrder = async (id: string) => {
-    if (!confirm('Obrisati narudžbinu?')) return
+    if (!confirm(t('cafeRestaurant.confirmDeleteOrder'))) return
     try {
       const res = await fetch(`/api/resto-orders/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Narudžbina obrisana')
+      toast.success(t('cafeRestaurant.orderDeleted'))
       if (expandedOrder === id) setExpandedOrder(null)
       fetchOrders()
     } catch {
-      toast.error('Greška pri brisanju narudžbine')
+      toast.error(t('cafeRestaurant.deleteOrderError'))
     }
   }
 
@@ -581,10 +584,10 @@ export function KafeRestoran() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <UtensilsCrossed className="h-6 w-6" />
-          Kafe Restoran
+          {t('cafeRestaurant.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Upravljanje menijem, narudžbinama i stolovima
+          {t('cafeRestaurant.subtitle')}
         </p>
       </div>
 
@@ -596,7 +599,7 @@ export function KafeRestoran() {
               <Receipt className="h-4.5 w-4.5 text-blue-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Današnje narudžbine</p>
+              <p className="text-xs text-muted-foreground">{t('cafeRestaurant.todayOrders')}</p>
               <p className="text-lg font-bold">{todayOrders.length}</p>
             </div>
           </div>
@@ -607,7 +610,7 @@ export function KafeRestoran() {
               <DollarSign className="h-4.5 w-4.5 text-emerald-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Ukupan promet</p>
+              <p className="text-xs text-muted-foreground">{t('cafeRestaurant.totalRevenue')}</p>
               <p className="text-lg font-bold">{formatRSD(todayRevenue)}</p>
             </div>
           </div>
@@ -618,7 +621,7 @@ export function KafeRestoran() {
               <Clock className="h-4.5 w-4.5 text-amber-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Aktuelna narudžbina</p>
+              <p className="text-xs text-muted-foreground">{t('cafeRestaurant.activeOrders')}</p>
               <p className="text-lg font-bold">{activeOrders.length}</p>
             </div>
           </div>
@@ -629,7 +632,7 @@ export function KafeRestoran() {
               <ShoppingBag className="h-4.5 w-4.5 text-violet-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Prosečna narudžbina</p>
+              <p className="text-xs text-muted-foreground">{t('cafeRestaurant.avgOrder')}</p>
               <p className="text-lg font-bold">{formatRSD(avgOrderValue)}</p>
             </div>
           </div>
@@ -639,16 +642,16 @@ export function KafeRestoran() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="stolovi">Stolovi</TabsTrigger>
+          <TabsTrigger value="stolovi">{t('cafeRestaurant.tables')}</TabsTrigger>
           <TabsTrigger value="narudzbine">
-            Narudžbine
+            {t('cafeRestaurant.orders')}
             {activeOrders.length > 0 && (
               <Badge variant="outline" className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px] bg-amber-50 text-amber-700 border-amber-200">
                 {activeOrders.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="meni">Meni</TabsTrigger>
+          <TabsTrigger value="meni">{t('cafeRestaurant.menu')}</TabsTrigger>
         </TabsList>
 
         {/* ============ STOLOVI TAB ============ */}
@@ -658,17 +661,17 @@ export function KafeRestoran() {
               {stoloviViewMode === 'form' ? (
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="icon" onClick={() => { setStoloviViewMode('list'); setEditingTable(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-                  <div><CardTitle>{editingTable ? 'Izmeni' : 'Novi'} sto</CardTitle></div>
+                  <div><CardTitle>{editingTable ? t('common.edit') : t('cafeRestaurant.new')} {t('cafeRestaurant.table').toLowerCase()}</CardTitle></div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base font-semibold">Stolovi</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-0.5">{tables.length} stolova</p>
+                    <CardTitle className="text-base font-semibold">{t('cafeRestaurant.tables')}</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">{tables.length} {t('cafeRestaurant.tables').toLowerCase()}</p>
                   </div>
                   <Button size="sm" className="gap-2" onClick={() => { setEditingTable(null); setStoloviViewMode('form') }}>
                     <Plus className="h-4 w-4" />
-                    Dodaj sto
+                    {t('cafeRestaurant.addTable')}
                   </Button>
                 </div>
               )}
@@ -678,11 +681,11 @@ export function KafeRestoran() {
                 <form onSubmit={handleTableSubmit} key={editingTable?.id || 'new'} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Broj stola *</Label>
+                      <Label className="text-xs">{t('cafeRestaurant.tableNumber')} *</Label>
                       <Input name="number" type="number" min={1} defaultValue={editingTable?.number || ''} required placeholder="1" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Naziv</Label>
+                      <Label className="text-xs">{t('common.name')}</Label>
                       <Input name="name" defaultValue={editingTable?.name || ''} placeholder="npr. Terasa 1" />
                     </div>
                   </div>
@@ -717,9 +720,9 @@ export function KafeRestoran() {
                     </Select>
                   </div>
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={() => { setStoloviViewMode('list'); setEditingTable(null) }} className="flex-1">Otkaži</Button>
+                    <Button type="button" variant="outline" onClick={() => { setStoloviViewMode('list'); setEditingTable(null) }} className="flex-1">{t('common.cancel')}</Button>
                     <Button type="submit" className="flex-1" disabled={submitting}>
-                      {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                      {submitting ? t('common.saving') : t('common.save')}
                     </Button>
                   </div>
                 </form>
@@ -738,7 +741,7 @@ export function KafeRestoran() {
                   ) : tables.length === 0 ? (
                     <div className="text-center py-12">
                       <UtensilsCrossed className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                      <p className="text-sm text-muted-foreground">Nema stolova. Dodajte prvi sto.</p>
+                      <p className="text-sm text-muted-foreground">{t('cafeRestaurant.noTables')}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -771,7 +774,7 @@ export function KafeRestoran() {
                           <div className="space-y-1.5 mb-3">
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Users className="h-3 w-3" />
-                              <span>{table.capacity} mesta</span>
+                              <span>{table.capacity} {t('cafeRestaurant.seats')}</span>
                             </div>
                             {table.location && (
                               <div className="text-xs text-muted-foreground">{LOCATION_LABELS[table.location] || table.location}</div>
@@ -782,13 +785,13 @@ export function KafeRestoran() {
                           </Badge>
                           {(table.activeOrderCount || 0) > 0 && (
                             <div className="mt-2 pt-2 border-t">
-                              <p className="text-[10px] text-muted-foreground">{(table.activeOrderCount || 0)} aktivnih narudžbina</p>
+                              <p className="text-[10px] text-muted-foreground">{(table.activeOrderCount || 0)} {t('cafeRestaurant.activeOrders').toLowerCase()}</p>
                             </div>
                           )}
                           <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button size="sm" variant="outline" className="w-full h-7 text-xs gap-1.5" onClick={() => openNewOrder()}>
                               <Plus className="h-3 w-3" />
-                              Nova narudžbina
+                              {t('cafeRestaurant.newOrder')}
                             </Button>
                           </div>
                         </Card>
@@ -808,17 +811,17 @@ export function KafeRestoran() {
               {narudzbineViewMode === 'form' ? (
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="icon" onClick={handleCancelOrder}><ArrowLeft className="h-4 w-4" /></Button>
-                  <div><CardTitle>Nova narudžbina</CardTitle></div>
+                  <div><CardTitle>{t('cafeRestaurant.newOrder')}</CardTitle></div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-base font-semibold">Narudžbine</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-0.5">{filteredOrders.length} narudžbina</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{filteredOrders.length} {t('cafeRestaurant.orders').toLowerCase()}</p>
                   </div>
                   <Button size="sm" className="gap-2" onClick={openNewOrder}>
                     <Plus className="h-4 w-4" />
-                    Nova narudžbina
+                    {t('cafeRestaurant.newOrder')}
                   </Button>
                 </div>
               )}
@@ -828,11 +831,11 @@ export function KafeRestoran() {
                 <form onSubmit={handleOrderSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Sto</Label>
+                      <Label className="text-xs">{t('cafeRestaurant.table')}</Label>
                       <Select name="tableId" defaultValue="">
-                        <SelectTrigger><SelectValue placeholder="Bez stola" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t('cafeRestaurant.noTable')} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Bez stola</SelectItem>
+                          <SelectItem value="">{t('cafeRestaurant.noTable')}</SelectItem>
                           {tables.filter(t => t.status === 'slobodan').map(t => (
                             <SelectItem key={t.id} value={t.id}>#{t.number} {t.name ? `- ${t.name}` : ''}</SelectItem>
                           ))}
@@ -843,7 +846,7 @@ export function KafeRestoran() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Tip</Label>
+                      <Label className="text-xs">{t('common.type')}</Label>
                       <Select name="type" defaultValue="restoran">
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -854,21 +857,21 @@ export function KafeRestoran() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Konobar</Label>
-                      <Input name="waiter" placeholder="Ime konobara" />
+                      <Label className="text-xs">{t('cafeRestaurant.waiter')}</Label>
+                      <Input name="waiter" placeholder={t('cafeRestaurant.waiterNamePlaceholder')} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs">Dodaj stavke</Label>
+                    <Label className="text-xs">{t('cafeRestaurant.addItems')}</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input className="pl-9" placeholder="Pretraži meni..." value={menuSearch} onChange={(e) => setMenuSearch(e.target.value)} />
+                      <Input className="pl-9" placeholder={t('cafeRestaurant.searchMenu')} value={menuSearch} onChange={(e) => setMenuSearch(e.target.value)} />
                     </div>
                     {menuSearch && (
                       <div className="max-h-48 overflow-y-auto rounded-lg border">
                         {availableMenuItems.length === 0 ? (
-                          <p className="text-xs text-muted-foreground p-3 text-center">Nema rezultata</p>
+                          <p className="text-xs text-muted-foreground p-3 text-center">{t('common.noData')}</p>
                         ) : (
                           availableMenuItems.map(item => (
                             <button
@@ -891,7 +894,7 @@ export function KafeRestoran() {
 
                   {orderItems.length > 0 && (
                     <div className="space-y-2">
-                      <Label className="text-xs">Stavke narudžbine</Label>
+                      <Label className="text-xs">{t('cafeRestaurant.orderItems')}</Label>
                       <div className="rounded-lg border divide-y max-h-48 overflow-y-auto">
                         {orderItems.map(oi => (
                           <div key={oi.menuItemId} className="flex items-center justify-between px-3 py-2">
@@ -909,20 +912,20 @@ export function KafeRestoran() {
                         ))}
                       </div>
                       <div className="flex justify-end">
-                        <p className="text-sm font-bold">Ukupno: {formatRSD(orderTotal)}</p>
+                        <p className="text-sm font-bold">{t('common.total')}: {formatRSD(orderTotal)}</p>
                       </div>
                     </div>
                   )}
 
                   <div className="space-y-2">
-                    <Label className="text-xs">Napomene</Label>
+                    <Label className="text-xs">{t('cafeRestaurant.notes')}</Label>
                     <Textarea name="notes" placeholder="Dodatne napomene..." rows={2} />
                   </div>
 
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={handleCancelOrder} className="flex-1">Otkaži</Button>
+                    <Button type="button" variant="outline" onClick={handleCancelOrder} className="flex-1">{t('common.cancel')}</Button>
                     <Button type="submit" className="flex-1" disabled={submitting}>
-                      {submitting ? 'Kreiranje...' : `Kreiraj narudžbinu (${orderItems.length} stavki)`}
+                      {submitting ? t('cafeRestaurant.creating') : t('cafeRestaurant.createOrder', { count: orderItems.length })}
                     </Button>
                   </div>
                 </form>
@@ -938,7 +941,7 @@ export function KafeRestoran() {
                         className="h-7 text-xs"
                         onClick={() => setOrderFilter(status)}
                       >
-                        {status === 'all' ? 'Sve' : ORDER_STATUS_LABEL[status] || status}
+                        {status === 'all' ? t('common.all') : ORDER_STATUS_LABEL[status] || status}
                       </Button>
                     ))}
                   </div>
@@ -955,7 +958,7 @@ export function KafeRestoran() {
                   ) : filteredOrders.length === 0 ? (
                     <div className="text-center py-12">
                       <Receipt className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                      <p className="text-sm text-muted-foreground">Nema narudžbina za prikaz</p>
+                      <p className="text-sm text-muted-foreground">{t('cafeRestaurant.noOrders')}</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -968,7 +971,7 @@ export function KafeRestoran() {
                               <div className="flex flex-col sm:flex-row sm:items-center gap-3" onClick={() => setExpandedOrder(isExpanded ? null : order.id)}>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-semibold text-sm">Narudžbina #{order.orderNumber}</span>
+                                    <span className="font-semibold text-sm">{t('cafeRestaurant.order')} #{order.orderNumber}</span>
                                     <Badge variant="outline" className={`text-[10px] ${ORDER_STATUS_BADGE[order.status] || ''}`}>
                                       {ORDER_STATUS_LABEL[order.status] || order.status}
                                     </Badge>
@@ -987,13 +990,13 @@ export function KafeRestoran() {
                                       <span className="flex items-center gap-1"><Users className="h-3 w-3" />{order.waiter}</span>
                                     )}
                                     <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDate(order.createdAt)}</span>
-                                    <span className="flex items-center gap-1"><ShoppingBag className="h-3 w-3" />{order.items?.length || 0} stavki</span>
+                                    <span className="flex items-center gap-1"><ShoppingBag className="h-3 w-3" />{order.items?.length || 0} {t('cafeRestaurant.items').toLowerCase()}</span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-3 shrink-0">
                                   <div className="text-right">
                                     <p className="font-bold text-sm">{formatRSD(order.totalAmount)}</p>
-                                    {order.discountPct > 0 && <p className="text-[10px] text-amber-600">Popust: -{order.discountPct}%</p>}
+                                    {order.discountPct > 0 && <p className="text-[10px] text-amber-600">{t('cafeRestaurant.discount')}: -{order.discountPct}%</p>}
                                   </div>
                                   <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                     {nextStatus && (
@@ -1013,9 +1016,9 @@ export function KafeRestoran() {
                             {isExpanded && order.items && (
                               <Card className="rounded-t-none border-t-0 p-4">
                                 <div className="space-y-2">
-                                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Stavke narudžbine</h4>
+                                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('cafeRestaurant.orderItems')}</h4>
                                   {order.items.length === 0 ? (
-                                    <p className="text-xs text-muted-foreground py-2">Nema stavki</p>
+                                    <p className="text-xs text-muted-foreground py-2">{t('cafeRestaurant.noItems')}</p>
                                   ) : (
                                     <div className="divide-y rounded-lg border">
                                       {order.items.map((item) => (
@@ -1039,7 +1042,7 @@ export function KafeRestoran() {
                                   )}
                                   {order.notes && (
                                     <div className="mt-2 p-2 rounded-md bg-muted/50">
-                                      <p className="text-[10px] text-muted-foreground font-medium">Napomene:</p>
+                                      <p className="text-[10px] text-muted-foreground font-medium">{t('cafeRestaurant.notes')}:</p>
                                       <p className="text-xs text-muted-foreground">{order.notes}</p>
                                     </div>
                                   )}
@@ -1064,12 +1067,12 @@ export function KafeRestoran() {
               {meniViewMode === 'category-form' ? (
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="icon" onClick={() => { setMeniViewMode('list'); setEditingCategory(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-                  <div><CardTitle>{editingCategory ? 'Izmeni' : 'Nova'} kategorija</CardTitle></div>
+                  <div><CardTitle>{editingCategory ? t('common.edit') : t('cafeRestaurant.new')} {t('cafeRestaurant.category').toLowerCase()}</CardTitle></div>
                 </div>
               ) : meniViewMode === 'menu-item-form' ? (
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="icon" onClick={() => { setMeniViewMode('list'); setEditingMenuItem(null); setMenuItemCategoryId('') }}><ArrowLeft className="h-4 w-4" /></Button>
-                  <div><CardTitle>{editingMenuItem ? 'Izmeni' : 'Nova'} stavka menija</CardTitle></div>
+                  <div><CardTitle>{editingMenuItem ? t('common.edit') : t('cafeRestaurant.new')} {t('cafeRestaurant.menuItem').toLowerCase()}</CardTitle></div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
@@ -1079,7 +1082,7 @@ export function KafeRestoran() {
                   </div>
                   <Button size="sm" className="gap-2" onClick={() => { setEditingCategory(null); setMeniViewMode('category-form') }}>
                     <Plus className="h-4 w-4" />
-                    Dodaj kategoriju
+                    {t('cafeRestaurant.addCategory')}
                   </Button>
                 </div>
               )}
@@ -1092,13 +1095,13 @@ export function KafeRestoran() {
                     <Input name="name" defaultValue={editingCategory?.name || ''} required placeholder="npr. Predjela" />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">Redosled</Label>
+                    <Label className="text-xs">{t('cafeRestaurant.sortOrder')}</Label>
                     <Input name="sortOrder" type="number" min={0} defaultValue={editingCategory?.sortOrder ?? 0} />
                   </div>
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={() => { setMeniViewMode('list'); setEditingCategory(null) }} className="flex-1">Otkaži</Button>
+                    <Button type="button" variant="outline" onClick={() => { setMeniViewMode('list'); setEditingCategory(null) }} className="flex-1">{t('common.cancel')}</Button>
                     <Button type="submit" className="flex-1" disabled={submitting}>
-                      {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                      {submitting ? t('common.saving') : t('common.save')}
                     </Button>
                   </div>
                 </form>
@@ -1110,7 +1113,7 @@ export function KafeRestoran() {
                       <Input name="name" defaultValue={editingMenuItem?.name || ''} required placeholder="npr. Cappuccino" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Kategorija *</Label>
+                      <Label className="text-xs">{t('cafeRestaurant.category')} *</Label>
                       <Select name="categoryId" defaultValue={editingMenuItem?.categoryId || menuItemCategoryId}>
                         <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
                         <SelectContent>
@@ -1121,7 +1124,7 @@ export function KafeRestoran() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Redosled</Label>
+                      <Label className="text-xs">{t('cafeRestaurant.sortOrder')}</Label>
                       <Input name="sortOrder" type="number" min={0} defaultValue={editingMenuItem?.sortOrder ?? 0} />
                     </div>
                   </div>
@@ -1131,18 +1134,18 @@ export function KafeRestoran() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Prodajna cena (RSD) *</Label>
+                      <Label className="text-xs">{t('cafeRestaurant.sellingPrice')} *</Label>
                       <Input name="price" type="number" step="0.01" min={0} defaultValue={editingMenuItem?.price || ''} required />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Nabavna cena (RSD)</Label>
+                      <Label className="text-xs">{t('cafeRestaurant.costPriceLabel')}</Label>
                       <Input name="cost" type="number" step="0.01" min={0} defaultValue={editingMenuItem?.cost || 0} />
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={() => { setMeniViewMode('list'); setEditingMenuItem(null); setMenuItemCategoryId('') }} className="flex-1">Otkaži</Button>
+                    <Button type="button" variant="outline" onClick={() => { setMeniViewMode('list'); setEditingMenuItem(null); setMenuItemCategoryId('') }} className="flex-1">{t('common.cancel')}</Button>
                     <Button type="submit" className="flex-1" disabled={submitting}>
-                      {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                      {submitting ? t('common.saving') : t('common.save')}
                     </Button>
                   </div>
                 </form>
@@ -1161,7 +1164,7 @@ export function KafeRestoran() {
                   ) : groupedMenu.length === 0 ? (
                     <div className="text-center py-12">
                       <UtensilsCrossed className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                      <p className="text-sm text-muted-foreground">Nema kategorija. Dodajte prvu kategoriju menija.</p>
+                      <p className="text-sm text-muted-foreground">{t('cafeRestaurant.noCategories')}</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -1182,7 +1185,7 @@ export function KafeRestoran() {
                               </div>
                               <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                 <Badge variant="outline" className={`text-[10px] ${cat.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                                  {cat.isActive ? 'Aktivna' : 'Neaktivna'}
+                                  {cat.isActive ? t('cafeRestaurant.active') : t('cafeRestaurant.inactive')}
                                 </Badge>
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditCategory(cat)}>
                                   <Pencil className="h-3 w-3" />
@@ -1202,11 +1205,11 @@ export function KafeRestoran() {
                                         <div className="flex items-center gap-2">
                                           <span className="font-medium text-sm">{item.name}</span>
                                           {!item.isAvailable && (
-                                            <Badge variant="outline" className="text-[10px] bg-red-50 text-red-600 border-red-200">Nedostupno</Badge>
+                                            <Badge variant="outline" className="text-[10px] bg-red-50 text-red-600 border-red-200">{t('cafeRestaurant.unavailable')}</Badge>
                                           )}
                                         </div>
                                         {item.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>}
-                                        {item.cost > 0 && <p className="text-[10px] text-muted-foreground mt-0.5">Nabavna cena: {formatRSD(item.cost)}</p>}
+                                        {item.cost > 0 && <p className="text-[10px] text-muted-foreground mt-0.5">{t('cafeRestaurant.costPrice')}: {formatRSD(item.cost)}</p>}
                                       </div>
                                       <div className="flex items-center gap-3 shrink-0">
                                         <div className="flex items-center gap-2">
@@ -1227,17 +1230,17 @@ export function KafeRestoran() {
                                 </div>
                                 <Button size="sm" variant="outline" className="mt-3 gap-1.5 h-7 text-xs" onClick={() => openNewMenuItem(cat.id)}>
                                   <Plus className="h-3 w-3" />
-                                  Dodaj stavku u {cat.name}
+                                  {t('cafeRestaurant.addMenuItemTo', { name: cat.name })}
                                 </Button>
                               </div>
                             )}
 
                             {isExpanded && (!cat.items || cat.items.length === 0) && (
                               <div className="px-4 pb-4">
-                                <p className="text-xs text-muted-foreground py-2 text-center">Nema stavki u ovoj kategoriji</p>
+                                <p className="text-xs text-muted-foreground py-2 text-center">{t('cafeRestaurant.noItemsInCategory')}</p>
                                 <Button size="sm" variant="outline" className="gap-1.5 h-7 text-xs" onClick={() => openNewMenuItem(cat.id)}>
                                   <Plus className="h-3 w-3" />
-                                  Dodaj stavku
+                                  {t('cafeRestaurant.addMenuItem')}
                                 </Button>
                               </div>
                             )}

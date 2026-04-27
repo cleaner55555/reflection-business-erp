@@ -37,6 +37,7 @@ import {
 import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 // ==================== INTERFACES ====================
 
@@ -154,12 +155,13 @@ const COMPANY = {
 // ==================== MAIN COMPONENT ====================
 
 export function Magacin() {
+  const { t } = useTranslation()
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Magacin</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('warehouse.title')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Upravljanje artiklima, zalihama, otpremnicama i cenovnicima
+          {t('warehouse.subtitle')}
         </p>
       </div>
 
@@ -167,19 +169,19 @@ export function Magacin() {
         <TabsList>
           <TabsTrigger value="artikli" className="gap-1.5">
             <Package className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Artikli</span>
+            <span className="hidden sm:inline">{t('warehouse.products')}</span>
           </TabsTrigger>
           <TabsTrigger value="kretanja" className="gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Kretanja Zaliha</span>
+            <span className="hidden sm:inline">{t('warehouse.movements')}</span>
           </TabsTrigger>
           <TabsTrigger value="otpremnice" className="gap-1.5">
             <FileText className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Otpremnice</span>
+            <span className="hidden sm:inline">{t('warehouse.deliveryNotes')}</span>
           </TabsTrigger>
           <TabsTrigger value="cenovnici" className="gap-1.5">
             <Tag className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Cenovnici</span>
+            <span className="hidden sm:inline">{t('warehouse.priceLists')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -203,6 +205,7 @@ export function Magacin() {
 // ==================== ARTIKLI TAB ====================
 
 function ArtikliTab() {
+  const { t } = useTranslation()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -244,13 +247,13 @@ function ArtikliTab() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Da li ste sigurni da želite da obrišete ovaj artikal?')) return
+    if (!confirm(t('warehouse.confirmDeleteProduct'))) return
     try {
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success('Artikal uspešno obrisan')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(t('warehouse.productDeleted'))
       fetchProducts()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -278,15 +281,15 @@ function ArtikliTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri kreiranju')
+        toast.error(err.error || t('common.saveError'))
         return
       }
-      toast.success(isEditing ? 'Artikal uspešno ažuriran' : 'Artikal uspešno kreiran')
+      toast.success(isEditing ? t('warehouse.productUpdated') : t('warehouse.productCreated'))
       setViewMode('list')
       setEditingProduct(null)
       fetchProducts()
     } catch {
-      toast.error('Greška pri kreiranju artikla')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -302,7 +305,7 @@ function ArtikliTab() {
             </Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                {editingProduct ? 'Izmeni Artikal' : 'Novi Artikal'}
+                {editingProduct ? t('warehouse.editProduct') : t('warehouse.newProduct')}
               </CardTitle>
             </div>
           </div>
@@ -310,11 +313,11 @@ function ArtikliTab() {
           <>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Artikli</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">{products.length} artikala</p>
+                <CardTitle className="text-base font-semibold">{t('warehouse.products')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{products.length} {t('warehouse.productsCount')}</p>
               </div>
               <Button size="sm" className="gap-2" onClick={handleNew}>
-                <Plus className="h-4 w-4" /> Novi Artikal
+                <Plus className="h-4 w-4" /> {t('warehouse.newProduct')}
               </Button>
             </div>
 
@@ -322,7 +325,7 @@ function ArtikliTab() {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Pretraži artikle..."
+                  placeholder={t('warehouse.searchProducts')}
                   className="pl-8 h-9"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -330,10 +333,10 @@ function ArtikliTab() {
               </div>
               <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger className="w-[160px] h-9">
-                  <SelectValue placeholder="Sve kategorije" />
+                  <SelectValue placeholder={t('warehouse.allCategories')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Sve kategorije</SelectItem>
+                  <SelectItem value="all">{t('warehouse.allCategories')}</SelectItem>
                   {categories.map((c) => (
                     <SelectItem key={c} value={c || ''}>{c}</SelectItem>
                   ))}
@@ -348,25 +351,25 @@ function ArtikliTab() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Naziv *</Label>
-                <Input name="name" placeholder="Naziv artikla" defaultValue={editingProduct?.name || ''} required />
+                <Label className="text-xs">{t('common.name')} *</Label>
+                <Input name="name" placeholder={t('warehouse.productNamePlaceholder')} defaultValue={editingProduct?.name || ''} required />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Šifra (SKU) *</Label>
+                <Label className="text-xs">{t('warehouse.skuLabel')} *</Label>
                 <Input name="sku" placeholder="SKU-001" defaultValue={editingProduct?.sku || ''} required />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Barkod</Label>
+                <Label className="text-xs">{t('warehouse.barcode')}</Label>
                 <Input name="barcode" placeholder="8600000000000" defaultValue={editingProduct?.barcode || ''} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Kategorija</Label>
-                <Input name="category" placeholder="Kategorija" defaultValue={editingProduct?.category || ''} />
+                <Label className="text-xs">{t('common.category')}</Label>
+                <Input name="category" defaultValue={editingProduct?.category || ''} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Jedinica mere</Label>
+                <Label className="text-xs">{t('warehouse.unitOfMeasure')}</Label>
                 <Select name="unit" defaultValue={editingProduct?.unit || 'kom'}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -381,27 +384,27 @@ function ArtikliTab() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Nabavna cena *</Label>
+                <Label className="text-xs">{t('warehouse.purchasePriceLabel')} *</Label>
                 <Input name="purchasePrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.purchasePrice || '')} required />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Prodajna cena *</Label>
+                <Label className="text-xs">{t('warehouse.sellingPriceLabel')} *</Label>
                 <Input name="sellingPrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.sellingPrice || '')} required />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Minimalna zaliha</Label>
+                <Label className="text-xs">{t('warehouse.minStock')}</Label>
                 <Input name="minStock" type="number" placeholder="0" defaultValue={String(editingProduct?.minStock || '')} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Trenutna zaliha</Label>
+                <Label className="text-xs">{t('warehouse.currentStock')}</Label>
                 <Input name="currentStock" type="number" placeholder="0" defaultValue={String(editingProduct?.currentStock || '')} />
               </div>
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : editingProduct ? 'Sačuvaj Izmene' : 'Kreiraj Artikal'}
+                {submitting ? t('common.saving') : editingProduct ? t('common.saveChanges') : t('warehouse.createProduct')}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </form>
         ) : loading ? (
@@ -415,21 +418,21 @@ function ArtikliTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Šifra</TableHead>
-                  <TableHead className="text-xs">Naziv</TableHead>
-                  <TableHead className="text-xs">Kategorija</TableHead>
-                  <TableHead className="text-xs text-right">Nabavna</TableHead>
-                  <TableHead className="text-xs text-right">Prodajna</TableHead>
-                  <TableHead className="text-xs text-center">Zaliha</TableHead>
-                  <TableHead className="text-xs text-center">Min</TableHead>
-                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                  <TableHead className="text-xs">{t('warehouse.sku')}</TableHead>
+                  <TableHead className="text-xs">{t('common.name')}</TableHead>
+                  <TableHead className="text-xs">{t('common.category')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('warehouse.purchasePriceShort')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('warehouse.sellingPriceShort')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('warehouse.stock')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('warehouse.min')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema artikala za prikaz
+                      {t('warehouse.noProducts')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -480,6 +483,7 @@ function ArtikliTab() {
 // ==================== KRETANJA ZALIHA TAB ====================
 
 function KretanjaTab() {
+  const { t } = useTranslation()
   const [movements, setMovements] = useState<StockMovement[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -528,14 +532,14 @@ function KretanjaTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri kreiranju')
+        toast.error(err.error || t('common.saveError'))
         return
       }
-      toast.success('Kretanje zaliha uspešno kreirano')
+      toast.success(t('warehouse.movementCreated'))
       setViewMode('list')
       fetchMovements()
     } catch {
-      toast.error('Greška pri kreiranju kretanja')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -548,14 +552,14 @@ function KretanjaTab() {
       const res = await fetch(`/api/stock/movement/${deleteId}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri brisanju')
+        toast.error(err.error || t('common.deleteError'))
         return
       }
-      toast.success('Kretanje zaliha uspešno obrisano')
+      toast.success(t('warehouse.movementDeleted'))
       setDeleteId(null)
       fetchMovements()
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     } finally {
       setDeleting(false)
     }
@@ -570,17 +574,17 @@ function KretanjaTab() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <CardTitle className="text-base font-semibold">Novo Kretanje Zaliha</CardTitle>
+              <CardTitle className="text-base font-semibold">{t('warehouse.newMovement')}</CardTitle>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Kretanja Zaliha</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">Istorija prijema i izdavanja robe</p>
+              <CardTitle className="text-base font-semibold">{t('warehouse.movements')}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('warehouse.movementsSubtitle')}</p>
             </div>
             <Button size="sm" className="gap-2" onClick={handleNew}>
-              <Plus className="h-4 w-4" /> Novo Kretanje
+              <Plus className="h-4 w-4" /> {t('warehouse.newMovement')}
             </Button>
           </div>
         )}
@@ -590,9 +594,9 @@ function KretanjaTab() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Artikal *</Label>
+                <Label className="text-xs">{t('warehouse.productLabel')} *</Label>
                 <Select name="productId" required>
-                  <SelectTrigger><SelectValue placeholder="Izaberite artikal" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('warehouse.selectProduct')} /></SelectTrigger>
                   <SelectContent>
                     {products.map((p) => (
                       <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
@@ -601,35 +605,35 @@ function KretanjaTab() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Tip *</Label>
+                <Label className="text-xs">{t('common.type')} *</Label>
                 <Select name="type" defaultValue="prijem">
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="prijem">Priem</SelectItem>
-                    <SelectItem value="izdavanje">Izdavanje</SelectItem>
-                    <SelectItem value="inventura">Inventura</SelectItem>
-                    <SelectItem value="korekcija">Korekcija</SelectItem>
+                    <SelectItem value="prijem">{t('common.prijem')}</SelectItem>
+                    <SelectItem value="izdavanje">{t('common.izdavanje')}</SelectItem>
+                    <SelectItem value="inventura">{t('common.inventura')}</SelectItem>
+                    <SelectItem value="korekcija">{t('common.korekcija')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Količina *</Label>
+              <Label className="text-xs">{t('common.quantity')} *</Label>
               <Input name="quantity" type="number" step="0.01" placeholder="0" required />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Dokument</Label>
-              <Input name="documentRef" placeholder="Broj dokumenta" />
+              <Label className="text-xs">{t('warehouse.document')}</Label>
+              <Input name="documentRef" />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Napomene</Label>
-              <Input name="notes" placeholder="Napomene" />
+              <Label className="text-xs">{t('common.notes')}</Label>
+              <Input name="notes" />
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : 'Kreiraj Kretanje'}
+                {submitting ? t('common.saving') : t('warehouse.createMovement')}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </form>
         ) : loading ? (
@@ -643,20 +647,20 @@ function KretanjaTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Datum</TableHead>
-                  <TableHead className="text-xs">Artikal</TableHead>
-                  <TableHead className="text-xs">Tip</TableHead>
-                  <TableHead className="text-xs text-right">Količina</TableHead>
-                  <TableHead className="text-xs">Dokument</TableHead>
-                  <TableHead className="text-xs">Napomene</TableHead>
-                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                  <TableHead className="text-xs">{t('common.date')}</TableHead>
+                  <TableHead className="text-xs">{t('warehouse.productLabel')}</TableHead>
+                  <TableHead className="text-xs">{t('common.type')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('common.quantity')}</TableHead>
+                  <TableHead className="text-xs">{t('warehouse.document')}</TableHead>
+                  <TableHead className="text-xs">{t('common.notes')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {movements.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema kretanja za prikaz
+                      {t('warehouse.noMovements')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -702,19 +706,19 @@ function KretanjaTab() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Potvrda brisanja</AlertDialogTitle>
+            <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Da li ste sigurni da želite da obrišete ovo kretanje zaliha? Zaliha artikla će biti automatski korigovana.
+              {t('warehouse.confirmDeleteMovement')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Otkaži</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
-              {deleting ? 'Brisanje...' : 'Obriši'}
+              {deleting ? t('common.deleting') : t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -726,6 +730,7 @@ function KretanjaTab() {
 // ==================== OTPREMNICE TAB ====================
 
 function OtpremniceTab() {
+  const { t } = useTranslation()
   const [deliveryNotes, setDeliveryNotes] = useState<DeliveryNote[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
@@ -826,11 +831,11 @@ function OtpremniceTab() {
     setViewMode('print')
     try {
       const res = await fetch(`/api/delivery-notes/${note.id}`)
-      if (!res.ok) { toast.error('Greška pri učitavanju otpremnice'); return }
+      if (!res.ok) { toast.error(t('warehouse.loadError')); return }
       const data: DeliveryNote = await res.json()
       setPrintNote(data)
     } catch {
-      toast.error('Greška pri učitavanju otpremnice')
+      toast.error(t('warehouse.loadError'))
     } finally {
       setPrintLoading(false)
     }
@@ -842,11 +847,11 @@ function OtpremniceTab() {
 
   const handleSubmit = async () => {
     if (!formPartnerId) {
-      toast.error('Izaberite partnera')
+      toast.error(t('warehouse.selectPartnerRequired'))
       return
     }
     if (lineItems.length === 0 || lineItems.some((li) => !li.productId)) {
-      toast.error('Dodajte barem jednu stavku sa izabranim proizvodom')
+      toast.error(t('warehouse.addItemRequired'))
       return
     }
     setSubmitting(true)
@@ -872,15 +877,15 @@ function OtpremniceTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška')
+        toast.error(err.error || t('common.error'))
         return
       }
-      toast.success(isEditing ? 'Otpremnica uspešno ažurirana' : 'Otpremnica uspešno kreirana')
+      toast.success(isEditing ? t('warehouse.deliveryNoteUpdated') : t('warehouse.deliveryNoteCreated'))
       setViewMode('list')
       setEditing(null)
       fetchDeliveryNotes()
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -893,14 +898,14 @@ function OtpremniceTab() {
       const res = await fetch(`/api/delivery-notes/${deleteId}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri brisanju')
+        toast.error(err.error || t('common.deleteError'))
         return
       }
-      toast.success('Otpremnica uspešno obrisana')
+      toast.success(t('warehouse.deliveryNoteDeleted'))
       setDeleteId(null)
       fetchDeliveryNotes()
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     } finally {
       setDeleting(false)
     }
@@ -916,7 +921,7 @@ function OtpremniceTab() {
             </Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                {editing ? 'Izmeni Otpremnicu' : 'Nova Otpremnica'}
+                {editing ? t('warehouse.editDeliveryNote') : t('warehouse.newDeliveryNote')}
               </CardTitle>
             </div>
           </div>
@@ -927,12 +932,12 @@ function OtpremniceTab() {
             </Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                Pregled Otpremnice {printNote?.number || ''}
+                {t('warehouse.previewDeliveryNote')} {printNote?.number || ''}
               </CardTitle>
             </div>
             <div className="ml-auto">
               <Button size="sm" className="gap-2" onClick={doPrint}>
-                <Printer className="h-4 w-4" /> Štampaj
+                <Printer className="h-4 w-4" /> {t('common.print')}
               </Button>
             </div>
           </div>
@@ -940,11 +945,11 @@ function OtpremniceTab() {
           <>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Otpremnice</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">{deliveryNotes.length} otpremnica</p>
+                <CardTitle className="text-base font-semibold">{t('warehouse.deliveryNotes')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{deliveryNotes.length} {t('warehouse.deliveryNotesCount')}</p>
               </div>
               <Button size="sm" className="gap-2" onClick={openCreate}>
-                <Plus className="h-4 w-4" /> Nova Otpremnica
+                <Plus className="h-4 w-4" /> {t('warehouse.newDeliveryNote')}
               </Button>
             </div>
 
@@ -952,7 +957,7 @@ function OtpremniceTab() {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Pretraži otpremnice..."
+                  placeholder={t('warehouse.searchDeliveryNotes')}
                   className="pl-8 h-9"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -960,14 +965,14 @@ function OtpremniceTab() {
               </div>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger className="w-[160px] h-9">
-                  <SelectValue placeholder="Svi statusi" />
+                  <SelectValue placeholder={t('warehouse.allStatuses')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Svi statusi</SelectItem>
-                  <SelectItem value="nacrt">Načrt</SelectItem>
-                  <SelectItem value="pripremljena">Pripremljena</SelectItem>
-                  <SelectItem value="otpremljena">Otpremljena</SelectItem>
-                  <SelectItem value="stornirana">Stornirana</SelectItem>
+                  <SelectItem value="all">{t('warehouse.allStatuses')}</SelectItem>
+                  <SelectItem value="nacrt">{t('common.draft')}</SelectItem>
+                  <SelectItem value="pripremljena">{t('common.pripremljena')}</SelectItem>
+                  <SelectItem value="otpremljena">{t('common.otpremljena')}</SelectItem>
+                  <SelectItem value="stornirana">{t('common.stornirana')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -996,16 +1001,16 @@ function OtpremniceTab() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold uppercase tracking-wide">Otpremnica</p>
-                  <p className="text-xs text-gray-500 mt-1">Broj: <span className="font-mono font-medium text-gray-800">{printNote.number}</span></p>
-                  <p className="text-xs text-gray-500">Datum: {formatDate(printNote.date)}</p>
-                  <p className="text-xs text-gray-500">Mesto: Beograd</p>
+                  <p className="text-lg font-bold uppercase tracking-wide">{t('warehouse.deliveryNote')}</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('common.number')}: <span className="font-mono font-medium text-gray-800">{printNote.number}</span></p>
+                  <p className="text-xs text-gray-500">{t('common.date')}: {formatDate(printNote.date)}</p>
+                  <p className="text-xs text-gray-500">{t('warehouse.city')}: Beograd</p>
                 </div>
               </div>
 
               {/* Partner Info */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Primalac</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.recipient')}</p>
                 <p className="text-sm font-semibold">{printNote.partner?.name || '-'}</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                   {printNote.partner?.pib && (
@@ -1019,10 +1024,10 @@ function OtpremniceTab() {
                 <thead>
                   <tr className="bg-gray-100">
                     <th className="border border-gray-300 px-2 py-2 text-center w-10">R.br</th>
-                    <th className="border border-gray-300 px-2 py-2">Naziv</th>
-                    <th className="border border-gray-300 px-2 py-2 text-center w-16">Količina</th>
-                    <th className="border border-gray-300 px-2 py-2 text-right w-24">Cena</th>
-                    <th className="border border-gray-300 px-2 py-2 text-right w-24">Iznos</th>
+                    <th className="border border-gray-300 px-2 py-2">{t('common.name')}</th>
+                    <th className="border border-gray-300 px-2 py-2 text-center w-16">{t('common.quantity')}</th>
+                    <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.price')}</th>
+                    <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.amount')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1042,7 +1047,7 @@ function OtpremniceTab() {
               <div className="flex justify-end mb-6">
                 <div className="w-48 space-y-1">
                   <div className="flex justify-between text-sm py-2 px-2 bg-gray-100 rounded font-bold border">
-                    <span>UKUPNO:</span>
+                    <span>{t('common.total')}:</span>
                     <span>{formatRSD(printNote.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))}</span>
                   </div>
                 </div>
@@ -1051,7 +1056,7 @@ function OtpremniceTab() {
               {/* Notes */}
               {printNote.notes && (
                 <div className="mb-4 text-xs">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Napomene</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
                   <p className="text-gray-600">{printNote.notes}</p>
                 </div>
               )}
@@ -1059,8 +1064,8 @@ function OtpremniceTab() {
               {/* Invoice Number Reference */}
               {printNote.invoiceNumber && (
                 <div className="mb-6 text-xs">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Referenca fakture</p>
-                  <p className="text-gray-600">Faktura br: {printNote.invoiceNumber}</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.invoiceRef')}</p>
+                  <p className="text-gray-600">{t('warehouse.invoice')} br: {printNote.invoiceNumber}</p>
                 </div>
               )}
 
@@ -1068,11 +1073,11 @@ function OtpremniceTab() {
               <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">Potpis izdavaoca</p>
+                  <p className="text-[10px] text-gray-400">{t('warehouse.issuerSignature')}</p>
                 </div>
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">Potpis primanja</p>
+                  <p className="text-[10px] text-gray-400">{t('warehouse.receiverSignature')}</p>
                 </div>
               </div>
             </div>
@@ -1083,9 +1088,9 @@ function OtpremniceTab() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Partner *</Label>
+                <Label className="text-xs">{t('common.partner')} *</Label>
                 <Select value={formPartnerId} onValueChange={setFormPartnerId}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite partnera" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('warehouse.selectPartner')} /></SelectTrigger>
                   <SelectContent>
                     {partners.map((p) => (
                       <SelectItem key={p.id} value={p.id}>{p.name} (PIB: {p.pib})</SelectItem>
@@ -1094,48 +1099,48 @@ function OtpremniceTab() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Status</Label>
+                <Label className="text-xs">{t('common.status')}</Label>
                 <Select value={formStatus} onValueChange={setFormStatus}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="nacrt">Načrt</SelectItem>
-                    <SelectItem value="pripremljena">Pripremljena</SelectItem>
-                    <SelectItem value="otpremljena">Otpremljena</SelectItem>
-                    <SelectItem value="stornirana">Stornirana</SelectItem>
+                    <SelectItem value="nacrt">{t('common.draft')}</SelectItem>
+                    <SelectItem value="pripremljena">{t('common.pripremljena')}</SelectItem>
+                    <SelectItem value="otpremljena">{t('common.otpremljena')}</SelectItem>
+                    <SelectItem value="stornirana">{t('common.stornirana')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Faktura br.</Label>
+                <Label className="text-xs">{t('warehouse.invoiceNumber')}</Label>
                 <Input value={formInvoiceNumber} onChange={(e) => setFormInvoiceNumber(e.target.value)} placeholder="Fak-001" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Napomene</Label>
-                <Input value={formNotes} onChange={(e) => setFormNotes(e.target.value)} placeholder="Napomene" />
+                <Label className="text-xs">{t('common.notes')}</Label>
+                <Input value={formNotes} onChange={(e) => setFormNotes(e.target.value)} />
               </div>
             </div>
 
             {/* Line Items */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-semibold">Stavke</Label>
+                <Label className="text-xs font-semibold">{t('warehouse.items')}</Label>
                 <Button type="button" variant="outline" size="sm" className="h-7 gap-1" onClick={addLineItem}>
-                  <Plus className="h-3 w-3" /> Dodaj stavku
+                  <Plus className="h-3 w-3" /> {t('warehouse.addItem')}
                 </Button>
               </div>
               {lineItems.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-4">Nema stavki. Kliknite &quot;Dodaj stavku&quot;.</p>
+                <p className="text-xs text-muted-foreground text-center py-4">{t('warehouse.noItems')}</p>
               )}
               <div className="space-y-2">
                 {lineItems.map((li, idx) => (
                   <div key={li.tempId} className="grid grid-cols-[1fr_80px_100px_32px] gap-2 items-end">
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">Proizvod</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t('warehouse.productLabel')}</Label>
                       <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Izaberite" />
+                          <SelectValue placeholder={t('common.select')} />
                         </SelectTrigger>
                         <SelectContent>
                           {products.map((p) => (
@@ -1145,7 +1150,7 @@ function OtpremniceTab() {
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">Količina</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t('common.quantity')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1155,7 +1160,7 @@ function OtpremniceTab() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">Cena</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t('common.price')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1180,9 +1185,9 @@ function OtpremniceTab() {
 
             <div className="flex gap-2">
               <Button disabled={submitting} onClick={handleSubmit}>
-                {submitting ? 'Čuvanje...' : editing ? 'Sačuvaj Izmene' : 'Kreiraj Otpremnicu'}
+                {submitting ? t('common.saving') : editing ? t('common.saveChanges') : t('warehouse.createDeliveryNote')}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </div>
         )}
@@ -1199,20 +1204,20 @@ function OtpremniceTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Broj</TableHead>
-                  <TableHead className="text-xs">Partner</TableHead>
-                  <TableHead className="text-xs">Datum</TableHead>
-                  <TableHead className="text-xs">Status</TableHead>
-                  <TableHead className="text-xs">Faktura</TableHead>
-                  <TableHead className="text-xs">Napomene</TableHead>
-                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                  <TableHead className="text-xs">{t('common.number')}</TableHead>
+                  <TableHead className="text-xs">{t('common.partner')}</TableHead>
+                  <TableHead className="text-xs">{t('common.date')}</TableHead>
+                  <TableHead className="text-xs">{t('common.status')}</TableHead>
+                  <TableHead className="text-xs">{t('warehouse.invoice')}</TableHead>
+                  <TableHead className="text-xs">{t('common.notes')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {deliveryNotes.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema otpremnica za prikaz
+                      {t('warehouse.noDeliveryNotes')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -1230,7 +1235,7 @@ function OtpremniceTab() {
                       <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes || '-'}</TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(dn)} title="Štampaj">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(dn)} title={t('common.print')}>
                             <Printer className="h-3.5 w-3.5" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(dn)}>
@@ -1254,19 +1259,19 @@ function OtpremniceTab() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Potvrda brisanja</AlertDialogTitle>
+            <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Da li ste sigurni da želite da obrišete ovu otpremnicu? Sve stavke će biti obrisane.
+              {t('warehouse.confirmDeleteDeliveryNote')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Otkaži</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
-              {deleting ? 'Brisanje...' : 'Obriši'}
+              {deleting ? t('common.deleting') : t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1278,6 +1283,7 @@ function OtpremniceTab() {
 // ==================== CENOVNICI TAB ====================
 
 function CenovniciTab() {
+  const { t } = useTranslation()
   const [priceLists, setPriceLists] = useState<PriceList[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -1361,11 +1367,11 @@ function CenovniciTab() {
 
   const handleSubmit = async () => {
     if (!formName) {
-      toast.error('Unesite naziv cenovnika')
+      toast.error(t('warehouse.priceListNameRequired'))
       return
     }
     if (lineItems.length === 0 || lineItems.some((li) => !li.productId)) {
-      toast.error('Dodajte barem jednu stavku sa izabranim proizvodom')
+      toast.error(t('warehouse.addItemRequired'))
       return
     }
     setSubmitting(true)
@@ -1391,15 +1397,15 @@ function CenovniciTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška')
+        toast.error(err.error || t('common.error'))
         return
       }
-      toast.success(isEditing ? 'Cenovnik uspešno ažuriran' : 'Cenovnik uspešno kreiran')
+      toast.success(isEditing ? t('warehouse.priceListUpdated') : t('warehouse.priceListCreated'))
       setViewMode('list')
       setEditing(null)
       fetchPriceLists()
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -1412,14 +1418,14 @@ function CenovniciTab() {
       const res = await fetch(`/api/price-lists/${deleteId}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri brisanju')
+        toast.error(err.error || t('common.deleteError'))
         return
       }
-      toast.success('Cenovnik uspešno obrisan')
+      toast.success(t('warehouse.priceListDeleted'))
       setDeleteId(null)
       fetchPriceLists()
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     } finally {
       setDeleting(false)
     }
@@ -1435,18 +1441,18 @@ function CenovniciTab() {
             </Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                {editing ? 'Izmeni Cenovnik' : 'Novi Cenovnik'}
+                {editing ? t('warehouse.editPriceList') : t('warehouse.newPriceList')}
               </CardTitle>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Cenovnici</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{priceLists.length} cenovnika</p>
+              <CardTitle className="text-base font-semibold">{t('warehouse.priceLists')}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{priceLists.length} {t('warehouse.priceListsCount')}</p>
             </div>
             <Button size="sm" className="gap-2" onClick={openCreate}>
-              <Plus className="h-4 w-4" /> Novi Cenovnik
+              <Plus className="h-4 w-4" /> {t('warehouse.newPriceList')}
             </Button>
           </div>
         )}
@@ -1456,21 +1462,21 @@ function CenovniciTab() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Naziv *</Label>
-                <Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Naziv cenovnika" />
+                <Label className="text-xs">{t('common.name')} *</Label>
+                <Input value={formName} onChange={(e) => setFormName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Opis</Label>
-                <Input value={formDescription} onChange={(e) => setFormDescription(e.target.value)} placeholder="Opis cenovnika" />
+                <Label className="text-xs">{t('common.description')}</Label>
+                <Input value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Važi od</Label>
+                <Label className="text-xs">{t('warehouse.validFrom')}</Label>
                 <Input type="date" value={formValidFrom} onChange={(e) => setFormValidFrom(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Važi do</Label>
+                <Label className="text-xs">{t('warehouse.validTo')}</Label>
                 <Input type="date" value={formValidTo} onChange={(e) => setFormValidTo(e.target.value)} />
               </div>
             </div>
@@ -1478,22 +1484,22 @@ function CenovniciTab() {
             {/* Line Items */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-semibold">Stavke cenovnika</Label>
+                <Label className="text-xs font-semibold">{t('warehouse.priceListItems')}</Label>
                 <Button type="button" variant="outline" size="sm" className="h-7 gap-1" onClick={addLineItem}>
-                  <Plus className="h-3 w-3" /> Dodaj stavku
+                  <Plus className="h-3 w-3" /> {t('warehouse.addItem')}
                 </Button>
               </div>
               {lineItems.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-4">Nema stavki. Kliknite &quot;Dodaj stavku&quot;.</p>
+                <p className="text-xs text-muted-foreground text-center py-4">{t('warehouse.noItems')}</p>
               )}
               <div className="space-y-2">
                 {lineItems.map((li) => (
                   <div key={li.tempId} className="grid grid-cols-[1fr_100px_80px_32px] gap-2 items-end">
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">Proizvod</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t('warehouse.productLabel')}</Label>
                       <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Izaberite" />
+                          <SelectValue placeholder={t('common.select')} />
                         </SelectTrigger>
                         <SelectContent>
                           {products.map((p) => (
@@ -1503,7 +1509,7 @@ function CenovniciTab() {
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">Cena</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t('common.price')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1513,7 +1519,7 @@ function CenovniciTab() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">Popust %</Label>
+                      <Label className="text-[10px] text-muted-foreground">{t('warehouse.discountPct')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1540,9 +1546,9 @@ function CenovniciTab() {
 
             <div className="flex gap-2">
               <Button disabled={submitting} onClick={handleSubmit}>
-                {submitting ? 'Čuvanje...' : editing ? 'Sačuvaj Izmene' : 'Kreiraj Cenovnik'}
+                {submitting ? t('common.saving') : editing ? t('common.saveChanges') : t('warehouse.createPriceList')}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </div>
         ) : loading ? (
@@ -1556,20 +1562,20 @@ function CenovniciTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Naziv</TableHead>
-                  <TableHead className="text-xs">Opis</TableHead>
-                  <TableHead className="text-xs text-center">Stavki</TableHead>
-                  <TableHead className="text-xs">Važi od</TableHead>
-                  <TableHead className="text-xs">Važi do</TableHead>
-                  <TableHead className="text-xs text-center">Status</TableHead>
-                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                  <TableHead className="text-xs">{t('common.name')}</TableHead>
+                  <TableHead className="text-xs">{t('common.description')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('warehouse.itemsCount')}</TableHead>
+                  <TableHead className="text-xs">{t('warehouse.validFrom')}</TableHead>
+                  <TableHead className="text-xs">{t('warehouse.validTo')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('common.status')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {priceLists.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema cenovnika za prikaz
+                      {t('warehouse.noPriceLists')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -1586,9 +1592,9 @@ function CenovniciTab() {
                       <TableCell className="text-xs">{pl.validTo ? formatDate(pl.validTo) : '-'}</TableCell>
                       <TableCell className="text-center">
                         {pl.isActive ? (
-                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-2 py-0">Aktivan</Badge>
+                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-2 py-0">{t('common.active')}</Badge>
                         ) : (
-                          <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-[10px] px-2 py-0">Neaktivan</Badge>
+                          <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-[10px] px-2 py-0">{t('common.inactive')}</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-center">
@@ -1614,19 +1620,19 @@ function CenovniciTab() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Potvrda brisanja</AlertDialogTitle>
+            <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Da li ste sigurni da želite da obrišete ovaj cenovnik? Sve stavke će biti obrisane.
+              {t('warehouse.confirmDeletePriceList')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Otkaži</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
-              {deleting ? 'Brisanje...' : 'Obriši'}
+              {deleting ? t('common.deleting') : t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

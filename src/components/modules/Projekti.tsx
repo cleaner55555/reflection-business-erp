@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Search, Pencil, Trash2, FolderKanban, CheckCircle2, ArrowLeft, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate } from '@/lib/helpers'
 
 interface Project {
@@ -27,6 +28,7 @@ const STATUS_COLORS: Record<string, string> = { aktivan: 'bg-emerald-50 text-eme
 const PRIORITY_COLORS: Record<string, string> = { nizak: 'text-muted-foreground', srednji: 'text-amber-600', visok: 'text-orange-600', hitan: 'text-red-600' }
 
 export function Projekti() {
+  const { t } = useTranslation()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -65,8 +67,8 @@ export function Projekti() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Obrisati projekat?')) return
-    try { await fetch(`/api/projects/${id}`, { method: 'DELETE' }); toast.success('Obrisano'); fetchProjects() } catch { toast.error('Greška') }
+    if (!confirm(t('projects.confirmDelete'))) return
+    try { await fetch(`/api/projects/${id}`, { method: 'DELETE' }); toast.success(t('common.deleteSuccess')); fetchProjects() } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -76,22 +78,22 @@ export function Projekti() {
     try {
       const url = editing ? `/api/projects/${editing.id}` : '/api/projects'
       const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (!res.ok) { toast.error('Greška'); return }
-      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setViewMode('list'); setEditing(null); fetchProjects()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+      if (!res.ok) { toast.error(t('common.error')); return }
+      toast.success(editing ? t('common.updated') : t('common.created')); setViewMode('list'); setEditing(null); fetchProjects()
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   const addTask = async () => {
     if (!newTask.title) return
     try {
       await fetch('/api/project-tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTask) })
-      toast.success('Task kreiran'); setAddingTaskForProject(null); setNewTask({ projectId: '', title: '', priority: 'srednji' }); fetchProjects()
-    } catch { toast.error('Greška') }
+      toast.success(t('projects.taskCreated')); setAddingTaskForProject(null); setNewTask({ projectId: '', title: '', priority: 'srednji' }); fetchProjects()
+    } catch { toast.error(t('common.error')) }
   }
 
   const toggleTask = async (task: ProjectTask) => {
     const newStatus = task.status === 'zavrseno' ? 'todo' : 'zavrseno'
-    try { await fetch('/api/project-tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: newStatus }) }); fetchProjects() } catch { toast.error('Greška') }
+    try { await fetch('/api/project-tasks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: task.id, status: newStatus }) }); fetchProjects() } catch { toast.error(t('common.error')) }
   }
 
   const openTaskForm = (projectId: string) => {
@@ -110,20 +112,20 @@ export function Projekti() {
         {viewMode === 'form' ? (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base font-semibold">{editing ? 'Izmeni' : 'Novi'} Projekat</CardTitle></div>
+            <div><CardTitle className="text-base font-semibold">{editing ? t('common.edit') : t('common.new')} {t('projects.project')}</CardTitle></div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div><CardTitle className="text-base font-semibold">Projekti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{projects.length} projekata</p></div>
-            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi Projekat</Button>
+            <div><CardTitle className="text-base font-semibold">{t('projects.title')}</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{projects.length} {t('projects.projectCount')}</p></div>
+            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> {t('projects.newProject')}</Button>
           </div>
         )}
         {viewMode === 'list' && (
           <div className="flex gap-2 mt-4">
             <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
-              <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Svi" /></SelectTrigger>
+              <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder={t('projects.all')} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Svi</SelectItem><SelectItem value="aktivan">Aktivni</SelectItem><SelectItem value="zavrsen">Završeni</SelectItem><SelectItem value="pauziran">Pauzirani</SelectItem>
+                <SelectItem value="all">{t('projects.all')}</SelectItem><SelectItem value="aktivan">{t('projects.activeFilter')}</SelectItem><SelectItem value="zavrsen">{t('projects.completedFilter')}</SelectItem><SelectItem value="pauziran">{t('projects.pausedFilter')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -132,29 +134,29 @@ export function Projekti() {
       <CardContent>
         {viewMode === 'form' ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input name="name" defaultValue={editing?.name || ''} required /></div>
-            <div className="space-y-2"><Label className="text-xs">Opis</Label><Input name="description" defaultValue={editing?.description || ''} /></div>
+            <div className="space-y-2"><Label className="text-xs">{t('projects.projectName')} *</Label><Input name="name" defaultValue={editing?.name || ''} required /></div>
+            <div className="space-y-2"><Label className="text-xs">{t('common.description')}</Label><Input name="description" defaultValue={editing?.description || ''} /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Status</Label>
+              <div className="space-y-2"><Label className="text-xs">{t('common.status')}</Label>
                 <Select name="status" defaultValue={editing?.status || 'aktivan'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-                  <SelectItem value="aktivan">Aktivan</SelectItem><SelectItem value="zavrsen">Završen</SelectItem><SelectItem value="pauziran">Pauziran</SelectItem><SelectItem value="otkazan">Otkazan</SelectItem>
+                  <SelectItem value="aktivan">{t('common.aktivan')}</SelectItem><SelectItem value="zavrsen">{t('common.zavrsen')}</SelectItem><SelectItem value="pauziran">{t('common.pauziran')}</SelectItem><SelectItem value="otkazan">{t('projects.otkazan')}</SelectItem>
                 </SelectContent></Select>
               </div>
-              <div className="space-y-2"><Label className="text-xs">Prioritet</Label>
+              <div className="space-y-2"><Label className="text-xs">{t('common.priority')}</Label>
                 <Select name="priority" defaultValue={editing?.priority || 'srednji'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-                  <SelectItem value="nizak">Nizak</SelectItem><SelectItem value="srednji">Srednji</SelectItem><SelectItem value="visok">Visok</SelectItem><SelectItem value="hitan">Hitan</SelectItem>
+                  <SelectItem value="nizak">{t('projects.priorityLow')}</SelectItem><SelectItem value="srednji">{t('projects.priorityMedium')}</SelectItem><SelectItem value="visok">{t('projects.priorityHigh')}</SelectItem><SelectItem value="hitan">{t('projects.priorityUrgent')}</SelectItem>
                 </SelectContent></Select>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Početak</Label><Input name="startDate" type="date" defaultValue={editing?.startDate?.split('T')[0] || ''} /></div>
-              <div className="space-y-2"><Label className="text-xs">Kraj</Label><Input name="endDate" type="date" defaultValue={editing?.endDate?.split('T')[0] || ''} /></div>
-              <div className="space-y-2"><Label className="text-xs">Budžet (RSD)</Label><Input name="budget" type="number" defaultValue={editing?.budget || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('projects.startDate')}</Label><Input name="startDate" type="date" defaultValue={editing?.startDate?.split('T')[0] || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('projects.endDate')}</Label><Input name="endDate" type="date" defaultValue={editing?.endDate?.split('T')[0] || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('projects.budget')} (RSD)</Label><Input name="budget" type="number" defaultValue={editing?.budget || ''} /></div>
             </div>
-            <div className="space-y-2"><Label className="text-xs">Zaduženi</Label><Input name="assignedTo" defaultValue={editing?.assignedTo || ''} /></div>
+            <div className="space-y-2"><Label className="text-xs">{t('projects.assignee')}</Label><Input name="assignedTo" defaultValue={editing?.assignedTo || ''} /></div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? t('common.saving') : t('common.save')}</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </form>
         ) : loading ? (
@@ -177,10 +179,10 @@ export function Projekti() {
                         <span className={`text-[10px] font-medium ${PRIORITY_COLORS[proj.priority] || ''}`}>{proj.priority}</span>
                       </div>
                       <div className="flex gap-4 text-xs text-muted-foreground">
-                        <span>Budžet: {formatRSD(proj.budget)}</span>
-                        <span>Potrošeno: {formatRSD(proj.spent)} ({progress}%)</span>
-                        <span>Tasks: {doneTasks}/{tasks.length}</span>
-                        {proj.assignedTo && <span>Zaduženi: {proj.assignedTo}</span>}
+                        <span>{t('projects.budget')}: {formatRSD(proj.budget)}</span>
+                        <span>{t('projects.spent')}: {formatRSD(proj.spent)} ({progress}%)</span>
+                        <span>{t('projects.tasks')}: {doneTasks}/{tasks.length}</span>
+                        {proj.assignedTo && <span>{t('projects.assignee')}: {proj.assignedTo}</span>}
                       </div>
                       <div className="mt-2 w-full bg-muted rounded-full h-2"><div className={`h-2 rounded-full ${progress > 100 ? 'bg-red-500' : 'bg-primary'}`} style={{ width: `${Math.min(progress, 100)}%` }} /></div>
                     </div>
@@ -192,32 +194,32 @@ export function Projekti() {
                   {isExpanded && (
                     <div className="mt-3 border-t pt-3 space-y-2">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-semibold">Taskovi</h4>
+                        <h4 className="text-xs font-semibold">{t('projects.tasks')}</h4>
                         {!isAddingTask && (
-                          <Button variant="outline" size="sm" className="h-6 text-[10px] gap-1" onClick={() => openTaskForm(proj.id)}><Plus className="h-3 w-3" /> Dodaj</Button>
+                          <Button variant="outline" size="sm" className="h-6 text-[10px] gap-1" onClick={() => openTaskForm(proj.id)}><Plus className="h-3 w-3" /> {t('common.add')}</Button>
                         )}
                       </div>
                       {isAddingTask && (
                         <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
                           <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-semibold">Novi Task</h4>
+                            <h4 className="text-xs font-semibold">{t('projects.newTask')}</h4>
                             <Button variant="ghost" size="icon" className="h-5 w-5" onClick={cancelTaskForm}><X className="h-3 w-3" /></Button>
                           </div>
                           <div className="space-y-2">
-                            <div className="space-y-1"><Label className="text-xs">Naslov *</Label><Input value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="h-8 text-xs" placeholder="Naslov taska" /></div>
-                            <div className="space-y-1"><Label className="text-xs">Prioritet</Label>
+                            <div className="space-y-1"><Label className="text-xs">{t('projects.taskName')} *</Label><Input value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="h-8 text-xs" placeholder={t('projects.taskNamePlaceholder')} /></div>
+                            <div className="space-y-1"><Label className="text-xs">{t('common.priority')}</Label>
                               <Select value={newTask.priority} onValueChange={(v) => setNewTask({ ...newTask, priority: v })}><SelectTrigger className="h-8"><SelectValue /></SelectTrigger><SelectContent>
-                                <SelectItem value="nizak">Nizak</SelectItem><SelectItem value="srednji">Srednji</SelectItem><SelectItem value="visok">Visok</SelectItem><SelectItem value="hitan">Hitan</SelectItem>
+                                <SelectItem value="nizak">{t('projects.priorityLow')}</SelectItem><SelectItem value="srednji">{t('projects.priorityMedium')}</SelectItem><SelectItem value="visok">{t('projects.priorityHigh')}</SelectItem><SelectItem value="hitan">{t('projects.priorityUrgent')}</SelectItem>
                               </SelectContent></Select>
                             </div>
                             <div className="flex gap-2">
-                              <Button size="sm" className="h-7 text-xs" onClick={addTask}>Kreiraj Task</Button>
-                              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={cancelTaskForm}>Otkaži</Button>
+                              <Button size="sm" className="h-7 text-xs" onClick={addTask}>{t('projects.createTask')}</Button>
+                              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={cancelTaskForm}>{t('common.cancel')}</Button>
                             </div>
                           </div>
                         </div>
                       )}
-                      {tasks.length === 0 && !isAddingTask ? <p className="text-xs text-muted-foreground">Nema taskova</p> : tasks.map((task) => (
+                      {tasks.length === 0 && !isAddingTask ? <p className="text-xs text-muted-foreground">{t('projects.noTasks')}</p> : tasks.map((task) => (
                         <div key={task.id} className="flex items-center gap-2 py-1" onClick={() => toggleTask(task)}>
                           <CheckCircle2 className={`h-4 w-4 ${task.status === 'zavrseno' ? 'text-emerald-500' : 'text-muted-foreground'}`} />
                           <span className={`text-xs ${task.status === 'zavrseno' ? 'line-through text-muted-foreground' : ''}`}>{task.title}</span>

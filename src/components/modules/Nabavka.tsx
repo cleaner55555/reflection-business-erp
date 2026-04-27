@@ -25,6 +25,7 @@ import {
 import { Pencil, Plus, Search, Trash2, ArrowLeft, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 // ==================== INTERFACES ====================
 
@@ -109,6 +110,7 @@ const COMPANY = {
 // ==================== MAIN COMPONENT ====================
 
 export function Nabavka() {
+  const { t } = useTranslation()
   const [orders, setOrders] = useState<PurchaseOrder[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
   const [products, setProducts] = useState<Product[]>([])
@@ -195,11 +197,11 @@ export function Nabavka() {
     setViewMode('print')
     try {
       const res = await fetch(`/api/purchase-orders/${po.id}`)
-      if (!res.ok) { toast.error('Greška pri učitavanju narudžbenice'); return }
+      if (!res.ok) { toast.error(t('procurement.loadError')); return }
       const data: FullPurchaseOrder = await res.json()
       setPrintOrder(data)
     } catch {
-      toast.error('Greška pri učitavanju narudžbenice')
+      toast.error(t('procurement.loadError'))
     } finally {
       setPrintLoading(false)
     }
@@ -210,13 +212,13 @@ export function Nabavka() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Da li ste sigurni da želite da obrišete ovu narudžbenicu?')) return
+    if (!confirm(t('procurement.confirmDelete'))) return
     try {
       const res = await fetch(`/api/purchase-orders/${id}`, { method: 'DELETE' })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success('Narudžbenica uspešno obrisana')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(t('procurement.deleteSuccess'))
       fetchOrders()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const grandTotal = lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
@@ -252,16 +254,16 @@ export function Nabavka() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška')
+        toast.error(err.error || t('common.error'))
         return
       }
-      toast.success(editingOrder ? 'Narudžbenica uspešno ažurirana' : 'Narudžbenica uspešno kreirana')
+      toast.success(editingOrder ? t('procurement.updateSuccess') : t('procurement.createSuccess'))
       setViewMode('list')
       setEditingOrder(null)
       setLineItems([{ productId: '', productName: '', quantity: 1, unitPrice: 0 }])
       fetchOrders()
     } catch {
-      toast.error(editingOrder ? 'Greška pri ažuriranju narudžbenice' : 'Greška pri kreiranju narudžbenice')
+      toast.error(editingOrder ? t('procurement.updateError') : t('procurement.createError'))
     } finally {
       setSubmitting(false)
     }
@@ -277,7 +279,7 @@ export function Nabavka() {
             </Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                {editingOrder ? 'Izmeni Narudžbenicu' : 'Nova Narudžbenica'}
+                {editingOrder ? t('procurement.editOrder') : t('procurement.newOrder')}
               </CardTitle>
             </div>
           </div>
@@ -288,12 +290,12 @@ export function Nabavka() {
             </Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                Pregled Narudžbenice {printOrder?.number || ''}
+                {t('procurement.previewOrder')} {printOrder?.number || ''}
               </CardTitle>
             </div>
             <div className="ml-auto">
               <Button size="sm" className="gap-2" onClick={doPrint}>
-                <Printer className="h-4 w-4" /> Štampaj
+                <Printer className="h-4 w-4" /> {t('common.print')}
               </Button>
             </div>
           </div>
@@ -301,11 +303,11 @@ export function Nabavka() {
           <>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Nabavka</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Upravljanje narudžbenicama</p>
+                <CardTitle className="text-base font-semibold">{t('procurement.title')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('procurement.subtitle')}</p>
               </div>
               <Button size="sm" className="gap-2" onClick={handleNew}>
-                <Plus className="h-4 w-4" /> Nova Narudžbenica
+                <Plus className="h-4 w-4" /> {t('procurement.newOrder')}
               </Button>
             </div>
 
@@ -313,7 +315,7 @@ export function Nabavka() {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Pretraži narudžbenice..."
+                  placeholder={t('procurement.searchOrders')}
                   className="pl-8 h-9"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -321,14 +323,14 @@ export function Nabavka() {
               </div>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger className="w-[150px] h-9">
-                  <SelectValue placeholder="Svi statusi" />
+                  <SelectValue placeholder={t('procurement.allStatuses')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Svi statusi</SelectItem>
-                  <SelectItem value="nacrt">Načrt</SelectItem>
-                  <SelectItem value="poslata">Poslata</SelectItem>
-                  <SelectItem value="primljena">Primljena</SelectItem>
-                  <SelectItem value="otkazana">Otkazana</SelectItem>
+                  <SelectItem value="all">{t('procurement.allStatuses')}</SelectItem>
+                  <SelectItem value="nacrt">{t('common.draft')}</SelectItem>
+                  <SelectItem value="poslata">{t('common.sent')}</SelectItem>
+                  <SelectItem value="primljena">{t('common.received')}</SelectItem>
+                  <SelectItem value="otkazana">{t('common.cancelled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -358,16 +360,16 @@ export function Nabavka() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold uppercase tracking-wide">Narudžbenica</p>
-                  <p className="text-xs text-gray-500 mt-1">Broj: <span className="font-mono font-medium text-gray-800">{printOrder.number}</span></p>
-                  <p className="text-xs text-gray-500">Datum: {formatDate(printOrder.date)}</p>
-                  <p className="text-xs text-gray-500">Mesto: Beograd</p>
+                  <p className="text-lg font-bold uppercase tracking-wide">{t('procurement.purchaseOrder')}</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('common.number')}: <span className="font-mono font-medium text-gray-800">{printOrder.number}</span></p>
+                  <p className="text-xs text-gray-500">{t('common.date')}: {formatDate(printOrder.date)}</p>
+                  <p className="text-xs text-gray-500">{t('procurement.city')}: Beograd</p>
                 </div>
               </div>
 
               {/* Partner Info */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Dobavljač</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('procurement.supplier')}</p>
                 <p className="text-sm font-semibold">{printOrder.partner?.name || '-'}</p>
                 {printOrder.partner && (
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
@@ -395,11 +397,11 @@ export function Nabavka() {
                 <thead>
                   <tr className="bg-gray-100">
                     <th className="border border-gray-300 px-2 py-2 text-center w-10">R.br</th>
-                    <th className="border border-gray-300 px-2 py-2">Naziv robe/usluge</th>
-                    <th className="border border-gray-300 px-2 py-2 text-center w-12">Količina</th>
-                    <th className="border border-gray-300 px-2 py-2 text-right w-24">Cena</th>
-                    <th className="border border-gray-300 px-2 py-2 text-center w-14">Popust%</th>
-                    <th className="border border-gray-300 px-2 py-2 text-right w-24">Iznos</th>
+                    <th className="border border-gray-300 px-2 py-2">{t('procurement.itemNameService')}</th>
+                    <th className="border border-gray-300 px-2 py-2 text-center w-12">{t('common.quantity')}</th>
+                    <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.price')}</th>
+                    <th className="border border-gray-300 px-2 py-2 text-center w-14">%</th>
+                    <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.amount')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -420,11 +422,11 @@ export function Nabavka() {
               <div className="flex justify-end mb-6">
                 <div className="w-72 space-y-1">
                   <div className="flex justify-between text-sm py-2 px-2 bg-gray-100 rounded font-bold border">
-                    <span>UKUPNO:</span>
+                    <span>{t('common.total')}:</span>
                     <span>{formatRSD(printOrder.totalAmount)}</span>
                   </div>
                   <div className="flex justify-between text-xs py-1 px-2">
-                    <span className="text-gray-500">Slovima:</span>
+                    <span className="text-gray-500">{t('procurement.inWords')}:</span>
                     <span className="font-medium italic text-gray-600">
                       {numberToSerbian(printOrder.totalAmount)}
                     </span>
@@ -435,13 +437,13 @@ export function Nabavka() {
               {/* Payment Info */}
               <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Plaćanje</p>
-                  <p><span className="text-gray-500">Način: </span>Uputnica</p>
-                  <p><span className="text-gray-500">Račun: </span>{COMPANY.account}</p>
-                  <p><span className="text-gray-500">Banka: </span>{COMPANY.bank}</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('procurement.payment')}</p>
+                  <p><span className="text-gray-500">{t('procurement.method')}: </span>{t('procurement.orderPayment')}</p>
+                  <p><span className="text-gray-500">{t('procurement.account')}: </span>{COMPANY.account}</p>
+                  <p><span className="text-gray-500">{t('procurement.bank')}: </span>{COMPANY.bank}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Status</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.status')}</p>
                   <p>
                     <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(printOrder.status)}`}>
                       {getStatusLabel(printOrder.status)}
@@ -453,7 +455,7 @@ export function Nabavka() {
               {/* Notes */}
               {printOrder.notes && (
                 <div className="mb-6 text-xs">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Napomene</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
                   <p className="text-gray-600">{printOrder.notes}</p>
                 </div>
               )}
@@ -462,11 +464,11 @@ export function Nabavka() {
               <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">Potpis naručioca</p>
+                  <p className="text-[10px] text-gray-400">{t('procurement.ordererSignature')}</p>
                 </div>
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">Potpis dobavljača</p>
+                  <p className="text-[10px] text-gray-400">{t('procurement.supplierSignature')}</p>
                 </div>
               </div>
             </div>
@@ -478,9 +480,9 @@ export function Nabavka() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Dobavljač *</Label>
+                <Label className="text-xs">{t('procurement.supplier')} *</Label>
                 <Select name="partnerId" required defaultValue={editingOrder?.partnerId || ''}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite dobavljača" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('procurement.selectSupplier')} /></SelectTrigger>
                   <SelectContent>
                     {partners.map((p) => (
                       <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
@@ -489,30 +491,30 @@ export function Nabavka() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Status</Label>
+                <Label className="text-xs">{t('common.status')}</Label>
                 <Select name="status" defaultValue={editingOrder?.status || 'nacrt'}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="nacrt">Načrt</SelectItem>
-                    <SelectItem value="poslata">Poslata</SelectItem>
-                    <SelectItem value="primljena">Primljena</SelectItem>
+                    <SelectItem value="nacrt">{t('common.draft')}</SelectItem>
+                    <SelectItem value="poslata">{t('common.sent')}</SelectItem>
+                    <SelectItem value="primljena">{t('common.received')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-3">
-              <Label className="text-xs font-semibold">Stavke narudžbenice</Label>
+              <Label className="text-xs font-semibold">{t('procurement.orderItems')}</Label>
               {lineItems.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2 items-end">
                   <div className="col-span-5">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">Proizvod</Label>}
+                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('procurement.product')}</Label>}
                     <Select
                       value={item.productId}
                       onValueChange={(v) => updateLineItem(idx, 'productId', v)}
                     >
                       <SelectTrigger className="h-9 text-xs">
-                        <SelectValue placeholder="Izaberite" />
+                        <SelectValue placeholder={t('common.select')} />
                       </SelectTrigger>
                       <SelectContent>
                         {products.map((p) => (
@@ -522,7 +524,7 @@ export function Nabavka() {
                     </Select>
                   </div>
                   <div className="col-span-3">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">Količina</Label>}
+                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('common.quantity')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -532,7 +534,7 @@ export function Nabavka() {
                     />
                   </div>
                   <div className="col-span-3">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">Jed. cena</Label>}
+                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('procurement.unitPrice')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -555,25 +557,25 @@ export function Nabavka() {
                 </div>
               ))}
               <Button type="button" variant="outline" size="sm" onClick={addLineItem} className="w-full gap-1">
-                <Plus className="h-3 w-3" /> Dodaj stavku
+                <Plus className="h-3 w-3" /> {t('procurement.addItem')}
               </Button>
             </div>
 
             <div className="rounded-lg bg-muted/50 p-3 text-right">
-              <span className="text-sm font-medium">Ukupno: </span>
+              <span className="text-sm font-medium">{t('common.total')}: </span>
               <span className="text-lg font-bold text-primary">{formatRSD(grandTotal)}</span>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs">Napomene (opciono)</Label>
-              <Input name="notes" placeholder="Napomene" />
+              <Label className="text-xs">{t('procurement.notesOptional')}</Label>
+              <Input name="notes" />
             </div>
 
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : editingOrder ? 'Sačuvaj Izmene' : 'Kreiraj Narudžbenicu'}
+                {submitting ? t('common.saving') : editingOrder ? t('common.saveChanges') : t('procurement.createOrder')}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </form>
         )}
@@ -592,20 +594,20 @@ export function Nabavka() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Broj</TableHead>
-                  <TableHead className="text-xs">Dobavljač</TableHead>
-                  <TableHead className="text-xs">Datum</TableHead>
-                  <TableHead className="text-xs">Status</TableHead>
-                  <TableHead className="text-xs">Stavki</TableHead>
-                  <TableHead className="text-xs text-right">Iznos</TableHead>
-                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                  <TableHead className="text-xs">{t('common.number')}</TableHead>
+                  <TableHead className="text-xs">{t('procurement.supplier')}</TableHead>
+                  <TableHead className="text-xs">{t('common.date')}</TableHead>
+                  <TableHead className="text-xs">{t('common.status')}</TableHead>
+                  <TableHead className="text-xs">{t('procurement.items')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {orders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema narudžbenica za prikaz
+                      {t('procurement.noOrders')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -625,13 +627,13 @@ export function Nabavka() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => handlePrint(po)} title="Štampaj">
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => handlePrint(po)} title={t('common.print')}>
                             <Printer className="h-3.5 w-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => handleEdit(po)} title="Izmeni">
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => handleEdit(po)} title={t('common.edit')}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-red-500" onClick={() => handleDelete(po.id)} title="Obriši">
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-red-500" onClick={() => handleDelete(po.id)} title={t('common.delete')}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>

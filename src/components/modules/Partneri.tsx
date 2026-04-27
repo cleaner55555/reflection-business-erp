@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator'
 import { Plus, Search, Users, Pencil, Trash2, Eye, Building2, Phone, Mail, MapPin, Landmark, CreditCard, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 interface Partner {
   id: string
@@ -88,6 +89,7 @@ interface PartnerAnalytics {
 }
 
 export function Partneri() {
+  const { t } = useTranslation()
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -132,18 +134,18 @@ export function Partneri() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Da li ste sigurni da želite da obrišete ovog partnera?')) return
+    if (!confirm(t('partners.confirmDelete'))) return
     try {
       const res = await fetch(`/api/partners/${id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri brisanju')
+        toast.error(err.error || t('common.deleteError'))
         return
       }
-      toast.success('Partner uspešno obrisan')
+      toast.success(t('partners.deleteSuccess'))
       fetchPartners()
     } catch {
-      toast.error('Greška pri brisanju partnera')
+      toast.error(t('partners.deleteError'))
     }
   }
 
@@ -175,15 +177,15 @@ export function Partneri() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška')
+        toast.error(err.error || t('common.error'))
         return
       }
-      toast.success(isEditing ? 'Partner uspešno ažuriran' : 'Partner uspešno kreiran')
+      toast.success(isEditing ? t('partners.updateSuccess') : t('partners.createSuccess'))
       setViewMode('list')
       setEditingPartner(null)
       fetchPartners()
     } catch {
-      toast.error('Greška')
+      toast.error(t('common.error'))
     } finally {
       setSubmitting(false)
     }
@@ -197,13 +199,13 @@ export function Partneri() {
     try {
       const res = await fetch(`/api/partners/${partner.id}/analytics`)
       if (!res.ok) {
-        toast.error('Greška pri učitavanju analitike')
+        toast.error(t('partners.analyticsLoadError'))
         return
       }
       const data = await res.json()
       setAnalyticsData(data)
     } catch {
-      toast.error('Greška pri učitavanju analitike')
+      toast.error(t('partners.analyticsLoadError'))
     } finally {
       setAnalyticsLoading(false)
     }
@@ -231,7 +233,7 @@ export function Partneri() {
             </Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                {editingPartner ? 'Izmeni Partnera' : 'Novi Partner'}
+                {editingPartner ? t('partners.editPartner') : t('partners.newPartner')}
               </CardTitle>
             </div>
           </div>
@@ -241,18 +243,18 @@ export function Partneri() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <CardTitle className="text-base font-semibold">Analitička Kartica</CardTitle>
+              <CardTitle className="text-base font-semibold">{t('partners.analyticsCard')}</CardTitle>
             </div>
           </div>
         ) : (
           <>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Partneri</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">{partners.length} partnera</p>
+                <CardTitle className="text-base font-semibold">{t('partners.title')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{partners.length} {t('partners.partnersCount')}</p>
               </div>
               <Button size="sm" className="gap-2" onClick={handleNew}>
-                <Plus className="h-4 w-4" /> Novi Partner
+                <Plus className="h-4 w-4" /> {t('partners.newPartner')}
               </Button>
             </div>
 
@@ -260,7 +262,7 @@ export function Partneri() {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Pretraži partnere..."
+                  placeholder={t('partners.searchPartners')}
                   className="pl-8 h-9"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -268,13 +270,13 @@ export function Partneri() {
               </div>
               <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger className="w-[150px] h-9">
-                  <SelectValue placeholder="Svi tipovi" />
+                  <SelectValue placeholder={t('partners.allTypes')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Svi tipovi</SelectItem>
-                  <SelectItem value="kupac">Kupac</SelectItem>
-                  <SelectItem value="dobavljac">Dobavljač</SelectItem>
-                  <SelectItem value="partner">Partner</SelectItem>
+                  <SelectItem value="all">{t('partners.allTypes')}</SelectItem>
+                  <SelectItem value="kupac">{t('partners.customer')}</SelectItem>
+                  <SelectItem value="dobavljac">{t('partners.supplier')}</SelectItem>
+                  <SelectItem value="partner">{t('common.partner')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,8 +288,8 @@ export function Partneri() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Naziv *</Label>
-                <Input name="name" placeholder="Naziv firme" required defaultValue={editingPartner?.name || ''} />
+                <Label className="text-xs">{t('common.name')} *</Label>
+                <Input name="name" placeholder={t('partners.companyNamePlaceholder')} required defaultValue={editingPartner?.name || ''} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">PIB *</Label>
@@ -296,58 +298,58 @@ export function Partneri() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Matični broj</Label>
+                <Label className="text-xs">{t('partners.maticniBroj')}</Label>
                 <Input name="maticniBr" placeholder="12345678" defaultValue={editingPartner?.maticniBr || ''} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Tip</Label>
+                <Label className="text-xs">{t('common.type')}</Label>
                 <Select name="type" defaultValue={editingPartner?.type || 'kupac'}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="kupac">Kupac</SelectItem>
-                    <SelectItem value="dobavljac">Dobavljač</SelectItem>
-                    <SelectItem value="partner">Partner</SelectItem>
+                    <SelectItem value="kupac">{t('partners.customer')}</SelectItem>
+                    <SelectItem value="dobavljac">{t('partners.supplier')}</SelectItem>
+                    <SelectItem value="partner">{t('common.partner')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Grad</Label>
-                <Input name="city" placeholder="Beograd" defaultValue={editingPartner?.city || ''} />
+                <Label className="text-xs">{t('partners.partnerCity')}</Label>
+                <Input name="city" defaultValue={editingPartner?.city || ''} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Adresa</Label>
-              <Input name="address" placeholder="Ulica i broj" defaultValue={editingPartner?.address || ''} />
+              <Label className="text-xs">{t('partners.partnerAddress')}</Label>
+              <Input name="address" defaultValue={editingPartner?.address || ''} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Telefon</Label>
-                <Input name="phone" placeholder="+381 11 123 4567" defaultValue={editingPartner?.phone || ''} />
+                <Label className="text-xs">{t('partners.partnerPhone')}</Label>
+                <Input name="phone" defaultValue={editingPartner?.phone || ''} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Email</Label>
-                <Input name="email" type="email" placeholder="info@firma.rs" defaultValue={editingPartner?.email || ''} />
+                <Label className="text-xs">{t('common.email')}</Label>
+                <Input name="email" type="email" defaultValue={editingPartner?.email || ''} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Tekući račun</Label>
+                <Label className="text-xs">{t('partners.bankAccount')}</Label>
                 <Input name="account" placeholder="265-00000000-00" defaultValue={editingPartner?.account || ''} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Banka</Label>
-                <Input name="bank" placeholder="Naziv banke" defaultValue={editingPartner?.bank || ''} />
+                <Label className="text-xs">{t('partners.bank')}</Label>
+                <Input name="bank" defaultValue={editingPartner?.bank || ''} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Napomene</Label>
-              <Input name="notes" placeholder="Napomene" defaultValue={editingPartner?.notes || ''} />
+              <Label className="text-xs">{t('common.notes')}</Label>
+              <Input name="notes" defaultValue={editingPartner?.notes || ''} />
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : editingPartner ? 'Sačuvaj Izmene' : 'Kreiraj Partnera'}
+                {submitting ? t('common.saving') : editingPartner ? t('common.saveChanges') : t('partners.createPartner')}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </form>
         ) : viewMode === 'analytics' ? (
@@ -417,24 +419,24 @@ export function Partneri() {
               {/* Summary Cards */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">
-                  <p className="text-xs text-muted-foreground font-medium">Ukupno fakture</p>
+                  <p className="text-xs text-muted-foreground font-medium">{t('partners.totalInvoices')}</p>
                   <p className="text-lg font-semibold mt-1">{formatRSD(analyticsData.summary.totalInvoiceAmount)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.invoiceCount} faktura</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.invoiceCount} {t('partners.invoicesCount')}</p>
                 </Card>
                 <Card className="p-4">
-                  <p className="text-xs text-muted-foreground font-medium">Plaćene fakture</p>
+                  <p className="text-xs text-muted-foreground font-medium">{t('partners.paidInvoices')}</p>
                   <p className="text-lg font-semibold mt-1 text-emerald-600">{formatRSD(analyticsData.summary.paidInvoiceAmount)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.invoiceCount > 0 ? `${Math.round((analyticsData.summary.paidInvoiceAmount / analyticsData.summary.totalInvoiceAmount) * 100)}%` : '0%'} od ukupnog</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.invoiceCount > 0 ? `${Math.round((analyticsData.summary.paidInvoiceAmount / analyticsData.summary.totalInvoiceAmount) * 100)}%` : '0%'} {t('partners.ofTotal')}</p>
                 </Card>
                 <Card className="p-4 border-red-200 bg-red-50/50">
-                  <p className="text-xs text-red-600 font-medium">Neplaćene fakture</p>
+                  <p className="text-xs text-red-600 font-medium">{t('partners.unpaidInvoices')}</p>
                   <p className="text-lg font-semibold mt-1 text-red-600">{formatRSD(analyticsData.summary.unpaidInvoiceAmount)}</p>
-                  <p className="text-[10px] text-red-500 mt-0.5">{analyticsData.summary.invoiceCount > 0 ? `${Math.round((analyticsData.summary.unpaidInvoiceAmount / analyticsData.summary.totalInvoiceAmount) * 100)}%` : '0%'} od ukupnog</p>
+                  <p className="text-[10px] text-red-500 mt-0.5">{analyticsData.summary.invoiceCount > 0 ? `${Math.round((analyticsData.summary.unpaidInvoiceAmount / analyticsData.summary.totalInvoiceAmount) * 100)}%` : '0%'} {t('partners.ofTotal')}</p>
                 </Card>
                 <Card className="p-4">
-                  <p className="text-xs text-muted-foreground font-medium">Ukupna nabavka</p>
+                  <p className="text-xs text-muted-foreground font-medium">{t('partners.totalProcurement')}</p>
                   <p className="text-lg font-semibold mt-1">{formatRSD(analyticsData.summary.totalPurchaseAmount)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.purchaseOrderCount} narudžbina</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.purchaseOrderCount} {t('partners.ordersCount')}</p>
                 </Card>
               </div>
 
@@ -442,18 +444,18 @@ export function Partneri() {
 
               {/* Recent Invoices */}
               <div>
-                <h3 className="text-sm font-semibold mb-3">Poslednje fakture</h3>
+                <h3 className="text-sm font-semibold mb-3">{t('partners.recentInvoices')}</h3>
                 {analyticsData.recentInvoices.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">Nema faktura za prikaz</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">{t('partners.noInvoices')}</p>
                 ) : (
                   <div className="max-h-48 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-xs">Broj</TableHead>
-                          <TableHead className="text-xs">Datum</TableHead>
-                          <TableHead className="text-xs text-right">Iznos</TableHead>
-                          <TableHead className="text-xs text-center">Status</TableHead>
+                          <TableHead className="text-xs">{t('common.number')}</TableHead>
+                          <TableHead className="text-xs">{t('common.date')}</TableHead>
+                          <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+                          <TableHead className="text-xs text-center">{t('common.status')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -479,18 +481,18 @@ export function Partneri() {
 
               {/* Recent Purchase Orders */}
               <div>
-                <h3 className="text-sm font-semibold mb-3">Poslednje narudžbine</h3>
+                <h3 className="text-sm font-semibold mb-3">{t('partners.recentOrders')}</h3>
                 {analyticsData.recentPurchaseOrders.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">Nema narudžbina za prikaz</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">{t('partners.noOrders')}</p>
                 ) : (
                   <div className="max-h-48 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-xs">Broj</TableHead>
-                          <TableHead className="text-xs">Datum</TableHead>
-                          <TableHead className="text-xs text-right">Iznos</TableHead>
-                          <TableHead className="text-xs text-center">Status</TableHead>
+                          <TableHead className="text-xs">{t('common.number')}</TableHead>
+                          <TableHead className="text-xs">{t('common.date')}</TableHead>
+                          <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+                          <TableHead className="text-xs text-center">{t('common.status')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -525,22 +527,22 @@ export function Partneri() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Naziv</TableHead>
+                    <TableHead className="text-xs">{t('common.name')}</TableHead>
                     <TableHead className="text-xs">PIB</TableHead>
-                    <TableHead className="text-xs">Tip</TableHead>
-                    <TableHead className="text-xs">Grad</TableHead>
-                    <TableHead className="text-xs">Telefon</TableHead>
-                    <TableHead className="text-xs">Email</TableHead>
-                    <TableHead className="text-xs text-center">Fakture</TableHead>
-                    <TableHead className="text-xs text-center">Narudžbine</TableHead>
-                    <TableHead className="text-xs text-right">Akcije</TableHead>
+                    <TableHead className="text-xs">{t('common.type')}</TableHead>
+                    <TableHead className="text-xs">{t('partners.partnerCity')}</TableHead>
+                    <TableHead className="text-xs">{t('partners.partnerPhone')}</TableHead>
+                    <TableHead className="text-xs">{t('common.email')}</TableHead>
+                    <TableHead className="text-xs text-center">{t('partners.invoices')}</TableHead>
+                    <TableHead className="text-xs text-center">{t('partners.orders')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {partners.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-sm">
-                        Nema partnera za prikaz
+                        {t('partners.noPartners')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -568,7 +570,7 @@ export function Partneri() {
                         </TableCell>
                         <TableCell className="text-xs text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenAnalytics(p)} title="Analitička kartica">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenAnalytics(p)} title={t('partners.analyticsCard')}>
                               <Eye className="h-3.5 w-3.5" />
                             </Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(p)}>

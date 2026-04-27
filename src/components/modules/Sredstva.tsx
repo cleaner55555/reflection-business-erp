@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusColor } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 interface Asset {
   id: string; name: string; category: string | null; serialNumber: string | null
@@ -22,6 +23,7 @@ interface Asset {
 const STATUS_LABELS: Record<string, string> = { aktivno: 'Aktivno', na_popravci: 'Na popravci', izvan_upotrebe: 'Izvan upotrebe', prodato: 'Prodato', otpisano: 'Otpisano' }
 
 export function Sredstva() {
+  const { t } = useTranslation()
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
@@ -53,8 +55,8 @@ export function Sredstva() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Obrisati sredstvo?')) return
-    try { await fetch(`/api/assets/${id}`, { method: 'DELETE' }); toast.success('Obrisano'); fetchAssets() } catch { toast.error('Greška') }
+    if (!confirm(t('assets.confirmDelete'))) return
+    try { await fetch(`/api/assets/${id}`, { method: 'DELETE' }); toast.success(t('common.deleteSuccess')); fetchAssets() } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -64,9 +66,9 @@ export function Sredstva() {
     try {
       const url = editing ? `/api/assets/${editing.id}` : '/api/assets'
       const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (!res.ok) { toast.error('Greška'); return }
-      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setViewMode('list'); setEditing(null); fetchAssets()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+      if (!res.ok) { toast.error(t('common.error')); return }
+      toast.success(editing ? t('common.updated') : t('common.created')); setViewMode('list'); setEditing(null); fetchAssets()
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   const totalValue = assets.reduce((s, a) => s + a.currentValue, 0)
@@ -76,14 +78,14 @@ export function Sredstva() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Osnovna Sredstva</h1>
-        <p className="text-muted-foreground text-sm mt-1">Praćenje i amortizacija osnovnih sredstava</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t('assets.title')}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t('assets.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4"><p className="text-xs text-muted-foreground">Trenutna vrednost</p><p className="text-lg font-bold">{formatRSD(totalValue)}</p></Card>
-        <Card className="p-4"><p className="text-xs text-muted-foreground">Ukupna amortizacija</p><p className="text-lg font-bold text-red-600">{formatRSD(totalDep)}</p></Card>
-        <Card className="p-4"><p className="text-xs text-muted-foreground">Aktivna sredstva</p><p className="text-lg font-bold">{activeCount}</p></Card>
+        <Card className="p-4"><p className="text-xs text-muted-foreground">{t('assets.currentValue')}</p><p className="text-lg font-bold">{formatRSD(totalValue)}</p></Card>
+        <Card className="p-4"><p className="text-xs text-muted-foreground">{t('assets.totalDepreciation')}</p><p className="text-lg font-bold text-red-600">{formatRSD(totalDep)}</p></Card>
+        <Card className="p-4"><p className="text-xs text-muted-foreground">{t('assets.activeAssets')}</p><p className="text-lg font-bold">{activeCount}</p></Card>
       </div>
 
       <Card>
@@ -92,45 +94,45 @@ export function Sredstva() {
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
               <div>
-                <CardTitle className="text-base font-semibold">{editing ? 'Izmeni' : 'Novo'} Sredstvo</CardTitle>
+                <CardTitle className="text-base font-semibold">{editing ? t('common.edit') : t('common.new')} {t('assets.asset')}</CardTitle>
               </div>
             </div>
           ) : (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <CardTitle className="text-base font-semibold">Sva sredstva</CardTitle>
-              <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novo Sredstvo</Button>
+              <CardTitle className="text-base font-semibold">{t('assets.allAssets')}</CardTitle>
+              <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> {t('common.new')} {t('assets.asset')}</Button>
             </div>
           )}
         </CardHeader>
         <CardContent>
           {viewMode === 'form' ? (
             <form onSubmit={handleSubmit} className="space-y-4" key={editing?.id || 'new'}>
-              <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input name="name" defaultValue={editing?.name || ''} required /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('assets.assetName')} *</Label><Input name="name" defaultValue={editing?.name || ''} required /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Kategorija</Label>
-                  <Select name="category" defaultValue={editing?.category || ''}><SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger><SelectContent>
+                <div className="space-y-2"><Label className="text-xs">{t('common.category')}</Label>
+                  <Select name="category" defaultValue={editing?.category || ''}><SelectTrigger><SelectValue placeholder={t('common.select')} /></SelectTrigger><SelectContent>
                     <SelectItem value="IT oprema">IT oprema</SelectItem><SelectItem value="vozila">Vozila</SelectItem><SelectItem value="uređaj">Uređaj</SelectItem><SelectItem value="nameštaj">Nameštaj</SelectItem><SelectItem value="alat">Alat</SelectItem><SelectItem value="ostalo">Ostalo</SelectItem>
                   </SelectContent></Select>
                 </div>
-                <div className="space-y-2"><Label className="text-xs">Serijski broj</Label><Input name="serialNumber" defaultValue={editing?.serialNumber || ''} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('assets.serialNumber')}</Label><Input name="serialNumber" defaultValue={editing?.serialNumber || ''} /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Datum kupovine</Label><Input name="purchaseDate" type="date" defaultValue={editing?.purchaseDate?.split('T')[0] || ''} /></div>
-                <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input name="location" defaultValue={editing?.location || ''} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('assets.purchaseDate')}</Label><Input name="purchaseDate" type="date" defaultValue={editing?.purchaseDate?.split('T')[0] || ''} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('assets.location')}</Label><Input name="location" defaultValue={editing?.location || ''} /></div>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Nabavna cena</Label><Input name="purchasePrice" type="number" step="0.01" defaultValue={editing?.purchasePrice || ''} /></div>
-                <div className="space-y-2"><Label className="text-xs">Trenutna vrednost</Label><Input name="currentValue" type="number" step="0.01" defaultValue={editing?.currentValue || ''} /></div>
-                <div className="space-y-2"><Label className="text-xs">Životni vek (mes.)</Label><Input name="usefulLife" type="number" defaultValue={editing?.usefulLife || '60'} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('assets.acquisitionValue')}</Label><Input name="purchasePrice" type="number" step="0.01" defaultValue={editing?.purchasePrice || ''} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('assets.currentValue')}</Label><Input name="currentValue" type="number" step="0.01" defaultValue={editing?.currentValue || ''} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('assets.usefulLife')}</Label><Input name="usefulLife" type="number" defaultValue={editing?.usefulLife || '60'} /></div>
               </div>
-              <div className="space-y-2"><Label className="text-xs">Status</Label>
+              <div className="space-y-2"><Label className="text-xs">{t('common.status')}</Label>
                 <Select name="status" defaultValue={editing?.status || 'aktivno'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-                  <SelectItem value="aktivno">Aktivno</SelectItem><SelectItem value="na_popravci">Na popravci</SelectItem><SelectItem value="izvan_upotrebe">Izvan upotrebe</SelectItem><SelectItem value="prodato">Prodato</SelectItem><SelectItem value="otpisano">Otpisano</SelectItem>
+                  <SelectItem value="aktivno">{t('assets.statusActive')}</SelectItem><SelectItem value="na_popravci">{t('assets.statusRepair')}</SelectItem><SelectItem value="izvan_upotrebe">{t('assets.statusOutOfUse')}</SelectItem><SelectItem value="prodato">{t('assets.statusSold')}</SelectItem><SelectItem value="otpisano">{t('assets.statusWrittenOff')}</SelectItem>
                 </SelectContent></Select>
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>Otkaži</Button>
-                <Button type="submit" className="flex-1" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
+                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
+                <Button type="submit" className="flex-1" disabled={submitting}>{submitting ? t('common.saving') : t('common.save')}</Button>
               </div>
             </form>
           ) : loading ? (
@@ -138,7 +140,7 @@ export function Sredstva() {
           ) : (
             <div className="max-h-[500px] overflow-y-auto">
               <Table><TableHeader><TableRow>
-                <TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs">Kategorija</TableHead><TableHead className="text-xs">Serijski br.</TableHead><TableHead className="text-xs text-right">Nabavna</TableHead><TableHead className="text-xs text-right">Trenutna</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-[80px]">Akcije</TableHead>
+                <TableHead className="text-xs">{t('common.name')}</TableHead><TableHead className="text-xs">{t('common.category')}</TableHead><TableHead className="text-xs">{t('assets.serialNumber')}</TableHead><TableHead className="text-xs text-right">{t('assets.acquisitionValue')}</TableHead><TableHead className="text-xs text-right">{t('assets.currentValue')}</TableHead><TableHead className="text-xs">{t('common.status')}</TableHead><TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {assets.map((a) => (

@@ -26,6 +26,7 @@ import {
 import { Plus, Search, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, BookOpen, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 interface Transaction {
   id: string
@@ -62,31 +63,32 @@ interface JournalEntry {
 }
 
 const JOURNAL_TYPE_OPTIONS = [
-  { value: 'all', label: 'Sve' },
-  { value: 'faktura_izlazna', label: 'Faktura izlazna' },
-  { value: 'faktura_ulazna', label: 'Faktura ulazna' },
-  { value: 'predracun', label: 'Predračun' },
-  { value: 'transakcija', label: 'Transakcija' },
-  { value: 'kasa', label: 'Kasa' },
-  { value: 'nabavka', label: 'Nabavka' },
-  { value: 'otpremnica', label: 'Otpremnica' },
+  { value: 'all', label: 'common.all' },
+  { value: 'faktura_izlazna', label: 'invoices.outgoing' },
+  { value: 'faktura_ulazna', label: 'invoices.incoming' },
+  { value: 'predracun', label: 'invoices.preinvoice' },
+  { value: 'transakcija', label: 'finance.transaction' },
+  { value: 'kasa', label: 'finance.cashRegister' },
+  { value: 'nabavka', label: 'finance.purchase' },
+  { value: 'otpremnica', label: 'finance.deliveryNote' },
 ] as const
 
 export function Finansije() {
+  const { t } = useTranslation()
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Finansije</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('finance.title')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Upravljanje transakcijama, blagajnom i keš operacijama
+          {t('finance.subtitle')}
         </p>
       </div>
 
       <Tabs defaultValue="transakcije" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="transakcije">Transakcije</TabsTrigger>
-          <TabsTrigger value="kasa">Kasa</TabsTrigger>
-          <TabsTrigger value="dnevnik">Dnevnik</TabsTrigger>
+          <TabsTrigger value="transakcije">{t('finance.transactions')}</TabsTrigger>
+          <TabsTrigger value="kasa">{t('finance.cashRegister')}</TabsTrigger>
+          <TabsTrigger value="dnevnik">{t('finance.journal')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="transakcije">
@@ -112,6 +114,7 @@ function TransakcijeTab() {
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
+  const { t } = useTranslation()
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true)
@@ -145,13 +148,13 @@ function TransakcijeTab() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Da li ste sigurni?')) return
+    if (!confirm(t('common.confirmDelete'))) return
     try {
       const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success('Transakcija obrisana')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(t('finance.transactionDeleted'))
       fetchTransactions()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -175,15 +178,15 @@ function TransakcijeTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška')
+        toast.error(err.error || t('common.error'))
         return
       }
-      toast.success(isEditing ? 'Transakcija uspešno ažurirana' : 'Transakcija uspešno kreirana')
+      toast.success(isEditing ? t('finance.transactionUpdated') : t('finance.transactionCreated'))
       setViewMode('list')
       setEditingTransaction(null)
       fetchTransactions()
     } catch {
-      toast.error('Greška pri čuvanju transakcije')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -196,17 +199,17 @@ function TransakcijeTab() {
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
             <div>
-              <CardTitle className="text-base font-semibold">{editingTransaction ? 'Izmeni Transakciju' : 'Nova Transakcija'}</CardTitle>
+              <CardTitle className="text-base font-semibold">{editingTransaction ? t('finance.editTransaction') : t('finance.newTransaction')}</CardTitle>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Transakcije</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">Sve finansijske transakcije</p>
+              <CardTitle className="text-base font-semibold">{t('finance.transactions')}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('finance.allTransactionsDesc')}</p>
             </div>
             <Button size="sm" className="gap-2" onClick={handleNew}>
-              <Plus className="h-4 w-4" /> Nova Transakcija
+              <Plus className="h-4 w-4" /> {t('finance.newTransaction')}
             </Button>
           </div>
         )}
@@ -217,7 +220,7 @@ function TransakcijeTab() {
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Pretraži transakcije..."
+                placeholder={t('finance.searchTransactions')}
                 className="pl-8 h-9"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -225,25 +228,25 @@ function TransakcijeTab() {
             </div>
             <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
               <SelectTrigger className="w-[140px] h-9">
-                <SelectValue placeholder="Svi tipovi" />
+                <SelectValue placeholder={t('finance.allTypes')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Svi tipovi</SelectItem>
-                <SelectItem value="prihod">Prihod</SelectItem>
-                <SelectItem value="rashod">Rashod</SelectItem>
+                <SelectItem value="all">{t('finance.allTypes')}</SelectItem>
+                <SelectItem value="prihod">{t('common.prihod')}</SelectItem>
+                <SelectItem value="rashod">{t('common.rashod')}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v === 'all' ? '' : v)}>
               <SelectTrigger className="w-[160px] h-9">
-                <SelectValue placeholder="Sve kategorije" />
+                <SelectValue placeholder={t('finance.allCategories')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Sve kategorije</SelectItem>
-                <SelectItem value="promet">Promet</SelectItem>
-                <SelectItem value="nabavka">Nabavka</SelectItem>
-                <SelectItem value="plata">Plata</SelectItem>
-                <SelectItem value="režije">Režije</SelectItem>
-                <SelectItem value="ostalo">Ostalo</SelectItem>
+                <SelectItem value="all">{t('finance.allCategories')}</SelectItem>
+                <SelectItem value="promet">{t('finance.category_revenue')}</SelectItem>
+                <SelectItem value="nabavka">{t('finance.purchase')}</SelectItem>
+                <SelectItem value="plata">{t('finance.salary')}</SelectItem>
+                <SelectItem value="režije">{t('finance.expenses')}</SelectItem>
+                <SelectItem value="ostalo">{t('finance.other')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -254,46 +257,46 @@ function TransakcijeTab() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Tip</Label>
+                <Label className="text-xs">{t('common.type')}</Label>
                 <Select name="type" defaultValue={editingTransaction?.type || 'prihod'}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="prihod">Prihod</SelectItem>
-                    <SelectItem value="rashod">Rashod</SelectItem>
+                    <SelectItem value="prihod">{t('common.prihod')}</SelectItem>
+                    <SelectItem value="rashod">{t('common.rashod')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Kategorija</Label>
+                <Label className="text-xs">{t('common.category')}</Label>
                 <Select name="category" defaultValue={editingTransaction?.category || 'promet'}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="promet">Promet</SelectItem>
-                    <SelectItem value="nabavka">Nabavka</SelectItem>
-                    <SelectItem value="plata">Plata</SelectItem>
-                    <SelectItem value="režije">Režije</SelectItem>
-                    <SelectItem value="ostalo">Ostalo</SelectItem>
+                    <SelectItem value="promet">{t('finance.category_revenue')}</SelectItem>
+                    <SelectItem value="nabavka">{t('finance.purchase')}</SelectItem>
+                    <SelectItem value="plata">{t('finance.salary')}</SelectItem>
+                    <SelectItem value="režije">{t('finance.expenses')}</SelectItem>
+                    <SelectItem value="ostalo">{t('finance.other')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Iznos (RSD)</Label>
+              <Label className="text-xs">{t('finance.amountRSD')}</Label>
               <Input name="amount" type="number" step="0.01" placeholder="0.00" required defaultValue={editingTransaction?.amount ?? ''} />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Opis</Label>
-              <Input name="description" placeholder="Opis transakcije" required defaultValue={editingTransaction?.description || ''} />
+              <Label className="text-xs">{t('common.description')}</Label>
+              <Input name="description" placeholder={t('finance.transactionDescription')} required defaultValue={editingTransaction?.description || ''} />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Dokument (opciono)</Label>
-              <Input name="documentRef" placeholder="Broj dokumenta" defaultValue={editingTransaction?.documentRef || ''} />
+              <Label className="text-xs">{t('finance.documentOptional')}</Label>
+              <Input name="documentRef" placeholder={t('finance.documentNumber')} defaultValue={editingTransaction?.documentRef || ''} />
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Čuvanje...' : editingTransaction ? 'Sačuvaj Izmene' : 'Kreiraj Transakciju'}
+                {submitting ? t('common.saving') : editingTransaction ? t('common.saveChanges') : t('finance.createTransaction')}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </form>
         ) : loading ? (
@@ -307,20 +310,20 @@ function TransakcijeTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Datum</TableHead>
-                  <TableHead className="text-xs">Tip</TableHead>
-                  <TableHead className="text-xs">Kategorija</TableHead>
-                  <TableHead className="text-xs">Opis</TableHead>
-                  <TableHead className="text-xs">Dokument</TableHead>
-                  <TableHead className="text-xs text-right">Iznos</TableHead>
-                  <TableHead className="text-xs w-[80px]">Akcije</TableHead>
+                  <TableHead className="text-xs">{t('common.date')}</TableHead>
+                  <TableHead className="text-xs">{t('common.type')}</TableHead>
+                  <TableHead className="text-xs">{t('common.category')}</TableHead>
+                  <TableHead className="text-xs">{t('common.description')}</TableHead>
+                  <TableHead className="text-xs">{t('finance.document')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+                  <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {transactions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema transakcija za prikaz
+                      {t('finance.noTransactions')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -369,6 +372,7 @@ function KasaTab() {
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editingEntry, setEditingEntry] = useState<CashEntry | null>(null)
+  const { t } = useTranslation()
 
   const fetchEntries = useCallback(async () => {
     setLoading(true)
@@ -402,13 +406,13 @@ function KasaTab() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Da li ste sigurni?')) return
+    if (!confirm(t('common.confirmDelete'))) return
     try {
       const res = await fetch(`/api/cash-register/${id}`, { method: 'DELETE' })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success('Unos uspešno obrisan')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(t('finance.entryDeleted'))
       fetchEntries()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -432,15 +436,15 @@ function KasaTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška')
+        toast.error(err.error || t('common.error'))
         return
       }
-      toast.success(isEditing ? 'Unos uspešno ažuriran' : 'Kasa unos uspešno kreiran')
+      toast.success(isEditing ? t('finance.entryUpdated') : t('finance.cashEntryCreated'))
       setViewMode('list')
       setEditingEntry(null)
       fetchEntries()
     } catch {
-      toast.error('Greška pri čuvanju unosa')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -454,21 +458,21 @@ function KasaTab() {
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
               <div>
-                <CardTitle className="text-base font-semibold">{editingEntry ? 'Izmeni Unos' : 'Novi Unos u Kasu'}</CardTitle>
+                <CardTitle className="text-base font-semibold">{editingEntry ? t('finance.editEntry') : t('finance.newCashEntry')}</CardTitle>
               </div>
             </div>
           ) : (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Blagajna</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Dnevni keš izvodi</p>
+                <CardTitle className="text-base font-semibold">{t('finance.cashRegister')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('finance.dailyCashStatements')}</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className={`rounded-lg px-4 py-2 text-sm font-bold ${runningBalance >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                  Stanje: {formatRSD(runningBalance)}
+                  {t('finance.balance')}: {formatRSD(runningBalance)}
                 </div>
                 <Button size="sm" className="gap-2" onClick={handleNew}>
-                  <Plus className="h-4 w-4" /> Novi Unos
+                  <Plus className="h-4 w-4" /> {t('finance.newEntry')}
                 </Button>
               </div>
             </div>
@@ -479,43 +483,43 @@ function KasaTab() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Tip</Label>
+                  <Label className="text-xs">{t('common.type')}</Label>
                   <Select name="type" defaultValue={editingEntry?.type || 'ulaz'}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ulaz">Ulaz</SelectItem>
-                      <SelectItem value="izlaz">Izlaz</SelectItem>
+                      <SelectItem value="ulaz">{t('finance.income')}</SelectItem>
+                      <SelectItem value="izlaz">{t('finance.expense')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Način plaćanja</Label>
+                  <Label className="text-xs">{t('finance.paymentMethod')}</Label>
                   <Select name="paymentMethod" defaultValue={editingEntry?.paymentMethod || 'gotovina'}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="gotovina">Gotovina</SelectItem>
-                      <SelectItem value="kartica">Kartica</SelectItem>
+                      <SelectItem value="gotovina">{t('finance.cash')}</SelectItem>
+                      <SelectItem value="kartica">{t('finance.card')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Iznos (RSD)</Label>
+                <Label className="text-xs">{t('finance.amountRSD')}</Label>
                 <Input name="amount" type="number" step="0.01" placeholder="0.00" required defaultValue={editingEntry?.amount ?? ''} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Opis</Label>
-                <Input name="description" placeholder="Opis unosa" required defaultValue={editingEntry?.description || ''} />
+                <Label className="text-xs">{t('common.description')}</Label>
+                <Input name="description" placeholder={t('finance.entryDescription')} required defaultValue={editingEntry?.description || ''} />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Partner (opciono)</Label>
-                <Input name="partnerName" placeholder="Ime partnera" defaultValue={editingEntry?.partnerName || ''} />
+                <Label className="text-xs">{t('finance.partnerOptional')}</Label>
+                <Input name="partnerName" placeholder={t('finance.partnerName')} defaultValue={editingEntry?.partnerName || ''} />
               </div>
               <div className="flex gap-2">
                 <Button type="submit" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : editingEntry ? 'Sačuvaj Izmene' : 'Kreiraj Unos'}
+                  {submitting ? t('common.saving') : editingEntry ? t('common.saveChanges') : t('finance.createEntry')}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+                <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
               </div>
             </form>
           ) : loading ? (
@@ -529,20 +533,20 @@ function KasaTab() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Datum</TableHead>
-                    <TableHead className="text-xs">Tip</TableHead>
-                    <TableHead className="text-xs">Opis</TableHead>
-                    <TableHead className="text-xs">Partner</TableHead>
-                    <TableHead className="text-xs">Plaćanje</TableHead>
-                    <TableHead className="text-xs text-right">Iznos</TableHead>
-                    <TableHead className="text-xs w-[80px]">Akcije</TableHead>
+                    <TableHead className="text-xs">{t('common.date')}</TableHead>
+                    <TableHead className="text-xs">{t('common.type')}</TableHead>
+                    <TableHead className="text-xs">{t('common.description')}</TableHead>
+                    <TableHead className="text-xs">{t('common.partner')}</TableHead>
+                    <TableHead className="text-xs">{t('finance.payment')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+                    <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {entries.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                        Nema unosa za prikaz
+                        {t('finance.noEntries')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -587,6 +591,7 @@ function DnevnikTab() {
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState('')
+  const { t } = useTranslation()
 
   const fetchJournal = useCallback(async () => {
     setLoading(true)
@@ -614,13 +619,13 @@ function DnevnikTab() {
           <div>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <BookOpen className="h-4 w-4" />
-              Finansijski Dnevnik
+              {t('finance.journal')}
             </CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Ujedinjeni hronološki pregled svih finansijskih događaja</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('finance.journalDesc')}</p>
           </div>
           <div className="flex items-center gap-3">
             <div className={`rounded-lg px-4 py-2 text-sm font-bold ${saldo >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-              Saldo: {formatRSD(Math.abs(saldo))} {saldo < 0 ? '(Potražuje)' : '(Duguje)'}
+              {t('common.balance')}: {formatRSD(Math.abs(saldo))} {saldo < 0 ? `(${t('common.credit')})` : `(${t('common.debit')})`}
             </div>
           </div>
         </div>
@@ -629,12 +634,12 @@ function DnevnikTab() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
           <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[180px] h-9">
-              <SelectValue placeholder="Sve vrste" />
+              <SelectValue placeholder={t('finance.allTypes')} />
             </SelectTrigger>
             <SelectContent>
               {JOURNAL_TYPE_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {t(opt.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -653,20 +658,20 @@ function DnevnikTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Datum</TableHead>
-                  <TableHead className="text-xs">Tip</TableHead>
-                  <TableHead className="text-xs">Opis</TableHead>
-                  <TableHead className="text-xs">Dokument</TableHead>
-                  <TableHead className="text-xs">Partner</TableHead>
-                  <TableHead className="text-xs text-right">Duguje</TableHead>
-                  <TableHead className="text-xs text-right">Potražuje</TableHead>
+                  <TableHead className="text-xs">{t('common.date')}</TableHead>
+                  <TableHead className="text-xs">{t('common.type')}</TableHead>
+                  <TableHead className="text-xs">{t('common.description')}</TableHead>
+                  <TableHead className="text-xs">{t('finance.document')}</TableHead>
+                  <TableHead className="text-xs">{t('common.partner')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('common.debit')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('common.credit')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {entries.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema stavki za prikaz
+                      {t('finance.noItems')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -693,7 +698,7 @@ function DnevnikTab() {
                     {/* Running totals row */}
                     <TableRow className="bg-muted/50 font-semibold border-t-2">
                       <TableCell colSpan={5} className="text-xs text-right">
-                        Ukupno:
+                        {t('common.total')}:
                       </TableCell>
                       <TableCell className="text-xs text-right font-bold text-blue-700">
                         {totalDebit > 0 ? formatRSD(totalDebit) : '-'}

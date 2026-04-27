@@ -25,6 +25,7 @@ import {
 import { Plus, Search, Trash2, Pencil, ArrowLeft, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 // ==================== INTERFACES ====================
 
@@ -145,6 +146,7 @@ export function Fakture() {
   const [printInvoice, setPrintInvoice] = useState<FullInvoice | null>(null)
   const [printLoading, setPrintLoading] = useState(false)
   const printRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
 
   // Form state
   const [lineItems, setLineItems] = useState<LineItem[]>([
@@ -200,11 +202,11 @@ export function Fakture() {
     setViewMode('print')
     try {
       const res = await fetch(`/api/invoices/${inv.id}`)
-      if (!res.ok) { toast.error('Greška pri učitavanju fakture'); return }
+      if (!res.ok) { toast.error(t('invoices.loadError')); return }
       const data: FullInvoice = await res.json()
       setPrintInvoice(data)
     } catch {
-      toast.error('Greška pri učitavanju fakture')
+      toast.error(t('invoices.loadError'))
     } finally {
       setPrintLoading(false)
     }
@@ -215,13 +217,13 @@ export function Fakture() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Da li ste sigurni da želite da obrišete ovu fakturu?')) return
+    if (!confirm(t('invoices.confirmDelete'))) return
     try {
       const res = await fetch(`/api/invoices/${id}`, { method: 'DELETE' })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success('Faktura uspešno obrisana')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(t('invoices.deleteSuccess'))
       fetchInvoices()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const addLineItem = () => {
@@ -297,16 +299,16 @@ export function Fakture() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri kreiranju')
+        toast.error(err.error || t('common.error'))
         return
       }
-      toast.success(isEditing ? 'Faktura uspešno ažurirana' : 'Faktura uspešno kreirana')
+      toast.success(isEditing ? t('invoices.updatedSuccess') : t('invoices.createdSuccess'))
       setViewMode('list')
       setEditingInvoice(null)
       setLineItems([{ productId: '', productName: '', quantity: 1, unitPrice: 0, discountPct: 0, taxRate: 20 }])
       fetchInvoices()
     } catch {
-      toast.error('Greška pri kreiranju fakture')
+      toast.error(t('invoices.createError'))
     } finally {
       setSubmitting(false)
     }
@@ -341,7 +343,7 @@ export function Fakture() {
               </Button>
               <div>
                 <CardTitle className="text-base font-semibold">
-                  {editingInvoice ? 'Izmeni Fakturu' : 'Nova Faktura'}
+                  {editingInvoice ? t('invoices.editInvoice') : t('invoices.newInvoice')}
                 </CardTitle>
               </div>
             </div>
@@ -352,12 +354,12 @@ export function Fakture() {
               </Button>
               <div>
                 <CardTitle className="text-base font-semibold">
-                  Pregled Fakture {printInvoice?.number || ''}
+                  {t('invoices.previewInvoice')} {printInvoice?.number || ''}
                 </CardTitle>
               </div>
               <div className="ml-auto">
                 <Button size="sm" className="gap-2" onClick={doPrint}>
-                  <Printer className="h-4 w-4" /> Štampaj
+                  <Printer className="h-4 w-4" /> {t('common.print')}
                 </Button>
               </div>
             </div>
@@ -365,11 +367,11 @@ export function Fakture() {
             <>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold">Fakture</CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">Upravljanje fakturama</p>
+                  <CardTitle className="text-base font-semibold">{t('invoices.title')}</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t('invoices.subtitle')}</p>
                 </div>
                 <Button size="sm" className="gap-2" onClick={handleNew}>
-                  <Plus className="h-4 w-4" /> Nova Faktura
+                  <Plus className="h-4 w-4" /> {t('invoices.newInvoice')}
                 </Button>
               </div>
 
@@ -377,7 +379,7 @@ export function Fakture() {
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Pretraži fakture..."
+                    placeholder={t('invoices.searchInvoices')}
                     className="pl-8 h-9"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -385,25 +387,25 @@ export function Fakture() {
                 </div>
                 <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
                   <SelectTrigger className="w-[150px] h-9">
-                    <SelectValue placeholder="Svi tipovi" />
+                    <SelectValue placeholder={t('invoices.allTypes')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Sve</SelectItem>
-                    <SelectItem value="predracun">Predračun</SelectItem>
-                    <SelectItem value="izlazna">Izlazna</SelectItem>
-                    <SelectItem value="ulazna">Ulazna</SelectItem>
+                    <SelectItem value="all">{t('common.all')}</SelectItem>
+                    <SelectItem value="predracun">{t('invoices.preinvoice')}</SelectItem>
+                    <SelectItem value="izlazna">{t('invoices.outgoing')}</SelectItem>
+                    <SelectItem value="ulazna">{t('invoices.incoming')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
                   <SelectTrigger className="w-[150px] h-9">
-                    <SelectValue placeholder="Svi statusi" />
+                    <SelectValue placeholder={t('invoices.allStatuses')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Svi statusi</SelectItem>
-                    <SelectItem value="nacrt">Načrt</SelectItem>
-                    <SelectItem value="poslata">Poslata</SelectItem>
-                    <SelectItem value="placena">Plaćena</SelectItem>
-                    <SelectItem value="otkazana">Otkazana</SelectItem>
+                    <SelectItem value="all">{t('invoices.allStatuses')}</SelectItem>
+                    <SelectItem value="nacrt">{t('common.nacrt')}</SelectItem>
+                    <SelectItem value="poslata">{t('common.poslata')}</SelectItem>
+                    <SelectItem value="placena">{t('common.placena')}</SelectItem>
+                    <SelectItem value="otkazana">{t('common.otkazana')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -436,15 +438,15 @@ export function Fakture() {
                     <p className="text-lg font-bold uppercase tracking-wide">
                       {getStatusLabel(printInvoice.type)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Broj: <span className="font-mono font-medium text-gray-800">{printInvoice.number}</span></p>
-                    <p className="text-xs text-gray-500">Datum: {formatDate(printInvoice.date)}</p>
-                    <p className="text-xs text-gray-500">Mesto: Beograd</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('invoices.numberLabel')}: <span className="font-mono font-medium text-gray-800">{printInvoice.number}</span></p>
+                    <p className="text-xs text-gray-500">{t('common.date')}: {formatDate(printInvoice.date)}</p>
+                    <p className="text-xs text-gray-500">{t('invoices.place')}: Beograd</p>
                   </div>
                 </div>
 
                 {/* Partner Info */}
                 <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Kupac</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('invoices.buyer')}</p>
                   <p className="text-sm font-semibold">{printInvoice.partner?.name || '-'}</p>
                   {printInvoice.partner && (
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
@@ -471,14 +473,14 @@ export function Fakture() {
                 <table className="w-full text-xs mb-6">
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="border border-gray-300 px-2 py-2 text-center w-10">R.br</th>
-                      <th className="border border-gray-300 px-2 py-2">Naziv robe/usluge</th>
-                      <th className="border border-gray-300 px-2 py-2 text-center w-12">Kol.</th>
-                      <th className="border border-gray-300 px-2 py-2 text-center w-12">JM</th>
-                      <th className="border border-gray-300 px-2 py-2 text-right w-24">Cena</th>
-                      <th className="border border-gray-300 px-2 py-2 text-center w-14">Popust%</th>
-                      <th className="border border-gray-300 px-2 py-2 text-center w-14">PDV%</th>
-                      <th className="border border-gray-300 px-2 py-2 text-right w-24">Iznos</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-10">{t('invoices.rowNum')}</th>
+                      <th className="border border-gray-300 px-2 py-2">{t('invoices.itemName')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-12">{t('invoices.qty')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-12">{t('invoices.unit')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.price')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-14">{t('invoices.discountPct')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-14">{t('invoices.taxPct')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.amount')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -487,7 +489,7 @@ export function Fakture() {
                         <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
                         <td className="border border-gray-300 px-2 py-1.5">{item.productName}</td>
                         <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
-                        <td className="border border-gray-300 px-2 py-1.5 text-center">kom</td>
+                        <td className="border border-gray-300 px-2 py-1.5 text-center">{t('invoices.unitPiece')}</td>
                         <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
                         <td className="border border-gray-300 px-2 py-1.5 text-center">{item.discountPct || 0}</td>
                         <td className="border border-gray-300 px-2 py-1.5 text-center">{item.taxRate || 20}</td>
@@ -501,23 +503,23 @@ export function Fakture() {
                 <div className="flex justify-end mb-6">
                   <div className="w-72 space-y-1">
                     <div className="flex justify-between text-xs py-1 px-2">
-                      <span className="text-gray-500">Osnovica:</span>
+                      <span className="text-gray-500">{t('invoices.baseAmount')}:</span>
                       <span className="font-medium">
                         {formatRSD(printInvoice.items.reduce((s, i) => s + calcItemBase(i), 0))}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs py-1 px-2">
-                      <span className="text-gray-500">Ukupan PDV:</span>
+                      <span className="text-gray-500">{t('invoices.totalTax')}:</span>
                       <span className="font-medium">
                         {formatRSD(printInvoice.items.reduce((s, i) => s + calcItemTax(i), 0))}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm py-2 px-2 bg-gray-100 rounded font-bold border">
-                      <span>UKUPNO:</span>
+                      <span>{t('common.total').toUpperCase()}:</span>
                       <span>{formatRSD(printInvoice.totalAmount)}</span>
                     </div>
                     <div className="flex justify-between text-xs py-1 px-2">
-                      <span className="text-gray-500">Slovima:</span>
+                      <span className="text-gray-500">{t('invoices.inWords')}:</span>
                       <span className="font-medium italic text-gray-600">
                         {numberToSerbian(printInvoice.totalAmount)}
                       </span>
@@ -528,14 +530,14 @@ export function Fakture() {
                 {/* Payment Info */}
                 <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
                   <div>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Plaćanje</p>
-                    <p><span className="text-gray-500">Način: </span>{getStatusLabel(printInvoice.paymentMethod)}</p>
-                    <p><span className="text-gray-500">Rok plaćanja: </span>{formatDate(printInvoice.dueDate)}</p>
-                    <p><span className="text-gray-500">Račun: </span>{COMPANY.account}</p>
-                    <p><span className="text-gray-500">Banka: </span>{COMPANY.bank}</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('finance.payment')}</p>
+                    <p><span className="text-gray-500">{t('finance.methodLabel')}: </span>{getStatusLabel(printInvoice.paymentMethod)}</p>
+                    <p><span className="text-gray-500">{t('invoices.dueDate')}: </span>{formatDate(printInvoice.dueDate)}</p>
+                    <p><span className="text-gray-500">{t('invoices.accountLabel')}: </span>{COMPANY.account}</p>
+                    <p><span className="text-gray-500">{t('invoices.bankLabel')}: </span>{COMPANY.bank}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Status</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.status')}</p>
                     <p>
                       <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(printInvoice.status)}`}>
                         {getStatusLabel(printInvoice.status)}
@@ -547,7 +549,7 @@ export function Fakture() {
                 {/* Notes */}
                 {printInvoice.notes && (
                   <div className="mb-6 text-xs">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Napomene</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.note')}</p>
                     <p className="text-gray-600">{printInvoice.notes}</p>
                   </div>
                 )}
@@ -556,11 +558,11 @@ export function Fakture() {
                 <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
                   <div className="text-center">
                     <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                    <p className="text-[10px] text-gray-400">Potpis izdavaoca</p>
+                    <p className="text-[10px] text-gray-400">{t('invoices.signatureIssuer')}</p>
                   </div>
                   <div className="text-center">
                     <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                    <p className="text-[10px] text-gray-400">Potpis primanja</p>
+                    <p className="text-[10px] text-gray-400">{t('invoices.signatureReceiver')}</p>
                   </div>
                 </div>
               </div>
@@ -572,33 +574,33 @@ export function Fakture() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Tip fakture *</Label>
+                  <Label className="text-xs">{t('invoices.invoiceType')} *</Label>
                   <Select name="type" defaultValue={editingInvoice?.type || 'izlazna'}>
-                    <SelectTrigger><SelectValue placeholder="Izaberite tip" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t('invoices.selectType')} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="predracun">Predračun</SelectItem>
-                      <SelectItem value="izlazna">Izlazna</SelectItem>
-                      <SelectItem value="ulazna">Ulazna</SelectItem>
+                      <SelectItem value="predracun">{t('invoices.preinvoice')}</SelectItem>
+                      <SelectItem value="izlazna">{t('invoices.outgoing')}</SelectItem>
+                      <SelectItem value="ulazna">{t('invoices.incoming')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Status</Label>
+                  <Label className="text-xs">{t('common.status')}</Label>
                   <Select name="status" defaultValue={editingInvoice?.status || 'nacrt'}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="nacrt">Načrt</SelectItem>
-                      <SelectItem value="poslata">Poslata</SelectItem>
-                      <SelectItem value="placena">Plaćena</SelectItem>
+                      <SelectItem value="nacrt">{t('common.nacrt')}</SelectItem>
+                      <SelectItem value="poslata">{t('common.poslata')}</SelectItem>
+                      <SelectItem value="placena">{t('common.placena')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Partner *</Label>
+                  <Label className="text-xs">{t('common.partner')} *</Label>
                   <Select name="partnerId" defaultValue={editingInvoice?.partnerId || ''} required>
-                    <SelectTrigger><SelectValue placeholder="Izaberite partnera" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t('invoices.selectPartner')} /></SelectTrigger>
                     <SelectContent>
                       {partners.map((p) => (
                         <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
@@ -607,19 +609,19 @@ export function Fakture() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Rok plaćanja *</Label>
+                  <Label className="text-xs">{t('invoices.dueDate')} *</Label>
                   <Input name="dueDate" type="date" required defaultValue={editingInvoice?.dueDate?.split('T')[0] || ''} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Način plaćanja</Label>
+                  <Label className="text-xs">{t('finance.paymentMethod')}</Label>
                   <Select name="paymentMethod" defaultValue={editingInvoice?.paymentMethod || 'racun'}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="racun">Račun</SelectItem>
-                      <SelectItem value="gotovina">Gotovina</SelectItem>
-                      <SelectItem value="kartica">Kartica</SelectItem>
+                      <SelectItem value="racun">{t('invoices.bankTransfer')}</SelectItem>
+                      <SelectItem value="gotovina">{t('finance.cash')}</SelectItem>
+                      <SelectItem value="kartica">{t('finance.card')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -627,17 +629,17 @@ export function Fakture() {
 
               {/* Line Items */}
               <div className="space-y-3">
-                <Label className="text-xs font-semibold">Stavke fakture</Label>
+                <Label className="text-xs font-semibold">{t('invoices.invoiceItems')}</Label>
                 {lineItems.map((item, idx) => (
                   <div key={idx} className="grid grid-cols-12 gap-2 items-end">
                     <div className="col-span-4">
-                      {idx === 0 && <Label className="text-[10px] text-muted-foreground">Proizvod</Label>}
+                      {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('invoices.product')}</Label>}
                       <Select
                         value={item.productId}
                         onValueChange={(v) => updateLineItem(idx, 'productId', v)}
                       >
                         <SelectTrigger className="h-9 text-xs">
-                          <SelectValue placeholder="Izaberite" />
+                          <SelectValue placeholder={t('invoices.select')} />
                         </SelectTrigger>
                         <SelectContent>
                           {products.map((p) => (
@@ -647,7 +649,7 @@ export function Fakture() {
                       </Select>
                     </div>
                     <div className="col-span-2">
-                      {idx === 0 && <Label className="text-[10px] text-muted-foreground">Količina</Label>}
+                      {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('common.quantity')}</Label>}
                       <Input
                         type="number"
                         className="h-9 text-xs"
@@ -657,7 +659,7 @@ export function Fakture() {
                       />
                     </div>
                     <div className="col-span-2">
-                      {idx === 0 && <Label className="text-[10px] text-muted-foreground">Cena</Label>}
+                      {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('common.price')}</Label>}
                       <Input
                         type="number"
                         className="h-9 text-xs"
@@ -666,7 +668,7 @@ export function Fakture() {
                       />
                     </div>
                     <div className="col-span-2">
-                      {idx === 0 && <Label className="text-[10px] text-muted-foreground">Popust %</Label>}
+                      {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('invoices.discountPct')}</Label>}
                       <Input
                         type="number"
                         className="h-9 text-xs"
@@ -689,25 +691,25 @@ export function Fakture() {
                   </div>
                 ))}
                 <Button type="button" variant="outline" size="sm" onClick={addLineItem} className="w-full gap-1">
-                  <Plus className="h-3 w-3" /> Dodaj stavku
+                  <Plus className="h-3 w-3" /> {t('invoices.addItem')}
                 </Button>
               </div>
 
               <div className="rounded-lg bg-muted/50 p-3 text-right">
-                <span className="text-sm font-medium">Ukupno: </span>
+                <span className="text-sm font-medium">{t('common.total')}: </span>
                 <span className="text-lg font-bold text-primary">{formatRSD(grandTotal)}</span>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Napomene (opciono)</Label>
-                <Input name="notes" placeholder="Napomene na fakturi" defaultValue={editingInvoice?.notes || ''} />
+                <Label className="text-xs">{t('invoices.notesOptional')}</Label>
+                <Input name="notes" placeholder={t('invoices.notesPlaceholder')} defaultValue={editingInvoice?.notes || ''} />
               </div>
 
               <div className="flex gap-2">
                 <Button type="submit" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : editingInvoice ? 'Sačuvaj Izmene' : 'Kreiraj Fakturu'}
+                  {submitting ? t('common.saving') : editingInvoice ? t('common.saveChanges') : t('invoices.createInvoice')}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+                <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
               </div>
             </form>
           )}
@@ -726,21 +728,21 @@ export function Fakture() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Broj</TableHead>
-                    <TableHead className="text-xs">Tip</TableHead>
-                    <TableHead className="text-xs">Partner</TableHead>
-                    <TableHead className="text-xs">Datum</TableHead>
-                    <TableHead className="text-xs">Rok plaćanja</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs text-right">Iznos</TableHead>
-                    <TableHead className="text-xs text-right">Akcije</TableHead>
+                    <TableHead className="text-xs">{t('common.number')}</TableHead>
+                    <TableHead className="text-xs">{t('common.type')}</TableHead>
+                    <TableHead className="text-xs">{t('common.partner')}</TableHead>
+                    <TableHead className="text-xs">{t('common.date')}</TableHead>
+                    <TableHead className="text-xs">{t('invoices.dueDate')}</TableHead>
+                    <TableHead className="text-xs">{t('common.status')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {invoices.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
-                        Nema faktura za prikaz
+                        {t('invoices.noInvoices')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -765,13 +767,13 @@ export function Fakture() {
                         </TableCell>
                         <TableCell className="text-xs text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(inv)} title="Štampaj">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(inv)} title={t('common.print')}>
                               <Printer className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(inv)} title="Izmeni">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(inv)} title={t('common.edit')}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(inv.id)} title="Obriši">
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(inv.id)} title={t('common.delete')}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>

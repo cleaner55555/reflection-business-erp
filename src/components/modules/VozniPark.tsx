@@ -16,6 +16,7 @@ import {
   Fuel, Gauge, User, Wrench, Receipt, CarFront, ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n'
 import { formatDate, formatRSD } from '@/lib/helpers'
 
 interface VehicleService {
@@ -102,6 +103,7 @@ const EXPENSE_TYPE_LABELS: Record<string, string> = {
 }
 
 export function VozniPark() {
+  const { t } = useTranslation()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -119,7 +121,7 @@ export function VozniPark() {
       const data = await res.json()
       setVehicles(data)
     } catch {
-      toast.error('Greška pri učitavanju vozila')
+      toast.error(t('vehicleFleet.loadVehiclesError'))
     } finally {
       setLoading(false)
     }
@@ -134,7 +136,7 @@ export function VozniPark() {
       const data = await res.json()
       setVehicles(prev => prev.map(v => v.id === vehicleId ? data : v))
     } catch {
-      toast.error('Greška pri učitavanju detalja')
+      toast.error(t('vehicleFleet.loadDetailsError'))
     }
   }, [])
 
@@ -151,39 +153,39 @@ export function VozniPark() {
   }
 
   const handleDeleteVehicle = async (id: string) => {
-    if (!confirm('Obrisati vozilo? Svi servisi i troškovi će biti obrisani.')) return
+    if (!confirm(t('vehicleFleet.confirmDeleteVehicle'))) return
     try {
       const res = await fetch(`/api/vehicles/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Vozilo obrisano')
+      toast.success(t('vehicleFleet.vehicleDeleted'))
       if (expandedId === id) setExpandedId(null)
       fetchVehicles()
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     }
   }
 
   const handleDeleteService = async (serviceId: string, vehicleId: string) => {
-    if (!confirm('Obrisati servis?')) return
+    if (!confirm(t('vehicleFleet.confirmDeleteService'))) return
     try {
       const res = await fetch(`/api/vehicle-services/${serviceId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Servis obrisan')
+      toast.success(t('vehicleFleet.serviceDeleted'))
       fetchVehicleDetails(vehicleId)
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     }
   }
 
   const handleDeleteExpense = async (expenseId: string, vehicleId: string) => {
-    if (!confirm('Obrisati trošak?')) return
+    if (!confirm(t('vehicleFleet.confirmDeleteExpense'))) return
     try {
       const res = await fetch(`/api/vehicle-expenses/${expenseId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Trošak obrisan')
+      toast.success(t('vehicleFleet.expenseDeleted'))
       fetchVehicleDetails(vehicleId)
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     }
   }
 
@@ -210,12 +212,12 @@ export function VozniPark() {
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error()
-      toast.success(editingVehicle ? 'Vozilo ažurirano' : 'Vozilo kreirano')
+      toast.success(editingVehicle ? t('vehicleFleet.vehicleUpdated') : t('vehicleFleet.vehicleCreated'))
       setViewMode('list')
       setEditingVehicle(null)
       fetchVehicles()
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -242,13 +244,13 @@ export function VozniPark() {
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error()
-      toast.success('Servis dodat')
+      toast.success(t('vehicleFleet.serviceAdded'))
       const vid = targetVehicleId
       setViewMode('list')
       setTargetVehicleId(null)
       fetchVehicleDetails(vid)
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -274,13 +276,13 @@ export function VozniPark() {
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error()
-      toast.success('Trošak dodat')
+      toast.success(t('vehicleFleet.expenseAdded'))
       const vid = targetVehicleId
       setViewMode('list')
       setTargetVehicleId(null)
       fetchVehicleDetails(vid)
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -337,9 +339,9 @@ export function VozniPark() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Car className="h-6 w-6" />
-          Vozni Park
+          {t('vehicleFleet.title')}
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">Upravljanje vozilima, servisima i troškovima</p>
+        <p className="text-muted-foreground text-sm mt-1">{t('vehicleFleet.subtitle')}</p>
       </div>
 
       {/* Stats */}
@@ -350,7 +352,7 @@ export function VozniPark() {
               <CarFront className="h-4.5 w-4.5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Ukupno vozila</p>
+              <p className="text-xs text-muted-foreground">{t('vehicleFleet.totalVehicles')}</p>
               <p className="text-lg font-bold">{vehicles.length}</p>
             </div>
           </div>
@@ -361,7 +363,7 @@ export function VozniPark() {
               <Gauge className="h-4.5 w-4.5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Ukupna kilometraža</p>
+              <p className="text-xs text-muted-foreground">{t('vehicleFleet.totalMileage')}</p>
               <p className="text-lg font-bold">{totalMileage.toLocaleString('sr-RS')} km</p>
             </div>
           </div>
@@ -372,7 +374,7 @@ export function VozniPark() {
               <Receipt className="h-4.5 w-4.5 text-amber-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Mesečni troškovi</p>
+              <p className="text-xs text-muted-foreground">{t('vehicleFleet.monthlyExpenses')}</p>
               <p className="text-lg font-bold">{formatRSD(monthlyExpenses)}</p>
             </div>
           </div>
@@ -384,35 +386,35 @@ export function VozniPark() {
           {viewMode === 'vehicle-form' ? (
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>{editingVehicle ? 'Izmeni' : 'Novo'} Vozilo</CardTitle></div>
+              <div><CardTitle>{editingVehicle ? t('common.edit') : t('common.new')} {t('vehicleFleet.vehicle')}</CardTitle></div>
             </div>
           ) : viewMode === 'service-form' ? (
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>Dodaj Servis</CardTitle></div>
+              <div><CardTitle>{t('vehicleFleet.addService')}</CardTitle></div>
             </div>
           ) : viewMode === 'expense-form' ? (
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>Dodaj Trošak</CardTitle></div>
+              <div><CardTitle>{t('vehicleFleet.addExpense')}</CardTitle></div>
             </div>
           ) : (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Vozila</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">{vehicles.length} vozila</p>
+                <CardTitle className="text-base font-semibold">{t('vehicleFleet.vehicles')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{vehicles.length} {t('vehicleFleet.vehiclesCount')}</p>
               </div>
               <div className="flex items-center gap-3">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList>
-                    <TabsTrigger value="all">Sva vozila</TabsTrigger>
-                    <TabsTrigger value="active">Aktivna</TabsTrigger>
-                    <TabsTrigger value="service">Na servisu</TabsTrigger>
+                    <TabsTrigger value="all">{t('vehicleFleet.allVehicles')}</TabsTrigger>
+                    <TabsTrigger value="active">{t('vehicleFleet.active')}</TabsTrigger>
+                    <TabsTrigger value="service">{t('vehicleFleet.inService')}</TabsTrigger>
                   </TabsList>
                 </Tabs>
                 <Button size="sm" className="gap-2" onClick={openNewVehicle}>
                   <Plus className="h-4 w-4" />
-                  Novo Vozilo
+                  {t('vehicleFleet.newVehicle')}
                 </Button>
               </div>
             </div>
@@ -423,27 +425,27 @@ export function VozniPark() {
             <form onSubmit={handleVehicleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Registarski broj *</Label>
+                  <Label className="text-xs">{t('vehicleFleet.registrationPlate')} *</Label>
                   <Input name="registration" defaultValue={editingVehicle?.registration || ''} required placeholder="npr. BG-123-AB" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Godište *</Label>
+                  <Label className="text-xs">{t('vehicleFleet.year')} *</Label>
                   <Input name="year" type="number" min={1990} max={2030} defaultValue={editingVehicle?.year || new Date().getFullYear()} required />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Marka *</Label>
+                  <Label className="text-xs">{t('vehicleFleet.make')} *</Label>
                   <Input name="make" defaultValue={editingVehicle?.make || ''} required placeholder="npr. VW" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Model *</Label>
+                  <Label className="text-xs">{t('vehicleFleet.model')} *</Label>
                   <Input name="model" defaultValue={editingVehicle?.model || ''} required placeholder="npr. Golf 8" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Gorivo</Label>
+                  <Label className="text-xs">{t('vehicleFleet.fuelType')}</Label>
                   <Select name="fuelType" defaultValue={editingVehicle?.fuelType || 'dizel'}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -456,13 +458,13 @@ export function VozniPark() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Kilometraža</Label>
+                  <Label className="text-xs">{t('vehicleFleet.mileage')}</Label>
                   <Input name="mileage" type="number" min={0} defaultValue={editingVehicle?.mileage || 0} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Status</Label>
+                  <Label className="text-xs">{t('common.status')}</Label>
                   <Select name="status" defaultValue={editingVehicle?.status || 'aktivno'}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -474,18 +476,18 @@ export function VozniPark() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Dodeljeno</Label>
-                  <Input name="assignedTo" defaultValue={editingVehicle?.assignedTo || ''} placeholder="Ime zaposlenog" />
+                  <Label className="text-xs">{t('vehicleFleet.assignedTo')}</Label>
+                  <Input name="assignedTo" defaultValue={editingVehicle?.assignedTo || ''} placeholder={t('vehicleFleet.assignedToPlaceholder')} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Napomene</Label>
-                <Textarea name="notes" defaultValue={editingVehicle?.notes || ''} placeholder="Dodatne napomene..." rows={3} />
+                <Label className="text-xs">{t('vehicleFleet.notes')}</Label>
+                <Textarea name="notes" defaultValue={editingVehicle?.notes || ''} placeholder={t('vehicleFleet.notesPlaceholder')} rows={3} />
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">Otkaži</Button>
+                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">{t('common.cancel')}</Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                  {submitting ? t('common.saving') : t('common.save')}
                 </Button>
               </div>
             </form>
@@ -493,7 +495,7 @@ export function VozniPark() {
             <form onSubmit={handleServiceSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Tip servisa</Label>
+                  <Label className="text-xs">{t('vehicleFleet.serviceType')}</Label>
                   <Select name="type" defaultValue="servis">
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -506,32 +508,32 @@ export function VozniPark() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Datum</Label>
+                  <Label className="text-xs">{t('common.date')}</Label>
                   <Input name="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Opis *</Label>
-                <Textarea name="description" required placeholder="Opis servisa..." rows={2} />
+                <Label className="text-xs">{t('common.description')} *</Label>
+                <Textarea name="description" required placeholder={t('vehicleFleet.serviceDescriptionPlaceholder')} rows={2} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Cena (RSD)</Label>
+                  <Label className="text-xs">{t('vehicleFleet.cost')} (RSD)</Label>
                   <Input name="cost" type="number" step="0.01" min={0} defaultValue={0} />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Kilometraža</Label>
+                  <Label className="text-xs">{t('vehicleFleet.mileage')}</Label>
                   <Input name="mileage" type="number" min={0} defaultValue={0} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Sledeći servis</Label>
+                <Label className="text-xs">{t('vehicleFleet.nextService')}</Label>
                 <Input name="nextDue" type="date" />
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">Otkaži</Button>
+                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">{t('common.cancel')}</Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Sačuvaj servis'}
+                  {submitting ? t('common.saving') : t('vehicleFleet.saveService')}
                 </Button>
               </div>
             </form>
@@ -539,7 +541,7 @@ export function VozniPark() {
             <form onSubmit={handleExpenseSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Tip troška</Label>
+                  <Label className="text-xs">{t('vehicleFleet.expenseType')}</Label>
                   <Select name="type" defaultValue="gorivo">
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -552,28 +554,28 @@ export function VozniPark() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Datum</Label>
+                  <Label className="text-xs">{t('common.date')}</Label>
                   <Input name="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Opis *</Label>
-                <Textarea name="description" required placeholder="Opis troška..." rows={2} />
+                <Label className="text-xs">{t('common.description')} *</Label>
+                <Textarea name="description" required placeholder={t('vehicleFleet.expenseDescriptionPlaceholder')} rows={2} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Iznos (RSD) *</Label>
+                  <Label className="text-xs">{t('common.amount')} (RSD) *</Label>
                   <Input name="amount" type="number" step="0.01" min={0} required defaultValue={0} />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Kilometraža</Label>
+                  <Label className="text-xs">{t('vehicleFleet.mileage')}</Label>
                   <Input name="mileage" type="number" min={0} defaultValue={0} />
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">Otkaži</Button>
+                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">{t('common.cancel')}</Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Sačuvaj trošak'}
+                  {submitting ? t('common.saving') : t('vehicleFleet.saveExpense')}
                 </Button>
               </div>
             </form>
@@ -597,7 +599,7 @@ export function VozniPark() {
               ) : filteredVehicles.length === 0 ? (
                 <div className="text-center py-12">
                   <Car className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                  <p className="text-sm text-muted-foreground">Nema vozila za prikaz</p>
+                  <p className="text-sm text-muted-foreground">{t('vehicleFleet.noVehicles')}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -668,11 +670,11 @@ export function VozniPark() {
                             )}
                             <span className="flex items-center gap-1">
                               <Wrench className="h-3 w-3" />
-                              {vehicle._count?.services || vehicle.services?.length || 0} servisa
+                              {vehicle._count?.services || vehicle.services?.length || 0} {t('vehicleFleet.servicesCount')}
                             </span>
                             <span className="flex items-center gap-1">
                               <Receipt className="h-3 w-3" />
-                              {vehicle._count?.expenses || vehicle.expenses?.length || 0} troškova
+                              {vehicle._count?.expenses || vehicle.expenses?.length || 0} {t('vehicleFleet.expensesCount')}
                             </span>
                           </div>
                         </Card>
@@ -680,7 +682,7 @@ export function VozniPark() {
                         {isExpanded && (
                           <Card className="rounded-t-none border-t-0 p-4">
                             <div className="flex items-center justify-between mb-3">
-                              <h4 className="text-sm font-semibold">Detalji vozila</h4>
+                              <h4 className="text-sm font-semibold">{t('vehicleFleet.vehicleDetails')}</h4>
                               <div className="flex gap-2">
                                 <Button
                                   size="sm"
@@ -689,7 +691,7 @@ export function VozniPark() {
                                   onClick={() => openAddService(vehicle.id)}
                                 >
                                   <Wrench className="h-3 w-3" />
-                                  Dodaj servis
+                                  {t('vehicleFleet.addService')}
                                 </Button>
                                 <Button
                                   size="sm"
@@ -698,7 +700,7 @@ export function VozniPark() {
                                   onClick={() => openAddExpense(vehicle.id)}
                                 >
                                   <Receipt className="h-3 w-3" />
-                                  Dodaj trošak
+                                  {t('vehicleFleet.addExpense')}
                                 </Button>
                               </div>
                             </div>
@@ -706,10 +708,10 @@ export function VozniPark() {
                             <div className="mb-4">
                               <h5 className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
                                 <Wrench className="h-3.5 w-3.5" />
-                                Poslednji servisi
+                                {t('vehicleFleet.lastServices')}
                               </h5>
                               {!vehicle.services || vehicle.services.length === 0 ? (
-                                <p className="text-xs text-muted-foreground/60 py-2">Nema servisa</p>
+                                <p className="text-xs text-muted-foreground/60 py-2">{t('vehicleFleet.noServices')}</p>
                               ) : (
                                 <div className="space-y-1.5 max-h-48 overflow-y-auto">
                                   {vehicle.services.slice(0, 5).map((service) => (
@@ -749,10 +751,10 @@ export function VozniPark() {
                             <div>
                               <h5 className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
                                 <Receipt className="h-3.5 w-3.5" />
-                                Poslednji troškovi
+                                {t('vehicleFleet.lastExpenses')}
                               </h5>
                               {!vehicle.expenses || vehicle.expenses.length === 0 ? (
-                                <p className="text-xs text-muted-foreground/60 py-2">Nema troškova</p>
+                                <p className="text-xs text-muted-foreground/60 py-2">{t('vehicleFleet.noExpenses')}</p>
                               ) : (
                                 <div className="space-y-1.5 max-h-48 overflow-y-auto">
                                   {vehicle.expenses.slice(0, 5).map((expense) => (

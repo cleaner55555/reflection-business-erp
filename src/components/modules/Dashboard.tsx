@@ -36,6 +36,7 @@ import {
   Legend,
 } from 'recharts'
 import { formatRSD, formatRSDShort, formatDate, getStatusLabel, getStatusColor, getMonthLabel } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 interface DashboardData {
   kpis: {
@@ -78,6 +79,7 @@ export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [lowStock, setLowStock] = useState<LowStockProduct[]>([])
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     Promise.all([
@@ -98,7 +100,7 @@ export function Dashboard() {
 
   const kpiCards = [
     {
-      title: 'Ukupan Prihod',
+      title: t('dashboard.totalRevenue'),
       value: formatRSD(kpis.totalRevenue),
       change: kpis.revenueGrowth,
       icon: TrendingUp,
@@ -107,7 +109,7 @@ export function Dashboard() {
       iconBg: 'bg-emerald-100',
     },
     {
-      title: 'Ukupan Rashod',
+      title: t('dashboard.totalExpenses'),
       value: formatRSD(kpis.totalExpenses),
       change: null,
       icon: TrendingDown,
@@ -116,7 +118,7 @@ export function Dashboard() {
       iconBg: 'bg-red-100',
     },
     {
-      title: 'Neto Dobit',
+      title: t('dashboard.netProfit'),
       value: formatRSD(kpis.netProfit),
       change: null,
       icon: DollarSign,
@@ -125,7 +127,7 @@ export function Dashboard() {
       iconBg: kpis.netProfit >= 0 ? 'bg-emerald-100' : 'bg-red-100',
     },
     {
-      title: 'Neplaćene Fakture',
+      title: t('dashboard.unpaidInvoices'),
       value: formatRSD(kpis.unpaidInvoiceAmount),
       change: null,
       icon: AlertTriangle,
@@ -143,9 +145,9 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Pregled</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Pregled poslovanja i ključnih performansi
+          {t('dashboard.subtitle')}
         </p>
       </div>
 
@@ -174,7 +176,7 @@ export function Dashboard() {
                       >
                         {Math.abs(kpi.change).toFixed(1)}%
                       </span>
-                      <span className="text-xs text-muted-foreground">od prošlog meseca</span>
+                      <span className="text-xs text-muted-foreground">{t('dashboard.fromLastMonth')}</span>
                     </div>
                   )}
                 </div>
@@ -192,8 +194,8 @@ export function Dashboard() {
         {/* Revenue Trend */}
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Trend Prihoda</CardTitle>
-            <p className="text-xs text-muted-foreground">Prihodi po mesecima</p>
+            <CardTitle className="text-base font-semibold">{t('dashboard.revenueTrend')}</CardTitle>
+            <p className="text-xs text-muted-foreground">{t('dashboard.revenueByMonth')}</p>
           </CardHeader>
           <CardContent>
             <div className="h-72">
@@ -220,7 +222,7 @@ export function Dashboard() {
                     tickLine={false}
                   />
                   <Tooltip
-                    formatter={(value: number) => [formatRSD(value), 'Prihod']}
+                    formatter={(value: number) => [formatRSD(value), t('common.prihod')]}
                     labelFormatter={getMonthLabel}
                     contentStyle={{
                       borderRadius: '8px',
@@ -244,8 +246,8 @@ export function Dashboard() {
         {/* Expenses by Category */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Rashodi po Kategorijama</CardTitle>
-            <p className="text-xs text-muted-foreground">Distribucija rashoda</p>
+            <CardTitle className="text-base font-semibold">{t('dashboard.expensesByCategory')}</CardTitle>
+            <p className="text-xs text-muted-foreground">{t('dashboard.expenseDistribution')}</p>
           </CardHeader>
           <CardContent>
             <div className="h-72">
@@ -297,8 +299,8 @@ export function Dashboard() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Poslednje Fakture</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Najnovije izdate fakture</p>
+                <CardTitle className="text-base font-semibold">{t('dashboard.recentInvoices')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('dashboard.recentInvoicesDesc')}</p>
               </div>
               <Receipt className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -307,11 +309,11 @@ export function Dashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Broj</TableHead>
-                  <TableHead className="text-xs">Partner</TableHead>
-                  <TableHead className="text-xs">Datum</TableHead>
-                  <TableHead className="text-xs">Status</TableHead>
-                  <TableHead className="text-xs text-right">Iznos</TableHead>
+                  <TableHead className="text-xs">{t('common.number')}</TableHead>
+                  <TableHead className="text-xs">{t('common.partner')}</TableHead>
+                  <TableHead className="text-xs">{t('common.date')}</TableHead>
+                  <TableHead className="text-xs">{t('common.status')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -343,8 +345,8 @@ export function Dashboard() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Niska Zaliha</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Artikli ispod minimuma</p>
+                <CardTitle className="text-base font-semibold">{t('dashboard.lowStock')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('dashboard.lowStockDesc')}</p>
               </div>
               <BoxIcon className="h-4 w-4 text-amber-500" />
             </div>
@@ -353,7 +355,7 @@ export function Dashboard() {
             <div className="space-y-3 max-h-72 overflow-y-auto">
               {lowStock.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  Sve zalihe su na zadovoljavajućem nivou
+                  {t('dashboard.allStockOk')}
                 </p>
               ) : (
                 lowStock.map((product) => (

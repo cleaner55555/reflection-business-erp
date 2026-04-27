@@ -26,6 +26,7 @@ import {
   Legend,
 } from 'recharts'
 import { formatRSD, formatRSDShort, getStatusLabel, getMonthLabel } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 const COLORS = ['#059669', '#0891b2', '#7c3aed', '#ea580c', '#db2777', '#0284c7', '#ca8a04']
 
@@ -61,6 +62,7 @@ export function Izvestaji() {
   const [partners, setPartners] = useState<Partner[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     Promise.all([
@@ -109,7 +111,7 @@ export function Izvestaji() {
   // Category distribution
   const categoryMap = new Map<string, number>()
   products.forEach((p) => {
-    const cat = p.category || 'Nekategorizovano'
+    const cat = p.category || t('reports.uncategorized')
     categoryMap.set(cat, (categoryMap.get(cat) || 0) + p.sellingPrice * p.currentStock)
   })
   const categoryData = Array.from(categoryMap.entries()).map(([name, value]) => ({ name, value }))
@@ -117,17 +119,17 @@ export function Izvestaji() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Izveštaji</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('reports.title')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Analitički izveštaji i pregledi poslovanja
+          {t('reports.subtitle')}
         </p>
       </div>
 
       {/* Revenue vs Expenses */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Mesečni Prihodi vs Rashodi</CardTitle>
-          <p className="text-xs text-muted-foreground">Poređenje prihoda i rashoda po mesecima</p>
+          <CardTitle className="text-base font-semibold">{t('reports.monthlyRevenueVsExpenses')}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t('reports.revenueExpenseComparison')}</p>
         </CardHeader>
         <CardContent>
           <div className="h-80">
@@ -148,7 +150,7 @@ export function Izvestaji() {
                   tickLine={false}
                 />
                 <Tooltip
-                  formatter={(value: number, name: string) => [formatRSD(value), name === 'prihod' ? 'Prihod' : 'Rashod']}
+                  formatter={(value: number, name: string) => [formatRSD(value), name === 'prihod' ? t('common.prihod') : t('common.rashod')]}
                   labelFormatter={getMonthLabel}
                   contentStyle={{
                     borderRadius: '8px',
@@ -157,8 +159,8 @@ export function Izvestaji() {
                     fontSize: '12px',
                   }}
                 />
-                <Bar dataKey="prihod" fill="#059669" radius={[4, 4, 0, 0]} name="Prihod" />
-                <Bar dataKey="rashod" fill="#ea580c" radius={[4, 4, 0, 0]} name="Rashod" />
+                <Bar dataKey="prihod" fill="#059669" radius={[4, 4, 0, 0]} name={t('common.prihod')} />
+                <Bar dataKey="rashod" fill="#ea580c" radius={[4, 4, 0, 0]} name={t('common.rashod')} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -169,8 +171,8 @@ export function Izvestaji() {
         {/* Top Products */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Top Proizvodi po Vrednosti</CardTitle>
-            <p className="text-xs text-muted-foreground">Proizvodi sa najvećom vrednošću zaliha</p>
+            <CardTitle className="text-base font-semibold">{t('reports.topProductsByValue')}</CardTitle>
+            <p className="text-xs text-muted-foreground">{t('reports.highestStockValue')}</p>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -193,7 +195,7 @@ export function Izvestaji() {
                     tickLine={false}
                   />
                   <Tooltip
-                    formatter={(value: number) => [formatRSD(value), 'Vrednost zaliha']}
+                    formatter={(value: number) => [formatRSD(value), t('reports.stockValue')]}
                     contentStyle={{
                       borderRadius: '8px',
                       border: '1px solid #e5e7eb',
@@ -210,8 +212,8 @@ export function Izvestaji() {
         {/* Category Distribution */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Distribucija po Kategorijama</CardTitle>
-            <p className="text-xs text-muted-foreground">Vrednost zaliha po kategorijama</p>
+            <CardTitle className="text-base font-semibold">{t('reports.categoryDistribution')}</CardTitle>
+            <p className="text-xs text-muted-foreground">{t('reports.stockValueByCategory')}</p>
           </CardHeader>
           <CardContent>
             <div className="h-80">
@@ -248,19 +250,19 @@ export function Izvestaji() {
       {/* Partner Summary */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">Pregled Partnera</CardTitle>
-          <p className="text-xs text-muted-foreground">Partneri i njihova aktivnost</p>
+          <CardTitle className="text-base font-semibold">{t('reports.partnerOverview')}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t('reports.partnerActivity')}</p>
         </CardHeader>
         <CardContent>
           <div className="max-h-[400px] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Naziv</TableHead>
-                  <TableHead className="text-xs">Tip</TableHead>
-                  <TableHead className="text-xs text-center">Fakture</TableHead>
-                  <TableHead className="text-xs text-center">Narudžbenice</TableHead>
-                  <TableHead className="text-xs text-center">Ukupno</TableHead>
+                  <TableHead className="text-xs">{t('common.name')}</TableHead>
+                  <TableHead className="text-xs">{t('common.type')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('reports.invoices')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('reports.purchaseOrders')}</TableHead>
+                  <TableHead className="text-xs text-center">{t('common.total')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

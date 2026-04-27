@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Search, Pencil, Trash2, HeartHandshake, Phone, Mail, Building2, CheckCircle2, Clock, XCircle, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
 interface Contact {
@@ -41,17 +42,18 @@ const STAGE_LABELS: Record<string, string> = { lead: 'Lead', kvalifikacija: 'Kva
 const STAGE_COLORS: Record<string, string> = { lead: 'bg-slate-100 border-slate-300', kvalifikacija: 'bg-blue-50 border-blue-300', predlog: 'bg-amber-50 border-amber-300', pregovaranje: 'bg-orange-50 border-orange-300', won: 'bg-emerald-50 border-emerald-300', lost: 'bg-red-50 border-red-300' }
 
 export function CRM() {
+  const { t } = useTranslation()
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">CRM</h1>
-        <p className="text-muted-foreground text-sm mt-1">Upravljanje kontaktima, poslovnim prilikama i aktivnostima</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t('crm.title')}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t('crm.subtitle')}</p>
       </div>
       <Tabs defaultValue="pipeline" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="pipeline" className="gap-1.5"><HeartHandshake className="h-3.5 w-3.5" /><span className="hidden sm:inline">Pipeline</span></TabsTrigger>
-          <TabsTrigger value="kontakti">Kontakti</TabsTrigger>
-          <TabsTrigger value="aktivnosti">Aktivnosti</TabsTrigger>
+          <TabsTrigger value="pipeline" className="gap-1.5"><HeartHandshake className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('crm.pipeline')}</span></TabsTrigger>
+          <TabsTrigger value="kontakti">{t('crm.contacts')}</TabsTrigger>
+          <TabsTrigger value="aktivnosti">{t('crm.activities')}</TabsTrigger>
         </TabsList>
         <TabsContent value="pipeline"><PipelineTab /></TabsContent>
         <TabsContent value="kontakti"><KontaktiTab /></TabsContent>
@@ -63,6 +65,7 @@ export function CRM() {
 
 // ==================== PIPELINE (KANBAN) ====================
 function PipelineTab() {
+  const { t } = useTranslation()
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
@@ -82,12 +85,12 @@ function PipelineTab() {
     try {
       await fetch(`/api/deals/${dealId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stage: newStage }) })
       fetchDeals()
-    } catch { toast.error('Greška') }
+    } catch { toast.error(t('common.error')) }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Obrisati poslovnu priliku?')) return
-    try { await fetch(`/api/deals/${id}`, { method: 'DELETE' }); toast.success('Obrisano'); fetchDeals() } catch { toast.error('Greška') }
+    if (!confirm(t('crm.confirmDeleteDeal'))) return
+    try { await fetch(`/api/deals/${id}`, { method: 'DELETE' }); toast.success(t('common.deleteSuccess')); fetchDeals() } catch { toast.error(t('common.error')) }
   }
 
   const handleNew = () => {
@@ -112,10 +115,10 @@ function PipelineTab() {
     try {
       const url = editingDeal ? `/api/deals/${editingDeal.id}` : '/api/deals'
       const res = await fetch(url, { method: editingDeal ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success(editingDeal ? 'Ažurirano' : 'Kreirano')
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(editingDeal ? t('common.updated') : t('common.created'))
       setViewMode('list'); setEditingDeal(null); fetchDeals()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   const nextStage = (stage: string) => {
@@ -133,15 +136,15 @@ function PipelineTab() {
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle className="text-base font-semibold">{editingDeal ? 'Izmeni' : 'Nova'} Priliku</CardTitle></div>
+              <div><CardTitle className="text-base font-semibold">{editingDeal ? t('common.edit') : t('common.new')} {t('crm.deal')}</CardTitle></div>
             </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" defaultValue={editingDeal?.title || ''} required /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('crm.dealTitle')} *</Label><Input name="title" defaultValue={editingDeal?.title || ''} required /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Vrednost (RSD)</Label><Input name="value" type="number" step="0.01" defaultValue={editingDeal?.value || ''} /></div>
-                <div className="space-y-2"><Label className="text-xs">Verovatnoća %</Label><Input name="probability" type="number" defaultValue={editingDeal?.probability || '10'} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('crm.dealValue')} (RSD)</Label><Input name="value" type="number" step="0.01" defaultValue={editingDeal?.value || ''} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('crm.probability')} %</Label><Input name="probability" type="number" defaultValue={editingDeal?.probability || '10'} /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2"><Label className="text-xs">Stage</Label>
@@ -150,12 +153,12 @@ function PipelineTab() {
                     <SelectContent>{STAGES.map(s => <SelectItem key={s} value={s}>{STAGE_LABELS[s]}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2"><Label className="text-xs">Rok zatvaranja</Label><Input name="closeDate" type="date" defaultValue={editingDeal?.closeDate?.split('T')[0] || ''} /></div>
+                <div className="space-y-2"><Label className="text-xs">{t('crm.closeDate')}</Label><Input name="closeDate" type="date" defaultValue={editingDeal?.closeDate?.split('T')[0] || ''} /></div>
               </div>
-              <div className="space-y-2"><Label className="text-xs">Napomene</Label><Input name="notes" defaultValue={editingDeal?.notes || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('common.notes')}</Label><Input name="notes" defaultValue={editingDeal?.notes || ''} /></div>
               <div className="flex gap-2">
-                <Button type="submit" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+                <Button type="submit" disabled={submitting}>{submitting ? t('common.saving') : t('common.save')}</Button>
+                <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
               </div>
             </form>
           </CardContent>
@@ -164,10 +167,10 @@ function PipelineTab() {
         <>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-3">
-              <div className="rounded-lg bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">Dobijeno: {formatRSD(totalValue)}</div>
-              <div className="rounded-lg bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">Pipeline: {formatRSD(pipelineValue)}</div>
+              <div className="rounded-lg bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">{t('crm.won')}: {formatRSD(totalValue)}</div>
+              <div className="rounded-lg bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">{t('crm.pipeline')}: {formatRSD(pipelineValue)}</div>
             </div>
-            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Nova Prilika</Button>
+            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> {t('crm.newDeal')}</Button>
           </div>
 
           {loading ? <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}</div> : (
@@ -204,7 +207,7 @@ function PipelineTab() {
                           </div>
                         </Card>
                       ))}
-                      {stageDeals.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-4">Nema prilika</p>}
+                      {stageDeals.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-4">{t('crm.noDeals')}</p>}
                     </div>
                   </div>
                 )
@@ -219,6 +222,7 @@ function PipelineTab() {
 
 // ==================== KONTAKTI TAB ====================
 function KontaktiTab() {
+  const { t } = useTranslation()
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -253,8 +257,8 @@ function KontaktiTab() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Obrisati kontakt?')) return
-    try { await fetch(`/api/contacts/${id}`, { method: 'DELETE' }); toast.success('Obrisano'); fetchContacts() } catch { toast.error('Greška') }
+    if (!confirm(t('crm.confirmDeleteContact'))) return
+    try { await fetch(`/api/contacts/${id}`, { method: 'DELETE' }); toast.success(t('common.deleteSuccess')); fetchContacts() } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -264,9 +268,9 @@ function KontaktiTab() {
     try {
       const url = editing ? `/api/contacts/${editing.id}` : '/api/contacts'
       const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success(editing ? 'Ažurirano' : 'Kreirano'); setViewMode('list'); setEditing(null); fetchContacts()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(editing ? t('common.updated') : t('common.created')); setViewMode('list'); setEditing(null); fetchContacts()
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   return (
@@ -275,43 +279,43 @@ function KontaktiTab() {
         {viewMode === 'form' ? (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base font-semibold">{editing ? 'Izmeni' : 'Novi'} Kontakt</CardTitle></div>
+            <div><CardTitle className="text-base font-semibold">{editing ? t('common.edit') : t('common.new')} {t('crm.contact')}</CardTitle></div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div><CardTitle className="text-base font-semibold">Kontakti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{contacts.length} kontakata</p></div>
-            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi Kontakt</Button>
+            <div><CardTitle className="text-base font-semibold">{t('crm.contacts')}</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{contacts.length} {t('crm.contactsCount')}</p></div>
+            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> {t('crm.newContact')}</Button>
           </div>
         )}
         {viewMode === 'list' && (
-          <div className="relative max-w-sm mt-4"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži kontakte..." className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+          <div className="relative max-w-sm mt-4"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder={t('crm.searchContacts')} className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
         )}
       </CardHeader>
       <CardContent>
         {viewMode === 'form' ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Ime *</Label><Input name="firstName" defaultValue={editing?.firstName || ''} required /></div>
-              <div className="space-y-2"><Label className="text-xs">Prezime *</Label><Input name="lastName" defaultValue={editing?.lastName || ''} required /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('crm.firstName')} *</Label><Input name="firstName" defaultValue={editing?.firstName || ''} required /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('crm.lastName')} *</Label><Input name="lastName" defaultValue={editing?.lastName || ''} required /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Email</Label><Input name="email" type="email" defaultValue={editing?.email || ''} /></div>
-              <div className="space-y-2"><Label className="text-xs">Telefon</Label><Input name="phone" defaultValue={editing?.phone || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('common.email')}</Label><Input name="email" type="email" defaultValue={editing?.email || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('crm.phone')}</Label><Input name="phone" defaultValue={editing?.phone || ''} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Pozicija</Label><Input name="position" defaultValue={editing?.position || ''} /></div>
-              <div className="space-y-2"><Label className="text-xs">Firma</Label><Input name="company" defaultValue={editing?.company || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('crm.position')}</Label><Input name="position" defaultValue={editing?.position || ''} /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('crm.company')}</Label><Input name="company" defaultValue={editing?.company || ''} /></div>
             </div>
-            <div className="space-y-2"><Label className="text-xs">Tagovi (zarez)</Label><Input name="tags" placeholder="vip, IT, konsalting" defaultValue={editing?.tags || ''} /></div>
-            <div className="space-y-2"><Label className="text-xs">Napomene</Label><Input name="notes" defaultValue={editing?.notes || ''} /></div>
+            <div className="space-y-2"><Label className="text-xs">{t('crm.tags')}</Label><Input name="tags" placeholder="vip, IT, konsalting" defaultValue={editing?.tags || ''} /></div>
+            <div className="space-y-2"><Label className="text-xs">{t('common.notes')}</Label><Input name="notes" defaultValue={editing?.notes || ''} /></div>
             <div className="flex gap-4">
-              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isLead" defaultChecked={editing?.isLead ?? true} /> Lead</label>
-              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isClient" defaultChecked={editing?.isClient ?? false} /> Klijent</label>
-              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isSupplier" defaultChecked={editing?.isSupplier ?? false} /> Dobavljač</label>
+              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isLead" defaultChecked={editing?.isLead ?? true} /> {t('crm.lead')}</label>
+              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isClient" defaultChecked={editing?.isClient ?? false} /> {t('crm.client')}</label>
+              <label className="flex items-center gap-2 text-xs"><input type="checkbox" name="isSupplier" defaultChecked={editing?.isSupplier ?? false} /> {t('crm.supplier')}</label>
             </div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? t('common.saving') : t('common.save')}</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </form>
         ) : loading ? (
@@ -319,14 +323,14 @@ function KontaktiTab() {
         ) : (
           <div className="max-h-[500px] overflow-y-auto">
             <Table><TableHeader><TableRow>
-              <TableHead className="text-xs">Ime</TableHead><TableHead className="text-xs">Firma</TableHead><TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Telefon</TableHead><TableHead className="text-xs">Email</TableHead><TableHead className="text-xs w-[80px]">Akcije</TableHead>
+              <TableHead className="text-xs">{t('common.name')}</TableHead><TableHead className="text-xs">{t('crm.company')}</TableHead><TableHead className="text-xs">{t('common.type')}</TableHead><TableHead className="text-xs">{t('crm.phone')}</TableHead><TableHead className="text-xs">{t('common.email')}</TableHead><TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
             </TableRow></TableHeader>
             <TableBody>
-              {contacts.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">Nema kontakata</TableCell></TableRow> : contacts.map((c) => (
+              {contacts.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">{t('crm.noContacts')}</TableCell></TableRow> : contacts.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="text-xs font-medium">{c.firstName} {c.lastName}</TableCell>
                   <TableCell className="text-xs">{c.company || '-'}</TableCell>
-                  <TableCell><div className="flex gap-1 flex-wrap">{c.isLead && <Badge variant="outline" className="text-[10px] bg-amber-50 border-amber-200">Lead</Badge>}{c.isClient && <Badge variant="outline" className="text-[10px] bg-emerald-50 border-emerald-200">Klijent</Badge>}{c.isSupplier && <Badge variant="outline" className="text-[10px] bg-blue-50 border-blue-200">Dobavljač</Badge>}</div></TableCell>
+                  <TableCell><div className="flex gap-1 flex-wrap">{c.isLead && <Badge variant="outline" className="text-[10px] bg-amber-50 border-amber-200">{t('crm.lead')}</Badge>}{c.isClient && <Badge variant="outline" className="text-[10px] bg-emerald-50 border-emerald-200">{t('crm.client')}</Badge>}{c.isSupplier && <Badge variant="outline" className="text-[10px] bg-blue-50 border-blue-200">{t('crm.supplier')}</Badge>}</div></TableCell>
                   <TableCell className="text-xs">{c.phone || '-'}</TableCell>
                   <TableCell className="text-xs">{c.email || '-'}</TableCell>
                   <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(c)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(c.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
@@ -342,6 +346,7 @@ function KontaktiTab() {
 
 // ==================== AKTIVNOSTI TAB ====================
 function AktivnostiTab() {
+  const { t } = useTranslation()
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
@@ -365,11 +370,11 @@ function AktivnostiTab() {
   }
 
   const toggleComplete = async (id: string, completed: boolean) => {
-    try { await fetch(`/api/crm-activities/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ completed: !completed }) }); fetchActivities() } catch { toast.error('Greška') }
+    try { await fetch(`/api/crm-activities/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ completed: !completed }) }); fetchActivities() } catch { toast.error(t('common.error')) }
   }
 
   const handleDelete = async (id: string) => {
-    try { await fetch(`/api/crm-activities/${id}`, { method: 'DELETE' }); fetchActivities() } catch { toast.error('Greška') }
+    try { await fetch(`/api/crm-activities/${id}`, { method: 'DELETE' }); fetchActivities() } catch { toast.error(t('common.error')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -378,9 +383,9 @@ function AktivnostiTab() {
     const body = { type: fd.get('type'), title: fd.get('title'), description: fd.get('description'), dueDate: fd.get('dueDate') }
     try {
       const res = await fetch('/api/crm-activities', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
-      toast.success('Kreirano'); setViewMode('list'); fetchActivities()
-    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
+      toast.success(t('common.created')); setViewMode('list'); fetchActivities()
+    } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
   const typeIcons: Record<string, string> = { poziv: '📞', sastanak: '🤝', email: '✉️', task: '✅', napomena: '📝' }
@@ -391,12 +396,12 @@ function AktivnostiTab() {
         {viewMode === 'form' ? (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base font-semibold">Nova Aktivnost</CardTitle></div>
+            <div><CardTitle className="text-base font-semibold">{t('crm.newActivity')}</CardTitle></div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div><CardTitle className="text-base font-semibold">Aktivnosti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{activities.filter(a => !a.completed).length} aktivnih</p></div>
-            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Nova Aktivnost</Button>
+            <div><CardTitle className="text-base font-semibold">{t('crm.activities')}</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{activities.filter(a => !a.completed).length} {t('crm.activeCount')}</p></div>
+            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> {t('crm.newActivity')}</Button>
           </div>
         )}
       </CardHeader>
@@ -404,18 +409,18 @@ function AktivnostiTab() {
         {viewMode === 'form' ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Tip</Label>
+              <div className="space-y-2"><Label className="text-xs">{t('common.type')}</Label>
                 <Select name="type" defaultValue="napomena"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-                  <SelectItem value="poziv">📞 Poziv</SelectItem><SelectItem value="sastanak">🤝 Sastanak</SelectItem><SelectItem value="email">✉️ Email</SelectItem><SelectItem value="task">✅ Task</SelectItem><SelectItem value="napomena">📝 Napomena</SelectItem>
+                  <SelectItem value="poziv">📞 {t('crm.typeCall')}</SelectItem><SelectItem value="sastanak">🤝 {t('crm.typeMeeting')}</SelectItem><SelectItem value="email">✉️ {t('crm.typeEmail')}</SelectItem><SelectItem value="task">✅ {t('crm.typeTask')}</SelectItem><SelectItem value="napomena">📝 {t('crm.typeNote')}</SelectItem>
                 </SelectContent></Select>
               </div>
-              <div className="space-y-2"><Label className="text-xs">Rok</Label><Input name="dueDate" type="date" /></div>
+              <div className="space-y-2"><Label className="text-xs">{t('crm.dueDate')}</Label><Input name="dueDate" type="date" /></div>
             </div>
-            <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" required /></div>
-            <div className="space-y-2"><Label className="text-xs">Opis</Label><Input name="description" /></div>
+            <div className="space-y-2"><Label className="text-xs">{t('crm.activityTitle')} *</Label><Input name="title" required /></div>
+            <div className="space-y-2"><Label className="text-xs">{t('common.description')}</Label><Input name="description" /></div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={submitting}>{submitting ? 'Čuvanje...' : 'Kreiraj'}</Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
+              <Button type="submit" disabled={submitting}>{submitting ? t('common.saving') : t('common.create')}</Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
             </div>
           </form>
         ) : loading ? (
@@ -423,10 +428,10 @@ function AktivnostiTab() {
         ) : (
           <div className="max-h-[500px] overflow-y-auto">
             <Table><TableHeader><TableRow>
-              <TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Naslov</TableHead><TableHead className="text-xs">Kontakt</TableHead><TableHead className="text-xs">Rok</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-[60px]"></TableHead>
+              <TableHead className="text-xs">{t('common.type')}</TableHead><TableHead className="text-xs">{t('common.name')}</TableHead><TableHead className="text-xs">{t('crm.contact')}</TableHead><TableHead className="text-xs">{t('crm.dueDate')}</TableHead><TableHead className="text-xs">{t('common.status')}</TableHead><TableHead className="text-xs w-[60px]"></TableHead>
             </TableRow></TableHeader>
             <TableBody>
-              {activities.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">Nema aktivnosti</TableCell></TableRow> : activities.map((a) => (
+              {activities.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">{t('crm.noActivities')}</TableCell></TableRow> : activities.map((a) => (
                 <TableRow key={a.id} className={a.completed ? 'opacity-50' : ''}>
                   <TableCell className="text-xs">{typeIcons[a.type] || '📝'}</TableCell>
                   <TableCell className="text-xs font-medium">{a.title}</TableCell>
@@ -435,7 +440,7 @@ function AktivnostiTab() {
                   <TableCell>
                     <Button variant="ghost" size="sm" className="h-6 gap-1" onClick={() => toggleComplete(a.id, a.completed)}>
                       {a.completed ? <CheckCircle2 className="h-3 w-3 text-emerald-500" /> : <Clock className="h-3 w-3 text-amber-500" />}
-                      <span className="text-[10px]">{a.completed ? 'Završeno' : 'Aktivno'}</span>
+                      <span className="text-[10px]">{a.completed ? t('common.completed') : t('common.active')}</span>
                     </Button>
                   </TableCell>
                   <TableCell><Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleDelete(a.id)}><XCircle className="h-3 w-3" /></Button></TableCell>

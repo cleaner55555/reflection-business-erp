@@ -49,6 +49,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -97,12 +98,13 @@ function getAccountTypeBadge(type: string) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function Knjigovodstvo() {
+  const { t } = useTranslation()
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Knjigovodstvo</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('accounting.title')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Glavna knjiga, kontni plan i knjiženje naloga
+          {t('accounting.subtitle')}
         </p>
       </div>
 
@@ -110,15 +112,15 @@ export function Knjigovodstvo() {
         <TabsList>
           <TabsTrigger value="glavna-knjiga" className="gap-1.5">
             <BookOpen className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Glavna knjiga</span>
+            <span className="hidden sm:inline">{t('accounting.generalLedger')}</span>
           </TabsTrigger>
           <TabsTrigger value="kontni-plan" className="gap-1.5">
             <Landmark className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Kontni plan</span>
+            <span className="hidden sm:inline">{t('accounting.chartOfAccounts')}</span>
           </TabsTrigger>
           <TabsTrigger value="nalog" className="gap-1.5">
             <FilePenLine className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Nalog za knjiženje</span>
+            <span className="hidden sm:inline">{t('accounting.journalEntries')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -139,6 +141,7 @@ export function Knjigovodstvo() {
 // ─── Tab 1: Glavna Knjiga ────────────────────────────────────────────────────
 
 function GlavnaKnjigaTab() {
+  const { t } = useTranslation()
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -196,18 +199,18 @@ function GlavnaKnjigaTab() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Da li ste sigurni da želite da obrišete ovu stavku?')) return
+    if (!confirm(t('accounting.confirmDeleteEntry'))) return
     try {
       const res = await fetch(`/api/journal-entries/${id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri brisanju')
+        toast.error(err.error || t('common.deleteError'))
         return
       }
-      toast.success('Stavka uspešno obrisana')
+      toast.success(t('accounting.entryDeleted'))
       fetchEntries()
     } catch {
-      toast.error('Greška pri brisanju stavke')
+      toast.error(t('common.deleteError'))
     }
   }
 
@@ -225,7 +228,7 @@ function GlavnaKnjigaTab() {
     }
 
     if (!body.accountCode || !body.description) {
-      toast.error('Konto i opis su obavezni')
+      toast.error(t('accounting.accountAndDescriptionRequired'))
       setSubmitting(false)
       return
     }
@@ -240,15 +243,15 @@ function GlavnaKnjigaTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška')
+        toast.error(err.error || t('common.error'))
         return
       }
-      toast.success(isEditing ? 'Stavka ažurirana' : 'Stavka kreirana')
+      toast.success(isEditing ? t('accounting.entryUpdated') : t('accounting.entryCreated'))
       setViewMode('list')
       setEditingEntry(null)
       fetchEntries()
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -264,7 +267,7 @@ function GlavnaKnjigaTab() {
             <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                {editingEntry ? 'Izmeni stavku' : 'Nova stavka knjiženja'}
+                {editingEntry ? t('common.edit') : t('accounting.newEntry')}
               </CardTitle>
             </div>
           </div>
@@ -274,14 +277,14 @@ function GlavnaKnjigaTab() {
               <div>
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  Glavna knjiga
+                  {t('accounting.generalLedger')}
                 </CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Dnevnik knjiženja — sve knjigovodstvene stavke
+                  {t('accounting.ledgerSubtitle')}
                 </p>
               </div>
               <Button size="sm" className="gap-2" onClick={handleNew}>
-                <Plus className="h-4 w-4" /> Nova stavka
+                <Plus className="h-4 w-4" /> {t('common.new')} {t('accounting.entry')}
               </Button>
             </div>
 
@@ -290,7 +293,7 @@ function GlavnaKnjigaTab() {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Pretraži po opisu ili dokumentu..."
+                  placeholder={t('accounting.searchPlaceholder')}
                   className="pl-8 h-9"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -301,10 +304,10 @@ function GlavnaKnjigaTab() {
                 onValueChange={(v) => setAccountFilter(v === 'all' ? '' : v)}
               >
                 <SelectTrigger className="w-[200px] h-9">
-                  <SelectValue placeholder="Svi konti" />
+                  <SelectValue placeholder={t('accounting.allAccounts')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Svi konti</SelectItem>
+                  <SelectItem value="all">{t('accounting.allAccounts')}</SelectItem>
                   {accounts.map((acc) => (
                     <SelectItem key={acc.code} value={acc.code}>
                       {acc.code} — {acc.name}
@@ -339,7 +342,7 @@ function GlavnaKnjigaTab() {
           >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Datum</Label>
+                <Label className="text-xs">{t('common.date')}</Label>
                 <Input
                   name="date"
                   type="date"
@@ -348,13 +351,13 @@ function GlavnaKnjigaTab() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Konto</Label>
+                <Label className="text-xs">{t('accounting.account')}</Label>
                 <Select
                   name="accountCode"
                   defaultValue={editingEntry?.accountCode || ''}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Izaberi konto" />
+                    <SelectValue placeholder={t('accounting.selectAccount')} />
                   </SelectTrigger>
                   <SelectContent>
                     {accounts.map((acc) => (
@@ -368,7 +371,7 @@ function GlavnaKnjigaTab() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs">Duguje (RSD)</Label>
+                <Label className="text-xs">{t('accounting.debit')} (RSD)</Label>
                 <Input
                   name="debit"
                   type="number"
@@ -379,7 +382,7 @@ function GlavnaKnjigaTab() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Potražuje (RSD)</Label>
+                <Label className="text-xs">{t('accounting.credit')} (RSD)</Label>
                 <Input
                   name="credit"
                   type="number"
@@ -391,30 +394,30 @@ function GlavnaKnjigaTab() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Opis</Label>
+              <Label className="text-xs">{t('common.description')}</Label>
               <Input
                 name="description"
-                placeholder="Opis stavke"
+                placeholder={t('accounting.entryDescription')}
                 required
                 defaultValue={editingEntry?.description || ''}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Dokument (opciono)</Label>
+              <Label className="text-xs">{t('accounting.document')} ({t('common.optional').toLowerCase()})</Label>
               <Input
                 name="documentRef"
-                placeholder="Broj dokumenta"
+                placeholder={t('accounting.documentNumber')}
                 defaultValue={editingEntry?.documentRef || ''}
               />
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>Otkaži</Button>
+              <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
               <Button type="submit" className="flex-1" disabled={submitting}>
                 {submitting
-                  ? 'Čuvanje...'
+                  ? t('common.saving')
                   : editingEntry
-                    ? 'Sačuvaj izmene'
-                    : 'Kreiraj stavku'}
+                    ? t('common.saveChanges')
+                    : t('accounting.createEntry')}
               </Button>
             </div>
           </form>
@@ -429,14 +432,14 @@ function GlavnaKnjigaTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs w-[100px]">Datum</TableHead>
-                  <TableHead className="text-xs w-[90px]">Konto</TableHead>
-                  <TableHead className="text-xs">Naziv konta</TableHead>
-                  <TableHead className="text-xs text-right w-[130px]">Duguje</TableHead>
-                  <TableHead className="text-xs text-right w-[130px]">Potražuje</TableHead>
-                  <TableHead className="text-xs">Opis</TableHead>
-                  <TableHead className="text-xs w-[100px]">Dokument</TableHead>
-                  <TableHead className="text-xs w-[80px]">Akcije</TableHead>
+                  <TableHead className="text-xs w-[100px]">{t('common.date')}</TableHead>
+                  <TableHead className="text-xs w-[90px]">{t('accounting.account')}</TableHead>
+                  <TableHead className="text-xs">{t('accounting.accountName')}</TableHead>
+                  <TableHead className="text-xs text-right w-[130px]">{t('accounting.debit')}</TableHead>
+                  <TableHead className="text-xs text-right w-[130px]">{t('accounting.credit')}</TableHead>
+                  <TableHead className="text-xs">{t('common.description')}</TableHead>
+                  <TableHead className="text-xs w-[100px]">{t('accounting.document')}</TableHead>
+                  <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -514,7 +517,7 @@ function GlavnaKnjigaTab() {
                         colSpan={3}
                         className="text-xs text-right font-bold"
                       >
-                        Ukupno:
+                        {t('common.total')}:
                       </TableCell>
                       <TableCell className="text-xs text-right font-bold text-emerald-700 whitespace-nowrap">
                         {totalDebit > 0 ? formatRSD(totalDebit) : '-'}
@@ -538,6 +541,7 @@ function GlavnaKnjigaTab() {
 // ─── Tab 2: Kontni Plan ──────────────────────────────────────────────────────
 
 function KontniPlanTab() {
+  const { t } = useTranslation()
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -597,15 +601,15 @@ function KontniPlanTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri brisanju')
+        toast.error(err.error || t('common.deleteError'))
         return
       }
-      toast.success(`Konto ${deleteTarget.code} uspešno obrisan`)
+      toast.success(t('accounting.accountDeleted', { code: deleteTarget.code }))
       setDeleteDialogOpen(false)
       setDeleteTarget(null)
       fetchAccounts()
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     }
   }
 
@@ -622,7 +626,7 @@ function KontniPlanTab() {
     }
 
     if (!body.code || !body.name) {
-      toast.error('Šifra i naziv konta su obavezni')
+      toast.error(t('accounting.codeAndNameRequired'))
       setSubmitting(false)
       return
     }
@@ -637,19 +641,19 @@ function KontniPlanTab() {
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška')
+        toast.error(err.error || t('common.error'))
         return
       }
       toast.success(
         isEditing
-          ? `Konto ${body.code} ažuriran`
-          : `Konto ${body.code} kreiran`
+          ? t('accounting.accountUpdated', { code: body.code })
+          : t('accounting.accountCreated', { code: body.code })
       )
       setViewMode('list')
       setEditingAccount(null)
       fetchAccounts()
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -664,7 +668,7 @@ function KontniPlanTab() {
               <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
               <div>
                 <CardTitle className="text-base font-semibold">
-                  {editingAccount ? 'Izmeni konto' : 'Novi konto'}
+                  {editingAccount ? t('accounting.editAccount') : t('accounting.newAccount')}
                 </CardTitle>
               </div>
             </div>
@@ -674,14 +678,14 @@ function KontniPlanTab() {
                 <div>
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
                     <Landmark className="h-4 w-4" />
-                    Kontni plan
+                    {t('accounting.chartOfAccounts')}
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Pregled i upravljanje svim kontima
+                    {t('accounting.chartOfAccountsSubtitle')}
                   </p>
                 </div>
                 <Button size="sm" className="gap-2" onClick={handleNew}>
-                  <Plus className="h-4 w-4" /> Novi konto
+                  <Plus className="h-4 w-4" /> {t('accounting.newAccount')}
                 </Button>
               </div>
 
@@ -690,7 +694,7 @@ function KontniPlanTab() {
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Pretraži konta..."
+                    placeholder={t('accounting.searchAccounts')}
                     className="pl-8 h-9"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -701,10 +705,10 @@ function KontniPlanTab() {
                   onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}
                 >
                   <SelectTrigger className="w-[150px] h-9">
-                    <SelectValue placeholder="Svi tipovi" />
+                    <SelectValue placeholder={t('accounting.allTypes')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Svi tipovi</SelectItem>
+                    <SelectItem value="all">{t('accounting.allTypes')}</SelectItem>
                     {ACCOUNT_TYPES.map((t) => (
                       <SelectItem key={t.value} value={t.value}>
                         {t.label}
@@ -713,7 +717,7 @@ function KontniPlanTab() {
                   </SelectContent>
                 </Select>
                 <Badge variant="outline" className="text-xs h-9 px-3 flex items-center">
-                  Ukupno: {filtered.length} konta
+                  {t('common.total')}: {filtered.length} {t('accounting.accounts')}
                 </Badge>
               </div>
             </>
@@ -728,7 +732,7 @@ function KontniPlanTab() {
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Šifra konta</Label>
+                  <Label className="text-xs">{t('accounting.accountCode')}</Label>
                   <Input
                     name="code"
                     placeholder="npr. 020, 110, 200"
@@ -738,7 +742,7 @@ function KontniPlanTab() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Tip konta</Label>
+                  <Label className="text-xs">{t('accounting.accountType')}</Label>
                   <Select
                     name="type"
                     defaultValue={editingAccount?.type || 'aktivna'}
@@ -757,38 +761,38 @@ function KontniPlanTab() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Naziv konta</Label>
+                <Label className="text-xs">{t('accounting.accountName')}</Label>
                 <Input
                   name="name"
-                  placeholder="Naziv konta"
+                  placeholder={t('accounting.accountName')}
                   required
                   defaultValue={editingAccount?.name || ''}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Nadređeni konto (opciono)</Label>
+                <Label className="text-xs">{t('accounting.parentAccount')} ({t('common.optional').toLowerCase()})</Label>
                 <Input
                   name="parentCode"
-                  placeholder="Šifra nadređenog konta"
+                  placeholder={t('accounting.parentAccountCode')}
                   defaultValue={editingAccount?.parentCode || ''}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Opis (opciono)</Label>
+                <Label className="text-xs">{t('common.description')} ({t('common.optional').toLowerCase()})</Label>
                 <Input
                   name="description"
-                  placeholder="Opis konta"
+                  placeholder={t('accounting.accountDescription')}
                   defaultValue={editingAccount?.description || ''}
                 />
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>Otkaži</Button>
+                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
                   {submitting
-                    ? 'Čuvanje...'
+                    ? t('common.saving')
                     : editingAccount
-                      ? 'Sačuvaj izmene'
-                      : 'Kreiraj konto'}
+                      ? t('common.saveChanges')
+                      : t('accounting.createAccount')}
                 </Button>
               </div>
             </form>
@@ -803,14 +807,14 @@ function KontniPlanTab() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs w-[90px]">Šifra</TableHead>
-                    <TableHead className="text-xs">Naziv</TableHead>
-                    <TableHead className="text-xs w-[100px]">Tip</TableHead>
-                    <TableHead className="text-xs">Opis</TableHead>
+                    <TableHead className="text-xs w-[90px]">{t('accounting.code')}</TableHead>
+                    <TableHead className="text-xs">{t('common.name')}</TableHead>
+                    <TableHead className="text-xs w-[100px]">{t('common.type')}</TableHead>
+                    <TableHead className="text-xs">{t('common.description')}</TableHead>
                     <TableHead className="text-xs w-[60px] text-center">
-                      Stavke
+                      {t('accounting.entries')}
                     </TableHead>
-                    <TableHead className="text-xs w-[80px]">Akcije</TableHead>
+                    <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -820,7 +824,7 @@ function KontniPlanTab() {
                         colSpan={6}
                         className="text-center py-8 text-muted-foreground text-sm"
                       >
-                        Nema konta za prikaz
+                        {t('accounting.noAccounts')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -892,24 +896,24 @@ function KontniPlanTab() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-5 w-5" />
-              Potvrda brisanja
+              {t('common.confirmDelete')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Da li ste sigurni da želite da obrišete konto{' '}
+              {t('accounting.confirmDeleteAccount')}{' '}
               <span className="font-semibold text-foreground">
                 {deleteTarget?.code} — {deleteTarget?.name}
               </span>
               ?<br />
-              Ova akcija ne može se poništiti.
+              {t('common.cannotUndo')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel>Otkaži</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
-              Obriši konto
+              {t('accounting.deleteAccount')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -969,7 +973,7 @@ function NalogTab() {
 
   const removeRow = (tempId: string) => {
     if (rows.length <= 2) {
-      toast.error('Minimalno 2 reda su potrebna za dvostruko knjiženje')
+      toast.error(t('accounting.minTwoRows'))
       return
     }
     setRows(rows.filter((r) => r.tempId !== tempId))
@@ -1001,14 +1005,14 @@ function NalogTab() {
     if (!canSubmit) {
       if (!isBalanced) {
         toast.error(
-          `Ukupno duguje i potražuje moraju biti jednaki. Razlika: ${formatRSD(difference)}`
+          `t('accounting.totalDebit') i potražuje moraju biti jednaki. ${t('accounting.difference')}: ${formatRSD(difference)}`
         )
       } else if (hasEmptyAccount) {
-        toast.error('Svi redovi moraju imati izabran konto')
+        toast.error(t('accounting.allRowsNeedAccount'))
       } else if (hasNoValues) {
-        toast.error('Morate uneti iznose')
+        toast.error(t('accounting.enterAmounts'))
       } else if (!description.trim()) {
-        toast.error('Opis naloga je obavezan')
+        toast.error(t('accounting.descriptionRequired'))
       }
       return
     }
@@ -1035,14 +1039,14 @@ function NalogTab() {
         })
         if (!res.ok) {
           const err = await res.json()
-          toast.error(err.error || 'Greška pri knjiženju')
+          toast.error(err.error || t('common.saveError'))
           setSubmitting(false)
           return
         }
       }
 
       toast.success(
-        `Nalog uspešno proknjižen — ${entries.length} stavki`
+        `t('accounting.entryPosted') + ' — ' + entries.length + ' ' + t('accounting.entries').toLowerCase()`
       )
 
       // Reset form
@@ -1056,7 +1060,7 @@ function NalogTab() {
 
       fetchRecentEntries()
     } catch {
-      toast.error('Greška pri knjiženju naloga')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -1069,17 +1073,17 @@ function NalogTab() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <FilePenLine className="h-4 w-4" />
-            Nalog za knjiženje
+            {t('accounting.journalEntries')}
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Kreirajte dvostruko knjiženje — ukupno duguje mora biti jednako potražuje
+            {t('accounting.journalEntryHint')}
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Header fields */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs">Datum naloga</Label>
+              <Label className="text-xs">{t('accounting.entryDate')}</Label>
               <Input
                 type="date"
                 value={date}
@@ -1088,16 +1092,16 @@ function NalogTab() {
             </div>
             <div className="space-y-2">
               <Label className="text-xs">
-                Opis naloga <span className="text-red-500">*</span>
+                {t('accounting.entryDescription')} <span className="text-red-500">*</span>
               </Label>
               <Input
-                placeholder="Opis naloga za knjiženje"
+                placeholder={t('accounting.entryDescriptionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Broj dokumenta (opciono)</Label>
+              <Label className="text-xs">{t('accounting.documentRefOptional')}</Label>
               <Input
                 placeholder="npr. FAK-001/2025"
                 value={documentRef}
@@ -1112,7 +1116,7 @@ function NalogTab() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Stavke naloga
+                {t('accounting.entryItems')}
               </Label>
               <Button
                 variant="outline"
@@ -1121,20 +1125,20 @@ function NalogTab() {
                 onClick={addRow}
               >
                 <Plus className="h-3.5 w-3.5" />
-                Dodaj red
+                {t('common.addRow')}
               </Button>
             </div>
 
             {/* Table header for mobile-friendly list */}
             <div className="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_40px] gap-2 px-1">
               <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                Konto
+                {t('accounting.account')}
               </span>
               <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide text-right">
-                Duguje (RSD)
+                {t('accounting.debit')} (RSD)
               </span>
               <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide text-right">
-                Potražuje (RSD)
+                {t('accounting.credit')} (RSD)
               </span>
               <span />
             </div>
@@ -1166,10 +1170,10 @@ function NalogTab() {
                           <SelectValue
                             placeholder={
                               idx === 0
-                                ? 'Duguje strana...'
+                                ? t('accounting.debitSide')
                                 : idx === 1
-                                  ? 'Potražuje strana...'
-                                  : 'Izaberi konto...'
+                                  ? t('accounting.creditSide')
+                                  : t('accounting.selectAccount')
                             }
                           />
                         </SelectTrigger>
@@ -1187,7 +1191,7 @@ function NalogTab() {
                     </div>
                     <div className="space-y-1">
                       <span className="sm:hidden text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                        Duguje (RSD)
+                        {t('accounting.debit')} (RSD)
                       </span>
                       <Input
                         type="number"
@@ -1207,7 +1211,7 @@ function NalogTab() {
                     </div>
                     <div className="space-y-1">
                       <span className="sm:hidden text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                        Potražuje (RSD)
+                        {t('accounting.credit')} (RSD)
                       </span>
                       <Input
                         type="number"
@@ -1247,7 +1251,7 @@ function NalogTab() {
                 <div className="flex items-center gap-6">
                   <div className="space-y-0.5">
                     <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                      Ukupno duguje
+                      t('accounting.totalDebit')
                     </span>
                     <p className="text-sm font-bold text-emerald-700">
                       {formatRSD(totalDebit)}
@@ -1270,7 +1274,7 @@ function NalogTab() {
                       variant="outline"
                       className="text-xs px-3 py-1 border-slate-300 text-slate-500"
                     >
-                      Unesite iznose
+                      t('accounting.enterAmounts')
                     </Badge>
                   ) : isBalanced ? (
                     <Badge
@@ -1278,7 +1282,7 @@ function NalogTab() {
                       className="text-xs px-3 py-1 bg-emerald-50 text-emerald-700 border-emerald-200 gap-1"
                     >
                       <CheckCircle2 className="h-3 w-3" />
-                      Saldo je u balansu
+                      t('accounting.balanceOk')
                     </Badge>
                   ) : (
                     <Badge
@@ -1286,7 +1290,7 @@ function NalogTab() {
                       className="text-xs px-3 py-1 bg-amber-50 text-amber-700 border-amber-200 gap-1"
                     >
                       <AlertCircle className="h-3 w-3" />
-                      Razlika: {formatRSD(difference)}
+                      t('accounting.difference') + ': ' + formatRSD(difference)
                     </Badge>
                   )}
                 </div>
@@ -1305,12 +1309,12 @@ function NalogTab() {
               {submitting ? (
                 <>
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Knjiženje...
+                  t('accounting.posting')
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4" />
-                  Knjiži nalog
+                  t('accounting.postEntry')
                 </>
               )}
             </Button>
@@ -1323,10 +1327,10 @@ function NalogTab() {
         <CardHeader className="pb-3">
           <div>
             <CardTitle className="text-base font-semibold">
-              Poslednje knjižene stavke
+              t('accounting.recentEntries')
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Pregled nedavno proknjiženih stavki
+              t('accounting.recentEntriesSubtitle')
             </p>
           </div>
         </CardHeader>
@@ -1342,17 +1346,17 @@ function NalogTab() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs w-[100px]">Datum</TableHead>
-                    <TableHead className="text-xs w-[90px]">Konto</TableHead>
+                    <TableHead className="text-xs w-[100px]">{t('common.date')}</TableHead>
+                    <TableHead className="text-xs w-[90px]">{t('accounting.account')}</TableHead>
                     <TableHead className="text-xs">Naziv konta</TableHead>
                     <TableHead className="text-xs text-right w-[130px]">
-                      Duguje
+                      {t('accounting.debit')}
                     </TableHead>
                     <TableHead className="text-xs text-right w-[130px]">
-                      Potražuje
+                      {t('accounting.credit')}
                     </TableHead>
-                    <TableHead className="text-xs">Opis</TableHead>
-                    <TableHead className="text-xs w-[100px]">Dokument</TableHead>
+                    <TableHead className="text-xs">{t('common.description')}</TableHead>
+                    <TableHead className="text-xs w-[100px]">{t('accounting.document')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1362,7 +1366,7 @@ function NalogTab() {
                         colSpan={7}
                         className="text-center py-6 text-muted-foreground text-sm"
                       >
-                        Nema knjiženih stavki
+                        t('accounting.noEntries')
                       </TableCell>
                     </TableRow>
                   ) : (

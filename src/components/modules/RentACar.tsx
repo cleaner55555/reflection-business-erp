@@ -18,6 +18,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate } from '@/lib/helpers'
 
 // ============ TYPES ============
@@ -144,6 +145,7 @@ const TRANSMISSION_LABELS: Record<string, string> = {
 // ============ COMPONENT ============
 
 export function RentACar() {
+  const { t } = useTranslation()
   const [vehicles, setVehicles] = useState<RentalVehicle[]>([])
   const [rentals, setRentals] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
@@ -180,7 +182,7 @@ export function RentACar() {
       const data = await res.json()
       setVehicles(data)
     } catch {
-      toast.error('Greška pri učitavanju vozila')
+      toast.error(t('rentACar.loadVehiclesError'))
     } finally {
       setLoading(false)
     }
@@ -194,7 +196,7 @@ export function RentACar() {
       const data = await res.json()
       setRentals(data)
     } catch {
-      toast.error('Greška pri učitavanju rezervacija')
+      toast.error(t('rentACar.loadRentalsError'))
     } finally {
       setRentalsLoading(false)
     }
@@ -276,12 +278,12 @@ export function RentACar() {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.error || 'Greška')
       }
-      toast.success(editingVehicle ? 'Vozilo ažurirano' : 'Vozilo kreirano')
+      toast.success(editingVehicle ? t('rentACar.vehicleUpdated') : t('rentACar.vehicleCreated'))
       setViewMode('list')
       setEditingVehicle(null)
       fetchVehicles()
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Greška pri čuvanju'
+      const message = err instanceof Error ? err.message : t('common.saveError')
       toast.error(message)
     } finally {
       setSubmitting(false)
@@ -289,17 +291,17 @@ export function RentACar() {
   }
 
   const handleDeleteVehicle = async (id: string) => {
-    if (!confirm('Obrisati vozilo? Sve rezervacije za ovo vozilo će biti obrisane ako postoje.')) return
+    if (!confirm(t('rentACar.confirmDeleteVehicle'))) return
     try {
       const res = await fetch(`/api/rental-vehicles/${id}`, { method: 'DELETE' })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.error || 'Greška')
       }
-      toast.success('Vozilo obrisano')
+      toast.success(t('rentACar.vehicleDeleted'))
       fetchVehicles()
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Greška pri brisanju'
+      const message = err instanceof Error ? err.message : t('common.deleteError')
       toast.error(message)
     }
   }
@@ -336,7 +338,7 @@ export function RentACar() {
   const handleRentalSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!rentalFormStartDate || !rentalFormEndDate || !rentalFormVehicle) {
-      toast.error('Popunite datum, vozilo i druge obavezne podatke')
+      toast.error(t('rentACar.fillRequiredFields'))
       return
     }
     setSubmitting(true)
@@ -372,7 +374,7 @@ export function RentACar() {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.error || 'Greška')
         }
-        toast.success('Rezervacija ažurirana')
+        toast.success(t('rentACar.rentalUpdated'))
       } else {
         const res = await fetch('/api/rentals', {
           method: 'POST',
@@ -383,14 +385,14 @@ export function RentACar() {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.error || 'Greška')
         }
-        toast.success('Rezervacija kreirana')
+        toast.success(t('rentACar.rentalCreated'))
       }
       setViewMode('list')
       setEditingRental(null)
       fetchRentals()
       fetchVehicles()
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Greška pri čuvanju'
+      const message = err instanceof Error ? err.message : t('common.saveError')
       toast.error(message)
     } finally {
       setSubmitting(false)
@@ -398,7 +400,7 @@ export function RentACar() {
   }
 
   const handleUpdateRentalStatus = async (rental: Rental, newStatus: string) => {
-    if (newStatus === 'otkazana' && !confirm('Otkazati ovu rezervaciju?')) return
+    if (newStatus === 'otkazana' && !confirm(t('rentACar.confirmCancelRental'))) return
     try {
       const res = await fetch(`/api/rentals/${rental.id}`, {
         method: 'PUT',
@@ -410,20 +412,20 @@ export function RentACar() {
       fetchRentals()
       fetchVehicles()
     } catch {
-      toast.error('Greška pri promeni statusa')
+      toast.error(t('rentACar.statusChangeError'))
     }
   }
 
   const handleDeleteRental = async (id: string) => {
-    if (!confirm('Obrisati rezervaciju?')) return
+    if (!confirm(t('rentACar.confirmDeleteRental'))) return
     try {
       const res = await fetch(`/api/rentals/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Rezervacija obrisana')
+      toast.success(t('rentACar.rentalDeleted'))
       fetchRentals()
       fetchVehicles()
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     }
   }
 
@@ -458,9 +460,9 @@ export function RentACar() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Car className="h-6 w-6" />
-          Rent a Car
+          {t('rentACar.title')}
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">Upravljanje vozilima za iznajmljivanje i rezervacijama</p>
+        <p className="text-muted-foreground text-sm mt-1">{t('rentACar.subtitle')}</p>
       </div>
 
       {/* Stats Cards */}
@@ -471,7 +473,7 @@ export function RentACar() {
               <CarFront className="h-4.5 w-4.5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Ukupno vozila</p>
+              <p className="text-xs text-muted-foreground">{t('rentACar.totalVehicles')}</p>
               <p className="text-lg font-bold">{totalVehicles}</p>
             </div>
           </div>
@@ -482,7 +484,7 @@ export function RentACar() {
               <ClipboardList className="h-4.5 w-4.5 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Aktivne rezervacije</p>
+              <p className="text-xs text-muted-foreground">{t('rentACar.activeRentals')}</p>
               <p className="text-lg font-bold">{activeRentals}</p>
             </div>
           </div>
@@ -493,7 +495,7 @@ export function RentACar() {
               <DollarSign className="h-4.5 w-4.5 text-amber-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Mesečni prihod</p>
+              <p className="text-xs text-muted-foreground">{t('rentACar.monthlyRevenue')}</p>
               <p className="text-lg font-bold">{formatRSD(monthlyRevenue)}</p>
             </div>
           </div>
@@ -506,11 +508,11 @@ export function RentACar() {
           <TabsList>
             <TabsTrigger value="vozila" className="gap-1.5">
               <Car className="h-3.5 w-3.5" />
-              Vozila
+              {t('rentACar.vehicles')}
             </TabsTrigger>
             <TabsTrigger value="rezervacije" className="gap-1.5">
               <CalendarDays className="h-3.5 w-3.5" />
-              Rezervacije
+              {t('rentACar.rentals')}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -522,38 +524,38 @@ export function RentACar() {
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-                  <div><CardTitle>{editingVehicle ? 'Izmeni' : 'Novo'} Vozilo</CardTitle></div>
+                  <div><CardTitle>{editingVehicle ? t('common.edit') : t('common.new')} {t('rentACar.vehicle')}</CardTitle></div>
                 </div>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleVehicleSubmit} key={editingVehicle?.id || 'new'} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Naziv *</Label>
+                      <Label className="text-xs">{t('common.name')} *</Label>
                       <Input name="name" defaultValue={editingVehicle?.name || ''} required placeholder="npr. VW Golf 8" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Registarski broj *</Label>
+                      <Label className="text-xs">{t('rentACar.registrationPlate')} *</Label>
                       <Input name="registration" defaultValue={editingVehicle?.registration || ''} required placeholder="npr. BG-123-AB" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Marka *</Label>
+                      <Label className="text-xs">{t('rentACar.make')} *</Label>
                       <Input name="make" defaultValue={editingVehicle?.make || ''} required placeholder="npr. VW" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Model *</Label>
+                      <Label className="text-xs">{t('rentACar.model')} *</Label>
                       <Input name="model" defaultValue={editingVehicle?.model || ''} required placeholder="npr. Golf 8" />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Godište *</Label>
+                      <Label className="text-xs">{t('rentACar.year')} *</Label>
                       <Input name="year" type="number" min={1990} max={2030} defaultValue={editingVehicle?.year || new Date().getFullYear()} required />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Gorivo</Label>
+                      <Label className="text-xs">{t('rentACar.fuelType')}</Label>
                       <Select name="fuelType" defaultValue={editingVehicle?.fuelType || 'dizel'}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -566,7 +568,7 @@ export function RentACar() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Menjač</Label>
+                      <Label className="text-xs">{t('rentACar.transmission')}</Label>
                       <Select name="transmission" defaultValue={editingVehicle?.transmission || 'automatski'}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -578,31 +580,31 @@ export function RentACar() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Sedišta</Label>
+                      <Label className="text-xs">{t('rentACar.seats')}</Label>
                       <Input name="seats" type="number" min={1} max={9} defaultValue={editingVehicle?.seats || 5} />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Kilometraža</Label>
+                      <Label className="text-xs">{t('rentACar.mileage')}</Label>
                       <Input name="mileage" type="number" min={0} defaultValue={editingVehicle?.mileage || 0} />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Dnevna cena (RSD) *</Label>
+                      <Label className="text-xs">{t('rentACar.dailyRate')} (RSD) *</Label>
                       <Input name="dailyRate" type="number" step="0.01" min={0} defaultValue={editingVehicle?.dailyRate || ''} required />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Nedeljna cena</Label>
-                      <Input name="weeklyRate" type="number" step="0.01" min={0} defaultValue={editingVehicle?.weeklyRate || ''} placeholder="Opciono" />
+                      <Label className="text-xs">{t('rentACar.weeklyRate')}</Label>
+                      <Input name="weeklyRate" type="number" step="0.01" min={0} defaultValue={editingVehicle?.weeklyRate || ''} placeholder={t('rentACar.optionalPlaceholder')} />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Mesečna cena</Label>
-                      <Input name="monthlyRate" type="number" step="0.01" min={0} defaultValue={editingVehicle?.monthlyRate || ''} placeholder="Opciono" />
+                      <Label className="text-xs">{t('rentACar.monthlyRate')}</Label>
+                      <Input name="monthlyRate" type="number" step="0.01" min={0} defaultValue={editingVehicle?.monthlyRate || ''} placeholder={t('rentACar.optionalPlaceholder')} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Status</Label>
+                      <Label className="text-xs">{t('common.status')}</Label>
                       <Select name="status" defaultValue={editingVehicle?.status || 'dostupno'}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -624,7 +626,7 @@ export function RentACar() {
                           className="h-4 w-4 rounded border-gray-300 accent-primary"
                         />
                         <Label htmlFor="ac-check" className="text-xs cursor-pointer flex items-center gap-1">
-                          <Snowflake className="h-3 w-3" /> Klima
+                          <Snowflake className="h-3 w-3" /> {t('rentACar.airConditioning')}
                         </Label>
                       </div>
                       <div className="flex items-center gap-2">
@@ -642,13 +644,13 @@ export function RentACar() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">Napomene</Label>
-                    <Textarea name="notes" defaultValue={editingVehicle?.notes || ''} placeholder="Dodatne napomene..." rows={3} />
+                    <Label className="text-xs">{t('rentACar.notes')}</Label>
+                    <Textarea name="notes" defaultValue={editingVehicle?.notes || ''} placeholder={t('rentACar.notesPlaceholder')} rows={3} />
                   </div>
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">Otkaži</Button>
+                    <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">{t('common.cancel')}</Button>
                     <Button type="submit" className="flex-1" disabled={submitting}>
-                      {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                      {submitting ? t('common.saving') : t('common.save')}
                     </Button>
                   </div>
                 </form>
@@ -660,16 +662,16 @@ export function RentACar() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Tabs value={vehicleStatusFilter} onValueChange={setVehicleStatusFilter}>
                   <TabsList>
-                    <TabsTrigger value="all">Sva</TabsTrigger>
-                    <TabsTrigger value="dostupno">Dostupna</TabsTrigger>
-                    <TabsTrigger value="iznajmljeno">Iznajmljena</TabsTrigger>
-                    <TabsTrigger value="rezervisano">Rezervisana</TabsTrigger>
+                    <TabsTrigger value="all">{t('rentACar.all')}</TabsTrigger>
+                    <TabsTrigger value="dostupno">{t('rentACar.available')}</TabsTrigger>
+                    <TabsTrigger value="iznajmljeno">{t('rentACar.rented')}</TabsTrigger>
+                    <TabsTrigger value="rezervisano">{t('rentACar.reserved')}</TabsTrigger>
                   </TabsList>
                 </Tabs>
 
                 <Button size="sm" className="gap-2" onClick={openNewVehicle}>
                   <Plus className="h-4 w-4" />
-                  Novo Vozilo
+                  {t('rentACar.newVehicle')}
                 </Button>
               </div>
 
@@ -691,7 +693,7 @@ export function RentACar() {
               ) : filteredVehicles.length === 0 ? (
                 <Card className="p-12 text-center">
                   <Car className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                  <p className="text-sm text-muted-foreground">Nema vozila za prikaz</p>
+                  <p className="text-sm text-muted-foreground">{t('rentACar.noVehicles')}</p>
                 </Card>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -749,7 +751,7 @@ export function RentACar() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="h-3 w-3" />
-                          {vehicle.seats} sedišta
+                          {vehicle.seats} {t('rentACar.seats')}
                         </span>
                         <span className="flex items-center gap-1">
                           <CreditCard className="h-3 w-3" />
@@ -758,7 +760,7 @@ export function RentACar() {
                         {vehicle.ac && (
                           <span className="flex items-center gap-1 text-emerald-600">
                             <Snowflake className="h-3 w-3" />
-                            Klima
+                            {t('rentACar.airConditioning')}
                           </span>
                         )}
                         {vehicle.gps && (
@@ -769,7 +771,7 @@ export function RentACar() {
                         )}
                         <span className="flex items-center gap-1 col-span-2">
                           <MapPin className="h-3 w-3" />
-                          {vehicle._count?.rentals || 0} iznajmljivanja
+                          {vehicle._count?.rentals || 0} {t('rentACar.rentalsCount')}
                         </span>
                       </div>
 
@@ -779,10 +781,10 @@ export function RentACar() {
                           <Separator className="my-2" />
                           <div className="flex gap-3 text-[10px] text-muted-foreground">
                             {vehicle.weeklyRate && (
-                              <span>Nedeljno: <span className="font-medium text-foreground">{formatRSD(vehicle.weeklyRate)}</span></span>
+                              <span>{t('rentACar.weekly')}: <span className="font-medium text-foreground">{formatRSD(vehicle.weeklyRate)}</span></span>
                             )}
                             {vehicle.monthlyRate && (
-                              <span>Mesečno: <span className="font-medium text-foreground">{formatRSD(vehicle.monthlyRate)}</span></span>
+                              <span>{t('rentACar.monthly')}: <span className="font-medium text-foreground">{formatRSD(vehicle.monthlyRate)}</span></span>
                             )}
                           </div>
                         </>
@@ -802,7 +804,7 @@ export function RentACar() {
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-                  <div><CardTitle>{editingRental ? 'Izmeni' : 'Nova'} Rezervacija</CardTitle></div>
+                  <div><CardTitle>{editingRental ? t('common.edit') : t('common.new')} {t('rentACar.rental')}</CardTitle></div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -810,16 +812,16 @@ export function RentACar() {
                   {/* Rental number + Vehicle */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Broj rezervacije *</Label>
+                      <Label className="text-xs">{t('rentACar.rentalNumber')} *</Label>
                       <Input name="number" defaultValue={editingRental?.number || generateRentalNumber()} required />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Vozilo *</Label>
+                      <Label className="text-xs">{t('rentACar.vehicle')} *</Label>
                       <Select
                         value={rentalFormVehicle}
                         onValueChange={handleVehicleSelectForRental}
                       >
-                        <SelectTrigger><SelectValue placeholder="Izaberite vozilo" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t('rentACar.selectVehicle')} /></SelectTrigger>
                         <SelectContent>
                           {vehicles.filter(v => v.status === 'dostupno' || v.id === rentalFormVehicle).map((v) => (
                             <SelectItem key={v.id} value={v.id}>
@@ -835,14 +837,14 @@ export function RentACar() {
 
                   {/* Client Info */}
                   <div>
-                    <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Podaci o klijentu</h4>
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">{t('rentACar.clientInfo')}</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-xs">Ime i prezime *</Label>
+                        <Label className="text-xs">{t('rentACar.clientName')} *</Label>
                         <Input name="clientName" defaultValue={editingRental?.clientName || ''} required placeholder="npr. Marko Marković" />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs">Telefon</Label>
+                        <Label className="text-xs">{t('rentACar.phone')}</Label>
                         <Input name="clientPhone" defaultValue={editingRental?.clientPhone || ''} placeholder="+381..." />
                       </div>
                       <div className="space-y-2">
@@ -850,7 +852,7 @@ export function RentACar() {
                         <Input name="clientEmail" type="email" defaultValue={editingRental?.clientEmail || ''} placeholder="email@primer.rs" />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs">Broj lične karte</Label>
+                        <Label className="text-xs">{t('rentACar.idDocument')}</Label>
                         <Input name="clientIdDoc" defaultValue={editingRental?.clientIdDoc || ''} placeholder="npr. 123456789" />
                       </div>
                     </div>
@@ -860,10 +862,10 @@ export function RentACar() {
 
                   {/* Dates + Rates */}
                   <div>
-                    <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Datum i cena</h4>
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">{t('rentACar.dateAndPrice')}</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-xs">Datum preuzimanja *</Label>
+                        <Label className="text-xs">{t('rentACar.pickupDate')} *</Label>
                         <Input
                           type="date"
                           value={rentalFormStartDate}
@@ -872,7 +874,7 @@ export function RentACar() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs">Datum povratka *</Label>
+                        <Label className="text-xs">{t('rentACar.returnDate')} *</Label>
                         <Input
                           type="date"
                           value={rentalFormEndDate}
@@ -881,11 +883,11 @@ export function RentACar() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs">Dnevna cena (RSD) *</Label>
+                        <Label className="text-xs">{t('rentACar.dailyRate')} (RSD) *</Label>
                         <Input name="dailyRate" type="number" step="0.01" min={0} value={rentalFormDailyRate} onChange={(e) => setRentalFormDailyRate(Number(e.target.value))} required />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs">Kilometraža pri preuzimanju</Label>
+                        <Label className="text-xs">{t('rentACar.pickupMileage')}</Label>
                         <Input name="pickupMileage" type="number" min={0} defaultValue={editingRental?.pickupMileage || 0} />
                       </div>
                     </div>
@@ -893,16 +895,16 @@ export function RentACar() {
                     {/* Auto-calculated summary */}
                     <div className="mt-4 rounded-lg border bg-muted/30 p-3 space-y-1.5">
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">Ukupno dana</span>
+                        <span className="text-muted-foreground">{t('rentACar.totalDays')}</span>
                         <span className="font-semibold">{rentalFormTotalDays}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">Dnevna cena</span>
+                        <span className="text-muted-foreground">{t('rentACar.dailyPrice')}</span>
                         <span className="font-medium">{formatRSD(rentalFormDailyRate)}</span>
                       </div>
                       <Separator />
                       <div className="flex justify-between text-sm">
-                        <span className="font-medium">Ukupan iznos</span>
+                        <span className="font-medium">{t('rentACar.totalAmount')}</span>
                         <span className="font-bold text-emerald-600">{formatRSD(rentalFormTotalAmount)}</span>
                       </div>
                     </div>
@@ -911,21 +913,21 @@ export function RentACar() {
                   {/* Deposit */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Depozit (RSD)</Label>
+                      <Label className="text-xs">{t('rentACar.deposit')} (RSD)</Label>
                       <Input name="deposit" type="number" step="0.01" min={0} defaultValue={editingRental?.deposit || 0} />
                     </div>
                   </div>
 
                   {/* Notes */}
                   <div className="space-y-2">
-                    <Label className="text-xs">Napomene</Label>
-                    <Textarea name="notes" defaultValue={editingRental?.notes || ''} placeholder="Dodatne napomene o rezervaciji..." rows={3} />
+                    <Label className="text-xs">{t('rentACar.notes')}</Label>
+                    <Textarea name="notes" defaultValue={editingRental?.notes || ''} placeholder={t('rentACar.rentalNotesPlaceholder')} rows={3} />
                   </div>
 
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">Otkaži</Button>
+                    <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">{t('common.cancel')}</Button>
                     <Button type="submit" className="flex-1" disabled={submitting}>
-                      {submitting ? 'Čuvanje...' : 'Sačuvaj rezervaciju'}
+                      {submitting ? t('common.saving') : t('rentACar.saveRental')}
                     </Button>
                   </div>
                 </form>
@@ -937,17 +939,17 @@ export function RentACar() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Tabs value={rentalStatusFilter} onValueChange={setRentalStatusFilter}>
                   <TabsList>
-                    <TabsTrigger value="all">Sve</TabsTrigger>
-                    <TabsTrigger value="rezervacija">Rezervacije</TabsTrigger>
-                    <TabsTrigger value="aktivna">Aktivne</TabsTrigger>
-                    <TabsTrigger value="zavrsena">Završene</TabsTrigger>
-                    <TabsTrigger value="otkazana">Otkazane</TabsTrigger>
+                    <TabsTrigger value="all">{t('rentACar.all')}</TabsTrigger>
+                    <TabsTrigger value="rezervacija">{t('rentACar.reservations')}</TabsTrigger>
+                    <TabsTrigger value="aktivna">{t('rentACar.activeFilter')}</TabsTrigger>
+                    <TabsTrigger value="zavrsena">{t('rentACar.completedFilter')}</TabsTrigger>
+                    <TabsTrigger value="otkazana">{t('rentACar.canceledFilter')}</TabsTrigger>
                   </TabsList>
                 </Tabs>
 
                 <Button size="sm" className="gap-2" onClick={openNewRental}>
                   <Plus className="h-4 w-4" />
-                  Nova Rezervacija
+                  {t('rentACar.newRental')}
                 </Button>
               </div>
 
@@ -969,7 +971,7 @@ export function RentACar() {
               ) : filteredRentals.length === 0 ? (
                 <Card className="p-12 text-center">
                   <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                  <p className="text-sm text-muted-foreground">Nema rezervacija za prikaz</p>
+                  <p className="text-sm text-muted-foreground">{t('rentACar.noRentals')}</p>
                 </Card>
               ) : (
                 <div className="space-y-3">
@@ -1006,7 +1008,7 @@ export function RentACar() {
                             )}
                             <span className="flex items-center gap-1.5">
                               <Car className="h-3 w-3 shrink-0" />
-                              <span className="truncate">{rental.vehicle?.name || 'Nepoznato vozilo'}</span>
+                              <span className="truncate">{rental.vehicle?.name || t('rentACar.unknownVehicle')}</span>
                               {rental.vehicle?.registration && (
                                 <span className="font-mono text-[10px]">({rental.vehicle.registration})</span>
                               )}
@@ -1025,7 +1027,7 @@ export function RentACar() {
                             </span>
                             <span className="flex items-center gap-1">
                               <Eye className="h-3 w-3" />
-                              {rental.totalDays} dana
+                              {rental.totalDays} {t('rentACar.days')}
                             </span>
                             <span className="flex items-center gap-1">
                               <Gauge className="h-3 w-3" />
@@ -1037,17 +1039,17 @@ export function RentACar() {
                           <div className="flex flex-wrap gap-4 text-xs">
                             <span className="flex items-center gap-1">
                               <DollarSign className="h-3 w-3 text-emerald-500" />
-                              <span className="text-muted-foreground">Iznos:</span>
+                              <span className="text-muted-foreground">{t('common.amount')}:</span>
                               <span className="font-bold text-sm text-emerald-600">{formatRSD(rental.totalAmount)}</span>
                             </span>
                             <span className="flex items-center gap-1">
                               <CreditCard className="h-3 w-3 text-amber-500" />
-                              <span className="text-muted-foreground">Depozit:</span>
+                              <span className="text-muted-foreground">{t('rentACar.deposit')}:</span>
                               <span className="font-medium">{formatRSD(rental.deposit)}</span>
                             </span>
                             <span className="flex items-center gap-1">
                               <FileText className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-muted-foreground">Dnevna:</span>
+                              <span className="text-muted-foreground">{t('rentACar.daily')}:</span>
                               <span className="font-medium">{formatRSD(rental.dailyRate)}</span>
                             </span>
                           </div>
@@ -1064,7 +1066,7 @@ export function RentACar() {
                             size="icon"
                             className="h-7 w-7"
                             onClick={() => openEditRental(rental)}
-                            title="Izmeni"
+                            title={t('common.edit')}
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
@@ -1075,7 +1077,7 @@ export function RentACar() {
                               size="icon"
                               className="h-7 w-7 text-emerald-600 hover:text-emerald-700"
                               onClick={() => handleUpdateRentalStatus(rental, 'aktivna')}
-                              title="Aktiviraj"
+                              title={t('rentACar.activate')}
                             >
                               <PlayCircle className="h-3.5 w-3.5" />
                             </Button>
@@ -1087,7 +1089,7 @@ export function RentACar() {
                               size="icon"
                               className="h-7 w-7 text-blue-600 hover:text-blue-700"
                               onClick={() => handleUpdateRentalStatus(rental, 'zavrsena')}
-                              title="Završi"
+                              title={t('rentACar.complete')}
                             >
                               <CheckCircle className="h-3.5 w-3.5" />
                             </Button>
@@ -1099,7 +1101,7 @@ export function RentACar() {
                               size="icon"
                               className="h-7 w-7 text-red-500 hover:text-red-600"
                               onClick={() => handleUpdateRentalStatus(rental, 'otkazana')}
-                              title="Otkaži"
+                              title={t('common.cancel')}
                             >
                               <XCircle className="h-3.5 w-3.5" />
                             </Button>
@@ -1110,7 +1112,7 @@ export function RentACar() {
                             size="icon"
                             className="h-7 w-7 text-red-500"
                             onClick={() => handleDeleteRental(rental.id)}
-                            title="Obriši"
+                            title={t('common.delete')}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

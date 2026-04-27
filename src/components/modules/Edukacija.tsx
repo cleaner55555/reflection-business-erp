@@ -16,6 +16,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n'
 
 interface Lesson {
   id: string
@@ -74,6 +75,7 @@ const LESSON_TYPE_COLORS: Record<string, string> = {
 }
 
 export function Edukacija() {
+  const { t } = useTranslation()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -93,7 +95,7 @@ export function Edukacija() {
       const data = await res.json()
       setCourses(data)
     } catch {
-      toast.error('Greška pri učitavanju kurseva')
+      toast.error(t('education.loadCoursesError'))
     } finally {
       setLoading(false)
     }
@@ -108,7 +110,7 @@ export function Edukacija() {
       const data = await res.json()
       setCourses(prev => prev.map(c => c.id === courseId ? data : c))
     } catch {
-      toast.error('Greška pri učitavanju lekcija')
+      toast.error(t('education.loadLessonsError'))
     }
   }, [])
 
@@ -125,27 +127,27 @@ export function Edukacija() {
   }
 
   const handleDeleteCourse = async (id: string) => {
-    if (!confirm('Obrisati kurs? Sve lekcije će biti obrisane.')) return
+    if (!confirm(t('education.confirmDeleteCourse'))) return
     try {
       const res = await fetch(`/api/courses/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Kurs obrisan')
+      toast.success(t('education.courseDeleted'))
       if (expandedId === id) setExpandedId(null)
       fetchCourses()
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     }
   }
 
   const handleDeleteLesson = async (lessonId: string, courseId: string) => {
-    if (!confirm('Obrisati lekciju?')) return
+    if (!confirm(t('education.confirmDeleteLesson'))) return
     try {
       const res = await fetch(`/api/lessons/${lessonId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      toast.success('Lekcija obrisana')
+      toast.success(t('education.lessonDeleted'))
       fetchCourseDetails(courseId)
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error(t('common.deleteError'))
     }
   }
 
@@ -169,12 +171,12 @@ export function Edukacija() {
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error()
-      toast.success(editingCourse ? 'Kurs ažuriran' : 'Kurs kreiran')
+      toast.success(editingCourse ? t('education.courseUpdated') : t('education.courseCreated'))
       setCourseViewMode('list')
       setEditingCourse(null)
       fetchCourses()
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -200,14 +202,14 @@ export function Edukacija() {
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error()
-      toast.success(editingLesson ? 'Lekcija ažurirana' : 'Lekcija kreirana')
+      toast.success(editingLesson ? t('education.lessonUpdated') : t('education.lessonCreated'))
       setLessonViewMode('list')
       setEditingLesson(null)
       const courseId = targetCourseId
       setTargetCourseId(null)
       fetchCourseDetails(courseId)
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error(t('common.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -259,9 +261,9 @@ export function Edukacija() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <GraduationCap className="h-6 w-6" />
-          Edukacija
+          {t('education.title')}
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">LMS platforma za internu edukaciju zaposlenih</p>
+        <p className="text-muted-foreground text-sm mt-1">{t('education.subtitle')}</p>
       </div>
 
       {/* Stats */}
@@ -272,7 +274,7 @@ export function Edukacija() {
               <BookOpen className="h-4.5 w-4.5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Ukupno kurseva</p>
+              <p className="text-xs text-muted-foreground">{t('education.totalCourses')}</p>
               <p className="text-lg font-bold">{courses.length}</p>
             </div>
           </div>
@@ -283,7 +285,7 @@ export function Edukacija() {
               <ListOrdered className="h-4.5 w-4.5 text-violet-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Ukupno lekcija</p>
+              <p className="text-xs text-muted-foreground">{t('education.totalLessons')}</p>
               <p className="text-lg font-bold">{totalLessons}</p>
             </div>
           </div>
@@ -294,7 +296,7 @@ export function Edukacija() {
               <Clock className="h-4.5 w-4.5 text-amber-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Ukupno trajanje</p>
+              <p className="text-xs text-muted-foreground">{t('education.totalDuration')}</p>
               <p className="text-lg font-bold">{totalDuration} min</p>
             </div>
           </div>
@@ -306,24 +308,24 @@ export function Edukacija() {
           {courseViewMode === 'form' ? (
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleCancelCourse}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>{editingCourse ? 'Izmeni' : 'Novi'} Kurs</CardTitle></div>
+              <div><CardTitle>{editingCourse ? t('common.edit') : t('common.new')} {t('education.course')}</CardTitle></div>
             </div>
           ) : (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
                 <div>
-                  <CardTitle className="text-base font-semibold">Kursevi</CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">{courses.length} kurseva</p>
+                  <CardTitle className="text-base font-semibold">{t('education.courses')}</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">{courses.length} {t('education.coursesCount')}</p>
                 </div>
                 <Button size="sm" className="gap-2" onClick={openNewCourse}>
                   <Plus className="h-4 w-4" />
-                  Novi Kurs
+                  {t('education.newCourse')}
                 </Button>
               </div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
-                  <TabsTrigger value="all">Svi kursevi</TabsTrigger>
-                  <TabsTrigger value="active">Aktivni</TabsTrigger>
+                  <TabsTrigger value="all">{t('education.allCourses')}</TabsTrigger>
+                  <TabsTrigger value="active">{t('education.active')}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -333,18 +335,18 @@ export function Edukacija() {
           {courseViewMode === 'form' ? (
             <form onSubmit={handleCourseSubmit} key={editingCourse?.id || 'new'} className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs">Naziv kursa *</Label>
+                <Label className="text-xs">{t('education.courseName')} *</Label>
                 <Input name="title" defaultValue={editingCourse?.title || ''} required placeholder="npr. Excel napredni" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">Opis</Label>
-                <Textarea name="description" defaultValue={editingCourse?.description || ''} placeholder="Kratak opis kursa..." rows={3} />
+                <Label className="text-xs">{t('common.description')}</Label>
+                <Textarea name="description" defaultValue={editingCourse?.description || ''} placeholder={t('education.courseDescriptionPlaceholder')} rows={3} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Kategorija</Label>
+                  <Label className="text-xs">{t('education.category')}</Label>
                   <Select name="category" defaultValue={editingCourse?.category || ''}>
-                    <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t('education.selectCategory')} /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="IT">IT</SelectItem>
                       <SelectItem value="Menadžment">Menadžment</SelectItem>
@@ -357,17 +359,17 @@ export function Edukacija() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Instruktor</Label>
-                  <Input name="instructor" defaultValue={editingCourse?.instructor || ''} placeholder="Ime instruktora" />
+                  <Label className="text-xs">{t('education.instructor')}</Label>
+                  <Input name="instructor" defaultValue={editingCourse?.instructor || ''} placeholder={t('education.instructorPlaceholder')} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Trajanje (min)</Label>
+                  <Label className="text-xs">{t('education.duration')} (min)</Label>
                   <Input name="duration" type="number" min={0} defaultValue={editingCourse?.duration || 0} />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Status</Label>
+                  <Label className="text-xs">{t('common.status')}</Label>
                   <Select name="status" defaultValue={editingCourse?.status || 'aktivno'}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -379,9 +381,9 @@ export function Edukacija() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={handleCancelCourse} className="flex-1">Otkaži</Button>
+                <Button type="button" variant="outline" onClick={handleCancelCourse} className="flex-1">{t('common.cancel')}</Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                  {submitting ? t('common.saving') : t('common.save')}
                 </Button>
               </div>
             </form>
@@ -405,7 +407,7 @@ export function Edukacija() {
               ) : filteredCourses.length === 0 ? (
                 <div className="text-center py-12">
                   <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                  <p className="text-sm text-muted-foreground">Nema kurseva za prikaz</p>
+                  <p className="text-sm text-muted-foreground">{t('education.noCourses')}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -486,16 +488,16 @@ export function Edukacija() {
                               <>
                                 <div className="flex items-center gap-3 mb-4">
                                   <Button variant="ghost" size="icon" onClick={handleCancelLesson}><ArrowLeft className="h-4 w-4" /></Button>
-                                  <h4 className="text-sm font-semibold">{editingLesson ? 'Izmeni' : 'Nova'} Lekcija</h4>
+                                  <h4 className="text-sm font-semibold">{editingLesson ? t('common.edit') : t('common.new')} {t('education.lesson')}</h4>
                                 </div>
                                 <form onSubmit={handleLessonSubmit} key={editingLesson?.id || targetCourseId || 'new'} className="space-y-4">
                                   <div className="space-y-2">
-                                    <Label className="text-xs">Naslov lekcije *</Label>
+                                    <Label className="text-xs">{t('education.lessonTitle')} *</Label>
                                     <Input name="title" defaultValue={editingLesson?.title || ''} required placeholder="npr. Uvod u Excel" />
                                   </div>
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                      <Label className="text-xs">Tip</Label>
+                                      <Label className="text-xs">{t('common.type')}</Label>
                                       <Select name="type" defaultValue={editingLesson?.type || 'tekst'}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
@@ -507,18 +509,18 @@ export function Edukacija() {
                                       </Select>
                                     </div>
                                     <div className="space-y-2">
-                                      <Label className="text-xs">Redni broj</Label>
+                                      <Label className="text-xs">{t('education.orderNum')}</Label>
                                       <Input name="orderNum" type="number" min={0} defaultValue={editingLesson?.orderNum ?? 0} />
                                     </div>
                                   </div>
                                   <div className="space-y-2">
-                                    <Label className="text-xs">Sadržaj</Label>
-                                    <Textarea name="content" defaultValue={editingLesson?.content || ''} placeholder="Sadržaj lekcije..." rows={5} />
+                                    <Label className="text-xs">{t('education.content')}</Label>
+                                    <Textarea name="content" defaultValue={editingLesson?.content || ''} placeholder={t('education.contentPlaceholder')} rows={5} />
                                   </div>
                                   <div className="flex gap-2">
-                                    <Button type="button" variant="outline" onClick={handleCancelLesson} className="flex-1">Otkaži</Button>
+                                    <Button type="button" variant="outline" onClick={handleCancelLesson} className="flex-1">{t('common.cancel')}</Button>
                                     <Button type="submit" className="flex-1" disabled={submitting}>
-                                      {submitting ? 'Čuvanje...' : 'Sačuvaj'}
+                                      {submitting ? t('common.saving') : t('common.save')}
                                     </Button>
                                   </div>
                                 </form>
@@ -528,7 +530,7 @@ export function Edukacija() {
                                 <div className="flex items-center justify-between mb-3">
                                   <h4 className="text-sm font-semibold flex items-center gap-1.5">
                                     <ListOrdered className="h-4 w-4" />
-                                    Lekcije
+                                    {t('education.lessons')}
                                   </h4>
                                   <Button
                                     size="sm"
@@ -537,14 +539,14 @@ export function Edukacija() {
                                     onClick={() => openAddLesson(course.id)}
                                   >
                                     <Plus className="h-3 w-3" />
-                                    Dodaj lekciju
+                                    {t('education.addLesson')}
                                   </Button>
                                 </div>
 
                                 {!course.lessons || course.lessons.length === 0 ? (
                                   <div className="text-center py-6">
                                     <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
-                                    <p className="text-xs text-muted-foreground">Nema lekcija</p>
+                                    <p className="text-xs text-muted-foreground">{t('education.noLessons')}</p>
                                   </div>
                                 ) : (
                                   <div className="space-y-1.5 max-h-72 overflow-y-auto">

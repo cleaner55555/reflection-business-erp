@@ -251,10 +251,10 @@ export function Protokol() {
   }
 
   const statsCards = [
-    { label: 'Ukupno', value: totalCount, icon: FileCheck, color: 'text-slate-600 bg-slate-50' },
-    { label: 'Ulazni', value: ulazniCount, icon: Inbox, color: 'text-blue-600 bg-blue-50' },
-    { label: 'Izlazni', value: izlazniCount, icon: Send, color: 'text-emerald-600 bg-emerald-50' },
-    { label: 'Hitni', value: hitniCount, icon: AlertTriangle, color: 'text-red-600 bg-red-50' },
+    { label: t('common.total'), value: totalCount, icon: FileCheck, color: 'text-slate-600 bg-slate-50' },
+    { label: t('protocol.incoming'), value: ulazniCount, icon: Inbox, color: 'text-blue-600 bg-blue-50' },
+    { label: t('protocol.outgoing'), value: izlazniCount, icon: Send, color: 'text-emerald-600 bg-emerald-50' },
+    { label: t('protocol.urgent'), value: hitniCount, icon: AlertTriangle, color: 'text-red-600 bg-red-50' },
   ]
 
   // ─── JSX ──────────────────────────────────────────────────────────────────
@@ -332,10 +332,10 @@ export function Protokol() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ulaz">
-                        <span className="flex items-center gap-1.5"><Inbox className="h-3.5 w-3.5" /> Ulazni</span>
+                        <span className="flex items-center gap-1.5"><Inbox className="h-3.5 w-3.5" /> {t('protocol.incoming')}</span>
                       </SelectItem>
                       <SelectItem value="izlaz">
-                        <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> Izlazni</span>
+                        <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> {t('protocol.outgoing')}</span>
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -472,7 +472,7 @@ export function Protokol() {
                   Otkaži
                 </Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : editing ? 'Ažuriraj' : 'Kreiraj'}
+                  {submitting ? t('common.saving') : editing ? t('common.update') : t('common.create')}
                 </Button>
               </div>
             </form>
@@ -483,10 +483,10 @@ export function Protokol() {
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="w-full sm:w-auto">
                   <TabsTrigger value="ulaz" className="gap-1.5 text-xs">
-                    <Inbox className="h-3.5 w-3.5" /> Ulazni dopisi
+                    <Inbox className="h-3.5 w-3.5" /> t('protocol.incoming')
                   </TabsTrigger>
                   <TabsTrigger value="izlaz" className="gap-1.5 text-xs">
-                    <Send className="h-3.5 w-3.5" /> Izlazni dopisi
+                    <Send className="h-3.5 w-3.5" /> t('protocol.outgoing')
                   </TabsTrigger>
                   <TabsTrigger value="sve" className="gap-1.5 text-xs">
                     <FileCheck className="h-3.5 w-3.5" /> Svi
@@ -508,10 +508,10 @@ export function Protokol() {
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
                       <SelectTrigger className="h-9 w-[140px] text-xs">
                         <Filter className="mr-1.5 h-3 w-3 text-muted-foreground" />
-                        <SelectValue placeholder="Status" />
+                        <SelectValue placeholder={t('common.status')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Svi statusi</SelectItem>
+                        <SelectItem value="all">{t('common.allStatuses')}</SelectItem>
                         {Object.entries(STATUS_CONFIG).map(([k, v]) => (
                           <SelectItem key={k} value={k}>{v.label}</SelectItem>
                         ))}
@@ -520,10 +520,10 @@ export function Protokol() {
                     <Select value={filterPriority} onValueChange={setFilterPriority}>
                       <SelectTrigger className="h-9 w-[140px] text-xs">
                         <Filter className="mr-1.5 h-3 w-3 text-muted-foreground" />
-                        <SelectValue placeholder="Prioritet" />
+                        <SelectValue placeholder={t('protocol.priority')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Svi prioriteti</SelectItem>
+                        <SelectItem value="all">{t('protocol.allPriorities')}</SelectItem>
                         {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
                           <SelectItem key={k} value={k}>{v.label}</SelectItem>
                         ))}
@@ -614,7 +614,7 @@ export function Protokol() {
                                       size="icon"
                                       className="h-7 w-7 text-red-500 hover:text-red-600"
                                       onClick={() => setDeleteTarget(entry)}
-                                      title="Obriši"
+                                      title={t("common.delete")}
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
@@ -654,7 +654,7 @@ export function Protokol() {
               disabled={deleting}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
-              {deleting ? 'Brisanje...' : 'Obriši'}
+              {deleting ? t('common.deleting') : t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
