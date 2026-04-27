@@ -39,7 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Languages } from 'lucide-react'
+import { Languages, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
 // Default active languages if not configured
@@ -101,7 +101,7 @@ const moduleLabelKeys: Record<string, string> = {
 
 function AppContent() {
   const { activeModule } = useAppStore()
-  const { t, locale, setLocale } = useTranslation()
+  const { t, locale, setLocale, isTranslating } = useTranslation()
   const ensureLoaded = useThemeStore((s) => s.ensureLoaded)
 
   // Active languages from settings
@@ -147,6 +147,13 @@ function AppContent() {
               </h2>
             </div>
             <div className="flex items-center gap-2">
+              {/* AI Translation loading indicator */}
+              {isTranslating && (
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                  <span className="hidden sm:inline">Prevodi se...</span>
+                </div>
+              )}
               {/* Language Switcher - dropdown with active languages only */}
               {headerLanguages.length > 1 ? (
                 <Select value={locale} onValueChange={(val) => setLocale(val)}>

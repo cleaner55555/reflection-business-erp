@@ -149,3 +149,30 @@ Stage Summary:
 - MailerLite.tsx: Already converted ✅ (no changes needed)
 - Podesavanja.tsx: No Dialogs found — skipped ✅
 - RentACar.tsx: 2 Dialogs → 2 inline Card forms (vehicle form + rental form)
+
+---
+Task ID: 3
+Agent: Main Coordinator
+Task: Implement automatic AI translation for all 80+ languages
+
+Work Log:
+- Created /api/i18n/translate API endpoint (GET + POST)
+- GET checks in-memory cache → DB cache → returns null if not found
+- POST uses z-ai-web-dev-sdk LLM to translate English translations to target language in batches of 60
+- Translations are cached in-memory (Map) and persisted to DB (AppSetting table)
+- Updated i18n context (context.tsx) to automatically fetch AI translations for non-hardcoded locales
+- Added isTranslating state to show loading spinner in header
+- Hardcoded locales (sr, sr-latn, en) use static translations from translations.ts
+- All other 80+ languages auto-translate via AI on first use, then cached forever
+- Added "Prevodi se..." loading indicator with spinner in header
+- Updated useTranslation hook to expose isTranslating flag
+- Tested: German translation works perfectly (save→Speichern, cancel→Abbrechen, etc.)
+- Cache verified: second request returns instantly from DB cache
+- Lint passes cleanly
+
+Stage Summary:
+- AI auto-translation system implemented for all 80+ languages
+- No manual translation needed — just pick a language and AI translates the entire UI
+- 3-tier caching: in-memory → DB (AppSetting) → AI translation
+- First translation takes ~10-20 seconds, subsequent loads are instant
+- Only sr, sr-latn, en have hardcoded translations; everything else is auto-translated

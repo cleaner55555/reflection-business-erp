@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 import { translations, DEFAULT_LOCALE, type TranslationMap } from './translations'
@@ -22,6 +23,8 @@ interface I18nContextValue {
   t: (key: string, params?: Record<string, string | number>) => string
   /** Translation map for the current locale */
   translations: TranslationMap
+  /** Whether a translation is currently being loaded from AI */
+  isTranslating: boolean
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null)
@@ -38,6 +41,12 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
   const hasInitialLocale = !!initialLocale
   const [locale, setLocaleState] = useState<string>(initialLocale ?? DEFAULT_LOCALE)
   const [isLoaded, setIsLoaded] = useState(hasInitialLocale)
+  const [isTranslating, setIsTranslating] = useState(false)
+  const [aiTranslations, setAiTranslations] = useState<Record<string, TranslationMap>>({})
+  const translatingRef = useRef<string | null>(null)
+
+  // Hardcoded locales that have static translations
+  const HARDCODED = new Set(['sr', 'sr-latn', 'en'])
 
   // Load saved locale from settings API on mount
   useEffect(() => {
@@ -75,6 +84,58 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
     }
   }, [hasInitialLocale])
 
+  // Fetch AI translations for non-hardcoded locales
+  const fetchTranslation = useCallback(async (targetLocale: string) => {
+    if (HARDCODED.has(targetLocale)) return
+
+    // Skip if already translating or already cached
+    if (translatingRef.current === targetLocale) return
+    if (aiTranslations[targetLocale]) return
+
+    translatingRef.current = targetLocale
+    setIsTranslating(true)
+
+    try {
+      // Try GET first (check cache)
+      const getRes = await fetch(`/api/i18n/translate?locale=${encodeURIComponent(targetLocale)}`)
+      const getData = await getRes.json()
+
+      if (getData.translations && getData.source !== 'not-found') {
+        setAiTranslations((prev) => ({ ...prev, [targetLocale]: getData.translations }))
+        setIsTranslating(false)
+        translatingRef.current = null
+        return
+      }
+
+      // Not cached — trigger AI translation
+      const postRes = await fetch('/api/i18n/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locale: targetLocale }),
+      })
+
+      if (postRes.ok) {
+        const postData = await postRes.json()
+        if (postData.translations) {
+          setAiTranslations((prev) => ({ ...prev, [targetLocale]: postData.translations }))
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch translation:', err)
+    } finally {
+      setIsTranslating(false)
+      translatingRef.current = null
+    }
+  }, [aiTranslations])
+
+  // When locale changes to a non-hardcoded locale, fetch translations
+  useEffect(() => {
+    if (!isLoaded) return
+    if (!HARDCODED.has(locale)) {
+      fetchTranslation(locale)
+    }
+  }, [locale, isLoaded, fetchTranslation])
+
   // Persist locale to settings API
   const setLocale = useCallback((newLocale: string) => {
     setLocaleState(newLocale)
@@ -97,10 +158,24 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
     })
   }, [])
 
+  // Get current translation map
+  const getCurrentTranslations = useCallback((): TranslationMap => {
+    // 1. Check hardcoded translations
+    if (translations[locale]) {
+      return translations[locale]
+    }
+    // 2. Check AI translations
+    if (aiTranslations[locale]) {
+      return aiTranslations[locale]
+    }
+    // 3. Fallback to English
+    return translations[DEFAULT_LOCALE] || translations['en']
+  }, [locale, aiTranslations])
+
   // Translation function with dot notation support
   const t = useCallback(
     (key: string, params?: Record<string, string | number>): string => {
-      const currentTranslations = translations[locale] || translations[DEFAULT_LOCALE]
+      const currentTranslations = getCurrentTranslations()
       const parts = key.split('.')
       let result: string | undefined
 
@@ -118,8 +193,8 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
       result = typeof current === 'string' ? current : undefined
 
       // Fallback: try English, then return the key itself
-      if (result === undefined && locale !== 'en') {
-        let fallback: unknown = translations['en']
+      if (result === undefined && locale !== DEFAULT_LOCALE && locale !== 'en') {
+        let fallback: unknown = translations[DEFAULT_LOCALE] || translations['en']
         for (const part of parts) {
           if (fallback && typeof fallback === 'object' && part in fallback) {
             fallback = (fallback as Record<string, unknown>)[part]
@@ -148,11 +223,10 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
 
       return result
     },
-    [locale]
+    [locale, getCurrentTranslations]
   )
 
-  // Get the current translation map
-  const currentTranslations = translations[locale] || translations[DEFAULT_LOCALE]
+  const currentTranslations = getCurrentTranslations()
 
   // Don't render children until locale is loaded from API (prevents flash)
   if (!isLoaded) {
@@ -166,6 +240,7 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
         setLocale,
         t,
         translations: currentTranslations,
+        isTranslating,
       }}
     >
       {children}
@@ -180,7 +255,7 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
  *
  * @example
  * ```tsx
- * const { t, locale, setLocale } = useTranslation()
+ * const { t, locale, setLocale, isTranslating } = useTranslation()
  *
  * // Simple lookup
  * t('common.save') // => 'Сачувај'
@@ -189,7 +264,7 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
  * t('common.countOf', { count: 5 }) // => '5 од'
  *
  * // Change locale
- * setLocale('en')
+ * setLocale('de') // => auto-translates to German via AI
  * ```
  */
 export function useTranslation(): I18nContextValue {
