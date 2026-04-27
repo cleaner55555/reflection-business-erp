@@ -3,7 +3,22 @@ import { db } from '@/lib/db'
 async function seed() {
   console.log('🌱 Seeding database...')
 
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth()
+
   // Clear existing data
+  await db.projectTask.deleteMany()
+  await db.project.deleteMany()
+  await db.document.deleteMany()
+  await db.attendance.deleteMany()
+  await db.payroll.deleteMany()
+  await db.employee.deleteMany()
+  await db.asset.deleteMany()
+  await db.calendarEvent.deleteMany()
+  await db.crmActivity.deleteMany()
+  await db.deal.deleteMany()
+  await db.contact.deleteMany()
   await db.deliveryNoteItem.deleteMany()
   await db.deliveryNote.deleteMany()
   await db.priceListItem.deleteMany()
@@ -247,7 +262,6 @@ async function seed() {
   ])
 
   // Transactions (monthly revenue and expenses over last 6 months)
-  const now = new Date()
   const categories = ['promet', 'nabavka', 'plata', 'režije', 'ostalo']
   const descriptions = [
     'Prodaja robe - faktura',
@@ -522,8 +536,8 @@ async function seed() {
     db.deal.create({ data: { title: 'IT oprema za Delta Trade', value: 350000, stage: 'pregovaranje', probability: 70, contactId: contacts[0].id, partnerId: partners[0].id, assignedTo: 'Ana Milić', closeDate: new Date(year, month + 2, 15), notes: 'Veliki ugovor za kompletnu IT infrastrukturu' } }),
     db.deal.create({ data: { title: 'Aluminijski profili - kvartalna narudžba', value: 120000, stage: 'predlog', probability: 40, contactId: contacts[1].id, partnerId: partners[1].id, assignedTo: 'Marko Petrović' } }),
     db.deal.create({ data: { title: 'LED paneli za novo sedište', value: 85000, stage: 'won', probability: 100, contactId: contacts[2].id, partnerId: partners[2].id, closeDate: new Date(year, month - 1, 5) } }),
-    db.deal.create({ data: { title: 'Pakovanje za e-commerce', value: 45000, stage: 'kvalifikacija', probability: 25, contactId: contacts[3].id, isLead: true, notes: 'Inicijalni upit' } }),
-    db.deal.create({ data: { title: 'ERP konsalting za startup', value: 200000, stage: 'lead', probability: 10, contactId: contacts[4].id, isLead: true } }),
+    db.deal.create({ data: { title: 'Pakovanje za e-commerce', value: 45000, stage: 'kvalifikacija', probability: 25, contactId: contacts[3].id, notes: 'Inicijalni upit' } }),
+    db.deal.create({ data: { title: 'ERP konsalting za startup', value: 200000, stage: 'lead', probability: 10, contactId: contacts[4].id } }),
     db.deal.create({ data: { title: 'Auto delovi - godišnji ugovor', value: 180000, stage: 'pregovaranje', probability: 60, contactId: contacts[6].id, partnerId: partners[5].id, assignedTo: 'Jelena Stanković' } }),
   ])
 

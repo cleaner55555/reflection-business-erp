@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Biznis Navigator — Moderni ERP Sistem",
-  description: "Sveobuhvatan informacioni sistem za upravljanje poslovanjem. Finansije, magacin, fakture, nabavka, partneri i izveštavanje.",
-  keywords: ["ERP", "Biznis Navigator", "poslovanje", "finansije", "magacin", "fakture", "Srbija"],
-  authors: [{ name: "Biznis Navigator Team" }],
+  title: "Reflection Business — ERP + CRM Sistem",
+  description: "Sveobuhvatan ERP + CRM sistem za upravljanje poslovanjem. Finansije, magacin, fakture, nabavka, CRM, HR, projekti, dokumenta i izveštavanje.",
+  keywords: ["ERP", "CRM", "Reflection Business", "poslovanje", "finansije", "magacin", "fakture", "Srbija"],
+  authors: [{ name: "Reflection Business Team" }],
   openGraph: {
-    title: "Biznis Navigator",
-    description: "Modularni ERP sistem za efikasno upravljanje poslovanjem",
+    title: "Reflection Business",
+    description: "Modularni ERP + CRM sistem za efikasno upravljanje poslovanjem",
     type: "website",
   },
 };
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="sr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
