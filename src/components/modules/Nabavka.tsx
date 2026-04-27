@@ -229,7 +229,7 @@ export function Nabavka() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Status</Label>
-                    <Select name="status" defaultValue="nacrt">
+                    <Select name="status" defaultValue={editingOrder?.status || 'nacrt'}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="nacrt">Načrt</SelectItem>

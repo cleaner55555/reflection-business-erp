@@ -234,7 +234,7 @@ export function Partneri() {
               <DialogHeader>
                 <DialogTitle>{editingPartner ? 'Izmeni Partnera' : 'Novi Partner'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form key={editingPartner?.id || 'new'} onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Naziv *</Label>
