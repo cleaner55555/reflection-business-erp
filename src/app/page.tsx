@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/modules/AppSidebar'
 import { Footer } from '@/components/modules/Footer'
@@ -27,59 +28,82 @@ import { Podesavanja } from '@/components/modules/Podesavanja'
 import { AIAssistant } from '@/components/modules/AIAssistant'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { useAppStore } from '@/lib/store'
+import { useThemeStore } from '@/lib/theme'
+import { I18nProvider, useTranslation, LOCALE_NAMES } from '@/lib/i18n'
 import { Separator } from '@/components/ui/separator'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Languages } from 'lucide-react'
 
-export default function Home() {
+// ============ MODULES MAP ============
+
+const modules: Record<string, React.ReactNode> = {
+  dashboard: <Dashboard />,
+  finansije: <Finansije />,
+  fakture: <Fakture />,
+  magacin: <Magacin />,
+  partneri: <Partneri />,
+  nabavka: <Nabavka />,
+  crm: <CRM />,
+  kalendar: <Kalendar />,
+  zaposleni: <Zaposleni />,
+  projekti: <Projekti />,
+  sredstva: <Sredstva />,
+  dokumenta: <Dokumenta />,
+  knjigovodstvo: <Knjigovodstvo />,
+  protokol: <Protokol />,
+  edukacija: <Edukacija />,
+  'vozni-park': <VozniPark />,
+  'kafe-restoran': <KafeRestoran />,
+  'email-marketing': <MailerLite />,
+  'rent-a-car': <RentACar />,
+  izvestaji: <Izvestaji />,
+  podesavanja: <Podesavanja />,
+}
+
+// ============ MODULE LABEL KEYS (for i18n) ============
+
+const moduleLabelKeys: Record<string, string> = {
+  dashboard: 'sidebar.dashboard',
+  finansije: 'sidebar.finances',
+  fakture: 'sidebar.invoices',
+  magacin: 'sidebar.warehouse',
+  partneri: 'sidebar.partners',
+  nabavka: 'sidebar.procurement',
+  crm: 'sidebar.crm',
+  kalendar: 'sidebar.calendar',
+  zaposleni: 'sidebar.employees',
+  projekti: 'sidebar.projects',
+  sredstva: 'sidebar.assets',
+  dokumenta: 'sidebar.documents',
+  knjigovodstvo: 'sidebar.accounting',
+  protokol: 'sidebar.protocol',
+  edukacija: 'sidebar.education',
+  'vozni-park': 'sidebar.vehicleFleet',
+  'kafe-restoran': 'sidebar.cafeRestaurant',
+  'email-marketing': 'sidebar.emailMarketing',
+  'rent-a-car': 'sidebar.rentACar',
+  izvestaji: 'sidebar.reports',
+  podesavanja: 'sidebar.settings',
+}
+
+// ============ INNER APP (needs i18n context) ============
+
+function AppContent() {
   const { activeModule } = useAppStore()
+  const { t, locale, setLocale } = useTranslation()
+  const ensureLoaded = useThemeStore((s) => s.ensureLoaded)
 
-  const moduleLabels: Record<string, string> = {
-    dashboard: 'Pregled',
-    finansije: 'Finansije',
-    fakture: 'Fakture',
-    magacin: 'Magacin',
-    partneri: 'Partneri',
-    nabavka: 'Nabavka',
-    crm: 'CRM',
-    kalendar: 'Kalendar',
-    zaposleni: 'Zaposleni',
-    projekti: 'Projekti',
-    sredstva: 'Osnovna sredstva',
-    dokumenta: 'Dokumenta',
-    knjigovodstvo: 'Knjigovodstvo',
-    protokol: 'Protokol',
-    edukacija: 'Edukacija',
-    'vozni-park': 'Vozni park',
-    'kafe-restoran': 'Kafe Restoran',
-    'email-marketing': 'Email Marketing',
-    'rent-a-car': 'Rent a Car',
-    izvestaji: 'Izveštaji',
-    podesavanja: 'Podešavanja',
-  }
-
-  const modules: Record<string, React.ReactNode> = {
-    dashboard: <Dashboard />,
-    finansije: <Finansije />,
-    fakture: <Fakture />,
-    magacin: <Magacin />,
-    partneri: <Partneri />,
-    nabavka: <Nabavka />,
-    crm: <CRM />,
-    kalendar: <Kalendar />,
-    zaposleni: <Zaposleni />,
-    projekti: <Projekti />,
-    sredstva: <Sredstva />,
-    dokumenta: <Dokumenta />,
-    knjigovodstvo: <Knjigovodstvo />,
-    protokol: <Protokol />,
-    edukacija: <Edukacija />,
-    'vozni-park': <VozniPark />,
-    'kafe-restoran': <KafeRestoran />,
-    'email-marketing': <MailerLite />,
-    'rent-a-car': <RentACar />,
-    izvestaji: <Izvestaji />,
-    podesavanja: <Podesavanja />,
-  }
+  // Initialize theme on mount
+  useEffect(() => {
+    ensureLoaded()
+  }, [ensureLoaded])
 
   return (
     <div className="min-h-screen flex">
@@ -91,10 +115,26 @@ export default function Home() {
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
               <h2 className="text-sm font-medium text-foreground">
-                {moduleLabels[activeModule]}
+                {t(moduleLabelKeys[activeModule] || activeModule)}
               </h2>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              {/* Language Switcher */}
+              <Select value={locale} onValueChange={(val) => setLocale(val as 'sr' | 'sr-latn' | 'en')}>
+                <SelectTrigger className="h-8 w-[130px] text-xs">
+                  <Languages className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(LOCALE_NAMES).map(([code, name]) => (
+                    <SelectItem key={code} value={code} className="text-xs">
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <ThemeToggle />
+            </div>
           </header>
 
           <main className="flex-1 overflow-auto bg-background/50">
@@ -120,5 +160,15 @@ export default function Home() {
       {/* AI Assistant - outside SidebarProvider to prevent dialog conflicts */}
       <AIAssistant />
     </div>
+  )
+}
+
+// ============ MAIN PAGE ============
+
+export default function Home() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
   )
 }
