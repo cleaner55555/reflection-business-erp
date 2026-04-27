@@ -28,6 +28,10 @@ import {
   FolderKanban,
   Building2,
   Files,
+  BookOpen,
+  Mail,
+  GraduationCap,
+  Car,
 } from 'lucide-react'
 
 const menuGroups: { label: string; items: { module: ModuleType; icon: React.ElementType; label: string }[] }[] = [
@@ -59,6 +63,10 @@ const menuGroups: { label: string; items: { module: ModuleType; icon: React.Elem
       { module: 'projekti', icon: FolderKanban, label: 'Projekti' },
       { module: 'sredstva', icon: Building2, label: 'Osnovna sredstva' },
       { module: 'dokumenta', icon: Files, label: 'Dokumenta' },
+      { module: 'knjigovodstvo', icon: BookOpen, label: 'Knjigovodstvo' },
+      { module: 'protokol', icon: Mail, label: 'Protokol' },
+      { module: 'edukacija', icon: GraduationCap, label: 'Edukacija' },
+      { module: 'vozni-park', icon: Car, label: 'Vozni park' },
     ],
   },
   {
@@ -123,7 +131,7 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-medium text-sidebar-foreground">Reflection Business</span>
-            <span className="text-[10px] text-sidebar-foreground/50">ERP + CRM v2.0</span>
+            <span className="text-[10px] text-sidebar-foreground/50">ERP + CRM v2.1</span>
           </div>
         </div>
       </SidebarFooter>

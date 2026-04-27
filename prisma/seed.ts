@@ -8,6 +8,14 @@ async function seed() {
   const month = now.getMonth()
 
   // Clear existing data
+  await db.vehicleExpense.deleteMany()
+  await db.vehicleService.deleteMany()
+  await db.vehicle.deleteMany()
+  await db.lesson.deleteMany()
+  await db.course.deleteMany()
+  await db.protocolEntry.deleteMany()
+  await db.journalEntry.deleteMany()
+  await db.account.deleteMany()
   await db.projectTask.deleteMany()
   await db.project.deleteMany()
   await db.document.deleteMany()
@@ -630,6 +638,82 @@ async function seed() {
     db.document.create({ data: { title: 'Račun br. 1-2025', type: 'faktura', category: 'Finansije', status: 'aktivno' } }),
   ])
 
+  // Accounts (Kontni plan)
+  await Promise.all([
+    db.account.create({ data: { code: '110', name: 'Gotovina', type: 'aktivna' } }),
+    db.account.create({ data: { code: '200', name: 'Dobavljači', type: 'pasivna' } }),
+    db.account.create({ data: { code: '201', name: 'Kupci', type: 'aktivna' } }),
+    db.account.create({ data: { code: '240', name: 'Zalihe robe', type: 'aktivna' } }),
+    db.account.create({ data: { code: '410', name: 'Ukupni prihodi od prodaje', type: 'prihodka' } }),
+    db.account.create({ data: { code: '420', name: 'Nabavna vrednost prodate robe', type: 'rashodna' } }),
+    db.account.create({ data: { code: '500', name: 'Materijalni troškovi', type: 'rashodna' } }),
+    db.account.create({ data: { code: '510', name: 'Troškovi zarada', type: 'rashodna' } }),
+    db.account.create({ data: { code: '520', name: 'Troškovi režija', type: 'rashodna' } }),
+    db.account.create({ data: { code: '020', name: 'Osnovna sredstva', type: 'aktivna', parentCode: '01' } }),
+    db.account.create({ data: { code: '028', name: 'Amortizacija osnovnih sredstava', type: 'aktivna' } }),
+    db.account.create({ data: { code: '601', name: 'Amortizacija', type: 'rashodna' } }),
+  ])
+
+  // Journal entries
+  await Promise.all([
+    db.journalEntry.create({ data: { date: new Date(year, month, 5), accountCode: '110', debit: 250000, credit: 0, description: 'Uplata od Delta Trade' } }),
+    db.journalEntry.create({ data: { date: new Date(year, month, 5), accountCode: '201', debit: 0, credit: 250000, description: 'Uplata od Delta Trade' } }),
+    db.journalEntry.create({ data: { date: new Date(year, month, 10), accountCode: '240', debit: 85000, credit: 0, description: 'Nabavka robe - Metal-Pro', documentRef: 'PO-001' } }),
+    db.journalEntry.create({ data: { date: new Date(year, month, 10), accountCode: '200', debit: 0, credit: 85000, description: 'Nabavka robe - Metal-Pro', documentRef: 'PO-001' } }),
+    db.journalEntry.create({ data: { date: new Date(year, month, 15), accountCode: '201', debit: 145000, credit: 0, description: 'Prodaja robe - TehnoShop', documentRef: 'F-001' } }),
+    db.journalEntry.create({ data: { date: new Date(year, month, 15), accountCode: '410', debit: 0, credit: 145000, description: 'Prodaja robe - TehnoShop', documentRef: 'F-001' } }),
+    db.journalEntry.create({ data: { date: new Date(year, month, 20), accountCode: '520', debit: 35000, credit: 0, description: 'Struja za januar', documentRef: 'R-STR-001' } }),
+    db.journalEntry.create({ data: { date: new Date(year, month, 20), accountCode: '110', debit: 0, credit: 35000, description: 'Struja za januar', documentRef: 'R-STR-001' } }),
+  ])
+
+  // Protocol entries
+  await Promise.all([
+    db.protocolEntry.create({ data: { number: 'PROT-2025-0001', direction: 'ulaz', sender: 'Poreska uprava', subject: 'Rešenje o PDV obrascu', documentType: 'rešenje', responsible: 'Jelena Stanković', status: 'odgovoren', priority: 'srednji' } }),
+    db.protocolEntry.create({ data: { number: 'PROT-2025-0002', direction: 'ulaz', sender: 'Delta Trade D.O.O.', subject: 'Zahtev za ponudu IT opreme', documentType: 'pismo', responsible: 'Ana Milić', status: 'u_radu', priority: 'visok', dueDate: new Date(year, month + 1, 5) } }),
+    db.protocolEntry.create({ data: { number: 'PROT-2025-0003', direction: 'izlaz', recipient: 'Metal-Pro D.O.O.', subject: 'Narudžbenica za aluminijumske profile', documentType: 'ponuda', responsible: 'Marko Petrović', status: 'završen', priority: 'hitan' } }),
+    db.protocolEntry.create({ data: { number: 'PROT-2025-0004', direction: 'ulaz', sender: 'Banca Intesa', subject: 'Obaveštenje o transakciji', documentType: 'pismo', responsible: 'Jelena Stanković', status: 'primljen', priority: 'nizak' } }),
+    db.protocolEntry.create({ data: { number: 'PROT-2025-0005', direction: 'izlaz', recipient: 'TehnoShop S.O.', subject: 'Ponuda za LED panele', documentType: 'ponuda', responsible: 'Ana Milić', status: 'u_radu', priority: 'srednji', dueDate: new Date(year, month + 2, 1) } }),
+    db.protocolEntry.create({ data: { number: 'PROT-2025-0006', direction: 'ulaz', sender: 'Eko-Pak D.O.O.', subject: 'Ugovor o saradnji', documentType: 'ugovor', responsible: 'Marko Petrović', status: 'proslijeđen', priority: 'visok' } }),
+  ])
+
+  // Courses (LMS)
+  const courses = await Promise.all([
+    db.course.create({ data: { title: 'Uvod u ERP sisteme', description: 'Osnovni koncepti i prednosti ERP sistema', category: 'IT', instructor: 'Stefan Ilić', duration: 120, status: 'aktivno' } }),
+    db.course.create({ data: { title: 'Prodajne tehnike', description: 'Moderne prodajne tehnike i komunikacija sa klijentima', category: 'Menadžment', instructor: 'Ana Milić', duration: 90, status: 'aktivno' } }),
+    db.course.create({ data: { title: 'Osnovne radnje u Excel-u', description: 'Formule, pivot tabele i grafikoni', category: 'IT', instructor: 'Stefan Ilić', duration: 180, status: 'aktivno' } }),
+    db.course.create({ data: { title: 'Bezbednost na radu', description: 'Propisi i praksa bezbednosti na radnom mestu', category: 'HR', instructor: 'Nikola Perić', duration: 60, status: 'aktivno' } }),
+  ])
+
+  // Lessons
+  for (const course of courses) {
+    const lessons = [
+      { title: 'Uvod i postavke', type: 'tekst', orderNum: 1 },
+      { title: 'Osnovni koncepti', type: 'tekst', orderNum: 2 },
+      { title: 'Praktični primer', type: 'video', orderNum: 3 },
+      { title: 'Test znanja', type: 'test', orderNum: 4 },
+    ]
+    for (const l of lessons) {
+      await db.lesson.create({ data: { courseId: course.id, ...l } })
+    }
+  }
+
+  // Vehicles
+  const vehicles = await Promise.all([
+    db.vehicle.create({ data: { registration: 'BG-123-AB', make: 'Volkswagen', model: 'Transporter', year: 2022, fuelType: 'dizel', mileage: 85000, status: 'aktivno', assignedTo: 'Nikola Perić' } }),
+    db.vehicle.create({ data: { registration: 'NS-456-CD', make: 'Peugeot', model: 'Partner', year: 2023, fuelType: 'dizel', mileage: 42000, status: 'aktivno', assignedTo: 'Milica Vasić' } }),
+    db.vehicle.create({ data: { registration: 'BG-789-EF', make: 'Skoda', model: 'Octavia', year: 2021, fuelType: 'benzin', mileage: 65000, status: 'na_servisu', assignedTo: 'Marko Petrović' } }),
+  ])
+
+  // Vehicle services & expenses
+  await Promise.all([
+    db.vehicleService.create({ data: { vehicleId: vehicles[0].id, type: 'promjena_ulja', description: 'Zamena ulja i filtera', cost: 15000, mileage: 82000, nextDue: new Date(year, month + 3, 15) } }),
+    db.vehicleService.create({ data: { vehicleId: vehicles[2].id, type: 'servis', description: 'Zamena kočionih pločica', cost: 35000, mileage: 63000, nextDue: new Date(year, month + 1, 20) } }),
+    db.vehicleExpense.create({ data: { vehicleId: vehicles[0].id, type: 'gorivo', description: 'Gorivo - NOVI SAD', amount: 12000, mileage: 84500 } }),
+    db.vehicleExpense.create({ data: { vehicleId: vehicles[0].id, type: 'putarina', description: 'Putarina NS-BG', amount: 1200, mileage: 84000 } }),
+    db.vehicleExpense.create({ data: { vehicleId: vehicles[1].id, type: 'gorivo', description: 'Gorivo - SUBOTICA', amount: 8500, mileage: 41500 } }),
+    db.vehicleExpense.create({ data: { vehicleId: vehicles[1].id, type: 'parking', description: 'Parking - BG centar', amount: 300, mileage: 41200 } }),
+  ])
+
   console.log('✅ Database seeded successfully!')
   console.log(`  - ${partners.length} partners`)
   console.log(`  - ${products.length} products`)
@@ -650,6 +734,11 @@ async function seed() {
   console.log(`  - 5 assets`)
   console.log(`  - 4 projects with tasks`)
   console.log(`  - 5 documents`)
+  console.log(`  - 12 accounts`)
+  console.log(`  - 8 journal entries`)
+  console.log(`  - 6 protocol entries`)
+  console.log(`  - 4 courses with lessons`)
+  console.log(`  - 3 vehicles`)
 }
 
 seed()

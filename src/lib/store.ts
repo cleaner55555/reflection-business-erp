@@ -14,6 +14,10 @@ export type ModuleType =
   | 'sredstva'
   | 'dokumenta'
   | 'izvestaji'
+  | 'knjigovodstvo'
+  | 'protokol'
+  | 'edukacija'
+  | 'vozni-park'
 
 interface AppState {
   activeModule: ModuleType

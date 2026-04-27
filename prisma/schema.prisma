@@ -358,20 +358,147 @@ model Attendance {
 // ============ OSNOVNA SREDSTVA ============
 
 model Asset {
+  id              String   @id @default(cuid())
+  name            String
+  category        String?
+  serialNumber    String?
+  purchaseDate    DateTime @default(now())
+  purchasePrice   Float
+  currentValue    Float
+  depreciation    Float    @default(0)
+  usefulLife      Int      @default(60) // meseci
+  depreciationMethod String @default("linearna") // linearna, degresivna
+  location        String?
+  status          String   @default("aktivno") // aktivno, na_popravci, izvan_upotrebe, prodato, otpisano
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============ KNJIGOVODSTVO ============
+
+model Account {
+  id          String   @id @default(cuid())
+  code        String   @unique  // npr. 020, 110, 200...
+  name        String
+  type        String   @default("aktivna") // aktivna, pasivna, prihodka, rashodna, kontna
+  description String?
+  parentCode  String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  entries     JournalEntry[]
+}
+
+model JournalEntry {
   id            String   @id @default(cuid())
-  name          String
-  category      String?
-  serialNumber  String?
-  purchaseDate  DateTime @default(now())
-  purchasePrice Float
-  currentValue  Float
-  depreciation  Float    @default(0)
-  usefulLife    Int      @default(60) // meseci
-  location      String?
-  status        String   @default("aktivno") // aktivno, na_popravci, izvan_upotrebe, prodato, otpisano
+  date          DateTime @default(now())
+  accountCode   String
+  debit         Float    @default(0)
+  credit        Float    @default(0)
+  description   String
+  documentRef   String?
+  partnerId     String?
+  createdAt     DateTime @default(now())
+
+  account       Account  @relation(fields: [accountCode], references: [code])
+}
+
+// ============ PROTOKOL ============
+
+model ProtocolEntry {
+  id            String   @id @default(cuid())
+  number        String   @unique
+  date          DateTime @default(now())
+  direction     String   @default("ulaz") // ulaz, izlaz
+  sender        String?  // pošiljalac (za ulazne)
+  recipient     String?  // primalac (za izlazne)
+  subject       String
+  description   String?
+  documentType  String?  // pismo, ugovor, ponuda, račun, ostalo
+  dueDate       DateTime?
+  responsible   String?
+  status        String   @default("primljen") // primljen, u_radu, završen, proslijeđen, odgovoren
+  priority      String   @default("srednji") // nizak, srednji, visok, hitan
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// ============ LMS - MODUL ZA UČENJE ============
+
+model Course {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  category      String?
+  instructor    String?
+  duration      Int      @default(0)  // minuta
+  status        String   @default("aktivno") // aktivno, skript, arhiviran
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lessons       Lesson[]
+}
+
+model Lesson {
+  id            String   @id @default(cuid())
+  courseId      String
+  title         String
+  content       String?  // HTML sadržaj
+  orderNum      Int      @default(0)
+  type          String   @default("tekst") // tekst, video, test, dok
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+// ============ VOZNI PARK ============
+
+model Vehicle {
+  id            String   @id @default(cuid())
+  registration  String   @unique  // registarski broj
+  make          String   // marka
+  model         String   // model
+  year          Int
+  fuelType      String   @default("dizel") // dizel, benzin, gas, hibrid, električni
+  mileage       Int      @default(0)
+  status        String   @default("aktivno") // aktivno, na_servisu, u_garazi, prodato
+  assignedTo    String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  services      VehicleService[]
+  expenses      VehicleExpense[]
+}
+
+model VehicleService {
+  id            String   @id @default(cuid())
+  vehicleId     String
+  date          DateTime @default(now())
+  type          String   @default("servis") // servis, promjena_ulja, gume, tehnicki, registracija
+  description   String
+  cost          Float    @default(0)
+  mileage       Int
+  nextDue       DateTime?
+  createdAt     DateTime @default(now())
+
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+}
+
+model VehicleExpense {
+  id            String   @id @default(cuid())
+  vehicleId     String
+  date          DateTime @default(now())
+  type          String   @default("gorivo") // gorivo, putarina, parking, servis, ostalo
+  amount        Float
+  description   String
+  mileage       Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
 
 // ============ PROJEKTI ============

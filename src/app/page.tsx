@@ -16,6 +16,10 @@ import { Zaposleni } from '@/components/modules/Zaposleni'
 import { Projekti } from '@/components/modules/Projekti'
 import { Sredstva } from '@/components/modules/Sredstva'
 import { Dokumenta } from '@/components/modules/Dokumenta'
+import { Knjigovodstvo } from '@/components/modules/Knjigovodstvo'
+import { Protokol } from '@/components/modules/Protokol'
+import { Edukacija } from '@/components/modules/Edukacija'
+import { VozniPark } from '@/components/modules/VozniPark'
 import { useAppStore } from '@/lib/store'
 import { Separator } from '@/components/ui/separator'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -36,6 +40,10 @@ export default function Home() {
     projekti: 'Projekti',
     sredstva: 'Osnovna sredstva',
     dokumenta: 'Dokumenta',
+    knjigovodstvo: 'Knjigovodstvo',
+    protokol: 'Protokol',
+    edukacija: 'Edukacija',
+    'vozni-park': 'Vozni park',
     izvestaji: 'Izveštaji',
   }
 
@@ -52,6 +60,10 @@ export default function Home() {
     projekti: <Projekti />,
     sredstva: <Sredstva />,
     dokumenta: <Dokumenta />,
+    knjigovodstvo: <Knjigovodstvo />,
+    protokol: <Protokol />,
+    edukacija: <Edukacija />,
+    'vozni-park': <VozniPark />,
     izvestaji: <Izvestaji />,
   }
 
