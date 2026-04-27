@@ -16,7 +16,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 interface Lesson {
   id: string
@@ -76,6 +76,7 @@ const LESSON_TYPE_COLORS: Record<string, string> = {
 
 export function Edukacija() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -102,6 +103,12 @@ export function Edukacija() {
   }, [])
 
   useEffect(() => { fetchCourses() }, [fetchCourses])
+
+  useEffect(() => {
+    if (courses.length > 0) {
+      translateTexts(courses.flatMap(c => [c.title, c.description, c.category, c.instructor, ...(c.lessons || []).map(l => l.title)].filter(Boolean)))
+    }
+  }, [courses])
 
   const fetchCourseDetails = useCallback(async (courseId: string) => {
     try {
@@ -423,9 +430,9 @@ export function Edukacija() {
                         >
                           <div className="flex items-start justify-between gap-2 mb-3">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-sm truncate">{course.title}</h3>
+                              <h3 className="font-semibold text-sm truncate">{tc(course.title)}</h3>
                               {course.instructor && (
-                                <p className="text-xs text-muted-foreground mt-0.5">{course.instructor}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{tc(course.instructor)}</p>
                               )}
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
@@ -456,7 +463,7 @@ export function Edukacija() {
                           <div className="flex flex-wrap items-center gap-2 mb-3">
                             {course.category && (
                               <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200">
-                                {course.category}
+                                {tc(course.category)}
                               </Badge>
                             )}
                             <Badge variant="outline" className={`text-[10px] ${STATUS_BADGES[course.status] || ''}`}>
@@ -475,7 +482,7 @@ export function Edukacija() {
                             </span>
                             {course.description && (
                               <span className="truncate max-w-[120px]" title={course.description}>
-                                {course.description}
+                                {tc(course.description)}
                               </span>
                             )}
                           </div>
@@ -562,7 +569,7 @@ export function Edukacija() {
                                           <span className="flex items-center gap-1 shrink-0 text-muted-foreground">
                                             {LESSON_TYPE_ICONS[lesson.type] || <FileText className="h-3.5 w-3.5" />}
                                           </span>
-                                          <span className="truncate font-medium">{lesson.title}</span>
+                                          <span className="truncate font-medium">{tc(lesson.title)}</span>
                                         </div>
                                         <div className="flex items-center gap-1 shrink-0">
                                           <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${LESSON_TYPE_COLORS[lesson.type] || ''}`}>

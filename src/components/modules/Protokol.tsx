@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,8 @@ const EMPTY_FORM: FormData = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Protokol() {
+  const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   // Data state
   const [entries, setEntries] = useState<ProtocolEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -131,6 +134,12 @@ export function Protokol() {
   }, [activeTab])
 
   useEffect(() => { fetchEntries() }, [fetchEntries])
+
+  useEffect(() => {
+    if (entries.length > 0) {
+      translateTexts(entries.flatMap(e => [e.sender, e.recipient, e.subject, e.responsible, e.notes].filter(Boolean)))
+    }
+  }, [entries])
 
   // ─── Computed ─────────────────────────────────────────────────────────────
 
@@ -576,11 +585,11 @@ export function Protokol() {
                                 </TableCell>
                                 <TableCell className="text-xs max-w-[160px] truncate">
                                   {entry.direction === 'ulaz'
-                                    ? (entry.sender || '-')
-                                    : (entry.recipient || '-')}
+                                    ? (tc(entry.sender) || '-')
+                                    : (tc(entry.recipient) || '-')}
                                 </TableCell>
                                 <TableCell className="text-xs font-medium">
-                                  <span className="line-clamp-1">{entry.subject}</span>
+                                  <span className="line-clamp-1">{tc(entry.subject)}</span>
                                 </TableCell>
                                 <TableCell className="text-xs">
                                   {entry.documentType
@@ -591,7 +600,7 @@ export function Protokol() {
                                   }
                                 </TableCell>
                                 <TableCell className="text-xs max-w-[110px] truncate">
-                                  {entry.responsible || '-'}
+                                  {tc(entry.responsible) || '-'}
                                 </TableCell>
                                 <TableCell className="text-xs whitespace-nowrap">
                                   {entry.dueDate ? formatDate(entry.dueDate) : '-'}
@@ -642,7 +651,7 @@ export function Protokol() {
             <AlertDialogDescription>
               Da li ste sigurni da želite da obrišete dopis{' '}
               <span className="font-semibold">{deleteTarget?.number}</span>
-              {' '}— <span className="italic">{deleteTarget?.subject}</span>?
+              {' '}— <span className="italic">{tc(deleteTarget?.subject)}</span>?
               <br />
               Ova akcija se ne može poništiti.
             </AlertDialogDescription>

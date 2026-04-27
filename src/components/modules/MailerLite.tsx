@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import { Progress } from '@/components/ui/progress'
 import { Mail, Plus, Pencil, Trash2, Users, Send, Clock, Eye, MousePointer, FileText, Copy, Upload, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 // ==================== TYPES ====================
 interface EmailList {
@@ -98,6 +98,7 @@ export function MailerLite() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
 
   const CAMPAIGN_STATUS = getCampaignStatuses(t)
 
@@ -122,6 +123,17 @@ export function MailerLite() {
   }, [])
 
   useState(() => { fetchAll() })
+
+  // Batch-translate content when data loads
+  useEffect(() => {
+    if (campaigns.length > 0 || lists.length > 0 || templates.length > 0) {
+      const texts: string[] = []
+      campaigns.forEach(c => { if (c.name) texts.push(c.name); if (c.subject) texts.push(c.subject) })
+      lists.forEach(l => { if (l.name) texts.push(l.name); if (l.description) texts.push(l.description) })
+      templates.forEach(tp => { if (tp.name) texts.push(tp.name); if (tp.subject) texts.push(tp.subject) })
+      if (texts.length > 0) translateTexts(texts)
+    }
+  }, [campaigns, lists, templates, translateTexts])
 
   const totalCampaigns = campaigns.length
   const totalSubscribers = subscribers.filter(s => s.status === 'aktivan').length
@@ -228,6 +240,7 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<EmailCampaign | null>(null)
   const { t } = useTranslation()
+  const { tc } = useContentTranslation()
 
   const CAMPAIGN_STATUS = getCampaignStatuses(t)
 
@@ -376,8 +389,8 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-semibold truncate">{c.name}</h3>
-                          <p className="text-xs text-muted-foreground truncate mt-0.5">{c.subject}</p>
+                          <h3 className="text-sm font-semibold truncate">{tc(c.name)}</h3>
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">{tc(c.subject)}</p>
                         </div>
                         <Badge variant="outline" className={`text-[10px] ml-2 shrink-0 ${CAMPAIGN_STATUS[c.status]?.color || ''}`}>
                           {CAMPAIGN_STATUS[c.status]?.label || c.status}

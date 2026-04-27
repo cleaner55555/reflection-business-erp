@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Search, Pencil, Trash2, FolderKanban, CheckCircle2, ArrowLeft, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate } from '@/lib/helpers'
 
 interface Project {
@@ -29,6 +29,7 @@ const PRIORITY_COLORS: Record<string, string> = { nizak: 'text-muted-foreground'
 
 export function Projekti() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -50,6 +51,20 @@ export function Projekti() {
   }, [statusFilter])
 
   useEffect(() => { fetchProjects() }, [fetchProjects])
+
+  useEffect(() => {
+    if (projects.length > 0) {
+      const texts: string[] = []
+      projects.forEach(proj => {
+        if (proj.name) texts.push(proj.name)
+        if (proj.assignedTo) texts.push(proj.assignedTo)
+        ;(proj.tasks || []).forEach(task => {
+          if (task.title) texts.push(task.title)
+        })
+      })
+      translateTexts(texts)
+    }
+  }, [projects, translateTexts])
 
   const handleNew = () => {
     setEditing(null)
@@ -174,7 +189,7 @@ export function Projekti() {
                   <div className="flex items-start justify-between cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : proj.id)}>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-sm font-semibold">{proj.name}</h3>
+                        <h3 className="text-sm font-semibold">{tc(proj.name)}</h3>
                         <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[proj.status] || ''}`}>{proj.status}</Badge>
                         <span className={`text-[10px] font-medium ${PRIORITY_COLORS[proj.priority] || ''}`}>{proj.priority}</span>
                       </div>
@@ -182,7 +197,7 @@ export function Projekti() {
                         <span>{t('projects.budget')}: {formatRSD(proj.budget)}</span>
                         <span>{t('projects.spent')}: {formatRSD(proj.spent)} ({progress}%)</span>
                         <span>{t('projects.tasks')}: {doneTasks}/{tasks.length}</span>
-                        {proj.assignedTo && <span>{t('projects.assignee')}: {proj.assignedTo}</span>}
+                        {proj.assignedTo && <span>{t('projects.assignee')}: {tc(proj.assignedTo)}</span>}
                       </div>
                       <div className="mt-2 w-full bg-muted rounded-full h-2"><div className={`h-2 rounded-full ${progress > 100 ? 'bg-red-500' : 'bg-primary'}`} style={{ width: `${Math.min(progress, 100)}%` }} /></div>
                     </div>
@@ -222,7 +237,7 @@ export function Projekti() {
                       {tasks.length === 0 && !isAddingTask ? <p className="text-xs text-muted-foreground">{t('projects.noTasks')}</p> : tasks.map((task) => (
                         <div key={task.id} className="flex items-center gap-2 py-1" onClick={() => toggleTask(task)}>
                           <CheckCircle2 className={`h-4 w-4 ${task.status === 'zavrseno' ? 'text-emerald-500' : 'text-muted-foreground'}`} />
-                          <span className={`text-xs ${task.status === 'zavrseno' ? 'line-through text-muted-foreground' : ''}`}>{task.title}</span>
+                          <span className={`text-xs ${task.status === 'zavrseno' ? 'line-through text-muted-foreground' : ''}`}>{tc(task.title)}</span>
                           <Badge variant="secondary" className="text-[10px] ml-auto">{task.status}</Badge>
                         </div>
                       ))}

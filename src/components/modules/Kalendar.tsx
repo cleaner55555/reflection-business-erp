@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, ChevronLeft, ChevronRight, CalendarDays, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatDate } from '@/lib/helpers'
 
 interface CalEvent {
@@ -22,6 +22,7 @@ const MONTHS = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Jun', 'Jul', 'Avgu
 
 export function Kalendar() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [events, setEvents] = useState<CalEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -42,6 +43,12 @@ export function Kalendar() {
   }, [month, year])
 
   useEffect(() => { fetchEvents() }, [fetchEvents])
+
+  useEffect(() => {
+    if (events.length > 0) {
+      translateTexts(events.map(e => e.title).filter(Boolean))
+    }
+  }, [events])
 
   const handleNew = () => { setEditing(null); setViewMode('form') }
   const handleEdit = (ev: CalEvent) => { setEditing(ev); setViewMode('form') }
@@ -164,7 +171,7 @@ export function Kalendar() {
                         <button key={ev.id} className={`w-full text-left text-[10px] px-1 py-0.5 rounded truncate border ${COLORS[ev.color] || COLORS.primary}`}
                           onClick={() => handleEdit(ev)}
                           onContextMenu={(e) => { e.preventDefault(); handleDelete(ev.id) }}>
-                          {ev.allDay ? '🗓 ' : ''}{ev.title}
+                          {ev.allDay ? '🗓 ' : ''}{tc(ev.title)}
                         </button>
                       ))}
                       {dayEvents.length > 3 && <p className="text-[10px] text-muted-foreground pl-1">+{dayEvents.length - 3} {t('calendar.more')}</p>}

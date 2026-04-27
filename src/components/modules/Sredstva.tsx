@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusColor } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 interface Asset {
   id: string; name: string; category: string | null; serialNumber: string | null
@@ -24,6 +24,7 @@ const STATUS_LABELS: Record<string, string> = { aktivno: 'Aktivno', na_popravci:
 
 export function Sredstva() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
@@ -38,6 +39,12 @@ export function Sredstva() {
   }, [])
 
   useEffect(() => { fetchAssets() }, [fetchAssets])
+
+  useEffect(() => {
+    if (assets.length > 0) {
+      translateTexts(assets.flatMap(a => [a.name, a.category, a.location].filter(Boolean)))
+    }
+  }, [assets])
 
   const handleNew = () => {
     setEditing(null)
@@ -145,8 +152,8 @@ export function Sredstva() {
               <TableBody>
                 {assets.map((a) => (
                   <TableRow key={a.id}>
-                    <TableCell className="text-xs font-medium">{a.name}</TableCell>
-                    <TableCell className="text-xs">{a.category || '-'}</TableCell>
+                    <TableCell className="text-xs font-medium">{tc(a.name)}</TableCell>
+                    <TableCell className="text-xs">{tc(a.category) || '-'}</TableCell>
                     <TableCell className="text-xs font-mono">{a.serialNumber || '-'}</TableCell>
                     <TableCell className="text-xs text-right">{formatRSD(a.purchasePrice)}</TableCell>
                     <TableCell className="text-xs text-right font-medium">{formatRSD(a.currentValue)}</TableCell>

@@ -18,7 +18,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate } from '@/lib/helpers'
 
 // ============ TYPES ============
@@ -146,6 +146,7 @@ const TRANSMISSION_LABELS: Record<string, string> = {
 
 export function RentACar() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [vehicles, setVehicles] = useState<RentalVehicle[]>([])
   const [rentals, setRentals] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
@@ -206,6 +207,16 @@ export function RentACar() {
     fetchVehicles()
     fetchRentals()
   }, [fetchVehicles, fetchRentals])
+
+  // Batch-translate content when data loads
+  useEffect(() => {
+    if (vehicles.length > 0 || rentals.length > 0) {
+      const texts: string[] = []
+      vehicles.forEach(v => { if (v.name) texts.push(v.name); if (v.make) texts.push(v.make); if (v.model) texts.push(v.model); if (v.notes) texts.push(v.notes) })
+      rentals.forEach(r => { if (r.clientName) texts.push(r.clientName); if (r.notes) texts.push(r.notes); if (r.vehicle?.name) texts.push(r.vehicle.name) })
+      if (texts.length > 0) translateTexts(texts)
+    }
+  }, [vehicles, rentals, translateTexts])
 
   // ============ COMPUTED VALUES ============
 
@@ -702,7 +713,7 @@ export function RentACar() {
                       {/* Header */}
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm truncate">{vehicle.name}</h3>
+                          <h3 className="font-semibold text-sm truncate">{tc(vehicle.name)}</h3>
                           <p className="text-xs text-muted-foreground font-mono mt-0.5">{vehicle.registration}</p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">

@@ -36,7 +36,7 @@ import {
   Legend,
 } from 'recharts'
 import { formatRSD, formatRSDShort, formatDate, getStatusLabel, getStatusColor, getMonthLabel } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 interface DashboardData {
   kpis: {
@@ -80,6 +80,7 @@ export function Dashboard() {
   const [lowStock, setLowStock] = useState<LowStockProduct[]>([])
   const [loading, setLoading] = useState(true)
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
 
   useEffect(() => {
     Promise.all([
@@ -91,6 +92,20 @@ export function Dashboard() {
       setLoading(false)
     })
   }, [])
+
+  useEffect(() => {
+    if (!data && lowStock.length === 0) return
+    const texts: string[] = []
+    if (data) {
+      data.recentInvoices.forEach((inv) => {
+        if (inv.partner?.name) texts.push(inv.partner.name)
+      })
+    }
+    lowStock.forEach((p) => {
+      if (p.name) texts.push(p.name)
+    })
+    if (texts.length > 0) translateTexts(texts)
+  }, [data, lowStock, translateTexts])
 
   if (loading || !data) {
     return <DashboardSkeleton />
@@ -320,7 +335,7 @@ export function Dashboard() {
                 {recentInvoices.map((invoice) => (
                   <TableRow key={invoice.id}>
                     <TableCell className="text-xs font-medium">{invoice.number}</TableCell>
-                    <TableCell className="text-xs">{invoice.partner?.name || '-'}</TableCell>
+                    <TableCell className="text-xs">{tc(invoice.partner?.name || '-')}</TableCell>
                     <TableCell className="text-xs">{formatDate(invoice.date)}</TableCell>
                     <TableCell>
                       <Badge
@@ -364,7 +379,7 @@ export function Dashboard() {
                     className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50/50 p-3"
                   >
                     <div className="space-y-0.5">
-                      <p className="text-xs font-medium">{product.name}</p>
+                      <p className="text-xs font-medium">{tc(product.name)}</p>
                       <p className="text-[10px] text-muted-foreground">{product.sku}</p>
                     </div>
                     <div className="text-right">

@@ -8,3 +8,9 @@ export {
 export type { Locale, TranslationMap } from './translations'
 export { ALL_LANGUAGES, LANGUAGES_BY_CODE } from './languages'
 export type { LanguageInfo } from './languages'
+export {
+  ContentTranslationProvider,
+  useContentTranslation,
+  TranslatableText,
+  useDataTranslation,
+} from './content-translation'

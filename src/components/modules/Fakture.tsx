@@ -25,7 +25,7 @@ import {
 import { Plus, Search, Trash2, Pencil, ArrowLeft, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 // ==================== INTERFACES ====================
 
@@ -147,6 +147,7 @@ export function Fakture() {
   const [printLoading, setPrintLoading] = useState(false)
   const printRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
 
   // Form state
   const [lineItems, setLineItems] = useState<LineItem[]>([
@@ -170,6 +171,19 @@ export function Fakture() {
     fetch('/api/partners').then((r) => r.json()).then(setPartners)
     fetch('/api/products').then((r) => r.json()).then(setProducts)
   }, [fetchInvoices])
+
+  useEffect(() => {
+    if (invoices.length === 0) return
+    const texts: string[] = []
+    invoices.forEach((inv) => {
+      if (inv.partner?.name) texts.push(inv.partner.name)
+      if (inv.notes) texts.push(inv.notes)
+      inv.items.forEach((item) => {
+        if (item.productName) texts.push(item.productName)
+      })
+    })
+    if (texts.length > 0) translateTexts(texts)
+  }, [invoices, translateTexts])
 
   const handleNew = () => {
     setEditingInvoice(null)
@@ -447,7 +461,7 @@ export function Fakture() {
                 {/* Partner Info */}
                 <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('invoices.buyer')}</p>
-                  <p className="text-sm font-semibold">{printInvoice.partner?.name || '-'}</p>
+                  <p className="text-sm font-semibold">{tc(printInvoice.partner?.name || '-')}</p>
                   {printInvoice.partner && (
                     <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                       {printInvoice.partner.address && (
@@ -487,7 +501,7 @@ export function Fakture() {
                     {printInvoice.items.map((item, idx) => (
                       <tr key={item.id}>
                         <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
-                        <td className="border border-gray-300 px-2 py-1.5">{item.productName}</td>
+                        <td className="border border-gray-300 px-2 py-1.5">{tc(item.productName)}</td>
                         <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
                         <td className="border border-gray-300 px-2 py-1.5 text-center">{t('invoices.unitPiece')}</td>
                         <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
@@ -550,7 +564,7 @@ export function Fakture() {
                 {printInvoice.notes && (
                   <div className="mb-6 text-xs">
                     <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.note')}</p>
-                    <p className="text-gray-600">{printInvoice.notes}</p>
+                    <p className="text-gray-600">{tc(printInvoice.notes)}</p>
                   </div>
                 )}
 
@@ -754,7 +768,7 @@ export function Fakture() {
                             {getStatusLabel(inv.type || 'izlazna')}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-xs">{inv.partner?.name || '-'}</TableCell>
+                        <TableCell className="text-xs">{tc(inv.partner?.name || '-')}</TableCell>
                         <TableCell className="text-xs">{formatDate(inv.date)}</TableCell>
                         <TableCell className="text-xs">{formatDate(inv.dueDate)}</TableCell>
                         <TableCell>

@@ -26,7 +26,7 @@ import { Separator } from '@/components/ui/separator'
 import { Plus, Search, Users, Pencil, Trash2, Eye, Building2, Phone, Mail, MapPin, Landmark, CreditCard, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 interface Partner {
   id: string
@@ -90,6 +90,7 @@ interface PartnerAnalytics {
 
 export function Partneri() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -117,6 +118,16 @@ export function Partneri() {
   useEffect(() => {
     fetchPartners()
   }, [fetchPartners])
+
+  // Batch-translate partner content fields when data loads
+  useEffect(() => {
+    if (partners.length > 0) {
+      const texts = partners.flatMap((p) => [
+        p.name, p.city, p.address, p.phone, p.email, p.notes
+      ].filter(Boolean) as string[])
+      translateTexts(texts)
+    }
+  }, [partners, translateTexts])
 
   const handleNew = () => {
     setEditingPartner(null)
@@ -370,7 +381,7 @@ export function Partneri() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-lg font-semibold">{analyticsData.partner.name}</span>
+                  <span className="text-lg font-semibold">{tc(analyticsData.partner.name)}</span>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="text-sm font-mono text-muted-foreground">PIB: {analyticsData.partner.pib}</span>
@@ -385,7 +396,7 @@ export function Partneri() {
                 {analyticsData.partner.address && (
                   <span className="flex items-center gap-1.5">
                     <MapPin className="h-3.5 w-3.5" />
-                    {analyticsData.partner.city ? `${analyticsData.partner.address}, ${analyticsData.partner.city}` : analyticsData.partner.address}
+                    {analyticsData.partner.city ? `${tc(analyticsData.partner.address)}, ${tc(analyticsData.partner.city)}` : tc(analyticsData.partner.address)}
                   </span>
                 )}
                 {analyticsData.partner.phone && (
@@ -548,16 +559,16 @@ export function Partneri() {
                   ) : (
                     partners.map((p) => (
                       <TableRow key={p.id}>
-                        <TableCell className="text-xs font-medium">{p.name}</TableCell>
+                        <TableCell className="text-xs font-medium">{tc(p.name)}</TableCell>
                         <TableCell className="text-xs font-mono">{p.pib}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeColors[p.type] || ''}`}>
                             {getStatusLabel(p.type)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-xs">{p.city || '-'}</TableCell>
-                        <TableCell className="text-xs">{p.phone || '-'}</TableCell>
-                        <TableCell className="text-xs">{p.email || '-'}</TableCell>
+                        <TableCell className="text-xs">{p.city ? tc(p.city) : '-'}</TableCell>
+                        <TableCell className="text-xs">{p.phone ? tc(p.phone) : '-'}</TableCell>
+                        <TableCell className="text-xs">{p.email ? tc(p.email) : '-'}</TableCell>
                         <TableCell className="text-xs text-center">
                           <Badge variant="secondary" className="text-[10px] px-2 py-0">
                             {p._count.invoices}

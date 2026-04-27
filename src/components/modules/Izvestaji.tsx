@@ -26,7 +26,7 @@ import {
   Legend,
 } from 'recharts'
 import { formatRSD, formatRSDShort, getStatusLabel, getMonthLabel } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 const COLORS = ['#059669', '#0891b2', '#7c3aed', '#ea580c', '#db2777', '#0284c7', '#ca8a04']
 

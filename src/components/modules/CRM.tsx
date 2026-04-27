@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Search, Pencil, Trash2, HeartHandshake, Phone, Mail, Building2, CheckCircle2, Clock, XCircle, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
 interface Contact {
@@ -66,6 +66,7 @@ export function CRM() {
 // ==================== PIPELINE (KANBAN) ====================
 function PipelineTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
@@ -80,6 +81,18 @@ function PipelineTab() {
   }, [])
 
   useEffect(() => { fetchDeals() }, [fetchDeals])
+
+  useEffect(() => {
+    if (deals.length > 0) {
+      const texts: string[] = []
+      deals.forEach(d => {
+        if (d.title) texts.push(d.title)
+        if (d.contact) { texts.push(d.contact.firstName, d.contact.lastName) }
+        if (d.assignedTo) texts.push(d.assignedTo)
+      })
+      translateTexts(texts)
+    }
+  }, [deals, translateTexts])
 
   const moveDeal = async (dealId: string, newStage: string) => {
     try {
@@ -190,9 +203,9 @@ function PipelineTab() {
                         <Card key={deal.id} className="p-3 cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleEdit(deal)}>
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium truncate">{deal.title}</p>
+                              <p className="text-xs font-medium truncate">{tc(deal.title)}</p>
                               <p className="text-xs text-muted-foreground">{formatRSD(deal.value)}</p>
-                              <p className="text-[10px] text-muted-foreground">{deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : deal.assignedTo || ''}</p>
+                              <p className="text-[10px] text-muted-foreground">{deal.contact ? `${tc(deal.contact.firstName)} ${tc(deal.contact.lastName)}` : tc(deal.assignedTo || '')}</p>
                             </div>
                             <div className="flex gap-1 ml-1">
                               {nextStage(stage) && (
@@ -223,6 +236,7 @@ function PipelineTab() {
 // ==================== KONTAKTI TAB ====================
 function KontaktiTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -240,6 +254,18 @@ function KontaktiTab() {
   }, [search])
 
   useEffect(() => { fetchContacts() }, [fetchContacts])
+
+  useEffect(() => {
+    if (contacts.length > 0) {
+      const texts: string[] = []
+      contacts.forEach(c => {
+        if (c.firstName) texts.push(c.firstName)
+        if (c.lastName) texts.push(c.lastName)
+        if (c.company) texts.push(c.company)
+      })
+      translateTexts(texts)
+    }
+  }, [contacts, translateTexts])
 
   const handleNew = () => {
     setEditing(null)
@@ -328,8 +354,8 @@ function KontaktiTab() {
             <TableBody>
               {contacts.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">{t('crm.noContacts')}</TableCell></TableRow> : contacts.map((c) => (
                 <TableRow key={c.id}>
-                  <TableCell className="text-xs font-medium">{c.firstName} {c.lastName}</TableCell>
-                  <TableCell className="text-xs">{c.company || '-'}</TableCell>
+                  <TableCell className="text-xs font-medium">{tc(c.firstName)} {tc(c.lastName)}</TableCell>
+                  <TableCell className="text-xs">{tc(c.company || '') || '-'}</TableCell>
                   <TableCell><div className="flex gap-1 flex-wrap">{c.isLead && <Badge variant="outline" className="text-[10px] bg-amber-50 border-amber-200">{t('crm.lead')}</Badge>}{c.isClient && <Badge variant="outline" className="text-[10px] bg-emerald-50 border-emerald-200">{t('crm.client')}</Badge>}{c.isSupplier && <Badge variant="outline" className="text-[10px] bg-blue-50 border-blue-200">{t('crm.supplier')}</Badge>}</div></TableCell>
                   <TableCell className="text-xs">{c.phone || '-'}</TableCell>
                   <TableCell className="text-xs">{c.email || '-'}</TableCell>
@@ -347,6 +373,7 @@ function KontaktiTab() {
 // ==================== AKTIVNOSTI TAB ====================
 function AktivnostiTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
@@ -360,6 +387,17 @@ function AktivnostiTab() {
   }, [])
 
   useEffect(() => { fetchActivities() }, [fetchActivities])
+
+  useEffect(() => {
+    if (activities.length > 0) {
+      const texts: string[] = []
+      activities.forEach(a => {
+        if (a.title) texts.push(a.title)
+        if (a.contact) { texts.push(a.contact.firstName, a.contact.lastName) }
+      })
+      translateTexts(texts)
+    }
+  }, [activities, translateTexts])
 
   const handleNew = () => {
     setViewMode('form')
@@ -434,8 +472,8 @@ function AktivnostiTab() {
               {activities.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">{t('crm.noActivities')}</TableCell></TableRow> : activities.map((a) => (
                 <TableRow key={a.id} className={a.completed ? 'opacity-50' : ''}>
                   <TableCell className="text-xs">{typeIcons[a.type] || '📝'}</TableCell>
-                  <TableCell className="text-xs font-medium">{a.title}</TableCell>
-                  <TableCell className="text-xs">{a.contact ? `${a.contact.firstName} ${a.contact.lastName}` : '-'}</TableCell>
+                  <TableCell className="text-xs font-medium">{tc(a.title)}</TableCell>
+                  <TableCell className="text-xs">{a.contact ? `${tc(a.contact.firstName)} ${tc(a.contact.lastName)}` : '-'}</TableCell>
                   <TableCell className="text-xs">{a.dueDate ? formatDate(a.dueDate) : '-'}</TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" className="h-6 gap-1" onClick={() => toggleComplete(a.id, a.completed)}>

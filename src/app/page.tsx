@@ -29,7 +29,7 @@ import { AIAssistant } from '@/components/modules/AIAssistant'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { useAppStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
-import { I18nProvider, useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
+import { I18nProvider, useTranslation, ALL_LANGUAGES, ContentTranslationProvider } from '@/lib/i18n'
 import { Separator } from '@/components/ui/separator'
 import {
   Select,
@@ -210,10 +210,24 @@ function AppContent() {
 
 // ============ MAIN PAGE ============
 
+// ============ WRAPPER WITH CONTENT TRANSLATION ============
+
+function AppWithContentTranslation() {
+  const { locale } = useTranslation()
+
+  return (
+    <ContentTranslationProvider locale={locale} sourceLocale="sr">
+      <AppContent />
+    </ContentTranslationProvider>
+  )
+}
+
+// ============ MAIN PAGE ============
+
 export default function Home() {
   return (
     <I18nProvider>
-      <AppContent />
+      <AppWithContentTranslation />
     </I18nProvider>
   )
 }

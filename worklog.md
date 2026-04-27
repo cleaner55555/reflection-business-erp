@@ -204,3 +204,125 @@ Stage Summary:
 - Every visible string in the UI now uses translation keys
 - When switching to any language (e.g., German), the ENTIRE interface translates including sidebar, header, all module content, tabs, forms, buttons, toasts, tables
 - First use of a new language triggers AI auto-translation (~10-20s), then cached permanently
+
+---
+Task ID: 5-b
+Agent: Main Coordinator
+Task: Apply content translation (tc) to Magacin, Partneri, Nabavka modules
+
+Work Log:
+- Read all 3 module files fully to identify user-entered content fields
+- Added `useContentTranslation` import from `@/lib/i18n` to all 3 files
+- Magacin.tsx (4 sub-components modified):
+  - ArtikliTab: added tc/translateTexts, useEffect for batch product translation, tc() on sku/name/category in table + category filter
+  - KretanjaTab: added tc/translateTexts, useEffect for batch movement translation, tc() on product name/sku/documentRef/notes
+  - OtpremniceTab: added tc/translateTexts, useEffect for batch delivery note translation, tc() on partner name/notes/item names in list + print view
+  - CenovniciTab: added tc/translateTexts, useEffect for batch price list translation, tc() on name/description in table
+- Partneri.tsx: added tc/translateTexts, useEffect for batch partner translation, tc() on name/city/address/phone/email in list + analytics views
+- Nabavka.tsx: added tc/translateTexts, useEffect for batch order translation, tc() on partner name/notes/item names/address/city in list + print view
+- All form inputs/edit forms left untouched (only displayed content translated)
+- All status labels using getStatusLabel() left untouched (already translated via t())
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- Content translation applied to 3 module files (7 sub-components total)
+- User-entered data (names, SKUs, categories, addresses, notes, descriptions) now auto-translates when user switches language
+- Batch translation triggered via useEffect on data load to minimize API calls
+- Form inputs, edit dialogs, and status badges are NOT translated (by design)
+
+---
+Task ID: 5-c
+Agent: Main Coordinator
+Task: Apply content translation (tc) to CRM, Zaposleni, Projekti modules
+
+Work Log:
+- Read all 3 module files fully to identify user-entered content fields
+- Added `useContentTranslation` import from `@/lib/i18n` to all 3 files
+- CRM.tsx (3 sub-components modified):
+  - PipelineTab: added tc/translateTexts, useEffect for batch deal translation, tc() on deal.title/contact names/assignedTo in kanban cards
+  - KontaktiTab: added tc/translateTexts, useEffect for batch contact translation, tc() on firstName/lastName/company in table
+  - AktivnostiTab: added tc/translateTexts, useEffect for batch activity translation, tc() on activity title/contact names in table
+- Zaposleni.tsx (3 sub-components modified):
+  - ZaposleniListTab: added tc/translateTexts, useEffect for batch employee translation, tc() on firstName/lastName/position/department in table
+  - PlateTab: added tc/translateTexts, useEffect for batch payroll translation, tc() on employee.firstName/lastName in table
+  - PrisustvoTab: added tc/translateTexts, useEffect for batch attendance translation, tc() on employee names/notes in table
+- Projekti.tsx (1 component modified):
+  - Added tc/translateTexts, useEffect for batch project+task translation, tc() on project.name/assignedTo/task.title in list+expanded views
+- All form inputs/edit forms left untouched (only displayed content translated)
+- Status labels (proj.status, task.status, emp.isActive, activity type badges) using t() or getStatusLabel() left untouched
+- Stage labels (STAGE_LABELS) left untouched as they are predefined enum values
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- Content translation applied to 3 module files (7 sub-components total)
+- User-entered data (names, companies, positions, departments, deal titles, project names, task titles, notes, assignees) now auto-translates when user switches language
+- Batch translation triggered via useEffect on data load to minimize API calls
+- Form inputs and status badges are NOT translated (by design)
+
+---
+Task ID: 5-d-1
+Agent: Main Coordinator
+Task: Apply content translation (tc) to Sredstva, Dokumenta, Knjigovodstvo, Protokol, Edukacija modules
+
+Work Log:
+- Read all 5 module files fully to identify user-entered content fields
+- Sredstva.tsx: Already has content translation ✅ (tc on name/category in table, useEffect for batch translate)
+- Dokumenta.tsx: Already has content translation ✅ (tc on title/category in table, useEffect for batch translate)
+- Knjigovodstvo.tsx (3 sub-components):
+  - GlavnaKnjigaTab: Already done ✅ (tc on account name and description in table)
+  - KontniPlanTab: Added tc/translateTexts, useEffect for batch account translation, tc() on acc.name and acc.description in table, tc() on deleteTarget?.name in AlertDialog
+  - NalogTab: Added useTranslation + useContentTranslation hooks, useEffect for batch recent entries translation, tc() on entry.account.name and entry.description in recent entries table
+- Protokol.tsx: Added useTranslation + useContentTranslation imports, tc/translateTexts hooks, useEffect for batch entry translation, tc() on sender/recipient/subject/responsible in table, tc() on deleteTarget?.subject in AlertDialog
+- Edukacija.tsx: Extended existing useEffect to also batch-translate lesson titles from embedded lessons (c.lessons)
+- All form inputs/edit forms left untouched (only displayed content translated)
+- Status labels (STATUS_LABELS, TYPE_LABELS, PRIORITY_CONFIG, DOC_TYPES, ACCOUNT_TYPES, LESSON_TYPE_LABELS) left untouched (predefined enum values)
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- Content translation applied to 3 module files (5 sub-components modified; 2 already done)
+- User-entered data (account names, entry descriptions, sender/recipient names, protocol subjects, responsible persons, lesson titles) now auto-translates when user switches language
+- Batch translation triggered via useEffect on data load to minimize API calls
+- Form inputs and status/type labels are NOT translated (by design)
+
+---
+Task ID: 5-a
+Agent: Main Coordinator
+Task: Apply content translation (tc) to Dashboard, Finansije, Fakture modules
+
+Work Log:
+- Read all 3 module files fully to identify user-entered content fields
+- Added `useContentTranslation` import from `@/lib/i18n` to all 3 files
+- Dashboard.tsx: added tc/translateTexts, useEffect to batch-translate invoice partner names and low stock product names, tc() on partner names in recent invoices table and product names in low stock alerts
+- Finansije.tsx (3 sub-components modified):
+  - TransakcijeTab: added tc/translateTexts, useEffect for batch transaction description translation, tc() on t.description in table
+  - KasaTab: added tc/translateTexts, useEffect for batch cash entry translation, tc() on entry.description and entry.partnerName in table
+  - DnevnikTab: added tc/translateTexts, useEffect for batch journal translation, tc() on entry.description and entry.partnerName in table
+- Fakture.tsx: added tc/translateTexts, useEffect for batch invoice translation (partner names, item product names, notes), tc() on partner names in list view, item product names and partner name and notes in print preview
+- All form inputs/edit forms left untouched (only displayed content translated)
+- All status labels using getStatusLabel() left untouched (already translated via t())
+- Lint passes cleanly with zero errors
+
+Stage Summary:
+- Content translation applied to 3 module files (5 sub-components total)
+- User-entered data (partner names, product names, transaction descriptions, cash entry descriptions, journal descriptions, partner names in journal, invoice notes) now auto-translates when user switches language
+- Batch translation triggered via useEffect on data load to minimize API calls
+- Form inputs and status badges are NOT translated (by design)
+
+---
+Task ID: 6
+Agent: Main Coordinator
+Task: Implement content translation system with MyMemory API fallback (no AI needed)
+
+Work Log:
+- Created `/api/i18n/translate-content` endpoint using MyMemory Translation API (free, no API key)
+- API supports batch translation with 3-tier caching: in-memory → DB → MyMemory API
+- Created `ContentTranslationProvider`, `useContentTranslation()`, `TranslatableText`, `useDataTranslation<T>()`
+- Updated page.tsx with ContentTranslationProvider wrapper
+- Applied content translation to all 20 module components
+- Translation works WITHOUT AI — uses free MyMemory API exclusively
+- All lint checks pass
+
+Stage Summary:
+- Content translation system: MyMemory API (free, no AI), 3-tier caching, batch debouncing
+- All user-entered content auto-translates on language switch
+- Forms show original text for data integrity

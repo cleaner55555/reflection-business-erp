@@ -26,7 +26,7 @@ import {
 import { Plus, Search, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, BookOpen, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 interface Transaction {
   id: string
@@ -115,6 +115,7 @@ function TransakcijeTab() {
   const [submitting, setSubmitting] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true)
@@ -131,6 +132,12 @@ function TransakcijeTab() {
   useEffect(() => {
     fetchTransactions()
   }, [fetchTransactions])
+
+  useEffect(() => {
+    if (transactions.length === 0) return
+    const texts = transactions.map((tx) => tx.description).filter(Boolean) as string[]
+    if (texts.length > 0) translateTexts(texts)
+  }, [transactions, translateTexts])
 
   const handleEdit = (t: Transaction) => {
     setEditingTransaction(t)
@@ -339,7 +346,7 @@ function TransakcijeTab() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs">{getStatusLabel(t.category)}</TableCell>
-                      <TableCell className="text-xs max-w-[200px] truncate">{t.description}</TableCell>
+                      <TableCell className="text-xs max-w-[200px] truncate">{tc(t.description)}</TableCell>
                       <TableCell className="text-xs">{t.documentRef || '-'}</TableCell>
                       <TableCell className={`text-xs text-right font-medium ${t.type === 'prihod' ? 'text-emerald-600' : 'text-red-600'}`}>
                         {t.type === 'prihod' ? '+' : '-'}{formatRSD(t.amount)}
@@ -373,6 +380,7 @@ function KasaTab() {
   const [submitting, setSubmitting] = useState(false)
   const [editingEntry, setEditingEntry] = useState<CashEntry | null>(null)
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
 
   const fetchEntries = useCallback(async () => {
     setLoading(true)
@@ -385,6 +393,16 @@ function KasaTab() {
   useEffect(() => {
     fetchEntries()
   }, [fetchEntries])
+
+  useEffect(() => {
+    if (entries.length === 0) return
+    const texts: string[] = []
+    entries.forEach((e) => {
+      if (e.description) texts.push(e.description)
+      if (e.partnerName) texts.push(e.partnerName)
+    })
+    if (texts.length > 0) translateTexts(texts)
+  }, [entries, translateTexts])
 
   const runningBalance = entries.reduce((acc, entry) => {
     return acc + (entry.type === 'ulaz' ? entry.amount : -entry.amount)
@@ -558,8 +576,8 @@ function KasaTab() {
                             {getStatusLabel(entry.type)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-xs max-w-[200px] truncate">{entry.description}</TableCell>
-                        <TableCell className="text-xs">{entry.partnerName || '-'}</TableCell>
+                        <TableCell className="text-xs max-w-[200px] truncate">{tc(entry.description)}</TableCell>
+                        <TableCell className="text-xs">{tc(entry.partnerName || '-')}</TableCell>
                         <TableCell className="text-xs">{getStatusLabel(entry.paymentMethod)}</TableCell>
                         <TableCell className={`text-xs text-right font-medium ${entry.type === 'ulaz' ? 'text-emerald-600' : 'text-red-600'}`}>
                           {entry.type === 'ulaz' ? '+' : '-'}{formatRSD(entry.amount)}
@@ -592,6 +610,7 @@ function DnevnikTab() {
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState('')
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
 
   const fetchJournal = useCallback(async () => {
     setLoading(true)
@@ -607,6 +626,16 @@ function DnevnikTab() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: fetch data on mount / filter change
     fetchJournal()
   }, [fetchJournal])
+
+  useEffect(() => {
+    if (entries.length === 0) return
+    const texts: string[] = []
+    entries.forEach((e) => {
+      if (e.description) texts.push(e.description)
+      if (e.partnerName) texts.push(e.partnerName)
+    })
+    if (texts.length > 0) translateTexts(texts)
+  }, [entries, translateTexts])
 
   const totalDebit = entries.reduce((acc, entry) => acc + (entry.debit || 0), 0)
   const totalCredit = entries.reduce((acc, entry) => acc + (entry.credit || 0), 0)
@@ -684,9 +713,9 @@ function DnevnikTab() {
                             {getStatusLabel(entry.type)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-xs max-w-[250px] truncate">{entry.description}</TableCell>
+                        <TableCell className="text-xs max-w-[250px] truncate">{tc(entry.description)}</TableCell>
                         <TableCell className="text-xs">{entry.documentNumber || '-'}</TableCell>
-                        <TableCell className="text-xs">{entry.partnerName || '-'}</TableCell>
+                        <TableCell className="text-xs">{tc(entry.partnerName || '-')}</TableCell>
                         <TableCell className={`text-xs text-right font-medium ${entry.debit > 0 ? 'text-blue-700' : 'text-muted-foreground'}`}>
                           {entry.debit > 0 ? formatRSD(entry.debit) : '-'}
                         </TableCell>

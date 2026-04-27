@@ -37,7 +37,7 @@ import {
 import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 // ==================== INTERFACES ====================
 
@@ -206,6 +206,7 @@ export function Magacin() {
 
 function ArtikliTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -228,6 +229,14 @@ function ArtikliTab() {
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
+
+  // Batch-translate product content fields when data loads
+  useEffect(() => {
+    if (products.length > 0) {
+      const texts = products.flatMap((p) => [p.name, p.sku, p.category].filter(Boolean) as string[])
+      translateTexts(texts)
+    }
+  }, [products, translateTexts])
 
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
 
@@ -338,7 +347,7 @@ function ArtikliTab() {
                 <SelectContent>
                   <SelectItem value="all">{t('warehouse.allCategories')}</SelectItem>
                   {categories.map((c) => (
-                    <SelectItem key={c} value={c || ''}>{c}</SelectItem>
+                    <SelectItem key={c} value={c || ''}>{tc(c || '')}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -438,11 +447,11 @@ function ArtikliTab() {
                 ) : (
                   products.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell className="text-xs font-mono">{p.sku}</TableCell>
-                      <TableCell className="text-xs font-medium">{p.name}</TableCell>
+                      <TableCell className="text-xs font-mono">{tc(p.sku)}</TableCell>
+                      <TableCell className="text-xs font-medium">{tc(p.name)}</TableCell>
                       <TableCell className="text-xs">
                         <Badge variant="secondary" className="text-[10px] px-2 py-0">
-                          {p.category || '-'}
+                          {p.category ? tc(p.category) : '-'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-right">{formatRSD(p.purchasePrice)}</TableCell>
@@ -484,6 +493,7 @@ function ArtikliTab() {
 
 function KretanjaTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [movements, setMovements] = useState<StockMovement[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -504,6 +514,16 @@ function KretanjaTab() {
     fetchMovements()
     fetch('/api/products').then((r) => r.json()).then(setProducts)
   }, [fetchMovements])
+
+  // Batch-translate movement content fields when data loads
+  useEffect(() => {
+    if (movements.length > 0) {
+      const texts = movements.flatMap((m) => [
+        m.product?.name, m.product?.sku, m.documentRef, m.notes
+      ].filter(Boolean) as string[])
+      translateTexts(texts)
+    }
+  }, [movements, translateTexts])
 
   const handleNew = () => {
     setViewMode('form')
@@ -669,8 +689,8 @@ function KretanjaTab() {
                       <TableCell className="text-xs">{formatDateTime(m.date)}</TableCell>
                       <TableCell className="text-xs">
                         <div>
-                          <span className="font-medium">{m.product?.name}</span>
-                          <span className="text-muted-foreground ml-1 text-[10px]">({m.product?.sku})</span>
+                          <span className="font-medium">{tc(m.product?.name || '')}</span>
+                          <span className="text-muted-foreground ml-1 text-[10px]">({tc(m.product?.sku || '')})</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -681,8 +701,8 @@ function KretanjaTab() {
                       <TableCell className={`text-xs text-right font-medium ${m.type === 'prijem' ? 'text-emerald-600' : 'text-red-600'}`}>
                         {m.type === 'prijem' ? '+' : '-'}{m.quantity}
                       </TableCell>
-                      <TableCell className="text-xs">{m.documentRef || '-'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{m.notes || '-'}</TableCell>
+                      <TableCell className="text-xs">{m.documentRef ? tc(m.documentRef) : '-'}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{m.notes ? tc(m.notes) : '-'}</TableCell>
                       <TableCell className="text-center">
                         <Button
                           variant="ghost"
@@ -731,6 +751,7 @@ function KretanjaTab() {
 
 function OtpremniceTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [deliveryNotes, setDeliveryNotes] = useState<DeliveryNote[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
@@ -768,6 +789,16 @@ function OtpremniceTab() {
     fetch('/api/products').then((r) => r.json()).then(setProducts)
     fetch('/api/partners').then((r) => r.json()).then(setPartners)
   }, [fetchDeliveryNotes])
+
+  // Batch-translate delivery note content fields when data loads
+  useEffect(() => {
+    if (deliveryNotes.length > 0) {
+      const texts = deliveryNotes.flatMap((dn) => [
+        dn.partner?.name, dn.notes, ...dn.items.map((i) => i.productName)
+      ].filter(Boolean) as string[])
+      translateTexts(texts)
+    }
+  }, [deliveryNotes, translateTexts])
 
   const addLineItem = () => {
     setLineItems([...lineItems, { tempId: nextTempId(), productId: '', productName: '', quantity: '1', unitPrice: '0' }])
@@ -1011,7 +1042,7 @@ function OtpremniceTab() {
               {/* Partner Info */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.recipient')}</p>
-                <p className="text-sm font-semibold">{printNote.partner?.name || '-'}</p>
+                <p className="text-sm font-semibold">{printNote.partner?.name ? tc(printNote.partner.name) : '-'}</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                   {printNote.partner?.pib && (
                     <span className="text-[10px] text-gray-500">PIB: {printNote.partner.pib}</span>
@@ -1034,7 +1065,7 @@ function OtpremniceTab() {
                   {printNote.items.map((item, idx) => (
                     <tr key={item.id}>
                       <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1.5">{item.productName}</td>
+                      <td className="border border-gray-300 px-2 py-1.5">{tc(item.productName)}</td>
                       <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
                       <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
                       <td className="border border-gray-300 px-2 py-1.5 text-right font-medium">{formatRSD(item.quantity * item.unitPrice)}</td>
@@ -1057,7 +1088,7 @@ function OtpremniceTab() {
               {printNote.notes && (
                 <div className="mb-4 text-xs">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
-                  <p className="text-gray-600">{printNote.notes}</p>
+                  <p className="text-gray-600">{tc(printNote.notes)}</p>
                 </div>
               )}
 
@@ -1224,7 +1255,7 @@ function OtpremniceTab() {
                   deliveryNotes.map((dn) => (
                     <TableRow key={dn.id}>
                       <TableCell className="text-xs font-mono font-medium">{dn.number}</TableCell>
-                      <TableCell className="text-xs font-medium">{dn.partner?.name}</TableCell>
+                      <TableCell className="text-xs font-medium">{dn.partner?.name ? tc(dn.partner.name) : '-'}</TableCell>
                       <TableCell className="text-xs">{formatDate(dn.date)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(dn.status)}`}>
@@ -1232,7 +1263,7 @@ function OtpremniceTab() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{dn.invoiceNumber || '-'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes || '-'}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes ? tc(dn.notes) : '-'}</TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(dn)} title={t('common.print')}>
@@ -1284,6 +1315,7 @@ function OtpremniceTab() {
 
 function CenovniciTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [priceLists, setPriceLists] = useState<PriceList[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -1312,6 +1344,14 @@ function CenovniciTab() {
     fetchPriceLists()
     fetch('/api/products').then((r) => r.json()).then(setProducts)
   }, [fetchPriceLists])
+
+  // Batch-translate price list content fields when data loads
+  useEffect(() => {
+    if (priceLists.length > 0) {
+      const texts = priceLists.flatMap((pl) => [pl.name, pl.description].filter(Boolean) as string[])
+      translateTexts(texts)
+    }
+  }, [priceLists, translateTexts])
 
   const addLineItem = () => {
     setLineItems([...lineItems, { tempId: nextTempId(), productId: '', price: '0', discountPct: '0' }])
@@ -1581,8 +1621,8 @@ function CenovniciTab() {
                 ) : (
                   priceLists.map((pl) => (
                     <TableRow key={pl.id}>
-                      <TableCell className="text-xs font-medium">{pl.name}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{pl.description || '-'}</TableCell>
+                      <TableCell className="text-xs font-medium">{tc(pl.name)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{pl.description ? tc(pl.description) : '-'}</TableCell>
                       <TableCell className="text-xs text-center">
                         <Badge variant="secondary" className="text-[10px] px-2 py-0">
                           {pl._count?.items ?? pl.items?.length ?? 0}

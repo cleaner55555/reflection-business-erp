@@ -16,7 +16,7 @@ import {
   Fuel, Gauge, User, Wrench, Receipt, CarFront, ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatDate, formatRSD } from '@/lib/helpers'
 
 interface VehicleService {
@@ -104,6 +104,7 @@ const EXPENSE_TYPE_LABELS: Record<string, string> = {
 
 export function VozniPark() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -128,6 +129,24 @@ export function VozniPark() {
   }, [])
 
   useEffect(() => { fetchVehicles() }, [fetchVehicles])
+
+  useEffect(() => {
+    if (!loading) {
+      const texts: string[] = []
+      vehicles.forEach(v => { texts.push(v.make, v.model); if (v.assignedTo) texts.push(v.assignedTo) })
+      translateTexts(texts)
+    }
+  }, [loading])
+
+  useEffect(() => {
+    vehicles.forEach(vehicle => {
+      if (!vehicle.services) return
+      const texts: string[] = []
+      vehicle.services.forEach(s => { if (s.description) texts.push(s.description) })
+      vehicle.expenses?.forEach(e => { if (e.description) texts.push(e.description) })
+      translateTexts(texts)
+    })
+  }, [vehicles])
 
   const fetchVehicleDetails = useCallback(async (vehicleId: string) => {
     try {
@@ -615,7 +634,7 @@ export function VozniPark() {
                         >
                           <div className="flex items-start justify-between gap-2 mb-3">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-sm">{vehicle.make} {vehicle.model}</h3>
+                              <h3 className="font-semibold text-sm">{tc(vehicle.make)} {tc(vehicle.model)}</h3>
                               <p className="text-xs text-muted-foreground font-mono mt-0.5">{vehicle.registration}</p>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">

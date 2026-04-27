@@ -49,7 +49,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -142,6 +142,7 @@ export function Knjigovodstvo() {
 
 function GlavnaKnjigaTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -177,8 +178,16 @@ function GlavnaKnjigaTab() {
   }, [fetchAccounts])
 
   useEffect(() => {
-    fetchEntries()
-  }, [fetchEntries])
+    if (entries.length > 0) {
+      translateTexts(entries.flatMap(e => [e.description].filter(Boolean)))
+    }
+  }, [entries])
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      translateTexts(accounts.map(a => a.name).filter(Boolean))
+    }
+  }, [accounts])
 
   const totalDebit = entries.reduce((acc, e) => acc + (e.debit || 0), 0)
   const totalCredit = entries.reduce((acc, e) => acc + (e.credit || 0), 0)
@@ -463,7 +472,7 @@ function GlavnaKnjigaTab() {
                           {entry.accountCode}
                         </TableCell>
                         <TableCell className="text-xs max-w-[160px] truncate">
-                          {entry.account?.name || entry.accountCode}
+                          {tc(entry.account?.name || entry.accountCode)}
                         </TableCell>
                         <TableCell
                           className={`text-xs text-right font-medium whitespace-nowrap ${
@@ -484,7 +493,7 @@ function GlavnaKnjigaTab() {
                           {entry.credit > 0 ? formatRSD(entry.credit) : '-'}
                         </TableCell>
                         <TableCell className="text-xs max-w-[200px] truncate">
-                          {entry.description}
+                          {tc(entry.description)}
                         </TableCell>
                         <TableCell className="text-xs whitespace-nowrap">
                           {entry.documentRef || '-'}
@@ -542,6 +551,7 @@ function GlavnaKnjigaTab() {
 
 function KontniPlanTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -563,6 +573,12 @@ function KontniPlanTab() {
   useEffect(() => {
     fetchAccounts()
   }, [fetchAccounts])
+
+  useEffect(() => {
+    if (accounts.length > 0) {
+      translateTexts(accounts.flatMap(a => [a.name, a.description].filter(Boolean)))
+    }
+  }, [accounts])
 
   const filtered = accounts.filter((acc) => {
     const matchSearch =
@@ -836,7 +852,7 @@ function KontniPlanTab() {
                             {acc.code}
                           </TableCell>
                           <TableCell className="text-xs font-medium">
-                            {acc.name}
+                            {tc(acc.name)}
                             {acc.parentCode && (
                               <span className="text-muted-foreground ml-1.5">
                                 (→ {acc.parentCode})
@@ -852,7 +868,7 @@ function KontniPlanTab() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
-                            {acc.description || '-'}
+                            {tc(acc.description) || '-'}
                           </TableCell>
                           <TableCell className="text-xs text-center">
                             <Badge variant="secondary" className="text-[10px] px-2 py-0">
@@ -901,7 +917,7 @@ function KontniPlanTab() {
             <AlertDialogDescription>
               {t('accounting.confirmDeleteAccount')}{' '}
               <span className="font-semibold text-foreground">
-                {deleteTarget?.code} — {deleteTarget?.name}
+                {deleteTarget?.code} — {tc(deleteTarget?.name)}
               </span>
               ?<br />
               {t('common.cannotUndo')}
@@ -925,6 +941,8 @@ function KontniPlanTab() {
 // ─── Tab 3: Nalog za Knjiženje ───────────────────────────────────────────────
 
 function NalogTab() {
+  const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -962,6 +980,12 @@ function NalogTab() {
     fetchAccounts()
     fetchRecentEntries()
   }, [fetchAccounts, fetchRecentEntries])
+
+  useEffect(() => {
+    if (recentEntries.length > 0) {
+      translateTexts(recentEntries.flatMap(e => [e.description, e.account?.name].filter(Boolean)))
+    }
+  }, [recentEntries])
 
   // Row management
   const addRow = () => {
@@ -1379,7 +1403,7 @@ function NalogTab() {
                           {entry.accountCode}
                         </TableCell>
                         <TableCell className="text-xs max-w-[140px] truncate">
-                          {entry.account?.name || entry.accountCode}
+                          {tc(entry.account?.name || entry.accountCode)}
                         </TableCell>
                         <TableCell
                           className={`text-xs text-right font-medium whitespace-nowrap ${
@@ -1400,7 +1424,7 @@ function NalogTab() {
                           {entry.credit > 0 ? formatRSD(entry.credit) : '-'}
                         </TableCell>
                         <TableCell className="text-xs max-w-[180px] truncate">
-                          {entry.description}
+                          {tc(entry.description)}
                         </TableCell>
                         <TableCell className="text-xs whitespace-nowrap">
                           {entry.documentRef || '-'}

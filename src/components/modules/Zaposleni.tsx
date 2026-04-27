@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Plus, Search, Pencil, Trash2, UserCog, Users, ArrowLeft, Printer } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate } from '@/lib/helpers'
 
 interface Employee {
@@ -61,6 +61,7 @@ export function Zaposleni() {
 
 function ZaposleniListTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -78,6 +79,19 @@ function ZaposleniListTab() {
   }, [search])
 
   useEffect(() => { fetchEmployees() }, [fetchEmployees])
+
+  useEffect(() => {
+    if (employees.length > 0) {
+      const texts: string[] = []
+      employees.forEach(emp => {
+        if (emp.firstName) texts.push(emp.firstName)
+        if (emp.lastName) texts.push(emp.lastName)
+        if (emp.position) texts.push(emp.position)
+        if (emp.department) texts.push(emp.department)
+      })
+      translateTexts(texts)
+    }
+  }, [employees, translateTexts])
 
   const handleNew = () => {
     setEditing(null)
@@ -167,9 +181,9 @@ function ZaposleniListTab() {
             <TableBody>
               {employees.map((emp) => (
                 <TableRow key={emp.id}>
-                  <TableCell className="text-xs font-medium">{emp.firstName} {emp.lastName}</TableCell>
-                  <TableCell className="text-xs">{emp.position || '-'}</TableCell>
-                  <TableCell className="text-xs">{emp.department || '-'}</TableCell>
+                  <TableCell className="text-xs font-medium">{tc(emp.firstName)} {tc(emp.lastName)}</TableCell>
+                  <TableCell className="text-xs">{tc(emp.position || '') || '-'}</TableCell>
+                  <TableCell className="text-xs">{tc(emp.department || '') || '-'}</TableCell>
                   <TableCell className="text-xs text-right">{formatRSD(emp.baseSalary)}</TableCell>
                   <TableCell><Badge variant={emp.isActive ? 'default' : 'secondary'} className="text-[10px]">{emp.isActive ? t('common.aktivan') : t('common.neaktivan')}</Badge></TableCell>
                   <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(emp)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(emp.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
@@ -185,6 +199,7 @@ function ZaposleniListTab() {
 
 function PlateTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [payrolls, setPayrolls] = useState<Payroll[]>([])
   const [employees, setEmployees] = useState<EmployeeOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -206,6 +221,16 @@ function PlateTab() {
   }, [])
 
   useEffect(() => { fetchPayrolls(); fetchEmployees() }, [fetchPayrolls, fetchEmployees])
+
+  useEffect(() => {
+    if (payrolls.length > 0) {
+      const texts: string[] = []
+      payrolls.forEach(p => {
+        texts.push(p.employee.firstName, p.employee.lastName)
+      })
+      translateTexts(texts)
+    }
+  }, [payrolls, translateTexts])
 
   const totalBase = payrolls.reduce((s, p) => s + p.baseSalary, 0)
   const totalNet = payrolls.reduce((s, p) => s + p.netSalary, 0)
@@ -425,7 +450,7 @@ function PlateTab() {
             <TableBody>
               {payrolls.map((p) => (
                 <TableRow key={p.id}>
-                  <TableCell className="text-xs font-medium">{p.employee.firstName} {p.employee.lastName}</TableCell>
+                  <TableCell className="text-xs font-medium">{tc(p.employee.firstName)} {tc(p.employee.lastName)}</TableCell>
                   <TableCell className="text-xs">{MONTHS[p.month - 1]} {p.year}</TableCell>
                   <TableCell className="text-xs text-right">{formatRSD(p.baseSalary)}</TableCell>
                   <TableCell className="text-xs text-right text-emerald-600">+{formatRSD(p.bonuses)}</TableCell>
@@ -451,6 +476,7 @@ function PlateTab() {
 
 function PrisustvoTab() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [attendances, setAttendances] = useState<Attendance[]>([])
   const [employees, setEmployees] = useState<EmployeeOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -472,6 +498,17 @@ function PrisustvoTab() {
   }, [])
 
   useEffect(() => { fetchAttendances(); fetchEmployees() }, [fetchAttendances, fetchEmployees])
+
+  useEffect(() => {
+    if (attendances.length > 0) {
+      const texts: string[] = []
+      attendances.forEach(a => {
+        texts.push(a.employee.firstName, a.employee.lastName)
+        if (a.notes) texts.push(a.notes)
+      })
+      translateTexts(texts)
+    }
+  }, [attendances, translateTexts])
 
   const typeColors: Record<string, string> = { rad: 'text-emerald-600', bolovanje: 'text-red-600', godisnji: 'text-blue-600', sluzbeni_put: 'text-purple-600', odsustvo: 'text-amber-600' }
   const typeLabels: Record<string, string> = { rad: t('employees.typeWork'), bolovanje: t('common.bolovanje'), godisnji: t('common.godisnji'), sluzbeni_put: t('common.sluzbeni_put'), odsustvo: t('employees.typeAbsence') }
@@ -615,11 +652,11 @@ function PrisustvoTab() {
             <TableBody>
               {attendances.map((a) => (
                 <TableRow key={a.id}>
-                  <TableCell className="text-xs font-medium">{a.employee.firstName} {a.employee.lastName}</TableCell>
+                  <TableCell className="text-xs font-medium">{tc(a.employee.firstName)} {tc(a.employee.lastName)}</TableCell>
                   <TableCell className="text-xs">{formatDate(a.date)}</TableCell>
                   <TableCell className="text-xs text-center">{a.hoursWorked}h</TableCell>
                   <TableCell className="text-xs"><span className={typeColors[a.type] || ''}>{typeLabels[a.type] || a.type}</span></TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{a.notes || '-'}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{tc(a.notes || '') || '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(a)}><Pencil className="h-3.5 w-3.5" /></Button>

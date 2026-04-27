@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 // ==================== TYPES ====================
 
@@ -194,6 +194,7 @@ export function KafeRestoran() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
 
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
 
   // ==================== DATA FETCHING ====================
 
@@ -248,6 +249,18 @@ export function KafeRestoran() {
   }, [fetchCategories, fetchMenuItems, fetchTables, fetchOrders])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  // Batch-translate content when data loads
+  useEffect(() => {
+    if (categories.length > 0 || menuItems.length > 0 || tables.length > 0 || orders.length > 0) {
+      const texts: string[] = []
+      categories.forEach(c => { if (c.name) texts.push(c.name) })
+      menuItems.forEach(mi => { if (mi.name) texts.push(mi.name); if (mi.description) texts.push(mi.description) })
+      tables.forEach(tb => { if (tb.name) texts.push(tb.name) })
+      orders.forEach(o => { if (o.waiter) texts.push(o.waiter); if (o.notes) texts.push(o.notes) })
+      if (texts.length > 0) translateTexts(texts)
+    }
+  }, [categories, menuItems, tables, orders, translateTexts])
 
   // ==================== COMPUTED VALUES ====================
 
@@ -770,7 +783,7 @@ export function KafeRestoran() {
                               </Button>
                             </div>
                           </div>
-                          <h3 className="font-semibold text-sm mb-1 truncate">{table.name || `Sto ${table.number}`}</h3>
+                          <h3 className="font-semibold text-sm mb-1 truncate">{table.name ? tc(table.name) : `Sto ${table.number}`}</h3>
                           <div className="space-y-1.5 mb-3">
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Users className="h-3 w-3" />

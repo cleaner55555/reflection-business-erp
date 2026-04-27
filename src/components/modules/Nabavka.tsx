@@ -25,7 +25,7 @@ import {
 import { Pencil, Plus, Search, Trash2, ArrowLeft, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 // ==================== INTERFACES ====================
 
@@ -111,6 +111,7 @@ const COMPANY = {
 
 export function Nabavka() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [orders, setOrders] = useState<PurchaseOrder[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
   const [products, setProducts] = useState<Product[]>([])
@@ -144,6 +145,16 @@ export function Nabavka() {
     fetch('/api/partners?type=dobavljac').then((r) => r.json()).then(setPartners)
     fetch('/api/products').then((r) => r.json()).then(setProducts)
   }, [fetchOrders])
+
+  // Batch-translate order content fields when data loads
+  useEffect(() => {
+    if (orders.length > 0) {
+      const texts = orders.flatMap((po) => [
+        po.partner?.name, po.notes, ...po.items.map((i) => i.productName)
+      ].filter(Boolean) as string[])
+      translateTexts(texts)
+    }
+  }, [orders, translateTexts])
 
   const addLineItem = () => {
     setLineItems([...lineItems, { productId: '', productName: '', quantity: 1, unitPrice: 0 }])
@@ -370,11 +381,11 @@ export function Nabavka() {
               {/* Partner Info */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('procurement.supplier')}</p>
-                <p className="text-sm font-semibold">{printOrder.partner?.name || '-'}</p>
+                <p className="text-sm font-semibold">{printOrder.partner?.name ? tc(printOrder.partner.name) : '-'}</p>
                 {printOrder.partner && (
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                     {printOrder.partner.address && (
-                      <span className="text-[10px] text-gray-500">{printOrder.partner.address}{printOrder.partner.city ? `, ${printOrder.partner.city}` : ''}</span>
+                      <span className="text-[10px] text-gray-500">{tc(printOrder.partner.address)}{printOrder.partner.city ? `, ${tc(printOrder.partner.city)}` : ''}</span>
                     )}
                     {printOrder.partner.pib && (
                       <span className="text-[10px] text-gray-500">PIB: {printOrder.partner.pib}</span>
@@ -408,7 +419,7 @@ export function Nabavka() {
                   {printOrder.items.map((item, idx) => (
                     <tr key={item.id}>
                       <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1.5">{item.productName}</td>
+                      <td className="border border-gray-300 px-2 py-1.5">{tc(item.productName)}</td>
                       <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
                       <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
                       <td className="border border-gray-300 px-2 py-1.5 text-center">0</td>
@@ -456,7 +467,7 @@ export function Nabavka() {
               {printOrder.notes && (
                 <div className="mb-6 text-xs">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
-                  <p className="text-gray-600">{printOrder.notes}</p>
+                  <p className="text-gray-600">{tc(printOrder.notes)}</p>
                 </div>
               )}
 
@@ -614,7 +625,7 @@ export function Nabavka() {
                   orders.map((po) => (
                     <TableRow key={po.id}>
                       <TableCell className="text-xs font-medium">{po.number}</TableCell>
-                      <TableCell className="text-xs">{po.partner?.name || '-'}</TableCell>
+                      <TableCell className="text-xs">{po.partner?.name ? tc(po.partner.name) : '-'}</TableCell>
                       <TableCell className="text-xs">{formatDate(po.date)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(po.status)}`}>

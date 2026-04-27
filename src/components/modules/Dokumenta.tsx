@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Pencil, Trash2, FileText, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate, getStatusColor } from '@/lib/helpers'
-import { useTranslation } from '@/lib/i18n'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
 interface Doc {
   id: string; title: string; category: string | null; type: string | null; fileName: string | null
@@ -24,6 +24,7 @@ const TYPE_LABELS: Record<string, string> = { faktura: 'Faktura', ugovor: 'Ugovo
 
 export function Dokumenta() {
   const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
   const [docs, setDocs] = useState<Doc[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
@@ -38,6 +39,12 @@ export function Dokumenta() {
   }, [])
 
   useEffect(() => { fetchDocs() }, [fetchDocs])
+
+  useEffect(() => {
+    if (docs.length > 0) {
+      translateTexts(docs.flatMap(d => [d.title, d.category].filter(Boolean)))
+    }
+  }, [docs])
 
   const handleNew = () => {
     setEditing(null)
@@ -126,9 +133,9 @@ export function Dokumenta() {
               <TableBody>
                 {docs.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">{t('documents.noDocuments')}</TableCell></TableRow> : docs.map((d) => (
                   <TableRow key={d.id}>
-                    <TableCell className="text-xs font-medium flex items-center gap-2"><FileText className="h-3.5 w-3.5 text-muted-foreground" />{d.title}</TableCell>
+                    <TableCell className="text-xs font-medium flex items-center gap-2"><FileText className="h-3.5 w-3.5 text-muted-foreground" />{tc(d.title)}</TableCell>
                     <TableCell className="text-xs"><Badge variant="secondary" className="text-[10px]">{TYPE_LABELS[d.type || ''] || d.type || '-'}</Badge></TableCell>
-                    <TableCell className="text-xs">{d.category || '-'}</TableCell>
+                    <TableCell className="text-xs">{tc(d.category) || '-'}</TableCell>
                     <TableCell className="text-xs">{formatDate(d.createdAt)}</TableCell>
                     <TableCell className="text-xs">{d.expiresAt ? formatDate(d.expiresAt) : '-'}</TableCell>
                     <TableCell><Badge variant="outline" className={`text-[10px] ${getStatusColor(d.status)}`}>{d.status}</Badge></TableCell>
