@@ -32,6 +32,9 @@ import {
   Mail,
   GraduationCap,
   Car,
+  CarFront,
+  UtensilsCrossed,
+  Settings,
 } from 'lucide-react'
 
 const menuGroups: { label: string; items: { module: ModuleType; icon: React.ElementType; label: string }[] }[] = [
@@ -64,14 +67,21 @@ const menuGroups: { label: string; items: { module: ModuleType; icon: React.Elem
       { module: 'sredstva', icon: Building2, label: 'Osnovna sredstva' },
       { module: 'dokumenta', icon: Files, label: 'Dokumenta' },
       { module: 'knjigovodstvo', icon: BookOpen, label: 'Knjigovodstvo' },
-      { module: 'protokol', icon: Mail, label: 'Protokol' },
+      { module: 'protokol', icon: FileText, label: 'Protokol' },
       { module: 'edukacija', icon: GraduationCap, label: 'Edukacija' },
+      { module: 'email-marketing', icon: Mail, label: 'Email Marketing' },
       { module: 'vozni-park', icon: Car, label: 'Vozni park' },
+      { module: 'kafe-restoran', icon: UtensilsCrossed, label: 'Kafe Restoran' },
+      { module: 'rent-a-car', icon: CarFront, label: 'Rent a Car' },
     ],
   },
   {
     label: 'ANALITIKA',
     items: [{ module: 'izvestaji', icon: BarChart3, label: 'Izveštaji' }],
+  },
+  {
+    label: 'SISTEM',
+    items: [{ module: 'podesavanja', icon: Settings, label: 'Podešavanja' }],
   },
 ]
 
@@ -131,7 +141,7 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-medium text-sidebar-foreground">Reflection Business</span>
-            <span className="text-[10px] text-sidebar-foreground/50">ERP + CRM v2.1</span>
+            <span className="text-[10px] text-sidebar-foreground/50">ERP + CRM v3.0</span>
           </div>
         </div>
       </SidebarFooter>

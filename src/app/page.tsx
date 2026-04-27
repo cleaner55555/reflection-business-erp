@@ -20,6 +20,11 @@ import { Knjigovodstvo } from '@/components/modules/Knjigovodstvo'
 import { Protokol } from '@/components/modules/Protokol'
 import { Edukacija } from '@/components/modules/Edukacija'
 import { VozniPark } from '@/components/modules/VozniPark'
+import { KafeRestoran } from '@/components/modules/KafeRestoran'
+import { MailerLite } from '@/components/modules/MailerLite'
+import { RentACar } from '@/components/modules/RentACar'
+import { Podesavanja } from '@/components/modules/Podesavanja'
+import { AIAssistant } from '@/components/modules/AIAssistant'
 import { useAppStore } from '@/lib/store'
 import { Separator } from '@/components/ui/separator'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -44,7 +49,11 @@ export default function Home() {
     protokol: 'Protokol',
     edukacija: 'Edukacija',
     'vozni-park': 'Vozni park',
+    'kafe-restoran': 'Kafe Restoran',
+    'email-marketing': 'Email Marketing',
+    'rent-a-car': 'Rent a Car',
     izvestaji: 'Izveštaji',
+    podesavanja: 'Podešavanja',
   }
 
   const modules: Record<string, React.ReactNode> = {
@@ -64,7 +73,11 @@ export default function Home() {
     protokol: <Protokol />,
     edukacija: <Edukacija />,
     'vozni-park': <VozniPark />,
+    'kafe-restoran': <KafeRestoran />,
+    'email-marketing': <MailerLite />,
+    'rent-a-car': <RentACar />,
     izvestaji: <Izvestaji />,
+    podesavanja: <Podesavanja />,
   }
 
   return (
@@ -96,6 +109,8 @@ export default function Home() {
           </main>
 
           <Footer />
+
+          <AIAssistant />
         </SidebarInset>
       </SidebarProvider>
     </div>

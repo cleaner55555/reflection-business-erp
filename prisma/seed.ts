@@ -7,7 +7,19 @@ async function seed() {
   const year = now.getFullYear()
   const month = now.getMonth()
 
-  // Clear existing data
+  // Clear existing data - new modules first (due to FK)
+  await db.rental.deleteMany()
+  await db.rentalVehicle.deleteMany()
+  await db.restoOrderItem.deleteMany()
+  await db.restoOrder.deleteMany()
+  await db.restoMenuItem.deleteMany()
+  await db.restoCategory.deleteMany()
+  await db.restoTable.deleteMany()
+  await db.emailCampaign.deleteMany()
+  await db.emailSubscriber.deleteMany()
+  await db.emailList.deleteMany()
+  await db.emailTemplate.deleteMany()
+  await db.appSetting.deleteMany()
   await db.vehicleExpense.deleteMany()
   await db.vehicleService.deleteMany()
   await db.vehicle.deleteMany()
@@ -714,6 +726,181 @@ async function seed() {
     db.vehicleExpense.create({ data: { vehicleId: vehicles[1].id, type: 'parking', description: 'Parking - BG centar', amount: 300, mileage: 41200 } }),
   ])
 
+  // ===== RENT A CAR =====
+  const rentalVehicles = await Promise.all([
+    db.rentalVehicle.create({ data: { name: 'VW Golf 8', make: 'Volkswagen', model: 'Golf 8', year: 2023, registration: 'BG-R-001', fuelType: 'dizel', transmission: 'automatski', seats: 5, dailyRate: 4500, weeklyRate: 28000, monthlyRate: 95000, mileage: 25000, status: 'dostupno', ac: true, gps: true } }),
+    db.rentalVehicle.create({ data: { name: 'Škoda Octavia', make: 'Škoda', model: 'Octavia', year: 2022, registration: 'BG-R-002', fuelType: 'benzin', transmission: 'automatski', seats: 5, dailyRate: 4000, weeklyRate: 25000, monthlyRate: 85000, mileage: 42000, status: 'iznajmljeno', ac: true, gps: true } }),
+    db.rentalVehicle.create({ data: { name: 'Peugeot 308', make: 'Peugeot', model: '308', year: 2023, registration: 'BG-R-003', fuelType: 'dizel', transmission: 'manuelni', seats: 5, dailyRate: 3500, weeklyRate: 22000, monthlyRate: 75000, mileage: 18000, status: 'dostupno', ac: true, gps: false } }),
+    db.rentalVehicle.create({ data: { name: 'Citroen C3', make: 'Citroen', model: 'C3', year: 2024, registration: 'BG-R-004', fuelType: 'benzin', transmission: 'manuelni', seats: 5, dailyRate: 2800, weeklyRate: 18000, monthlyRate: 60000, mileage: 8000, status: 'rezervisano', ac: true, gps: false } }),
+    db.rentalVehicle.create({ data: { name: 'Dacia Duster', make: 'Dacia', model: 'Duster', year: 2022, registration: 'BG-R-005', fuelType: 'dizel', transmission: 'manuelni', seats: 5, dailyRate: 3800, weeklyRate: 24000, monthlyRate: 80000, mileage: 35000, status: 'dostupno', ac: true, gps: true } }),
+    db.rentalVehicle.create({ data: { name: 'Fiat 500', make: 'Fiat', model: '500', year: 2024, registration: 'BG-R-006', fuelType: 'benzin', transmission: 'manuelni', seats: 4, dailyRate: 2200, weeklyRate: 14000, monthlyRate: 48000, mileage: 5000, status: 'na_servisu', ac: false, gps: false } }),
+  ])
+
+  await Promise.all([
+    db.rental.create({ data: { number: 'RNT-2025-001', vehicleId: rentalVehicles[1].id, clientName: 'Jovan Marković', clientPhone: '+381 63 999 111', clientEmail: 'jovan@gmail.com', startDate: new Date(year, month, 10), endDate: new Date(year, month, 15), pickupMileage: 40000, dailyRate: 4000, totalDays: 5, totalAmount: 20000, deposit: 5000, status: 'aktivna' } }),
+    db.rental.create({ data: { number: 'RNT-2025-002', vehicleId: rentalVehicles[3].id, clientName: 'Ana Savić', clientPhone: '+381 64 888 222', startDate: new Date(year, month + 1, 1), endDate: new Date(year, month + 1, 7), pickupMileage: 7000, dailyRate: 2800, totalDays: 6, totalAmount: 16800, deposit: 3000, status: 'rezervacija' } }),
+    db.rental.create({ data: { number: 'RNT-2025-003', vehicleId: rentalVehicles[0].id, clientName: 'Petar Nikolić', clientPhone: '+381 65 777 333', clientIdDoc: '1209987654321', startDate: new Date(year, month - 1, 5), endDate: new Date(year, month - 1, 12), pickupMileage: 22000, returnMileage: 24500, dailyRate: 4500, totalDays: 7, totalAmount: 31500, deposit: 8000, status: 'zavrsena' } }),
+    db.rental.create({ data: { number: 'RNT-2025-004', vehicleId: rentalVehicles[2].id, clientName: 'Milan Đorđević', clientPhone: '+381 62 666 444', clientEmail: 'milan@yahoo.com', startDate: new Date(year, month - 2, 1), endDate: new Date(year, month - 2, 3), pickupMileage: 16000, returnMileage: 16200, dailyRate: 3500, totalDays: 2, totalAmount: 7000, deposit: 3000, status: 'zavrsena' } }),
+  ])
+
+  // ===== KAFE RESTORAN =====
+  const restoCategories = await Promise.all([
+    db.restoCategory.create({ data: { name: 'Kafa i napitci', sortOrder: 1, isActive: true } }),
+    db.restoCategory.create({ data: { name: 'Predjela', sortOrder: 2, isActive: true } }),
+    db.restoCategory.create({ data: { name: 'Glavna jela', sortOrder: 3, isActive: true } }),
+    db.restoCategory.create({ data: { name: 'Deserti', sortOrder: 4, isActive: true } }),
+    db.restoCategory.create({ data: { name: 'Alkoholna pića', sortOrder: 5, isActive: true } }),
+  ])
+
+  const menuItems = await Promise.all([
+    // Kafa i napitci
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[0].id, name: 'Espresso', description: 'Dvostruki espresso', price: 220, cost: 40, sortOrder: 1, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[0].id, name: 'Cappuccino', description: 'Sa penom od mleka', price: 300, cost: 60, sortOrder: 2, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[0].id, name: 'Latte', description: 'Dvostruki espresso sa toplim mlekom', price: 350, cost: 70, sortOrder: 3, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[0].id, name: 'Čaj', description: 'Čaj od kamilice, nane, limuna', price: 200, cost: 30, sortOrder: 4, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[0].id, name: 'Sok od pomorandže', description: 'Sveži sok 250ml', price: 350, cost: 120, sortOrder: 5, isAvailable: true } }),
+    // Predjela
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[1].id, name: 'Supa dana', description: 'Sveža domaća supa', price: 350, cost: 100, sortOrder: 1, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[1].id, name: 'Salata sa tunom', description: 'Mešana salata sa tunom, paradajzom, maslinama', price: 550, cost: 200, sortOrder: 2, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[1].id, name: 'Bruskete', description: 'Bruskete sa paradajzom i bosiljkom', price: 450, cost: 120, sortOrder: 3, isAvailable: true } }),
+    // Glavna jela
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[2].id, name: 'Ćevapi', description: '10 komada sa lepinjom, kajmakom i lukom', price: 750, cost: 280, sortOrder: 1, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[2].id, name: 'Pljeskavica', description: 'Goveđa pljeskavica sa lepinjom', price: 680, cost: 250, sortOrder: 2, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[2].id, name: 'Pasta Carbonara', description: 'Spaghetti sa slaninom, jajima i parmezanom', price: 620, cost: 180, sortOrder: 3, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[2].id, name: 'Steak sa pečurkama', description: 'Svinjski steak sa sosom od pečuraka', price: 950, cost: 380, sortOrder: 4, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[2].id, name: 'Grilovano pile', description: 'Pileće grlo na žaru sa povrćem', price: 720, cost: 260, sortOrder: 5, isAvailable: true } }),
+    // Deserti
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[3].id, name: 'Torta čokolada', description: 'Čokoladna torta sa ganache', price: 380, cost: 100, sortOrder: 1, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[3].id, name: 'Palacinke', description: 'Palacinke sa džemom/nutellom', price: 300, cost: 60, sortOrder: 2, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[3].id, name: 'Sladoled', description: '3 kugle sladoleda po izboru', price: 280, cost: 70, sortOrder: 3, isAvailable: true } }),
+    // Alkoholna pića
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[4].id, name: 'Lager pivo', description: 'Točeno pivo 0.5L', price: 280, cost: 100, sortOrder: 1, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[4].id, name: 'Crno vino', description: 'Vino čaša 0.2L', price: 320, cost: 80, sortOrder: 2, isAvailable: true } }),
+    db.restoMenuItem.create({ data: { categoryId: restoCategories[4].id, name: 'Žestočka', description: 'Rakija od šljive 0.05L', price: 250, cost: 60, sortOrder: 3, isAvailable: true } }),
+  ])
+
+  // Resto tables
+  const restoTables = await Promise.all([
+    db.restoTable.create({ data: { number: 1, name: 'Prozor 1', capacity: 2, status: 'slobodan', location: 'sprat' } }),
+    db.restoTable.create({ data: { number: 2, name: 'Prozor 2', capacity: 2, status: 'zauzet', location: 'sprat' } }),
+    db.restoTable.create({ data: { number: 3, name: 'Centar', capacity: 4, status: 'slobodan', location: 'sprat' } }),
+    db.restoTable.create({ data: { number: 4, name: 'Sofa', capacity: 6, status: 'slobodan', location: 'sprat' } }),
+    db.restoTable.create({ data: { number: 5, name: 'Terasa 1', capacity: 4, status: 'rezervisan', location: 'terasa' } }),
+    db.restoTable.create({ data: { number: 6, name: 'Terasa 2', capacity: 4, status: 'slobodan', location: 'terasa' } }),
+    db.restoTable.create({ data: { number: 7, name: 'Bašta 1', capacity: 8, status: 'slobodan', location: 'bašta' } }),
+    db.restoTable.create({ data: { number: 8, name: 'Bašta 2', capacity: 8, status: 'slobodan', location: 'bašta' } }),
+  ])
+
+  // Resto orders
+  await Promise.all([
+    db.restoOrder.create({
+      data: {
+        orderNumber: 1, tableId: restoTables[1].id, status: 'u_toku', type: 'restoran', waiter: 'Milica',
+        totalAmount: 1270,
+        items: { create: [
+          { menuItemId: menuItems[0].id, menuItemName: 'Espresso', quantity: 2, unitPrice: 220, total: 440 },
+          { menuItemId: menuItems[4].id, menuItemName: 'Sok od pomorandže', quantity: 1, unitPrice: 350, total: 350 },
+          { menuItemId: menuItems[6].id, menuItemName: 'Salata sa tunom', quantity: 1, unitPrice: 550, total: 550, status: 'spremno' },
+        ] }
+      }
+    }),
+    db.restoOrder.create({
+      data: {
+        orderNumber: 2, tableId: restoTables[2].id, status: 'spremno', type: 'restoran', waiter: 'Ana',
+        totalAmount: 2030,
+        items: { create: [
+          { menuItemId: menuItems[1].id, menuItemName: 'Cappuccino', quantity: 2, unitPrice: 300, total: 600 },
+          { menuItemId: menuItems[8].id, menuItemName: 'Ćevapi', quantity: 1, unitPrice: 750, total: 750, status: 'spremno' },
+          { menuItemId: menuItems[11].id, menuItemName: 'Pasta Carbonara', quantity: 1, unitPrice: 620, total: 620, status: 'spremno' },
+        ] }
+      }
+    }),
+    db.restoOrder.create({
+      data: {
+        orderNumber: 3, tableId: null, status: 'zavrseno', type: 'dostava', waiter: 'Milica', totalAmount: 1050,
+        items: { create: [
+          { menuItemId: menuItems[8].id, menuItemName: 'Ćevapi', quantity: 1, unitPrice: 750, total: 750, status: 'usluženo' },
+          { menuItemId: menuItems[0].id, menuItemName: 'Espresso', quantity: 1, unitPrice: 220, total: 220, status: 'usluženo' },
+        ] }
+      }
+    }),
+  ])
+
+  // ===== EMAIL MARKETING (MAILERLITE) =====
+  const emailLists = await Promise.all([
+    db.emailList.create({ data: { name: 'Glavna lista', description: 'Svi pretplatnici - newsletter' } }),
+    db.emailList.create({ data: { name: 'VIP klijenti', description: 'VIP i verni klijenti' } }),
+    db.emailList.create({ data: { name: 'Poslovni partneri', description: 'B2B partneri i dobavljači' } }),
+  ])
+
+  await Promise.all([
+    db.emailSubscriber.create({ data: { listId: emailLists[0].id, email: 'marko@delta.rs', firstName: 'Marko', lastName: 'Petrović', status: 'aktivan', source: 'ručno' } }),
+    db.emailSubscriber.create({ data: { listId: emailLists[0].id, email: 'jelena@metalpro.rs', firstName: 'Jelena', lastName: 'Stanković', status: 'aktivan', source: 'web forma' } }),
+    db.emailSubscriber.create({ data: { listId: emailLists[0].id, email: 'nenad@techshop.rs', firstName: 'Nenad', lastName: 'Jovanović', status: 'aktivan', source: 'ručno' } }),
+    db.emailSubscriber.create({ data: { listId: emailLists[0].id, email: 'ana@ekopak.rs', firstName: 'Ana', lastName: 'Milić', status: 'neaktivan', source: 'uvoz' } }),
+    db.emailSubscriber.create({ data: { listId: emailLists[1].id, email: 'ivan@slobodan.rs', firstName: 'Ivan', lastName: 'Nikolić', status: 'aktivan', source: 'ručno' } }),
+    db.emailSubscriber.create({ data: { listId: emailLists[1].id, email: 'maja@startup.rs', firstName: 'Maja', lastName: 'Đorđević', status: 'aktivan', source: 'web forma' } }),
+    db.emailSubscriber.create({ data: { listId: emailLists[2].id, email: 'stefan@autopart.rs', firstName: 'Stefan', lastName: 'Popović', status: 'aktivan', source: 'ručno' } }),
+    db.emailSubscriber.create({ data: { listId: emailLists[2].id, email: 'luka@gradnja.rs', firstName: 'Luka', lastName: 'Simić', status: 'aktivan', source: 'ručno' } }),
+  ])
+
+  await Promise.all([
+    db.emailCampaign.create({ data: { name: 'Januarski newsletter', subject: 'Novosti za januar 2025', preheader: 'Pogledajte šta je novo kod nas', content: '<h1>Novosti</h1><p>Dobrodošli u novu godinu!</p>', status: 'zavrsena', listId: emailLists[0].id, sentCount: 3, openRate: 66.7, clickRate: 33.3, sentAt: new Date(year, month - 2, 5) } }),
+    db.emailCampaign.create({ data: { name: 'Febuarska promocija', subject: '🔥 20% popusta na sve usluge', preheader: 'Vreme je za uštedu', content: '<h1>Promocija!</h1><p>20% popusta za sve partnere</p>', status: 'poslata', listId: emailLists[0].id, sentCount: 4, openRate: 50, clickRate: 25, sentAt: new Date(year, month - 1, 10) } }),
+    db.emailCampaign.create({ data: { name: 'VIP ponuda - Mart', subject: 'Ekskluzivna ponuda za naše VIP partnere', content: '<h1>VIP ponuda</h1><p>Posebna ponuda samo za vas</p>', status: 'nacrt', listId: emailLists[1].id } }),
+    db.emailCampaign.create({ data: { name: 'B2B obaveštenje', subject: 'Ažuriranje cenovnika', content: '<h1>Cenovnik</h1><p>Nove cene važe od 1. aprila</p>', status: 'nacrt', listId: emailLists[2].id } }),
+  ])
+
+  await Promise.all([
+    db.emailTemplate.create({ data: { name: 'Newsletter šablon', subject: 'Novosti od {{company}}', content: '<div style="font-family:sans-serif"><h1>{{title}}</h1><p>{{content}}</p></div>', category: 'promotivno' } }),
+    db.emailTemplate.create({ data: { name: 'Dobrodošlica', subject: 'Dobrodošli {{firstName}}!', content: '<div><h1>Zdravo {{firstName}}!</h1><p>Hvala vam na prijavi.</p></div>', category: 'transakciono' } }),
+    db.emailTemplate.create({ data: { name: 'Obaveštenje o narudžbi', subject: 'Vaša narudžbina je {{status}}', content: '<div><h1>Narudžbina #{{orderNumber}}</h1><p>Status: {{status}}</p></div>', category: 'obavestenje' } }),
+  ])
+
+  // ===== APP SETTINGS =====
+  const defaultSettings = [
+    // Module toggles
+    { key: 'module_finansije_enabled', value: 'true', label: 'Finansije', type: 'boolean', group: 'modules' },
+    { key: 'module_fakture_enabled', value: 'true', label: 'Fakture', type: 'boolean', group: 'modules' },
+    { key: 'module_magacin_enabled', value: 'true', label: 'Magacin', type: 'boolean', group: 'modules' },
+    { key: 'module_partneri_enabled', value: 'true', label: 'Partneri', type: 'boolean', group: 'modules' },
+    { key: 'module_nabavka_enabled', value: 'true', label: 'Nabavka', type: 'boolean', group: 'modules' },
+    { key: 'module_crm_enabled', value: 'true', label: 'CRM', type: 'boolean', group: 'modules' },
+    { key: 'module_kalendar_enabled', value: 'true', label: 'Kalendar', type: 'boolean', group: 'modules' },
+    { key: 'module_zaposleni_enabled', value: 'true', label: 'Zaposleni', type: 'boolean', group: 'modules' },
+    { key: 'module_projekti_enabled', value: 'true', label: 'Projekti', type: 'boolean', group: 'modules' },
+    { key: 'module_sredstva_enabled', value: 'true', label: 'Osnovna sredstva', type: 'boolean', group: 'modules' },
+    { key: 'module_dokumenta_enabled', value: 'true', label: 'Dokumenta', type: 'boolean', group: 'modules' },
+    { key: 'module_knjigovodstvo_enabled', value: 'true', label: 'Knjigovodstvo', type: 'boolean', group: 'modules' },
+    { key: 'module_protokol_enabled', value: 'true', label: 'Protokol', type: 'boolean', group: 'modules' },
+    { key: 'module_edukacija_enabled', value: 'true', label: 'Edukacija', type: 'boolean', group: 'modules' },
+    { key: 'module_vozni_park_enabled', value: 'true', label: 'Vozni park', type: 'boolean', group: 'modules' },
+    { key: 'module_rent_a_car_enabled', value: 'true', label: 'Rent a Car', type: 'boolean', group: 'modules' },
+    { key: 'module_kafe_restoran_enabled', value: 'true', label: 'Kafe Restoran', type: 'boolean', group: 'modules' },
+    { key: 'module_email_marketing_enabled', value: 'true', label: 'Email Marketing', type: 'boolean', group: 'modules' },
+    // Company settings
+    { key: 'company_name', value: 'Reflection Business D.O.O.', label: 'Naziv firme', type: 'text', group: 'company' },
+    { key: 'company_pib', value: '100000000', label: 'PIB', type: 'text', group: 'company' },
+    { key: 'company_maticni_br', value: '20000000', label: 'Matični broj', type: 'text', group: 'company' },
+    { key: 'company_address', value: 'Bulevar oslobođenja 1', label: 'Adresa', type: 'text', group: 'company' },
+    { key: 'company_city', value: 'Beograd', label: 'Grad', type: 'text', group: 'company' },
+    { key: 'company_zip', value: '11000', label: 'Poštanski broj', type: 'text', group: 'company' },
+    { key: 'company_phone', value: '+381 11 000 0000', label: 'Telefon', type: 'text', group: 'company' },
+    { key: 'company_email', value: 'info@reflection.rs', label: 'Email', type: 'text', group: 'company' },
+    { key: 'company_website', value: 'www.reflection.rs', label: 'Web sajt', type: 'text', group: 'company' },
+    { key: 'company_bank_account', value: '265-000000-00', label: 'Žiro račun', type: 'text', group: 'company' },
+    // General settings
+    { key: 'general_currency', value: 'RSD', label: 'Valuta', type: 'text', group: 'general' },
+    { key: 'general_tax_rate', value: '20', label: 'Stopa PDV (%)', type: 'number', group: 'general' },
+    { key: 'general_payment_method', value: 'racun', label: 'Način plaćanja', type: 'text', group: 'general' },
+    { key: 'general_fiscal_year_start', value: '1', label: 'Početak fiskalne godine (mesec)', type: 'number', group: 'general' },
+    { key: 'general_language', value: 'sr', label: 'Jezik', type: 'text', group: 'general' },
+  ]
+
+  await Promise.all(
+    defaultSettings.map((s) => db.appSetting.create({ data: s }))
+  )
+
   console.log('✅ Database seeded successfully!')
   console.log(`  - ${partners.length} partners`)
   console.log(`  - ${products.length} products`)
@@ -739,6 +926,12 @@ async function seed() {
   console.log(`  - 6 protocol entries`)
   console.log(`  - 4 courses with lessons`)
   console.log(`  - 3 vehicles`)
+  console.log(`  - ${rentalVehicles.length} rental vehicles + 4 rentals`)
+  console.log(`  - ${restoCategories.length} resto categories + ${menuItems.length} menu items`)
+  console.log(`  - ${restoTables.length} tables + 3 orders`)
+  console.log(`  - ${emailLists.length} email lists + 8 subscribers + 4 campaigns`)
+  console.log(`  - 3 email templates`)
+  console.log(`  - ${defaultSettings.length} app settings`)
 }
 
 seed()

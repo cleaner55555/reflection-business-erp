@@ -552,3 +552,198 @@ model Document {
 
   partner     Partner? @relation(fields: [partnerId], references: [id])
 }
+
+// ============ RENT A CAR ============
+
+model RentalVehicle {
+  id            String   @id @default(cuid())
+  name          String   // npr. VW Golf 8
+  make          String
+  model         String
+  year          Int
+  registration  String   @unique
+  fuelType      String   @default("dizel")
+  transmission  String   @default("automatski") // automatski,manuelni
+  seats         Int      @default(5)
+  dailyRate     Float    // dnevna cena RSD
+  weeklyRate    Float?
+  monthlyRate   Float?
+  mileage       Int      @default(0)
+  status        String   @default("dostupno") // dostupno, iznajmljeno, na_servisu, rezervisano, prodato
+  ac            Boolean  @default(true)
+  gps           Boolean  @default(false)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  rentals       Rental[]
+}
+
+model Rental {
+  id            String   @id @default(cuid())
+  number        String   @unique
+  vehicleId     String
+  clientName    String
+  clientPhone   String?
+  clientEmail   String?
+  clientIdDoc   String?  // broj lične karte
+  startDate     DateTime
+  endDate       DateTime
+  pickupMileage Int
+  returnMileage Int?
+  dailyRate     Float
+  totalDays     Int
+  totalAmount   Float
+  deposit       Float    @default(0)
+  status        String   @default("rezervacija") // rezervacija, aktivna, zavrsena, otkazana
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  vehicle       RentalVehicle @relation(fields: [vehicleId], references: [id])
+}
+
+// ============ KAFE RESTORAN ============
+
+model RestoCategory {
+  id          String   @id @default(cuid())
+  name        String
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       RestoMenuItem[]
+}
+
+model RestoMenuItem {
+  id          String   @id @default(cuid())
+  categoryId  String
+  name        String
+  description String?
+  price       Float
+  cost        Float    @default(0) // nabavna cena
+  image       String?
+  isAvailable Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category    RestoCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems  RestoOrderItem[]
+}
+
+model RestoTable {
+  id          String   @id @default(cuid())
+  number      Int      @unique
+  name        String?  // npr. "Terasa 1"
+  capacity    Int      @default(4)
+  status      String   @default("slobodan") // slobodan, zauzet, rezervisan
+  location    String?  // npr. "sprat", "terasa", "bašta"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders      RestoOrder[]
+}
+
+model RestoOrder {
+  id            String   @id @default(cuid())
+  orderNumber   Int
+  tableId       String?
+  status        String   @default("u_toku") // u_toku, spremno, usluženo, plaćeno, otkazano
+  type          String   @default("restoran") // restoran, porudzbina, dostava
+  totalAmount   Float    @default(0)
+  discountPct   Float    @default(0)
+  waiter        String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  table         RestoTable?   @relation(fields: [tableId], references: [id])
+  items         RestoOrderItem[]
+}
+
+model RestoOrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  menuItemId    String
+  menuItemName  String
+  quantity      Int
+  unitPrice     Float
+  total         Float
+  notes         String?
+  status        String   @default("naručeno") // naručeno, u_pripremi, spremno, usluženo
+
+  order         RestoOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem      RestoMenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+// ============ MAILERLITE - EMAIL MARKETING ============
+
+model EmailList {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subscribers   EmailSubscriber[]
+  campaigns     EmailCampaign[]
+}
+
+model EmailSubscriber {
+  id            String   @id @default(cuid())
+  listId        String?
+  email         String
+  firstName     String?
+  lastName      String?
+  status        String   @default("aktivan") // aktivan, neaktivan, otkazan
+  source        String?  // web forma, uvoz, ručno
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  list          EmailList? @relation(fields: [listId], references: [id])
+}
+
+model EmailCampaign {
+  id            String   @id @default(cuid())
+  name          String
+  subject       String
+  preheader     String?
+  content       String   // HTML sadržaj
+  status        String   @default("nacrt") // nacrt, poslata, zakazana, u_toku, zavrsena
+  listId        String?
+  sentCount     Int      @default(0)
+  openRate      Float    @default(0) // procenta
+  clickRate     Float    @default(0)
+  bounceRate    Float    @default(0)
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  list          EmailList? @relation(fields: [listId], references: [id])
+}
+
+model EmailTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  subject       String
+  content       String   // HTML
+  category      String?  // promotivno, transakciono, obavestenje
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============ SETTINGS ============
+
+model AppSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  label       String?
+  type        String   @default("text") // text, boolean, number, json
+  group       String   @default("general") // general, modules, company
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -18,6 +18,10 @@ export type ModuleType =
   | 'protokol'
   | 'edukacija'
   | 'vozni-park'
+  | 'kafe-restoran'
+  | 'podesavanja'
+  | 'email-marketing'
+  | 'rent-a-car'
 
 interface AppState {
   activeModule: ModuleType
