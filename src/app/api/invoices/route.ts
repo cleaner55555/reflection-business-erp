@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// GET /api/invoices?search=...&status=...&partnerId=...&dateFrom=...&dateTo=...
+// GET /api/invoices?search=...&status=...&type=...&partnerId=...&dateFrom=...&dateTo=...
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || '';
+    const type = searchParams.get('type') || '';
     const partnerId = searchParams.get('partnerId') || '';
     const dateFrom = searchParams.get('dateFrom') || '';
     const dateTo = searchParams.get('dateTo') || '';
@@ -23,6 +24,10 @@ export async function GET(request: NextRequest) {
 
     if (status) {
       where.status = status;
+    }
+
+    if (type) {
+      where.type = type;
     }
 
     if (partnerId) {
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { partnerId, number, date, dueDate, status, discountPct, notes, paymentMethod, items } = body;
+    const { partnerId, number, date, dueDate, status, type, discountPct, notes, paymentMethod, items } = body;
 
     if (!partnerId || !number || !dueDate) {
       return NextResponse.json({ error: 'partnerId, number, and dueDate are required' }, { status: 400 });
@@ -107,6 +112,7 @@ export async function POST(request: NextRequest) {
         date: date ? new Date(date) : undefined,
         dueDate: new Date(dueDate),
         status: status || 'nacrt',
+        type: type || 'izlazna',
         totalAmount,
         taxAmount,
         discountPct: parseFloat(discountPct) || 0,

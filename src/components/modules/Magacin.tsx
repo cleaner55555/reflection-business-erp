@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -22,6 +23,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -30,9 +41,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, AlertTriangle, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
+
+// ==================== INTERFACES ====================
 
 interface Product {
   id: string
@@ -59,20 +72,108 @@ interface StockMovement {
   product: { id: string; name: string; sku: string; currentStock: number }
 }
 
+interface Partner {
+  id: string
+  name: string
+  pib: string
+  type: string
+}
+
+interface DeliveryNoteItem {
+  id: string
+  productId: string
+  productName: string
+  quantity: number
+  unitPrice: number
+}
+
+interface DeliveryNote {
+  id: string
+  number: string
+  date: string
+  partnerId: string
+  status: string
+  invoiceNumber: string | null
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  partner: { id: string; name: string; pib: string }
+  items: DeliveryNoteItem[]
+}
+
+interface PriceListItem {
+  id: string
+  productId: string
+  price: number
+  discountPct: number
+  product?: { id: string; name: string; sku: string; unit: string }
+}
+
+interface PriceList {
+  id: string
+  name: string
+  description: string | null
+  validFrom: string | null
+  validTo: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  _count?: { items: number }
+  items: PriceListItem[]
+}
+
+// ==================== LINE ITEM HELPERS ====================
+
+interface LineItem {
+  tempId: string
+  productId: string
+  productName: string
+  quantity: string
+  unitPrice: string
+}
+
+interface PriceLineItem {
+  tempId: string
+  productId: string
+  price: string
+  discountPct: string
+}
+
+let tempIdCounter = 0
+function nextTempId() {
+  return `temp_${++tempIdCounter}_${Date.now()}`
+}
+
+// ==================== MAIN COMPONENT ====================
+
 export function Magacin() {
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Magacin</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Upravljanje artiklima, zalihama i kretanjem robe
+          Upravljanje artiklima, zalihama, otpremnicama i cenovnicima
         </p>
       </div>
 
       <Tabs defaultValue="artikli" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="artikli">Artikli</TabsTrigger>
-          <TabsTrigger value="kretanja">Kretanja Zaliha</TabsTrigger>
+          <TabsTrigger value="artikli" className="gap-1.5">
+            <Package className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Artikli</span>
+          </TabsTrigger>
+          <TabsTrigger value="kretanja" className="gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Kretanja Zaliha</span>
+          </TabsTrigger>
+          <TabsTrigger value="otpremnice" className="gap-1.5">
+            <FileText className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Otpremnice</span>
+          </TabsTrigger>
+          <TabsTrigger value="cenovnici" className="gap-1.5">
+            <Tag className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Cenovnici</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="artikli">
@@ -81,10 +182,18 @@ export function Magacin() {
         <TabsContent value="kretanja">
           <KretanjaTab />
         </TabsContent>
+        <TabsContent value="otpremnice">
+          <OtpremniceTab />
+        </TabsContent>
+        <TabsContent value="cenovnici">
+          <CenovniciTab />
+        </TabsContent>
       </Tabs>
     </div>
   )
 }
+
+// ==================== ARTIKLI TAB (unchanged) ====================
 
 function ArtikliTab() {
   const [products, setProducts] = useState<Product[]>([])
@@ -341,12 +450,16 @@ function ArtikliTab() {
   )
 }
 
+// ==================== KRETANJA ZALIHA TAB (with delete) ====================
+
 function KretanjaTab() {
   const [movements, setMovements] = useState<StockMovement[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const fetchMovements = useCallback(async () => {
     setLoading(true)
@@ -390,6 +503,26 @@ function KretanjaTab() {
       toast.error('Greška pri kreiranju kretanja')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteId) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/stock/movement/${deleteId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Greška pri brisanju')
+        return
+      }
+      toast.success('Kretanje zaliha uspešno obrisano')
+      setDeleteId(null)
+      fetchMovements()
+    } catch {
+      toast.error('Greška pri brisanju')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -475,12 +608,13 @@ function KretanjaTab() {
                   <TableHead className="text-xs text-right">Količina</TableHead>
                   <TableHead className="text-xs">Dokument</TableHead>
                   <TableHead className="text-xs">Napomene</TableHead>
+                  <TableHead className="text-xs text-center">Akcije</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {movements.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
                       Nema kretanja za prikaz
                     </TableCell>
                   </TableRow>
@@ -504,6 +638,16 @@ function KretanjaTab() {
                       </TableCell>
                       <TableCell className="text-xs">{m.documentRef || '-'}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{m.notes || '-'}</TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-500 hover:text-red-600"
+                          onClick={() => setDeleteId(m.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -512,6 +656,762 @@ function KretanjaTab() {
           </div>
         )}
       </CardContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Potvrda brisanja</AlertDialogTitle>
+            <AlertDialogDescription>
+              Da li ste sigurni da želite da obrišete ovo kretanje zaliha? Zaliha artikla će biti automatski korigovana.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Otkaži</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? 'Brisanje...' : 'Obriši'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
+  )
+}
+
+// ==================== OTPREMNICE TAB ====================
+
+function OtpremniceTab() {
+  const [deliveryNotes, setDeliveryNotes] = useState<DeliveryNote[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [partners, setPartners] = useState<Partner[]>([])
+  const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [editing, setEditing] = useState<DeliveryNote | null>(null)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  // Line items state
+  const [lineItems, setLineItems] = useState<LineItem[]>([])
+  const [formStatus, setFormStatus] = useState('nacrt')
+  const [formPartnerId, setFormPartnerId] = useState('')
+  const [formInvoiceNumber, setFormInvoiceNumber] = useState('')
+  const [formNotes, setFormNotes] = useState('')
+
+  const fetchDeliveryNotes = useCallback(async () => {
+    setLoading(true)
+    const params = new URLSearchParams()
+    if (search) params.set('search', search)
+    if (statusFilter) params.set('status', statusFilter)
+    const res = await fetch(`/api/delivery-notes?${params.toString()}`)
+    const data = await res.json()
+    setDeliveryNotes(data)
+    setLoading(false)
+  }, [search, statusFilter])
+
+  useEffect(() => {
+    fetchDeliveryNotes()
+    fetch('/api/products').then((r) => r.json()).then(setProducts)
+    fetch('/api/partners').then((r) => r.json()).then(setPartners)
+  }, [fetchDeliveryNotes])
+
+  const addLineItem = () => {
+    setLineItems([...lineItems, { tempId: nextTempId(), productId: '', productName: '', quantity: '1', unitPrice: '0' }])
+  }
+
+  const removeLineItem = (tempId: string) => {
+    setLineItems(lineItems.filter((li) => li.tempId !== tempId))
+  }
+
+  const updateLineItem = (tempId: string, field: keyof LineItem, value: string) => {
+    setLineItems(lineItems.map((li) => {
+      if (li.tempId !== tempId) return li
+      const updated = { ...li, [field]: value }
+      if (field === 'productId') {
+        const prod = products.find((p) => p.id === value)
+        if (prod) {
+          updated.productName = prod.name
+          if (!updated.unitPrice || updated.unitPrice === '0') {
+            updated.unitPrice = String(prod.sellingPrice)
+          }
+        }
+      }
+      return updated
+    }))
+  }
+
+  const openCreateDialog = () => {
+    setEditing(null)
+    setLineItems([{ tempId: nextTempId(), productId: '', productName: '', quantity: '1', unitPrice: '0' }])
+    setFormStatus('nacrt')
+    setFormPartnerId('')
+    setFormInvoiceNumber('')
+    setFormNotes('')
+    setDialogOpen(true)
+  }
+
+  const openEditDialog = (note: DeliveryNote) => {
+    setEditing(note)
+    setFormStatus(note.status)
+    setFormPartnerId(note.partnerId)
+    setFormInvoiceNumber(note.invoiceNumber || '')
+    setFormNotes(note.notes || '')
+    setLineItems(note.items.map((item) => ({
+      tempId: nextTempId(),
+      productId: item.productId,
+      productName: item.productName,
+      quantity: String(item.quantity),
+      unitPrice: String(item.unitPrice),
+    })))
+    setDialogOpen(true)
+  }
+
+  const handleSubmit = async () => {
+    if (!formPartnerId) {
+      toast.error('Izaberite partnera')
+      return
+    }
+    if (lineItems.length === 0 || lineItems.some((li) => !li.productId)) {
+      toast.error('Dodajte barem jednu stavku sa izabranim proizvodom')
+      return
+    }
+    setSubmitting(true)
+    const body = {
+      partnerId: formPartnerId,
+      status: formStatus,
+      invoiceNumber: formInvoiceNumber || undefined,
+      notes: formNotes || undefined,
+      items: lineItems.map((li) => ({
+        productId: li.productId,
+        productName: li.productName,
+        quantity: li.quantity,
+        unitPrice: li.unitPrice,
+      })),
+    }
+    try {
+      const isEditing = !!editing
+      const url = isEditing ? `/api/delivery-notes/${editing.id}` : '/api/delivery-notes'
+      const res = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Greška')
+        return
+      }
+      toast.success(isEditing ? 'Otpremnica uspešno ažurirana' : 'Otpremnica uspešno kreirana')
+      setDialogOpen(false)
+      fetchDeliveryNotes()
+    } catch {
+      toast.error('Greška pri čuvanju')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteId) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/delivery-notes/${deleteId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Greška pri brisanju')
+        return
+      }
+      toast.success('Otpremnica uspešno obrisana')
+      setDeleteId(null)
+      fetchDeliveryNotes()
+    } catch {
+      toast.error('Greška pri brisanju')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold">Otpremnice</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">{deliveryNotes.length} otpremnica</p>
+          </div>
+          <Button size="sm" className="gap-2" onClick={openCreateDialog}>
+            <Plus className="h-4 w-4" /> Nova Otpremnica
+          </Button>
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Pretraži otpremnice..."
+              className="pl-8 h-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[160px] h-9">
+              <SelectValue placeholder="Svi statusi" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Svi statusi</SelectItem>
+              <SelectItem value="nacrt">Načrt</SelectItem>
+              <SelectItem value="pripremljena">Pripremljena</SelectItem>
+              <SelectItem value="otpremljena">Otpremljena</SelectItem>
+              <SelectItem value="stornirana">Stornirana</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : (
+          <div className="max-h-[500px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Broj</TableHead>
+                  <TableHead className="text-xs">Partner</TableHead>
+                  <TableHead className="text-xs">Datum</TableHead>
+                  <TableHead className="text-xs">Status</TableHead>
+                  <TableHead className="text-xs">Faktura</TableHead>
+                  <TableHead className="text-xs">Napomene</TableHead>
+                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {deliveryNotes.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                      Nema otpremnica za prikaz
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  deliveryNotes.map((dn) => (
+                    <TableRow key={dn.id}>
+                      <TableCell className="text-xs font-mono font-medium">{dn.number}</TableCell>
+                      <TableCell className="text-xs font-medium">{dn.partner?.name}</TableCell>
+                      <TableCell className="text-xs">{formatDate(dn.date)}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(dn.status)}`}>
+                          {getStatusLabel(dn.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{dn.invoiceNumber || '-'}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes || '-'}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(dn)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(dn.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditing(null) }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editing ? 'Izmeni Otpremnicu' : 'Nova Otpremnica'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Partner *</Label>
+                <Select value={formPartnerId} onValueChange={setFormPartnerId}>
+                  <SelectTrigger><SelectValue placeholder="Izaberite partnera" /></SelectTrigger>
+                  <SelectContent>
+                    {partners.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name} (PIB: {p.pib})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Status</Label>
+                <Select value={formStatus} onValueChange={setFormStatus}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nacrt">Načrt</SelectItem>
+                    <SelectItem value="pripremljena">Pripremljena</SelectItem>
+                    <SelectItem value="otpremljena">Otpremljena</SelectItem>
+                    <SelectItem value="stornirana">Stornirana</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Faktura br.</Label>
+                <Input value={formInvoiceNumber} onChange={(e) => setFormInvoiceNumber(e.target.value)} placeholder="Fak-001" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Napomene</Label>
+                <Input value={formNotes} onChange={(e) => setFormNotes(e.target.value)} placeholder="Napomene" />
+              </div>
+            </div>
+
+            {/* Line Items */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Stavke</Label>
+                <Button type="button" variant="outline" size="sm" className="h-7 gap-1" onClick={addLineItem}>
+                  <Plus className="h-3 w-3" /> Dodaj stavku
+                </Button>
+              </div>
+              {lineItems.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-4">Nema stavki. Kliknite &quot;Dodaj stavku&quot;.</p>
+              )}
+              <div className="space-y-2">
+                {lineItems.map((li, idx) => (
+                  <div key={li.tempId} className="grid grid-cols-[1fr_80px_100px_32px] gap-2 items-end">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Proizvod</Label>
+                      <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Izaberite" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {products.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Količina</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        className="h-8 text-xs"
+                        value={li.quantity}
+                        onChange={(e) => updateLineItem(li.tempId, 'quantity', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Cena</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        className="h-8 text-xs"
+                        value={li.unitPrice}
+                        onChange={(e) => updateLineItem(li.tempId, 'unitPrice', e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500 hover:text-red-600"
+                      onClick={() => removeLineItem(li.tempId)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Button className="w-full" disabled={submitting} onClick={handleSubmit}>
+              {submitting ? 'Čuvanje...' : editing ? 'Sačuvaj Izmene' : 'Kreiraj Otpremnicu'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Potvrda brisanja</AlertDialogTitle>
+            <AlertDialogDescription>
+              Da li ste sigurni da želite da obrišete ovu otpremnicu? Sve stavke će biti obrisane.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Otkaži</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? 'Brisanje...' : 'Obriši'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
+  )
+}
+
+// ==================== CENOVNICI TAB ====================
+
+function CenovniciTab() {
+  const [priceLists, setPriceLists] = useState<PriceList[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [editing, setEditing] = useState<PriceList | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  // Form state
+  const [formName, setFormName] = useState('')
+  const [formDescription, setFormDescription] = useState('')
+  const [formValidFrom, setFormValidFrom] = useState('')
+  const [formValidTo, setFormValidTo] = useState('')
+  const [lineItems, setLineItems] = useState<PriceLineItem[]>([])
+
+  const fetchPriceLists = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch('/api/price-lists')
+    const data = await res.json()
+    setPriceLists(data)
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    fetchPriceLists()
+    fetch('/api/products').then((r) => r.json()).then(setProducts)
+  }, [fetchPriceLists])
+
+  const addLineItem = () => {
+    setLineItems([...lineItems, { tempId: nextTempId(), productId: '', price: '0', discountPct: '0' }])
+  }
+
+  const removeLineItem = (tempId: string) => {
+    setLineItems(lineItems.filter((li) => li.tempId !== tempId))
+  }
+
+  const updateLineItem = (tempId: string, field: keyof PriceLineItem, value: string) => {
+    setLineItems(lineItems.map((li) => {
+      if (li.tempId !== tempId) return li
+      const updated = { ...li, [field]: value }
+      if (field === 'productId') {
+        const prod = products.find((p) => p.id === value)
+        if (prod && (!updated.price || updated.price === '0')) {
+          updated.price = String(prod.sellingPrice)
+        }
+      }
+      return updated
+    }))
+  }
+
+  const openCreateDialog = () => {
+    setEditing(null)
+    setFormName('')
+    setFormDescription('')
+    setFormValidFrom('')
+    setFormValidTo('')
+    setLineItems([{ tempId: nextTempId(), productId: '', price: '0', discountPct: '0' }])
+    setDialogOpen(true)
+  }
+
+  const openEditDialog = (pl: PriceList) => {
+    setEditing(pl)
+    setFormName(pl.name)
+    setFormDescription(pl.description || '')
+    setFormValidFrom(pl.validFrom ? pl.validFrom.split('T')[0] : '')
+    setFormValidTo(pl.validTo ? pl.validTo.split('T')[0] : '')
+    setLineItems(pl.items.map((item) => ({
+      tempId: nextTempId(),
+      productId: item.productId,
+      price: String(item.price),
+      discountPct: String(item.discountPct),
+    })))
+    setDialogOpen(true)
+  }
+
+  const handleSubmit = async () => {
+    if (!formName) {
+      toast.error('Unesite naziv cenovnika')
+      return
+    }
+    if (lineItems.length === 0 || lineItems.some((li) => !li.productId)) {
+      toast.error('Dodajte barem jednu stavku sa izabranim proizvodom')
+      return
+    }
+    setSubmitting(true)
+    const body = {
+      name: formName,
+      description: formDescription || undefined,
+      validFrom: formValidFrom || undefined,
+      validTo: formValidTo || undefined,
+      isActive: true,
+      items: lineItems.map((li) => ({
+        productId: li.productId,
+        price: li.price,
+        discountPct: li.discountPct || '0',
+      })),
+    }
+    try {
+      const isEditing = !!editing
+      const url = isEditing ? `/api/price-lists/${editing.id}` : '/api/price-lists'
+      const res = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Greška')
+        return
+      }
+      toast.success(isEditing ? 'Cenovnik uspešno ažuriran' : 'Cenovnik uspešno kreiran')
+      setDialogOpen(false)
+      fetchPriceLists()
+    } catch {
+      toast.error('Greška pri čuvanju')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteId) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/price-lists/${deleteId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Greška pri brisanju')
+        return
+      }
+      toast.success('Cenovnik uspešno obrisan')
+      setDeleteId(null)
+      fetchPriceLists()
+    } catch {
+      toast.error('Greška pri brisanju')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold">Cenovnici</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">{priceLists.length} cenovnika</p>
+          </div>
+          <Button size="sm" className="gap-2" onClick={openCreateDialog}>
+            <Plus className="h-4 w-4" /> Novi Cenovnik
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : (
+          <div className="max-h-[500px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Naziv</TableHead>
+                  <TableHead className="text-xs">Opis</TableHead>
+                  <TableHead className="text-xs text-center">Stavki</TableHead>
+                  <TableHead className="text-xs">Važi od</TableHead>
+                  <TableHead className="text-xs">Važi do</TableHead>
+                  <TableHead className="text-xs text-center">Status</TableHead>
+                  <TableHead className="text-xs text-center">Akcije</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {priceLists.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                      Nema cenovnika za prikaz
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  priceLists.map((pl) => (
+                    <TableRow key={pl.id}>
+                      <TableCell className="text-xs font-medium">{pl.name}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{pl.description || '-'}</TableCell>
+                      <TableCell className="text-xs text-center">
+                        <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                          {pl._count?.items ?? pl.items?.length ?? 0}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">{pl.validFrom ? formatDate(pl.validFrom) : '-'}</TableCell>
+                      <TableCell className="text-xs">{pl.validTo ? formatDate(pl.validTo) : '-'}</TableCell>
+                      <TableCell className="text-center">
+                        {pl.isActive ? (
+                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-2 py-0">Aktivan</Badge>
+                        ) : (
+                          <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-[10px] px-2 py-0">Neaktivan</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(pl)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(pl.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditing(null) }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editing ? 'Izmeni Cenovnik' : 'Novi Cenovnik'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Naziv *</Label>
+                <Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Naziv cenovnika" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Opis</Label>
+                <Input value={formDescription} onChange={(e) => setFormDescription(e.target.value)} placeholder="Opis cenovnika" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Važi od</Label>
+                <Input type="date" value={formValidFrom} onChange={(e) => setFormValidFrom(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Važi do</Label>
+                <Input type="date" value={formValidTo} onChange={(e) => setFormValidTo(e.target.value)} />
+              </div>
+            </div>
+
+            {/* Line Items */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Stavke cenovnika</Label>
+                <Button type="button" variant="outline" size="sm" className="h-7 gap-1" onClick={addLineItem}>
+                  <Plus className="h-3 w-3" /> Dodaj stavku
+                </Button>
+              </div>
+              {lineItems.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-4">Nema stavki. Kliknite &quot;Dodaj stavku&quot;.</p>
+              )}
+              <div className="space-y-2">
+                {lineItems.map((li) => (
+                  <div key={li.tempId} className="grid grid-cols-[1fr_100px_80px_32px] gap-2 items-end">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Proizvod</Label>
+                      <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Izaberite" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {products.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Cena</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        className="h-8 text-xs"
+                        value={li.price}
+                        onChange={(e) => updateLineItem(li.tempId, 'price', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">Popust %</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        className="h-8 text-xs"
+                        value={li.discountPct}
+                        onChange={(e) => updateLineItem(li.tempId, 'discountPct', e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500 hover:text-red-600"
+                      onClick={() => removeLineItem(li.tempId)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Button className="w-full" disabled={submitting} onClick={handleSubmit}>
+              {submitting ? 'Čuvanje...' : editing ? 'Sačuvaj Izmene' : 'Kreiraj Cenovnik'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Potvrda brisanja</AlertDialogTitle>
+            <AlertDialogDescription>
+              Da li ste sigurni da želite da obrišete ovaj cenovnik? Sve stavke će biti obrisane.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Otkaži</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? 'Brisanje...' : 'Obriši'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   )
 }

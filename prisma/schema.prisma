@@ -28,6 +28,7 @@ model Partner {
 
   invoices         Invoice[]
   purchaseOrders   PurchaseOrder[]
+  deliveryNotes    DeliveryNote[]
 }
 
 // ============ ROBA / PROIZVODI ============
@@ -51,6 +52,8 @@ model Product {
   invoiceItems      InvoiceItem[]
   purchaseOrderItems PurchaseOrderItem[]
   stockMovements    StockMovement[]
+  deliveryNoteItems DeliveryNoteItem[]
+  priceListItems    PriceListItem[]
 }
 
 // ============ FAKTURE ============
@@ -62,6 +65,7 @@ model Invoice {
   dueDate       DateTime
   partnerId     String
   status        String   @default("nacrt") // nacrt, poslata, placena, otkazana
+  type          String   @default("izlazna") // izlazna, ulazna, predracun
   totalAmount   Float
   taxAmount     Float    @default(0)
   discountPct   Float    @default(0)
@@ -132,6 +136,61 @@ model StockMovement {
   createdAt   DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id])
+}
+
+// ============ OTPREMNICE ============
+
+model DeliveryNote {
+  id            String   @id @default(cuid())
+  number        String   @unique
+  date          DateTime @default(now())
+  partnerId     String
+  status        String   @default("nacrt") // nacrt, pripremljena, otpremljena, stornirana
+  invoiceNumber String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id])
+  items   DeliveryNoteItem[]
+}
+
+model DeliveryNoteItem {
+  id              String   @id @default(cuid())
+  deliveryNoteId  String
+  productId       String
+  productName     String
+  quantity        Float
+  unitPrice       Float
+
+  deliveryNote DeliveryNote @relation(fields: [deliveryNoteId], references: [id], onDelete: Cascade)
+  product       Product @relation(fields: [productId], references: [id])
+}
+
+// ============ CENOVNICI ============
+
+model PriceList {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  validFrom   DateTime?
+  validTo     DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items PriceListItem[]
+}
+
+model PriceListItem {
+  id          String   @id @default(cuid())
+  priceListId String
+  productId   String
+  price       Float
+  discountPct Float    @default(0)
+
+  priceList PriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
 }
 
 // ============ FINANSIJE ============

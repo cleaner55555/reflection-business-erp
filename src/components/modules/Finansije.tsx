@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
@@ -57,6 +57,28 @@ interface CashEntry {
   createdAt: string
 }
 
+interface JournalEntry {
+  id: string
+  date: string
+  type: string
+  description: string
+  documentNumber: string | null
+  partnerName: string | null
+  debit: number
+  credit: number
+}
+
+const JOURNAL_TYPE_OPTIONS = [
+  { value: 'all', label: 'Sve' },
+  { value: 'faktura_izlazna', label: 'Faktura izlazna' },
+  { value: 'faktura_ulazna', label: 'Faktura ulazna' },
+  { value: 'predracun', label: 'Predračun' },
+  { value: 'transakcija', label: 'Transakcija' },
+  { value: 'kasa', label: 'Kasa' },
+  { value: 'nabavka', label: 'Nabavka' },
+  { value: 'otpremnica', label: 'Otpremnica' },
+] as const
+
 export function Finansije() {
   return (
     <div className="space-y-6">
@@ -71,6 +93,7 @@ export function Finansije() {
         <TabsList>
           <TabsTrigger value="transakcije">Transakcije</TabsTrigger>
           <TabsTrigger value="kasa">Kasa</TabsTrigger>
+          <TabsTrigger value="dnevnik">Dnevnik</TabsTrigger>
         </TabsList>
 
         <TabsContent value="transakcije">
@@ -78,6 +101,9 @@ export function Finansije() {
         </TabsContent>
         <TabsContent value="kasa">
           <KasaTab />
+        </TabsContent>
+        <TabsContent value="dnevnik">
+          <DnevnikTab />
         </TabsContent>
       </Tabs>
     </div>
@@ -531,5 +557,135 @@ function KasaTab() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function DnevnikTab() {
+  const [entries, setEntries] = useState<JournalEntry[]>([])
+  const [loading, setLoading] = useState(true)
+  const [typeFilter, setTypeFilter] = useState('')
+
+  const fetchJournal = useCallback(async () => {
+    setLoading(true)
+    const params = new URLSearchParams()
+    if (typeFilter) params.set('type', typeFilter)
+    const res = await fetch(`/api/journal?${params.toString()}`)
+    const data = await res.json()
+    setEntries(data)
+    setLoading(false)
+  }, [typeFilter])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: fetch data on mount / filter change
+    fetchJournal()
+  }, [fetchJournal])
+
+  const totalDebit = entries.reduce((acc, entry) => acc + (entry.debit || 0), 0)
+  const totalCredit = entries.reduce((acc, entry) => acc + (entry.credit || 0), 0)
+  const saldo = totalDebit - totalCredit
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Finansijski Dnevnik
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">Ujedinjeni hronološki pregled svih finansijskih događaja</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className={`rounded-lg px-4 py-2 text-sm font-bold ${saldo >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+              Saldo: {formatRSD(Math.abs(saldo))} {saldo < 0 ? '(Potražuje)' : '(Duguje)'}
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+          <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[180px] h-9">
+              <SelectValue placeholder="Sve vrste" />
+            </SelectTrigger>
+            <SelectContent>
+              {JOURNAL_TYPE_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : (
+          <div className="max-h-[500px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Datum</TableHead>
+                  <TableHead className="text-xs">Tip</TableHead>
+                  <TableHead className="text-xs">Opis</TableHead>
+                  <TableHead className="text-xs">Dokument</TableHead>
+                  <TableHead className="text-xs">Partner</TableHead>
+                  <TableHead className="text-xs text-right">Duguje</TableHead>
+                  <TableHead className="text-xs text-right">Potražuje</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {entries.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                      Nema stavki za prikaz
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  <>
+                    {entries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="text-xs">{formatDate(entry.date)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(entry.type)}`}>
+                            {getStatusLabel(entry.type)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs max-w-[250px] truncate">{entry.description}</TableCell>
+                        <TableCell className="text-xs">{entry.documentNumber || '-'}</TableCell>
+                        <TableCell className="text-xs">{entry.partnerName || '-'}</TableCell>
+                        <TableCell className={`text-xs text-right font-medium ${entry.debit > 0 ? 'text-blue-700' : 'text-muted-foreground'}`}>
+                          {entry.debit > 0 ? formatRSD(entry.debit) : '-'}
+                        </TableCell>
+                        <TableCell className={`text-xs text-right font-medium ${entry.credit > 0 ? 'text-orange-700' : 'text-muted-foreground'}`}>
+                          {entry.credit > 0 ? formatRSD(entry.credit) : '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {/* Running totals row */}
+                    <TableRow className="bg-muted/50 font-semibold border-t-2">
+                      <TableCell colSpan={5} className="text-xs text-right">
+                        Ukupno:
+                      </TableCell>
+                      <TableCell className="text-xs text-right font-bold text-blue-700">
+                        {totalDebit > 0 ? formatRSD(totalDebit) : '-'}
+                      </TableCell>
+                      <TableCell className="text-xs text-right font-bold text-orange-700">
+                        {totalCredit > 0 ? formatRSD(totalCredit) : '-'}
+                      </TableCell>
+                    </TableRow>
+                  </>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

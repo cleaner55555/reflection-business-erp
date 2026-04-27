@@ -29,9 +29,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, Users, Pencil, Trash2 } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import { Plus, Search, Users, Pencil, Trash2, Eye, Building2, Phone, Mail, MapPin, Landmark, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
-import { getStatusLabel } from '@/lib/helpers'
+import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
 interface Partner {
   id: string
@@ -49,6 +50,50 @@ interface Partner {
   _count: { invoices: number; purchaseOrders: number }
 }
 
+interface AnalyticsSummary {
+  totalInvoiceAmount: number
+  paidInvoiceAmount: number
+  unpaidInvoiceAmount: number
+  totalPurchaseAmount: number
+  invoiceCount: number
+  purchaseOrderCount: number
+}
+
+interface RecentInvoice {
+  id: string
+  number: string
+  date: string
+  totalAmount: number
+  status: string
+}
+
+interface RecentPurchaseOrder {
+  id: string
+  number: string
+  date: string
+  totalAmount: number
+  status: string
+}
+
+interface PartnerAnalytics {
+  partner: {
+    id: string
+    name: string
+    pib: string
+    type: string
+    city: string
+    address: string
+    phone: string
+    email: string
+    account: string
+    bank: string
+  }
+  summary: AnalyticsSummary
+  recentInvoices: RecentInvoice[]
+  recentPurchaseOrders: RecentPurchaseOrder[]
+  transactions: unknown[]
+}
+
 export function Partneri() {
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
@@ -57,6 +102,12 @@ export function Partneri() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // Analytics state
+  const [analyticsOpen, setAnalyticsOpen] = useState(false)
+  const [analyticsPartner, setAnalyticsPartner] = useState<Partner | null>(null)
+  const [analyticsData, setAnalyticsData] = useState<PartnerAnalytics | null>(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
 
   const fetchPartners = useCallback(async () => {
     setLoading(true)
@@ -133,6 +184,26 @@ export function Partneri() {
       toast.error('Greška')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleOpenAnalytics = async (partner: Partner) => {
+    setAnalyticsPartner(partner)
+    setAnalyticsOpen(true)
+    setAnalyticsLoading(true)
+    setAnalyticsData(null)
+    try {
+      const res = await fetch(`/api/partners/${partner.id}/analytics`)
+      if (!res.ok) {
+        toast.error('Greška pri učitavanju analitike')
+        return
+      }
+      const data = await res.json()
+      setAnalyticsData(data)
+    } catch {
+      toast.error('Greška pri učitavanju analitike')
+    } finally {
+      setAnalyticsLoading(false)
     }
   }
 
@@ -309,6 +380,9 @@ export function Partneri() {
                       </TableCell>
                       <TableCell className="text-xs text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenAnalytics(p)} title="Analitička kartica">
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(p)}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
@@ -325,6 +399,183 @@ export function Partneri() {
           </div>
         )}
       </CardContent>
+
+      {/* Analytics Dialog */}
+      <Dialog open={analyticsOpen} onOpenChange={(open) => {
+        setAnalyticsOpen(open)
+        if (!open) {
+          setAnalyticsPartner(null)
+          setAnalyticsData(null)
+        }
+      }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          {analyticsLoading ? (
+            <div className="space-y-4 py-6">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-40" />
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24 w-full" />
+                ))}
+              </div>
+              <Skeleton className="h-48 w-full mt-4" />
+            </div>
+          ) : analyticsData ? (
+            <>
+              <DialogHeader>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <DialogTitle className="text-lg flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      {analyticsData.partner.name}
+                    </DialogTitle>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-sm font-mono text-muted-foreground">PIB: {analyticsData.partner.pib}</span>
+                      <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeColors[analyticsData.partner.type] || ''}`}>
+                        {getStatusLabel(analyticsData.partner.type)}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              {/* Contact info */}
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground py-1">
+                {analyticsData.partner.address && (
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {analyticsData.partner.city ? `${analyticsData.partner.address}, ${analyticsData.partner.city}` : analyticsData.partner.address}
+                  </span>
+                )}
+                {analyticsData.partner.phone && (
+                  <span className="flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5" />
+                    {analyticsData.partner.phone}
+                  </span>
+                )}
+                {analyticsData.partner.email && (
+                  <span className="flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5" />
+                    {analyticsData.partner.email}
+                  </span>
+                )}
+                {analyticsData.partner.account && (
+                  <span className="flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5" />
+                    {analyticsData.partner.account}
+                  </span>
+                )}
+                {analyticsData.partner.bank && (
+                  <span className="flex items-center gap-1.5">
+                    <Landmark className="h-3.5 w-3.5" />
+                    {analyticsData.partner.bank}
+                  </span>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Summary Cards */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="p-4">
+                  <p className="text-xs text-muted-foreground font-medium">Ukupno fakture</p>
+                  <p className="text-lg font-semibold mt-1">{formatRSD(analyticsData.summary.totalInvoiceAmount)}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.invoiceCount} faktura</p>
+                </Card>
+                <Card className="p-4">
+                  <p className="text-xs text-muted-foreground font-medium">Plaćene fakture</p>
+                  <p className="text-lg font-semibold mt-1 text-emerald-600">{formatRSD(analyticsData.summary.paidInvoiceAmount)}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.invoiceCount > 0 ? `${Math.round((analyticsData.summary.paidInvoiceAmount / analyticsData.summary.totalInvoiceAmount) * 100)}%` : '0%'} od ukupnog</p>
+                </Card>
+                <Card className="p-4 border-red-200 bg-red-50/50">
+                  <p className="text-xs text-red-600 font-medium">Neplaćene fakture</p>
+                  <p className="text-lg font-semibold mt-1 text-red-600">{formatRSD(analyticsData.summary.unpaidInvoiceAmount)}</p>
+                  <p className="text-[10px] text-red-500 mt-0.5">{analyticsData.summary.invoiceCount > 0 ? `${Math.round((analyticsData.summary.unpaidInvoiceAmount / analyticsData.summary.totalInvoiceAmount) * 100)}%` : '0%'} od ukupnog</p>
+                </Card>
+                <Card className="p-4">
+                  <p className="text-xs text-muted-foreground font-medium">Ukupna nabavka</p>
+                  <p className="text-lg font-semibold mt-1">{formatRSD(analyticsData.summary.totalPurchaseAmount)}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{analyticsData.summary.purchaseOrderCount} narudžbina</p>
+                </Card>
+              </div>
+
+              <Separator />
+
+              {/* Recent Invoices */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Poslednje fakture</h3>
+                {analyticsData.recentInvoices.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">Nema faktura za prikaz</p>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">Broj</TableHead>
+                          <TableHead className="text-xs">Datum</TableHead>
+                          <TableHead className="text-xs text-right">Iznos</TableHead>
+                          <TableHead className="text-xs text-center">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {analyticsData.recentInvoices.map((inv) => (
+                          <TableRow key={inv.id}>
+                            <TableCell className="text-xs font-mono">{inv.number}</TableCell>
+                            <TableCell className="text-xs">{formatDate(inv.date)}</TableCell>
+                            <TableCell className="text-xs text-right font-medium">{formatRSD(inv.totalAmount)}</TableCell>
+                            <TableCell className="text-xs text-center">
+                              <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(inv.status)}`}>
+                                {getStatusLabel(inv.status)}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Recent Purchase Orders */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Poslednje narudžbine</h3>
+                {analyticsData.recentPurchaseOrders.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">Nema narudžbina za prikaz</p>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">Broj</TableHead>
+                          <TableHead className="text-xs">Datum</TableHead>
+                          <TableHead className="text-xs text-right">Iznos</TableHead>
+                          <TableHead className="text-xs text-center">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {analyticsData.recentPurchaseOrders.map((po) => (
+                          <TableRow key={po.id}>
+                            <TableCell className="text-xs font-mono">{po.number}</TableCell>
+                            <TableCell className="text-xs">{formatDate(po.date)}</TableCell>
+                            <TableCell className="text-xs text-right font-medium">{formatRSD(po.totalAmount)}</TableCell>
+                            <TableCell className="text-xs text-center">
+                              <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(po.status)}`}>
+                                {getStatusLabel(po.status)}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

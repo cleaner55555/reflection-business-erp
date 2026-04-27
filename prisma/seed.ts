@@ -4,6 +4,10 @@ async function seed() {
   console.log('🌱 Seeding database...')
 
   // Clear existing data
+  await db.deliveryNoteItem.deleteMany()
+  await db.deliveryNote.deleteMany()
+  await db.priceListItem.deleteMany()
+  await db.priceList.deleteMany()
   await db.invoiceItem.deleteMany()
   await db.invoice.deleteMany()
   await db.purchaseOrderItem.deleteMany()
@@ -341,13 +345,17 @@ async function seed() {
       items.push({ productId: product.id, productName: product.name, quantity, unitPrice, discountPct, taxRate, total })
     }
 
+    const invTypes = ['izlazna', 'izlazna', 'izlazna', 'ulazna', 'predracun']
+    const invType = invTypes[Math.floor(Math.random() * invTypes.length)]
+
     await db.invoice.create({
       data: {
-        number: `F-${now.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}-${String(i + 1).padStart(4, '0')}`,
+        number: `${invType === 'predracun' ? 'PR' : 'F'}-${now.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}-${String(i + 1).padStart(4, '0')}`,
         date,
         dueDate,
         partnerId: partner.id,
         status,
+        type: invType,
         totalAmount,
         taxAmount,
         discountPct: 0,
@@ -443,14 +451,68 @@ async function seed() {
     })
   }
 
+  // Delivery notes
+  const dnStatuses = ['nacrt', 'pripremljena', 'otpremljena', 'otpremljena', 'stornirana']
+  const customers = partners.filter(p => p.type === 'kupac' || p.type === 'partner')
+  for (let i = 0; i < 6; i++) {
+    const monthOffset = Math.floor(i / 2)
+    const month = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1)
+    const day = 1 + Math.floor(Math.random() * 28)
+    const date = new Date(month.getFullYear(), month.getMonth(), day)
+    const customer = customers[Math.floor(Math.random() * customers.length)] || partners[0]
+    const status = dnStatuses[Math.floor(Math.random() * dnStatuses.length)]
+    const numItems = 1 + Math.floor(Math.random() * 3)
+    const items: Array<{ productId: string; productName: string; quantity: number; unitPrice: number }> = []
+    for (let j = 0; j < numItems; j++) {
+      const product = products[Math.floor(Math.random() * products.length)]
+      const quantity = 1 + Math.floor(Math.random() * 20)
+      items.push({ productId: product.id, productName: product.name, quantity, unitPrice: product.sellingPrice })
+    }
+    await db.deliveryNote.create({
+      data: {
+        number: `OT-${now.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}-${String(i + 1).padStart(3, '0')}`,
+        date,
+        partnerId: customer.id,
+        status,
+        invoiceNumber: i < 3 ? `F-${now.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}-${String(i + 1).padStart(4, '0')}` : undefined,
+        items: { create: items },
+      },
+    })
+  }
+
+  // Price lists
+  const priceListData = [
+    { name: 'Standardni cenovnik', description: 'Redovne cene za sve kupce', validFrom: new Date(now.getFullYear(), 0, 1) },
+    { name: 'Veleprodajni cenovnik', description: 'Cene za veleprodajne partnere', validFrom: new Date(now.getFullYear(), 0, 1) },
+    { name: 'Aktuelno - Leto 2025', description: 'Sezonski cenovnik za leto 2025', validFrom: new Date(now.getFullYear(), 4, 1), validTo: new Date(now.getFullYear(), 8, 31) },
+  ]
+  for (const pl of priceListData) {
+    const plItems = products.slice(0, 5 + Math.floor(Math.random() * 4)).map(p => ({
+      productId: p.id,
+      price: Math.round(p.sellingPrice * (0.85 + Math.random() * 0.3)),
+      discountPct: Math.random() > 0.5 ? Math.round(Math.random() * 15) : 0,
+    }))
+    await db.priceList.create({
+      data: {
+        name: pl.name,
+        description: pl.description,
+        validFrom: pl.validFrom,
+        validTo: pl.validTo,
+        items: { create: plItems },
+      },
+    })
+  }
+
   console.log('✅ Database seeded successfully!')
   console.log(`  - ${partners.length} partners`)
   console.log(`  - ${products.length} products`)
   console.log(`  - ${transactions.length} transactions`)
-  console.log(`  - 15 invoices`)
+  console.log(`  - 15 invoices (izlazna/ulazna/predracun)`)
   console.log(`  - ~50 cash register entries`)
   console.log(`  - 30 stock movements`)
   console.log(`  - 8 purchase orders`)
+  console.log(`  - 6 delivery notes`)
+  console.log(`  - 3 price lists`)
 }
 
 seed()

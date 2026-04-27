@@ -56,6 +56,7 @@ interface Invoice {
   dueDate: string
   partnerId: string
   status: string
+  type: string
   totalAmount: number
   taxAmount: number
   discountPct: number
@@ -87,6 +88,7 @@ export function Fakture() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null)
@@ -101,11 +103,12 @@ export function Fakture() {
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     if (statusFilter) params.set('status', statusFilter)
+    if (typeFilter) params.set('type', typeFilter)
     const res = await fetch(`/api/invoices?${params.toString()}`)
     const data = await res.json()
     setInvoices(data)
     setLoading(false)
-  }, [search, statusFilter])
+  }, [search, statusFilter, typeFilter])
 
   useEffect(() => {
     fetchInvoices()
@@ -180,10 +183,13 @@ export function Fakture() {
     const month = String(now.getMonth() + 1).padStart(2, '0')
     const count = String(Math.floor(Math.random() * 9000) + 1000)
 
+    const invoiceType = fd.get('type') as string || 'izlazna'
+
     const body = {
       partnerId: fd.get('partnerId') as string,
       number: isEditing ? editingInvoice.number : `F-${year}-${month}-${count}`,
       date: isEditing ? editingInvoice.date : new Date().toISOString(),
+      type: invoiceType,
       status: fd.get('status') as string || 'nacrt',
       dueDate: fd.get('dueDate') as string,
       paymentMethod: fd.get('paymentMethod') as string || 'racun',
@@ -242,13 +248,13 @@ export function Fakture() {
               <form onSubmit={handleSubmit} key={editingInvoice?.id || 'new'} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-xs">Partner *</Label>
-                    <Select name="partnerId" defaultValue={editingInvoice?.partnerId || ''} required>
-                      <SelectTrigger><SelectValue placeholder="Izaberite partnera" /></SelectTrigger>
+                    <Label className="text-xs">Tip fakture *</Label>
+                    <Select name="type" defaultValue={editingInvoice?.type || 'izlazna'}>
+                      <SelectTrigger><SelectValue placeholder="Izaberite tip" /></SelectTrigger>
                       <SelectContent>
-                        {partners.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                        ))}
+                        <SelectItem value="predracun">Predračun</SelectItem>
+                        <SelectItem value="izlazna">Izlazna</SelectItem>
+                        <SelectItem value="ulazna">Ulazna</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -266,9 +272,22 @@ export function Fakture() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
+                    <Label className="text-xs">Partner *</Label>
+                    <Select name="partnerId" defaultValue={editingInvoice?.partnerId || ''} required>
+                      <SelectTrigger><SelectValue placeholder="Izaberite partnera" /></SelectTrigger>
+                      <SelectContent>
+                        {partners.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label className="text-xs">Rok plaćanja *</Label>
                     <Input name="dueDate" type="date" required defaultValue={editingInvoice?.dueDate?.split('T')[0] || ''} />
                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Način plaćanja</Label>
                     <Select name="paymentMethod" defaultValue={editingInvoice?.paymentMethod || 'racun'}>
@@ -378,7 +397,18 @@ export function Fakture() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+          <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
+            <SelectTrigger className="w-[150px] h-9">
+              <SelectValue placeholder="Svi tipovi" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Sve</SelectItem>
+              <SelectItem value="predracun">Predračun</SelectItem>
+              <SelectItem value="izlazna">Izlazna</SelectItem>
+              <SelectItem value="ulazna">Ulazna</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[150px] h-9">
               <SelectValue placeholder="Svi statusi" />
             </SelectTrigger>
@@ -405,6 +435,7 @@ export function Fakture() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-xs">Broj</TableHead>
+                  <TableHead className="text-xs">Tip</TableHead>
                   <TableHead className="text-xs">Partner</TableHead>
                   <TableHead className="text-xs">Datum</TableHead>
                   <TableHead className="text-xs">Rok plaćanja</TableHead>
@@ -416,7 +447,7 @@ export function Fakture() {
               <TableBody>
                 {invoices.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
                       Nema faktura za prikaz
                     </TableCell>
                   </TableRow>
@@ -424,6 +455,11 @@ export function Fakture() {
                   invoices.map((inv) => (
                     <TableRow key={inv.id}>
                       <TableCell className="text-xs font-medium">{inv.number}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(inv.type || 'izlazna')}`}>
+                          {getStatusLabel(inv.type || 'izlazna')}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-xs">{inv.partner?.name || '-'}</TableCell>
                       <TableCell className="text-xs">{formatDate(inv.date)}</TableCell>
                       <TableCell className="text-xs">{formatDate(inv.dueDate)}</TableCell>

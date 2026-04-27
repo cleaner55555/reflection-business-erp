@@ -36,6 +36,9 @@ export function getStatusLabel(status: string): string {
     placena: 'Plaćena',
     otkazana: 'Otkazana',
     primljena: 'Primljena',
+    pripremljena: 'Pripremljena',
+    otpremljena: 'Otpremljena',
+    stornirana: 'Stornirana',
     prijem: 'Priem',
     izdavanje: 'Izdavanje',
     inventura: 'Inventura',
@@ -55,6 +58,16 @@ export function getStatusLabel(status: string): string {
     gotovina: 'Gotovina',
     racun: 'Račun',
     kartica: 'Kartica',
+    izlazna: 'Izlazna',
+    ulazna: 'Ulazna',
+    predracun: 'Predračun',
+    faktura_izlazna: 'Faktura izlazna',
+    faktura_ulazna: 'Faktura ulazna',
+    predracun_label: 'Predračun',
+    kasa_ulaz: 'Kasa ulaz',
+    kasa_izlaz: 'Kasa izlaz',
+    transakcija: 'Transakcija',
+    otpremnica: 'Otpremnica',
   }
   return labels[status] || status
 }
@@ -66,6 +79,9 @@ export function getStatusColor(status: string): string {
     placena: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     otkazana: 'bg-red-50 text-red-700 border-red-200',
     primljena: 'bg-blue-50 text-blue-700 border-blue-200',
+    pripremljena: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+    otpremljena: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    stornirana: 'bg-red-50 text-red-700 border-red-200',
     prijem: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     izdavanje: 'bg-orange-50 text-orange-700 border-orange-200',
     inventura: 'bg-purple-50 text-purple-700 border-purple-200',
@@ -74,6 +90,15 @@ export function getStatusColor(status: string): string {
     rashod: 'bg-red-50 text-red-700 border-red-200',
     ulaz: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     izlaz: 'bg-orange-50 text-orange-700 border-orange-200',
+    izlazna: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    ulazna: 'bg-blue-50 text-blue-700 border-blue-200',
+    predracun: 'bg-violet-50 text-violet-700 border-violet-200',
+    faktura_izlazna: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    faktura_ulazna: 'bg-blue-50 text-blue-700 border-blue-200',
+    kasa_ulaz: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    kasa_izlaz: 'bg-orange-50 text-orange-700 border-orange-200',
+    nabavka: 'bg-orange-50 text-orange-700 border-orange-200',
+    otpremnica: 'bg-teal-50 text-teal-700 border-teal-200',
   }
   return colors[status] || 'bg-slate-100 text-slate-700 border-slate-200'
 }
