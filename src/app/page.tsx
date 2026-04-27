@@ -31,8 +31,19 @@ import { useAppStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { I18nProvider, useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
 import { Separator } from '@/components/ui/separator'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Languages } from 'lucide-react'
+import { useState } from 'react'
+
+// Default active languages if not configured
+const DEFAULT_ACTIVE_LANGS = ['sr', 'sr-latn', 'en']
 
 // ============ MODULES MAP ============
 
@@ -93,10 +104,34 @@ function AppContent() {
   const { t, locale, setLocale } = useTranslation()
   const ensureLoaded = useThemeStore((s) => s.ensureLoaded)
 
+  // Active languages from settings
+  const [activeLangs, setActiveLangs] = useState<string[]>(DEFAULT_ACTIVE_LANGS)
+
+  // Load active languages from settings
+  useEffect(() => {
+    fetch('/api/settings?group=general')
+      .then((res) => res.ok ? res.json() : [])
+      .then((data: Array<{ key: string; value: string }>) => {
+        const setting = data?.find((s) => s.key === 'active_languages')
+        if (setting?.value) {
+          try {
+            const parsed = JSON.parse(setting.value)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setActiveLangs(parsed)
+            }
+          } catch { /* use default */ }
+        }
+      })
+      .catch(() => { /* use default */ })
+  }, [])
+
   // Initialize theme on mount
   useEffect(() => {
     ensureLoaded()
   }, [ensureLoaded])
+
+  // Filter languages to show in header
+  const headerLanguages = ALL_LANGUAGES.filter((l) => activeLangs.includes(l.code))
 
   return (
     <div className="min-h-screen flex">
@@ -112,22 +147,35 @@ function AppContent() {
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              {/* Language Switcher - shows flag and native name of current locale */}
-              <button
-                onClick={() => {
-                  const currentIdx = ALL_LANGUAGES.findIndex((l) => l.code === locale)
-                  const nextIdx = (currentIdx + 1) % ALL_LANGUAGES.length
-                  setLocale(ALL_LANGUAGES[nextIdx].code)
-                }}
-                className="flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-xs hover:bg-accent hover:text-accent-foreground transition-colors"
-                title={ALL_LANGUAGES.find((l) => l.code === locale)?.englishName || locale}
-              >
-                <span>{ALL_LANGUAGES.find((l) => l.code === locale)?.flag || '🌐'}</span>
-                <Languages className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="max-w-[70px] truncate">
-                  {ALL_LANGUAGES.find((l) => l.code === locale)?.nativeName || locale}
-                </span>
-              </button>
+              {/* Language Switcher - dropdown with active languages only */}
+              {headerLanguages.length > 1 ? (
+                <Select value={locale} onValueChange={(val) => setLocale(val)}>
+                  <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs">
+                    <span className="flex items-center gap-1.5 truncate">
+                      <span>{ALL_LANGUAGES.find((l) => l.code === locale)?.flag || '🌐'}</span>
+                      <span className="truncate">
+                        {ALL_LANGUAGES.find((l) => l.code === locale)?.nativeName || locale}
+                      </span>
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {headerLanguages.map((lang) => (
+                      <SelectItem key={lang.code} value={lang.code} className="text-xs">
+                        <span className="mr-1.5">{lang.flag}</span>
+                        {lang.nativeName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <button
+                  onClick={() => setLocale(headerLanguages[0]?.code || 'sr')}
+                  className="flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-xs"
+                >
+                  <span>{headerLanguages[0]?.flag || '🌐'}</span>
+                  <span>{headerLanguages[0]?.nativeName || 'SR'}</span>
+                </button>
+              )}
               <ThemeToggle />
             </div>
           </header>

@@ -85,7 +85,10 @@ interface GeneralSettings {
   default_payment_method: string
   fiscal_year_start: string
   language: string
+  active_languages: string // JSON array of language codes, e.g. '["sr","sr-latn","en"]'
 }
+
+const DEFAULT_ACTIVE_LANGUAGES = ['sr', 'sr-latn', 'en']
 
 const GENERAL_DEFAULTS: GeneralSettings = {
   default_currency: 'RSD',
@@ -93,6 +96,7 @@ const GENERAL_DEFAULTS: GeneralSettings = {
   default_payment_method: 'racun',
   fiscal_year_start: '1',
   language: 'sr',
+  active_languages: JSON.stringify(DEFAULT_ACTIVE_LANGUAGES),
 }
 
 // ============ API TYPES ============
@@ -106,127 +110,89 @@ interface AppSettingResponse {
   group: string
 }
 
-// ============ LANGUAGE SEARCH SELECT COMPONENT ============
+// ============ ACTIVE LANGUAGES PICKER ============
 
-function LanguageSearchSelect({ value, onChange }: { value: string; onChange: (code: string) => void }) {
-  const [open, setOpen] = useState(false)
+function ActiveLanguagesPicker({ activeCodes, onToggle }: { activeCodes: string[]; onToggle: (code: string) => void }) {
   const [search, setSearch] = useState('')
   const { t } = useTranslation()
-
-  const selectedLang = ALL_LANGUAGES.find((l) => l.code === value)
 
   const filtered = search.length > 0
     ? ALL_LANGUAGES.filter(
         (l) =>
           l.nativeName.toLowerCase().includes(search.toLowerCase()) ||
-          l.englishName.toLowerCase().includes(search.toLowerCase()) ||
-          l.code.toLowerCase().includes(search.toLowerCase())
+          l.englishName.toLowerCase().includes(search.toLowerCase())
       )
     : ALL_LANGUAGES
 
   // Group by region
-  const groups: Record<string, typeof ALL_LANGUAGES> = {}
-  const regionOrder = ['EUROPE', 'ASIA', 'AFRICA', 'AMERICAS', 'OCEANIA', 'CONSTRUCTED / OTHER']
-  filtered.forEach((lang) => {
-    // Determine region from the ALL_LANGUAGES ordering
-    const idx = ALL_LANGUAGES.indexOf(lang)
-    let region = 'OTHER'
-    if (idx >= 0 && idx < 46) region = 'EUROPE'
-    else if (idx >= 46 && idx < 72) region = 'ASIA'
-    else if (idx >= 72 && idx < 80) region = 'AFRICA'
-    else if (idx >= 80 && idx < 86) region = 'AMERICAS'
-    else if (idx >= 86 && idx < 90) region = 'OCEANIA'
-    else region = 'CONSTRUCTED / OTHER'
-    if (!groups[region]) groups[region] = []
-    groups[region].push(lang)
-  })
-
-  const regionLabels: Record<string, string> = {
-    EUROPE: t('settings.languageEurope') || 'Evropa',
-    ASIA: t('settings.languageAsia') || 'Azija',
-    AFRICA: t('settings.languageAfrica') || 'Afrika',
-    AMERICAS: t('settings.languageAmericas') || 'Amerike',
-    'OCEANIA': t('settings.languageOceania') || 'Okeanija',
-    'CONSTRUCTED / OTHER': t('settings.languageOther') || 'Ostalo',
-  }
+  const regionRanges: Array<{ label: string; start: number; end: number }> = [
+    { label: 'Evropa', start: 0, end: 45 },
+    { label: 'Azija', start: 45, end: 72 },
+    { label: 'Afrika', start: 72, end: 80 },
+    { label: 'Amerike', start: 80, end: 86 },
+    { label: 'Okeanija', start: 86, end: 90 },
+    { label: 'Ostalo', start: 90, end: ALL_LANGUAGES.length },
+  ]
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-      >
-        {selectedLang ? (
-          <span className="flex items-center gap-2">
-            <span>{selectedLang.flag}</span>
-            <span>{selectedLang.nativeName}</span>
-            <span className="text-muted-foreground text-xs">({selectedLang.englishName})</span>
-          </span>
-        ) : (
-          <span className="text-muted-foreground">{t('common.select')}</span>
+    <div>
+      <div className="relative mb-3">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t('common.search') || 'Pretraga...'}
+          className="flex h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 py-1 text-sm outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      <div className="max-h-64 overflow-y-auto rounded-md border divide-y">
+        {filtered.length === 0 && (
+          <div className="py-6 text-center text-sm text-muted-foreground">{t('common.noResults')}</div>
         )}
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); setSearch('') }} />
-          <div className="absolute z-50 mt-1 w-full max-h-80 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
-            <div className="p-2 border-b">
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t('common.search') || 'Pretraga...'}
-                  className="flex h-8 w-full rounded-md border border-input bg-background pl-8 pr-3 py-1 text-sm outline-none focus:ring-2 focus:ring-ring"
-                  autoFocus
-                />
+        {regionRanges
+          .filter((r) => filtered.some((l) => ALL_LANGUAGES.indexOf(l) >= r.start && ALL_LANGUAGES.indexOf(l) < r.end))
+          .map((region) => (
+            <div key={region.label}>
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/50 sticky top-0">
+                {region.label}
               </div>
-            </div>
-            <div className="overflow-y-auto max-h-64 p-1">
-              {filtered.length === 0 && (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  {t('common.noResults')}
-                </div>
-              )}
-              {regionOrder
-                .filter((r) => groups[r] && groups[r].length > 0)
-                .map((region) => (
-                  <div key={region}>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      {regionLabels[region] || region}
-                    </div>
-                    {groups[region].map((lang) => (
-                      <button
-                        key={lang.code}
-                        type="button"
-                        onClick={() => {
-                          onChange(lang.code)
-                          setOpen(false)
-                          setSearch('')
-                        }}
+              {filtered
+                .filter((l) => {
+                  const idx = ALL_LANGUAGES.indexOf(l)
+                  return idx >= region.start && idx < region.end
+                })
+                .map((lang) => {
+                  const isActive = activeCodes.includes(lang.code)
+                  return (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => onToggle(lang.code)}
+                      className={cn(
+                        'flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-accent/50 transition-colors',
+                        isActive && 'bg-primary/5'
+                      )}
+                    >
+                      <div
                         className={cn(
-                          'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors',
-                          lang.code === value && 'bg-accent'
+                          'flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
+                          isActive
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-muted-foreground/30'
                         )}
                       >
-                        <span className="shrink-0">{lang.flag}</span>
-                        <span className="truncate">{lang.nativeName}</span>
-                        <span className="ml-auto text-xs text-muted-foreground shrink-0">
-                          {lang.englishName}
-                        </span>
-                        {lang.code === value && (
-                          <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                ))}
+                        {isActive && <Check className="h-3 w-3" />}
+                      </div>
+                      <span className="shrink-0 text-base">{lang.flag}</span>
+                      <span className="flex-1 text-left truncate">{lang.nativeName}</span>
+                      <span className="text-xs text-muted-foreground shrink-0">{lang.englishName}</span>
+                    </button>
+                  )
+                })}
             </div>
-          </div>
-        </>
-      )}
+          ))}
+      </div>
     </div>
   )
 }
@@ -282,6 +248,25 @@ export function Podesavanja() {
 
   // Active tab
   const [activeTab, setActiveTab] = useState('moduli')
+
+  // Active languages helper
+  const activeLangCodes: string[] = (() => {
+    try { return JSON.parse(general.active_languages) || DEFAULT_ACTIVE_LANGUAGES }
+    catch { return DEFAULT_ACTIVE_LANGUAGES }
+  })()
+
+  const toggleActiveLang = (code: string) => {
+    setGeneral((prev) => {
+      const current = (() => {
+        try { return JSON.parse(prev.active_languages) || [...DEFAULT_ACTIVE_LANGUAGES] }
+        catch { return [...DEFAULT_ACTIVE_LANGUAGES] }
+      })()
+      const next = current.includes(code)
+        ? current.filter((c: string) => c !== code)
+        : [...current, code]
+      return { ...prev, active_languages: JSON.stringify(next) }
+    })
+  }
 
   // ============ SYNC THEME STATE ============
 
@@ -358,6 +343,7 @@ export function Podesavanja() {
           default_payment_method: map['default_payment_method'] || prev.default_payment_method,
           fiscal_year_start: map['fiscal_year_start'] || prev.fiscal_year_start,
           language: map['language'] || prev.language,
+          active_languages: map['active_languages'] || prev.active_languages,
         }))
       }
       setGeneralLoading(false)
@@ -798,12 +784,40 @@ export function Podesavanja() {
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="language">{t('settings.language')}</Label>
-                      <LanguageSearchSelect
-                        value={general.language}
-                        onChange={(val) => setGeneral((prev) => ({ ...prev, language: val }))}
-                      />
+                      <Select value={general.language} onValueChange={(val) => setGeneral((prev) => ({ ...prev, language: val }))}>
+                        <SelectTrigger id="language" className="sm:max-w-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ALL_LANGUAGES.filter((l) => activeLangCodes.includes(l.code)).map((lang) => (
+                            <SelectItem key={lang.code} value={lang.code} className="text-xs">
+                              <span className="mr-1.5">{lang.flag}</span>
+                              {lang.nativeName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[10px] text-muted-foreground">Izaberite aktivni jezik za interfejs</p>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Active Languages Selector - which languages show in header */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">Jezici za prebacivanje</CardTitle>
+                    <Badge variant="secondary" className="text-xs">{activeLangCodes.length}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Izaberite koji jezici će biti dostupni za brzo prebacivanje u header-u</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Search */}
+                  <ActiveLanguagesPicker
+                    activeCodes={activeLangCodes}
+                    onToggle={toggleActiveLang}
+                  />
                 </CardContent>
               </Card>
 
