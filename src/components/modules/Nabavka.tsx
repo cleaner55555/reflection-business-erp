@@ -210,11 +210,11 @@ export function Nabavka() {
                 <Plus className="h-4 w-4" /> Nova Narudžbenica
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent key={editingOrder?.id || 'new'} className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingOrder ? 'Izmeni Narudžbenicu' : 'Nova Narudžbenica'}</DialogTitle>
               </DialogHeader>
-              <form key={editingOrder?.id || 'new'} onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Dobavljač *</Label>

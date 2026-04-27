@@ -78,9 +78,9 @@ export function Sredstva() {
             <CardTitle className="text-base font-semibold">Sva sredstva</CardTitle>
             <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null) }}>
               <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Novo Sredstvo</Button></DialogTrigger>
-              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogContent key={editing?.id || 'new'} className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>{editing ? 'Izmeni' : 'Novo'} Sredstvo</DialogTitle></DialogHeader>
-                <form onSubmit={handleSubmit} key={editing?.id || 'new'} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input name="name" defaultValue={editing?.name || ''} required /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2"><Label className="text-xs">Kategorija</Label>

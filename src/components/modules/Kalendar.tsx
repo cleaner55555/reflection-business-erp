@@ -101,9 +101,9 @@ export function Kalendar() {
             </div>
             <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null) }}>
               <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Novi Događaj</Button></DialogTrigger>
-              <DialogContent className="max-w-lg">
+              <DialogContent key={editing?.id || 'new'} className="max-w-lg">
                 <DialogHeader><DialogTitle>{editing ? 'Izmeni' : 'Novi'} Događaj</DialogTitle></DialogHeader>
-                <form onSubmit={handleSubmit} key={editing?.id || 'new'} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" defaultValue={editing?.title || ''} required /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2"><Label className="text-xs">Tip</Label>

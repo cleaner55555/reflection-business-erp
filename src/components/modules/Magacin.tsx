@@ -289,11 +289,11 @@ function ArtikliTab() {
                 <Plus className="h-4 w-4" /> Novi Artikal
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent key={editingProduct?.id || 'new'} className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingProduct ? 'Izmeni Artikal' : 'Novi Artikal'}</DialogTitle>
               </DialogHeader>
-              <form key={editingProduct?.id || 'new'} onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Naziv *</Label>

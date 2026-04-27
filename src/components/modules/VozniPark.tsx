@@ -386,11 +386,11 @@ export function VozniPark() {
               Novo Vozilo
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent key={editingVehicle?.id || 'new'} className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingVehicle ? 'Izmeni' : 'Novo'} Vozilo</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleVehicleSubmit} key={editingVehicle?.id || 'new'} className="space-y-4">
+            <form onSubmit={handleVehicleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs">Registarski broj *</Label>

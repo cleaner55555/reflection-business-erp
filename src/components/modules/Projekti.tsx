@@ -92,9 +92,9 @@ export function Projekti() {
           <div><CardTitle className="text-base font-semibold">Projekti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{projects.length} projekata</p></div>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null) }}>
             <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Novi Projekat</Button></DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent key={editing?.id || 'new'} className="max-w-lg">
               <DialogHeader><DialogTitle>{editing ? 'Izmeni' : 'Novi'} Projekat</DialogTitle></DialogHeader>
-              <form onSubmit={handleSubmit} key={editing?.id || 'new'} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input name="name" defaultValue={editing?.name || ''} required /></div>
                 <div className="space-y-2"><Label className="text-xs">Opis</Label><Input name="description" defaultValue={editing?.description || ''} /></div>
                 <div className="grid grid-cols-2 gap-4">

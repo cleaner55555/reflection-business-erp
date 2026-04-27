@@ -200,11 +200,11 @@ function TransakcijeTab() {
                 <Plus className="h-4 w-4" /> Nova Transakcija
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent key={editingTransaction?.id || 'new'} className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>{editingTransaction ? 'Izmeni Transakciju' : 'Nova Transakcija'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} key={editingTransaction?.id || 'new'} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Tip</Label>
@@ -446,11 +446,11 @@ function KasaTab() {
                     <Plus className="h-4 w-4" /> Novi Unos
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-lg">
+                <DialogContent key={editingEntry?.id || 'new'} className="max-w-lg">
                   <DialogHeader>
                     <DialogTitle>{editingEntry ? 'Izmeni Unos' : 'Novi Unos u Kasu'}</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit} key={editingEntry?.id || 'new'} className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-xs">Tip</Label>

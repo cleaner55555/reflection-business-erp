@@ -121,9 +121,9 @@ function PipelineTab() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditingDeal(null) }}>
           <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Nova Prilika</Button></DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent key={editingDeal?.id || 'new'} className="max-w-lg">
             <DialogHeader><DialogTitle>{editingDeal ? 'Izmeni' : 'Nova'} Priliku</DialogTitle></DialogHeader>
-            <form onSubmit={handleSubmit} key={editingDeal?.id || 'new'} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input name="title" defaultValue={editingDeal?.title || ''} required /></div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2"><Label className="text-xs">Vrednost (RSD)</Label><Input name="value" type="number" step="0.01" defaultValue={editingDeal?.value || ''} /></div>
@@ -234,9 +234,9 @@ function KontaktiTab() {
           <div><CardTitle className="text-base font-semibold">Kontakti</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{contacts.length} kontakata</p></div>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null) }}>
             <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Novi Kontakt</Button></DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogContent key={editing?.id || 'new'} className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? 'Izmeni' : 'Novi'} Kontakt</DialogTitle></DialogHeader>
-              <form onSubmit={handleSubmit} key={editing?.id || 'new'} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label className="text-xs">Ime *</Label><Input name="firstName" defaultValue={editing?.firstName || ''} required /></div>
                   <div className="space-y-2"><Label className="text-xs">Prezime *</Label><Input name="lastName" defaultValue={editing?.lastName || ''} required /></div>

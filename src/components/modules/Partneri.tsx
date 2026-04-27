@@ -230,11 +230,11 @@ export function Partneri() {
                 <Plus className="h-4 w-4" /> Novi Partner
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent key={editingPartner?.id || 'new'} className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingPartner ? 'Izmeni Partnera' : 'Novi Partner'}</DialogTitle>
               </DialogHeader>
-              <form key={editingPartner?.id || 'new'} onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Naziv *</Label>

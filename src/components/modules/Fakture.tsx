@@ -241,11 +241,11 @@ export function Fakture() {
                 <Plus className="h-4 w-4" /> Nova Faktura
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent key={editingInvoice?.id || 'new'} className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingInvoice ? 'Izmeni Fakturu' : 'Nova Faktura'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} key={editingInvoice?.id || 'new'} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Tip fakture *</Label>
