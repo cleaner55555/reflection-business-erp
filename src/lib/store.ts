@@ -7,6 +7,12 @@ export type ModuleType =
   | 'magacin'
   | 'partneri'
   | 'nabavka'
+  | 'crm'
+  | 'kalendar'
+  | 'zaposleni'
+  | 'projekti'
+  | 'sredstva'
+  | 'dokumenta'
   | 'izvestaji'
 
 interface AppState {

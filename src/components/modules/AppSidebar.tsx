@@ -1,7 +1,6 @@
 'use client'
 
 import { useAppStore, type ModuleType } from '@/lib/store'
-import { cn } from '@/lib/utils'
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +22,12 @@ import {
   ShoppingCart,
   Users,
   BarChart3,
+  HeartHandshake,
+  CalendarDays,
+  UserCog,
+  FolderKanban,
+  Building2,
+  Files,
 } from 'lucide-react'
 
 const menuGroups: { label: string; items: { module: ModuleType; icon: React.ElementType; label: string }[] }[] = [
@@ -40,8 +45,21 @@ const menuGroups: { label: string; items: { module: ModuleType; icon: React.Elem
     ],
   },
   {
-    label: 'RELACIJE',
-    items: [{ module: 'partneri', icon: Users, label: 'Partneri' }],
+    label: 'CRM & RELACIJE',
+    items: [
+      { module: 'crm', icon: HeartHandshake, label: 'CRM' },
+      { module: 'partneri', icon: Users, label: 'Partneri' },
+      { module: 'kalendar', icon: CalendarDays, label: 'Kalendar' },
+    ],
+  },
+  {
+    label: 'ORGANIZACIJA',
+    items: [
+      { module: 'zaposleni', icon: UserCog, label: 'Zaposleni' },
+      { module: 'projekti', icon: FolderKanban, label: 'Projekti' },
+      { module: 'sredstva', icon: Building2, label: 'Osnovna sredstva' },
+      { module: 'dokumenta', icon: Files, label: 'Dokumenta' },
+    ],
   },
   {
     label: 'ANALITIKA',
@@ -62,15 +80,15 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/50">
       <SidebarHeader className="px-4 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-primary-foreground">
             <Compass className="h-5 w-5" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-bold tracking-tight text-sidebar-foreground">
-              Biznis
+              Reflection
             </span>
             <span className="text-xs font-medium text-primary">
-              Navigator
+              Business
             </span>
           </div>
         </div>
@@ -101,11 +119,11 @@ export function AppSidebar() {
       <SidebarFooter className="p-4">
         <div className="group-data-[collapsible=icon]:hidden flex items-center gap-2 rounded-lg bg-sidebar-accent p-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20">
-            <span className="text-xs font-bold text-primary">BN</span>
+            <span className="text-xs font-bold text-primary">RB</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-medium text-sidebar-foreground">Biznis Navigator</span>
-            <span className="text-[10px] text-sidebar-foreground/50">ERP v1.0</span>
+            <span className="text-xs font-medium text-sidebar-foreground">Reflection Business</span>
+            <span className="text-[10px] text-sidebar-foreground/50">ERP + CRM v2.0</span>
           </div>
         </div>
       </SidebarFooter>

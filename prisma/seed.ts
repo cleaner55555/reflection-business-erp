@@ -503,16 +503,139 @@ async function seed() {
     })
   }
 
+  console.log('  - 3 price lists')
+
+  // CRM - Contacts
+  const contacts = await Promise.all([
+    db.contact.create({ data: { firstName: 'Marko', lastName: 'Petrović', email: 'marko@delta.rs', phone: '+381 63 111 222', position: 'Direktor', company: 'Delta Trade', isLead: false, isClient: true, tags: 'vip,IT' } }),
+    db.contact.create({ data: { firstName: 'Jelena', lastName: 'Stanković', email: 'jelena@metalpro.rs', phone: '+381 63 222 333', position: 'Komercijalista', company: 'Metal-Pro', isLead: false, isClient: true, isSupplier: true, tags: 'metalurgija' } }),
+    db.contact.create({ data: { firstName: 'Nenad', lastName: 'Jovanović', email: 'nenad@techshop.rs', phone: '+381 11 444 555', position: 'Vlasnik', company: 'TehnoShop', isClient: true, tags: 'IT,elektronika' } }),
+    db.contact.create({ data: { firstName: 'Ana', lastName: 'Milić', email: 'ana@ekopak.rs', position: 'Menadžer', company: 'Eko-Pak', isLead: false, isSupplier: true, tags: 'pakovanje' } }),
+    db.contact.create({ data: { firstName: 'Ivan', lastName: 'Nikolić', email: 'ivan@slobodan.rs', phone: '+381 65 888 999', position: 'Inženjer', isLead: true, tags: 'IT,konsalting' } }),
+    db.contact.create({ data: { firstName: 'Maja', lastName: 'Đorđević', email: 'maja@startup.rs', phone: '+381 11 555 666', position: 'CEO', isLead: true, tags: 'startup' } }),
+    db.contact.create({ data: { firstName: 'Stefan', lastName: 'Popović', email: 'stefan@autopart.rs', position: 'Tehničar', company: 'Auto-Part', isClient: true, tags: 'auto' } }),
+    db.contact.create({ data: { firstName: 'Luka', lastName: 'Simić', email: 'luka@gradnja.rs', position: 'Projektant', company: 'Alfa Gradnja', isClient: true, tags: 'gradja' } }),
+  ])
+
+  // CRM - Deals
+  await Promise.all([
+    db.deal.create({ data: { title: 'IT oprema za Delta Trade', value: 350000, stage: 'pregovaranje', probability: 70, contactId: contacts[0].id, partnerId: partners[0].id, assignedTo: 'Ana Milić', closeDate: new Date(year, month + 2, 15), notes: 'Veliki ugovor za kompletnu IT infrastrukturu' } }),
+    db.deal.create({ data: { title: 'Aluminijski profili - kvartalna narudžba', value: 120000, stage: 'predlog', probability: 40, contactId: contacts[1].id, partnerId: partners[1].id, assignedTo: 'Marko Petrović' } }),
+    db.deal.create({ data: { title: 'LED paneli za novo sedište', value: 85000, stage: 'won', probability: 100, contactId: contacts[2].id, partnerId: partners[2].id, closeDate: new Date(year, month - 1, 5) } }),
+    db.deal.create({ data: { title: 'Pakovanje za e-commerce', value: 45000, stage: 'kvalifikacija', probability: 25, contactId: contacts[3].id, isLead: true, notes: 'Inicijalni upit' } }),
+    db.deal.create({ data: { title: 'ERP konsalting za startup', value: 200000, stage: 'lead', probability: 10, contactId: contacts[4].id, isLead: true } }),
+    db.deal.create({ data: { title: 'Auto delovi - godišnji ugovor', value: 180000, stage: 'pregovaranje', probability: 60, contactId: contacts[6].id, partnerId: partners[5].id, assignedTo: 'Jelena Stanković' } }),
+  ])
+
+  // CRM - Activities
+  const dealIds = await db.deal.findMany({ select: { id: true } })
+  await Promise.all([
+    db.crmActivity.create({ data: { type: 'sastanak', title: 'Sastanak sa Delta Trade - IT oprema', contactId: contacts[0].id, dealId: dealIds[0].id, dueDate: new Date(year, month + 1, 10) } }),
+    db.crmActivity.create({ data: { type: 'poziv', title: 'Poziv za potvrdu narudžbe profila', contactId: contacts[1].id, dealId: dealIds[1].id, dueDate: new Date(year, month + 1, 5), completed: true } }),
+    db.crmActivity.create({ data: { type: 'email', title: 'Poslata ponude za LED panele', contactId: contacts[2].id, dealId: dealIds[2].id, completed: true } }),
+    db.crmActivity.create({ data: { type: 'task', title: 'Pripremiti ponudu za pakovanje', contactId: contacts[3].id, dealId: dealIds[3].id, dueDate: new Date(year, month + 1, 20) } }),
+    db.crmActivity.create({ data: { type: 'sastanak', title: 'Demo ERP sistema', contactId: contacts[4].id, dealId: dealIds[4].id, dueDate: new Date(year, month + 2, 1) } }),
+    db.crmActivity.create({ data: { type: 'napomena', title: 'Slediti rok za auto delove', contactId: contacts[6].id, dealId: dealIds[5].id } }),
+    db.crmActivity.create({ data: { type: 'task', title: 'Ažurirati cenovnik za Delta', contactId: contacts[0].id, dueDate: new Date(year, month + 1, 15) } }),
+  ])
+
+  // Calendar events
+  await Promise.all([
+    db.calendarEvent.create({ data: { title: 'Sastanak sa Delta Trade', description: 'Predstaviti novu ponudu', startTime: new Date(year, month + 1, 10, 10, 0), endTime: new Date(year, month + 1, 10, 11, 30), color: 'blue', type: 'sastanak' } }),
+    db.calendarEvent.create({ data: { title: 'Rok za predračun', startTime: new Date(year, month + 1, 15, 0, 0), color: 'red', type: 'rok' } }),
+    db.calendarEvent.create({ data: { title: 'Team sastanak', description: 'Sedmični sastanak tima', startTime: new Date(year, month + 1, 8, 9, 0), endTime: new Date(year, month + 1, 8, 10, 0), color: 'green', type: 'sastanak', allDay: false } }),
+    db.calendarEvent.create({ data: { title: 'Rođendan firme', startTime: new Date(year, month + 3, 1, 0, 0), color: 'purple', type: 'podsetnik', allDay: true } }),
+    db.calendarEvent.create({ data: { title: 'Obuka za nove zaposlene', startTime: new Date(year, month + 1, 20, 14, 0), endTime: new Date(year, month + 1, 20, 16, 0), color: 'orange', type: 'task' } }),
+    db.calendarEvent.create({ data: { title: 'Predstavaćenje za Metal-Pro', startTime: new Date(year, month + 2, 5, 11, 0), endTime: new Date(year, month + 2, 5, 12, 0), color: 'primary', type: 'sastanak' } }),
+  ])
+
+  // Employees
+  const employees = await Promise.all([
+    db.employee.create({ data: { firstName: 'Marko', lastName: 'Petrović', email: 'marko@reflection.rs', phone: '+381 63 111 000', position: 'Direktor', department: 'Menadžment', baseSalary: 250000, bankAccount: '265-111111-11' } }),
+    db.employee.create({ data: { firstName: 'Ana', lastName: 'Milić', email: 'ana@reflection.rs', phone: '+381 63 222 000', position: 'Komercijalac', department: 'Prodaja', baseSalary: 180000, bankAccount: '265-222222-22' } }),
+    db.employee.create({ data: { firstName: 'Jelena', lastName: 'Stanković', email: 'jelena@reflection.rs', phone: '+381 63 333 000', position: 'Knjigovođa', department: 'Finansije', baseSalary: 160000, bankAccount: '265-333333-33' } }),
+    db.employee.create({ data: { firstName: 'Stefan', lastName: 'Ilić', email: 'stefan@reflection.rs', position: 'IT stručnjak', department: 'IT', baseSalary: 200000, bankAccount: '265-444444-44' } }),
+    db.employee.create({ data: { firstName: 'Milica', lastName: 'Vasić', email: 'milica@reflection.rs', position: 'Magacioner', department: 'Magacin', baseSalary: 120000, bankAccount: '265-555555-55' } }),
+    db.employee.create({ data: { firstName: 'Nikola', lastName: 'Perić', email: 'nikola@reflection.rs', position: 'Vozač', department: 'Logistika', baseSalary: 100000, bankAccount: '265-666666-66' } }),
+  ])
+
+  // Payrolls
+  for (const emp of employees) {
+    const bonuses = Math.random() > 0.5 ? 20000 + Math.floor(Math.random() * 30000) : 0
+    const deductions = 15000 + Math.floor(Math.random() * 10000)
+    await db.payroll.create({
+      data: { employeeId: emp.id, month, year, baseSalary: emp.baseSalary, bonuses, deductions, netSalary: emp.baseSalary + bonuses - deductions, status: 'isplaceno', payDate: new Date(year, month + 1, 5) },
+    })
+  }
+
+  // Attendances
+  for (const emp of employees) {
+    for (let d = 1; d <= 25; d++) {
+      const type = Math.random() > 0.95 ? 'bolovanje' : Math.random() > 0.97 ? 'godisnji' : 'rad'
+      const hours = type === 'rad' ? 8 : 0
+      await db.attendance.create({ data: { employeeId: emp.id, date: new Date(year, month, d), hoursWorked: hours, type, notes: type === 'rad' ? '' : undefined } })
+    }
+  }
+
+  // Assets
+  await Promise.all([
+    db.asset.create({ data: { name: 'Dell Latitude 5540', category: 'IT oprema', serialNumber: 'DL5540-2024-001', purchasePrice: 180000, currentValue: 140000, depreciation: 40000, usefulLife: 48, location: 'Kancelarija', status: 'aktivno' } }),
+    db.asset.create({ data: { name: 'Volkswagen Transporter', category: 'Vozila', serialNumber: 'WV-TR-2024-001', purchasePrice: 4500000, currentValue: 4000000, depreciation: 500000, usefulLife: 60, location: 'Garaža', status: 'aktivno' } }),
+    db.asset.create({ data: { name: 'HP LaserJet Pro M404', category: 'IT oprema', serialNumber: 'HP-M404-2024-001', purchasePrice: 85000, currentValue: 60000, depreciation: 25000, usefulLife: 36, location: 'Kancelarija', status: 'aktivno' } }),
+    db.asset.create({ data: { name: 'Stanley alatni set', category: 'Alat', serialNumber: 'ST-SET-001', purchasePrice: 25000, currentValue: 20000, depreciation: 5000, usefulLife: 60, location: 'Magacin', status: 'aktivno' } }),
+    db.asset.create({ data: { name: 'Klima uređaj Gree 12000', category: 'IT oprema', serialNumber: 'GR-12000-001', purchasePrice: 120000, currentValue: 90000, depreciation: 30000, usefulLife: 60, location: 'Server soba', status: 'aktivno' } }),
+  ])
+
+  // Projects
+  const projects = await Promise.all([
+    db.project.create({ data: { name: 'Migracija na cloud', description: 'Migracija server infrastrukture na AWS/Azure', status: 'aktivan', budget: 500000, spent: 180000, priority: 'visok', assignedTo: 'Stefan Ilić' } }),
+    db.project.create({ data: { name: 'Redizajn web sajta', description: 'Kompletan redizajn korporativnog sajta', status: 'aktivan', budget: 200000, spent: 75000, priority: 'srednji', assignedTo: 'Ana Milić' } }),
+    db.project.create({ data: { name: 'Implementacija ERP modula', description: 'Dodavanje CRM i HR modula', status: 'aktivan', budget: 300000, spent: 120000, priority: 'hitan', assignedTo: 'Stefan Ilić' } }),
+    db.project.create({ data: { name: 'Renovacija kancelarije', description: 'Renovacija i opremanje novog prostora', status: 'zavrsen', budget: 150000, spent: 145000, priority: 'nizak', assignedTo: 'Marko Petrović', endDate: new Date(year, month - 1, 15) } }),
+  ])
+
+  // Project Tasks
+  for (const proj of projects) {
+    const tasks = [
+      { title: 'Planiranje', status: proj.status === 'zavrsen' ? 'zavrseno' : 'zavrseno', priority: 'visok' },
+      { title: 'Izvršenje', status: proj.status === 'zavrsen' ? 'zavrseno' : 'u_toku', priority: 'visok' },
+      { title: 'Testiranje', status: proj.status === 'zavrsen' ? 'zavrseno' : 'todo', priority: 'srednji' },
+      { title: 'Dokumentacija', status: proj.status === 'zavrsen' ? 'zavrseno' : 'todo', priority: 'nizak' },
+    ]
+    for (const t of tasks) {
+      await db.projectTask.create({ data: { projectId: proj.id, ...t } })
+    }
+  }
+
+  // Documents
+  await Promise.all([
+    db.document.create({ data: { title: 'Ugovor o saradnji - Delta Trade', type: 'ugovor', category: 'Partneri', status: 'aktivno', partnerId: partners[0].id } }),
+    db.document.create({ data: { title: 'Godišnji izveštaj 2024', type: 'izvestaj', category: 'Izveštaji', status: 'aktivno' } }),
+    db.document.create({ data: { title: 'Ponuda za IT opremu', type: 'ponuda', category: 'Prodaja', status: 'aktivno', expiresAt: new Date(year, month + 3, 1) } }),
+    db.document.create({ data: { title: 'Ugovor o zakupi vozila', type: 'ugovor', category: 'Logistika', status: 'aktivno' } }),
+    db.document.create({ data: { title: 'Račun br. 1-2025', type: 'faktura', category: 'Finansije', status: 'aktivno' } }),
+  ])
+
   console.log('✅ Database seeded successfully!')
   console.log(`  - ${partners.length} partners`)
   console.log(`  - ${products.length} products`)
   console.log(`  - ${transactions.length} transactions`)
-  console.log(`  - 15 invoices (izlazna/ulazna/predracun)`)
+  console.log(`  - 15 invoices`)
   console.log(`  - ~50 cash register entries`)
   console.log(`  - 30 stock movements`)
   console.log(`  - 8 purchase orders`)
   console.log(`  - 6 delivery notes`)
   console.log(`  - 3 price lists`)
+  console.log(`  - 8 CRM contacts`)
+  console.log(`  - 6 deals`)
+  console.log(`  - 7 CRM activities`)
+  console.log(`  - 6 calendar events`)
+  console.log(`  - 6 employees`)
+  console.log(`  - 6 payrolls`)
+  console.log(`  - ~150 attendance records`)
+  console.log(`  - 5 assets`)
+  console.log(`  - 4 projects with tasks`)
+  console.log(`  - 5 documents`)
 }
 
 seed()

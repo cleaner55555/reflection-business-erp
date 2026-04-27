@@ -10,6 +10,12 @@ import { Magacin } from '@/components/modules/Magacin'
 import { Partneri } from '@/components/modules/Partneri'
 import { Nabavka } from '@/components/modules/Nabavka'
 import { Izvestaji } from '@/components/modules/Izvestaji'
+import { CRM } from '@/components/modules/CRM'
+import { Kalendar } from '@/components/modules/Kalendar'
+import { Zaposleni } from '@/components/modules/Zaposleni'
+import { Projekti } from '@/components/modules/Projekti'
+import { Sredstva } from '@/components/modules/Sredstva'
+import { Dokumenta } from '@/components/modules/Dokumenta'
 import { useAppStore } from '@/lib/store'
 import { Separator } from '@/components/ui/separator'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -24,7 +30,29 @@ export default function Home() {
     magacin: 'Magacin',
     partneri: 'Partneri',
     nabavka: 'Nabavka',
+    crm: 'CRM',
+    kalendar: 'Kalendar',
+    zaposleni: 'Zaposleni',
+    projekti: 'Projekti',
+    sredstva: 'Osnovna sredstva',
+    dokumenta: 'Dokumenta',
     izvestaji: 'Izveštaji',
+  }
+
+  const modules: Record<string, React.ReactNode> = {
+    dashboard: <Dashboard />,
+    finansije: <Finansije />,
+    fakture: <Fakture />,
+    magacin: <Magacin />,
+    partneri: <Partneri />,
+    nabavka: <Nabavka />,
+    crm: <CRM />,
+    kalendar: <Kalendar />,
+    zaposleni: <Zaposleni />,
+    projekti: <Projekti />,
+    sredstva: <Sredstva />,
+    dokumenta: <Dokumenta />,
+    izvestaji: <Izvestaji />,
   }
 
   return (
@@ -50,13 +78,7 @@ export default function Home() {
                 transition={{ duration: 0.2 }}
                 className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8"
               >
-                {activeModule === 'dashboard' && <Dashboard />}
-                {activeModule === 'finansije' && <Finansije />}
-                {activeModule === 'fakture' && <Fakture />}
-                {activeModule === 'magacin' && <Magacin />}
-                {activeModule === 'partneri' && <Partneri />}
-                {activeModule === 'nabavka' && <Nabavka />}
-                {activeModule === 'izvestaji' && <Izvestaji />}
+                {modules[activeModule]}
               </motion.div>
             </AnimatePresence>
           </main>

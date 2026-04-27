@@ -29,6 +29,10 @@ model Partner {
   invoices         Invoice[]
   purchaseOrders   PurchaseOrder[]
   deliveryNotes    DeliveryNote[]
+  contacts         Contact[]
+  deals            Deal[]
+  employees        Employee[]
+  documents        Document[]
 }
 
 // ============ ROBA / PROIZVODI ============
@@ -218,4 +222,206 @@ model CashRegister {
   partnerName   String?
   paymentMethod String   @default("gotovina")
   createdAt     DateTime @default(now())
+}
+
+// ============ CRM - KONTAKTI ============
+
+model Contact {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String?
+  position    String?
+  company     String?
+  partnerId   String?
+  notes       String?
+  tags        String?
+  isClient    Boolean  @default(false)
+  isSupplier  Boolean  @default(false)
+  isLead      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  partner     Partner?        @relation(fields: [partnerId], references: [id])
+  activities  CrmActivity[]
+  deals       Deal[]
+}
+
+// ============ CRM - POSLOVNE PRILIKE ============
+
+model Deal {
+  id          String   @id @default(cuid())
+  title       String
+  value       Float    @default(0)
+  stage       String   @default("lead") // lead, kvalifikacija, predlog, pregovaranje, won, lost
+  probability Int      @default(10)
+  contactId   String?
+  partnerId   String?
+  assignedTo  String?
+  closeDate   DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  contact     Contact?       @relation(fields: [contactId], references: [id])
+  partner     Partner?       @relation(fields: [partnerId], references: [id])
+  activities  CrmActivity[]
+}
+
+// ============ CRM - AKTIVNOSTI ============
+
+model CrmActivity {
+  id          String   @id @default(cuid())
+  type        String   // poziv, sastanak, email, task, napomena
+  title       String
+  description String?
+  dueDate     DateTime?
+  completed   Boolean  @default(false)
+  contactId   String?
+  dealId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  contact     Contact? @relation(fields: [contactId], references: [id])
+  deal        Deal?    @relation(fields: [dealId], references: [id])
+}
+
+// ============ KALENDAR ============
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime?
+  allDay      Boolean  @default(false)
+  color       String   @default("primary")
+  type        String   @default("sastanak")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============ PLATE I KADROVI ============
+
+model Employee {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String?
+  phone         String?
+  position      String?
+  department    String?
+  baseSalary    Float    @default(0)
+  bankAccount   String?
+  partnerId     String?  // ako je iznajmljen/vanradni
+  isActive      Boolean  @default(true)
+  hireDate      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  partner       Partner? @relation(fields: [partnerId], references: [id])
+  payrolls      Payroll[]
+  attendances   Attendance[]
+}
+
+model Payroll {
+  id            String   @id @default(cuid())
+  employeeId    String
+  month         Int      // 1-12
+  year          Int
+  baseSalary    Float
+  bonuses       Float    @default(0)
+  deductions    Float    @default(0)
+  netSalary     Float
+  status        String   @default("nacrt") // nacrt, odobreno, isplaceno
+  payDate       DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  employee      Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Attendance {
+  id            String   @id @default(cuid())
+  employeeId    String
+  date          DateTime
+  hoursWorked   Float    @default(8)
+  type          String   @default("rad") // rad, bolovanje, godisnji, sluzbeni_put, odsustvo
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  employee      Employee @relation(fields: [employeeId], references: [id])
+}
+
+// ============ OSNOVNA SREDSTVA ============
+
+model Asset {
+  id            String   @id @default(cuid())
+  name          String
+  category      String?
+  serialNumber  String?
+  purchaseDate  DateTime @default(now())
+  purchasePrice Float
+  currentValue  Float
+  depreciation  Float    @default(0)
+  usefulLife    Int      @default(60) // meseci
+  location      String?
+  status        String   @default("aktivno") // aktivno, na_popravci, izvan_upotrebe, prodato, otpisano
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============ PROJEKTI ============
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("aktivan") // aktivan, zavrsen, pauziran, otkazan
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  budget      Float    @default(0)
+  spent       Float    @default(0)
+  priority    String   @default("srednji") // nizak, srednji, visok, hitan
+  assignedTo  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tasks       ProjectTask[]
+}
+
+model ProjectTask {
+  id          String   @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  status      String   @default("todo") // todo, u_toku, zavrseno, blokirano
+  priority    String   @default("srednji")
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ============ DMS - DOKUMENTI ============
+
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+  category    String?
+  type        String?  // faktura, ugovor, ponuda, izvestaj, ostalo
+  fileName    String?
+  fileSize    Int      @default(0)
+  status      String   @default("aktivno")
+  partnerId   String?
+  expiresAt   DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  partner     Partner? @relation(fields: [partnerId], references: [id])
 }
