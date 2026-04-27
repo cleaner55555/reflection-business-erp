@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
@@ -79,6 +79,7 @@ export function Nabavka() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -126,6 +127,27 @@ export function Nabavka() {
     setLineItems(updated)
   }
 
+  const handleEdit = (po: PurchaseOrder) => {
+    setEditingOrder(po)
+    setLineItems(po.items.map(i => ({
+      productId: i.productId,
+      productName: i.productName,
+      quantity: i.quantity,
+      unitPrice: i.unitPrice,
+    })))
+    setDialogOpen(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Da li ste sigurni da želite da obrišete ovu narudžbenicu?')) return
+    try {
+      const res = await fetch(`/api/purchase-orders/${id}`, { method: 'DELETE' })
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
+      toast.success('Narudžbenica uspešno obrisana')
+      fetchOrders()
+    } catch { toast.error('Greška') }
+  }
+
   const grandTotal = lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -140,7 +162,7 @@ export function Nabavka() {
 
     const body = {
       partnerId: fd.get('partnerId') as string,
-      number: `PO-${year}-${month}-${count}`,
+      number: editingOrder ? editingOrder.number : `PO-${year}-${month}-${count}`,
       status: fd.get('status') as string || 'nacrt',
       notes: fd.get('notes') as string,
       items: lineItems.map((item) => ({
@@ -151,22 +173,24 @@ export function Nabavka() {
     }
 
     try {
-      const res = await fetch('/api/purchase-orders', {
-        method: 'POST',
+      const url = editingOrder ? `/api/purchase-orders/${editingOrder.id}` : '/api/purchase-orders'
+      const res = await fetch(url, {
+        method: editingOrder ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri kreiranju')
+        toast.error(err.error || 'Greška')
         return
       }
-      toast.success('Narudžbenica uspešno kreirana')
+      toast.success(editingOrder ? 'Narudžbenica uspešno ažurirana' : 'Narudžbenica uspešno kreirana')
       setDialogOpen(false)
+      setEditingOrder(null)
       setLineItems([{ productId: '', productName: '', quantity: 1, unitPrice: 0 }])
       fetchOrders()
     } catch {
-      toast.error('Greška pri kreiranju narudžbenice')
+      toast.error(editingOrder ? 'Greška pri ažuriranju narudžbenice' : 'Greška pri kreiranju narudžbenice')
     } finally {
       setSubmitting(false)
     }
@@ -180,7 +204,7 @@ export function Nabavka() {
             <CardTitle className="text-base font-semibold">Nabavka</CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">Upravljanje narudžbenicama</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) { setEditingOrder(null); setLineItems([{ productId: '', productName: '', quantity: 1, unitPrice: 0 }]) } setDialogOpen(open) }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">
                 <Plus className="h-4 w-4" /> Nova Narudžbenica
@@ -188,13 +212,13 @@ export function Nabavka() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Nova Narudžbenica</DialogTitle>
+                <DialogTitle>{editingOrder ? 'Izmeni Narudžbenicu' : 'Nova Narudžbenica'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form key={editingOrder?.id || 'new'} onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Dobavljač *</Label>
-                    <Select name="partnerId" required>
+                    <Select name="partnerId" required defaultValue={editingOrder?.partnerId || ''}>
                       <SelectTrigger><SelectValue placeholder="Izaberite dobavljača" /></SelectTrigger>
                       <SelectContent>
                         {partners.map((p) => (
@@ -285,7 +309,7 @@ export function Nabavka() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Kreiraj Narudžbenicu'}
+                  {submitting ? 'Čuvanje...' : editingOrder ? 'Sačuvaj Izmene' : 'Kreiraj Narudžbenicu'}
                 </Button>
               </form>
             </DialogContent>
@@ -334,12 +358,13 @@ export function Nabavka() {
                   <TableHead className="text-xs">Status</TableHead>
                   <TableHead className="text-xs">Stavki</TableHead>
                   <TableHead className="text-xs text-right">Iznos</TableHead>
+                  <TableHead className="text-xs text-center">Akcije</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
                       Nema narudžbenica za prikaz
                     </TableCell>
                   </TableRow>
@@ -357,6 +382,16 @@ export function Nabavka() {
                       <TableCell className="text-xs">{po.items.length}</TableCell>
                       <TableCell className="text-xs text-right font-medium">
                         {formatRSD(po.totalAmount)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => handleEdit(po)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-red-500" onClick={() => handleDelete(po.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

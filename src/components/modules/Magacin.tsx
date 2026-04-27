@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, AlertTriangle } from 'lucide-react'
+import { Plus, Search, AlertTriangle, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
@@ -93,6 +93,7 @@ function ArtikliTab() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
   const fetchProducts = useCallback(async () => {
     setLoading(true)
@@ -111,6 +112,21 @@ function ArtikliTab() {
 
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
 
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product)
+    setDialogOpen(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Da li ste sigurni da želite da obrišete ovaj artikal?')) return
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' })
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
+      toast.success('Artikal uspešno obrisan')
+      fetchProducts()
+    } catch { toast.error('Greška') }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitting(true)
@@ -127,8 +143,10 @@ function ArtikliTab() {
       currentStock: fd.get('currentStock') as string,
     }
     try {
-      const res = await fetch('/api/products', {
-        method: 'POST',
+      const isEditing = !!editingProduct
+      const url = isEditing ? `/api/products/${editingProduct.id}` : '/api/products'
+      const res = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
@@ -137,8 +155,9 @@ function ArtikliTab() {
         toast.error(err.error || 'Greška pri kreiranju')
         return
       }
-      toast.success('Artikal uspešno kreiran')
+      toast.success(isEditing ? 'Artikal uspešno ažuriran' : 'Artikal uspešno kreiran')
       setDialogOpen(false)
+      setEditingProduct(null)
       fetchProducts()
     } catch {
       toast.error('Greška pri kreiranju artikla')
@@ -155,7 +174,7 @@ function ArtikliTab() {
             <CardTitle className="text-base font-semibold">Artikli</CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">{products.length} artikala</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingProduct(null) }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">
                 <Plus className="h-4 w-4" /> Novi Artikal
@@ -163,31 +182,31 @@ function ArtikliTab() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Novi Artikal</DialogTitle>
+                <DialogTitle>{editingProduct ? 'Izmeni Artikal' : 'Novi Artikal'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form key={editingProduct?.id || 'new'} onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Naziv *</Label>
-                    <Input name="name" placeholder="Naziv artikla" required />
+                    <Input name="name" placeholder="Naziv artikla" defaultValue={editingProduct?.name || ''} required />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Šifra (SKU) *</Label>
-                    <Input name="sku" placeholder="SKU-001" required />
+                    <Input name="sku" placeholder="SKU-001" defaultValue={editingProduct?.sku || ''} required />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Barkod</Label>
-                    <Input name="barcode" placeholder="8600000000000" />
+                    <Input name="barcode" placeholder="8600000000000" defaultValue={editingProduct?.barcode || ''} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Kategorija</Label>
-                    <Input name="category" placeholder="Kategorija" />
+                    <Input name="category" placeholder="Kategorija" defaultValue={editingProduct?.category || ''} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Jedinica mere</Label>
-                    <Select name="unit" defaultValue="kom">
+                    <Select name="unit" defaultValue={editingProduct?.unit || 'kom'}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="kom">kom</SelectItem>
@@ -202,23 +221,23 @@ function ArtikliTab() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Nabavna cena *</Label>
-                    <Input name="purchasePrice" type="number" step="0.01" placeholder="0.00" required />
+                    <Input name="purchasePrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.purchasePrice || '')} required />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Prodajna cena *</Label>
-                    <Input name="sellingPrice" type="number" step="0.01" placeholder="0.00" required />
+                    <Input name="sellingPrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.sellingPrice || '')} required />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Minimalna zaliha</Label>
-                    <Input name="minStock" type="number" placeholder="0" />
+                    <Input name="minStock" type="number" placeholder="0" defaultValue={String(editingProduct?.minStock || '')} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Trenutna zaliha</Label>
-                    <Input name="currentStock" type="number" placeholder="0" />
+                    <Input name="currentStock" type="number" placeholder="0" defaultValue={String(editingProduct?.currentStock || '')} />
                   </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Kreiraj Artikal'}
+                  {submitting ? 'Čuvanje...' : editingProduct ? 'Sačuvaj Izmene' : 'Kreiraj Artikal'}
                 </Button>
               </form>
             </DialogContent>
@@ -267,12 +286,13 @@ function ArtikliTab() {
                   <TableHead className="text-xs text-right">Prodajna</TableHead>
                   <TableHead className="text-xs text-center">Zaliha</TableHead>
                   <TableHead className="text-xs text-center">Min</TableHead>
+                  <TableHead className="text-xs text-center">Akcije</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
                       Nema artikala za prikaz
                     </TableCell>
                   </TableRow>
@@ -299,6 +319,16 @@ function ArtikliTab() {
                         </div>
                       </TableCell>
                       <TableCell className="text-xs text-center text-muted-foreground">{p.minStock}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(p)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => handleDelete(p.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

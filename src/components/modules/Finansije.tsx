@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
+import { Plus, Search, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 
@@ -92,6 +92,7 @@ function TransakcijeTab() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true)
@@ -109,6 +110,21 @@ function TransakcijeTab() {
     fetchTransactions()
   }, [fetchTransactions])
 
+  const handleEdit = (t: Transaction) => {
+    setEditingTransaction(t)
+    setDialogOpen(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Da li ste sigurni?')) return
+    try {
+      const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' })
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
+      toast.success('Transakcija obrisana')
+      fetchTransactions()
+    } catch { toast.error('Greška') }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitting(true)
@@ -121,21 +137,24 @@ function TransakcijeTab() {
       documentRef: fd.get('documentRef') as string,
     }
     try {
-      const res = await fetch('/api/transactions', {
-        method: 'POST',
+      const isEditing = !!editingTransaction
+      const url = isEditing ? `/api/transactions/${editingTransaction.id}` : '/api/transactions'
+      const res = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(isEditing ? { ...body, date: editingTransaction.date } : body),
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri kreiranju')
+        toast.error(err.error || 'Greška')
         return
       }
-      toast.success('Transakcija uspešno kreirana')
+      toast.success(isEditing ? 'Transakcija uspešno ažurirana' : 'Transakcija uspešno kreirana')
       setDialogOpen(false)
+      setEditingTransaction(null)
       fetchTransactions()
     } catch {
-      toast.error('Greška pri kreiranju transakcije')
+      toast.error('Greška pri čuvanju transakcije')
     } finally {
       setSubmitting(false)
     }
@@ -149,7 +168,7 @@ function TransakcijeTab() {
             <CardTitle className="text-base font-semibold">Transakcije</CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">Sve finansijske transakcije</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingTransaction(null) }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">
                 <Plus className="h-4 w-4" /> Nova Transakcija
@@ -157,13 +176,13 @@ function TransakcijeTab() {
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Nova Transakcija</DialogTitle>
+                <DialogTitle>{editingTransaction ? 'Izmeni Transakciju' : 'Nova Transakcija'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} key={editingTransaction?.id || 'new'} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs">Tip</Label>
-                    <Select name="type" defaultValue="prihod">
+                    <Select name="type" defaultValue={editingTransaction?.type || 'prihod'}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="prihod">Prihod</SelectItem>
@@ -173,7 +192,7 @@ function TransakcijeTab() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Kategorija</Label>
-                    <Select name="category" defaultValue="promet">
+                    <Select name="category" defaultValue={editingTransaction?.category || 'promet'}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="promet">Promet</SelectItem>
@@ -187,18 +206,18 @@ function TransakcijeTab() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Iznos (RSD)</Label>
-                  <Input name="amount" type="number" step="0.01" placeholder="0.00" required />
+                  <Input name="amount" type="number" step="0.01" placeholder="0.00" required defaultValue={editingTransaction?.amount ?? ''} />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Opis</Label>
-                  <Input name="description" placeholder="Opis transakcije" required />
+                  <Input name="description" placeholder="Opis transakcije" required defaultValue={editingTransaction?.description || ''} />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Dokument (opciono)</Label>
-                  <Input name="documentRef" placeholder="Broj dokumenta" />
+                  <Input name="documentRef" placeholder="Broj dokumenta" defaultValue={editingTransaction?.documentRef || ''} />
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? 'Čuvanje...' : 'Kreiraj Transakciju'}
+                  {submitting ? 'Čuvanje...' : editingTransaction ? 'Sačuvaj Izmene' : 'Kreiraj Transakciju'}
                 </Button>
               </form>
             </DialogContent>
@@ -259,12 +278,13 @@ function TransakcijeTab() {
                   <TableHead className="text-xs">Opis</TableHead>
                   <TableHead className="text-xs">Dokument</TableHead>
                   <TableHead className="text-xs text-right">Iznos</TableHead>
+                  <TableHead className="text-xs w-[80px]">Akcije</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {transactions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
                       Nema transakcija za prikaz
                     </TableCell>
                   </TableRow>
@@ -286,6 +306,16 @@ function TransakcijeTab() {
                       <TableCell className={`text-xs text-right font-medium ${t.type === 'prihod' ? 'text-emerald-600' : 'text-red-600'}`}>
                         {t.type === 'prihod' ? '+' : '-'}{formatRSD(t.amount)}
                       </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(t)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDelete(t.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -303,6 +333,7 @@ function KasaTab() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [editingEntry, setEditingEntry] = useState<CashEntry | null>(null)
 
   const fetchEntries = useCallback(async () => {
     setLoading(true)
@@ -320,6 +351,21 @@ function KasaTab() {
     return acc + (entry.type === 'ulaz' ? entry.amount : -entry.amount)
   }, 0)
 
+  const handleEdit = (entry: CashEntry) => {
+    setEditingEntry(entry)
+    setDialogOpen(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Da li ste sigurni?')) return
+    try {
+      const res = await fetch(`/api/cash-register/${id}`, { method: 'DELETE' })
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Greška'); return }
+      toast.success('Unos uspešno obrisan')
+      fetchEntries()
+    } catch { toast.error('Greška') }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitting(true)
@@ -332,21 +378,24 @@ function KasaTab() {
       paymentMethod: fd.get('paymentMethod') as string,
     }
     try {
-      const res = await fetch('/api/cash-register', {
-        method: 'POST',
+      const isEditing = !!editingEntry
+      const url = isEditing ? `/api/cash-register/${editingEntry.id}` : '/api/cash-register'
+      const res = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(isEditing ? { ...body, date: editingEntry.date } : body),
       })
       if (!res.ok) {
         const err = await res.json()
-        toast.error(err.error || 'Greška pri kreiranju')
+        toast.error(err.error || 'Greška')
         return
       }
-      toast.success('Kasa unos uspešno kreiran')
+      toast.success(isEditing ? 'Unos uspešno ažuriran' : 'Kasa unos uspešno kreiran')
       setDialogOpen(false)
+      setEditingEntry(null)
       fetchEntries()
     } catch {
-      toast.error('Greška pri kreiranju unosa')
+      toast.error('Greška pri čuvanju unosa')
     } finally {
       setSubmitting(false)
     }
@@ -365,7 +414,7 @@ function KasaTab() {
               <div className={`rounded-lg px-4 py-2 text-sm font-bold ${runningBalance >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
                 Stanje: {formatRSD(runningBalance)}
               </div>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingEntry(null) }}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="gap-2">
                     <Plus className="h-4 w-4" /> Novi Unos
@@ -373,13 +422,13 @@ function KasaTab() {
                 </DialogTrigger>
                 <DialogContent className="max-w-lg">
                   <DialogHeader>
-                    <DialogTitle>Novi Unos u Kasu</DialogTitle>
+                    <DialogTitle>{editingEntry ? 'Izmeni Unos' : 'Novi Unos u Kasu'}</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form onSubmit={handleSubmit} key={editingEntry?.id || 'new'} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-xs">Tip</Label>
-                        <Select name="type" defaultValue="ulaz">
+                        <Select name="type" defaultValue={editingEntry?.type || 'ulaz'}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="ulaz">Ulaz</SelectItem>
@@ -389,7 +438,7 @@ function KasaTab() {
                       </div>
                       <div className="space-y-2">
                         <Label className="text-xs">Način plaćanja</Label>
-                        <Select name="paymentMethod" defaultValue="gotovina">
+                        <Select name="paymentMethod" defaultValue={editingEntry?.paymentMethod || 'gotovina'}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="gotovina">Gotovina</SelectItem>
@@ -400,18 +449,18 @@ function KasaTab() {
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs">Iznos (RSD)</Label>
-                      <Input name="amount" type="number" step="0.01" placeholder="0.00" required />
+                      <Input name="amount" type="number" step="0.01" placeholder="0.00" required defaultValue={editingEntry?.amount ?? ''} />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs">Opis</Label>
-                      <Input name="description" placeholder="Opis unosa" required />
+                      <Input name="description" placeholder="Opis unosa" required defaultValue={editingEntry?.description || ''} />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs">Partner (opciono)</Label>
-                      <Input name="partnerName" placeholder="Ime partnera" />
+                      <Input name="partnerName" placeholder="Ime partnera" defaultValue={editingEntry?.partnerName || ''} />
                     </div>
                     <Button type="submit" className="w-full" disabled={submitting}>
-                      {submitting ? 'Čuvanje...' : 'Kreiraj Unos'}
+                      {submitting ? 'Čuvanje...' : editingEntry ? 'Sačuvaj Izmene' : 'Kreiraj Unos'}
                     </Button>
                   </form>
                 </DialogContent>
@@ -437,12 +486,13 @@ function KasaTab() {
                     <TableHead className="text-xs">Partner</TableHead>
                     <TableHead className="text-xs">Plaćanje</TableHead>
                     <TableHead className="text-xs text-right">Iznos</TableHead>
+                    <TableHead className="text-xs w-[80px]">Akcije</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {entries.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
                         Nema unosa za prikaz
                       </TableCell>
                     </TableRow>
@@ -460,6 +510,16 @@ function KasaTab() {
                         <TableCell className="text-xs">{getStatusLabel(entry.paymentMethod)}</TableCell>
                         <TableCell className={`text-xs text-right font-medium ${entry.type === 'ulaz' ? 'text-emerald-600' : 'text-red-600'}`}>
                           {entry.type === 'ulaz' ? '+' : '-'}{formatRSD(entry.amount)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(entry)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDelete(entry.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
