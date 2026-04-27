@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,20 +7,156 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ============ PARTNERI / KLIJENTI / DOBAVLJAČI ============
+
+model Partner {
+  id          String   @id @default(cuid())
+  name        String
+  pib         String   @unique
+  maticniBr   String?
+  address     String?
+  city        String?
+  zipCode     String?
+  phone       String?
+  email       String?
+  type        String   @default("kupac") // kupac, dobavljac, partner
+  account     String?
+  bank        String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoices         Invoice[]
+  purchaseOrders   PurchaseOrder[]
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ============ ROBA / PROIZVODI ============
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  sku         String   @unique
+  barcode     String?
+  category    String?
+  unit        String   @default("kom") // kom, kg, l, m, pak
+  purchasePrice Float
+  sellingPrice  Float
+  minStock    Int      @default(0)
+  currentStock Int     @default(0)
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoiceItems      InvoiceItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  stockMovements    StockMovement[]
+}
+
+// ============ FAKTURE ============
+
+model Invoice {
+  id            String   @id @default(cuid())
+  number        String   @unique
+  date          DateTime @default(now())
+  dueDate       DateTime
+  partnerId     String
+  status        String   @default("nacrt") // nacrt, poslata, placena, otkazana
+  totalAmount   Float
+  taxAmount     Float    @default(0)
+  discountPct   Float    @default(0)
+  notes         String?
+  paymentMethod String   @default("racun") // racun, gotovina, kartica
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id])
+  items   InvoiceItem[]
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  productId   String
+  productName String
+  quantity    Float
+  unitPrice   Float
+  discountPct Float    @default(0)
+  taxRate     Float    @default(20)
+  total       Float
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// ============ NABAVKA ============
+
+model PurchaseOrder {
+  id            String   @id @default(cuid())
+  number        String   @unique
+  date          DateTime @default(now())
+  partnerId     String
+  status        String   @default("nacrt") // nacrt, poslata, primljena, otkazana
+  totalAmount   Float
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id])
+  items   PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  quantity    Float
+  unitPrice   Float
+  total       Float
+
+  order   PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// ============ MAGACIN / ZALIHE ============
+
+model StockMovement {
+  id          String   @id @default(cuid())
+  productId   String
+  date        DateTime @default(now())
+  type        String   // prijem, izdavanje, inventura, korekcija
+  quantity    Float
+  documentRef String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// ============ FINANSIJE ============
+
+model Transaction {
+  id            String   @id @default(cuid())
+  date          DateTime @default(now())
+  type          String   // prihod, rashod
+  category      String   // promet, nabavka, plata, režije, ostalo
+  amount        Float
+  description   String
+  documentRef   String?
+  partnerId     String?
+  createdAt     DateTime @default(now())
+}
+
+// ============ KASA ============
+
+model CashRegister {
+  id            String   @id @default(cuid())
+  date          DateTime @default(now())
+  type          String   // ulaz, izlaz
+  amount        Float
+  description   String
+  partnerName   String?
+  paymentMethod String   @default("gotovina")
+  createdAt     DateTime @default(now())
 }
