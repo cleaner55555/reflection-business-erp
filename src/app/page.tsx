@@ -24,8 +24,7 @@ import { KafeRestoran } from '@/components/modules/KafeRestoran'
 import { MailerLite } from '@/components/modules/MailerLite'
 import { RentACar } from '@/components/modules/RentACar'
 import { Podesavanja } from '@/components/modules/Podesavanja'
-// AI Assistant temporarily disabled - fixing dialog conflicts
-// import { AIAssistant } from '@/components/modules/AIAssistant'
+import { AIAssistant } from '@/components/modules/AIAssistant'
 import { useAppStore } from '@/lib/store'
 import { Separator } from '@/components/ui/separator'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -111,9 +110,11 @@ export default function Home() {
 
           <Footer />
 
-          {/* AI Assistant - temporarily disabled while fixing dialog conflicts */}
         </SidebarInset>
       </SidebarProvider>
+
+      {/* AI Assistant - outside SidebarProvider to prevent dialog conflicts */}
+      <AIAssistant />
     </div>
   )
 }

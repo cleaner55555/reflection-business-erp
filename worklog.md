@@ -31,3 +31,23 @@ Stage Summary:
 - Full demo data seeded for all modules
 - Application version updated to v3.0
 - Total modules: 21 (Dashboard, Finansije, Fakture, Magacin, Partneri, Nabavka, CRM, Kalendar, Zaposleni, Projekti, Osnovna sredstva, Dokumenta, Knjigovodstvo, Protokol, Edukacija, Vozni park, Rent a Car, Kafe Restoran, Email Marketing, Izveštaji, Podešavanja)
+
+---
+Task ID: 2
+Agent: Main Coordinator
+Task: Fix AI chat component - re-enable without breaking edit dialogs
+
+Work Log:
+- Investigated AI chat component implementation (AIAssistant.tsx)
+- Identified root cause: AI chat was previously placed INSIDE SidebarInset, causing stacking context conflicts with Dialog z-index
+- Re-enabled AIAssistant import in page.tsx
+- Moved AIAssistant component OUTSIDE SidebarProvider to make it a completely independent fixed-position element
+- Lowered AI chat z-index from z-50 to z-40 so Dialogs (z-50 via portal) always render above the chat panel
+- Verified dev server compiles with zero errors
+- Lint passes cleanly
+
+Stage Summary:
+- AI Assistant chat widget is now active and properly positioned
+- Chat uses z-40, Dialogs use z-50 — no more z-index conflicts
+- Chat panel is placed outside SidebarProvider — no more layout/overflow interference
+- Editing on all module pages should work correctly alongside the AI chat
