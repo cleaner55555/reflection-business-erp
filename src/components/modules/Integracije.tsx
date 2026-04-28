@@ -38,6 +38,17 @@ import {
   Clock,
   UploadCloud,
   X,
+  Plug,
+  RefreshCw,
+  Play,
+  Square,
+  Zap,
+  Plus,
+  Edit2,
+  Globe,
+  Eye,
+  Wifi,
+  WifiOff,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -90,6 +101,47 @@ interface IntegrationJob {
   createdAt: string
   fileName?: string | null
 }
+
+interface SyncConnector {
+  id: string
+  name: string
+  type: string
+  direction: string
+  isActive: boolean
+  status: string
+  hostUrl: string | null
+  apiKey: string | null
+  username: string | null
+  database: string | null
+  syncInterval: number
+  syncEntities: string
+  lastSyncAt: string | null
+  lastSyncStatus: string | null
+  totalSyncs: number
+  totalRecords: number
+  notes: string | null
+  createdAt: string
+}
+
+const CONNECTOR_TYPES: Record<string, string> = {
+  biznis_navigator: 'Biznis Navigator',
+  pantheon: 'Pantheon',
+  minimax: 'Minimax',
+  efakture: 'eFakture (SEF)',
+  sap: 'SAP',
+  biznisoft: 'BizniSoft',
+  custom_api: 'Custom API',
+}
+
+const ENTITY_OPTIONS = [
+  { value: 'partners', label: 'Partners' },
+  { value: 'products', label: 'Products' },
+  { value: 'transactions', label: 'Transactions' },
+  { value: 'contacts', label: 'Contacts' },
+  { value: 'invoices', label: 'Invoices' },
+  { value: 'stock', label: 'Stock' },
+  { value: 'employees', label: 'Employees' },
+]
 
 // ==================== ENTITY FIELDS ====================
 
@@ -154,8 +206,12 @@ export function Integracije() {
         </p>
       </div>
 
-      <Tabs defaultValue="import" className="space-y-4">
+      <Tabs defaultValue="connections" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="connections" className="gap-1.5">
+            <Plug className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t('integrations.tab_connections')}</span>
+          </TabsTrigger>
           <TabsTrigger value="import" className="gap-1.5">
             <Upload className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('integrations.tab_import')}</span>
@@ -170,6 +226,9 @@ export function Integracije() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="connections">
+          <ConnectionsTab />
+        </TabsContent>
         <TabsContent value="import">
           <ImportWizard />
         </TabsContent>
@@ -180,6 +239,428 @@ export function Integracije() {
           <HistoryTab />
         </TabsContent>
       </Tabs>
+    </div>
+  )
+}
+
+// ==================== CONNECTIONS TAB ====================
+
+function ConnectionsTab() {
+  const { t } = useTranslation()
+  const [connectors, setConnectors] = useState<SyncConnector[]>([])
+  const [loading, setLoading] = useState(true)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState<string | null>(null)
+  const [syncing, setSyncing] = useState<string | null>(null)
+
+  // Form state
+  const [formName, setFormName] = useState('')
+  const [formType, setFormType] = useState('biznis_navigator')
+  const [formDirection, setFormDirection] = useState('import')
+  const [formHostUrl, setFormHostUrl] = useState('')
+  const [formApiKey, setFormApiKey] = useState('')
+  const [formUsername, setFormUsername] = useState('')
+  const [formPassword, setFormPassword] = useState('')
+  const [formDatabase, setFormDatabase] = useState('')
+  const [formInterval, setFormInterval] = useState(60)
+  const [formEntities, setFormEntities] = useState<string[]>(['partners', 'products'])
+  const [formNotes, setFormNotes] = useState('')
+
+  const fetchConnectors = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/integrations/connectors')
+      if (res.ok) setConnectors(await res.json())
+    } catch { /* silent */ } finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchConnectors() }, [fetchConnectors])
+
+  const resetForm = () => {
+    setFormName('')
+    setFormType('biznis_navigator')
+    setFormDirection('import')
+    setFormHostUrl('')
+    setFormApiKey('')
+    setFormUsername('')
+    setFormPassword('')
+    setFormDatabase('')
+    setFormInterval(60)
+    setFormEntities(['partners', 'products'])
+    setFormNotes('')
+    setEditingId(null)
+  }
+
+  const handleAdd = () => { resetForm(); setViewMode('form') }
+
+  const handleEdit = (c: SyncConnector) => {
+    setEditingId(c.id)
+    setFormName(c.name)
+    setFormType(c.type)
+    setFormDirection(c.direction)
+    setFormHostUrl(c.hostUrl || '')
+    setFormApiKey(c.apiKey || '')
+    setFormUsername(c.username || '')
+    setFormPassword('')
+    setFormDatabase(c.database || '')
+    setFormInterval(c.syncInterval)
+    setFormEntities(JSON.parse(c.syncEntities || '[]'))
+    setFormNotes(c.notes || '')
+    setViewMode('form')
+  }
+
+  const handleSave = async () => {
+    if (!formName.trim()) { toast.error(t('common.requiredField', 'Name')); return }
+    if (formEntities.length === 0) { toast.error('Select at least one entity'); return }
+    setSaving(true)
+    try {
+      const body = {
+        name: formName,
+        type: formType,
+        direction: formDirection,
+        hostUrl: formHostUrl || null,
+        apiKey: formApiKey || null,
+        username: formUsername || null,
+        password: formPassword || null,
+        database: formDatabase || null,
+        syncInterval: formInterval,
+        syncEntities: JSON.stringify(formEntities),
+        notes: formNotes || null,
+      }
+      const url = editingId ? `/api/integrations/connectors/${editingId}` : '/api/integrations/connectors'
+      const res = await fetch(url, {
+        method: editingId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) {
+        toast.success(t('integrations.connectorSaved'))
+        resetForm()
+        setViewMode('list')
+        fetchConnectors()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || t('common.error'))
+      }
+    } catch { toast.error(t('common.error')) } finally { setSaving(false) }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t('common.confirmDelete'))) return
+    try {
+      const res = await fetch(`/api/integrations/connectors/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        toast.success(t('integrations.connectorDeleted'))
+        fetchConnectors()
+      }
+    } catch { toast.error(t('common.deleteError')) }
+  }
+
+  const handleTest = async (id: string) => {
+    setTesting(id)
+    try {
+      const res = await fetch(`/api/integrations/connectors/${id}/test`, { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        toast.success(`${t('integrations.testSuccess')} (${data.latency}${t('integrations.latencyMs')})`)
+      } else {
+        toast.error(t('integrations.testFailed'))
+      }
+      fetchConnectors()
+    } catch { toast.error(t('common.error')) } finally { setTesting(null) }
+  }
+
+  const handleSync = async (id: string) => {
+    setSyncing(id)
+    try {
+      const res = await fetch(`/api/integrations/connectors/${id}/sync`, { method: 'POST' })
+      if (res.ok) {
+        toast.success(t('integrations.syncCompleted'))
+        fetchConnectors()
+      } else {
+        toast.error(t('integrations.syncFailed'))
+      }
+    } catch { toast.error(t('integrations.syncFailed')) } finally { setSyncing(null) }
+  }
+
+  const toggleActive = async (connector: SyncConnector) => {
+    const newActive = !connector.isActive
+    const newStatus = newActive ? 'connected' : 'disconnected'
+    try {
+      const res = await fetch(`/api/integrations/connectors/${connector.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: newActive, status: newStatus }),
+      })
+      if (res.ok) fetchConnectors()
+    } catch { /* silent */ }
+  }
+
+  const toggleEntity = (entity: string) => {
+    setFormEntities(prev =>
+      prev.includes(entity) ? prev.filter(e => e !== entity) : [...prev, entity]
+    )
+  }
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case 'connected': return 'bg-emerald-500'
+      case 'syncing': return 'bg-blue-500'
+      case 'error': return 'bg-red-500'
+      default: return 'bg-gray-400'
+    }
+  }
+
+  const formatTime = (dateStr: string | null) => {
+    if (!dateStr) return '—'
+    const d = new Date(dateStr)
+    return d.toLocaleString('sr-RS', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  }
+
+  const getNextSync = (connector: SyncConnector) => {
+    if (!connector.isActive || connector.status !== 'connected') return '—'
+    const last = connector.lastSyncAt ? new Date(connector.lastSyncAt).getTime() : 0
+    const next = new Date(last + connector.syncInterval * 60 * 1000)
+    return next.toLocaleString('sr-RS', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  }
+
+  // FORM VIEW
+  if (viewMode === 'form') {
+    return (
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => { resetForm(); setViewMode('list') }}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <CardTitle className="text-base font-semibold">
+                {editingId ? t('integrations.editConnector') : t('integrations.addConnector')}
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">{t('integrations.connectorName')} *</Label>
+                <input className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Biznis Navigator - Test" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('integrations.connectorType')}</Label>
+                <Select value={formType} onValueChange={setFormType}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CONNECTOR_TYPES).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('integrations.connectorDirection')}</Label>
+                <Select value={formDirection} onValueChange={setFormDirection}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="import">{t('integrations.directionImport')}</SelectItem>
+                    <SelectItem value="export">{t('integrations.directionExport')}</SelectItem>
+                    <SelectItem value="bidirectional">{t('integrations.directionBidirectional')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('integrations.connectorInterval')}</Label>
+                <input type="number" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formInterval} onChange={e => setFormInterval(Number(e.target.value))} min={5} />
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <p className="text-xs font-medium mb-3">{t('integrations.connectorHost')}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">URL / Host</Label>
+                  <input className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formHostUrl} onChange={e => setFormHostUrl(e.target.value)} placeholder="https://api.example.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('integrations.connectorApiKey')}</Label>
+                  <input type="password" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formApiKey} onChange={e => setFormApiKey(e.target.value)} placeholder="sk-..." />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('integrations.connectorUsername')}</Label>
+                  <input className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formUsername} onChange={e => setFormUsername(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('integrations.connectorPassword')}</Label>
+                  <input type="password" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formPassword} onChange={e => setFormPassword(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('integrations.connectorDatabase')}</Label>
+                  <input className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formDatabase} onChange={e => setFormDatabase(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <p className="text-xs font-medium mb-3">{t('integrations.connectorEntities')}</p>
+              <div className="flex flex-wrap gap-2">
+                {ENTITY_OPTIONS.map(opt => (
+                  <button key={opt.value} onClick={() => toggleEntity(opt.value)} className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${formEntities.includes(opt.value) ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-muted-foreground/30 hover:border-primary/50'}`}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs">{t('integrations.connectorNotes')}</Label>
+              <textarea className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formNotes} onChange={e => setFormNotes(e.target.value)} />
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <Button variant="outline" size="sm" onClick={() => { resetForm(); setViewMode('list') }}>{t('common.cancel')}</Button>
+              <Button size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}
+                {saving ? t('common.saving') : t('common.save')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    )
+  }
+
+  // LIST VIEW
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold">{t('integrations.connectionsTitle')}</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('integrations.directSyncDesc')}</p>
+        </div>
+        <Button size="sm" className="gap-1.5" onClick={handleAdd}>
+          <Plus className="h-3.5 w-3.5" />
+          {t('integrations.addConnector')}
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}</div>
+      ) : connectors.length === 0 ? (
+        <Card className="py-12">
+          <div className="flex flex-col items-center text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+              <WifiOff className="h-7 w-7 text-muted-foreground" />
+            </div>
+            <h3 className="text-sm font-semibold">{t('integrations.noConnectors')}</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-xs">{t('integrations.noConnectorsDesc')}</p>
+            <Button size="sm" className="mt-4 gap-1.5" onClick={handleAdd}>
+              <Plus className="h-3.5 w-3.5" />
+              {t('integrations.addConnector')}
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {connectors.map(connector => (
+            <Card key={connector.id} className={`relative overflow-hidden ${connector.isActive ? 'border-emerald-200' : ''}`}>
+              {/* Status indicator bar */}
+              <div className={`absolute top-0 left-0 right-0 h-0.5 ${statusColor(connector.status)}`} />
+              <CardHeader className="pb-2 pt-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${connector.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
+                      <Globe className="h-4.5 w-4.5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-sm font-semibold leading-tight">{connector.name}</CardTitle>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{CONNECTOR_TYPES[connector.type] || connector.type}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="outline" className={`text-[10px] h-5 px-1.5 ${connector.isActive ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-gray-200 text-gray-500'}`}>
+                      <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 ${statusColor(connector.status)}`} />
+                      {t(`integrations.status${connector.status.charAt(0).toUpperCase() + connector.status.slice(1)}` as string)}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-muted/50 rounded-md p-2">
+                    <p className="text-sm font-bold">{connector.totalSyncs}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('integrations.totalSyncs')}</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-md p-2">
+                    <p className="text-sm font-bold">{connector.totalRecords}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('integrations.totalRecords')}</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-md p-2">
+                    <p className="text-sm font-bold">{connector.syncInterval}m</p>
+                    <p className="text-[10px] text-muted-foreground">{t('integrations.connectorInterval')}</p>
+                  </div>
+                </div>
+
+                {/* Sync info */}
+                <div className="flex flex-col gap-1 text-[10px] text-muted-foreground">
+                  <div className="flex justify-between">
+                    <span>{t('integrations.lastSync')}</span>
+                    <span className="font-medium text-foreground">{formatTime(connector.lastSyncAt)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t('integrations.nextSync')}</span>
+                    <span className="font-medium text-foreground">{getNextSync(connector)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t('integrations.connectorEntities')}</span>
+                    <span className="font-medium text-foreground">{JSON.parse(connector.syncEntities || '[]').length} tipova</span>
+                  </div>
+                </div>
+
+                {/* Direction badge */}
+                <div className="flex items-center gap-1.5">
+                  <Badge variant="secondary" className="text-[10px] h-5">
+                    {connector.direction === 'bidirectional' ? t('integrations.directionBidirectional') : connector.direction === 'export' ? t('integrations.directionExport') : t('integrations.directionImport')}
+                  </Badge>
+                  {connector.isActive && (
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-emerald-50 text-emerald-700 border-emerald-200">
+                      <Zap className="h-2.5 w-2.5 mr-0.5" />
+                      {t('integrations.autoSync')}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 pt-1">
+                  <Button variant="outline" size="sm" className="h-7 flex-1 gap-1 text-[10px]" onClick={() => handleTest(connector.id)} disabled={testing === connector.id}>
+                    {testing === connector.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wifi className="h-3 w-3" />}
+                    {t('integrations.testConnection')}
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 flex-1 gap-1 text-[10px]" onClick={() => handleSync(connector.id)} disabled={syncing === connector.id || !connector.isActive}>
+                    {syncing === connector.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    {t('integrations.syncNow')}
+                  </Button>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Button variant="ghost" size="sm" className="h-7 flex-1 gap-1 text-[10px]" onClick={() => handleEdit(connector)}>
+                    <Edit2 className="h-3 w-3" />
+                    {t('common.edit')}
+                  </Button>
+                  <Button variant="ghost" size="sm" className={`h-7 flex-1 gap-1 text-[10px] ${connector.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'}`} onClick={() => toggleActive(connector)}>
+                    {connector.isActive ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+                    {connector.isActive ? t('integrations.stopSync') : t('integrations.startSync')}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 text-[10px] text-destructive hover:text-destructive" onClick={() => handleDelete(connector.id)}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
