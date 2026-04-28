@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import { Database } from "bun:sqlite";
 import { serve } from "bun";
 
 // ─── Configuration ───────────────────────────────────────────────────────────
@@ -24,20 +24,8 @@ function log(level: "info" | "warn" | "error", msg: string) {
 }
 
 // ─── Database ────────────────────────────────────────────────────────────────
-let db: Database.Database;
-
-function openDatabase(): Database.Database {
-  try {
-    const d = new Database(DB_PATH, { readonly: true });
-    // Enable WAL mode for better concurrent read performance
-    d.pragma("journal_mode = WAL");
-    log("info", `Database opened: ${DB_PATH}`);
-    return d;
-  } catch (err) {
-    log("error", `Failed to open database: ${(err as Error).message}`);
-    process.exit(1);
-  }
-}
+const db = new Database(DB_PATH, { readonly: true });
+log("info", `Database opened: ${DB_PATH}`);
 
 interface SyncConnectorRow {
   id: string;
@@ -50,11 +38,8 @@ interface SyncConnectorRow {
 }
 
 function getActiveConnectorsDueForSync(): SyncConnectorRow[] {
-  const now = new Date();
-  const cutoff = new Date(now.getTime() - 60 * 60_000); // will be recalculated per-connector
-
   const rows = db
-    .prepare(
+    .query(
       `
       SELECT id, name, type, isActive, status, syncInterval, lastSyncAt
       FROM SyncConnector
