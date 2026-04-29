@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer } from 'lucide-react'
+import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer, BarChart3, MapPin, Warehouse as WarehouseIcon, TrendingDown, TrendingUp, ArrowRightLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
@@ -166,15 +166,23 @@ export function Magacin() {
         </p>
       </div>
 
-      <Tabs defaultValue="artikli" className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="pregled" className="space-y-4">
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="pregled" className="gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Pregled</span>
+          </TabsTrigger>
           <TabsTrigger value="artikli" className="gap-1.5">
             <Package className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('warehouse.products')}</span>
           </TabsTrigger>
           <TabsTrigger value="kretanja" className="gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5" />
+            <ArrowRightLeft className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('warehouse.movements')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="lokacije" className="gap-1.5">
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Lokacije</span>
           </TabsTrigger>
           <TabsTrigger value="otpremnice" className="gap-1.5">
             <FileText className="h-3.5 w-3.5" />
@@ -186,12 +194,14 @@ export function Magacin() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="pregled"><StockOverview /></TabsContent>
         <TabsContent value="artikli">
           <ArtikliTab />
         </TabsContent>
         <TabsContent value="kretanja">
           <KretanjaTab />
         </TabsContent>
+        <TabsContent value="lokacije"><LokacijeTab /></TabsContent>
         <TabsContent value="otpremnice">
           <OtpremniceTab />
         </TabsContent>
@@ -200,6 +210,266 @@ export function Magacin() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+// ==================== STOCK OVERVIEW DASHBOARD ====================
+
+interface WarehouseLocation {
+  id: string; name: string; code: string; type: string; parentId: string | null; isActive: boolean
+  parent?: { id: string; name: string; code: string } | null
+  _count?: { children: number; stockMovements: number }
+}
+
+function StockOverview() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [movements, setMovements] = useState<StockMovement[]>([])
+  const [locations, setLocations] = useState<WarehouseLocation[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      const [pRes, mRes, lRes] = await Promise.all([fetch('/api/products'), fetch('/api/stock'), fetch('/api/warehouse-locations')])
+      if (cancelled) return
+      setProducts(await pRes.json())
+      setMovements(await mRes.json())
+      setLocations(await lRes.json())
+      setLoading(false)
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const stats = useMemo(() => {
+    const totalProducts = products.length
+    const totalStock = products.reduce((s, p) => s + p.currentStock, 0)
+    const totalValue = products.reduce((s, p) => s + (p.currentStock * p.purchasePrice), 0)
+    const retailValue = products.reduce((s, p) => s + (p.currentStock * p.sellingPrice), 0)
+    const lowStock = products.filter(p => p.currentStock <= p.minStock && p.currentStock > 0)
+    const outOfStock = products.filter(p => p.currentStock <= 0)
+    const recentMovements = movements.filter(m => (Date.now() - new Date(m.date).getTime()) < 7 * 24 * 60 * 60 * 1000)
+    const last7DaysIn = recentMovements.filter(m => m.type === 'prijem').reduce((s, m) => s + m.quantity, 0)
+    const last7DaysOut = recentMovements.filter(m => m.type === 'izdavanje').reduce((s, m) => s + m.quantity, 0)
+    const categories = [...new Set(products.map(p => p.category).filter(Boolean))]
+    return { totalProducts, totalStock, totalValue, retailValue, lowStock, outOfStock, last7DaysIn, last7DaysOut, categories }
+  }, [products, movements])
+
+  const topProducts = useMemo(() => {
+    return [...products].sort((a, b) => (b.currentStock * b.purchasePrice) - (a.currentStock * a.purchasePrice)).slice(0, 10)
+  }, [products])
+
+  if (loading) return <div className="space-y-3"><Skeleton className="h-32 w-full" /><Skeleton className="h-64 w-full" /></div>
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Proizvoda</p><p className="text-sm font-bold text-emerald-700">{stats.totalProducts}</p></div>
+        <div className="rounded-lg bg-blue-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Ukupna zaliha</p><p className="text-sm font-bold text-blue-700">{stats.totalStock.toLocaleString()}</p></div>
+        <div className="rounded-lg bg-purple-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Nabavna vrednost</p><p className="text-sm font-bold text-purple-700">{formatRSD(stats.totalValue)}</p></div>
+        <div className="rounded-lg bg-amber-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Prodajna vrednost</p><p className="text-sm font-bold text-amber-700">{formatRSD(stats.retailValue)}</p></div>
+        <div className="rounded-lg bg-red-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Upozorenja</p><p className="text-sm font-bold text-red-700">{stats.lowStock.length + stats.outOfStock.length}</p></div>
+        <div className="rounded-lg bg-slate-100 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Lokacije</p><p className="text-sm font-bold">{locations.length}</p></div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-500" />Upozorenja zaliha</CardTitle></CardHeader>
+          <CardContent>
+            {stats.outOfStock.length === 0 && stats.lowStock.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-4 text-center">Nema upozorenja</p>
+            ) : (
+              <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                {stats.outOfStock.map(p => (
+                  <div key={p.id} className="flex items-center justify-between p-2 rounded bg-red-50 border border-red-200">
+                    <div className="flex items-center gap-2"><span className="text-xs font-medium">{p.name}</span><span className="text-[10px] text-muted-foreground">({p.sku})</span></div>
+                    <Badge variant="outline" className="text-[9px] bg-red-100 text-red-700 border-red-200">Nema na stanju</Badge>
+                  </div>
+                ))}
+                {stats.lowStock.map(p => (
+                  <div key={p.id} className="flex items-center justify-between p-2 rounded bg-amber-50 border border-amber-200">
+                    <div className="flex items-center gap-2"><span className="text-xs font-medium">{p.name}</span><span className="text-[10px] text-muted-foreground">({p.sku})</span></div>
+                    <span className="text-[10px] font-medium text-amber-700">{p.currentStock}/{p.minStock} {p.unit}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Package className="h-4 w-4" />Top proizvodi po vrednosti</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-1.5 max-h-64 overflow-y-auto">
+              {topProducts.map((p, i) => (
+                <div key={p.id} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
+                  <div className="flex items-center gap-2"><span className="text-[10px] text-muted-foreground w-4">{i + 1}.</span><span className="text-xs font-medium">{p.name}</span><span className="text-[10px] text-muted-foreground">({p.currentStock} {p.unit})</span></div>
+                  <span className="text-xs font-semibold">{formatRSD(p.currentStock * p.purchasePrice)}</span>
+                </div>
+              ))}
+              {topProducts.length === 0 && <p className="text-xs text-muted-foreground py-4 text-center">Nema proizvoda</p>}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><ArrowRightLeft className="h-4 w-4" />Kretanje (7 dana)</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                <TrendingUp className="h-5 w-5 text-emerald-500" />
+                <div><p className="text-[10px] text-muted-foreground">Prijem</p><p className="text-sm font-bold text-emerald-700">{stats.last7DaysIn.toLocaleString()}</p></div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
+                <TrendingDown className="h-5 w-5 text-red-500" />
+                <div><p className="text-[10px] text-muted-foreground">Izdavanje</p><p className="text-sm font-bold text-red-700">{stats.last7DaysOut.toLocaleString()}</p></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Tag className="h-4 w-4" />Kategorije ({stats.categories.length})</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-1.5 max-h-64 overflow-y-auto">
+              {stats.categories.map(cat => {
+                const catProducts = products.filter(p => p.category === cat)
+                const catValue = catProducts.reduce((s, p) => s + (p.currentStock * p.purchasePrice), 0)
+                return (
+                  <div key={cat} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
+                    <span className="text-xs font-medium">{cat}</span>
+                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                      <span>{catProducts.length} art.</span>
+                      <span className="font-medium text-foreground">{formatRSD(catValue)}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// ==================== LOKACIJE TAB ====================
+
+function LokacijeTab() {
+  const [locations, setLocations] = useState<WarehouseLocation[]>([])
+  const [loading, setLoading] = useState(true)
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [submitting, setSubmitting] = useState(false)
+  const [editing, setEditing] = useState<WarehouseLocation | null>(null)
+  const [formType, setFormType] = useState('polica')
+  const [formParentId, setFormParentId] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      const res = await fetch('/api/warehouse-locations')
+      if (cancelled) return
+      setLocations(await res.json())
+      setLoading(false)
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const locTypes = [
+    { value: 'magacin', label: 'Magacin', color: 'bg-slate-100 text-slate-700' },
+    { value: 'zona', label: 'Zona', color: 'bg-blue-100 text-blue-700' },
+    { value: 'regal', label: 'Regal', color: 'bg-emerald-100 text-emerald-700' },
+    { value: 'polica', label: 'Polica', color: 'bg-amber-100 text-amber-700' },
+    { value: 'bin', label: 'Bin', color: 'bg-violet-100 text-violet-700' },
+  ]
+
+  const handleNew = () => { setEditing(null); setFormType('polica'); setFormParentId(''); setViewMode('form') }
+  const handleEdit = (loc: WarehouseLocation) => { setEditing(loc); setFormType(loc.type); setFormParentId(loc.parentId || ''); setViewMode('form') }
+  const handleCancel = () => { setViewMode('list'); setEditing(null) }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); setSubmitting(true)
+    const fd = new FormData(e.currentTarget)
+    const body = { name: fd.get('name') as string, code: fd.get('code') as string, type: formType, parentId: formParentId || null }
+    try {
+      const url = editing ? `/api/warehouse-locations/${editing.id}` : '/api/warehouse-locations'
+      const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (!res.ok) { const err = await res.json(); toast.error(err.error); return }
+      toast.success(editing ? 'Lokacija ažurirana' : 'Lokacija kreirana')
+      setViewMode('list'); setEditing(null)
+      const newRes = await fetch('/api/warehouse-locations'); setLocations(await newRes.json())
+    } catch { toast.error('Greška') } finally { setSubmitting(false) }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati lokaciju?')) return
+    try { await fetch(`/api/warehouse-locations/${id}`, { method: 'DELETE' }); toast.success('Obrisano'); const res = await fetch('/api/warehouse-locations'); setLocations(await res.json()) } catch { toast.error('Greška') }
+  }
+
+  if (viewMode === 'form') return (
+    <Card>
+      <CardHeader className="pb-3"><div className="flex items-center gap-3"><Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base font-semibold">{editing ? 'Izmeni lokaciju' : 'Nova lokacija'}</CardTitle></div></CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input name="name" defaultValue={editing?.name || ''} required placeholder="npr. Regal A" /></div>
+            <div className="space-y-2"><Label className="text-xs">Šifra *</Label><Input name="code" defaultValue={editing?.code || ''} required placeholder="npr. WH-A-03" disabled={!!editing} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2"><Label className="text-xs">Tip</Label>
+              <Select value={formType} onValueChange={setFormType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{locTypes.map(lt => <SelectItem key={lt.value} value={lt.value}>{lt.label}</SelectItem>)}</SelectContent></Select>
+            </div>
+            <div className="space-y-2"><Label className="text-xs">Nadređena</Label>
+              <Select value={formParentId || '__none'} onValueChange={v => setFormParentId(v === '__none' ? '' : v)}><SelectTrigger><SelectValue placeholder="Bez" /></SelectTrigger><SelectContent>
+                <SelectItem value="__none">Bez nadređene</SelectItem>
+                {locations.filter(l => l.id !== editing?.id).map(l => <SelectItem key={l.id} value={l.id}>{l.code} — {l.name}</SelectItem>)}
+              </SelectContent></Select>
+            </div>
+          </div>
+          <div className="flex gap-2"><Button type="submit" disabled={submitting}>{submitting ? 'Čuva se...' : 'Sačuvaj'}</Button><Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button></div>
+        </form>
+      </CardContent>
+    </Card>
+  )
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div><CardTitle className="text-base font-semibold flex items-center gap-2"><MapPin className="h-4 w-4" />Lokacije magacina</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{locations.length} lokacija</p></div>
+          <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" />Nova lokacija</Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? <Skeleton className="h-64 w-full" /> : (
+          <div className="max-h-[500px] overflow-y-auto">
+            <Table>
+              <TableHeader><TableRow>
+                <TableHead className="text-xs">Šifra</TableHead><TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Nadređena</TableHead><TableHead className="text-xs text-center">Pod.</TableHead><TableHead className="text-xs text-center">Kretanja</TableHead><TableHead className="text-xs">Akcije</TableHead>
+              </TableRow></TableHeader>
+              <TableBody>
+                {locations.length === 0 ? (<TableRow><TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">Nema lokacija</TableCell></TableRow>) : locations.map(loc => {
+                  const typeInfo = locTypes.find(lt => lt.value === loc.type) || locTypes[3]
+                  return (
+                    <TableRow key={loc.id}>
+                      <TableCell className="text-xs font-mono font-medium">{loc.code}</TableCell>
+                      <TableCell className="text-xs font-medium">{loc.name}</TableCell>
+                      <TableCell><Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeInfo.color}`}>{typeInfo.label}</Badge></TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{loc.parent ? loc.parent.code : '-'}</TableCell>
+                      <TableCell className="text-xs text-center">{loc._count?.children || 0}</TableCell>
+                      <TableCell className="text-xs text-center">{loc._count?.stockMovements || 0}</TableCell>
+                      <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(loc)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(loc.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

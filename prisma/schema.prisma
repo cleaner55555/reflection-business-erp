@@ -41,6 +41,7 @@ model Company {
   deliveryNotes       DeliveryNote[]
   stockMovements      StockMovement[]
   priceLists          PriceList[]
+  warehouseLocations  WarehouseLocation[]
   transactions        Transaction[]
   cashRegisters       CashRegister[]
   contacts            Contact[]
@@ -317,19 +318,38 @@ model PurchaseOrderItem {
 
 // ============ MAGACIN / ZALIHE ============
 
+model WarehouseLocation {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String   // npr. "Regal A", "Hala 1 - Polica 3"
+  code        String   @unique // npr. "WH-A-03"
+  type        String   @default("polica") // magacin, zona, regal, polica, bin
+  parentId    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company       Company              @relation(fields: [companyId], references: [id])
+  parent        WarehouseLocation?   @relation("LocationTree", fields: [parentId], references: [id])
+  children      WarehouseLocation[] @relation("LocationTree")
+  stockMovements StockMovement[]
+}
+
 model StockMovement {
   id          String   @id @default(cuid())
   companyId   String
   productId   String
+  locationId  String?
   date        DateTime @default(now())
-  type        String   // prijem, izdavanje, inventura, korekcija
+  type        String   // prijem, izdavanje, inventura, korekcija, transfer
   quantity    Float
   documentRef String?
   notes       String?
   createdAt   DateTime @default(now())
 
-  company Company @relation(fields: [companyId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  company  Company            @relation(fields: [companyId], references: [id])
+  product  Product            @relation(fields: [productId], references: [id])
+  location WarehouseLocation? @relation(fields: [locationId], references: [id])
 }
 
 // ============ OTPREMNICE ============
