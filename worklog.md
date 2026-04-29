@@ -221,3 +221,32 @@ Stage Summary:
 - All integrated into Settings (Podesavanja) module
 - Existing APIs for roles, audit-logs, webhooks fully support all UI operations
 - Foundation for Phase 4.2 (RBAC enforcement middleware) and Phase 4.3 (Public API v2)
+
+---
+Task ID: 5-1
+Agent: Main (direct)
+Task: Phase 5 - Maloprodaja & POS Module
+
+Work Log:
+- Added 3 new Prisma models: POSShift (shift management with open/close/balance tracking), POSOrder (POS orders with payment method, fiscal number, partner linking), POSOrderLine (order items with discount, tax, quantity)
+- Added Company relations (posShifts, posOrders) and Partner relation (posOrders)
+- Created /api/pos/shifts route (GET list, POST open new shift with auto-numbering)
+- Created /api/pos/shifts/[id] route (PUT close shift with cash difference calculation, DELETE)
+- Created /api/pos/orders route (GET with filters, POST create order with auto order number POS-YYMMDD-NNN, stock deduction, stock movement creation)
+- Created /api/pos/dashboard route (active shift, today's stats by payment method, avg ticket, top products, recent orders)
+- Created /api/pos/sync route (GET margin analysis per product/category, POST batch margin/markup update with rounding)
+- Created Maloprodaja.tsx component (~1280 lines) with 4 tabs:
+  - Kasa (POS Terminal): Touch-friendly grid of products, barcode scanner detection, category filter, shopping cart with quantity/discount controls, payment dialog (cash/card/transfer) with change calculation, receipt confirmation
+  - Smene (Shift Manager): Open/close shifts with opening/closing balance, shift history with difference tracking, active shift banner
+  - Sync (Wholesale→Retail): Margin/markup system, category-level and global pricing, rounding options (1/5/10/50/100 RSD), category breakdown, full product table with margin display
+  - Izveštaji (Reports): Today's KPIs (total, count, avg ticket), payment method breakdown with progress bars, top products, recent orders
+- Added 'pos' to ModuleType in store.ts
+- Added POS to AppSidebar (Monitor icon) in business group
+- Added Maloprodaja import and module mapping in page.tsx
+- Added i18n keys: sidebar.pos in Serbian and English
+
+Stage Summary:
+- Phase 5 COMPLETE: Full POS module with terminal, shifts, sync, and reports
+- Odoo-level POS with barcode scanning, multi-payment, shift management
+- Wholesale→Retail sync with margin/markup engine
+- All lint checks pass

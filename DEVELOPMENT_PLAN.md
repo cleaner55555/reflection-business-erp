@@ -647,9 +647,9 @@ Dashboard, Fakture, Partneri, Magacin, Knjigovodstvo, Finansije, BankSync, CRM, 
 |---|---|---|
 | **1** | Dashboard, Auth, Settings, Global Search | ✅ Završeno |
 | **2** | Fakture, Partneri, Magacin, Knjigovodstvo, CRM, BankSync, eFakture, BN Migration, Zakoni (29 zemalja), AI Assistant, Recurring Invoices | ✅ Završeno |
-| **3** | CRM+, Knjigovodstvo+, Magacin+, Fakture+, Partneri+, Projekti+, Zaposleni+ | 🔄 Trenutno |
-| **4** | Multi-Tenant, RBAC, Public API v2 | 📋 Planirano |
-| **5** | POS, Maloprodaja Sync, Cenovnici, Cash Register+ | 📋 Planirano |
+| **3** | CRM+, Knjigovodstvo+, Magacin+, Fakture+, Partneri+, Projekti+, Zaposleni+ | ✅ Završeno |
+| **4** | Multi-Tenant, RBAC, Public API v2 | ✅ Završeno |
+| **5** | POS, Maloprodaja Sync, Cenovnici, Cash Register+ | ✅ Završeno |
 | **6** | WMS (lokacije, barkod, štampači, advanced inventory) | 📋 Planirano |
 | **7** | Shipping (multi-carrier, label printing, tracking) | 📋 Planirano |
 | **8** | Marketplace (veleprodaja, maloprodaja, kupac, admin) | 📋 Planirano |

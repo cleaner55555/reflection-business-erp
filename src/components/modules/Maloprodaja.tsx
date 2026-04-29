@@ -95,7 +95,7 @@ export function Maloprodaja() {
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pos">
             <ShoppingCart className="h-4 w-4 mr-1.5" />
             Kasa
@@ -103,6 +103,10 @@ export function Maloprodaja() {
           <TabsTrigger value="smene">
             <Clock className="h-4 w-4 mr-1.5" />
             Smene
+          </TabsTrigger>
+          <TabsTrigger value="sync">
+            <Package className="h-4 w-4 mr-1.5" />
+            Sync
           </TabsTrigger>
           <TabsTrigger value="izvestaji">
             <BarChart3 className="h-4 w-4 mr-1.5" />
@@ -115,6 +119,9 @@ export function Maloprodaja() {
         </TabsContent>
         <TabsContent value="smene">
           <ShiftManager companyId={activeCompanyId} />
+        </TabsContent>
+        <TabsContent value="sync">
+          <RetailSync companyId={activeCompanyId} />
         </TabsContent>
         <TabsContent value="izvestaji">
           <POSReports companyId={activeCompanyId} />
@@ -156,37 +163,7 @@ function POSTerminal({ companyId }: { companyId: string | null }) {
       .catch(() => {})
   }, [companyId])
 
-  // Barcode scanner detection (rapid typing)
-  const handleSearchInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setSearchTerm(val)
-
-    if (val.length > 3) {
-      barcodeBuffer.current = val
-      if (barcodeTimer.current) clearTimeout(barcodeTimer.current)
-      barcodeTimer.current = setTimeout(() => {
-        // Check if it's a barcode match
-        const match = products.find(p => p.barcode === barcodeBuffer.current || p.sku === barcodeBuffer.current)
-        if (match) {
-          addToCart(match)
-          setSearchTerm('')
-          barcodeBuffer.current = ''
-        }
-      }, 100)
-    }
-  }, [products])
-
-  const categories = [...new Set(products.filter(p => p.category).map(p => p.category!))]
-  const filtered = products.filter(p => {
-    const matchSearch = !searchTerm ||
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchCategory = !selectedCategory || p.category === selectedCategory
-    return matchSearch && matchCategory && p.currentStock > 0
-  })
-
-  const addToCart = (product: POSProduct) => {
+  const addToCart = useCallback((product: POSProduct) => {
     setCart(prev => {
       const existing = prev.find(i => i.productId === product.id)
       if (existing) {
@@ -206,7 +183,36 @@ function POSTerminal({ companyId }: { companyId: string | null }) {
         maxStock: product.currentStock,
       }]
     })
-  }
+  }, [])
+
+  // Barcode scanner detection (rapid typing)
+  const handleSearchInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setSearchTerm(val)
+
+    if (val.length > 3) {
+      barcodeBuffer.current = val
+      if (barcodeTimer.current) clearTimeout(barcodeTimer.current)
+      barcodeTimer.current = setTimeout(() => {
+        const match = products.find(p => p.barcode === barcodeBuffer.current || p.sku === barcodeBuffer.current)
+        if (match) {
+          addToCart(match)
+          setSearchTerm('')
+          barcodeBuffer.current = ''
+        }
+      }, 100)
+    }
+  }, [products, addToCart])
+
+  const categories = [...new Set(products.filter(p => p.category).map(p => p.category!))]
+  const filtered = products.filter(p => {
+    const matchSearch = !searchTerm ||
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.barcode?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchCategory = !selectedCategory || p.category === selectedCategory
+    return matchSearch && matchCategory && p.currentStock > 0
+  })
 
   const updateQuantity = (productId: string, delta: number) => {
     setCart(prev => prev.map(i => {
@@ -982,6 +988,289 @@ function POSReports({ companyId }: { companyId: string | null }) {
             {dashboard.recentOrders.length === 0 && (
               <div className="text-center py-6 text-sm text-muted-foreground">Nema računa</div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ============ RETAIL SYNC (Wholesale → Retail) ============
+
+interface SyncProduct {
+  id: string
+  name: string
+  sku: string
+  category?: string
+  purchasePrice: number
+  sellingPrice: number
+  currentStock: number
+  unit: string
+  marginPct: number
+  markupPct: number
+}
+
+interface SyncCategory {
+  name: string
+  count: number
+  totalWholesale: number
+  totalRetail: number
+  avgMargin: number
+}
+
+function RetailSync({ companyId }: { companyId: string | null }) {
+  const [data, setData] = useState<{
+    products: SyncProduct[]
+    categories: SyncCategory[]
+    stats: { totalProducts: number; totalValueWholesale: number; totalValueRetail: number; totalMarginValue: number; avgMargin: number }
+  } | null>(null)
+  const [syncType, setSyncType] = useState<'margin' | 'markup'>('margin')
+  const [syncValue, setSyncValue] = useState('')
+  const [syncCategory, setSyncCategory] = useState<string | null>(null)
+  const [roundTo, setRoundTo] = useState('0')
+  const [applying, setApplying] = useState(false)
+  const [result, setResult] = useState<string | null>(null)
+  const [searchFilter, setSearchFilter] = useState('')
+
+  const loadSync = () => {
+    if (!companyId) return
+    fetch('/api/pos/sync', { headers: { 'x-company-id': companyId } })
+      .then(r => r.json())
+      .then(setData)
+      .catch(() => {})
+  }
+
+  useEffect(() => { loadSync() }, [companyId])
+
+  const applySync = async () => {
+    if (!companyId || !syncValue) return
+    setApplying(true)
+    setResult(null)
+    try {
+      const res = await fetch('/api/pos/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-company-id': companyId },
+        body: JSON.stringify({
+          type: syncType,
+          marginPct: syncType === 'margin' ? parseFloat(syncValue) : 0,
+          markupPct: syncType === 'markup' ? parseFloat(syncValue) : 0,
+          category: syncCategory,
+          roundTo: parseFloat(roundTo) || 0,
+        }),
+      })
+      if (res.ok) {
+        const r = await res.json()
+        setResult(`Ažurirano ${r.updated} proizvoda (${r.type === 'margin' ? 'marža' : 'zaračunata'}) - ${r.category}`)
+        loadSync()
+      }
+    } catch { /* error */ }
+    setApplying(false)
+  }
+
+  if (!data) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Package className="h-8 w-8 mx-auto mb-2 animate-pulse opacity-30" />
+        <p className="text-sm">Učitavanje...</p>
+      </div>
+    )
+  }
+
+  const filtered = data.products.filter(p => {
+    const matchSearch = !searchFilter || p.name.toLowerCase().includes(searchFilter.toLowerCase()) || p.sku.toLowerCase().includes(searchFilter.toLowerCase())
+    const matchCat = !syncCategory || p.category === syncCategory
+    return matchSearch && matchCat
+  })
+
+  return (
+    <div className="space-y-4">
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground">Proizvodi</div>
+            <div className="text-xl font-bold mt-1">{data.stats.totalProducts}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground">Veleprodajna vrednost</div>
+            <div className="text-lg font-bold mt-1">
+              {(data.stats.totalValueWholesale / 1000).toFixed(1)}K RSD
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground">Maloprodajna vrednost</div>
+            <div className="text-lg font-bold mt-1">
+              {(data.stats.totalValueRetail / 1000).toFixed(1)}K RSD
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-xs text-muted-foreground">Prosečna marža</div>
+            <div className="text-xl font-bold mt-1 text-green-600">{data.stats.avgMargin.toFixed(1)}%</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sync Controls */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">Automatsko postavljanje maloprodajnih cena</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {/* Type */}
+            <div>
+              <label className="text-xs text-muted-foreground">Tip</label>
+              <select
+                value={syncType}
+                onChange={e => setSyncType(e.target.value as 'margin' | 'markup')}
+                className="w-full mt-1 h-9 rounded-md border bg-background px-3 text-sm"
+              >
+                <option value="margin">Marža na nabavnu</option>
+                <option value="markup">Zaračunata u prodajnu</option>
+              </select>
+            </div>
+            {/* Value */}
+            <div>
+              <label className="text-xs text-muted-foreground">
+                {syncType === 'margin' ? 'Marža (%)' : 'Zaračunata (%)'}
+              </label>
+              <Input
+                type="number"
+                value={syncValue}
+                onChange={e => setSyncValue(e.target.value)}
+                placeholder={syncType === 'margin' ? '30' : '23'}
+                className="mt-1"
+              />
+            </div>
+            {/* Category */}
+            <div>
+              <label className="text-xs text-muted-foreground">Kategorija</label>
+              <select
+                value={syncCategory || ''}
+                onChange={e => setSyncCategory(e.target.value || null)}
+                className="w-full mt-1 h-9 rounded-md border bg-background px-3 text-sm"
+              >
+                <option value="">Sve kategorije</option>
+                {data.categories.map(c => (
+                  <option key={c.name} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            {/* Round */}
+            <div>
+              <label className="text-xs text-muted-foreground">Zaokruži na</label>
+              <select
+                value={roundTo}
+                onChange={e => setRoundTo(e.target.value)}
+                className="w-full mt-1 h-9 rounded-md border bg-background px-3 text-sm"
+              >
+                <option value="0">Bez zaokruživanja</option>
+                <option value="1">1 RSD</option>
+                <option value="5">5 RSD</option>
+                <option value="10">10 RSD</option>
+                <option value="50">50 RSD</option>
+                <option value="100">100 RSD</option>
+              </select>
+            </div>
+            {/* Apply */}
+            <div className="flex items-end">
+              <Button
+                onClick={applySync}
+                disabled={!syncValue || applying}
+                className="w-full"
+              >
+                {applying ? 'Primenjujem...' : 'Primeni'}
+              </Button>
+            </div>
+          </div>
+          {result && (
+            <div className="mt-3 p-2 rounded bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-sm">
+              {result}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Category breakdown */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">Po kategorijama</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {data.categories.map(cat => (
+              <div key={cat.name} className="flex items-center gap-3 text-sm">
+                <span className="flex-1 font-medium">{cat.name}</span>
+                <Badge variant="outline">{cat.count} proizvoda</Badge>
+                <span className="w-24 text-right text-muted-foreground">
+                  {(cat.totalWholesale / 1000).toFixed(1)}K
+                </span>
+                <span className="w-24 text-right font-medium">
+                  {(cat.totalRetail / 1000).toFixed(1)}K
+                </span>
+                <Badge className="w-16 text-center" variant={cat.avgMargin > 0 ? 'default' : 'destructive'}>
+                  {cat.avgMargin.toFixed(1)}%
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Products table */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">Proizvodi ({filtered.length})</CardTitle>
+          <Input
+            placeholder="Pretraži..."
+            value={searchFilter}
+            onChange={e => setSearchFilter(e.target.value)}
+            className="mt-2"
+          />
+        </CardHeader>
+        <CardContent>
+          <div className="max-h-[50vh] overflow-y-auto">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-background">
+                <tr className="border-b text-left">
+                  <th className="py-2 px-2 font-medium">Proizvod</th>
+                  <th className="py-2 px-2 font-medium text-right">Nabavna</th>
+                  <th className="py-2 px-2 font-medium text-right">Maloprodajna</th>
+                  <th className="py-2 px-2 font-medium text-right">Marža</th>
+                  <th className="py-2 px-2 font-medium text-right">Zaliha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(p => (
+                  <tr key={p.id} className="border-b hover:bg-muted/50">
+                    <td className="py-1.5 px-2">
+                      <div className="font-medium truncate max-w-[200px]">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">{p.sku} • {p.category || '-'}</div>
+                    </td>
+                    <td className="py-1.5 px-2 text-right font-mono">
+                      {p.purchasePrice.toLocaleString('sr-RS', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="py-1.5 px-2 text-right font-mono font-medium">
+                      {p.sellingPrice.toLocaleString('sr-RS', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="py-1.5 px-2 text-right">
+                      <Badge variant={p.marginPct > 0 ? 'default' : 'destructive'} className="font-mono">
+                        {p.marginPct.toFixed(1)}%
+                      </Badge>
+                    </td>
+                    <td className="py-1.5 px-2 text-right text-muted-foreground">
+                      {p.currentStock} {p.unit}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>
