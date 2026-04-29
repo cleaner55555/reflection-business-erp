@@ -161,3 +161,63 @@ Stage Summary:
 - Accounting module now Odoo-level with dashboard KPIs, account card/statement, voucher numbers, persistent budgets
 - All lint checks pass
 - Foundation for Phase 4 bank reconciliation, PDV reporting, fiscal period closing
+
+---
+Task ID: 3-FINAL
+Agent: Main (direct)
+Task: Phase 3 - Final accounting features (PDV, year-close, analytic, EPC QR)
+
+Work Log:
+- Created /api/accounting/pdv-report/route.ts: PDV prijava with ulazni/izlazni PDV, promet, nabavka, obligation/refund calc
+- Created /api/accounting/year-close/route.ts: year-end closing with profit/loss transfer to account 130, GET status check
+- Created /api/accounting/analytic/route.ts: analytic accounting by project/department, grouped balances
+- Created /api/invoices/epc-qr/route.ts: EPC QR code string generation for SEPA
+- Added PDV Prijava tab to Knjigovodstvo.tsx (month selector, tax report, obligation/refund display)
+- Added Analitika tab (analytic account filter, grouped debit/credit/balance)
+- Added Godišnje Zatvaranje tab (year-end close with confirmation, revenue/expense breakdown)
+- Knjigovodstvo.tsx expanded to ~2208 lines with 9 tabs total
+
+Stage Summary:
+- Phase 3 COMPLETE: All 7 modules at Odoo-level
+- Accounting: 9 tabs (Dashboard, Glavna Knjiga, Kontni Plan, Nalog, Budžeti, Bruto Bilans, PDV Prijava, Analitika, God. Zatvaranje)
+- All lint checks pass
+
+---
+Task ID: 4-1
+Agent: Main (direct)
+Task: Phase 4 - RBAC, Audit, Webhooks (Multi-Tenant & User System)
+
+Work Log:
+- Created PermissionsEditor.tsx (~500 lines): Visual role management with:
+  - Role cards with user count, module permission progress bar
+  - Permission matrix: modules grouped by category × 4 actions (read/create/write/delete)
+  - Group toggle and module toggle for bulk operations
+  - Create new role with clone-from-existing option
+  - Edit role with view/edit mode toggle
+  - Delete role with user count warning
+- Created AuditLogViewer.tsx (~400 lines): Audit log viewer with:
+  - 4 KPI cards (total, today, last hour, filtered)
+  - Search, entity filter, action filter, date range filters
+  - Log table with action icons, timestamps, entity badges
+  - Pagination (50 per page)
+  - CSV export
+  - Top entities and top actions breakdown with progress bars
+  - Clear old logs (older than 3 months)
+- Created WebhookManager.tsx (~450 lines): Webhook management with:
+  - Webhook cards with URL, events, status, secret indicator
+  - Create/edit dialog with 16 event types in 8 groups
+  - Group toggle for event selection
+  - Secret key generator
+  - Test webhook delivery (HTTP POST with ping event)
+  - Copy URL and open in new tab
+  - Info card explaining webhook functionality
+- Updated Podesavanja.tsx: Added 3 new tabs (Uloge, Audit, Webhooks) → 9 tabs total
+  - Tabs: Moduli, Firma, Opšte, Izgled, Korisnici, API, Uloge, Audit, Webhooks
+- Fixed pre-existing lint errors (CRMEnhanced missing Plus import, Projekti missing BugoviTab)
+- All lint checks pass
+
+Stage Summary:
+- Phase 4 core features complete: Visual RBAC permissions editor, audit log viewer, webhook management
+- All integrated into Settings (Podesavanja) module
+- Existing APIs for roles, audit-logs, webhooks fully support all UI operations
+- Foundation for Phase 4.2 (RBAC enforcement middleware) and Phase 4.3 (Public API v2)

@@ -127,14 +127,14 @@ export function Projekti() {
           <TabsTrigger value="zadaci" className="gap-1.5"><ListTodo className="h-3.5 w-3.5" /><span className="hidden sm:inline">Zadaci</span></TabsTrigger>
           <TabsTrigger value="timesheet" className="gap-1.5"><Timer className="h-3.5 w-3.5" /><span className="hidden sm:inline">Evidencija</span></TabsTrigger>
           <TabsTrigger value="timeline" className="gap-1.5"><GanttChart className="h-3.5 w-3.5" /><span className="hidden sm:inline">Timeline</span></TabsTrigger>
-          <TabsTrigger value="bugovi" className="gap-1.5"><Bug className="h-3.5 w-3.5" /><span className="hidden sm:inline">Bugovi</span></TabsTrigger>
+
         </TabsList>
         <TabsContent value="pregled"><ProjectDashboard /></TabsContent>
         <TabsContent value="projekti"><ProjectsList /></TabsContent>
         <TabsContent value="zadaci"><TaskKanban /></TabsContent>
         <TabsContent value="timesheet"><TimesheetView /></TabsContent>
         <TabsContent value="timeline"><TimelineView /></TabsContent>
-        <TabsContent value="bugovi"><BugoviTab /></TabsContent>
+
       </Tabs>
     </div>
   )

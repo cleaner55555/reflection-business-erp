@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { AlertTriangle, Settings2, Zap, Play, Pause, Trash2, ArrowRight } from 'lucide-react'
+import { AlertTriangle, Settings2, Zap, Play, Pause, Trash2, ArrowRight, Plus } from 'lucide-react'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'

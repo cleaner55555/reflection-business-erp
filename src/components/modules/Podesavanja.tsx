@@ -10,13 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key } from 'lucide-react'
+import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/helpers'
 import { useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
 import { useThemeStore, DEFAULT_THEME } from '@/lib/theme'
 import { UserManagement } from './UserManagement'
 import { ApiKeyManagement } from './ApiKeyManagement'
+import { PermissionsEditor } from './PermissionsEditor'
+import { AuditLogViewer } from './AuditLogViewer'
+import { WebhookManager } from './WebhookManager'
 import { themePresets } from '@/lib/theme-presets'
 import type { ThemeSettings } from '@/lib/theme'
 
@@ -542,7 +545,7 @@ export function Podesavanja() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 lg:w-[720px]">
+        <TabsList className="grid w-full grid-cols-9 lg:w-[960px]">
           <TabsTrigger value="moduli" className="gap-1.5 text-xs sm:text-sm">
             <Blocks className="h-4 w-4 hidden sm:block" />
             <span className="hidden sm:inline">{t('settings.tab_modules')}</span>
@@ -566,6 +569,18 @@ export function Podesavanja() {
           <TabsTrigger value="api" className="gap-1.5 text-xs sm:text-sm">
             <Key className="h-4 w-4" />
             <span className="hidden sm:inline">API</span>
+          </TabsTrigger>
+          <TabsTrigger value="uloge" className="gap-1.5 text-xs sm:text-sm">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Uloge</span>
+          </TabsTrigger>
+          <TabsTrigger value="audit" className="gap-1.5 text-xs sm:text-sm">
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">Audit</span>
+          </TabsTrigger>
+          <TabsTrigger value="webhooks" className="gap-1.5 text-xs sm:text-sm">
+            <Webhook className="h-4 w-4" />
+            <span className="hidden sm:inline">Webhooks</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1034,6 +1049,21 @@ export function Podesavanja() {
         {/* ============ API TAB ============ */}
         <TabsContent value="api">
           <ApiKeyManagement />
+        </TabsContent>
+
+        {/* ============ ULOGE (PERMISSIONS) TAB ============ */}
+        <TabsContent value="uloge">
+          <PermissionsEditor />
+        </TabsContent>
+
+        {/* ============ AUDIT LOG TAB ============ */}
+        <TabsContent value="audit">
+          <AuditLogViewer />
+        </TabsContent>
+
+        {/* ============ WEBHOOKS TAB ============ */}
+        <TabsContent value="webhooks">
+          <WebhookManager />
         </TabsContent>
       </Tabs>
     </div>
