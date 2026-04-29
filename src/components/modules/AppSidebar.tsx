@@ -16,31 +16,15 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import {
-  LayoutDashboard,
-  Wallet,
-  FileText,
-  Warehouse,
-  ShoppingCart,
-  Users,
-  BarChart3,
-  HeartHandshake,
-  CalendarDays,
-  UserCog,
-  FolderKanban,
-  Building2,
-  Files,
-  BookOpen,
-  Mail,
-  GraduationCap,
-  Car,
-  CarFront,
-  UtensilsCrossed,
-  Settings,
-  Plug,
-  Landmark,
-  Scale,
-  Monitor,
-  Truck,
+  LayoutDashboard, Wallet, FileText, Warehouse, ShoppingCart, Users, BarChart3,
+  HeartHandshake, CalendarDays, UserCog, FolderKanban, Building2, Files,
+  BookOpen, Mail, GraduationCap, Car, CarFront, UtensilsCrossed, Settings,
+  Plug, Landmark, Scale, Monitor, Truck, Store, ClipboardList, Receipt,
+  CreditCard, PenTool, Factory, ShieldCheck, Wrench, Briefcase, Palmtree,
+  ThumbsUp, HeadphonesIcon, MapPin, CalendarClock, CalendarRange, Share2,
+  MessageSquare, Megaphone, PartyPopper, Workflow, ClipboardCheck,
+  MessageCircle, BookMarked, Globe2, PenLine, Phone, Wifi, MessageCircleReply,
+  UsersRound, Table2, ShoppingBag, GitBranch,
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -53,11 +37,15 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
     items: [
       { module: 'finansije', icon: Wallet, labelKey: 'sidebar.finances' },
       { module: 'fakture', icon: FileText, labelKey: 'sidebar.invoices' },
+      { module: 'ponude', icon: ClipboardList, labelKey: 'sidebar.quotes' },
       { module: 'magacin', icon: Warehouse, labelKey: 'sidebar.warehouse' },
       { module: 'nabavka', icon: ShoppingCart, labelKey: 'sidebar.procurement' },
       { module: 'bank-sync', icon: Landmark, labelKey: 'sidebar.bank' },
       { module: 'pos', icon: Monitor, labelKey: 'sidebar.pos' },
       { module: 'shipping', icon: Truck, labelKey: 'sidebar.shipping' },
+      { module: 'proizvodnja', icon: Factory, labelKey: 'sidebar.manufacturing' },
+      { module: 'troskovi', icon: Receipt, labelKey: 'sidebar.expenses' },
+      { module: 'pretplate', icon: CreditCard, labelKey: 'sidebar.subscriptions' },
     ],
   },
   {
@@ -66,29 +54,58 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
       { module: 'crm', icon: HeartHandshake, labelKey: 'sidebar.crm' },
       { module: 'partneri', icon: Users, labelKey: 'sidebar.partners' },
       { module: 'kalendar', icon: CalendarDays, labelKey: 'sidebar.calendar' },
+      { module: 'marketplace', icon: Store, labelKey: 'sidebar.marketplace' },
+      { module: 'podrska', icon: HeadphonesIcon, labelKey: 'sidebar.helpdesk' },
+      { module: 'potpisi', icon: PenTool, labelKey: 'sidebar.sign' },
     ],
   },
   {
     labelKey: 'sidebar.group_organization',
     items: [
       { module: 'zaposleni', icon: UserCog, labelKey: 'sidebar.employees' },
+      { module: 'odsustva', icon: Palmtree, labelKey: 'sidebar.timeoff' },
+      { module: 'regrutacija', icon: Briefcase, labelKey: 'sidebar.recruitment' },
+      { module: 'preporuke', icon: ThumbsUp, labelKey: 'sidebar.referrals' },
       { module: 'projekti', icon: FolderKanban, labelKey: 'sidebar.projects' },
+      { module: 'zakazivanja', icon: CalendarClock, labelKey: 'sidebar.appointments' },
+      { module: 'planer', icon: CalendarRange, labelKey: 'sidebar.planning' },
       { module: 'sredstva', icon: Building2, labelKey: 'sidebar.assets' },
+      { module: 'odrzavanje', icon: Wrench, labelKey: 'sidebar.maintenance' },
+      { module: 'kvalitet', icon: ShieldCheck, labelKey: 'sidebar.quality' },
       { module: 'dokumenta', icon: Files, labelKey: 'sidebar.documents' },
       { module: 'knjigovodstvo', icon: BookOpen, labelKey: 'sidebar.accounting' },
       { module: 'protokol', icon: FileText, labelKey: 'sidebar.protocol' },
       { module: 'edukacija', icon: GraduationCap, labelKey: 'sidebar.education' },
+      { module: 'baza-znanja', icon: BookMarked, labelKey: 'sidebar.knowledge' },
       { module: 'email-marketing', icon: Mail, labelKey: 'sidebar.emailMarketing' },
+      { module: 'drustvene-mreze', icon: Share2, labelKey: 'sidebar.social' },
+      { module: 'sms-marketing', icon: Megaphone, labelKey: 'sidebar.sms' },
+      { module: 'dogadjaji', icon: PartyPopper, labelKey: 'sidebar.events' },
+      { module: 'mkt-automatizacija', icon: Workflow, labelKey: 'sidebar.mktAutomation' },
+      { module: 'ankete', icon: ClipboardCheck, labelKey: 'sidebar.surveys' },
       { module: 'vozni-park', icon: Car, labelKey: 'sidebar.vehicleFleet' },
       { module: 'kafe-restoran', icon: UtensilsCrossed, labelKey: 'sidebar.cafeRestaurant' },
       { module: 'rent-a-car', icon: CarFront, labelKey: 'sidebar.rentACar' },
+      { module: 'terenski-servis', icon: MapPin, labelKey: 'sidebar.fieldService' },
+      { module: 'chet', icon: MessageCircle, labelKey: 'sidebar.discuss' },
+      { module: 'website', icon: Globe2, labelKey: 'sidebar.website' },
+      { module: 'blog', icon: PenLine, labelKey: 'sidebar.blog' },
+      { module: 'voip', icon: Phone, labelKey: 'sidebar.voip' },
+      { module: 'iot', icon: Wifi, labelKey: 'sidebar.iot' },
+      { module: 'whatsapp', icon: MessageCircleReply, labelKey: 'sidebar.whatsapp' },
+      { module: 'forum', icon: UsersRound, labelKey: 'sidebar.forum' },
+      { module: 'plm', icon: GitBranch, labelKey: 'sidebar.plm' },
+      { module: 'ecommerce', icon: ShoppingBag, labelKey: 'sidebar.ecommerce' },
+      { module: 'spreadsheet', icon: Table2, labelKey: 'sidebar.spreadsheet' },
     ],
   },
   {
     labelKey: 'sidebar.group_analytics',
-    items: [{ module: 'izvestaji', icon: BarChart3, labelKey: 'sidebar.reports' },
+    items: [
+      { module: 'izvestaji', icon: BarChart3, labelKey: 'sidebar.reports' },
       { module: 'integracije', icon: Plug, labelKey: 'sidebar.integrations' },
-      { module: 'zakoni', icon: Scale, labelKey: 'sidebar.laws' }],
+      { module: 'zakoni', icon: Scale, labelKey: 'sidebar.laws' },
+    ],
   },
   {
     labelKey: 'sidebar.group_system',
@@ -114,11 +131,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           {logo ? (
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-sidebar-accent">
-              <img
-                src={logo}
-                alt="Logo"
-                className="h-7 w-7 object-contain"
-              />
+              <img src={logo} alt="Logo" className="h-7 w-7 object-contain" />
             </div>
           ) : (
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-primary-foreground">
@@ -131,18 +144,12 @@ export function AppSidebar() {
                 <span className="text-sm font-bold tracking-tight text-sidebar-foreground truncate max-w-[140px]">
                   {companyName}
                 </span>
-                <span className="text-xs font-medium text-primary">
-                  Business
-                </span>
+                <span className="text-xs font-medium text-primary">Business</span>
               </>
             ) : (
               <>
-                <span className="text-sm font-bold tracking-tight text-sidebar-foreground">
-                  Reflection
-                </span>
-                <span className="text-xs font-medium text-primary">
-                  Business
-                </span>
+                <span className="text-sm font-bold tracking-tight text-sidebar-foreground">Reflection</span>
+                <span className="text-xs font-medium text-primary">Business</span>
               </>
             )}
           </div>
@@ -186,7 +193,7 @@ export function AppSidebar() {
             <span className="text-xs font-medium text-sidebar-foreground truncate max-w-[120px]">
               {companyName || 'Reflection Business'}
             </span>
-            <span className="text-[10px] text-sidebar-foreground/50">ERP + CRM v3.0</span>
+            <span className="text-[10px] text-sidebar-foreground/50">ERP + CRM v4.0 · {menuGroups.reduce((sum, g) => sum + g.items.length, 0)} modula</span>
           </div>
         </div>
       </SidebarFooter>

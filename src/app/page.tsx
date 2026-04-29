@@ -35,6 +35,37 @@ import { NotificationCenter } from '@/components/modules/NotificationCenter'
 import { Zakoni } from '@/components/modules/Zakoni'
 import { Maloprodaja } from '@/components/modules/Maloprodaja'
 import { Shipping } from '@/components/modules/Shipping'
+import { Marketplace } from '@/components/modules/Marketplace'
+import { Ponude } from '@/components/modules/Ponude'
+import { Pretplate } from '@/components/modules/Pretplate'
+import { Troškovi } from '@/components/modules/Troškovi'
+import { Potpisi } from '@/components/modules/Potpisi'
+import { Proizvodnja } from '@/components/modules/Proizvodnja'
+import { Kvalitet } from '@/components/modules/Kvalitet'
+import { Održavanje } from '@/components/modules/Održavanje'
+import { Regrutacija } from '@/components/modules/Regrutacija'
+import { Odsustva } from '@/components/modules/Odsustva'
+import { Preporuke } from '@/components/modules/Preporuke'
+import { Podrška } from '@/components/modules/Podrška'
+import { TerenskiServis } from '@/components/modules/TerenskiServis'
+import { Zakazivanja } from '@/components/modules/Zakazivanja'
+import { Planer } from '@/components/modules/Planer'
+import { DruštveneMreže } from '@/components/modules/DruštveneMreže'
+import { SmsMarketing } from '@/components/modules/SmsMarketing'
+import { Događaji } from '@/components/modules/Događaji'
+import { MktAutomatizacija } from '@/components/modules/MktAutomatizacija'
+import { Ankete } from '@/components/modules/Ankete'
+import { Čet } from '@/components/modules/Čet'
+import { BazaZnanja } from '@/components/modules/BazaZnanja'
+import { WebsiteBuilder } from '@/components/modules/WebsiteBuilder'
+import { BlogModul } from '@/components/modules/BlogModul'
+import { VoIP } from '@/components/modules/VoIP'
+import { IoT } from '@/components/modules/IoT'
+import { WhatsApp } from '@/components/modules/WhatsApp'
+import { Forum } from '@/components/modules/Forum'
+import { PLM } from '@/components/modules/PLM'
+import { ECommerce } from '@/components/modules/ECommerce'
+import { Spreadsheet } from '@/components/modules/Spreadsheet'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -86,6 +117,37 @@ const modules: Record<string, React.ReactNode> = {
   zakoni: <Zakoni />,
   pos: <Maloprodaja />,
   shipping: <Shipping />,
+  marketplace: <Marketplace />,
+  ponude: <Ponude />,
+  pretplate: <Pretplate />,
+  troškovi: <Troškovi />,
+  potpisi: <Potpisi />,
+  proizvodnja: <Proizvodnja />,
+  kvalitet: <Kvalitet />,
+  odrzavanje: <Održavanje />,
+  regrutacija: <Regrutacija />,
+  odsustva: <Odsustva />,
+  preporuke: <Preporuke />,
+  podrska: <Podrška />,
+  'terenski-servis': <TerenskiServis />,
+  zakazivanja: <Zakazivanja />,
+  planer: <Planer />,
+  'drustvene-mreze': <DruštveneMreže />,
+  'sms-marketing': <SmsMarketing />,
+  dogadjaji: <Događaji />,
+  'mkt-automatizacija': <MktAutomatizacija />,
+  ankete: <Ankete />,
+  chet: <Čet />,
+  'baza-znanja': <BazaZnanja />,
+  website: <WebsiteBuilder />,
+  blog: <BlogModul />,
+  voip: <VoIP />,
+  iot: <IoT />,
+  whatsapp: <WhatsApp />,
+  forum: <Forum />,
+  plm: <PLM />,
+  ecommerce: <ECommerce />,
+  spreadsheet: <Spreadsheet />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -118,6 +180,37 @@ const moduleLabelKeys: Record<string, string> = {
   zakoni: 'zakoni.title',
   pos: 'sidebar.pos',
   shipping: 'sidebar.shipping',
+  marketplace: 'sidebar.marketplace',
+  ponude: 'sidebar.quotes',
+  pretplate: 'sidebar.subscriptions',
+  troškovi: 'sidebar.expenses',
+  potpisi: 'sidebar.sign',
+  proizvodnja: 'sidebar.manufacturing',
+  kvalitet: 'sidebar.quality',
+  odrzavanje: 'sidebar.maintenance',
+  regrutacija: 'sidebar.recruitment',
+  odsustva: 'sidebar.timeoff',
+  preporuke: 'sidebar.referrals',
+  podrska: 'sidebar.helpdesk',
+  'terenski-servis': 'sidebar.fieldService',
+  zakazivanja: 'sidebar.appointments',
+  planer: 'sidebar.planning',
+  'drustvene-mreze': 'sidebar.social',
+  'sms-marketing': 'sidebar.sms',
+  dogadjaji: 'sidebar.events',
+  'mkt-automatizacija': 'sidebar.mktAutomation',
+  ankete: 'sidebar.surveys',
+  chet: 'sidebar.discuss',
+  'baza-znanja': 'sidebar.knowledge',
+  website: 'sidebar.website',
+  blog: 'sidebar.blog',
+  voip: 'sidebar.voip',
+  iot: 'sidebar.iot',
+  whatsapp: 'sidebar.whatsapp',
+  forum: 'sidebar.forum',
+  plm: 'sidebar.plm',
+  ecommerce: 'sidebar.ecommerce',
+  spreadsheet: 'sidebar.spreadsheet',
 }
 
 // ============ INNER APP (needs i18n context) ============

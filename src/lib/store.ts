@@ -28,6 +28,37 @@ export type ModuleType =
   | 'zakoni'
   | 'pos'
   | 'shipping'
+  | 'marketplace'
+  | 'ponude'
+  | 'pretplate'
+  | 'troskovi'
+  | 'potpisi'
+  | 'proizvodnja'
+  | 'kvalitet'
+  | 'odrzavanje'
+  | 'regrutacija'
+  | 'odsustva'
+  | 'preporuke'
+  | 'podrska'
+  | 'terenski-servis'
+  | 'zakazivanja'
+  | 'planer'
+  | 'drustvene-mreze'
+  | 'sms-marketing'
+  | 'dogadjaji'
+  | 'mkt-automatizacija'
+  | 'ankete'
+  | 'chet'
+  | 'baza-znanja'
+  | 'website'
+  | 'blog'
+  | 'voip'
+  | 'iot'
+  | 'whatsapp'
+  | 'forum'
+  | 'plm'
+  | 'ecommerce'
+  | 'spreadsheet'
 
 export interface UserInfo {
   id: string
@@ -139,7 +170,13 @@ export const useAppStore = create<AppState>((set, get) => ({
         'crm', 'kalendar', 'zaposleni', 'projekti', 'sredstva', 'dokumenta',
         'knjigovodstvo', 'protokol', 'edukacija', 'vozni-park', 'kafe-restoran',
         'email-marketing', 'rent-a-car', 'izvestaji', 'integracije', 'bank-sync',
-        'podesavanja', 'notifications', 'zakoni', 'pos', 'shipping'
+        'podesavanja', 'notifications', 'zakoni', 'pos', 'shipping',
+        'marketplace', 'ponude', 'pretplate', 'troskovi', 'potpisi',
+        'proizvodnja', 'kvalitet', 'odrzavanje', 'regrutacija', 'odsustva',
+        'preporuke', 'podrska', 'terenski-servis', 'zakazivanja', 'planer',
+        'drustvene-mreze', 'sms-marketing', 'dogadjaji', 'mkt-automatizacija',
+        'ankete', 'chet', 'baza-znanja', 'website', 'blog', 'voip',
+        'iot', 'whatsapp', 'forum', 'plm', 'ecommerce', 'spreadsheet'
       ]
       modules.forEach(m => { permissions[m] = ['read', 'write', 'delete', 'admin'] })
     }

@@ -102,6 +102,31 @@ model Company {
   shippingCarriers    ShippingCarrier[]
   shippingOrders      ShippingOrder[]
   shippingEvents      ShippingEvent[]
+  salesOrders         SalesOrder[]
+  subscriptions       Subscription[]
+  expenseReports      ExpenseReport[]
+  signingRequests     SigningRequest[]
+  billOfMaterials     BillOfMaterials[]
+  manufacturingOrders ManufacturingOrder[]
+  qualityInspections  QualityInspection[]
+  maintenanceOrders   MaintenanceOrder[]
+  jobPostings         JobPosting[]
+  leaveRequests       LeaveRequest[]
+  referrals           Referral[]
+  helpdeskTickets     HelpdeskTicket[]
+  workOrders          WorkOrder[]
+  appointments        Appointment[]
+  planningSlots       PlanningSlot[]
+  socialPosts         SocialPost[]
+  smsCampaigns        SmsCampaign[]
+  events              Event[]
+  mktWorkflows        MktWorkflow[]
+  surveys             Survey[]
+  chatChannels        ChatChannel[]
+  kbArticles          KbArticle[]
+  webPages            WebPage[]
+  blogPosts           BlogPost[]
+  voipCalls           VoipCall[]
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -218,6 +243,11 @@ model Partner {
   posOrders           POSOrder[] @relation("POSOrderPartner")
   receivingOrders     ReceivingOrder[] @relation("ReceivingPartner")
   shippingOrders      ShippingOrder[] @relation("ShippingPartner")
+  salesOrders         SalesOrder[]
+  subscriptions       Subscription[]
+  helpdeskTickets     HelpdeskTicket[] @relation("TicketPartner")
+  workOrders          WorkOrder[] @relation("WorkOrderPartner")
+  appointments        Appointment[] @relation("AppointmentPartner")
 
   @@unique([companyId, pib])
 }
@@ -1743,3 +1773,619 @@ model ShippingEvent {
   order         ShippingOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
+
+// =============================================
+// Faza 8-9: NOVI MODULI (Odoo parity)
+// =============================================
+
+// ============ SALES / PONUDE ============
+
+model SalesOrder {
+  id            String   @id @default(cuid())
+  companyId     String
+  number        String
+  date          DateTime @default(now())
+  partnerId     String
+  status        String   @default("nacrt") // nacrt, poslata, potvrdena, otkazana
+  totalAmount   Float
+  taxAmount     Float    @default(0)
+  discountPct   Float    @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company        @relation(fields: [companyId], references: [id])
+  partner       Partner        @relation(fields: [partnerId], references: [id])
+  lines         SalesOrderLine[]
+
+  @@unique([companyId, number])
+}
+
+model SalesOrderLine {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  quantity    Float
+  unitPrice   Float
+  discountPct Float    @default(0)
+  taxRate     Float    @default(20)
+  total       Float
+
+  order   SalesOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+// ============ SUBSCRIPTIONS / PRETPLATE ============
+
+model Subscription {
+  id            String   @id @default(cuid())
+  companyId     String
+  partnerId     String
+  name          String
+  description   String?
+  frequency     String   // monthly, quarterly, yearly
+  amount        Float
+  currency      String   @default("RSD")
+  startDate     DateTime
+  endDate       DateTime?
+  nextInvoice   DateTime?
+  status        String   @default("aktivna") // aktivna, pauzirana, završena, otkazana
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+  partner       Partner  @relation(fields: [partnerId], references: [id])
+}
+
+// ============ EXPENSES / TROŠKOVI ============
+
+model ExpenseReport {
+  id            String   @id @default(cuid())
+  companyId     String
+  employeeId    String
+  title         String
+  date          DateTime @default(now())
+  status        String   @default("nacrt") // nacrt, na_odobrenju, odobreno, odbijeno, isplaćeno
+  totalAmount   Float    @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+  items         ExpenseItem[]
+}
+
+model ExpenseItem {
+  id            String   @id @default(cuid())
+  reportId      String
+  category      String  // put, hrana, smeštaj, kancelarija, telefon, ostalo
+  description   String
+  amount        Float
+  date          DateTime @default(now())
+  notes         String?
+
+  report        ExpenseReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+// ============ SIGN / DIGITALNI POTPIS ============
+
+model SigningRequest {
+  id            String   @id @default(cuid())
+  companyId     String
+  documentId    String?
+  documentTitle String
+  requester     String
+  signerEmail   String
+  signerName    String
+  status        String   @default("na_čekanju") // na_čekanju, potpisano, odbijeno, isteklo
+  signedAt      DateTime?
+  signatureData String?
+  expiresAt     DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ MANUFACTURING / PROIZVODNJA ============
+
+model BillOfMaterials {
+  id            String   @id @default(cuid())
+  companyId     String
+  productId     String
+  productName   String
+  quantity      Float    @default(1)
+  type          String   @default("standard") // standard, phantom
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company            @relation(fields: [companyId], references: [id])
+  components    BomComponent[]
+}
+
+model BomComponent {
+  id          String   @id @default(cuid())
+  bomId       String
+  productId   String
+  productName String
+  quantity    Float    @default(1)
+
+  bom         BillOfMaterials @relation(fields: [bomId], references: [id], onDelete: Cascade)
+}
+
+model ManufacturingOrder {
+  id            String   @id @default(cuid())
+  companyId     String
+  number        String
+  productId     String
+  productName   String
+  bomId         String?
+  quantity      Float
+  status        String   @default("planirano") // planirano, u_toku, završeno, otkazano
+  startDate     DateTime?
+  endDate       DateTime?
+  assignedTo    String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ QUALITY CONTROL / KONTROLA KVALITETA ============
+
+model QualityInspection {
+  id            String   @id @default(cuid())
+  companyId     String
+  productId     String?
+  productName   String?
+  orderId       String?
+  type          String   @default("ulazna") // ulazna, procesna, izlazna
+  status        String   @default("planirana") // planirana, u_toku, položena, pala
+  result        String?  // položena, pala, uslovno
+  inspector     String?
+  notes         String?
+  inspectedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company            @relation(fields: [companyId], references: [id])
+  defects       QualityDefect[]
+}
+
+model QualityDefect {
+  id            String   @id @default(cuid())
+  inspectionId  String
+  description   String
+  severity      String   @default("minor") // critical, major, minor, cosmetic
+  action        String?
+  resolved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  inspection    QualityInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+}
+
+// ============ MAINTENANCE / ODRŽAVANJE ============
+
+model MaintenanceOrder {
+  id            String   @id @default(cuid())
+  companyId     String
+  assetId       String?
+  assetName     String?
+  type          String   @default("preventivno") // preventivno, korektivno, hitno
+  priority      String   @default("srednji") // nizak, srednji, visok, hitan
+  status        String   @default("planirano") // planirano, u_toku, završeno, otkazano
+  assignedTo    String?
+  scheduledDate DateTime?
+  completedDate DateTime?
+  description   String
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ RECRUITMENT / REGRUTACIJA ============
+
+model JobPosting {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  department    String?
+  description   String
+  requirements  String?
+  location      String?
+  type          String   @default("puno_vreme") // puno_vreme, posao, honorarno, praksa
+  status        String   @default("aktivno") // draft, aktivno, zatvoreno, popunjeno
+  applications  Int      @default(0)
+  postedAt      DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company           @relation(fields: [companyId], references: [id])
+  applicants    JobApplication[]
+}
+
+model JobApplication {
+  id            String   @id @default(cuid())
+  postingId     String
+  firstName     String
+  lastName      String
+  email         String
+  phone         String?
+  cvFile        String?
+  coverLetter   String?
+  status        String   @default("primljena") // primljena, u_procesu, intervju, ponuda, prihvaćena, odbijena
+  appliedAt     DateTime @default(now())
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  posting       JobPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+}
+
+// ============ TIME OFF / ODSUSTVA ============
+
+model LeaveRequest {
+  id            String   @id @default(cuid())
+  companyId     String
+  employeeId    String
+  employeeName  String
+  type          String   // godišnji, bolovanje, slobodan_dan, plaćeno_odsustvo, rodiljni, očinski
+  startDate     DateTime
+  endDate       DateTime
+  days          Float
+  status        String   @default("na_čekanju") // na_čekanju, odobreno, odbijeno, otkazano
+  approvedBy    String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ REFERRALS / PREPORUKE ============
+
+model Referral {
+  id            String   @id @default(cuid())
+  companyId     String
+  referrerId    String
+  referrerName  String
+  candidateName String
+  candidateEmail String
+  position      String
+  status        String   @default("primljena") // primljena, u_procesu, zaposlena, odbijena
+  bonus         Float    @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ HELPDESK / PODRŠKA ============
+
+model HelpdeskTicket {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  description   String
+  priority      String   @default("srednji") // nizak, srednji, visok, hitan
+  status        String   @default("otvoren") // otvoren, u_toku, čeka_odgovor, rešen, zatvoren
+  category      String?
+  assignedTo    String?
+  partnerId     String?
+  partnerName   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company           @relation(fields: [companyId], references: [id])
+  partner       Partner?          @relation("TicketPartner", fields: [partnerId], references: [id])
+  messages      TicketMessage[]
+}
+
+model TicketMessage {
+  id            String   @id @default(cuid())
+  ticketId      String
+  author        String
+  content       String
+  isInternal    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  ticket        HelpdeskTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+// ============ FIELD SERVICE / TERENSKI SERVIS ============
+
+model WorkOrder {
+  id            String   @id @default(cuid())
+  companyId     String
+  partnerId     String?
+  partnerName   String?
+  type          String   @default("servis") // servis, instalacija, popravka, pregled
+  status        String   @default("planiran") // planiran, dodeljen, u_toku, završen, otkazan
+  priority      String   @default("srednji")
+  assignedTo    String?
+  address       String?
+  scheduledDate DateTime?
+  completedDate DateTime?
+  description   String
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company          @relation(fields: [companyId], references: [id])
+  partner       Partner?         @relation("WorkOrderPartner", fields: [partnerId], references: [id])
+}
+
+// ============ APPOINTMENTS / ZAKAZIVANJA ============
+
+model Appointment {
+  id            String   @id @default(cuid())
+  companyId     String
+  partnerId     String?
+  partnerName   String?
+  employeeId    String?
+  employeeName  String?
+  type          String   @default("konsultacija") // konsultacija, pregled, sastanak, servis
+  date          DateTime
+  duration      Int      @default(30) // minuta
+  status        String   @default("zakazano") // zakazano, potvrđeno, otkazano, završeno
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company          @relation(fields: [companyId], references: [id])
+  partner       Partner?         @relation("AppointmentPartner", fields: [partnerId], references: [id])
+}
+
+// ============ PLANNING / PLANER ============
+
+model PlanningSlot {
+  id            String   @id @default(cuid())
+  companyId     String
+  employeeId    String?
+  employeeName  String?
+  date          DateTime
+  startTime     DateTime
+  endTime       DateTime
+  projectId     String?
+  taskName      String?
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ SOCIAL MARKETING ============
+
+model SocialPost {
+  id            String   @id @default(cuid())
+  companyId     String
+  platform      String   // facebook, instagram, linkedin, tiktok, twitter
+  content       String
+  imageUrl      String?
+  status        String   @default("nacrt") // nacrt, zakazano, objavljeno, neuspešno
+  scheduledAt   DateTime?
+  publishedAt   DateTime?
+  likes         Int      @default(0)
+  shares        Int      @default(0)
+  comments      Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ SMS MARKETING ============
+
+model SmsCampaign {
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  message       String
+  recipientCount Int     @default(0)
+  status        String   @default("nacrt") // nacrt, poslata, delimično, završena
+  sentAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ EVENTS / DOGAĐAJI ============
+
+model Event {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  description   String?
+  startDate     DateTime
+  endDate       DateTime?
+  location      String?
+  capacity      Int      @default(0)
+  registeredCount Int    @default(0)
+  status        String   @default("planiran") // planiran, aktivan, završen, otkazan
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company              @relation(fields: [companyId], references: [id])
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id            String   @id @default(cuid())
+  eventId       String
+  name          String
+  email         String
+  phone         String?
+  status        String   @default("prijavljeno") // prijavljeno, potvrđeno, otkazano
+  registeredAt  DateTime @default(now())
+
+  event         Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+// ============ MARKETING AUTOMATION ============
+
+model MktWorkflow {
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  trigger       String   // new_lead, deal_won, cart_abandoned, etc
+  isActive      Boolean  @default(true)
+  executedCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company           @relation(fields: [companyId], references: [id])
+  steps         MktWorkflowStep[]
+}
+
+model MktWorkflowStep {
+  id            String   @id @default(cuid())
+  workflowId    String
+  sequence      Int
+  action        String   // send_email, wait, update_tag, assign, notify
+  actionData    String?  // JSON
+  createdAt     DateTime @default(now())
+
+  workflow      MktWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+}
+
+// ============ SURVEYS / ANKETE ============
+
+model Survey {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  description   String?
+  isActive      Boolean  @default(true)
+  responseCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company           @relation(fields: [companyId], references: [id])
+  questions     SurveyQuestion[]
+  responses     SurveyResponse[]
+}
+
+model SurveyQuestion {
+  id            String   @id @default(cuid())
+  surveyId      String
+  question      String
+  type          String   @default("text") // text, choice, rating, nps, multiple
+  options       String?  // JSON array for choice/multiple
+  orderNum      Int      @default(0)
+
+  survey        Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+}
+
+model SurveyResponse {
+  id            String   @id @default(cuid())
+  surveyId      String
+  answers       String   // JSON: { questionId: answer, ... }
+  createdAt     DateTime @default(now())
+
+  survey        Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+}
+
+// ============ DISCUSS / ČET ============
+
+model ChatChannel {
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  type          String   @default("kanal") // kanal, direktorna, grupa
+  members       String?  // JSON array of member IDs
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company        @relation(fields: [companyId], references: [id])
+  messages      ChatMessage[]
+}
+
+model ChatMessage {
+  id            String   @id @default(cuid())
+  channelId     String
+  author        String
+  content       String
+  createdAt     DateTime @default(now())
+
+  channel       ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+}
+
+// ============ KNOWLEDGE BASE / BAZA ZNANJA ============
+
+model KbArticle {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  content       String?  // HTML/Markdown
+  category      String?
+  author        String?
+  views         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ WEBSITE BUILDER (Faza 9) ============
+
+model WebPage {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  slug          String
+  content       String?  // HTML
+  status        String   @default("nacrt") // nacrt, objavljena
+  metaTitle     String?
+  metaDesc      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ ECOMMERCE (Faza 9) ============
+
+model BlogPost {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  slug          String
+  content       String?
+  excerpt       String?
+  author        String?
+  category      String?
+  tags          String?  // JSON array
+  status        String   @default("nacrt") // nacrt, objavljena
+  views         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ VoIP ============
+
+model VoipCall {
+  id            String   @id @default(cuid())
+  companyId     String
+  caller        String
+  callee        String
+  direction     String   @default("outgoing") // incoming, outgoing
+  duration      Int      @default(0) // sekunde
+  status        String   @default("završen") // završen, propušten, u_toku
+  startedAt     DateTime @default(now())
+  recordingUrl  String?
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  company       Company  @relation(fields: [companyId], references: [id])
+}
