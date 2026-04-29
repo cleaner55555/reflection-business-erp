@@ -16,12 +16,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import {
   Plus, Search, Pencil, Trash2, UserCog, Users, ArrowLeft, Printer,
   BarChart3, Building2, DollarSign, Calendar, Clock, TrendingUp, Award,
-  AlertTriangle, Eye, FileText, Star,
+  AlertTriangle, Eye, FileText, Star, GitBranch,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate } from '@/lib/helpers'
-import { OceneTab } from './ZaposleniEnhanced'
+import { OceneTab, OrganigramTab } from './ZaposleniEnhanced'
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -96,6 +96,10 @@ export function Zaposleni() {
             <Clock className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('employees.attendance')}</span>
           </TabsTrigger>
+          <TabsTrigger value="organigram" className="gap-1.5">
+            <GitBranch className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Organigram</span>
+          </TabsTrigger>
           <TabsTrigger value="ocene" className="gap-1.5">
             <Star className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Ocene</span>
@@ -105,6 +109,7 @@ export function Zaposleni() {
         <TabsContent value="zaposleni"><ZaposleniListTab /></TabsContent>
         <TabsContent value="plate"><PlateTab /></TabsContent>
         <TabsContent value="prisustvo"><PrisustvoTab /></TabsContent>
+        <TabsContent value="organigram"><OrganigramTab /></TabsContent>
         <TabsContent value="ocene"><OceneTab /></TabsContent>
       </Tabs>
     </div>

@@ -12,7 +12,11 @@ export async function GET(req: NextRequest) {
 
   const employees = await db.employee.findMany({
     where: Object.keys(where).length > 0 ? where : undefined,
-    include: { partner: { select: { id: true, name: true } } },
+    include: {
+      partner: { select: { id: true, name: true } },
+      manager: { select: { id: true, firstName: true, lastName: true, position: true } },
+      subordinates: { select: { id: true } },
+    },
     orderBy: { createdAt: 'desc' },
   })
   return NextResponse.json(employees)
@@ -20,11 +24,19 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { firstName, lastName, email, phone, position, department, baseSalary, bankAccount, partnerId, isActive } = body
+  const { firstName, lastName, email, phone, position, department, baseSalary, bankAccount, partnerId, isActive, managerId, contractType, contractEndDate, benefits } = body
   if (!firstName || !lastName) return NextResponse.json({ error: 'Ime i prezime obavezni' }, { status: 400 })
 
   const employee = await db.employee.create({
-    data: { firstName, lastName, email, phone, position, department, baseSalary: Number(baseSalary) || 0, bankAccount, partnerId, isActive: isActive !== false },
+    data: {
+      firstName, lastName, email, phone, position, department,
+      baseSalary: Number(baseSalary) || 0, bankAccount, partnerId,
+      isActive: isActive !== false,
+      managerId: managerId || null,
+      contractType: contractType || 'odredjeno',
+      contractEndDate: contractEndDate ? new Date(contractEndDate) : null,
+      benefits: benefits || null,
+    },
   })
   return NextResponse.json(employee, { status: 201 })
 }

@@ -474,16 +474,19 @@ function FaktureTab() {
     } catch { toast.error('Greška') }
   }
 
-  // Post invoice to accounting (knjiženje)
+  // Post invoice to accounting (knjiženje) - proper Serbian accounting
   const handlePostToAccounting = async (inv: Invoice) => {
     try {
-      const res = await fetch('/api/journal-entries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: inv.date, description: `Faktura ${inv.number} - ${inv.partner?.name || ''}`, debit: inv.totalAmount, credit: 0, documentRef: inv.number, partnerId: inv.partnerId }) })
-      if (!res.ok) { toast.error('Greška pri knjiženju'); return }
-      const entry = await res.json()
-      // Create credit entry for counter-account
-      await fetch('/api/journal-entries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: inv.date, description: `Faktura ${inv.number} - potraživanje`, debit: 0, credit: inv.totalAmount, documentRef: inv.number, partnerId: inv.partnerId }) })
-      await fetch(`/api/invoices/${inv.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'placena' }) })
-      toast.success('Faktura knjižena u nalog')
+      const res = await fetch('/api/invoices/post-to-journal', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ invoiceId: inv.id })
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        toast.error(err.error || 'Greška pri knjiženju')
+        return
+      }
+      const data = await res.json()
+      toast.success(data.message || 'Faktura knjižena u dnevnik')
       fetchInvoices()
     } catch { toast.error('Greška pri knjiženju') }
   }
@@ -1032,9 +1035,16 @@ function FaktureTab() {
                       <TableCell className="text-xs">{formatDate(inv.date)}</TableCell>
                       <TableCell className="text-xs">{formatDate(inv.dueDate)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(inv.status)}`}>
-                          {getStatusLabel(inv.status)}
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(inv.status)}`}>
+                            {getStatusLabel(inv.status)}
+                          </Badge>
+                          {inv.postedToJournal && (
+                            <Badge className="bg-emerald-100 text-emerald-700 text-[9px] px-1.5 py-0 gap-0.5">
+                              <BookOpen className="h-2.5 w-2.5" /> Knjiženo
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-xs text-right font-medium">
                         {formatRSD(inv.totalAmount)}
@@ -1063,7 +1073,7 @@ function FaktureTab() {
                               <ArrowRightLeft className="h-3.5 w-3.5" />
                             </Button>
                           )}
-                          {inv.status === 'poslata' && (
+                          {inv.status === 'poslata' && !inv.postedToJournal && (
                             <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" onClick={() => handlePostToAccounting(inv)} title="Knjiži u nalog">
                               <BookOpen className="h-3.5 w-3.5" />
                             </Button>
