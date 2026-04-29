@@ -320,6 +320,7 @@ export const translations: Record<string, TranslationMap> = {
       settings: 'Поставке',
       integrations: 'Интеграције',
       bank: 'Банка',
+      pos: 'Малопродажа (POS)',
       laws: 'Закони и Порези',
     },
 
@@ -3250,6 +3251,7 @@ export const translations: Record<string, TranslationMap> = {
       settings: 'Settings',
       integrations: 'Integrations',
       bank: 'Bank',
+      pos: 'POS (Retail)',
       laws: 'Laws & Taxes',
     },
 

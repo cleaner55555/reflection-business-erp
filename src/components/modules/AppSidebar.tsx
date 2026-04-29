@@ -39,6 +39,7 @@ import {
   Plug,
   Landmark,
   Scale,
+  Monitor,
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -54,6 +55,7 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
       { module: 'magacin', icon: Warehouse, labelKey: 'sidebar.warehouse' },
       { module: 'nabavka', icon: ShoppingCart, labelKey: 'sidebar.procurement' },
       { module: 'bank-sync', icon: Landmark, labelKey: 'sidebar.bank' },
+      { module: 'pos', icon: Monitor, labelKey: 'sidebar.pos' },
     ],
   },
   {

@@ -95,6 +95,8 @@ model Company {
   employeeEvaluations EmployeeEvaluation[]
   crmAutomationRules  CrmAutomationRule[]
   fiscalPeriods       FiscalPeriod[]
+  posShifts           POSShift[]
+  posOrders           POSOrder[] @relation("POSOrderCompany")
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -208,6 +210,7 @@ model Partner {
   projects             Project[]
   journalEntries       JournalEntry[] @relation("JournalEntryPartner")
   priceList           PriceList? @relation("PartnerPriceList", fields: [priceListId], references: [id])
+  posOrders           POSOrder[] @relation("POSOrderPartner")
 
   @@unique([companyId, pib])
 }
@@ -244,6 +247,7 @@ model Product {
   deliveryNoteItems  DeliveryNoteItem[]
   priceListItems     PriceListItem[]
   lots               Lot[]
+  posOrderLines      POSOrderLine[]
 
   @@unique([companyId, sku])
 }
@@ -1485,4 +1489,70 @@ model Webhook {
   updatedAt   DateTime @updatedAt
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// ============ POS - MALOPRODAJA ============
+
+model POSShift {
+  id              String   @id @default(cuid())
+  companyId       String
+  number          Int      // shift number for the day
+  cashierName     String   // who opened the shift
+  status          String   @default("otvorena") // otvorena, zatvorena
+  openingBalance  Float    @default(0)
+  closingBalance  Float?   // calculated when closed
+  expectedCash    Float?   // opening + cash sales
+  difference      Float?   // closing - expected
+  openedAt        DateTime @default(now())
+  closedAt        DateTime?
+  note            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company   @relation(fields: [companyId], references: [id])
+  orders  POSOrder[]
+}
+
+model POSOrder {
+  id              String   @id @default(cuid())
+  companyId       String
+  shiftId         String
+  orderNumber     String   // POS-YYMMDD-NNN
+  partnerId       String?  // optional customer
+  partnerName     String?  // denormalized for speed
+  status          String   @default("aktivan") // aktivan, placen, storniran
+  paymentMethod   String   @default("gotovina") // gotovina, kartica, transakcioni_racun, virmanski
+  subtotal        Float    @default(0) // without tax
+  taxAmount       Float    @default(0)
+  discountAmount  Float    @default(0)
+  totalAmount     Float    @default(0)
+  paidAmount      Float    @default(0)
+  changeAmount    Float    @default(0)
+  itemsCount      Int      @default(0)
+  fiscalized      Boolean  @default(false)
+  fiscalNumber    String?
+  note            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company    @relation("POSOrderCompany", fields: [companyId], references: [id])
+  shift   POSShift   @relation(fields: [shiftId], references: [id])
+  partner Partner?   @relation("POSOrderPartner", fields: [partnerId], references: [id])
+  lines   POSOrderLine[]
+}
+
+model POSOrderLine {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  sku         String?
+  quantity    Float
+  unitPrice   Float
+  discountPct Float    @default(0)
+  taxRate     Float    @default(20)
+  total       Float    // (quantity * unitPrice * (1 - discountPct/100))
+
+  order   POSOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product  @relation(fields: [productId], references: [id])
 }

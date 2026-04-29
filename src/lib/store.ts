@@ -26,6 +26,7 @@ export type ModuleType =
   | 'bank-sync'
   | 'notifications'
   | 'zakoni'
+  | 'pos'
 
 export interface UserInfo {
   id: string
@@ -137,7 +138,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         'crm', 'kalendar', 'zaposleni', 'projekti', 'sredstva', 'dokumenta',
         'knjigovodstvo', 'protokol', 'edukacija', 'vozni-park', 'kafe-restoran',
         'email-marketing', 'rent-a-car', 'izvestaji', 'integracije', 'bank-sync',
-        'podesavanja', 'notifications', 'zakoni'
+        'podesavanja', 'notifications', 'zakoni', 'pos'
       ]
       modules.forEach(m => { permissions[m] = ['read', 'write', 'delete', 'admin'] })
     }
