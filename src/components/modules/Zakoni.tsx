@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
@@ -19,7 +19,7 @@ import {
   Globe2, Calculator, FileText, Receipt, Building2, Scale, Search,
   ChevronRight, CheckCircle2, AlertCircle, Info, TrendingUp, TrendingDown,
   DollarSign, Users, Briefcase, Landmark, FileCheck, Clock,
-  RefreshCw, Check, ExternalLink, Shield, ShieldCheck,
+  RefreshCw, Check, ExternalLink, Shield, ShieldCheck, Globe, Zap,
 } from 'lucide-react'
 
 const REGIONS = [
@@ -58,10 +58,14 @@ export function Zakoni() {
   const [vatAmount, setVatAmount] = useState<string>('1000')
   const [vatDirection, setVatDirection] = useState<'gross' | 'net'>('gross')
   const [salaryInput, setSalaryInput] = useState<string>('100000')
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'success' | 'updated' | 'error'>('idle')
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'success' | 'updated' | 'error' | 'batch'>('idle')
   const [updateMessage, setUpdateMessage] = useState<string>('')
   const [lastVerified, setLastVerified] = useState<string | null>(null)
   const [updateChanges, setUpdateChanges] = useState<{ field: string; oldValue: string; newValue: string }[]>([])
+  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number; changes: number } | null>(null)
+  const [batchResults, setBatchResults] = useState<Array<{ countryCode: string; countryName: string; flag: string; status: string; changes: any[] }>>([])
+  const [showBatchResults, setShowBatchResults] = useState(false)
+  const autoCheckedRef = useRef(false)
 
   const law = getTaxLaw(selectedCountry)
 
@@ -80,7 +84,31 @@ export function Zakoni() {
       .catch(() => {})
   }, [selectedCountry])
 
-  // Check for updates via web search + AI
+  // Auto-check active country on first mount (once per session)
+  useEffect(() => {
+    if (autoCheckedRef.current || !selectedCountry) return
+    autoCheckedRef.current = true
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/tax-laws/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-company-id': '' },
+          body: JSON.stringify({ countryCode: selectedCountry }),
+        })
+        const data = await res.json()
+        if (data.verifiedAt) setLastVerified(data.verifiedAt)
+        if (data.status === 'updated') {
+          setUpdateStatus('updated')
+          setUpdateChanges(data.changes || [])
+          setUpdateMessage(t('zakoni.updateFound') || `${data.changes.length} promena pronađeno!`)
+          setTimeout(() => setUpdateStatus('idle'), 15000)
+        }
+      } catch { /* silent auto-check */ }
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [selectedCountry, t])
+
+  // Check for updates via web search + AI (single country)
   const checkForUpdates = useCallback(async () => {
     setUpdateStatus('checking')
     setUpdateMessage('')
@@ -101,7 +129,7 @@ export function Zakoni() {
         setUpdateChanges(data.changes || [])
       } else if (data.status === 'verified') {
         setUpdateStatus('success')
-        setUpdateMessage(t('zakoni.updateVerified') || 'Zakoni su aktuelni')
+        setUpdateMessage(data.summary || t('zakoni.updateVerified') || 'Zakoni su aktuelni')
       } else if (data.status === 'error') {
         setUpdateStatus('error')
         setUpdateMessage(data.error || t('zakoni.updateError') || 'Greška pri proveri')
@@ -116,6 +144,49 @@ export function Zakoni() {
     // Reset status after 10s
     setTimeout(() => setUpdateStatus('idle'), 10000)
   }, [selectedCountry, t])
+
+  // Batch update ALL countries
+  const updateAllCountries = useCallback(async () => {
+    setUpdateStatus('batch')
+    setUpdateMessage(t('zakoni.batchUpdating') || 'Ažuriram sve zemlje...')
+    setBatchProgress({ done: 0, total: COUNTRY_TAX_LAWS.length, changes: 0 })
+    setBatchResults([])
+    setShowBatchResults(true)
+    try {
+      const res = await fetch('/api/tax-laws/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-company-id': '' },
+        body: JSON.stringify({ batch: true }),
+      })
+      const data = await res.json()
+      if (data.status === 'batch_complete') {
+        const allChanges = data.results.filter((r: any) => r.status === 'updated')
+        const mapped = data.results.map((r: any) => {
+          const cl = COUNTRY_TAX_LAWS.find(c => c.code === r.countryCode)
+          return {
+            countryCode: r.countryCode,
+            countryName: cl?.name || r.countryCode,
+            flag: cl?.flag || '🌐',
+            status: r.status,
+            changes: r.changes || [],
+          }
+        })
+        setBatchResults(mapped)
+        setBatchProgress({ done: data.totalCountries, total: data.totalCountries, changes: data.totalChanges })
+        setUpdateStatus('updated')
+        setUpdateChanges(allChanges.flatMap((r: any) => r.changes || []))
+        setUpdateMessage(
+          data.totalChanges > 0
+            ? (t('zakoni.batchFoundChanges') || `Završeno! ${data.totalChanges} promena u ${allChanges.length} zemalja`)
+            : (t('zakoni.batchAllVerified') || `Završeno! Sve ${data.totalCountries} zemalja je aktuelno`)
+        )
+        setLastVerified(data.verifiedAt)
+      }
+    } catch {
+      setUpdateStatus('error')
+      setUpdateMessage(t('zakoni.updateError') || 'Greška pri batch ažuriranju')
+    }
+  }, [t])
 
   const filteredCountries = useMemo(() => {
     let countries = activeRegion === 'all' ? COUNTRY_TAX_LAWS : getCountriesByRegion(activeRegion)
@@ -185,12 +256,14 @@ export function Zakoni() {
 
       {/* Update Status Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 bg-muted/30 rounded-lg border">
-        <div className="flex items-center gap-2 flex-1">
-          <ShieldCheck className={`h-4 w-4 ${updateStatus === 'updated' ? 'text-orange-500' : updateStatus === 'success' ? 'text-emerald-500' : updateStatus === 'error' ? 'text-red-500' : 'text-muted-foreground'}`} />
+        <div className="flex items-center gap-2 flex-1 flex-wrap">
+          <ShieldCheck className={`h-4 w-4 ${updateStatus === 'updated' ? 'text-orange-500' : updateStatus === 'success' ? 'text-emerald-500' : updateStatus === 'error' ? 'text-red-500' : updateStatus === 'batch' ? 'text-blue-500 animate-pulse' : 'text-muted-foreground'}`} />
           <span className="text-xs text-muted-foreground">
-            {lastVerified
-              ? `${t('zakoni.lastVerified') || 'Zadnja provera'}: ${new Date(lastVerified).toLocaleDateString('sr-RS')} ${new Date(lastVerified).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}`
-              : (t('zakoni.notVerified') || 'Nije proveravano')
+            {updateStatus === 'batch'
+              ? (t('zakoni.batchUpdating') || 'Ažuriram sve zemlje...')
+              : lastVerified
+                ? `${t('zakoni.lastVerified') || 'Zadnja provera'}: ${new Date(lastVerified).toLocaleDateString('sr-RS')} ${new Date(lastVerified).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}`
+                : (t('zakoni.notVerified') || 'Nije proveravano')
             }
           </span>
           {updateStatus === 'updated' && updateChanges.length > 0 && (
@@ -203,21 +276,87 @@ export function Zakoni() {
               <Check className="h-2.5 w-2.5 mr-0.5" /> {t('zakoni.upToDate') || 'Aktuelno'}
             </Badge>
           )}
+          {updateStatus === 'batch' && batchProgress && (
+            <Badge className="bg-blue-100 text-blue-700 text-[10px]">
+              <RefreshCw className="h-2.5 w-2.5 mr-0.5 animate-spin" />
+              {batchProgress.done}/{batchProgress.total}
+            </Badge>
+          )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={checkForUpdates}
-          disabled={updateStatus === 'checking'}
-          className="text-xs gap-1.5"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
-          {updateStatus === 'checking'
-            ? (t('zakoni.checking') || 'Proveravam...')
-            : (t('zakoni.checkUpdates') || 'Proveri ažuriranja')
-          }
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={checkForUpdates}
+            disabled={updateStatus === 'checking' || updateStatus === 'batch'}
+            className="text-xs gap-1.5"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
+            {updateStatus === 'checking'
+              ? (t('zakoni.checking') || 'Proveravam...')
+              : (t('zakoni.checkUpdates') || 'Proveri ažuriranja')
+            }
+          </Button>
+          <Button
+            variant={showBatchResults ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              if (!showBatchResults) {
+                updateAllCountries()
+              } else {
+                setShowBatchResults(false)
+              }
+            }}
+            disabled={updateStatus === 'checking' || updateStatus === 'batch'}
+            className="text-xs gap-1.5"
+          >
+            <Globe className={`h-3.5 w-3.5 ${updateStatus === 'batch' ? 'animate-pulse' : ''}`} />
+            {updateStatus === 'batch'
+              ? (t('zakoni.batchProgress') || 'Ažuriram...')
+              : showBatchResults
+                ? (t('zakoni.hideBatch') || 'Sakrij rezultate')
+                : (t('zakoni.updateAll') || 'Ažuriraj sve')
+            }
+          </Button>
+        </div>
       </div>
+
+      {/* Batch Results */}
+      {showBatchResults && batchResults.length > 0 && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-2">
+          <div className="p-3 bg-muted/30 rounded-lg border">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium flex items-center gap-1.5">
+                <Zap className="h-3.5 w-3.5 text-primary" />
+                {t('zakoni.batchResults') || 'Rezultati ažuriranja'}
+              </p>
+              {batchProgress && (
+                <span className="text-xs text-muted-foreground">
+                  {batchProgress.total} {t('zakoni.countries') || 'zemalja'} · {batchProgress.changes} {t('zakoni.changes') || 'promena'}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1.5 max-h-48 overflow-y-auto">
+              {batchResults.map(r => (
+                <div
+                  key={r.countryCode}
+                  className={`flex items-center gap-1.5 p-1.5 rounded-md text-[10px] ${
+                    r.status === 'updated' ? 'bg-orange-50 border border-orange-200' : 'bg-emerald-50/50 border border-emerald-100'
+                  }`}
+                >
+                  <span>{r.flag}</span>
+                  <span className="truncate flex-1 font-medium">{r.countryName.substring(0, 12)}</span>
+                  {r.status === 'updated' ? (
+                    <Badge variant="destructive" className="text-[8px] px-1 h-3.5">{r.changes.length}</Badge>
+                  ) : (
+                    <Check className="h-3 w-3 text-emerald-500" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Update Changes */}
       {updateChanges.length > 0 && (

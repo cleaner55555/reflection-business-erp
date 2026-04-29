@@ -429,6 +429,13 @@ export const translations: Record<string, TranslationMap> = {
       updateError: 'Greška pri proveri ažuriranja',
       autoUpdateInfo: 'Podaci se automatski proveravaju web pretragom',
       dataYear: 'Podaci: 2024',
+      updateAll: 'Ažuriraj sve',
+      batchUpdating: 'Ažuriram sve zemlje...',
+      batchProgress: 'Ažuriram...',
+      batchResults: 'Rezultati ažuriranja',
+      batchFoundChanges: 'Završeno! pronadjene promene',
+      batchAllVerified: 'Sve zemlje su aktuelne',
+      hideBatch: 'Sakrij rezultate',
     },
 
     dashboard: {
@@ -3193,6 +3200,13 @@ export const translations: Record<string, TranslationMap> = {
       updateError: 'Error checking for updates',
       autoUpdateInfo: 'Data verified via web search',
       dataYear: 'Data: 2024',
+      updateAll: 'Update All Countries',
+      batchUpdating: 'Updating all countries...',
+      batchProgress: 'Updating...',
+      batchResults: 'Update Results',
+      batchFoundChanges: 'Done! Changes found in',
+      batchAllVerified: 'Done! All countries are up to date',
+      hideBatch: 'Hide Results',
     },
 
     dashboard: {
