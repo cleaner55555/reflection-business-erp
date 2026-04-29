@@ -433,9 +433,17 @@ export const translations: Record<string, TranslationMap> = {
       batchUpdating: 'Ažuriram sve zemlje...',
       batchProgress: 'Ažuriram...',
       batchResults: 'Rezultati ažuriranja',
-      batchFoundChanges: 'Završeno! pronadjene promene',
+      batchFoundChanges: 'Završeno! pronađene promene',
       batchAllVerified: 'Sve zemlje su aktuelne',
       hideBatch: 'Sakrij rezultate',
+      batchFoundChange: 'Promena pronađena:',
+      batchProcessing: 'Ažuriram',
+      batchWaiting: 'Pripremam',
+      autoEnabled: 'Auto-žuriranje',
+      autoUpdateToggle: 'Auto-žuriranje (svakih 6h)',
+      autoBatchChanges: 'Auto: pronađene promene',
+      autoBatchOK: 'Auto: sve aktuelno',
+      liveConnection: 'WebSocket',
     },
 
     dashboard: {
@@ -3207,6 +3215,14 @@ export const translations: Record<string, TranslationMap> = {
       batchFoundChanges: 'Done! Changes found in',
       batchAllVerified: 'Done! All countries are up to date',
       hideBatch: 'Hide Results',
+      batchFoundChange: 'Change found:',
+      batchProcessing: 'Updating',
+      batchWaiting: 'Preparing',
+      autoEnabled: 'Auto-update',
+      autoUpdateToggle: 'Auto-update (every 6h)',
+      autoBatchChanges: 'Auto: changes found',
+      autoBatchOK: 'Auto: all up to date',
+      liveConnection: 'WebSocket',
     },
 
     dashboard: {
