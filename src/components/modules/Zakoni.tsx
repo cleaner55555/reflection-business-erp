@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
@@ -19,6 +19,7 @@ import {
   Globe2, Calculator, FileText, Receipt, Building2, Scale, Search,
   ChevronRight, CheckCircle2, AlertCircle, Info, TrendingUp, TrendingDown,
   DollarSign, Users, Briefcase, Landmark, FileCheck, Clock,
+  RefreshCw, Check, ExternalLink, Shield, ShieldCheck,
 } from 'lucide-react'
 
 const REGIONS = [
@@ -57,8 +58,64 @@ export function Zakoni() {
   const [vatAmount, setVatAmount] = useState<string>('1000')
   const [vatDirection, setVatDirection] = useState<'gross' | 'net'>('gross')
   const [salaryInput, setSalaryInput] = useState<string>('100000')
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'success' | 'updated' | 'error'>('idle')
+  const [updateMessage, setUpdateMessage] = useState<string>('')
+  const [lastVerified, setLastVerified] = useState<string | null>(null)
+  const [updateChanges, setUpdateChanges] = useState<{ field: string; oldValue: string; newValue: string }[]>([])
 
   const law = getTaxLaw(selectedCountry)
+
+  // Fetch last verified status on mount & country change
+  useEffect(() => {
+    if (!selectedCountry) return
+    fetch(`/api/tax-laws/update?code=${selectedCountry}`, {
+      headers: { 'x-company-id': '' },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.lastVerified) {
+          setLastVerified(data.lastVerified)
+        }
+      })
+      .catch(() => {})
+  }, [selectedCountry])
+
+  // Check for updates via web search + AI
+  const checkForUpdates = useCallback(async () => {
+    setUpdateStatus('checking')
+    setUpdateMessage('')
+    setUpdateChanges([])
+    try {
+      const res = await fetch('/api/tax-laws/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-company-id': '',
+        },
+        body: JSON.stringify({ countryCode: selectedCountry }),
+      })
+      const data = await res.json()
+      if (data.status === 'updated') {
+        setUpdateStatus('updated')
+        setUpdateMessage(t('zakoni.updateFound') || `${data.changes.length} promena pronađeno!`)
+        setUpdateChanges(data.changes || [])
+      } else if (data.status === 'verified') {
+        setUpdateStatus('success')
+        setUpdateMessage(t('zakoni.updateVerified') || 'Zakoni su aktuelni')
+      } else if (data.status === 'error') {
+        setUpdateStatus('error')
+        setUpdateMessage(data.error || t('zakoni.updateError') || 'Greška pri proveri')
+      }
+      if (data.verifiedAt) {
+        setLastVerified(data.verifiedAt)
+      }
+    } catch {
+      setUpdateStatus('error')
+      setUpdateMessage(t('zakoni.updateError') || 'Greška pri proveri ažuriranja')
+    }
+    // Reset status after 10s
+    setTimeout(() => setUpdateStatus('idle'), 10000)
+  }, [selectedCountry, t])
 
   const filteredCountries = useMemo(() => {
     let countries = activeRegion === 'all' ? COUNTRY_TAX_LAWS : getCountriesByRegion(activeRegion)
@@ -125,6 +182,71 @@ export function Zakoni() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Update Status Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 bg-muted/30 rounded-lg border">
+        <div className="flex items-center gap-2 flex-1">
+          <ShieldCheck className={`h-4 w-4 ${updateStatus === 'updated' ? 'text-orange-500' : updateStatus === 'success' ? 'text-emerald-500' : updateStatus === 'error' ? 'text-red-500' : 'text-muted-foreground'}`} />
+          <span className="text-xs text-muted-foreground">
+            {lastVerified
+              ? `${t('zakoni.lastVerified') || 'Zadnja provera'}: ${new Date(lastVerified).toLocaleDateString('sr-RS')} ${new Date(lastVerified).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}`
+              : (t('zakoni.notVerified') || 'Nije proveravano')
+            }
+          </span>
+          {updateStatus === 'updated' && updateChanges.length > 0 && (
+            <Badge variant="destructive" className="text-[10px]">
+              {updateChanges.length} {t('zakoni.changes') || 'promena'}
+            </Badge>
+          )}
+          {updateStatus === 'success' && (
+            <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">
+              <Check className="h-2.5 w-2.5 mr-0.5" /> {t('zakoni.upToDate') || 'Aktuelno'}
+            </Badge>
+          )}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={checkForUpdates}
+          disabled={updateStatus === 'checking'}
+          className="text-xs gap-1.5"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
+          {updateStatus === 'checking'
+            ? (t('zakoni.checking') || 'Proveravam...')
+            : (t('zakoni.checkUpdates') || 'Proveri ažuriranja')
+          }
+        </Button>
+      </div>
+
+      {/* Update Changes */}
+      {updateChanges.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="p-3 bg-orange-50 border border-orange-200 rounded-lg space-y-1.5"
+        >
+          <p className="text-xs font-medium text-orange-700">{t('zakoni.foundChanges') || 'Pronađene promene:'}</p>
+          {updateChanges.map((change, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs">
+              <span className="font-medium text-orange-600">{change.field}:</span>
+              <span className="text-red-500 line-through">{change.oldValue}</span>
+              <span className="text-muted-foreground">→</span>
+              <span className="text-emerald-600 font-bold">{change.newValue}</span>
+            </div>
+          ))}
+        </motion.div>
+      )}
+      {updateStatus === 'error' && updateMessage && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+          {updateMessage}
+        </motion.div>
+      )}
+      {updateStatus === 'success' && updateMessage && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-600">
+          ✓ {updateMessage}
+        </motion.div>
+      )}
 
       {/* Country Quick Stats */}
       <motion.div
