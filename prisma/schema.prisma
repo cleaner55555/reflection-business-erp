@@ -127,6 +127,10 @@ model Company {
   webPages            WebPage[]
   blogPosts           BlogPost[]
   voipCalls           VoipCall[]
+  mpVendors           MpVendor[]
+  mpOrders            MpOrder[]
+  mpReviews           MpReview[]
+  mpDisputes          MpDispute[]
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -2388,4 +2392,115 @@ model VoipCall {
   createdAt     DateTime @default(now())
 
   company       Company  @relation(fields: [companyId], references: [id])
+}
+
+// ============ MARKETPLACE ============
+
+model MpVendor {
+  id              String   @id @default(cuid())
+  companyId       String
+  partnerId       String
+  slug            String   @unique
+  description     String?
+  logo            String?
+  coverImage      String?
+  categories      String   @default("[]")
+  deliveryTime    String?
+  minOrderAmount  Float    @default(0)
+  commissionRate  Float    @default(5)
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  totalSales      Float    @default(0)
+  totalOrders     Int      @default(0)
+  status          String   @default("pending")
+  bankAccount     String?
+  paymentTerms    String   @default("odmah")
+  shippingFree    Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  approvedAt      DateTime?
+  approvedBy      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company         Company   @relation(fields: [companyId], references: [id])
+  orders          MpOrder[]
+  reviews         MpReview[]
+  disputes        MpDispute[]
+}
+
+model MpOrder {
+  id                String   @id @default(cuid())
+  companyId         String
+  vendorId          String
+  number            String
+  retailerName      String
+  retailerEmail     String?
+  retailerPhone     String?
+  retailerAddress   String?
+  retailerCity      String?
+  status            String   @default("nacrt")
+  items             String
+  totalAmount       Float
+  commissionAmount  Float    @default(0)
+  commissionRate    Float    @default(5)
+  notes             String?
+  internalNotes     String?
+  trackingNumber    String?
+  carrierName       String?
+  estimatedDelivery DateTime?
+  deliveredAt       DateTime?
+  cancelledAt       DateTime?
+  cancelReason      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  company         Company   @relation(fields: [companyId], references: [id])
+  vendor          MpVendor @relation(fields: [vendorId], references: [id])
+  reviews         MpReview[]
+  disputes        MpDispute[]
+
+  @@unique([companyId, number])
+}
+
+model MpReview {
+  id              String   @id @default(cuid())
+  companyId       String
+  vendorId        String
+  orderId         String?
+  productId       String?
+  productName     String?
+  authorName      String
+  rating          Int
+  title           String?
+  comment         String?
+  status          String   @default("objavljen")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company         Company   @relation(fields: [companyId], references: [id])
+  vendor          MpVendor @relation(fields: [vendorId], references: [id])
+  order           MpOrder? @relation(fields: [orderId], references: [id])
+  disputes        MpDispute[]
+}
+
+model MpDispute {
+  id              String   @id @default(cuid())
+  companyId       String
+  vendorId        String
+  orderId         String
+  reviewId        String?
+  type            String
+  description     String?
+  resolution      String?
+  status          String   @default("otvoren")
+  priority        String   @default("srednji")
+  assignedTo      String?
+  resolvedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company         Company    @relation(fields: [companyId], references: [id])
+  vendor          MpVendor   @relation(fields: [vendorId], references: [id])
+  order           MpOrder    @relation(fields: [orderId], references: [id])
+  review          MpReview? @relation(fields: [reviewId], references: [id])
 }
