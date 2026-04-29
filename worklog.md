@@ -91,3 +91,40 @@ Work Log:
 Stage Summary:
 - Invoices module now has dashboard overview, conversion workflow, accounting integration
 - Foundation for Phase 3.4 full e-invoicing and fiscalization
+
+---
+Task ID: 3-5
+Agent: Main (direct)
+Task: Phase 3 - Partners Module Improvement
+
+Work Log:
+- Updated /api/partners route: added tag, isActive, hasCreditLimit filters; include contacts/projects/deals/children counts; proper tags parsing in POST
+- Updated /api/partners/[id] route: include contacts, invoices, purchaseOrders, children, parent in GET; proper tags/isActive/creditLimit/paymentTerms handling in PUT; prevent delete with linked invoices/POs
+- Created new /api/partners/stats endpoint: total/byType/active/inactive/newThisMonth/topPartners/cityGroups/allTags/partnersWithCredit
+- Rebuilt Partneri.tsx (636→1252 lines) with 3 tabs:
+  - Pregled (Dashboard): 4 KPI cards, tag overview with counts, credit alerts, top partners table, cities breakdown with progress bars
+  - Partneri (List+CRUD): search + type + status filters, organized form sections (basic/contact/financial/tags), tag input with badges/removal, active toggle switch, inline table with tags/counts
+  - Analitika (Deep Dive): partner selector, full partner detail (info header, summary cards, contact persons, child companies, recent invoices with type, purchase orders, delivery notes)
+
+Stage Summary:
+- Partners module now Odoo-level with dashboard analytics, tag management, credit tracking, contact persons view
+- All lint checks pass
+- Foundation for Phase 5 CRM integration and Phase 7 reporting
+
+---
+Task ID: 3-6
+Agent: Main (direct)
+Task: Phase 3 - Employees Module Improvement
+
+Work Log:
+- Created /api/employees/stats endpoint: total/active/inactive, salary cost analysis, department breakdown with avgSalary, new hires, work anniversaries, attendance summary by type, payroll summary
+- Rebuilt Zaposleni.tsx (674→1088 lines) with 4 tabs:
+  - Pregled (Dashboard): 4 KPI cards (employees, avg salary, new hires, payroll), department breakdown with salary bars, attendance summary by type with hours, work anniversaries section
+  - Zaposleni (List+CRUD): search + department + status filters, organized form sections (personal/financial), active toggle, employee detail dialog showing payroll history + attendance summary
+  - Plate (Payroll): month/year/employee filters, 4 summary cards (base/bonuses/deductions/net), full payroll table with print/edit/delete
+  - Prisustvo (Attendance): month/year/type filters, 4 summary cards (total hours/work/vacation/sick), attendance table with color-coded type badges
+
+Stage Summary:
+- Employees module now Odoo-level with HR dashboard, payroll filtering, attendance analytics, anniversaries
+- All lint checks pass
+- Phase 3 COMPLETE: All 7 modules improved (CRM, Accounting, Warehouse, Invoices, Partners, Projects, Employees)
