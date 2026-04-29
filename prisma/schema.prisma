@@ -7,65 +7,216 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============ MULTI-TENANT: KOMPANIJE ============
+
+model Company {
+  id            String   @id @default(cuid())
+  name          String
+  pib           String?  @unique
+  maticniBr     String?
+  address       String?
+  city          String?
+  zipCode       String?
+  phone         String?
+  email         String?
+  website       String?
+  logo          String?
+  bankName      String?
+  bankAccount   String?
+  isActive      Boolean  @default(true)
+  plan          String   @default("free") // free, starter, pro, enterprise
+  trialEndsAt   DateTime?
+  maxUsers      Int      @default(5)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users         UserCompany[]
+  apiKeys       ApiKey[]
+
+  partners            Partner[]
+  products            Product[]
+  invoices            Invoice[]
+  recurringInvoices   RecurringInvoice[]
+  purchaseOrders      PurchaseOrder[]
+  deliveryNotes       DeliveryNote[]
+  stockMovements      StockMovement[]
+  priceLists          PriceList[]
+  transactions        Transaction[]
+  cashRegisters       CashRegister[]
+  contacts            Contact[]
+  restoOrderItems     RestoOrderItem[]
+  deals               Deal[]
+  crmActivities       CrmActivity[]
+  calendarEvents      CalendarEvent[]
+  employees           Employee[]
+  payrolls            Payroll[]
+  attendances         Attendance[]
+  assets              Asset[]
+  accounts            Account[]
+  journalEntries      JournalEntry[]
+  protocolEntries     ProtocolEntry[]
+  courses             Course[]
+  lessons             Lesson[]
+  vehicles            Vehicle[]
+  vehicleServices     VehicleService[]
+  vehicleExpenses     VehicleExpense[]
+  projects            Project[]
+  projectTasks        ProjectTask[]
+  documents           Document[]
+  rentalVehicles      RentalVehicle[]
+  rentals             Rental[]
+  restoCategories     RestoCategory[]
+  restoMenuItems      RestoMenuItem[]
+  restoTables         RestoTable[]
+  restoOrders         RestoOrder[]
+  emailLists          EmailList[]
+  emailSubscribers    EmailSubscriber[]
+  emailCampaigns      EmailCampaign[]
+  emailTemplates      EmailTemplate[]
+  integrationJobs     IntegrationJob[]
+  syncConnectors      SyncConnector[]
+  syncLogs            SyncLog[]
+  notifications       Notification[]
+  bankAccounts        BankAccount[]
+  bankTransactions    BankTransaction[]
+  appSettings         AppSetting[]
+}
+
+// ============ USER ACCOUNTS & ROLES ============
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  avatar        String?
+  phone         String?
+  isActive      Boolean  @default(true)
+  isSuperAdmin  Boolean  @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  companyRoles  UserCompany[]
+  ownedApiKeys  ApiKey[]      @relation("ApiKeyOwner")
+  createdJobs   IntegrationJob[]  @relation("JobCreator")
+}
+
+model Role {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  displayName   String
+  description   String?
+  permissions   String   // JSON: { "invoices": ["read","write","delete"], "partners": ["read","write"], ... }
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userCompanies UserCompany[]
+}
+
+model UserCompany {
+  id            String   @id @default(cuid())
+  userId        String
+  companyId     String
+  roleId        String
+  jobTitle      String?
+  isDefault     Boolean  @default(false) // is this their default company?
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  role          Role     @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, companyId])
+}
+
+model ApiKey {
+  id            String   @id @default(cuid())
+  name          String
+  key           String   @unique
+  companyId     String
+  userId        String
+  permissions   String   @default("[\"read\"]") // JSON: ["read","write"] or specific scopes
+  lastUsedAt    DateTime?
+  expiresAt     DateTime?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user          User     @relation("ApiKeyOwner", fields: [userId], references: [id], onDelete: Cascade)
+}
+
 // ============ PARTNERI / KLIJENTI / DOBAVLJAČI ============
 
 model Partner {
-  id          String   @id @default(cuid())
-  name        String
-  pib         String   @unique
-  maticniBr   String?
-  address     String?
-  city        String?
-  zipCode     String?
-  phone       String?
-  email       String?
-  type        String   @default("kupac") // kupac, dobavljac, partner
-  account     String?
-  bank        String?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  pib           String?
+  maticniBr     String?
+  address       String?
+  city          String?
+  zipCode       String?
+  phone         String?
+  email         String?
+  type          String   @default("kupac") // kupac, dobavljac, partner
+  account       String?
+  bank          String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
+  company       Company  @relation(fields: [companyId], references: [id])
   invoices             Invoice[]
   recurringInvoices   RecurringInvoice[]
-  purchaseOrders   PurchaseOrder[]
-  deliveryNotes    DeliveryNote[]
-  contacts         Contact[]
-  deals            Deal[]
-  employees        Employee[]
-  documents        Document[]
+  purchaseOrders       PurchaseOrder[]
+  deliveryNotes        DeliveryNote[]
+  contacts             Contact[]
+  deals                Deal[]
+  employees            Employee[]
+  documents            Document[]
+
+  @@unique([companyId, pib])
 }
 
 // ============ ROBA / PROIZVODI ============
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  sku         String   @unique
-  barcode     String?
-  category    String?
-  unit        String   @default("kom") // kom, kg, l, m, pak
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  sku           String
+  barcode       String?
+  category      String?
+  unit          String   @default("kom") // kom, kg, l, m, pak
   purchasePrice Float
   sellingPrice  Float
-  minStock    Int      @default(0)
-  currentStock Int     @default(0)
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  minStock      Int      @default(0)
+  currentStock  Int      @default(0)
+  description   String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  invoiceItems      InvoiceItem[]
+  company       Company  @relation(fields: [companyId], references: [id])
+  invoiceItems       InvoiceItem[]
   purchaseOrderItems PurchaseOrderItem[]
-  stockMovements    StockMovement[]
-  deliveryNoteItems DeliveryNoteItem[]
-  priceListItems    PriceListItem[]
+  stockMovements     StockMovement[]
+  deliveryNoteItems  DeliveryNoteItem[]
+  priceListItems     PriceListItem[]
+
+  @@unique([companyId, sku])
 }
 
 // ============ FAKTURE ============
 
 model Invoice {
   id            String   @id @default(cuid())
-  number        String   @unique
+  companyId     String
+  number        String
   date          DateTime @default(now())
   dueDate       DateTime
   partnerId     String
@@ -82,11 +233,14 @@ model Invoice {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  partner Partner @relation(fields: [partnerId], references: [id])
-  items   InvoiceItem[]
-  recurringId String?
-  recurring   RecurringInvoice? @relation(fields: [recurringId], references: [id])
+  company       Company  @relation(fields: [companyId], references: [id])
+  partner       Partner  @relation(fields: [partnerId], references: [id])
+  items         InvoiceItem[]
+  recurringId   String?
+  recurring     RecurringInvoice? @relation(fields: [recurringId], references: [id])
   bankTransactions BankTransaction[]
+
+  @@unique([companyId, number])
 }
 
 model InvoiceItem {
@@ -108,6 +262,7 @@ model InvoiceItem {
 
 model RecurringInvoice {
   id              String       @id @default(cuid())
+  companyId       String
   name            String
   partnerId       String
   frequency       String       // monthly, weekly, quarterly, yearly
@@ -121,15 +276,17 @@ model RecurringInvoice {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  partner  Partner   @relation(fields: [partnerId], references: [id])
-  invoices Invoice[]
+  company         Company      @relation(fields: [companyId], references: [id])
+  partner         Partner      @relation(fields: [partnerId], references: [id])
+  invoices        Invoice[]
 }
 
 // ============ NABAVKA ============
 
 model PurchaseOrder {
   id            String   @id @default(cuid())
-  number        String   @unique
+  companyId     String
+  number        String
   date          DateTime @default(now())
   partnerId     String
   status        String   @default("nacrt") // nacrt, poslata, primljena, otkazana
@@ -138,8 +295,11 @@ model PurchaseOrder {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  partner Partner @relation(fields: [partnerId], references: [id])
-  items   PurchaseOrderItem[]
+  company       Company  @relation(fields: [companyId], references: [id])
+  partner       Partner  @relation(fields: [partnerId], references: [id])
+  items         PurchaseOrderItem[]
+
+  @@unique([companyId, number])
 }
 
 model PurchaseOrderItem {
@@ -159,6 +319,7 @@ model PurchaseOrderItem {
 
 model StockMovement {
   id          String   @id @default(cuid())
+  companyId   String
   productId   String
   date        DateTime @default(now())
   type        String   // prijem, izdavanje, inventura, korekcija
@@ -167,6 +328,7 @@ model StockMovement {
   notes       String?
   createdAt   DateTime @default(now())
 
+  company Company @relation(fields: [companyId], references: [id])
   product Product @relation(fields: [productId], references: [id])
 }
 
@@ -174,7 +336,8 @@ model StockMovement {
 
 model DeliveryNote {
   id            String   @id @default(cuid())
-  number        String   @unique
+  companyId     String
+  number        String
   date          DateTime @default(now())
   partnerId     String
   status        String   @default("nacrt") // nacrt, pripremljena, otpremljena, stornirana
@@ -183,8 +346,11 @@ model DeliveryNote {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  partner Partner @relation(fields: [partnerId], references: [id])
-  items   DeliveryNoteItem[]
+  company       Company  @relation(fields: [companyId], references: [id])
+  partner       Partner  @relation(fields: [partnerId], references: [id])
+  items         DeliveryNoteItem[]
+
+  @@unique([companyId, number])
 }
 
 model DeliveryNoteItem {
@@ -203,6 +369,7 @@ model DeliveryNoteItem {
 
 model PriceList {
   id          String   @id @default(cuid())
+  companyId   String
   name        String
   description String?
   validFrom   DateTime?
@@ -211,7 +378,8 @@ model PriceList {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  items PriceListItem[]
+  company Company @relation(fields: [companyId], references: [id])
+  items   PriceListItem[]
 }
 
 model PriceListItem {
@@ -229,6 +397,7 @@ model PriceListItem {
 
 model Transaction {
   id            String   @id @default(cuid())
+  companyId     String
   date          DateTime @default(now())
   type          String   // prihod, rashod
   category      String   // promet, nabavka, plata, režije, ostalo
@@ -237,12 +406,15 @@ model Transaction {
   documentRef   String?
   partnerId     String?
   createdAt     DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
 }
 
 // ============ KASA ============
 
 model CashRegister {
   id            String   @id @default(cuid())
+  companyId     String
   date          DateTime @default(now())
   type          String   // ulaz, izlaz
   amount        Float
@@ -250,18 +422,21 @@ model CashRegister {
   partnerName   String?
   paymentMethod String   @default("gotovina")
   createdAt     DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
 }
 
 // ============ CRM - KONTAKTI ============
 
 model Contact {
   id          String   @id @default(cuid())
+  companyId   String
   firstName   String
   lastName    String
   email       String?
   phone       String?
   position    String?
-  company     String?
+  companyName String?
   partnerId   String?
   notes       String?
   tags        String?
@@ -271,15 +446,17 @@ model Contact {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  partner     Partner?        @relation(fields: [partnerId], references: [id])
-  activities  CrmActivity[]
-  deals       Deal[]
+  company       Company        @relation(fields: [companyId], references: [id])
+  partner       Partner?       @relation(fields: [partnerId], references: [id])
+  activities    CrmActivity[]
+  deals         Deal[]
 }
 
 // ============ CRM - POSLOVNE PRILIKE ============
 
 model Deal {
   id          String   @id @default(cuid())
+  companyId   String
   title       String
   value       Float    @default(0)
   stage       String   @default("lead") // lead, kvalifikacija, predlog, pregovaranje, won, lost
@@ -292,15 +469,17 @@ model Deal {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  contact     Contact?       @relation(fields: [contactId], references: [id])
-  partner     Partner?       @relation(fields: [partnerId], references: [id])
-  activities  CrmActivity[]
+  company   Company  @relation(fields: [companyId], references: [id])
+  contact   Contact? @relation(fields: [contactId], references: [id])
+  partner   Partner? @relation(fields: [partnerId], references: [id])
+  activities CrmActivity[]
 }
 
 // ============ CRM - AKTIVNOSTI ============
 
 model CrmActivity {
   id          String   @id @default(cuid())
+  companyId   String
   type        String   // poziv, sastanak, email, task, napomena
   title       String
   description String?
@@ -311,14 +490,16 @@ model CrmActivity {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  contact     Contact? @relation(fields: [contactId], references: [id])
-  deal        Deal?    @relation(fields: [dealId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+  contact Contact? @relation(fields: [contactId], references: [id])
+  deal    Deal?    @relation(fields: [dealId], references: [id])
 }
 
 // ============ KALENDAR ============
 
 model CalendarEvent {
   id          String   @id @default(cuid())
+  companyId   String
   title       String
   description String?
   startTime   DateTime
@@ -328,12 +509,15 @@ model CalendarEvent {
   type        String   @default("sastanak")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
 }
 
 // ============ PLATE I KADROVI ============
 
 model Employee {
   id            String   @id @default(cuid())
+  companyId     String
   firstName     String
   lastName      String
   email         String?
@@ -348,13 +532,15 @@ model Employee {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  partner       Partner? @relation(fields: [partnerId], references: [id])
-  payrolls      Payroll[]
-  attendances   Attendance[]
+  company   Company  @relation(fields: [companyId], references: [id])
+  partner   Partner? @relation(fields: [partnerId], references: [id])
+  payrolls  Payroll[]
+  attendances Attendance[]
 }
 
 model Payroll {
   id            String   @id @default(cuid())
+  companyId     String
   employeeId    String
   month         Int      // 1-12
   year          Int
@@ -368,11 +554,13 @@ model Payroll {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  employee      Employee @relation(fields: [employeeId], references: [id])
+  company  Company  @relation(fields: [companyId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
 }
 
 model Attendance {
   id            String   @id @default(cuid())
+  companyId     String
   employeeId    String
   date          DateTime
   hoursWorked   Float    @default(8)
@@ -380,34 +568,39 @@ model Attendance {
   notes         String?
   createdAt     DateTime @default(now())
 
-  employee      Employee @relation(fields: [employeeId], references: [id])
+  company  Company  @relation(fields: [companyId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
 }
 
 // ============ OSNOVNA SREDSTVA ============
 
 model Asset {
-  id              String   @id @default(cuid())
-  name            String
-  category        String?
-  serialNumber    String?
-  purchaseDate    DateTime @default(now())
-  purchasePrice   Float
-  currentValue    Float
-  depreciation    Float    @default(0)
-  usefulLife      Int      @default(60) // meseci
-  depreciationMethod String @default("linearna") // linearna, degresivna
-  location        String?
-  status          String   @default("aktivno") // aktivno, na_popravci, izvan_upotrebe, prodato, otpisano
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  companyId           String
+  name                String
+  category            String?
+  serialNumber        String?
+  purchaseDate        DateTime @default(now())
+  purchasePrice       Float
+  currentValue        Float
+  depreciation        Float    @default(0)
+  usefulLife          Int      @default(60) // meseci
+  depreciationMethod  String   @default("linearna") // linearna, degresivna
+  location            String?
+  status              String   @default("aktivno") // aktivno, na_popravci, izvan_upotrebe, prodato, otpisano
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
 }
 
 // ============ KNJIGOVODSTVO ============
 
 model Account {
   id          String   @id @default(cuid())
-  code        String   @unique  // npr. 020, 110, 200...
+  companyId   String
+  code        String   // npr. 020, 110, 200...
   name        String
   type        String   @default("aktivna") // aktivna, pasivna, prihodka, rashodna, kontna
   description String?
@@ -415,13 +608,15 @@ model Account {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
-  entries     JournalEntry[]
+  company Company @relation(fields: [companyId], references: [id])
+  entries  JournalEntry[]
 }
 
 model JournalEntry {
   id            String   @id @default(cuid())
+  companyId     String
   date          DateTime @default(now())
-  accountCode   String
+  accountId     String
   debit         Float    @default(0)
   credit        Float    @default(0)
   description   String
@@ -429,14 +624,16 @@ model JournalEntry {
   partnerId     String?
   createdAt     DateTime @default(now())
 
-  account       Account  @relation(fields: [accountCode], references: [code])
+  company Company @relation(fields: [companyId], references: [id])
+  account Account @relation(fields: [accountId], references: [id])
 }
 
 // ============ PROTOKOL ============
 
 model ProtocolEntry {
   id            String   @id @default(cuid())
-  number        String   @unique
+  companyId     String
+  number        String
   date          DateTime @default(now())
   direction     String   @default("ulaz") // ulaz, izlaz
   sender        String?  // pošiljalac (za ulazne)
@@ -451,12 +648,17 @@ model ProtocolEntry {
   notes         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, number])
 }
 
 // ============ LMS - MODUL ZA UČENJE ============
 
 model Course {
   id            String   @id @default(cuid())
+  companyId     String
   title         String
   description   String?
   category      String?
@@ -466,11 +668,13 @@ model Course {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  lessons       Lesson[]
+  company Company @relation(fields: [companyId], references: [id])
+  lessons Lesson[]
 }
 
 model Lesson {
   id            String   @id @default(cuid())
+  companyId     String
   courseId      String
   title         String
   content       String?  // HTML sadržaj
@@ -479,14 +683,16 @@ model Lesson {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id])
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 // ============ VOZNI PARK ============
 
 model Vehicle {
   id            String   @id @default(cuid())
-  registration  String   @unique  // registarski broj
+  companyId     String
+  registration  String   // registarski broj
   make          String   // marka
   model         String   // model
   year          Int
@@ -498,12 +704,16 @@ model Vehicle {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  services      VehicleService[]
-  expenses      VehicleExpense[]
+  company  Company         @relation(fields: [companyId], references: [id])
+  services VehicleService[]
+  expenses VehicleExpense[]
+
+  @@unique([companyId, registration])
 }
 
 model VehicleService {
   id            String   @id @default(cuid())
+  companyId     String
   vehicleId     String
   date          DateTime @default(now())
   type          String   @default("servis") // servis, promjena_ulja, gume, tehnicki, registracija
@@ -513,11 +723,13 @@ model VehicleService {
   nextDue       DateTime?
   createdAt     DateTime @default(now())
 
-  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
 
 model VehicleExpense {
   id            String   @id @default(cuid())
+  companyId     String
   vehicleId     String
   date          DateTime @default(now())
   type          String   @default("gorivo") // gorivo, putarina, parking, servis, ostalo
@@ -526,13 +738,15 @@ model VehicleExpense {
   mileage       Int      @default(0)
   createdAt     DateTime @default(now())
 
-  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
 
 // ============ PROJEKTI ============
 
 model Project {
   id          String   @id @default(cuid())
+  companyId   String
   name        String
   description String?
   status      String   @default("aktivan") // aktivan, zavrsen, pauziran, otkazan
@@ -545,11 +759,13 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tasks       ProjectTask[]
+  company Company @relation(fields: [companyId], references: [id])
+  tasks   ProjectTask[]
 }
 
 model ProjectTask {
   id          String   @id @default(cuid())
+  companyId   String
   projectId   String
   title       String
   description String?
@@ -559,13 +775,15 @@ model ProjectTask {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 // ============ DMS - DOKUMENTI ============
 
 model Document {
   id          String   @id @default(cuid())
+  companyId   String
   title       String
   category    String?
   type        String?  // faktura, ugovor, ponuda, izvestaj, ostalo
@@ -578,18 +796,20 @@ model Document {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  partner     Partner? @relation(fields: [partnerId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+  partner Partner? @relation(fields: [partnerId], references: [id])
 }
 
 // ============ RENT A CAR ============
 
 model RentalVehicle {
   id            String   @id @default(cuid())
+  companyId     String
   name          String   // npr. VW Golf 8
   make          String
   model         String
   year          Int
-  registration  String   @unique
+  registration  String   // registarski broj
   fuelType      String   @default("dizel")
   transmission  String   @default("automatski") // automatski,manuelni
   seats         Int      @default(5)
@@ -604,12 +824,16 @@ model RentalVehicle {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  rentals       Rental[]
+  company Company @relation(fields: [companyId], references: [id])
+  rentals Rental[]
+
+  @@unique([companyId, registration])
 }
 
 model Rental {
   id            String   @id @default(cuid())
-  number        String   @unique
+  companyId     String
+  number        String
   vehicleId     String
   clientName    String
   clientPhone   String?
@@ -628,42 +852,50 @@ model Rental {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  vehicle       RentalVehicle @relation(fields: [vehicleId], references: [id])
+  company Company       @relation(fields: [companyId], references: [id])
+  vehicle RentalVehicle @relation(fields: [vehicleId], references: [id])
+
+  @@unique([companyId, number])
 }
 
 // ============ KAFE RESTORAN ============
 
 model RestoCategory {
   id          String   @id @default(cuid())
+  companyId   String
   name        String
   sortOrder   Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  items       RestoMenuItem[]
+  company Company @relation(fields: [companyId], references: [id])
+  items   RestoMenuItem[]
 }
 
 model RestoMenuItem {
-  id          String   @id @default(cuid())
-  categoryId  String
-  name        String
-  description String?
-  price       Float
-  cost        Float    @default(0) // nabavna cena
-  image       String?
-  isAvailable Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  companyId     String
+  categoryId    String
+  name          String
+  description   String?
+  price         Float
+  cost          Float    @default(0) // nabavna cena
+  image         String?
+  isAvailable   Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  category    RestoCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  orderItems  RestoOrderItem[]
+  company  Company        @relation(fields: [companyId], references: [id])
+  category RestoCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems RestoOrderItem[]
 }
 
 model RestoTable {
   id          String   @id @default(cuid())
-  number      Int      @unique
+  companyId   String
+  number      Int
   name        String?  // npr. "Terasa 1"
   capacity    Int      @default(4)
   status      String   @default("slobodan") // slobodan, zauzet, rezervisan
@@ -671,11 +903,15 @@ model RestoTable {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  orders      RestoOrder[]
+  company Company @relation(fields: [companyId], references: [id])
+  orders  RestoOrder[]
+
+  @@unique([companyId, number])
 }
 
 model RestoOrder {
   id            String   @id @default(cuid())
+  companyId     String
   orderNumber   Int
   tableId       String?
   status        String   @default("u_toku") // u_toku, spremno, usluženo, plaćeno, otkazano
@@ -687,12 +923,14 @@ model RestoOrder {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  table         RestoTable?   @relation(fields: [tableId], references: [id])
-  items         RestoOrderItem[]
+  company Company       @relation(fields: [companyId], references: [id])
+  table   RestoTable?   @relation(fields: [tableId], references: [id])
+  items   RestoOrderItem[]
 }
 
 model RestoOrderItem {
   id            String   @id @default(cuid())
+  companyId     String
   orderId       String
   menuItemId    String
   menuItemName  String
@@ -702,25 +940,29 @@ model RestoOrderItem {
   notes         String?
   status        String   @default("naručeno") // naručeno, u_pripremi, spremno, usluženo
 
-  order         RestoOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  menuItem      RestoMenuItem @relation(fields: [menuItemId], references: [id])
+  company  Company      @relation(fields: [companyId], references: [id])
+  order    RestoOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem RestoMenuItem @relation(fields: [menuItemId], references: [id])
 }
 
 // ============ MAILERLITE - EMAIL MARKETING ============
 
 model EmailList {
   id            String   @id @default(cuid())
+  companyId     String
   name          String
   description   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  subscribers   EmailSubscriber[]
-  campaigns     EmailCampaign[]
+  company     Company          @relation(fields: [companyId], references: [id])
+  subscribers EmailSubscriber[]
+  campaigns   EmailCampaign[]
 }
 
 model EmailSubscriber {
   id            String   @id @default(cuid())
+  companyId     String
   listId        String?
   email         String
   firstName     String?
@@ -730,11 +972,13 @@ model EmailSubscriber {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  list          EmailList? @relation(fields: [listId], references: [id])
+  company Company    @relation(fields: [companyId], references: [id])
+  list   EmailList?  @relation(fields: [listId], references: [id])
 }
 
 model EmailCampaign {
   id            String   @id @default(cuid())
+  companyId     String
   name          String
   subject       String
   preheader     String?
@@ -750,23 +994,28 @@ model EmailCampaign {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  list          EmailList? @relation(fields: [listId], references: [id])
+  company Company   @relation(fields: [companyId], references: [id])
+  list   EmailList? @relation(fields: [listId], references: [id])
 }
 
 model EmailTemplate {
   id            String   @id @default(cuid())
+  companyId     String
   name          String
   subject       String
   content       String   // HTML
   category      String?  // promotivno, transakciono, obavestenje
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
 }
 
 // ============ INTEGRACIJE ============
 
 model IntegrationJob {
   id            String   @id @default(cuid())
+  companyId     String
   type          String   // import, export
   entityType    String   // partners, products, transactions, contacts, invoices, stock
   source        String   @default("custom") // biznis_navigator, pantheon, minimax, eFakture, custom
@@ -779,14 +1028,19 @@ model IntegrationJob {
   mapping       String?  // JSON: { sourceCol: targetField }
   options       String?  // JSON: skipDuplicates, updateExisting, etc.
   notes         String?
+  createdBy     String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  creator User?  @relation("JobCreator", fields: [createdBy], references: [id])
 }
 
 // ============ SYNC CONNECTORS ============
 
 model SyncConnector {
   id              String   @id @default(cuid())
+  companyId       String
   name            String
   type            String   // biznis_navigator, pantheon, minimax, efakture, sap, biznisoft, custom_api
   direction       String   @default("import") // import, export, bidirectional
@@ -808,11 +1062,13 @@ model SyncConnector {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  logs            SyncLog[]
+  company Company  @relation(fields: [companyId], references: [id])
+  logs   SyncLog[]
 }
 
 model SyncLog {
   id              String   @id @default(cuid())
+  companyId       String
   connectorId     String
   direction       String
   entityType      String
@@ -826,13 +1082,16 @@ model SyncLog {
   notes           String?
   createdAt       DateTime @default(now())
 
-  connector       SyncConnector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+  company   Company      @relation(fields: [companyId], references: [id])
+  connector SyncConnector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
 }
 
 // ============ NOTIFICATIONS ============
 
 model Notification {
   id          String   @id @default(cuid())
+  companyId   String
+  userId      String?  // null = broadcast to all users in company
   type        String   // overdue_invoice, low_stock, payment_received, task_due, system
   title       String
   message     String
@@ -842,27 +1101,32 @@ model Notification {
   priority    String   @default("medium") // low, medium, high, urgent
   actionUrl   String?  // which module to open (e.g., "fakture")
   createdAt   DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
 }
 
 // ============ BANKA - SINHRONIZACIJA I PREKNJIŽAVANJE ============
 
 model BankAccount {
-  id          String   @id @default(cuid())
-  name        String
-  bank        String?
-  account     String
-  currency    String   @default("RSD")
-  isActive    Boolean  @default(true)
-  balance     Float    @default(0)
-  lastSyncAt  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  bank          String?
+  account       String
+  currency      String   @default("RSD")
+  isActive      Boolean  @default(true)
+  balance       Float    @default(0)
+  lastSyncAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
+  company      Company          @relation(fields: [companyId], references: [id])
   transactions BankTransaction[]
 }
 
 model BankTransaction {
   id            String   @id @default(cuid())
+  companyId     String
   bankAccountId String
   date          DateTime
   amount        Float
@@ -875,19 +1139,25 @@ model BankTransaction {
   transactionId String?
   createdAt     DateTime @default(now())
 
-  bankAccount BankAccount @relation(fields: [bankAccountId], references: [id])
-  invoice     Invoice?    @relation(fields: [invoiceId], references: [id])
+  company     Company      @relation(fields: [companyId], references: [id])
+  bankAccount BankAccount  @relation(fields: [bankAccountId], references: [id])
+  invoice     Invoice?     @relation(fields: [invoiceId], references: [id])
 }
 
 // ============ SETTINGS ============
 
 model AppSetting {
   id          String   @id @default(cuid())
-  key         String   @unique
-  value       String
+  companyId   String?
+  key         String
   label       String?
+  value       String
   type        String   @default("text") // text, boolean, number, json
   group       String   @default("general") // general, modules, company
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  company Company? @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, key])
 }

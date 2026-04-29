@@ -32,6 +32,9 @@ import { GlobalSearch } from '@/components/modules/GlobalSearch'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { NotificationBell } from '@/components/modules/NotificationBell'
 import { NotificationCenter } from '@/components/modules/NotificationCenter'
+import { AuthPage } from '@/components/modules/AuthPage'
+import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
+import { UserMenu } from '@/components/modules/UserMenu'
 import { useAppStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { I18nProvider, useTranslation, ALL_LANGUAGES, ContentTranslationProvider } from '@/lib/i18n'
@@ -111,36 +114,55 @@ const moduleLabelKeys: Record<string, string> = {
 // ============ INNER APP (needs i18n context) ============
 
 function AppContent() {
-  const { activeModule } = useAppStore()
+  const { activeModule, currentUser, activeCompanyId } = useAppStore()
   const { t, locale, setLocale, isTranslating } = useTranslation()
   const ensureLoaded = useThemeStore((s) => s.ensureLoaded)
 
+  // Show auth page if not logged in
+  const showAuth = !currentUser
+
+  // Seed database on first load
+  const [seeded, setSeeded] = useState(false)
+  if (!seeded) {
+    setSeeded(true)
+    fetch('/api/seed', { method: 'POST' }).catch(() => {})
+  }
+
   // Auto-generate notifications on mount (debounced)
   useEffect(() => {
+    if (!currentUser || !activeCompanyId) return
     const timer = setTimeout(async () => {
       try {
-        await fetch('/api/notifications/generate', { method: 'POST' })
+        await fetch('/api/notifications/generate', {
+          method: 'POST',
+          headers: { 'x-company-id': activeCompanyId },
+        })
       } catch { /* silent */ }
     }, 2000)
     return () => clearTimeout(timer)
-  }, [])
+  }, [currentUser, activeCompanyId])
 
   // Poll for new notifications every 60 seconds
   useEffect(() => {
+    if (!currentUser || !activeCompanyId) return
     const interval = setInterval(async () => {
       try {
-        await fetch('/api/notifications/generate', { method: 'POST' })
+        await fetch('/api/notifications/generate', {
+          method: 'POST',
+          headers: { 'x-company-id': activeCompanyId },
+        })
       } catch { /* silent */ }
     }, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [currentUser, activeCompanyId])
 
   // Active languages from settings
   const [activeLangs, setActiveLangs] = useState<string[]>(DEFAULT_ACTIVE_LANGS)
 
   // Load active languages from settings
   useEffect(() => {
-    fetch('/api/settings?group=general')
+    if (!activeCompanyId) return
+    fetch(`/api/settings?group=general&companyId=${activeCompanyId}`)
       .then((res) => res.ok ? res.json() : [])
       .then((data: Array<{ key: string; value: string }>) => {
         const setting = data?.find((s) => s.key === 'active_languages')
@@ -154,7 +176,7 @@ function AppContent() {
         }
       })
       .catch(() => { /* use default */ })
-  }, [])
+  }, [activeCompanyId])
 
   // Initialize theme on mount
   useEffect(() => {
@@ -163,6 +185,11 @@ function AppContent() {
 
   // Filter languages to show in header
   const headerLanguages = ALL_LANGUAGES.filter((l) => activeLangs.includes(l.code))
+
+  // Show auth page
+  if (showAuth || !currentUser) {
+    return <AuthPage />
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -178,6 +205,9 @@ function AppContent() {
               </h2>
             </div>
             <div className="flex items-center gap-2">
+              {/* Company Switcher */}
+              <CompanySwitcher />
+
               {/* AI Translation loading indicator */}
               {isTranslating && (
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
@@ -212,6 +242,7 @@ function AppContent() {
               <GlobalSearch />
               <NotificationBell />
               <ThemeToggle />
+              <UserMenu />
             </div>
           </header>
 
@@ -240,8 +271,6 @@ function AppContent() {
     </div>
   )
 }
-
-// ============ MAIN PAGE ============
 
 // ============ WRAPPER WITH CONTENT TRANSLATION ============
 

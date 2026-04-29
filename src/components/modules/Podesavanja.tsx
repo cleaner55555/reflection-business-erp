@@ -10,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search } from 'lucide-react'
+import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/helpers'
 import { useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
 import { useThemeStore, DEFAULT_THEME } from '@/lib/theme'
+import { UserManagement } from './UserManagement'
+import { ApiKeyManagement } from './ApiKeyManagement'
 import { themePresets } from '@/lib/theme-presets'
 import type { ThemeSettings } from '@/lib/theme'
 
@@ -540,22 +542,30 @@ export function Podesavanja() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[520px]">
+        <TabsList className="grid w-full grid-cols-6 lg:w-[720px]">
           <TabsTrigger value="moduli" className="gap-1.5 text-xs sm:text-sm">
             <Blocks className="h-4 w-4 hidden sm:block" />
-            {t('settings.tab_modules')}
+            <span className="hidden sm:inline">{t('settings.tab_modules')}</span>
           </TabsTrigger>
           <TabsTrigger value="firma" className="gap-1.5 text-xs sm:text-sm">
             <Building2 className="h-4 w-4 hidden sm:block" />
-            {t('settings.tab_company')}
+            <span className="hidden sm:inline">{t('settings.tab_company')}</span>
           </TabsTrigger>
           <TabsTrigger value="opste" className="gap-1.5 text-xs sm:text-sm">
             <SlidersHorizontal className="h-4 w-4 hidden sm:block" />
-            {t('settings.tab_general')}
+            <span className="hidden sm:inline">{t('settings.tab_general')}</span>
           </TabsTrigger>
           <TabsTrigger value="izgled" className="gap-1.5 text-xs sm:text-sm">
             <Palette className="h-4 w-4 hidden sm:block" />
-            {t('settings.tab_appearance')}
+            <span className="hidden sm:inline">{t('settings.tab_appearance')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="korisnici" className="gap-1.5 text-xs sm:text-sm">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Korisnici</span>
+          </TabsTrigger>
+          <TabsTrigger value="api" className="gap-1.5 text-xs sm:text-sm">
+            <Key className="h-4 w-4" />
+            <span className="hidden sm:inline">API</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1014,6 +1024,16 @@ export function Podesavanja() {
               {t('common.save')}
             </Button>
           </div>
+        </TabsContent>
+
+        {/* ============ KORISNICI TAB ============ */}
+        <TabsContent value="korisnici">
+          <UserManagement />
+        </TabsContent>
+
+        {/* ============ API TAB ============ */}
+        <TabsContent value="api">
+          <ApiKeyManagement />
         </TabsContent>
       </Tabs>
     </div>
