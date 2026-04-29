@@ -6,18 +6,26 @@ export async function GET(req: NextRequest) {
   const contactId = searchParams.get('contactId') || ''
   const dealId = searchParams.get('dealId') || ''
   const completed = searchParams.get('completed')
+  const upcoming = searchParams.get('upcoming')
 
   const where: Record<string, unknown> = {}
   if (contactId) where.contactId = contactId
   if (dealId) where.dealId = dealId
   if (completed === 'true') where.completed = true
   if (completed === 'false') where.completed = false
+  if (upcoming === 'true') {
+    where.completed = false
+    where.dueDate = { not: null }
+  }
 
   const activities = await db.crmActivity.findMany({
     where: Object.keys(where).length > 0 ? where : undefined,
-    include: { contact: { select: { id: true, firstName: true, lastName: true } }, deal: { select: { id: true, title: true } } },
+    include: {
+      contact: { select: { id: true, firstName: true, lastName: true } },
+      deal: { select: { id: true, title: true, stage: true } }
+    },
     orderBy: { createdAt: 'desc' },
-    take: 50,
+    take: 100,
   })
   return NextResponse.json(activities)
 }
@@ -28,7 +36,15 @@ export async function POST(req: NextRequest) {
   if (!title) return NextResponse.json({ error: 'Naslov je obavezan' }, { status: 400 })
 
   const activity = await db.crmActivity.create({
-    data: { type: type || 'napomena', title, description, dueDate: dueDate ? new Date(dueDate) : null, completed: !!completed, contactId, dealId },
+    data: {
+      type: type || 'napomena',
+      title,
+      description: description || null,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      completed: !!completed,
+      contactId: contactId || null,
+      dealId: dealId || null,
+    },
   })
   return NextResponse.json(activity, { status: 201 })
 }
