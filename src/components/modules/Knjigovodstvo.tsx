@@ -57,6 +57,12 @@ import {
   Receipt,
   BarChart3,
   Eye,
+  Calculator,
+  PieChart,
+  Lock,
+  Unlock,
+  Users,
+  Filter,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
@@ -207,6 +213,18 @@ export function Knjigovodstvo() {
             <Scale className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Bruto Bilans</span>
           </TabsTrigger>
+          <TabsTrigger value="pdv" className="gap-1.5">
+            <Calculator className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">PDV Prijava</span>
+          </TabsTrigger>
+          <TabsTrigger value="analitika" className="gap-1.5">
+            <PieChart className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Analitika</span>
+          </TabsTrigger>
+          <TabsTrigger value="god-zatvaranje" className="gap-1.5">
+            <Lock className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">God. Zatvaranje</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pregled">
@@ -226,6 +244,15 @@ export function Knjigovodstvo() {
         </TabsContent>
         <TabsContent value="bruto-bilans">
           <BrutoBilansTab fiscalYear={fiscalYear} />
+        </TabsContent>
+        <TabsContent value="pdv">
+          <PdvTab fiscalYear={fiscalYear} />
+        </TabsContent>
+        <TabsContent value="analitika">
+          <AnalitikaTab fiscalYear={fiscalYear} />
+        </TabsContent>
+        <TabsContent value="god-zatvaranje">
+          <GodZatvaranjeTab fiscalYear={fiscalYear} />
         </TabsContent>
       </Tabs>
     </div>
@@ -1586,5 +1613,590 @@ function BrutoBilansTab({ fiscalYear }: { fiscalYear: number }) {
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+// ─── Tab: PDV Prijava ──────────────────────────────────────────────────────────
+
+function PdvTab({ fiscalYear }: { fiscalYear: number }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [month, setMonth] = useState(0) // 0 = full year
+
+  const fetchPdv = useCallback(async () => {
+    setLoading(true)
+    const params = new URLSearchParams()
+    params.set('year', String(fiscalYear))
+    if (month > 0) params.set('month', String(month))
+    const res = await fetch(`/api/accounting/pdv?${params.toString()}`)
+    setData(await res.json())
+    setLoading(false)
+  }, [fiscalYear, month])
+
+  useEffect(() => { fetchPdv() }, [fetchPdv])
+
+  if (loading || !data) {
+    return <div className="space-y-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>
+  }
+
+  const period = (data.period as { label: string })?.label || ''
+  const output = data.output as { pdv20: number; pdv10: number; pdv0: number; total: number; osnovica: number }
+  const input = data.input as { pdv20: number; pdv10: number; pdv0: number; total: number; osnovica: number }
+  const settlement = data.settlement as { zaUplatu: number; naPovrat: number; saldo: number }
+  const monthlyBreakdown = data.monthlyBreakdown as Array<{ month: number; label: string; output: number; input: number; saldo: number }> | null
+  const partners = data.partners as Array<{ name: string; pdvOutput: number; pdvInput: number; count: number }> || []
+  const accountSums = data.accountSums as Array<{ code: string; name: string; debit: number; credit: number }> || []
+
+  const saldoPositive = settlement.saldo >= 0
+
+  return (
+    <div className="space-y-4">
+      {/* Period selector + summary */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Select value={String(month)} onValueChange={(v) => setMonth(parseInt(v))}>
+            <SelectTrigger className="w-[180px] h-9">
+              <SelectValue placeholder="Period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Celokupna godina {fiscalYear}</SelectItem>
+              {Array.from({ length: 12 }, (_, i) => (
+                <SelectItem key={i + 1} value={String(i + 1)}>
+                  {new Date(fiscalYear, i).toLocaleDateString('sr-Latn', { month: 'long', year: 'numeric' })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Badge variant={saldoPositive ? 'default' : 'destructive'} className="text-sm px-3 py-1">
+          {saldoPositive ? 'PDV za uplatu' : 'PDV na povrat'}: {formatRSD(Math.abs(settlement.saldo))}
+        </Badge>
+      </div>
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="bg-emerald-50 border-emerald-200">
+          <CardContent className="p-3">
+            <p className="text-[10px] text-emerald-600 uppercase font-medium">PDV na promet (izlazni)</p>
+            <p className="text-lg font-bold text-emerald-700">{formatRSD(output.total)}</p>
+            <p className="text-[10px] text-emerald-600 mt-1">Osnovica: {formatRSD(output.osnovica)}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-3">
+            <p className="text-[10px] text-blue-600 uppercase font-medium">PDV na nabavku (ulazni)</p>
+            <p className="text-lg font-bold text-blue-700">{formatRSD(input.total)}</p>
+            <p className="text-[10px] text-blue-600 mt-1">Osnovica: {formatRSD(input.osnovica)}</p>
+          </CardContent>
+        </Card>
+        <Card className={saldoPositive ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}>
+          <CardContent className="p-3">
+            <p className={`text-[10px ${saldoPositive ? 'text-amber-600' : 'text-red-600'} uppercase font-medium`}>
+              {saldoPositive ? 'PDV za uplatu' : 'PDV na povrat'}
+            </p>
+            <p className={`text-lg font-bold ${saldoPositive ? 'text-amber-700' : 'text-red-600'}`}>
+              {formatRSD(Math.abs(settlement.saldo))}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-violet-50 border-violet-200">
+          <CardContent className="p-3">
+            <p className="text-[10px] text-violet-600 uppercase font-medium">Broj partnera</p>
+            <p className="text-lg font-bold text-violet-700">{partners.length}</p>
+            <p className="text-[10px] text-violet-600 mt-1">Sa PDV stavkama</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Rate breakdown */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <Calculator className="h-4 w-4" />
+            PDV po stopama
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-emerald-700">Izlazni PDV (po stopama):</p>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between"><span>20% stopa:</span><span className="font-medium">{formatRSD(output.pdv20)}</span></div>
+                <div className="flex justify-between"><span>10% stopa:</span><span className="font-medium">{formatRSD(output.pdv10)}</span></div>
+                <div className="flex justify-between"><span>Oslobođeno:</span><span className="font-medium">{formatRSD(output.pdv0)}</span></div>
+                <div className="flex justify-between font-semibold border-t pt-1"><span>Ukupno:</span><span>{formatRSD(output.total)}</span></div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-blue-600">Ulazni PDV (po stopama):</p>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between"><span>20% stopa:</span><span className="font-medium">{formatRSD(input.pdv20)}</span></div>
+                <div className="flex justify-between"><span>10% stopa:</span><span className="font-medium">{formatRSD(input.pdv10)}</span></div>
+                <div className="flex justify-between"><span>Ostalo:</span><span className="font-medium">{formatRSD(input.pdv0)}</span></div>
+                <div className="flex justify-between font-semibold border-t pt-1"><span>Ukupno:</span><span>{formatRSD(input.total)}</span></div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Monthly breakdown (only for full year) */}
+      {monthlyBreakdown && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">Mesečni pregled {fiscalYear}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-[300px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Mesec</TableHead>
+                    <TableHead className="text-xs text-right">Izlazni</TableHead>
+                    <TableHead className="text-xs text-right">Ulazni</TableHead>
+                    <TableHead className="text-xs text-right">Saldo</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {monthlyBreakdown.map((m) => (
+                    <TableRow key={m.month}>
+                      <TableCell className="text-xs font-medium">{m.label}</TableCell>
+                      <TableCell className="text-xs text-right text-emerald-700">{m.output > 0 ? formatRSD(m.output) : '-'}</TableCell>
+                      <TableCell className="text-xs text-right text-blue-600">{m.input > 0 ? formatRSD(m.input) : '-'}</TableCell>
+                      <TableCell className={`text-xs text-right font-semibold ${m.saldo >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                        {m.saldo > 0 ? `+${formatRSD(m.saldo)}` : formatRSD(m.saldo)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-muted/50 font-semibold border-t-2">
+                    <TableCell className="text-xs font-bold">Ukupno:</TableCell>
+                    <TableCell className="text-xs text-right font-bold text-emerald-700">{formatRSD(monthlyBreakdown.reduce((s, m) => s + m.output, 0))}</TableCell>
+                    <TableCell className="text-xs text-right font-bold text-blue-600">{formatRSD(monthlyBreakdown.reduce((s, m) => s + m.input, 0))}</TableCell>
+                    <TableCell className="text-xs text-right font-bold">{formatRSD(monthlyBreakdown.reduce((s, m) => s + m.saldo, 0))}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Account detail */}
+      {accountSums.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">PDV konta</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-[200px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Konto</TableHead>
+                    <TableHead className="text-xs">Naziv</TableHead>
+                    <TableHead className="text-xs text-right">Duguje</TableHead>
+                    <TableHead className="text-xs text-right">Potražuje</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {accountSums.map((a) => (
+                    <TableRow key={a.code}>
+                      <TableCell className="text-xs font-mono">{a.code}</TableCell>
+                      <TableCell className="text-xs">{a.name}</TableCell>
+                      <TableCell className="text-xs text-right">{a.debit > 0 ? formatRSD(a.debit) : '-'}</TableCell>
+                      <TableCell className="text-xs text-right">{a.credit > 0 ? formatRSD(a.credit) : '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Partners */}
+      {partners.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Partneri sa PDV stavkama
+              <Badge variant="secondary" className="text-xs">{partners.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-[250px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Partner</TableHead>
+                    <TableHead className="text-xs text-right">Izlazni PDV</TableHead>
+                    <TableHead className="text-xs text-right">Ulazni PDV</TableHead>
+                    <TableHead className="text-xs text-right">Stavki</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {partners.map((p) => (
+                    <TableRow key={p.name}>
+                      <TableCell className="text-xs font-medium">{p.name}</TableCell>
+                      <TableCell className="text-xs text-right text-emerald-700">{p.pdvOutput > 0 ? formatRSD(p.pdvOutput) : '-'}</TableCell>
+                      <TableCell className="text-xs text-right text-blue-600">{p.pdvInput > 0 ? formatRSD(p.pdvInput) : '-'}</TableCell>
+                      <TableCell className="text-xs text-right">{p.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
+
+// ─── Tab: Analitika ────────────────────────────────────────────────────────────
+
+function AnalitikaTab({ fiscalYear }: { fiscalYear: number }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [dimension, setDimension] = useState<string>('partner')
+
+  const fetchAnalitika = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch(`/api/accounting/analitika?year=${fiscalYear}&dimension=${dimension}`)
+    setData(await res.json())
+    setLoading(false)
+  }, [fiscalYear, dimension])
+
+  useEffect(() => { fetchAnalitika() }, [fetchAnalitika])
+
+  if (loading || !data) {
+    return <div className="space-y-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>
+  }
+
+  const groups = (data.groups as Array<{ key: string; name: string; type: string; debit: number; credit: number; saldo: number; count: number; byAccountType: Record<string, number>; monthly: Record<string, number> }>) || []
+  const partnerSummary = (data.partnerSummary as Array<{ id: string; name: string; type: string; total: number }>) || []
+  const monthLabels = (data.monthLabels as string[]) || []
+
+  return (
+    <div className="space-y-4">
+      {/* Dimension selector */}
+      <div className="flex items-center gap-3">
+        <Filter className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Grupiši po:</span>
+        <div className="flex gap-2">
+          {[
+            { value: 'partner', label: 'Partneru' },
+            { value: 'account', label: 'Kontu' },
+            { value: 'type', label: 'Tipu konta' },
+          ].map((d) => (
+            <Button key={d.value} size="sm" variant={dimension === d.value ? 'default' : 'outline'} onClick={() => setDimension(d.value)}>
+              {d.label}
+            </Button>
+          ))}
+        </div>
+        <Badge variant="outline" className="text-xs">{groups.length} grupa</Badge>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Ukupno duguje</p>
+            <p className="text-lg font-bold">{formatRSD(data.totalDebit as number || 0)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Ukupno potražuje</p>
+            <p className="text-lg font-bold">{formatRSD(data.totalCredit as number || 0)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Saldo</p>
+            <p className={`text-lg font-bold ${(data.totalSaldo as number || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              {formatRSD(data.totalSaldo as number || 0)}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Stavki ukupno</p>
+            <p className="text-lg font-bold">{data.groupCount as number}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Groups table */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold">Analitički pregled</CardTitle>
+          <p className="text-xs text-muted-foreground">{dimension === 'partner' ? 'Po partnerima' : dimension === 'account' ? 'Po kontima' : 'Po tipu'}</p>
+        </CardHeader>
+        <CardContent>
+          <div className="max-h-[400px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs w-[200px]">Naziv</TableHead>
+                  <TableHead className="text-xs text-right">Duguje</TableHead>
+                  <TableHead className="text-xs text-right">Potražuje</TableHead>
+                  <TableHead className="text-xs text-right">Saldo</TableHead>
+                  <TableHead className="text-xs text-center">Stavki</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {groups.slice(0, 50).map((g) => (
+                  <TableRow key={g.key}>
+                    <TableCell className="text-xs font-medium max-w-[200px] truncate">{g.name}</TableCell>
+                    <TableCell className="text-xs text-right">{g.debit > 0 ? formatRSD(g.debit) : '-'}</TableCell>
+                    <TableCell className="text-xs text-right">{g.credit > 0 ? formatRSD(g.credit) : '-'}</TableCell>
+                    <TableCell className={`text-xs text-right font-semibold ${g.saldo >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                      {formatRSD(g.saldo)}
+                    </TableCell>
+                    <TableCell className="text-xs text-center">{g.count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Partner summary (only in non-partner dimension) */}
+      {dimension !== 'partner' && partnerSummary.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Top partneri po prometu
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {partnerSummary.slice(0, 10).map((p) => {
+                const maxVal = partnerSummary[0]?.total || 1
+                const pct = (p.total / maxVal) * 100
+                return (
+                  <div key={p.id} className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium truncate">{p.name}</span>
+                        <span className="text-xs text-muted-foreground">{p.type}</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-primary/70" style={{ width: `${Math.max(pct, 1)}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-xs font-medium text-right whitespace-nowrap">{formatRSD(p.total)}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
+
+// ─── Tab: Godišnje Zatvaranje ────────────────────────────────────────────────
+
+function GodZatvaranjeTab({ fiscalYear }: { fiscalYear: number }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [closing, setClosing] = useState(false)
+
+  const fetchStatus = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch(`/api/accounting/year-close?year=${fiscalYear}`)
+    setData(await res.json())
+    setLoading(false)
+  }, [fiscalYear])
+
+  useEffect(() => { fetchStatus() }, [fetchStatus])
+
+  if (loading || !data) {
+    return <div className="space-y-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>
+  }
+
+  const isClosed = data.isClosed as boolean
+  const profit = data.profit as number || 0
+  const totalRevenue = data.totalRevenue as number || 0
+  const totalExpenses = data.totalExpenses as number || 0
+  const revenueAccounts = (data.revenueAccounts as Array<{ code: string; name: string; amount: number }>) || []
+  const expenseAccounts = (data.expenseAccounts as Array<{ code: string; name: string; amount: number }>) || []
+
+  const handleCloseYear = async () => {
+    if (!confirm(`Da li ste sigurni da želite da zatvorite godinu ${fiscalYear}? Ovo će kreirati knjižne stavke za zatvaranje prihodnih i rashodnih konta i preneti dobit/gubitak na konto Godišnji rezultat.`)) return
+    setClosing(true)
+    try {
+      const res = await fetch('/api/accounting/year-close', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year: fiscalYear }),
+      })
+      const result = await res.json()
+      if (res.ok) {
+        toast.success(result.message || `Godišnje zatvaranje ${fiscalYear} uspešno`)
+        fetchStatus()
+      } else {
+        toast.error(result.error || 'Greška pri zatvaranju')
+      }
+    } catch {
+      toast.error('Greška pri zatvaranju')
+    } finally {
+      setClosing(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Status */}
+      <Card className={isClosed ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            {isClosed ? (
+              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+            ) : (
+              <AlertCircle className="h-8 w-8 text-amber-600" />
+            )}
+            <div>
+              <p className="text-sm font-semibold">
+                Godišnje zatvaranje {fiscalYear}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {isClosed
+                  ? `Godina je zatvorena. Nalog zatvaranja: ${data.closingVoucher || '-'}`
+                  : 'Godina još nije zatvorena. Kliknite dugme za automatsko zatvaranje prihodnih i rashodnih konta.'
+                }
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Financial summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase font-medium">Ukupni prihodi</p>
+            <p className="text-lg font-bold text-teal-600">{formatRSD(totalRevenue)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase font-medium">Ukupni rashodi</p>
+            <p className="text-lg font-bold text-orange-600">{formatRSD(totalExpenses)}</p>
+          </CardContent>
+        </Card>
+        <Card className={profit >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}>
+          <CardContent className="p-3">
+            <p className={`text-[10px uppercase font-medium ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              {profit >= 0 ? 'Dobit' : 'Gubitak'}
+            </p>
+            <p className={`text-2xl font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+              {formatRSD(profit)}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3">
+            <p className="text-[10px] text-muted-foreground uppercase font-medium">Marža</p>
+            <p className={`text-lg font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+              {totalRevenue > 0 ? `${((profit / totalRevenue) * 100).toFixed(1)}%` : '0%'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {!isClosed && (
+        <div className="space-y-4">
+          {/* Revenue accounts */}
+          {revenueAccounts.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-teal-700">Prihodni konti</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-h-[200px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">Konto</TableHead>
+                        <TableHead className="text-xs">Naziv</TableHead>
+                        <TableHead className="text-xs text-right">Iznos</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {revenueAccounts.map((a) => (
+                        <TableRow key={a.code}>
+                          <TableCell className="text-xs font-mono">{a.code}</TableCell>
+                          <TableCell className="text-xs">{a.name}</TableCell>
+                          <TableCell className="text-xs text-right font-medium text-teal-700">{formatRSD(a.amount)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Expense accounts */}
+          {expenseAccounts.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-orange-700">Rashodni konti</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-h-[200px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">Konto</TableHead>
+                        <TableHead className="text-xs">Naziv</TableHead>
+                        <TableHead className="text-xs text-right">Iznos</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {expenseAccounts.map((a) => (
+                        <TableRow key={a.code}>
+                          <TableCell className="text-xs font-mono">{a.code}</TableCell>
+                          <TableCell className="text-xs">{a.name}</TableCell>
+                          <TableCell className="text-xs text-right font-medium text-orange-700">{formatRSD(a.amount)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Close button */}
+          <div className="flex justify-end">
+            <Button variant="destructive" className="gap-2" onClick={handleCloseYear} disabled={closing}>
+              {closing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+              {closing ? 'Zatvaranje...' : `Zatvori godinu ${fiscalYear}`}
+            </Button>
+          </div>
+
+          <AlertDialog>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Potvrda zatvaranje</AlertDialogTitle>
+              <AlertDialogDescription>
+                Da li ste sigurni? Ovo će:
+                <br />• Zatvorati sve prihodne konte (postaviti nula saldo)
+                <br />• Zatvoriti sve rashodne konte (postaviti nula saldo)
+                <br />• Preneti dobit/gubitak na konto 130 (Godišnji rezultat)
+                <br />• Kreirati nalog zatvaranja
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </AlertDialog>
+        </div>
+      )}
+    </div>
   )
 }
