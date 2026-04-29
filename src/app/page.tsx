@@ -26,8 +26,12 @@ import { MailerLite } from '@/components/modules/MailerLite'
 import { RentACar } from '@/components/modules/RentACar'
 import { Podesavanja } from '@/components/modules/Podesavanja'
 import { Integracije } from '@/components/modules/Integracije'
+import { BankSync } from '@/components/modules/BankSync'
 import { AIAssistant } from '@/components/modules/AIAssistant'
+import { GlobalSearch } from '@/components/modules/GlobalSearch'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { NotificationBell } from '@/components/modules/NotificationBell'
+import { NotificationCenter } from '@/components/modules/NotificationCenter'
 import { useAppStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { I18nProvider, useTranslation, ALL_LANGUAGES, ContentTranslationProvider } from '@/lib/i18n'
@@ -71,6 +75,8 @@ const modules: Record<string, React.ReactNode> = {
   izvestaji: <Izvestaji />,
   podesavanja: <Podesavanja />,
   integracije: <Integracije />,
+  'bank-sync': <BankSync />,
+  notifications: <NotificationCenter />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -97,7 +103,9 @@ const moduleLabelKeys: Record<string, string> = {
   'rent-a-car': 'sidebar.rentACar',
   izvestaji: 'sidebar.reports',
   integracije: 'sidebar.integrations',
+  'bank-sync': 'sidebar.bank',
   podesavanja: 'sidebar.settings',
+  notifications: 'notifications.title',
 }
 
 // ============ INNER APP (needs i18n context) ============
@@ -106,6 +114,26 @@ function AppContent() {
   const { activeModule } = useAppStore()
   const { t, locale, setLocale, isTranslating } = useTranslation()
   const ensureLoaded = useThemeStore((s) => s.ensureLoaded)
+
+  // Auto-generate notifications on mount (debounced)
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      try {
+        await fetch('/api/notifications/generate', { method: 'POST' })
+      } catch { /* silent */ }
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Poll for new notifications every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        await fetch('/api/notifications/generate', { method: 'POST' })
+      } catch { /* silent */ }
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Active languages from settings
   const [activeLangs, setActiveLangs] = useState<string[]>(DEFAULT_ACTIVE_LANGS)
@@ -181,6 +209,8 @@ function AppContent() {
                   <span>{headerLanguages[0]?.nativeName || 'SR'}</span>
                 </button>
               )}
+              <GlobalSearch />
+              <NotificationBell />
               <ThemeToggle />
             </div>
           </header>

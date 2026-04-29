@@ -27,6 +27,7 @@ import {
 } from 'recharts'
 import { formatRSD, formatRSDShort, getStatusLabel, getMonthLabel } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { ReportDownloadButton } from './ReportDownloadButton'
 
 const COLORS = ['#059669', '#0891b2', '#7c3aed', '#ea580c', '#db2777', '#0284c7', '#ca8a04']
 
@@ -118,11 +119,19 @@ export function Izvestaji() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t('reports.title')}</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          {t('reports.subtitle')}
-        </p>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t('reports.title')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {t('reports.subtitle')}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <ReportDownloadButton type="financial" />
+          <ReportDownloadButton type="partners" />
+          <ReportDownloadButton type="products" />
+          <ReportDownloadButton type="transactions" />
+        </div>
       </div>
 
       {/* Revenue vs Expenses */}

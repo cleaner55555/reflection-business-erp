@@ -26,7 +26,8 @@ model Partner {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  invoices         Invoice[]
+  invoices             Invoice[]
+  recurringInvoices   RecurringInvoice[]
   purchaseOrders   PurchaseOrder[]
   deliveryNotes    DeliveryNote[]
   contacts         Contact[]
@@ -75,11 +76,17 @@ model Invoice {
   discountPct   Float    @default(0)
   notes         String?
   paymentMethod String   @default("racun") // racun, gotovina, kartica
+  sefStatus     String   @default("not_sent") // not_sent, sent, accepted, rejected
+  sefSentAt     DateTime?
+  sefUuid       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   partner Partner @relation(fields: [partnerId], references: [id])
   items   InvoiceItem[]
+  recurringId String?
+  recurring   RecurringInvoice? @relation(fields: [recurringId], references: [id])
+  bankTransactions BankTransaction[]
 }
 
 model InvoiceItem {
@@ -95,6 +102,27 @@ model InvoiceItem {
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
+}
+
+// ============ PONAVLJAjuCE FAKTURE ============
+
+model RecurringInvoice {
+  id              String       @id @default(cuid())
+  name            String
+  partnerId       String
+  frequency       String       // monthly, weekly, quarterly, yearly
+  nextDate        DateTime     // when to generate next invoice
+  lastGenerated   DateTime?
+  startDate       DateTime     // when recurrence starts
+  endDate         DateTime?    // optional end date
+  isActive        Boolean      @default(true)
+  items           String       // JSON array of invoice line items template
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  partner  Partner   @relation(fields: [partnerId], references: [id])
+  invoices Invoice[]
 }
 
 // ============ NABAVKA ============
@@ -799,6 +827,56 @@ model SyncLog {
   createdAt       DateTime @default(now())
 
   connector       SyncConnector @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+}
+
+// ============ NOTIFICATIONS ============
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        String   // overdue_invoice, low_stock, payment_received, task_due, system
+  title       String
+  message     String
+  entityType  String?  // invoice, product, partner, etc.
+  entityId    String?
+  isRead      Boolean  @default(false)
+  priority    String   @default("medium") // low, medium, high, urgent
+  actionUrl   String?  // which module to open (e.g., "fakture")
+  createdAt   DateTime @default(now())
+}
+
+// ============ BANKA - SINHRONIZACIJA I PREKNJIŽAVANJE ============
+
+model BankAccount {
+  id          String   @id @default(cuid())
+  name        String
+  bank        String?
+  account     String
+  currency    String   @default("RSD")
+  isActive    Boolean  @default(true)
+  balance     Float    @default(0)
+  lastSyncAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions BankTransaction[]
+}
+
+model BankTransaction {
+  id            String   @id @default(cuid())
+  bankAccountId String
+  date          DateTime
+  amount        Float
+  description   String
+  reference     String?
+  counterpart   String?
+  category      String?
+  isReconciled  Boolean  @default(false)
+  invoiceId     String?
+  transactionId String?
+  createdAt     DateTime @default(now())
+
+  bankAccount BankAccount @relation(fields: [bankAccountId], references: [id])
+  invoice     Invoice?    @relation(fields: [invoiceId], references: [id])
 }
 
 // ============ SETTINGS ============

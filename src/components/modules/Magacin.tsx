@@ -38,6 +38,7 @@ import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, Ar
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { ReportDownloadButton } from './ReportDownloadButton'
 
 // ==================== INTERFACES ====================
 
@@ -325,9 +326,12 @@ function ArtikliTab() {
                 <CardTitle className="text-base font-semibold">{t('warehouse.products')}</CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">{products.length} {t('warehouse.productsCount')}</p>
               </div>
-              <Button size="sm" className="gap-2" onClick={handleNew}>
-                <Plus className="h-4 w-4" /> {t('warehouse.newProduct')}
-              </Button>
+              <div className="flex items-center gap-2">
+                <ReportDownloadButton type="products" />
+                <Button size="sm" className="gap-2" onClick={handleNew}>
+                  <Plus className="h-4 w-4" /> {t('warehouse.newProduct')}
+                </Button>
+              </div>
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">

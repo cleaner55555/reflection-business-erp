@@ -9,6 +9,14 @@ export async function GET(request: NextRequest) {
     const firstDayOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastDayOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
+    // Today boundaries (start and end of day)
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    // Yesterday boundaries
+    const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0);
+    const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+
     // Run all queries in parallel for performance
     const [
       totalRevenue,
@@ -24,6 +32,12 @@ export async function GET(request: NextRequest) {
       thisMonthRevenue,
       lastMonthRevenue,
       transactionsByCategory,
+      overdueInvoices,
+      todayDueInvoices,
+      recentPartners,
+      recentTransactions,
+      newPartnersThisMonth,
+      unpaidInvoiceCount,
     ] = await Promise.all([
       // Total revenue from income transactions
       db.transaction.aggregate({
@@ -117,6 +131,63 @@ export async function GET(request: NextRequest) {
         _sum: { amount: true },
         orderBy: { _sum: { amount: 'desc' } },
       }),
+
+      // Overdue invoices (dueDate < now AND not paid/cancelled)
+      db.invoice.findMany({
+        where: {
+          dueDate: { lt: startOfToday },
+          status: { notIn: ['placena', 'otkazana'] },
+        },
+        orderBy: { dueDate: 'asc' },
+        take: 10,
+        include: {
+          partner: { select: { id: true, name: true } },
+        },
+      }),
+
+      // Today's due invoices
+      db.invoice.findMany({
+        where: {
+          dueDate: { gte: startOfToday, lte: endOfToday },
+          status: { notIn: ['placena', 'otkazana'] },
+        },
+        orderBy: { dueDate: 'asc' },
+        include: {
+          partner: { select: { id: true, name: true } },
+        },
+      }),
+
+      // Recent partners (last 5)
+      db.partner.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          pib: true,
+          type: true,
+          city: true,
+          createdAt: true,
+        },
+      }),
+
+      // Recent transactions (last 5)
+      db.transaction.findMany({
+        orderBy: { date: 'desc' },
+        take: 5,
+      }),
+
+      // New partners this month
+      db.partner.count({
+        where: {
+          createdAt: { gte: firstDayOfMonth },
+        },
+      }),
+
+      // Unpaid invoice count
+      db.invoice.count({
+        where: { status: { in: ['nacrt', 'poslata'] } },
+      }),
     ]);
 
     // Cash in/out separate totals
@@ -128,6 +199,23 @@ export async function GET(request: NextRequest) {
     const cashOut = await db.cashRegister.aggregate({
       where: { type: 'izlaz' },
       _sum: { amount: true },
+    });
+
+    // Overdue count
+    const overdueCount = await db.invoice.count({
+      where: {
+        dueDate: { lt: startOfToday },
+        status: { notIn: ['placena', 'otkazana'] },
+      },
+    });
+
+    // Overdue total amount
+    const overdueTotal = await db.invoice.aggregate({
+      where: {
+        dueDate: { lt: startOfToday },
+        status: { notIn: ['placena', 'otkazana'] },
+      },
+      _sum: { totalAmount: true },
     });
 
     // Calculate revenue growth percentage
@@ -145,6 +233,7 @@ export async function GET(request: NextRequest) {
         invoiceCount,
         lowStockProducts,
         unpaidInvoiceAmount: unpaidInvoices._sum.totalAmount || 0,
+        unpaidInvoiceCount,
         partnerCount,
         productCount,
         thisMonthRevenue: thisMonthTotal,
@@ -163,6 +252,14 @@ export async function GET(request: NextRequest) {
         category: row.category,
         amount: row._sum.amount || 0,
       })),
+      // New fields
+      overdueInvoices,
+      overdueCount,
+      overdueTotal: overdueTotal._sum.totalAmount || 0,
+      todayDueInvoices,
+      recentPartners,
+      recentTransactions,
+      newPartnersThisMonth,
     });
   } catch (error) {
     console.error('Error fetching dashboard data:', error);

@@ -37,6 +37,7 @@ import {
   UtensilsCrossed,
   Settings,
   Plug,
+  Landmark,
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -51,6 +52,7 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
       { module: 'fakture', icon: FileText, labelKey: 'sidebar.invoices' },
       { module: 'magacin', icon: Warehouse, labelKey: 'sidebar.warehouse' },
       { module: 'nabavka', icon: ShoppingCart, labelKey: 'sidebar.procurement' },
+      { module: 'bank-sync', icon: Landmark, labelKey: 'sidebar.bank' },
     ],
   },
   {

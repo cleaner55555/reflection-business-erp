@@ -53,6 +53,7 @@ import {
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/lib/i18n'
+import { MigrationWizard } from './MigrationWizard'
 
 // ==================== TYPES ====================
 
@@ -207,10 +208,14 @@ export function Integracije() {
       </div>
 
       <Tabs defaultValue="connections" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="connections" className="gap-1.5">
             <Plug className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('integrations.tab_connections')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="migration" className="gap-1.5">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t('integrations.tab_migration')}</span>
           </TabsTrigger>
           <TabsTrigger value="import" className="gap-1.5">
             <Upload className="h-3.5 w-3.5" />
@@ -228,6 +233,9 @@ export function Integracije() {
 
         <TabsContent value="connections">
           <ConnectionsTab />
+        </TabsContent>
+        <TabsContent value="migration">
+          <MigrationWizard />
         </TabsContent>
         <TabsContent value="import">
           <ImportWizard />

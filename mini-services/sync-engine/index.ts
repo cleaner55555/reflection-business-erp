@@ -11,6 +11,7 @@ const MAIN_APP_BASE = "http://localhost:3000";
 let activeConnectors = 0;
 let lastCheckAt: string | null = null;
 let isPolling = false;
+let lastRecurringCheckAt: string | null = null;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function timestamp(): string {
@@ -91,6 +92,34 @@ async function triggerSync(connector: SyncConnectorRow): Promise<void> {
   }
 }
 
+// ─── Recurring Invoice Check ───────────────────────────────────────────────
+async function checkRecurringInvoices(): Promise<void> {
+  log("info", "Checking recurring invoices for auto-generation...");
+
+  try {
+    const response = await fetch(`${MAIN_APP_BASE}/api/recurring-invoices/check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      log("warn", `Recurring check failed — HTTP ${response.status}: ${body.slice(0, 200)}`);
+      return;
+    }
+
+    const data = await response.json().catch(() => ({}));
+    if (data.generated > 0) {
+      log("info", `Recurring invoices: ${data.generated} invoice(s) auto-generated from ${data.total} due`);
+    } else {
+      log("info", `Recurring invoices: 0 due — ${data.message || "all up to date"}`);
+    }
+    lastRecurringCheckAt = timestamp();
+  } catch (err) {
+    log("error", `Recurring invoice check error: ${(err as Error).message}`);
+  }
+}
+
 // ─── Polling Loop ────────────────────────────────────────────────────────────
 async function pollConnectors(): Promise<void> {
   if (isPolling) {
@@ -112,6 +141,9 @@ async function pollConnectors(): Promise<void> {
     for (const connector of dueConnectors) {
       await triggerSync(connector);
     }
+
+    // Check recurring invoices
+    await checkRecurringInvoices();
   } catch (err) {
     log("error", `Poll error: ${(err as Error).message}`);
   } finally {
@@ -131,6 +163,7 @@ const server = serve({
         status: "running",
         connectors: activeConnectors,
         lastCheck: lastCheckAt,
+        lastRecurringCheck: lastRecurringCheckAt,
         uptime: process.uptime(),
       });
     }

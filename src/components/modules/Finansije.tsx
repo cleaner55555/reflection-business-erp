@@ -27,6 +27,7 @@ import { Plus, Search, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, BookOpen,
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { ReportDownloadButton } from './ReportDownloadButton'
 
 interface Transaction {
   id: string
@@ -215,9 +216,12 @@ function TransakcijeTab() {
               <CardTitle className="text-base font-semibold">{t('finance.transactions')}</CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">{t('finance.allTransactionsDesc')}</p>
             </div>
-            <Button size="sm" className="gap-2" onClick={handleNew}>
-              <Plus className="h-4 w-4" /> {t('finance.newTransaction')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <ReportDownloadButton type="transactions" />
+              <Button size="sm" className="gap-2" onClick={handleNew}>
+                <Plus className="h-4 w-4" /> {t('finance.newTransaction')}
+              </Button>
+            </div>
           </div>
         )}
 

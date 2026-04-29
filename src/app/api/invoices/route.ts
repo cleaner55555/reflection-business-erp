@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const partnerId = searchParams.get('partnerId') || '';
     const dateFrom = searchParams.get('dateFrom') || '';
     const dateTo = searchParams.get('dateTo') || '';
+    const sefStatus = searchParams.get('sefStatus') || '';
 
     const where: Record<string, unknown> = {};
 
@@ -32,6 +33,10 @@ export async function GET(request: NextRequest) {
 
     if (partnerId) {
       where.partnerId = partnerId;
+    }
+
+    if (sefStatus) {
+      where.sefStatus = sefStatus;
     }
 
     if (dateFrom || dateTo) {

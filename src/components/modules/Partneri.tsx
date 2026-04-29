@@ -27,6 +27,7 @@ import { Plus, Search, Users, Pencil, Trash2, Eye, Building2, Phone, Mail, MapPi
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { ReportDownloadButton } from './ReportDownloadButton'
 
 interface Partner {
   id: string
@@ -264,9 +265,12 @@ export function Partneri() {
                 <CardTitle className="text-base font-semibold">{t('partners.title')}</CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">{partners.length} {t('partners.partnersCount')}</p>
               </div>
-              <Button size="sm" className="gap-2" onClick={handleNew}>
-                <Plus className="h-4 w-4" /> {t('partners.newPartner')}
-              </Button>
+              <div className="flex items-center gap-2">
+                <ReportDownloadButton type="partners" />
+                <Button size="sm" className="gap-2" onClick={handleNew}>
+                  <Plus className="h-4 w-4" /> {t('partners.newPartner')}
+                </Button>
+              </div>
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">

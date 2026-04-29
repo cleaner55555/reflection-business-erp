@@ -125,6 +125,11 @@ export function getStatusLabel(status: string): string {
     promotivno: 'Promotivno',
     transakciono: 'Transakciono',
     obavestenje: 'Obaveštenje',
+    // SEF statuses
+    not_sent: 'Nije poslata',
+    sent: 'Poslata',
+    accepted: 'Prihvaćena',
+    rejected: 'Odbijena',
   }
   return labels[status] || status
 }
@@ -175,6 +180,10 @@ export function getStatusColor(status: string): string {
     srednji: 'bg-amber-50 text-amber-600',
     visok: 'bg-orange-50 text-orange-600',
     hitan: 'bg-red-50 text-red-600',
+    // SEF statuses
+    not_sent: 'bg-slate-100 text-slate-600 border-slate-200',
+    accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    rejected: 'bg-red-50 text-red-700 border-red-200',
     odobreno: 'bg-blue-50 text-blue-700 border-blue-200',
     isplaceno: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   }

@@ -23,6 +23,8 @@ export type ModuleType =
   | 'email-marketing'
   | 'rent-a-car'
   | 'integracije'
+  | 'bank-sync'
+  | 'notifications'
 
 interface AppState {
   activeModule: ModuleType
