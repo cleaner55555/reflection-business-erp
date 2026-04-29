@@ -46,6 +46,8 @@ import {
   CheckCircle2,
   X,
   ArrowLeft,
+  PiggyBank,
+  Scale,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
@@ -122,6 +124,14 @@ export function Knjigovodstvo() {
             <FilePenLine className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('accounting.journalEntries')}</span>
           </TabsTrigger>
+          <TabsTrigger value="budzeti" className="gap-1.5">
+            <PiggyBank className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Budžeti</span>
+          </TabsTrigger>
+          <TabsTrigger value="bruto-bilans" className="gap-1.5">
+            <Scale className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Bruto Bilans</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="glavna-knjiga">
@@ -132,6 +142,12 @@ export function Knjigovodstvo() {
         </TabsContent>
         <TabsContent value="nalog">
           <NalogTab />
+        </TabsContent>
+        <TabsContent value="budzeti">
+          <BudzetiTab />
+        </TabsContent>
+        <TabsContent value="bruto-bilans">
+          <BrutoBilansTab />
         </TabsContent>
       </Tabs>
     </div>
@@ -1436,6 +1452,184 @@ function NalogTab() {
               </Table>
             </div>
           )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ─── Tab 4: Budžeti ──────────────────────────────────────────────────────────
+
+interface BudgetItem {
+  id: string; accountCode: string; accountName: string
+  january: number; february: number; march: number; april: number
+  may: number; june: number; july: number; august: number
+  september: number; october: number; november: number; december: number
+}
+
+const MONTH_KEYS = ['january','february','march','april','may','june','july','august','september','october','november','december'] as const
+
+function BudzetiTab() {
+  const { t } = useTranslation()
+  const [items, setItems] = useState<BudgetItem[]>([
+    { id: crypto.randomUUID(), accountCode: '200', accountName: 'Prihodi od prodaje', january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0 },
+    { id: crypto.randomUUID(), accountCode: '410', accountName: 'Troškovi materijala', january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0 },
+    { id: crypto.randomUUID(), accountCode: '420', accountName: 'Troškovi zarada', january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0 },
+  ])
+  const [actuals, setActuals] = useState<Record<string, Record<string, number>>>({})
+
+  const updateItem = (id: string, month: string, value: number): void => {
+    setItems(items.map((item) => item.id === id ? { ...item, [month]: value } : item))
+  }
+
+  const addRow = (): void => {
+    setItems([...items, { id: crypto.randomUUID(), accountCode: '', accountName: 'Novi kont', january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0 }])
+  }
+
+  const removeRow = (id: string): void => {
+    setItems(items.filter((i) => i.id !== id))
+  }
+
+  const totals = MONTH_KEYS.reduce((acc: Record<string, number>, m: string) => {
+    acc[m] = items.reduce((s: number, i: BudgetItem) => s + (i[m] || 0), 0)
+    return acc
+  }, {})
+
+  const yearlyTotal = Object.values(totals).reduce((s: number, v) => s + v, 0)
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div><h3 className="text-sm font-semibold flex items-center gap-2"><PiggyBank className="h-4 w-4" />Budžeti - Plan vs Realizacija</h3><p className="text-[10px] text-muted-foreground">Godišnji budžetski plan po kontima i mesecima</p></div>
+        <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={addRow}><Plus className="h-3 w-3" />Dodaj kont</Button>
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-[10px] sticky left-0 bg-background min-w-[140px]">Konto</TableHead>
+                  {MONTH_KEYS.map((m: string, idx: number) => (
+                    <TableHead key={m} className="text-[10px] min-w-[90px] text-center">{t(`common.month_${idx + 1}`)}</TableHead>
+                  ))}
+                  <TableHead className="text-[10px] min-w-[90px] text-center font-bold">Ukupno</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item: BudgetItem) => {
+                  const rowTotal = MONTH_KEYS.reduce((s: number, m: string) => s + (item[m] || 0), 0)
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="text-xs sticky left-0 bg-background">
+                        <div className="font-medium">{item.accountName}</div>
+                        <div className="text-[9px] text-muted-foreground font-mono">{item.accountCode}</div>
+                      </TableCell>
+                      {MONTH_KEYS.map((m: string) => (
+                        <TableCell key={m} className="text-xs text-center p-1">
+                          <Input type="number" className="h-7 text-xs text-center w-[80px] mx-auto" value={item[m] || ''} onChange={(e) => updateItem(item.id, m, Number(e.target.value) || 0)} />
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-xs text-center font-bold p-1">{formatRSD(rowTotal)}</TableCell>
+                    </TableRow>
+                  )
+                })}
+                <TableRow className="bg-muted/50 font-bold border-t-2">
+                  <TableCell className="text-xs sticky left-0 bg-muted/50">Ukupno</TableCell>
+                  {MONTH_KEYS.map((m: string) => (
+                    <TableCell key={m} className="text-xs text-center">{formatRSD(totals[m])}</TableCell>
+                  ))}
+                  <TableCell className="text-xs text-center">{formatRSD(yearlyTotal)}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ─── Tab 5: Bruto Bilans (Trial Balance) ──────────────────────────────────────
+
+function BrutoBilansTab() {
+  const { t } = useTranslation()
+  const { tc } = useContentTranslation()
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchAll = async (): Promise<void> => {
+      const [accRes, entryRes] = await Promise.all([fetch('/api/accounts'), fetch('/api/journal-entries')])
+      const accData: Account[] = await accRes.json()
+      const entryData: JournalEntry[] = await entryRes.json()
+
+      const enriched = accData.map((acc) => {
+        const accEntries = entryData.filter((e) => e.accountCode === acc.code)
+        const debit = accEntries.reduce((s, e) => s + (e.debit || 0), 0)
+        const credit = accEntries.reduce((s, e) => s + (e.credit || 0), 0)
+        return { ...acc, debit, credit, balance: debit - credit }
+      })
+      setAccounts(enriched)
+      setLoading(false)
+    }
+    fetchAll()
+  }, [])
+
+  const totalDebit = accounts.reduce((s, a) => s + (a.debit || 0), 0)
+  const totalCredit = accounts.reduce((s, a) => s + (a.credit || 0), 0)
+  const isBalanced = Math.abs(totalDebit - totalCredit) < 0.01
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div><h3 className="text-sm font-semibold flex items-center gap-2"><Scale className="h-4 w-4" />Bruto Bilans (Trial Balance)</h3><p className="text-[10px] text-muted-foreground">Pregled stanja svih konta - saldo duguje/potražuje</p></div>
+        <Badge variant={isBalanced ? 'default' : 'destructive'} className="text-xs">{isBalanced ? 'Bilans je u ravnoteži ✓' : 'Nije u ravnoteži!'}</Badge>
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <div className="max-h-[500px] overflow-y-auto">
+            {loading ? <div className="space-y-3 p-4">{Array.from({ length: 6 }).map((_, i: number) => <Skeleton key={i} className="h-8 w-full" />)}</div> : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-[10px] w-[80px]">Konto</TableHead>
+                    <TableHead className="text-[10px]">Naziv</TableHead>
+                    <TableHead className="text-[10px] w-[80px]">Tip</TableHead>
+                    <TableHead className="text-[10px] text-right w-[120px]">Duguje</TableHead>
+                    <TableHead className="text-[10px] text-right w-[120px]">Potražuje</TableHead>
+                    <TableHead className="text-[10px] text-right w-[120px]">Saldo</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {accounts.map((acc) => {
+                    const typeBadge = getAccountTypeBadge(acc.type)
+                    const hasData = (acc.debit || 0) > 0 || (acc.credit || 0) > 0
+                    return (
+                      <TableRow key={acc.id} className={hasData ? '' : 'opacity-50'}>
+                        <TableCell className="text-xs font-mono">{acc.code}</TableCell>
+                        <TableCell className="text-xs">{tc(acc.name)}</TableCell>
+                        <TableCell><Badge variant="outline" className={`text-[9px] px-1.5 ${typeBadge.color}`}>{typeBadge.label}</Badge></TableCell>
+                        <TableCell className="text-xs text-right text-emerald-700 font-medium">{(acc.debit || 0) > 0 ? formatRSD(acc.debit) : '-'}</TableCell>
+                        <TableCell className="text-xs text-right text-red-600 font-medium">{(acc.credit || 0) > 0 ? formatRSD(acc.credit) : '-'}</TableCell>
+                        <TableCell className={`text-xs text-right font-bold ${((acc.debit || 0) - (acc.credit || 0)) > 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                          {formatRSD((acc.debit || 0) - (acc.credit || 0))}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                  <TableRow className="bg-muted/50 font-bold border-t-2">
+                    <TableCell colSpan={3} className="text-xs text-right">UKUPNO:</TableCell>
+                    <TableCell className="text-xs text-right text-emerald-700">{formatRSD(totalDebit)}</TableCell>
+                    <TableCell className="text-xs text-right text-red-600">{formatRSD(totalCredit)}</TableCell>
+                    <TableCell className="text-xs text-right">{formatRSD(totalDebit - totalCredit)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

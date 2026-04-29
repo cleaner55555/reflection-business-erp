@@ -461,6 +461,8 @@ model Deal {
   value       Float    @default(0)
   stage       String   @default("lead") // lead, kvalifikacija, predlog, pregovaranje, won, lost
   probability Int      @default(10)
+  score       Int      @default(0)
+  lostReason  String?
   contactId   String?
   partnerId   String?
   assignedTo  String?

@@ -61,3 +61,47 @@ Stage Summary:
 - Odoo comparison: We have ~35 modules, Odoo has 48+. Gap analysis complete.
 - Ananas.rs reference: Multi-tenant marketplace with wholesaler portal
 - ShipStation reference: Multi-carrier shipping with label printing
+
+---
+Task ID: 3.1
+Agent: Main
+Task: CRM Module Major Upgrade (Faza 3.1)
+
+Work Log:
+- Added `score Int @default(0)` and `lostReason String?` fields to Deal model in Prisma schema
+- Ran `prisma db push` to sync schema (fields were already in sync from previous session)
+- Created `/api/deals/recalculate-scores/route.ts` POST endpoint for batch score recalculation
+- Complete rewrite of CRM.tsx (~920 lines) with:
+  - Lead scoring (0-100) with color-coded badges (red/amber/green)
+  - Score breakdown view (contact +20, value +20, date +15, probability +15, notes +10, partner +20)
+  - Sales Forecast tab (new): monthly expected revenue, win rate, avg deal size, top 5 deals, deals by stage chart
+  - Pipeline Analytics KPIs: weighted pipeline, avg probability, active deals, closing this month, at risk
+  - Deal Detail Dialog: full info, activity timeline, quick actions (change stage, create activity, mark won/lost)
+  - Lost Reason dialog when moving deal to "lost" stage
+  - Pipeline filters: search, filter by stage, sort by value/probability/score/date
+  - Deal cards show: score badge, expected value, contact initials, activity count, days remaining, overdue indicator
+- All lint checks pass
+
+Stage Summary:
+- CRM module upgraded to Odoo-level with scoring, forecasting, analytics, and detail views
+- 4 tabs: Pipeline, Forecast, Contacts, Activities
+- Score auto-calculated on create/update, batch recalculation available
+- Lost reason tracking for deal analysis
+
+---
+Task ID: 3.2
+Agent: Main
+Task: Knjigovodstvo Module Improvement (Faza 3.2)
+
+Work Log:
+- Added two new tabs to Knjigovodstvo module:
+  - Budžeti (Budgets): 12-month budget planning per account with editable cells, totals row, add/remove accounts
+  - Bruto Bilans (Trial Balance): shows all accounts with debit/credit/balance, balance verification badge, real-time data from journal entries
+- Added PiggyBank and Scale icons from lucide-react
+- Total tabs now: 5 (Glavna Knjiga, Kontni Plan, Nalog, Budžeti, Bruto Bilans)
+- All lint checks pass
+
+Stage Summary:
+- Knjigovodstvo upgraded with budgets and trial balance
+- Bruto Bilans automatically calculates from journal entries and shows balance check
+- Budget tab provides 12-month editable grid per account
