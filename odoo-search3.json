@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/inventory_and_mrp/inventory/warehouses_storage/inventory_management/use_locations.html",
+    "name": "Locations — Odoo 19.0 documentation",
+    "snippet": "To create specific storage locations, enable the Storage Locations feature by going to Inventory app ‣ Configuration ‣ Settings. In the Warehouses section, tick ...",
+    "host_name": "www.odoo.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/17.0/ko/applications/inventory_and_mrp/barcode/operations/receipts_deliveries.html",
+    "name": "바코드로 입고 및 배송 처리하기 — Odoo 17.0 문서",
+    "snippet": "To do so, navigate to Inventory app ‣ Configuration ‣ Settings. Then, scroll down to the Barcode section, and select the checkbox next to the Barcode Scanner ...",
+    "host_name": "www.odoo.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo-bs.com/odoo-for-logistics",
+    "name": "Odoo for Logistics & Warehousing - Features, Modules & Benefits",
+    "snippet": "Automation Across Warehouse & Transportation. Automate replenishment, picking flows, barcode operations, load checks, and dispatching to streamline every step ...",
+    "host_name": "www.odoo-bs.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odooskillz.com/blog/odoo-skillz-insights-1/odoo-barcode-warehouse-implementation-guide-337?srsltid=AfmBOoo7KqbWGX-ngtrZZse8-93raAD7GoaQ_FCJ8_FlL7K9oMAC6Djc",
+    "name": "Odoo Barcode Warehouse Implementation Guide",
+    "snippet": "Odoo's barcode module uses standard barcode symbologies (Code 128, EAN-13, UPC, QR codes) to identify products, lots, locations, and documents.",
+    "host_name": "www.odooskillz.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/forum/help-1/ship-from-nearest-warehouse-multi-warehousecountry-setup-101313",
+    "name": "Ship from nearest Warehouse (Multi-Warehouse/Country Setup)",
+    "snippet": "We are dealing with a lot of customer orders from multiple countries. Until now we shipped everything from one warehouse in our home country. Missing: delivery bin barcode",
+    "host_name": "www.odoo.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=SVnM2h27fv4",
+    "name": "How to ship from Multiple Warehouses in Odoo v15 - YouTube",
+    "snippet": "In a previous video I explained how to set up your shipping connectors to ship and pack your products for delivery to customers. Missing: company bin barcode",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/forum/help-1/product-barcode-constraint-in-multi-company-settings-211789",
+    "name": "Product barcode constraint in multi company settings - Odoo",
+    "snippet": "This way you will be selling the same product with the same ID and the same barcode in different companies with different financial results for ... Missing: shipping delivery module warehouse bin",
+    "host_name": "www.odoo.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/15.0/applications/inventory_and_mrp/inventory/barcode/operations/internal.html",
+    "name": "Process receipts and deliveries with barcodes - Odoo",
+    "snippet": "The Barcode app can be used to process receipts, deliveries, and other types of operations in real time using a barcode scanner or the Odoo mobile app. This ... Missing: bin | Show results with: bin",
+    "host_name": "www.odoo.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/forum/help-1/warehouse-and-location-in-multi-company-59830",
+    "name": "Warehouse and Location in Multi-Company - Odoo",
+    "snippet": "Hello All. I'm currently working in a mutlicompany environment and I'm having several doubts with Stock Module. When we install a new DB we ... Missing: shipping bin barcode",
+    "host_name": "www.odoo.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/forum/help-1/multi-company-shared-warehouse-1-warehouse-multiple-companies-129048",
+    "name": "Multi company shared warehouse - Odoo",
+    "snippet": "So, mechanism like your customers are storing goods in your warehouse and in your warehouse you allocate one bin/location to your customer. Missing: shipping delivery module barcode",
+    "host_name": "www.odoo.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

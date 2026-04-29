@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/websites/ecommerce.html",
+    "name": "eCommerce — Odoo 19.0 documentation",
+    "snippet": "It offers a wide range of tools and features to configure products, customize the design, manage ordering and checkout processes , set up delivery methods, ... Read more",
+    "host_name": "www.odoo.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/websites/website.html",
+    "name": "Website — Odoo 19.0 documentation",
+    "snippet": "It includes various tools and features to help you design, publish, and maintain web pages without needing advanced technical skills. You can easily customize ... Read more",
+    "host_name": "www.odoo.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/app/ecommerce-features",
+    "name": "Odoo eCommerce | Features",
+    "snippet": "Discover the features of Odoo eCommerce. Design and create your own online shop and provide your customers with the best possible experience.",
+    "host_name": "www.odoo.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/app/ecommerce",
+    "name": "eCommerce website design",
+    "snippet": "Use Odoo's open-source eCommerce website builder and benefit from integrated inbound marketing, order, and inventory management tools. Try it now!",
+    "host_name": "www.odoo.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/websites/ecommerce/configuration/products.html",
+    "name": "Products — Odoo 19.0 documentation",
+    "snippet": "Odoo eCommerce allows you to create products and manage their visibility on the website. Products can be configured in various ways, including adding product ... Read more",
+    "host_name": "www.odoo.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/app/website-features",
+    "name": "Open Source Website Builder Features",
+    "snippet": "Odoo is a suite of open source business apps that cover all your company needs: CRM, eCommerce, accounting, inventory, point of sale, project management, etc. Read more",
+    "host_name": "www.odoo.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo-bs.com/odoo-for-ecommerce",
+    "name": "Odoo for eCommerce - Features, Modules & Benefits",
+    "snippet": "All-in-one platform for eCommerce : Odoo connects your store with sales, inventory, invoicing, accounting, and customer service in one system.",
+    "host_name": "www.odoo-bs.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.slideshare.net/slideshow/odoo-website-builder-features/231096239",
+    "name": "Odoo Website Builder Features | PDF",
+    "snippet": "The document describes the website builder features of the Odoo platform . It provides an intuitive drag-and-drop interface for building websites without ...",
+    "host_name": "www.slideshare.net",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://muchconsulting.com/blog/odoo-2/odoo-website-80",
+    "name": "Odoo Website Builder Guide | Features, Pros & How to Get",
+    "snippet": "Visual page editor · Blog · Forms · Live chat · eCommerce · Multi-language, multi-site · Built-in SEO features. Read more",
+    "host_name": "muchconsulting.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/websites.html",
+    "name": "Websites — Odoo 19.0 documentation",
+    "snippet": "Website-specific configuration. eCommerce features . Customer accounts · Pricing · Content availability across websites. Website pages. Read more",
+    "host_name": "www.odoo.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
