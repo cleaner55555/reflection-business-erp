@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { AlertTriangle, BarChart3, CheckCircle2, Circle, Clock, FolderKanban, Pencil, Plus, Search, Trash2, ArrowLeft, X, ListTodo, CalendarDays, DollarSign, Users, Target, TrendingUp, Timer, GanttChart, Eye, Play, Square, Pause } from 'lucide-react'
+import { AlertTriangle, BarChart3, CheckCircle2, Circle, Clock, FolderKanban, Pencil, Plus, Search, Trash2, ArrowLeft, X, ListTodo, CalendarDays, DollarSign, Users, Target, TrendingUp, Timer, GanttChart, Eye, Play, Pause, Bug } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
@@ -127,12 +127,14 @@ export function Projekti() {
           <TabsTrigger value="zadaci" className="gap-1.5"><ListTodo className="h-3.5 w-3.5" /><span className="hidden sm:inline">Zadaci</span></TabsTrigger>
           <TabsTrigger value="timesheet" className="gap-1.5"><Timer className="h-3.5 w-3.5" /><span className="hidden sm:inline">Evidencija</span></TabsTrigger>
           <TabsTrigger value="timeline" className="gap-1.5"><GanttChart className="h-3.5 w-3.5" /><span className="hidden sm:inline">Timeline</span></TabsTrigger>
+          <TabsTrigger value="bugovi" className="gap-1.5"><Bug className="h-3.5 w-3.5" /><span className="hidden sm:inline">Bugovi</span></TabsTrigger>
         </TabsList>
         <TabsContent value="pregled"><ProjectDashboard /></TabsContent>
         <TabsContent value="projekti"><ProjectsList /></TabsContent>
         <TabsContent value="zadaci"><TaskKanban /></TabsContent>
         <TabsContent value="timesheet"><TimesheetView /></TabsContent>
         <TabsContent value="timeline"><TimelineView /></TabsContent>
+        <TabsContent value="bugovi"><BugoviTab /></TabsContent>
       </Tabs>
     </div>
   )

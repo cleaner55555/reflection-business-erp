@@ -34,11 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer, BarChart3, MapPin, Warehouse as WarehouseIcon, TrendingDown, TrendingUp, ArrowRightLeft } from 'lucide-react'
+import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer, BarChart3, MapPin, Warehouse as WarehouseIcon, TrendingDown, TrendingUp, ArrowRightLeft, Hash, ClipboardCheck, ArrowLeftRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { ReportDownloadButton } from './ReportDownloadButton'
+import { LotoviTab, InventuraTab, TransferiTab } from './MagacinEnhanced'
 
 // ==================== INTERFACES ====================
 
@@ -192,6 +193,18 @@ export function Magacin() {
             <Tag className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('warehouse.priceLists')}</span>
           </TabsTrigger>
+          <TabsTrigger value="lotovi" className="gap-1.5">
+            <Hash className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Lotovi</span>
+          </TabsTrigger>
+          <TabsTrigger value="inventura" className="gap-1.5">
+            <ClipboardCheck className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Inventura</span>
+          </TabsTrigger>
+          <TabsTrigger value="transferi" className="gap-1.5">
+            <ArrowLeftRight className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Transferi</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pregled"><StockOverview /></TabsContent>
@@ -208,6 +221,9 @@ export function Magacin() {
         <TabsContent value="cenovnici">
           <CenovniciTab />
         </TabsContent>
+        <TabsContent value="lotovi"><LotoviTab /></TabsContent>
+        <TabsContent value="inventura"><InventuraTab /></TabsContent>
+        <TabsContent value="transferi"><TransferiTab /></TabsContent>
       </Tabs>
     </div>
   )

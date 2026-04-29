@@ -19,11 +19,12 @@ import {
   Plus, Search, Pencil, Trash2, HeartHandshake, Phone, Mail, Building2, CheckCircle2, Clock, XCircle,
   ArrowLeft, TrendingUp, BarChart3, Target, AlertTriangle, RefreshCw, X, Activity, Calendar,
   ChevronRight, MessageSquare, User, Users, Filter, Tag, Globe, Megaphone, Handshake, Briefcase,
-  CircleDot, CircleCheck, CircleX
+  CircleDot, CircleCheck, CircleX, Settings2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate } from '@/lib/helpers'
+import { AutomacijeTab } from './CRMEnhanced'
 
 // ============ INTERFACES ============
 
@@ -148,12 +149,14 @@ export function CRM() {
           <TabsTrigger value="aktivnosti" className="gap-1.5"><Activity className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('crm.activities')}</span></TabsTrigger>
           <TabsTrigger value="forecast" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('crm.forecast')}</span></TabsTrigger>
           <TabsTrigger value="izvori" className="gap-1.5"><Megaphone className="h-3.5 w-3.5" /><span className="hidden sm:inline">Izvori</span></TabsTrigger>
+          <TabsTrigger value="automacije" className="gap-1.5"><Settings2 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Automacije</span></TabsTrigger>
         </TabsList>
         <TabsContent value="pipeline"><PipelineTab /></TabsContent>
         <TabsContent value="kontakti"><KontaktiTab /></TabsContent>
         <TabsContent value="aktivnosti"><AktivnostiTab /></TabsContent>
         <TabsContent value="forecast"><ForecastTab /></TabsContent>
         <TabsContent value="izvori"><IzvoriTab /></TabsContent>
+        <TabsContent value="automacije"><AutomacijeTab /></TabsContent>
       </Tabs>
     </div>
   )

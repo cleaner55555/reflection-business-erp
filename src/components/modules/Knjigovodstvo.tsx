@@ -1625,15 +1625,18 @@ function PdvTab({ fiscalYear }: { fiscalYear: number }) {
 
   const fetchPdv = useCallback(async () => {
     setLoading(true)
-    const params = new URLSearchParams()
-    params.set('year', String(fiscalYear))
-    if (month > 0) params.set('month', String(month))
-    const res = await fetch(`/api/accounting/pdv?${params.toString()}`)
-    setData(await res.json())
-    setLoading(false)
+    try {
+      const params = new URLSearchParams()
+      params.set('year', String(fiscalYear))
+      if (month > 0) params.set('month', String(month))
+      const res = await fetch(`/api/accounting/pdv?${params.toString()}`)
+      setData(await res.json())
+    } finally {
+      setLoading(false)
+    }
   }, [fiscalYear, month])
 
-  useEffect(() => { fetchPdv() }, [fetchPdv])
+  useEffect(() => { void fetchPdv() }, [fetchPdv])
 
   if (loading || !data) {
     return <div className="space-y-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>
@@ -1863,12 +1866,15 @@ function AnalitikaTab({ fiscalYear }: { fiscalYear: number }) {
 
   const fetchAnalitika = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/accounting/analitika?year=${fiscalYear}&dimension=${dimension}`)
-    setData(await res.json())
-    setLoading(false)
+    try {
+      const res = await fetch(`/api/accounting/analitika?year=${fiscalYear}&dimension=${dimension}`)
+      setData(await res.json())
+    } finally {
+      setLoading(false)
+    }
   }, [fiscalYear, dimension])
 
-  useEffect(() => { fetchAnalitika() }, [fetchAnalitika])
+  useEffect(() => { void fetchAnalitika() }, [fetchAnalitika])
 
   if (loading || !data) {
     return <div className="space-y-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>

@@ -45,9 +45,12 @@ import {
   TrendingUp,
   DollarSign,
   FilePlus,
+  CalendarClock,
+  Receipt,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { RecurringInvoices } from './RecurringInvoices'
+import { RateOtplateTab, FiskalizacijaTab } from './FaktureEnhanced'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { ReportDownloadButton } from './ReportDownloadButton'
@@ -191,6 +194,8 @@ export function Fakture() {
           <TabsTrigger value="fakture" className="gap-1.5"><FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('efakture.tabInvoices')}</span></TabsTrigger>
           <TabsTrigger value="recurring" className="gap-1.5"><Clock className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('recurring.tabLabel')}</span></TabsTrigger>
           <TabsTrigger value="efakture" className="gap-1.5"><Send className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('efakture.tab')}</span></TabsTrigger>
+          <TabsTrigger value="rate" className="gap-1.5"><CalendarClock className="h-3.5 w-3.5" /><span className="hidden sm:inline">Rate</span></TabsTrigger>
+          <TabsTrigger value="fiskalizacija" className="gap-1.5"><Receipt className="h-3.5 w-3.5" /><span className="hidden sm:inline">Fiskalizacija</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="pregled"><InvoiceDashboard /></TabsContent>
@@ -203,6 +208,8 @@ export function Fakture() {
         <TabsContent value="efakture">
           <EFaktureTab />
         </TabsContent>
+        <TabsContent value="rate"><RateOtplateTab /></TabsContent>
+        <TabsContent value="fiskalizacija"><FiskalizacijaTab /></TabsContent>
       </Tabs>
     </div>
   )

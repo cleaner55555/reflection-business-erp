@@ -90,6 +90,11 @@ model Company {
   bankTransactions    BankTransaction[]
   appSettings         AppSetting[]
   budgets             Budget[]
+  lots                Lot[]
+  inventoryCounts     InventoryCount[]
+  employeeEvaluations EmployeeEvaluation[]
+  crmAutomationRules  CrmAutomationRule[]
+  fiscalPeriods       FiscalPeriod[]
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -172,12 +177,17 @@ model Partner {
   zipCode       String?
   phone         String?
   email         String?
+  website       String?
   type          String   @default("kupac") // kupac, dobavljac, partner
   account       String?
   bank          String?
   notes         String?
   creditLimit   Float    @default(0)
   paymentTerms  Int      @default(0)    // dana za plaćanje, 0 = odmah
+  loyaltyPoints Int      @default(0)   // bodovi lojalnostnog programa
+  kycStatus     String   @default("not_verified") // not_verified, pending, verified, rejected
+  kycVerifiedAt DateTime?
+  priceListId   String?  // default cenovnik za partnera
   parentId      String?
   tags          String?  // JSON array of tags
   isActive      Boolean  @default(true)
@@ -197,6 +207,7 @@ model Partner {
   documents            Document[]
   projects             Project[]
   journalEntries       JournalEntry[] @relation("JournalEntryPartner")
+  priceList           PriceList? @relation("PartnerPriceList", fields: [priceListId], references: [id])
 
   @@unique([companyId, pib])
 }
@@ -214,7 +225,13 @@ model Product {
   purchasePrice Float
   sellingPrice  Float
   minStock      Int      @default(0)
+  maxStock      Int      @default(0)
   currentStock  Int      @default(0)
+  costMethod    String   @default("prosek") // fifo, lifo, prosek
+  trackLots     Boolean  @default(false) // lot/serial tracking
+  expiryDays    Int      @default(0) // rok trajanja u danima
+  weight        Float    @default(0) // težina u kg
+  volume        Float    @default(0) // zapremina u m3
   description   String?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
@@ -226,6 +243,7 @@ model Product {
   stockMovements     StockMovement[]
   deliveryNoteItems  DeliveryNoteItem[]
   priceListItems     PriceListItem[]
+  lots               Lot[]
 
   @@unique([companyId, sku])
 }
@@ -240,10 +258,22 @@ model Invoice {
   dueDate       DateTime
   partnerId     String
   status        String   @default("nacrt") // nacrt, poslata, placena, otkazana
-  type          String   @default("izlazna") // izlazna, ulazna, predracun
+  type          String   @default("izlazna") // izlazna, ulazna, predracun, avansna
   totalAmount   Float
   taxAmount     Float    @default(0)
+  baseAmount    Float    @default(0) // osnovica (bez poreza)
   discountPct   Float    @default(0)
+  currency      String   @default("RSD")
+  exchangeRate  Float    @default(1)
+  incoterms     String? // DAP, FOB, CIF, EXW, DDP...
+  deliveryAddress String?
+  advanceInvoiceId String? // za rate - parent avansna faktura
+  installmentNumber Int? // koji deo rate (1,2,3...)
+  totalInstallments Int? // ukupno rata
+  fiscalizedNumber String? // fiskalni broj računa (Srbija)
+  fiscalizedAt   DateTime?
+  postedToJournal Boolean @default(false) // knjiženo u knjigovodstvo
+  postedAt      DateTime?
   notes         String?
   paymentMethod String   @default("racun") // racun, gotovina, kartica
   sefStatus     String   @default("not_sent") // not_sent, sent, accepted, rejected
@@ -350,24 +380,32 @@ model WarehouseLocation {
   company       Company              @relation(fields: [companyId], references: [id])
   parent        WarehouseLocation?   @relation("LocationTree", fields: [parentId], references: [id])
   children      WarehouseLocation[] @relation("LocationTree")
-  stockMovements StockMovement[]
+  stockMovements StockMovement[] @relation("MovementLocation")
+  movementsTo   StockMovement[] @relation("MovementToLocation")
+  lots          Lot[]
+  inventoryCounts InventoryCount[]
 }
 
 model StockMovement {
-  id          String   @id @default(cuid())
-  companyId   String
-  productId   String
-  locationId  String?
-  date        DateTime @default(now())
-  type        String   // prijem, izdavanje, inventura, korekcija, transfer
-  quantity    Float
-  documentRef String?
-  notes       String?
-  createdAt   DateTime @default(now())
+  id            String    @id @default(cuid())
+  companyId     String
+  productId     String
+  locationId    String?
+  toLocationId  String? // za transfere između lokacija
+  date          DateTime  @default(now())
+  type          String    // prijem, izdavanje, inventura, korekcija, transfer
+  quantity      Float
+  unitCost      Float     @default(0) // nabavna cena u trenutku kretanja
+  lotNumber     String?   // lot/batch broj
+  expiryDate    DateTime? // rok trajanja
+  documentRef   String?
+  notes         String?
+  createdAt     DateTime  @default(now())
 
-  company  Company            @relation(fields: [companyId], references: [id])
-  product  Product            @relation(fields: [productId], references: [id])
-  location WarehouseLocation? @relation(fields: [locationId], references: [id])
+  company       Company            @relation(fields: [companyId], references: [id])
+  product       Product            @relation(fields: [productId], references: [id])
+  location      WarehouseLocation? @relation("MovementLocation", fields: [locationId], references: [id])
+  toLocation   WarehouseLocation? @relation("MovementToLocation", fields: [toLocationId], references: [id])
 }
 
 // ============ OTPREMNICE ============
@@ -416,8 +454,9 @@ model PriceList {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id])
-  items   PriceListItem[]
+  company  Company   @relation(fields: [companyId], references: [id])
+  items    PriceListItem[]
+  partners Partner[] @relation("PartnerPriceList")
 }
 
 model PriceListItem {
@@ -493,24 +532,25 @@ model Contact {
 // ============ CRM - POSLOVNE PRILIKE ============
 
 model Deal {
-  id          String   @id @default(cuid())
-  companyId   String
-  title       String
-  value       Float    @default(0)
-  stage       String   @default("lead") // lead, kvalifikacija, predlog, pregovaranje, won, lost
-  probability Int      @default(10)
-  score       Int      @default(0)
-  source      String   @default("manual") // manual, web, referral, cold_call, email, social, trade_show, advertising, other
-  lostReason  String?
-  tags        String?  // JSON array of tags
-  contactId   String?
-  partnerId   String?
-  assignedTo  String?
-  expectedRevenue Float @default(0)
-  closeDate   DateTime?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String    @id @default(cuid())
+  companyId         String
+  title            String
+  value            Float     @default(0)
+  stage            String    @default("lead") // lead, kvalifikacija, predlog, pregovaranje, won, lost
+  probability      Int       @default(10)
+  score            Int       @default(0)
+  source           String    @default("manual") // manual, web, referral, cold_call, email, social, trade_show, advertising, other
+  forecastCategory String    @default("pipeline") // commit, best_case, pipeline, omitted
+  lostReason       String?
+  tags             String?   // JSON array of tags
+  contactId        String?
+  partnerId        String?
+  assignedTo       String?
+  expectedRevenue  Float     @default(0)
+  closeDate        DateTime?
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   company   Company  @relation(fields: [companyId], references: [id])
   contact   Contact? @relation(fields: [contactId], references: [id])
@@ -528,6 +568,8 @@ model CrmActivity {
   description String?
   dueDate     DateTime?
   completed   Boolean  @default(false)
+  priority    String   @default("srednji") // nizak, srednji, visok, hitan
+  assignedTo  String? // ko je zadužen
   contactId   String?
   dealId      String?
   createdAt   DateTime @default(now())
@@ -570,15 +612,22 @@ model Employee {
   baseSalary    Float    @default(0)
   bankAccount   String?
   partnerId     String?  // ako je iznajmljen/vanradni
+  managerId     String?  // nadređeni (za organigram)
+  contractType  String   @default("odredjeno") // odredjeno, neodredjeno, stipendija, honorarno, praksa
+  contractEndDate DateTime? // kraj ugovora
+  benefits      String?  // JSON: { "transport": 5000, "obrok": 3000, ... }
   isActive      Boolean  @default(true)
   hireDate      DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  company   Company  @relation(fields: [companyId], references: [id])
-  partner   Partner? @relation(fields: [partnerId], references: [id])
-  payrolls  Payroll[]
-  attendances Attendance[]
+  company       Company  @relation(fields: [companyId], references: [id])
+  partner       Partner? @relation(fields: [partnerId], references: [id])
+  manager       Employee? @relation("EmployeeManager", fields: [managerId], references: [id])
+  subordinates  Employee[] @relation("EmployeeManager")
+  payrolls      Payroll[]
+  attendances   Attendance[]
+  evaluations   EmployeeEvaluation[]
 }
 
 model Payroll {
@@ -602,14 +651,16 @@ model Payroll {
 }
 
 model Attendance {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   companyId     String
   employeeId    String
   date          DateTime
-  hoursWorked   Float    @default(8)
-  type          String   @default("rad") // rad, bolovanje, godisnji, sluzbeni_put, odsustvo
+  clockIn       DateTime? // dolazak
+  clockOut      DateTime? // odlazak
+  hoursWorked   Float     @default(8)
+  type          String    @default("rad") // rad, bolovanje, godisnji, sluzbeni_put, odsustvo
   notes         String?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
 
   company  Company  @relation(fields: [companyId], references: [id])
   employee Employee @relation(fields: [employeeId], references: [id])
@@ -656,20 +707,23 @@ model Account {
 }
 
 model JournalEntry {
-  id            String   @id @default(cuid())
-  companyId     String
-  date          DateTime @default(now())
-  accountId     String
-  debit         Float    @default(0)
-  credit        Float    @default(0)
-  description   String
-  documentRef   String?
-  partnerId     String?
-  voucherNumber String?
-  reconciled    Boolean  @default(false)
-  reconciledAt  DateTime?
-  fiscalYear    Int?
-  createdAt     DateTime @default(now())
+  id               String   @id @default(cuid())
+  companyId         String
+  date             DateTime @default(now())
+  accountId        String
+  debit            Float    @default(0)
+  credit           Float    @default(0)
+  description      String
+  documentRef      String?
+  partnerId        String?
+  voucherNumber    String?
+  reconciled       Boolean  @default(false)
+  reconciledAt     DateTime?
+  fiscalYear       Int?
+  currency         String   @default("RSD")
+  exchangeRate     Float    @default(1)
+  analyticAccount  String?  // analitičko knjigovodstvo: projekat/odeljenje
+  createdAt        DateTime @default(now())
 
   company Company @relation(fields: [companyId], references: [id])
   account Account @relation(fields: [accountId], references: [id])
@@ -821,6 +875,61 @@ model VehicleExpense {
   vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }
 
+// ============ MAGACIN - LOT/SERIAL TRACKING ============
+
+model Lot {
+  id          String   @id @default(cuid())
+  companyId   String
+  productId   String
+  lotNumber   String
+  quantity    Float
+  expiryDate  DateTime?
+  locationId  String?
+  purchaseDate DateTime @default(now())
+  purchasePrice Float   @default(0)
+  supplier    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company  Company            @relation(fields: [companyId], references: [id])
+  product  Product            @relation(fields: [productId], references: [id])
+  location WarehouseLocation? @relation(fields: [locationId], references: [id])
+}
+
+// ============ MAGACIN - INVENTURA ============
+
+model InventoryCount {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  locationId  String?
+  status      String   @default("nacrt") // nacrt, u_toku, zavrsena
+  startDate   DateTime?
+  endDate     DateTime?
+  countedBy   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company       Company           @relation(fields: [companyId], references: [id])
+  location      WarehouseLocation? @relation(fields: [locationId], references: [id])
+  items         InventoryCountItem[]
+}
+
+model InventoryCountItem {
+  id              String   @id @default(cuid())
+  inventoryCountId String
+  productId       String
+  productName     String
+  systemQty       Float    @default(0)
+  countedQty      Float    @default(0)
+  difference      Float    @default(0)
+  notes           String?
+
+  inventoryCount InventoryCount @relation(fields: [inventoryCountId], references: [id], onDelete: Cascade)
+}
+
 // ============ PROJEKTI ============
 
 model Project {
@@ -861,6 +970,8 @@ model ProjectTask {
   estimatedHours Float     @default(0)
   loggedHours    Float     @default(0)
   orderNum       Int       @default(0)
+  isBug          Boolean   @default(false) // bug tracking flag
+  bugSeverity    String?   // critical, major, minor, trivial
   tags           String?   // JSON array of tags
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -887,6 +998,69 @@ model TimesheetEntry {
   company       Company     @relation(fields: [companyId], references: [id])
   project       Project     @relation(fields: [projectId], references: [id])
   task          ProjectTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+// ============ ZAPOSLENI - OCENE RADNOG UČINKA ============
+
+model EmployeeEvaluation {
+  id          String   @id @default(cuid())
+  companyId   String
+  employeeId  String
+  period      String  // Q1, Q2, Q3, Q4, godisnje
+  year        Int
+  rating      Int     @default(3) // 1-5
+  strengths   String?
+  weaknesses  String?
+  goals       String?
+  reviewNotes String?
+  reviewerId  String?
+  status      String  @default("nacrt") // nacrt, zakazano, zavrseno
+  reviewDate  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company  Company  @relation(fields: [companyId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+// ============ CRM - AUTOMATIZACIJA PRAVILA ============
+
+model CrmAutomationRule {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  trigger     String  // stage_change, deal_created, days_inactive, score_above
+  condition   String? // JSON: { field: value, ... }
+  action      String  // move_stage, assign_to, send_email, add_tag, set_score
+  actionData  String? // JSON: { to: "kvalifikacija", ... }
+  isActive    Boolean  @default(true)
+  executedCount Int   @default(0)
+  lastExecutedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ KNJIGOVODSTVO - PORESKI PERIODI ============
+
+model FiscalPeriod {
+  id            String   @id @default(cuid())
+  companyId     String
+  year          Int
+  month         Int
+  status        String   @default("otvoren") // otvoren, zatvoren
+  pdvSubmitted  Boolean  @default(false)
+  pdvSubmittedAt DateTime?
+  closedBy      String?
+  closedAt      DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, year, month])
 }
 
 // ============ DMS - DOKUMENTI ============

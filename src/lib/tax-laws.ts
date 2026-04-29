@@ -2582,3 +2582,13 @@ export function calculateEmployerCost(grossSalary: number, socialContributions: 
 
   return { totalEmployeeContributions, totalEmployerContributions, employerCost, breakdown }
 }
+
+export function getCurrencySymbol(currency: string): string {
+  const symbols: Record<string, string> = {
+    RSD: 'din', EUR: '€', USD: '$', GBP: '£', CHF: 'CHF', BAM: 'KM',
+    HRK: 'kn', MKD: 'ден', BGN: 'лв', RON: 'lei', PLN: 'zł', CZK: 'Kč',
+    HUF: 'Ft', SEK: 'kr', NOK: 'kr', DKK: 'kr', ISK: 'kr',
+    TRY: '₺', UAH: '₴', GEL: '₾', RUB: '₽', CNY: '¥', JPY: '¥',
+  }
+  return symbols[currency] || currency
+}
