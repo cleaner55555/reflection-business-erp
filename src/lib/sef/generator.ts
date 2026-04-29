@@ -89,9 +89,12 @@ function formatAmount(num: number): string {
   return num.toFixed(2)
 }
 
-function formatDateSEF(isoDate: string): string {
+function formatDateSEF(isoDate: string | Date): string {
   // SEF expects YYYY-MM-DD format
-  return isoDate.split('T')[0]
+  if (isoDate instanceof Date) {
+    return isoDate.toISOString().split('T')[0]
+  }
+  return String(isoDate).split('T')[0]
 }
 
 // ==================== PAYMENT MEANS CODE ====================
@@ -293,8 +296,8 @@ ${wrappedLines}
 interface DBInvoice {
   id: string
   number: string
-  date: string
-  dueDate: string
+  date: string | Date
+  dueDate: string | Date
   status: string
   type: string
   totalAmount: number
@@ -364,8 +367,8 @@ export function convertInvoiceToSEFData(invoice: DBInvoice): SEFInvoiceData {
   return {
     uuid: invoice.sefUuid || generateUUID(),
     invoiceNumber: invoice.number,
-    issueDate: invoice.date,
-    dueDate: invoice.dueDate,
+    issueDate: invoice.date instanceof Date ? invoice.date.toISOString() : String(invoice.date),
+    dueDate: invoice.dueDate instanceof Date ? invoice.dueDate.toISOString() : String(invoice.dueDate),
     invoiceTypeCode,
     currency: 'RSD',
     seller,
