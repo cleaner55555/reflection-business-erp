@@ -27,11 +27,18 @@ model Company {
   plan          String   @default("free") // free, starter, pro, enterprise
   trialEndsAt   DateTime?
   maxUsers      Int      @default(5)
+  currency      String   @default("RSD")
+  timezone      String   @default("Europe/Belgrade")
+  locale        String   @default("sr")
+  modules       String   @default("[]") // JSON: enabled modules ["crm","fakture",...]
+  maxStorageMb  Int      @default(100)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   users         UserCompany[]
   apiKeys       ApiKey[]
+  auditLogs     AuditLog[]
+  webhooks      Webhook[]
 
   partners            Partner[]
   products            Product[]
@@ -1225,4 +1232,45 @@ model AppSetting {
   company Company? @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, key])
+}
+
+// ============ AUDIT LOG - DNEVNIK IZMENA ============
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  companyId   String
+  userId      String?
+  action      String   // create, update, delete, login, logout, export, import
+  entity      String   // invoice, partner, product, journal_entry, etc.
+  entityId    String?
+  details     String?  // JSON: { field: oldValue → newValue, ... }
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([entity])
+  @@index([createdAt])
+}
+
+// ============ WEBHOOKS - EVENT DRIVEN INTEGRACIJE ============
+
+model Webhook {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  url         String
+  events      String   // JSON: ["invoice.created","partner.updated",...]
+  secret      String?  // for HMAC signature
+  headers     String?  // JSON: { "Authorization": "Bearer ..." }
+  isActive    Boolean  @default(true)
+  lastTriggerAt  DateTime?
+  successCount   Int      @default(0)
+  failCount      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
