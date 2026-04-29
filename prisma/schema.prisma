@@ -63,6 +63,7 @@ model Company {
   vehicleExpenses     VehicleExpense[]
   projects            Project[]
   projectTasks        ProjectTask[]
+  timesheetEntries    TimesheetEntry[]
   documents           Document[]
   rentalVehicles      RentalVehicle[]
   rentals             Rental[]
@@ -167,10 +168,17 @@ model Partner {
   account       String?
   bank          String?
   notes         String?
+  creditLimit   Float    @default(0)
+  paymentTerms  Int      @default(0)    // dana za plaćanje, 0 = odmah
+  parentId      String?
+  tags          String?  // JSON array of tags
+  isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   company       Company  @relation(fields: [companyId], references: [id])
+  parent        Partner? @relation("PartnerHierarchy", fields: [parentId], references: [id])
+  children      Partner[] @relation("PartnerHierarchy")
   invoices             Invoice[]
   recurringInvoices   RecurringInvoice[]
   purchaseOrders       PurchaseOrder[]
@@ -179,6 +187,7 @@ model Partner {
   deals                Deal[]
   employees            Employee[]
   documents            Document[]
+  projects             Project[]
 
   @@unique([companyId, pib])
 }
@@ -781,27 +790,58 @@ model Project {
   spent       Float    @default(0)
   priority    String   @default("srednji") // nizak, srednji, visok, hitan
   assignedTo  String?
+  partnerId   String?
+  tags        String?  // JSON array of tags
+  color       String?  // hex color for project
+  progress    Int      @default(0) // auto-calculated 0-100
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id])
-  tasks   ProjectTask[]
+  company       Company           @relation(fields: [companyId], references: [id])
+  partner       Partner?          @relation(fields: [partnerId], references: [id])
+  tasks         ProjectTask[]
+  timesheetEntries TimesheetEntry[]
 }
 
 model ProjectTask {
+  id             String    @id @default(cuid())
+  companyId      String
+  projectId      String
+  title          String
+  description    String?
+  status         String    @default("todo") // todo, u_toku, zavrseno, blokirano
+  priority       String    @default("srednji")
+  dueDate        DateTime?
+  assignedTo     String?
+  estimatedHours Float     @default(0)
+  loggedHours    Float     @default(0)
+  orderNum       Int       @default(0)
+  tags           String?   // JSON array of tags
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  company       Company           @relation(fields: [companyId], references: [id])
+  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  timesheetEntries TimesheetEntry[]
+}
+
+// ============ TIMESHEET - EVIDENCIJA RADNOG VREMENA ============
+
+model TimesheetEntry {
   id          String   @id @default(cuid())
   companyId   String
   projectId   String
-  title       String
+  taskId      String
+  employeeId  String?  // Ime zaposlenog (tekstualno za sada)
+  date        DateTime @default(now())
+  hours       Float
   description String?
-  status      String   @default("todo") // todo, u_toku, zavrseno, blokirano
-  priority    String   @default("srednji")
-  dueDate     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id])
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  company       Company     @relation(fields: [companyId], references: [id])
+  project       Project     @relation(fields: [projectId], references: [id])
+  task          ProjectTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
 // ============ DMS - DOKUMENTI ============

@@ -37,6 +37,14 @@ import {
   XCircle,
   Eye,
   Loader2,
+  BarChart3,
+  AlertTriangle,
+  Clock,
+  ArrowRightLeft,
+  BookOpen,
+  TrendingUp,
+  DollarSign,
+  FilePlus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { RecurringInvoices } from './RecurringInvoices'
@@ -177,13 +185,15 @@ export function Fakture() {
         </p>
       </div>
 
-      <Tabs defaultValue="fakture" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="fakture">{t('efakture.tabInvoices')}</TabsTrigger>
-          <TabsTrigger value="recurring">{t('recurring.tabLabel')}</TabsTrigger>
-          <TabsTrigger value="efakture">{t('efakture.tab')}</TabsTrigger>
+      <Tabs defaultValue="pregled" className="space-y-4">
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="pregled" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Pregled</span></TabsTrigger>
+          <TabsTrigger value="fakture" className="gap-1.5"><FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('efakture.tabInvoices')}</span></TabsTrigger>
+          <TabsTrigger value="recurring" className="gap-1.5"><Clock className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('recurring.tabLabel')}</span></TabsTrigger>
+          <TabsTrigger value="efakture" className="gap-1.5"><Send className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('efakture.tab')}</span></TabsTrigger>
         </TabsList>
 
+        <TabsContent value="pregled"><InvoiceDashboard /></TabsContent>
         <TabsContent value="fakture">
           <FaktureTab />
         </TabsContent>
@@ -194,6 +204,99 @@ export function Fakture() {
           <EFaktureTab />
         </TabsContent>
       </Tabs>
+    </div>
+  )
+}
+
+// ==================== INVOICE DASHBOARD ====================
+
+function InvoiceDashboard() {
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchInvoices = useCallback(async (): Promise<void> => {
+    setLoading(true)
+    const res = await fetch('/api/invoices')
+    setInvoices(await res.json())
+    setLoading(false)
+  }, [])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { fetchInvoices() }, [fetchInvoices])
+
+  const stats = useMemo(() => {
+    const now = new Date()
+    const thisMonth = invoices.filter(i => {
+      const d = new Date(i.date)
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    })
+    const overdue = invoices.filter(i => new Date(i.dueDate) < now && i.status === 'poslata')
+    const byType = {
+      izlazna: invoices.filter(i => i.type === 'izlazna'),
+      ulazna: invoices.filter(i => i.type === 'ulazna'),
+      predracun: invoices.filter(i => i.type === 'predracun'),
+    }
+    const byStatus = {
+      nacrt: invoices.filter(i => i.status === 'nacrt').length,
+      poslata: invoices.filter(i => i.status === 'poslata').length,
+      placena: invoices.filter(i => i.status === 'placena').length,
+      otkazana: invoices.filter(i => i.status === 'otkazana').length,
+    }
+    return {
+      total: invoices.length,
+      totalAmount: invoices.reduce((s, i) => s + i.totalAmount, 0),
+      monthCount: thisMonth.length,
+      monthAmount: thisMonth.reduce((s, i) => s + i.totalAmount, 0),
+      overdueCount: overdue.length,
+      overdueAmount: overdue.reduce((s, i) => s + i.totalAmount, 0),
+      avgInvoice: invoices.length > 0 ? invoices.reduce((s, i) => s + i.totalAmount, 0) / invoices.length : 0,
+      unpaid: invoices.filter(i => i.status === 'poslata'),
+      byType,
+      byStatus,
+    }
+  }, [invoices])
+
+  if (loading) return <div className="space-y-3"><Skeleton className="h-32 w-full" /><Skeleton className="h-48 w-full" /></div>
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><FileText className="h-3.5 w-3.5" />Ukupno</div><p className="text-2xl font-bold">{stats.total}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><DollarSign className="h-3.5 w-3.5" />Ukupan iznos</div><p className="text-lg font-bold">{formatRSD(stats.totalAmount)}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-emerald-600 mb-1"><TrendingUp className="h-3.5 w-3.5" />Ovaj mesec</div><p className="text-2xl font-bold text-emerald-700">{stats.monthCount}</p><p className="text-xs text-muted-foreground">{formatRSD(stats.monthAmount)}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><BarChart3 className="h-3.5 w-3.5" />Prosek</div><p className="text-lg font-bold">{formatRSD(stats.avgInvoice)}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><CheckCircle2 className="h-3.5 w-3.5" />Plaćene</div><p className="text-2xl font-bold text-blue-700">{stats.byStatus.placena}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-red-600 mb-1"><AlertTriangle className="h-3.5 w-3.5" />Prekoračene</div><p className="text-2xl font-bold text-red-600">{stats.overdueCount}</p><p className="text-xs text-muted-foreground">{formatRSD(stats.overdueAmount)}</p></Card>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Po tipu</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Izlazne fakture</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.izlazna.length}</span><p className="text-[10px] text-muted-foreground">{formatRSD(stats.byType.izlazna.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Ulazne fakture</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.ulazna.length}</span><p className="text-[10px] text-muted-foreground">{formatRSD(stats.byType.ulazna.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Predračuni</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.predracun.length}</span><p className="text-[10px] text-muted-foreground">{formatRSD(stats.byType.predracun.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Prekoračene fakture</CardTitle></CardHeader>
+          <CardContent>
+            {stats.overdueCount === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-6">Nema prekoračenih faktura</p>
+            ) : (
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {stats.overdue.slice(0, 10).map(inv => (
+                  <div key={inv.id} className="flex items-center justify-between p-2 rounded bg-red-50 border border-red-200">
+                    <div><span className="text-xs font-medium">{inv.number}</span><span className="text-[10px] text-muted-foreground ml-2">{inv.partner?.name || '—'}</span></div>
+                    <div className="text-right"><span className="text-xs font-bold text-red-600">{formatRSD(inv.totalAmount)}</span><p className="text-[10px] text-muted-foreground">Rok: {formatDate(inv.dueDate)}</p></div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
@@ -347,6 +450,35 @@ function FaktureTab() {
     } finally {
       setPdfDownloading(null)
     }
+  }
+
+  // Convert predracun to izlazna faktura
+  const handleConvertToInvoice = async (inv: Invoice) => {
+    if (!confirm(`Konvertovati predračun ${inv.number} u fakturu?`)) return
+    try {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const count = String(Math.floor(Math.random() * 9000) + 1000)
+      const res = await fetch(`/api/invoices/${inv.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'izlazna', number: `F-${year}-${month}-${count}` }) })
+      if (!res.ok) { toast.error('Greška pri konverziji'); return }
+      toast.success('Predračun konvertovan u fakturu')
+      fetchInvoices()
+    } catch { toast.error('Greška') }
+  }
+
+  // Post invoice to accounting (knjiženje)
+  const handlePostToAccounting = async (inv: Invoice) => {
+    try {
+      const res = await fetch('/api/journal-entries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: inv.date, description: `Faktura ${inv.number} - ${inv.partner?.name || ''}`, debit: inv.totalAmount, credit: 0, documentRef: inv.number, partnerId: inv.partnerId }) })
+      if (!res.ok) { toast.error('Greška pri knjiženju'); return }
+      const entry = await res.json()
+      // Create credit entry for counter-account
+      await fetch('/api/journal-entries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: inv.date, description: `Faktura ${inv.number} - potraživanje`, debit: 0, credit: inv.totalAmount, documentRef: inv.number, partnerId: inv.partnerId }) })
+      await fetch(`/api/invoices/${inv.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'placena' }) })
+      toast.success('Faktura knjižena u nalog')
+      fetchInvoices()
+    } catch { toast.error('Greška pri knjiženju') }
   }
 
   const handleDelete = async (id: string) => {
@@ -919,6 +1051,16 @@ function FaktureTab() {
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(inv)} title={t('common.print')}>
                             <Printer className="h-3.5 w-3.5" />
                           </Button>
+                          {inv.type === 'predracun' && inv.status === 'nacrt' && (
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => handleConvertToInvoice(inv)} title="Konvertuj u fakturu">
+                              <ArrowRightLeft className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          {inv.status === 'poslata' && (
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" onClick={() => handlePostToAccounting(inv)} title="Knjiži u nalog">
+                              <BookOpen className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(inv)} title={t('common.edit')}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>

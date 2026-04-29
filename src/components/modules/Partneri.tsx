@@ -42,7 +42,12 @@ interface Partner {
   account: string | null
   bank: string | null
   notes: string | null
-  _count: { invoices: number; purchaseOrders: number }
+  creditLimit: number
+  paymentTerms: number
+  parentId: string | null
+ tags: string | null
+ isActive: boolean
+  _count: { invoices: number; purchaseOrders: number; projects: number; children: number }
 }
 
 interface AnalyticsSummary {
@@ -178,6 +183,10 @@ export function Partneri() {
       account: fd.get('account') as string,
       bank: fd.get('bank') as string,
       notes: fd.get('notes') as string,
+      creditLimit: Number(fd.get('creditLimit')) || 0,
+      paymentTerms: Number(fd.get('paymentTerms')) || 0,
+      parentId: (fd.get('parentId') as string) || null,
+      tags: (fd.get('tags') as string) || null,
     }
     try {
       const isEditing = !!editingPartner
@@ -359,6 +368,23 @@ export function Partneri() {
             <div className="space-y-2">
               <Label className="text-xs">{t('common.notes')}</Label>
               <Input name="notes" defaultValue={editingPartner?.notes || ''} />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Kreditni limit (RSD)</Label>
+                <Input name="creditLimit" type="number" step="0.01" placeholder="0" defaultValue={editingPartner?.creditLimit || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Rok plaćanja (dana)</Label>
+                <Input name="paymentTerms" type="number" min="0" placeholder="0 = odmah" defaultValue={editingPartner?.paymentTerms || ''} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Nadređna firma</Label>
+                <Select name="parentId" defaultValue={editingPartner?.parentId || ''}>
+                  <SelectTrigger><SelectValue placeholder="Bez nadređne firme" /></SelectTrigger>
+                  <SelectContent><SelectItem value="">Bez nadređne</SelectItem>{partners.filter(p => p.id !== (editingPartner?.id || '')).map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={submitting}>

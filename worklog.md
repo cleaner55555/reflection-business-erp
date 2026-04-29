@@ -48,3 +48,46 @@ Work Log:
 Stage Summary:
 - Warehouse now has dashboard overview + location management (Odoo WMS basics)
 - Foundation for Phase 6 full WMS with barcode/scanner support
+
+---
+Task ID: 3-3
+Agent: Main (direct)
+Task: Phase 3 - Projects Module Improvement
+
+Work Log:
+- Updated Prisma schema:
+  - Project: added `partnerId` (FK to Partner), `tags` (JSON), `color` (hex), `progress` (auto-calc 0-100)
+  - ProjectTask: added `assignedTo`, `estimatedHours`, `loggedHours`, `orderNum`, `tags`
+  - New TimesheetEntry model: projectId, taskId, employeeId, date, hours, description
+  - Added Partner.projects relation
+- Updated projects API (GET with search/filter, POST with new fields, include partner+timesheets)
+- Updated project-tasks API (auto-orderNum, auto-progress recalc on status change, cascade delete timesheets)
+- Created new /api/timesheets route (GET with filters, POST, PUT, DELETE, auto-update loggedHours)
+- Rebuilt Projekti.tsx (~1150 lines) with 5 tabs:
+  - Pregled (Dashboard): 8 KPI cards, budget progress, tasks in progress, overdue alerts, status breakdown
+  - Projekti (List/Kanban): Search + filter by status/priority, tag management, partner linking, color picker, task CRUD with estimated hours, project detail dialog
+  - Zadaci (Task Kanban): All tasks across projects, 4 columns (todo/u_toku/zavrseno/blokirano), inline add, move between columns
+  - Evidencija (Timesheets): Time tracking per task/project, date range filter, summary by project, CRUD entries
+  - Timeline (Gantt): Visual project + task timeline, project progress bars, color-coded task bars, month markers
+
+Stage Summary:
+- Projects module now Odoo-level with task kanban, timesheets, timeline, partner linking, tags
+- All lint checks pass
+- Foundation for Phase 10 resource planning and timesheet integration
+
+---
+Task ID: 3-4
+Agent: Main (direct)
+Task: Phase 3 - Invoices Module Improvement
+
+Work Log:
+- Added InvoiceDashboard component with 6 KPI cards (total, amount, this month, average, paid, overdue)
+- Added "Po tipu" breakdown (izlazne, ulazne, predracuni) with amounts
+- Added overdue invoices alert panel with partner details
+- Added "Konvertuj u fakturu" button for predracun→izlazna conversion
+- Added "Knjiži u nalog" button for posting invoice to accounting (journal entries)
+- Reorganized tabs: Pregled (new), Fakture, Ponavljajuće, eFakture
+
+Stage Summary:
+- Invoices module now has dashboard overview, conversion workflow, accounting integration
+- Foundation for Phase 3.4 full e-invoicing and fiscalization
