@@ -34,12 +34,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer, BarChart3, MapPin, Warehouse as WarehouseIcon, TrendingDown, TrendingUp, ArrowRightLeft, Hash, ClipboardCheck, ArrowLeftRight } from 'lucide-react'
+import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer, BarChart3, MapPin, Warehouse as WarehouseIcon, TrendingDown, TrendingUp, ArrowRightLeft, Hash, ClipboardCheck, ArrowLeftRight, ScanBarcode, Layers, ArrowDownToLine } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { ReportDownloadButton } from './ReportDownloadButton'
 import { LotoviTab, InventuraTab, TransferiTab } from './MagacinEnhanced'
+import { BarkodiTab, ZoneMapTab, PickingTab, PrijemTab } from './WmsEnhanced'
 
 // ==================== INTERFACES ====================
 
@@ -205,6 +206,22 @@ export function Magacin() {
             <ArrowLeftRight className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Transferi</span>
           </TabsTrigger>
+          <TabsTrigger value="barkodi" className="gap-1.5">
+            <ScanBarcode className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Barkodi</span>
+          </TabsTrigger>
+          <TabsTrigger value="zone" className="gap-1.5">
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Zone</span>
+          </TabsTrigger>
+          <TabsTrigger value="picking" className="gap-1.5">
+            <Layers className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Picking</span>
+          </TabsTrigger>
+          <TabsTrigger value="prijem" className="gap-1.5">
+            <ArrowDownToLine className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Prijem</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pregled"><StockOverview /></TabsContent>
@@ -224,6 +241,10 @@ export function Magacin() {
         <TabsContent value="lotovi"><LotoviTab /></TabsContent>
         <TabsContent value="inventura"><InventuraTab /></TabsContent>
         <TabsContent value="transferi"><TransferiTab /></TabsContent>
+        <TabsContent value="barkodi"><BarkodiTab /></TabsContent>
+        <TabsContent value="zone"><ZoneMapTab /></TabsContent>
+        <TabsContent value="picking"><PickingTab /></TabsContent>
+        <TabsContent value="prijem"><PrijemTab /></TabsContent>
       </Tabs>
     </div>
   )

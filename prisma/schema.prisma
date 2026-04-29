@@ -92,6 +92,8 @@ model Company {
   budgets             Budget[]
   lots                Lot[]
   inventoryCounts     InventoryCount[]
+  pickWaves           PickWave[]
+  receivingOrders     ReceivingOrder[]
   employeeEvaluations EmployeeEvaluation[]
   crmAutomationRules  CrmAutomationRule[]
   fiscalPeriods       FiscalPeriod[]
@@ -211,6 +213,7 @@ model Partner {
   journalEntries       JournalEntry[] @relation("JournalEntryPartner")
   priceList           PriceList? @relation("PartnerPriceList", fields: [priceListId], references: [id])
   posOrders           POSOrder[] @relation("POSOrderPartner")
+  receivingOrders     ReceivingOrder[] @relation("ReceivingPartner")
 
   @@unique([companyId, pib])
 }
@@ -376,6 +379,10 @@ model WarehouseLocation {
   name        String   // npr. "Regal A", "Hala 1 - Polica 3"
   code        String   @unique // npr. "WH-A-03"
   type        String   @default("polica") // magacin, zona, regal, polica, bin
+  zone        String   @default("skladistenje") // prijem, skladistenje, otprema, kontrola, hladjenje, return, karantin
+  row         Int      @default(0) // red za vizuelnu mapu
+  col         Int      @default(0) // kolona za vizuelnu mapu
+  capacity    Float    @default(0) // kapacitet lokacije
   parentId    String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -932,6 +939,84 @@ model InventoryCountItem {
   notes           String?
 
   inventoryCount InventoryCount @relation(fields: [inventoryCountId], references: [id], onDelete: Cascade)
+}
+
+// ============ WMS - WAVE PICKING ============
+
+model PickWave {
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  status        String   @default("nacrt") // nacrt, u_toku, zakljucana, zavrsena
+  priority      String   @default("srednji") // nizak, srednji, visok, hitan
+  assignedTo    String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company          @relation(fields: [companyId], references: [id])
+  lines         PickWaveLine[]
+}
+
+model PickWaveLine {
+  id            String   @id @default(cuid())
+  waveId        String
+  productId     String
+  productName   String
+  quantity      Float
+  pickedQty     Float    @default(0)
+  locationCode  String?
+  pickedFrom    String?
+  lotNumber     String?
+  status        String   @default("na_cekanju") // na_cekanju, u_toku, pokupljeno, nedostaje
+  pickedAt      DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  wave          PickWave @relation(fields: [waveId], references: [id], onDelete: Cascade)
+}
+
+// ============ WMS - PRIJEM ROBE ============
+
+model ReceivingOrder {
+  id            String   @id @default(cuid())
+  companyId     String
+  number        String
+  partnerId     String?
+  documentRef   String?
+  status        String   @default("nacrt") // nacrt, u_toku, završen
+  receivedBy    String?
+  receivedAt    DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company            @relation(fields: [companyId], references: [id])
+  partner       Partner?           @relation("ReceivingPartner", fields: [partnerId], references: [id])
+  lines         ReceivingOrderLine[]
+
+  @@unique([companyId, number])
+}
+
+model ReceivingOrderLine {
+  id              String   @id @default(cuid())
+  receivingOrderId String
+  productId       String
+  productName     String
+  expectedQty     Float    @default(0)
+  receivedQty     Float    @default(0)
+  lotNumber       String?
+  expiryDate      DateTime?
+  locationId      String?
+  unitCost        Float    @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  receivingOrder ReceivingOrder @relation(fields: [receivingOrderId], references: [id], onDelete: Cascade)
 }
 
 // ============ PROJEKTI ============

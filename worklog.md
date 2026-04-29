@@ -250,3 +250,35 @@ Stage Summary:
 - Odoo-level POS with barcode scanning, multi-payment, shift management
 - Wholesale→Retail sync with margin/markup engine
 - All lint checks pass
+
+---
+Task ID: 6-1
+Agent: Main (direct)
+Task: Phase 6 - WMS (Warehouse Management System)
+
+Work Log:
+- Updated Prisma schema:
+  - WarehouseLocation: added `zone` (prijem/skladistenje/otprema/kontrola/hladjenje/return/karantin), `row`, `col`, `capacity` fields
+  - New PickWave model: wave-based picking with lines, status, priority, assignment
+  - New PickWaveLine model: per-line picking with pickedQty, locationCode, lotNumber, status
+  - New ReceivingOrder model: receiving dock workflow with partner, document ref, status
+  - New ReceivingOrderLine model: per-line receiving with expectedQty, receivedQty, lot, expiry, location
+  - Added Company relations (pickWaves, receivingOrders) and Partner relation (receivingOrders)
+- Created /api/wms/waves route (GET with status filter, POST create wave with lines)
+- Created /api/wms/waves/[id] route (PUT: update wave status or pick lines with auto stock deduction, DELETE drafts)
+- Created /api/wms/receiving route (GET with status filter, POST create receiving order)
+- Created /api/wms/receiving/[id] route (PUT: receive lines with auto stock movement, finish order, DELETE drafts)
+- Created /api/wms/dashboard route (KPIs: products, stock, value, alerts, zones, waves, receiving, movements)
+- Created /api/wms/putaway route (GET: smart putaway suggestions)
+- Created /api/barcodes/generate route (GET: Code128 + QR barcode SVG generation)
+- Created WmsEnhanced.tsx (~620 lines) with 4 new tabs:
+  - BarkodiTab: Scanner input, product cards with barcodes, print labels
+  - ZoneMapTab: 7 zones, visual grid map, zone-filtered list
+  - PickingTab: Wave picking create/start/pick/finish workflow
+  - PrijemTab: Receiving dock create/start/receive/finish workflow
+- Updated Magacin.tsx: 13 tabs total (added Barkodi, Zone, Picking, Prijem)
+- All lint checks pass
+
+Stage Summary:
+- Phase 6 WMS COMPLETE: Barcode system, zone management, wave picking, receiving dock
+- Foundation for Phase 6.2 (advanced inventory features)
