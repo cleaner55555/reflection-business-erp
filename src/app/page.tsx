@@ -32,6 +32,7 @@ import { GlobalSearch } from '@/components/modules/GlobalSearch'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { NotificationBell } from '@/components/modules/NotificationBell'
 import { NotificationCenter } from '@/components/modules/NotificationCenter'
+import { Zakoni } from '@/components/modules/Zakoni'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -80,6 +81,7 @@ const modules: Record<string, React.ReactNode> = {
   integracije: <Integracije />,
   'bank-sync': <BankSync />,
   notifications: <NotificationCenter />,
+  zakoni: <Zakoni />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -109,6 +111,7 @@ const moduleLabelKeys: Record<string, string> = {
   'bank-sync': 'sidebar.bank',
   podesavanja: 'sidebar.settings',
   notifications: 'notifications.title',
+  zakoni: 'zakoni.title',
 }
 
 // ============ INNER APP (needs i18n context) ============

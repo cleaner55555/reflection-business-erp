@@ -38,6 +38,7 @@ import {
   Settings,
   Plug,
   Landmark,
+  Scale,
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -82,7 +83,8 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
   {
     labelKey: 'sidebar.group_analytics',
     items: [{ module: 'izvestaji', icon: BarChart3, labelKey: 'sidebar.reports' },
-      { module: 'integracije', icon: Plug, labelKey: 'sidebar.integrations' }],
+      { module: 'integracije', icon: Plug, labelKey: 'sidebar.integrations' },
+      { module: 'zakoni', icon: Scale, labelKey: 'sidebar.laws' }],
   },
   {
     labelKey: 'sidebar.group_system',
