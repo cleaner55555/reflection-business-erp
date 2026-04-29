@@ -34,6 +34,7 @@ import { NotificationBell } from '@/components/modules/NotificationBell'
 import { NotificationCenter } from '@/components/modules/NotificationCenter'
 import { Zakoni } from '@/components/modules/Zakoni'
 import { Maloprodaja } from '@/components/modules/Maloprodaja'
+import { Shipping } from '@/components/modules/Shipping'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -84,6 +85,7 @@ const modules: Record<string, React.ReactNode> = {
   notifications: <NotificationCenter />,
   zakoni: <Zakoni />,
   pos: <Maloprodaja />,
+  shipping: <Shipping />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -115,6 +117,7 @@ const moduleLabelKeys: Record<string, string> = {
   notifications: 'notifications.title',
   zakoni: 'zakoni.title',
   pos: 'sidebar.pos',
+  shipping: 'sidebar.shipping',
 }
 
 // ============ INNER APP (needs i18n context) ============

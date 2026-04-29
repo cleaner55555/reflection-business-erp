@@ -321,6 +321,7 @@ export const translations: Record<string, TranslationMap> = {
       integrations: 'Интеграције',
       bank: 'Банка',
       pos: 'Малопродажа (POS)',
+      shipping: 'Испорука & Логистика',
       laws: 'Закони и Порези',
     },
 
@@ -1851,6 +1852,9 @@ export const translations: Record<string, TranslationMap> = {
       settings: 'Podešavanja',
       integrations: 'Integracije',
       bank: 'Banka',
+      pos: 'Maloprodaja (POS)',
+      shipping: 'Isporuka & Logistika',
+      laws: 'Zakoni i Porezi',
     },
 
     dashboard: {
@@ -3252,6 +3256,7 @@ export const translations: Record<string, TranslationMap> = {
       integrations: 'Integrations',
       bank: 'Bank',
       pos: 'POS (Retail)',
+      shipping: 'Shipping & Logistics',
       laws: 'Laws & Taxes',
     },
 

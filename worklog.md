@@ -282,3 +282,30 @@ Work Log:
 Stage Summary:
 - Phase 6 WMS COMPLETE: Barcode system, zone management, wave picking, receiving dock
 - Foundation for Phase 6.2 (advanced inventory features)
+
+---
+Task ID: 7-1
+Agent: Main (direct)
+Task: Phase 7 - Shipping & Logistics Module
+
+Work Log:
+- Added 3 new Prisma models: ShippingCarrier (carrier management with API keys, contact, pricing), ShippingOrder (full shipment lifecycle with sender/recipient addresses, COD, insurance, weight/volume), ShippingEvent (tracking timeline with status, location, description)
+- Added Company relations (shippingCarriers, shippingOrders, shippingEvents) and Partner relation (shippingOrders)
+- Created /api/shipping/carriers route (GET with order counts, POST create, PUT update, DELETE with safety check)
+- Created /api/shipping/orders route (GET with search/filter/status, POST with auto-numbering SHP-YYMMDD-NNN, PUT with status updates and addEvent for tracking, DELETE draft-only)
+- Created /api/shipping/dashboard route (KPIs: total/draft/transit/delivered/returned, cost aggregation, carrier stats, status breakdown, recent orders)
+- Created Shipping.tsx component (~680 lines) with 4 tabs:
+  - Pregled (Dashboard): 4 KPI cards, status breakdown with progress bars, carrier stats, recent orders table
+  - Pošiljke (Orders): Search + status filter, order table with quick status advance, delete
+  - Kuriri (Carriers): Card grid with carrier details (type, contact, delivery estimate, order count, pricing)
+  - Praćenje (Tracking): Route visualization with sender/recipient, status badges, tracking detail dialog with quick action buttons
+- Created dialogs: New Order (full form), New Carrier (CRUD), Tracking Detail (status, route, quick actions)
+- Added 'shipping' to ModuleType in store.ts and admin permissions
+- Added Shipping to AppSidebar (Truck icon) in business group
+- Added i18n keys: sidebar.shipping in Serbian (Cyrillic, Latin) and English
+- All lint checks pass
+
+Stage Summary:
+- Phase 7 COMPLETE: Full Shipping & Logistics module with carrier management, order tracking, dashboard analytics
+- Odoo-level shipping with multi-carrier support, COD, insurance, route visualization
+- Foundation for carrier API integrations and label printing

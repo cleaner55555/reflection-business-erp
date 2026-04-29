@@ -99,6 +99,9 @@ model Company {
   fiscalPeriods       FiscalPeriod[]
   posShifts           POSShift[]
   posOrders           POSOrder[] @relation("POSOrderCompany")
+  shippingCarriers    ShippingCarrier[]
+  shippingOrders      ShippingOrder[]
+  shippingEvents      ShippingEvent[]
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -214,6 +217,7 @@ model Partner {
   priceList           PriceList? @relation("PartnerPriceList", fields: [priceListId], references: [id])
   posOrders           POSOrder[] @relation("POSOrderPartner")
   receivingOrders     ReceivingOrder[] @relation("ReceivingPartner")
+  shippingOrders      ShippingOrder[] @relation("ShippingPartner")
 
   @@unique([companyId, pib])
 }
@@ -1641,3 +1645,101 @@ model POSOrderLine {
   order   POSOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product  @relation(fields: [productId], references: [id])
 }
+
+
+// ============ SHIPPING & LOGISTICS ============
+
+model ShippingCarrier {
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String   // npr. "BEX", "Post Express", "DHL"
+  code          String   // npr. "bex", "post-express", "dhl"
+  type          String   @default("domestic") // domestic, regional, international
+  website       String?
+  apiUrl        String?
+  apiKey        String?
+  apiSecret     String?
+  contactPhone  String?
+  contactEmail  String?
+  isActive      Boolean  @default(true)
+  defaultWeight Float    @default(0.5) // default paket tezina u kg
+  defaultPrice  Float    @default(0) // default cena
+  deliveryEstimate String @default("1-3") // dana
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company          @relation(fields: [companyId], references: [id])
+  orders        ShippingOrder[]
+}
+
+model ShippingOrder {
+  id              String   @id @default(cuid())
+  companyId       String
+  number          String   // npr. "SHP-250715-001"
+  carrierId       String?
+  partnerId       String?
+  deliveryNoteId  String?
+  invoiceId       String?
+  status          String   @default("nacrt") // nacrt, cekanje_preuzimanja, preuzeto, u_tranzitu, isporuceno, vraceno, otkazano
+  weight          Float    @default(0) // kg
+  volume          Float    @default(0) // m3
+  packageCount    Int      @default(1)
+  declaredValue   Float    @default(0)
+  shippingCost    Float    @default(0)
+  codAmount       Float    @default(0) // pouzeće
+  codCurrency     String   @default("RSD")
+  insurance       Boolean  @default(false)
+  insuranceCost   Float    @default(0)
+
+  // Adresa pošiljaoca
+  senderName      String?
+  senderAddress   String?
+  senderCity      String?
+  senderZip       String?
+  senderPhone     String?
+
+  // Adresa primaoca
+  recipientName   String?
+  recipientAddress String?
+  recipientCity   String?
+  recipientZip    String?
+  recipientPhone  String?
+  recipientEmail  String?
+
+  // Reference
+  refNumber       String? // referentni broj za kurira
+  trackingNumber  String? // tracking broj od kurira
+  labelUrl        String? // URL štampanog labela
+
+  pickedUpAt      DateTime?
+  inTransitAt     DateTime?
+  deliveredAt     DateTime?
+  returnedAt      DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company       Company          @relation(fields: [companyId], references: [id])
+  carrier       ShippingCarrier? @relation(fields: [carrierId], references: [id])
+  partner       Partner?         @relation("ShippingPartner", fields: [partnerId], references: [id])
+  events        ShippingEvent[]
+
+  @@unique([companyId, number])
+}
+
+model ShippingEvent {
+  id            String   @id @default(cuid())
+  companyId     String
+  orderId       String
+  status        String   // picked_up, in_transit, at_hub, out_for_delivery, delivered, failed, returned
+  location      String?
+  description   String?
+  eventDate     DateTime @default(now())
+  rawResponse   String?  // JSON from carrier API
+  createdAt     DateTime @default(now())
+
+  company       Company        @relation(fields: [companyId], references: [id])
+  order         ShippingOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
