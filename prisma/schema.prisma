@@ -462,10 +462,13 @@ model Deal {
   stage       String   @default("lead") // lead, kvalifikacija, predlog, pregovaranje, won, lost
   probability Int      @default(10)
   score       Int      @default(0)
+  source      String   @default("manual") // manual, web, referral, cold_call, email, social, trade_show, advertising, other
   lostReason  String?
+  tags        String?  // JSON array of tags
   contactId   String?
   partnerId   String?
   assignedTo  String?
+  expectedRevenue Float @default(0)
   closeDate   DateTime?
   notes       String?
   createdAt   DateTime @default(now())
