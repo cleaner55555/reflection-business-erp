@@ -131,6 +131,8 @@ model Company {
   mpOrders            MpOrder[]
   mpReviews           MpReview[]
   mpDisputes          MpDispute[]
+  mpProducts          MpProduct[]
+  mpCoupons           MpCoupon[]
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -2426,6 +2428,8 @@ model MpVendor {
   orders          MpOrder[]
   reviews         MpReview[]
   disputes        MpDispute[]
+  products        MpProduct[]
+  coupons         MpCoupon[]
 }
 
 model MpOrder {
@@ -2480,6 +2484,7 @@ model MpReview {
   company         Company   @relation(fields: [companyId], references: [id])
   vendor          MpVendor @relation(fields: [vendorId], references: [id])
   order           MpOrder? @relation(fields: [orderId], references: [id])
+  product         MpProduct? @relation(fields: [productId], references: [id])
   disputes        MpDispute[]
 }
 
@@ -2503,4 +2508,64 @@ model MpDispute {
   vendor          MpVendor   @relation(fields: [vendorId], references: [id])
   order           MpOrder    @relation(fields: [orderId], references: [id])
   review          MpReview? @relation(fields: [reviewId], references: [id])
+}
+
+// ============ MARKETPLACE - PROIZVODI ============
+
+model MpProduct {
+  id              String   @id @default(cuid())
+  companyId       String
+  vendorId        String
+  name            String
+  sku             String?
+  barcode         String?
+  category        String?
+  description     String?
+  price            Float    @default(0)
+  compareAtPrice  Float    @default(0)
+  costPrice       Float    @default(0)
+  unit            String   @default("kom")
+  stock           Int      @default(0)
+  minOrderQty     Int      @default(1)
+  weight          Float    @default(0)
+  imageUrl        String?
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  tags            String   @default("[]")
+  salesCount      Int      @default(0)
+  totalRevenue    Float    @default(0)
+  avgRating       Float    @default(0)
+  reviewCount     Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company         Company   @relation(fields: [companyId], references: [id])
+  vendor          MpVendor @relation(fields: [vendorId], references: [id])
+  reviews         MpReview[]
+}
+
+// ============ MARKETPLACE - KUPONI ============
+
+model MpCoupon {
+  id              String   @id @default(cuid())
+  companyId       String
+  code            String
+  description     String?
+  discountType    String   @default("procenat") // procenat, fiksno
+  discountValue   Float    @default(0)
+  minOrderAmount  Float    @default(0)
+  maxUses         Int      @default(0)
+  usedCount       Int      @default(0)
+  validFrom       DateTime?
+  validTo         DateTime?
+  vendorId        String?  // null = globalno, vendorId = samo za tog vendora
+  category        String?  // null = sve kategorije, category = samo za tu kategoriju
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company         Company   @relation(fields: [companyId], references: [id])
+  vendor          MpVendor? @relation(fields: [vendorId], references: [id])
+
+  @@unique([companyId, code])
 }
