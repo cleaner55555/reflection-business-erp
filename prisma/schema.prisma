@@ -89,6 +89,7 @@ model Company {
   bankAccounts        BankAccount[]
   bankTransactions    BankTransaction[]
   appSettings         AppSetting[]
+  budgets             Budget[]
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -195,6 +196,7 @@ model Partner {
   employees            Employee[]
   documents            Document[]
   projects             Project[]
+  journalEntries       JournalEntry[] @relation("JournalEntryPartner")
 
   @@unique([companyId, pib])
 }
@@ -663,10 +665,46 @@ model JournalEntry {
   description   String
   documentRef   String?
   partnerId     String?
+  voucherNumber String?
+  reconciled    Boolean  @default(false)
+  reconciledAt  DateTime?
+  fiscalYear    Int?
   createdAt     DateTime @default(now())
 
   company Company @relation(fields: [companyId], references: [id])
   account Account @relation(fields: [accountId], references: [id])
+  partner Partner? @relation("JournalEntryPartner", fields: [partnerId], references: [id])
+}
+
+// ============ BUDŽETI ============
+
+model Budget {
+  id          String   @id @default(cuid())
+  companyId   String
+  accountCode String
+  year        Int
+  name        String
+  january     Float    @default(0)
+  february    Float    @default(0)
+  march       Float    @default(0)
+  april       Float    @default(0)
+  may         Float    @default(0)
+  june        Float    @default(0)
+  july        Float    @default(0)
+  august      Float    @default(0)
+  september   Float    @default(0)
+  october     Float    @default(0)
+  november    Float    @default(0)
+  december    Float    @default(0)
+  totalAnnual Float    @default(0)
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, accountCode, year])
 }
 
 // ============ PROTOKOL ============

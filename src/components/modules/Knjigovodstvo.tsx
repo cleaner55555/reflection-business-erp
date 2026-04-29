@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, Fragment } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,7 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import {
   Plus,
   Search,
@@ -52,6 +51,12 @@ import {
   TrendingUp,
   TrendingDown,
   RefreshCw,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownRight,
+  Receipt,
+  BarChart3,
+  Eye,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
@@ -78,6 +83,10 @@ interface JournalEntry {
   credit: number
   description: string
   documentRef?: string | null
+  voucherNumber?: string | null
+  fiscalYear?: number | null
+  reconciled?: boolean
+  partner?: { id: string; name: string } | null
   account: { code: string; name: string }
 }
 
@@ -88,25 +97,42 @@ interface JournalRow {
   credit: number
 }
 
-interface TrialBalanceAccount {
-  id: string
-  code: string
-  name: string
-  type: string
-  parentCode?: string | null
-  entryCount: number
-  totalDebit: number
-  totalCredit: number
-  saldo: number
-}
-
 interface BudgetItem {
   id: string
   accountCode: string
-  accountName: string
+  name: string
+  year: number
   january: number; february: number; march: number; april: number
   may: number; june: number; july: number; august: number
   september: number; october: number; november: number; december: number
+  totalAnnual: number
+  notes?: string | null
+  isActive: boolean
+}
+
+interface DashboardData {
+  fiscalYear: number
+  totalAssets: number
+  totalLiabilities: number
+  totalRevenue: number
+  totalExpenses: number
+  profit: number
+  totalEquity: number
+  totalEntries: number
+  totalAccounts: number
+  totalBudget: number
+  budgetCount: number
+  recentEntries: JournalEntry[]
+}
+
+interface AccountStatement {
+  account: { code: string; name: string; type: string }
+  openingBalance: number
+  closingBalance: number
+  totalDebit: number
+  totalCredit: number
+  entryCount: number
+  entries: Array<JournalEntry & { runningBalance: number }>
 }
 
 const ACCOUNT_TYPES = [
@@ -118,6 +144,7 @@ const ACCOUNT_TYPES = [
 ] as const
 
 const MONTH_KEYS = ['january','february','march','april','may','june','july','august','september','october','november','december'] as const
+const MONTH_LABELS = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Avg','Sep','Okt','Nov','Dec'] as const
 
 function getAccountTypeBadge(type: string) {
   const found = ACCOUNT_TYPES.find((t) => t.value === type)
@@ -128,17 +155,38 @@ function getAccountTypeBadge(type: string) {
 
 export function Knjigovodstvo() {
   const { t } = useTranslation()
+  const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear())
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t('accounting.title')}</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          {t('accounting.subtitle')}
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t('accounting.title')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {t('accounting.subtitle')}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label className="text-xs whitespace-nowrap">Fiskalna godina:</Label>
+          <Select value={String(fiscalYear)} onValueChange={(v) => setFiscalYear(parseInt(v))}>
+            <SelectTrigger className="w-[100px] h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[2025, 2024, 2023, 2026].map(y => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <Tabs defaultValue="glavna-knjiga" className="space-y-4">
+      <Tabs defaultValue="pregled" className="space-y-4">
         <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="pregled" className="gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Pregled</span>
+          </TabsTrigger>
           <TabsTrigger value="glavna-knjiga" className="gap-1.5">
             <BookOpen className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t('accounting.generalLedger')}</span>
@@ -161,8 +209,11 @@ export function Knjigovodstvo() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="pregled">
+          <DashboardTab fiscalYear={fiscalYear} />
+        </TabsContent>
         <TabsContent value="glavna-knjiga">
-          <GlavnaKnjigaTab />
+          <GlavnaKnjigaTab fiscalYear={fiscalYear} />
         </TabsContent>
         <TabsContent value="kontni-plan">
           <KontniPlanTab />
@@ -171,19 +222,138 @@ export function Knjigovodstvo() {
           <NalogTab />
         </TabsContent>
         <TabsContent value="budzeti">
-          <BudzetiTab />
+          <BudzetiTab fiscalYear={fiscalYear} />
         </TabsContent>
         <TabsContent value="bruto-bilans">
-          <BrutoBilansTab />
+          <BrutoBilansTab fiscalYear={fiscalYear} />
         </TabsContent>
       </Tabs>
     </div>
   )
 }
 
-// ─── Tab 1: Glavna Knjiga ────────────────────────────────────────────────────
+// ─── Dashboard Tab ─────────────────────────────────────────────────────────────
 
-function GlavnaKnjigaTab() {
+function DashboardTab({ fiscalYear }: { fiscalYear: number }) {
+  const { t } = useTranslation()
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchDashboard = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch(`/api/accounting/dashboard?year=${fiscalYear}`)
+    const json = await res.json()
+    setData(json)
+    setLoading(false)
+  }, [fiscalYear])
+
+  useEffect(() => {
+    const load = async () => { await fetchDashboard() }
+    load()
+  }, [fetchDashboard])
+
+  if (loading || !data) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Skeleton key={i} className="h-28" />
+        ))}
+      </div>
+    )
+  }
+
+  const kpis = [
+    { label: 'Ukupna imovina', value: data.totalAssets, icon: Wallet, color: 'text-emerald-600', bg: 'bg-emerald-50', trend: null },
+    { label: 'Obaveze', value: data.totalLiabilities, icon: ArrowDownRight, color: 'text-blue-600', bg: 'bg-blue-50', trend: null },
+    { label: 'Prihodi', value: data.totalRevenue, icon: TrendingUp, color: 'text-teal-600', bg: 'bg-teal-50', trend: null },
+    { label: 'Rashodi', value: data.totalExpenses, icon: TrendingDown, color: 'text-orange-600', bg: 'bg-orange-50', trend: null },
+    { label: 'Dobit / Gubitak', value: data.profit, icon: BarChart3, color: data.profit >= 0 ? 'text-emerald-600' : 'text-red-600', bg: data.profit >= 0 ? 'bg-emerald-50' : 'bg-red-50', trend: data.profit >= 0 ? 'up' : 'down' },
+    { label: 'Kapital', value: data.totalEquity, icon: Landmark, color: 'text-violet-600', bg: 'bg-violet-50', trend: null },
+    { label: 'Stavki knjiženja', value: null, icon: Receipt, color: 'text-slate-600', bg: 'bg-slate-50', count: data.totalEntries },
+    { label: 'Budžet', value: data.totalBudget, icon: PiggyBank, color: 'text-amber-600', bg: 'bg-amber-50', trend: null },
+  ]
+
+  return (
+    <div className="space-y-6">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpis.map((kpi) => (
+          <Card key={kpi.label} className="relative overflow-hidden">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground font-medium">{kpi.label}</p>
+                  {kpi.count !== undefined ? (
+                    <p className="text-xl font-bold">{kpi.count}</p>
+                  ) : (
+                    <p className="text-xl font-bold">{formatRSD(kpi.value || 0)}</p>
+                  )}
+                </div>
+                <div className={`p-2 rounded-lg ${kpi.bg}`}>
+                  <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
+                </div>
+              </div>
+              {kpi.trend && (
+                <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${kpi.trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {kpi.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {kpi.trend === 'up' ? 'Dobit' : 'Gubitak'}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Recent Entries */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <Receipt className="h-4 w-4" />
+            Poslednje knjiženje
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {data.recentEntries.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm">Nema stavki za prikaz</div>
+          ) : (
+            <div className="max-h-[300px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs w-[90px]">Datum</TableHead>
+                    <TableHead className="text-xs w-[100px]">Nalog</TableHead>
+                    <TableHead className="text-xs w-[70px]">Konto</TableHead>
+                    <TableHead className="text-xs text-right w-[110px]">Duguje</TableHead>
+                    <TableHead className="text-xs text-right w-[110px]">Potražuje</TableHead>
+                    <TableHead className="text-xs">Opis</TableHead>
+                    <TableHead className="text-xs w-[80px]">Dokument</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.recentEntries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
+                      <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
+                      <TableCell className="text-xs font-mono">{entry.accountCode}</TableCell>
+                      <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
+                      <TableCell className="text-xs text-right text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
+                      <TableCell className="text-xs max-w-[200px] truncate">{entry.description}</TableCell>
+                      <TableCell className="text-xs">{entry.documentRef || '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ─── Tab: Glavna Knjiga (General Ledger) ──────────────────────────────────────
+
+function GlavnaKnjigaTab({ fiscalYear }: { fiscalYear: number }) {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [entries, setEntries] = useState<JournalEntry[]>([])
@@ -192,10 +362,12 @@ function GlavnaKnjigaTab() {
   const [accountFilter, setAccountFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'form' | 'statement'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null)
   const [accounts, setAccounts] = useState<Account[]>([])
+  const [statement, setStatement] = useState<AccountStatement | null>(null)
+  const [statementCode, setStatementCode] = useState('')
 
   const fetchAccounts = useCallback(async () => {
     const res = await fetch('/api/accounts')
@@ -210,60 +382,45 @@ function GlavnaKnjigaTab() {
     if (accountFilter) params.set('accountCode', accountFilter)
     if (dateFrom) params.set('from', dateFrom)
     if (dateTo) params.set('to', dateTo)
+    if (fiscalYear) params.set('fiscalYear', String(fiscalYear))
     const res = await fetch(`/api/journal-entries?${params.toString()}`)
     const data = await res.json()
     setEntries(data)
     setLoading(false)
-  }, [search, accountFilter, dateFrom, dateTo])
+  }, [search, accountFilter, dateFrom, dateTo, fiscalYear])
+
+  useEffect(() => { fetchAccounts() }, [fetchAccounts])
+  useEffect(() => { fetchEntries() }, [fetchEntries])
 
   useEffect(() => {
-    fetchAccounts()
-  }, [fetchAccounts])
-
-  useEffect(() => {
-    if (entries.length > 0) {
-      translateTexts(entries.flatMap(e => [e.description].filter(Boolean)))
-    }
+    if (entries.length > 0) translateTexts(entries.flatMap(e => [e.description].filter(Boolean)))
   }, [entries, translateTexts])
-
-  useEffect(() => {
-    if (accounts.length > 0) {
-      translateTexts(accounts.map(a => a.name).filter(Boolean))
-    }
-  }, [accounts, translateTexts])
 
   const totalDebit = entries.reduce((acc, e) => acc + (e.debit || 0), 0)
   const totalCredit = entries.reduce((acc, e) => acc + (e.credit || 0), 0)
 
-  const handleNew = () => {
-    setEditingEntry(null)
-    setViewMode('form')
-  }
+  const handleNew = () => { setEditingEntry(null); setViewMode('form') }
+  const handleEdit = (entry: JournalEntry) => { setEditingEntry(entry); setViewMode('form') }
+  const handleCancel = () => { setViewMode('list'); setEditingEntry(null); setStatement(null) }
 
-  const handleEdit = (entry: JournalEntry) => {
-    setEditingEntry(entry)
-    setViewMode('form')
-  }
-
-  const handleCancel = () => {
-    setViewMode('list')
-    setEditingEntry(null)
+  const handleViewStatement = async (code: string) => {
+    setStatementCode(code)
+    setViewMode('statement')
+    const from = `${fiscalYear}-01-01`
+    const to = `${fiscalYear}-12-31`
+    const res = await fetch(`/api/accounts/statement?accountCode=${code}&from=${from}&to=${to}`)
+    const data = await res.json()
+    setStatement(data)
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm(t('accounting.confirmDeleteEntry'))) return
     try {
       const res = await fetch(`/api/journal-entries/${id}`, { method: 'DELETE' })
-      if (!res.ok) {
-        const err = await res.json()
-        toast.error(err.error || t('common.deleteError'))
-        return
-      }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.deleteError')); return }
       toast.success(t('accounting.entryDeleted'))
       fetchEntries()
-    } catch {
-      toast.error(t('common.deleteError'))
-    }
+    } catch { toast.error(t('common.deleteError')) }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -277,14 +434,13 @@ function GlavnaKnjigaTab() {
       description: fd.get('description') as string,
       documentRef: (fd.get('documentRef') as string) || null,
       date: fd.get('date') as string,
+      fiscalYear,
     }
-
     if (!body.accountCode || !body.description) {
       toast.error(t('accounting.accountAndDescriptionRequired'))
       setSubmitting(false)
       return
     }
-
     try {
       const isEditing = !!editingEntry
       const url = isEditing ? `/api/journal-entries/${editingEntry.id}` : '/api/journal-entries'
@@ -293,20 +449,10 @@ function GlavnaKnjigaTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) {
-        const err = await res.json()
-        toast.error(err.error || t('common.error'))
-        return
-      }
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
       toast.success(isEditing ? t('accounting.entryUpdated') : t('accounting.entryCreated'))
-      setViewMode('list')
-      setEditingEntry(null)
-      fetchEntries()
-    } catch {
-      toast.error(t('common.saveError'))
-    } finally {
-      setSubmitting(false)
-    }
+      setViewMode('list'); setEditingEntry(null); fetchEntries()
+    } catch { toast.error(t('common.saveError')) } finally { setSubmitting(false) }
   }
 
   const today = new Date().toISOString().split('T')[0]
@@ -317,10 +463,20 @@ function GlavnaKnjigaTab() {
         {viewMode === 'form' ? (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base font-semibold">
+              {editingEntry ? t('common.edit') : t('accounting.newEntry')}
+            </CardTitle>
+          </div>
+        ) : viewMode === 'statement' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
             <div>
               <CardTitle className="text-base font-semibold">
-                {editingEntry ? t('common.edit') : t('accounting.newEntry')}
+                Konto kartica: {statementCode}
               </CardTitle>
+              {statement && (
+                <p className="text-xs text-muted-foreground">{statement.account.name} — {statement.account.type}</p>
+              )}
             </div>
           </div>
         ) : (
@@ -341,46 +497,24 @@ function GlavnaKnjigaTab() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4 flex-wrap">
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('accounting.searchPlaceholder')}
-                  className="pl-8 h-9"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+                <Input placeholder={t('accounting.searchPlaceholder')} className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
               </div>
-              <Select
-                value={accountFilter || 'all'}
-                onValueChange={(v) => setAccountFilter(v === 'all' ? '' : v)}
-              >
+              <Select value={accountFilter || 'all'} onValueChange={(v) => setAccountFilter(v === 'all' ? '' : v)}>
                 <SelectTrigger className="w-[200px] h-9">
                   <SelectValue placeholder={t('accounting.allAccounts')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('accounting.allAccounts')}</SelectItem>
                   {accounts.map((acc) => (
-                    <SelectItem key={acc.code} value={acc.code}>
-                      {acc.code} — {acc.name}
-                    </SelectItem>
+                    <SelectItem key={acc.code} value={acc.code}>{acc.code} — {acc.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Input
-                type="date"
-                className="w-[150px] h-9"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                placeholder="Od"
-              />
-              <Input
-                type="date"
-                className="w-[150px] h-9"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                placeholder="Do"
-              />
+              <Input type="date" className="w-[140px] h-9" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+              <Input type="date" className="w-[140px] h-9" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
             </div>
           </>
         )}
@@ -391,20 +525,15 @@ function GlavnaKnjigaTab() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs">{t('common.date')}</Label>
-                <Input name="date" type="date" required
-                  defaultValue={editingEntry ? editingEntry.date.split('T')[0] : today} />
+                <Input name="date" type="date" required defaultValue={editingEntry ? editingEntry.date.split('T')[0] : today} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">{t('accounting.account')}</Label>
                 <Select name="accountCode" defaultValue={editingEntry?.accountCode || ''}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('accounting.selectAccount')} />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('accounting.selectAccount')} /></SelectTrigger>
                   <SelectContent>
                     {accounts.map((acc) => (
-                      <SelectItem key={acc.code} value={acc.code}>
-                        {acc.code} — {acc.name}
-                      </SelectItem>
+                      <SelectItem key={acc.code} value={acc.code}>{acc.code} — {acc.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -413,24 +542,20 @@ function GlavnaKnjigaTab() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs">{t('accounting.debit')} (RSD)</Label>
-                <Input name="debit" type="number" step="0.01" min="0" placeholder="0.00"
-                  defaultValue={editingEntry?.debit || ''} />
+                <Input name="debit" type="number" step="0.01" min="0" placeholder="0.00" defaultValue={editingEntry?.debit || ''} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">{t('accounting.credit')} (RSD)</Label>
-                <Input name="credit" type="number" step="0.01" min="0" placeholder="0.00"
-                  defaultValue={editingEntry?.credit || ''} />
+                <Input name="credit" type="number" step="0.01" min="0" placeholder="0.00" defaultValue={editingEntry?.credit || ''} />
               </div>
             </div>
             <div className="space-y-2">
               <Label className="text-xs">{t('common.description')}</Label>
-              <Input name="description" placeholder={t('accounting.entryDescription')} required
-                defaultValue={editingEntry?.description || ''} />
+              <Input name="description" placeholder={t('accounting.entryDescription')} required defaultValue={editingEntry?.description || ''} />
             </div>
             <div className="space-y-2">
               <Label className="text-xs">{t('accounting.document')} ({t('common.optional').toLowerCase()})</Label>
-              <Input name="documentRef" placeholder={t('accounting.documentNumber')}
-                defaultValue={editingEntry?.documentRef || ''} />
+              <Input name="documentRef" placeholder={t('accounting.documentNumber')} defaultValue={editingEntry?.documentRef || ''} />
             </div>
             <div className="flex gap-2">
               <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
@@ -439,51 +564,105 @@ function GlavnaKnjigaTab() {
               </Button>
             </div>
           </form>
-        ) : loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
+        ) : viewMode === 'statement' && statement ? (
+          <div className="space-y-4">
+            {/* Statement summary */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-[10px] text-muted-foreground uppercase font-medium">Početno stanje</p>
+                <p className="text-sm font-bold">{formatRSD(statement.openingBalance)}</p>
+              </div>
+              <div className="rounded-lg bg-emerald-50 p-3">
+                <p className="text-[10px] text-emerald-700 uppercase font-medium">Ukupno duguje</p>
+                <p className="text-sm font-bold text-emerald-700">{formatRSD(statement.totalDebit)}</p>
+              </div>
+              <div className="rounded-lg bg-red-50 p-3">
+                <p className="text-[10px] text-red-600 uppercase font-medium">Ukupno potražuje</p>
+                <p className="text-sm font-bold text-red-600">{formatRSD(statement.totalCredit)}</p>
+              </div>
+              <div className="rounded-lg bg-blue-50 p-3">
+                <p className="text-[10px] text-blue-700 uppercase font-medium">Završno stanje</p>
+                <p className={`text-sm font-bold ${statement.closingBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                  {formatRSD(statement.closingBalance)}
+                </p>
+              </div>
+            </div>
+            {/* Statement entries */}
+            <div className="max-h-[400px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs w-[90px]">Datum</TableHead>
+                    <TableHead className="text-xs w-[100px]">Nalog</TableHead>
+                    <TableHead className="text-xs text-right w-[110px]">Duguje</TableHead>
+                    <TableHead className="text-xs text-right w-[110px]">Potražuje</TableHead>
+                    <TableHead className="text-xs">Opis</TableHead>
+                    <TableHead className="text-xs text-right w-[120px]">Saldo</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {statement.entries.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-sm">Nema stavki</TableCell>
+                    </TableRow>
+                  ) : (
+                    statement.entries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
+                        <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
+                        <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
+                        <TableCell className="text-xs text-right text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
+                        <TableCell className="text-xs max-w-[200px] truncate">{entry.description}</TableCell>
+                        <TableCell className={`text-xs text-right font-semibold whitespace-nowrap ${entry.runningBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                          {formatRSD(entry.runningBalance)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
+        ) : loading ? (
+          <div className="space-y-3">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
         ) : (
           <div className="max-h-[520px] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs w-[100px]">{t('common.date')}</TableHead>
-                  <TableHead className="text-xs w-[90px]">{t('accounting.account')}</TableHead>
-                  <TableHead className="text-xs">{t('accounting.accountName')}</TableHead>
-                  <TableHead className="text-xs text-right w-[130px]">{t('accounting.debit')}</TableHead>
-                  <TableHead className="text-xs text-right w-[130px]">{t('accounting.credit')}</TableHead>
+                  <TableHead className="text-xs w-[90px]">{t('common.date')}</TableHead>
+                  <TableHead className="text-xs w-[100px]">Nalog</TableHead>
+                  <TableHead className="text-xs w-[80px]">{t('accounting.account')}</TableHead>
+                  <TableHead className="text-xs text-right w-[120px]">{t('accounting.debit')}</TableHead>
+                  <TableHead className="text-xs text-right w-[120px]">{t('accounting.credit')}</TableHead>
                   <TableHead className="text-xs">{t('common.description')}</TableHead>
                   <TableHead className="text-xs w-[100px]">{t('accounting.document')}</TableHead>
-                  <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
+                  <TableHead className="text-xs w-[100px]">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {entries.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema stavki za prikaz
-                    </TableCell>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema stavki za prikaz</TableCell>
                   </TableRow>
                 ) : (
                   <>
                     {entries.map((entry) => (
                       <TableRow key={entry.id}>
                         <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
-                        <TableCell className="text-xs font-mono font-medium">{entry.accountCode}</TableCell>
-                        <TableCell className="text-xs max-w-[160px] truncate">{tc(entry.account?.name || entry.accountCode)}</TableCell>
-                        <TableCell className={`text-xs text-right font-medium whitespace-nowrap ${entry.debit > 0 ? 'text-emerald-700' : 'text-muted-foreground'}`}>
-                          {entry.debit > 0 ? formatRSD(entry.debit) : '-'}
+                        <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
+                        <TableCell className="text-xs font-mono font-medium cursor-pointer hover:text-primary" onClick={() => handleViewStatement(entry.accountCode)}>
+                          {entry.accountCode}
                         </TableCell>
-                        <TableCell className={`text-xs text-right font-medium whitespace-nowrap ${entry.credit > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
-                          {entry.credit > 0 ? formatRSD(entry.credit) : '-'}
-                        </TableCell>
+                        <TableCell className="text-xs text-right font-medium text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
+                        <TableCell className="text-xs text-right font-medium text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
                         <TableCell className="text-xs max-w-[200px] truncate">{tc(entry.description)}</TableCell>
                         <TableCell className="text-xs whitespace-nowrap">{entry.documentRef || '-'}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleViewStatement(entry.accountCode)} title="Konto kartica">
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(entry)}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
@@ -496,12 +675,8 @@ function GlavnaKnjigaTab() {
                     ))}
                     <TableRow className="bg-muted/50 font-semibold border-t-2">
                       <TableCell colSpan={3} className="text-xs text-right font-bold">{t('common.total')}:</TableCell>
-                      <TableCell className="text-xs text-right font-bold text-emerald-700 whitespace-nowrap">
-                        {totalDebit > 0 ? formatRSD(totalDebit) : '-'}
-                      </TableCell>
-                      <TableCell className="text-xs text-right font-bold text-red-600 whitespace-nowrap">
-                        {totalCredit > 0 ? formatRSD(totalCredit) : '-'}
-                      </TableCell>
+                      <TableCell className="text-xs text-right font-bold text-emerald-700 whitespace-nowrap">{totalDebit > 0 ? formatRSD(totalDebit) : '-'}</TableCell>
+                      <TableCell className="text-xs text-right font-bold text-red-600 whitespace-nowrap">{totalCredit > 0 ? formatRSD(totalCredit) : '-'}</TableCell>
                       <TableCell colSpan={3} />
                     </TableRow>
                   </>
@@ -515,7 +690,7 @@ function GlavnaKnjigaTab() {
   )
 }
 
-// ─── Tab 2: Kontni Plan ──────────────────────────────────────────────────────
+// ─── Tab: Kontni Plan ──────────────────────────────────────────────────────────
 
 function KontniPlanTab() {
   const { t } = useTranslation()
@@ -524,12 +699,13 @@ function KontniPlanTab() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'form' | 'statement'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Account | null>(null)
   const [importing, setImporting] = useState(false)
+  const [statement, setStatement] = useState<AccountStatement | null>(null)
 
   const fetchAccounts = useCallback(async () => {
     setLoading(true)
@@ -539,14 +715,9 @@ function KontniPlanTab() {
     setLoading(false)
   }, [])
 
+  useEffect(() => { fetchAccounts() }, [fetchAccounts])
   useEffect(() => {
-    fetchAccounts()
-  }, [fetchAccounts])
-
-  useEffect(() => {
-    if (accounts.length > 0) {
-      translateTexts(accounts.flatMap(a => [a.name, a.description].filter(Boolean)))
-    }
+    if (accounts.length > 0) translateTexts(accounts.flatMap(a => [a.name, a.description].filter(Boolean)))
   }, [accounts, translateTexts])
 
   const filtered = accounts.filter((acc) => {
@@ -555,7 +726,6 @@ function KontniPlanTab() {
     return matchSearch && matchType
   })
 
-  // Group by type
   const grouped = filtered.reduce<Record<string, Account[]>>((acc, item) => {
     const type = item.type || 'nepoznato'
     if (!acc[type]) acc[type] = []
@@ -565,9 +735,16 @@ function KontniPlanTab() {
 
   const handleNew = () => { setEditingAccount(null); setViewMode('form') }
   const handleEdit = (acc: Account) => { setEditingAccount(acc); setViewMode('form') }
-  const handleCancel = () => { setViewMode('list'); setEditingAccount(null) }
-
+  const handleCancel = () => { setViewMode('list'); setEditingAccount(null); setStatement(null) }
   const handleDeleteClick = (acc: Account) => { setDeleteTarget(acc); setDeleteDialogOpen(true) }
+
+  const handleViewStatement = async (code: string) => {
+    setViewMode('statement')
+    const year = new Date().getFullYear()
+    const res = await fetch(`/api/accounts/statement?accountCode=${code}&from=${year}-01-01&to=${year}-12-31`)
+    const data = await res.json()
+    setStatement(data)
+  }
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return
@@ -622,10 +799,14 @@ function KontniPlanTab() {
           {viewMode === 'form' ? (
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base font-semibold">{editingAccount ? 'Izmeni konto' : 'Novi konto'}</CardTitle>
+            </div>
+          ) : viewMode === 'statement' ? (
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
               <div>
-                <CardTitle className="text-base font-semibold">
-                  {editingAccount ? 'Izmeni konto' : 'Novi konto'}
-                </CardTitle>
+                <CardTitle className="text-base font-semibold">Konto kartica: {statement?.account.code}</CardTitle>
+                {statement && <p className="text-xs text-muted-foreground">{statement.account.name}</p>}
               </div>
             </div>
           ) : (
@@ -633,44 +814,31 @@ function KontniPlanTab() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    <Landmark className="h-4 w-4" />
-                    {t('accounting.chartOfAccounts')}
+                    <Landmark className="h-4 w-4" /> {t('accounting.chartOfAccounts')}
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t('accounting.chartOfAccountsSubtitle')}
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t('accounting.chartOfAccountsSubtitle')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant="outline" className="gap-2" onClick={handleImportSerbian} disabled={importing}>
                     {importing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                    {importing ? 'Uvoz...' : 'Uvezi srpski kontni plan'}
+                    {importing ? 'Uvoz...' : 'Uvezi srpski plan'}
                   </Button>
-                  <Button size="sm" className="gap-2" onClick={handleNew}>
-                    <Plus className="h-4 w-4" /> Novi konto
-                  </Button>
+                  <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi konto</Button>
                 </div>
               </div>
-
-              {/* Filters */}
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input placeholder="Pretraži konta..." className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
                 <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
-                  <SelectTrigger className="w-[150px] h-9">
-                    <SelectValue placeholder="Svi tipovi" />
-                  </SelectTrigger>
+                  <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Svi tipovi" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Svi tipovi</SelectItem>
-                    {ACCOUNT_TYPES.map((at) => (
-                      <SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>
-                    ))}
+                    {ACCOUNT_TYPES.map((at) => (<SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
-                <Badge variant="outline" className="text-xs h-9 px-3 flex items-center">
-                  Ukupno: {filtered.length} konta
-                </Badge>
+                <Badge variant="outline" className="text-xs h-9 px-3 flex items-center">Ukupno: {filtered.length} konta</Badge>
               </div>
             </>
           )}
@@ -687,11 +855,7 @@ function KontniPlanTab() {
                   <Label className="text-xs">Tip konta</Label>
                   <Select name="type" defaultValue={editingAccount?.type || 'aktivna'}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {ACCOUNT_TYPES.map((at) => (
-                        <SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectContent>{ACCOUNT_TYPES.map((at) => (<SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>))}</SelectContent>
                   </Select>
                 </div>
               </div>
@@ -716,12 +880,59 @@ function KontniPlanTab() {
                 </Button>
               </div>
             </form>
-          ) : loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
+          ) : viewMode === 'statement' && statement ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Početno stanje</p>
+                  <p className="text-sm font-bold">{formatRSD(statement.openingBalance)}</p>
+                </div>
+                <div className="rounded-lg bg-emerald-50 p-3">
+                  <p className="text-[10px] text-emerald-700 uppercase font-medium">Ukupno duguje</p>
+                  <p className="text-sm font-bold text-emerald-700">{formatRSD(statement.totalDebit)}</p>
+                </div>
+                <div className="rounded-lg bg-red-50 p-3">
+                  <p className="text-[10px] text-red-600 uppercase font-medium">Ukupno potražuje</p>
+                  <p className="text-sm font-bold text-red-600">{formatRSD(statement.totalCredit)}</p>
+                </div>
+                <div className="rounded-lg bg-blue-50 p-3">
+                  <p className="text-[10px] text-blue-700 uppercase font-medium">Završno stanje</p>
+                  <p className={`text-sm font-bold ${statement.closingBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{formatRSD(statement.closingBalance)}</p>
+                </div>
+              </div>
+              <div className="max-h-[350px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs w-[90px]">Datum</TableHead>
+                      <TableHead className="text-xs w-[100px]">Nalog</TableHead>
+                      <TableHead className="text-xs text-right w-[110px]">Duguje</TableHead>
+                      <TableHead className="text-xs text-right w-[110px]">Potražuje</TableHead>
+                      <TableHead className="text-xs">Opis</TableHead>
+                      <TableHead className="text-xs text-right w-[120px]">Saldo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {statement.entries.length === 0 ? (
+                      <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-sm">Nema stavki</TableCell></TableRow>
+                    ) : (
+                      statement.entries.map((entry) => (
+                        <TableRow key={entry.id}>
+                          <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
+                          <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
+                          <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
+                          <TableCell className="text-xs text-right text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
+                          <TableCell className="text-xs max-w-[200px] truncate">{entry.description}</TableCell>
+                          <TableCell className={`text-xs text-right font-semibold whitespace-nowrap ${entry.runningBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{formatRSD(entry.runningBalance)}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
+          ) : loading ? (
+            <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
           ) : (
             <div className="max-h-[520px] overflow-y-auto space-y-4">
               {Object.entries(grouped).map(([type, accs]) => {
@@ -738,7 +949,7 @@ function KontniPlanTab() {
                           <TableHead className="text-xs w-[80px]">Šifra</TableHead>
                           <TableHead className="text-xs">Naziv</TableHead>
                           <TableHead className="text-xs w-[60px] text-center">Stavke</TableHead>
-                          <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
+                          <TableHead className="text-xs w-[120px]">{t('common.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -747,15 +958,14 @@ function KontniPlanTab() {
                             <TableCell className="text-xs font-mono font-medium">{acc.code}</TableCell>
                             <TableCell className="text-xs font-medium">
                               {tc(acc.name)}
-                              {acc.parentCode && (
-                                <span className="text-muted-foreground ml-1.5">→ {acc.parentCode}</span>
-                              )}
+                              {acc.parentCode && <span className="text-muted-foreground ml-1.5">→ {acc.parentCode}</span>}
                             </TableCell>
                             <TableCell className="text-xs text-center">
                               <Badge variant="secondary" className="text-[10px] px-2 py-0">{acc._count?.entries || 0}</Badge>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleViewStatement(acc.code)} title="Konto kartica"><Eye className="h-3.5 w-3.5" /></Button>
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(acc)}><Pencil className="h-3.5 w-3.5" /></Button>
                                 <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDeleteClick(acc)}><Trash2 className="h-3.5 w-3.5" /></Button>
                               </div>
@@ -769,7 +979,7 @@ function KontniPlanTab() {
               })}
               {filtered.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground text-sm">
-                  Nema konta za prikaz. Kliknite &quot;Uvezi srpski kontni plan&quot; da započnete.
+                  Nema konta za prikaz. Kliknite &quot;Uvezi srpski plan&quot; da započnete.
                 </div>
               )}
             </div>
@@ -777,22 +987,17 @@ function KontniPlanTab() {
         </CardContent>
       </Card>
 
-      {/* Delete confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" /> {t('common.confirmDelete')}
-            </AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600"><AlertCircle className="h-5 w-5" /> {t('common.confirmDelete')}</AlertDialogTitle>
             <AlertDialogDescription>
               Obrisati konto <span className="font-semibold text-foreground">{deleteTarget?.code} — {tc(deleteTarget?.name)}</span>?<br />{t('common.cannotUndo')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0">
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700 focus:ring-red-600">
-              Obriši
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700 focus:ring-red-600">Obriši</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -800,17 +1005,15 @@ function KontniPlanTab() {
   )
 }
 
-// ─── Tab 3: Nalog za Knjiženje ───────────────────────────────────────────────
+// ─── Tab: Nalog za Knjiženje ───────────────────────────────────────────────────
 
 function NalogTab() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [accounts, setAccounts] = useState<Account[]>([])
-  const [loadingAccounts, setLoadingAccounts] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [recentEntries, setRecentEntries] = useState<JournalEntry[]>([])
   const [loadingRecent, setLoadingRecent] = useState(true)
-
   const today = new Date().toISOString().split('T')[0]
 
   const [date, setDate] = useState(today)
@@ -822,13 +1025,12 @@ function NalogTab() {
     { tempId: crypto.randomUUID(), accountCode: '', debit: 0, credit: 0 },
     { tempId: crypto.randomUUID(), accountCode: '', debit: 0, credit: 0 },
   ])
+  const [lastVoucher, setLastVoucher] = useState<string | null>(null)
 
   const fetchAccounts = useCallback(async () => {
-    setLoadingAccounts(true)
     const res = await fetch('/api/accounts')
     const data = await res.json()
     setAccounts(data)
-    setLoadingAccounts(false)
   }, [])
 
   const fetchPartners = useCallback(async () => {
@@ -839,7 +1041,7 @@ function NalogTab() {
 
   const fetchRecentEntries = useCallback(async () => {
     setLoadingRecent(true)
-    const res = await fetch('/api/journal-entries?_limit=30')
+    const res = await fetch('/api/journal-entries?_limit=50')
     const data = await res.json()
     setRecentEntries(data)
     setLoadingRecent(false)
@@ -852,20 +1054,14 @@ function NalogTab() {
   }, [fetchAccounts, fetchRecentEntries, fetchPartners])
 
   useEffect(() => {
-    if (recentEntries.length > 0) {
-      translateTexts(recentEntries.flatMap(e => [e.description, e.account?.name].filter(Boolean)))
-    }
+    if (recentEntries.length > 0) translateTexts(recentEntries.flatMap(e => [e.description, e.account?.name].filter(Boolean)))
   }, [recentEntries, translateTexts])
 
-  const addRow = () => {
-    setRows([...rows, { tempId: crypto.randomUUID(), accountCode: '', debit: 0, credit: 0 }])
-  }
-
+  const addRow = () => setRows([...rows, { tempId: crypto.randomUUID(), accountCode: '', debit: 0, credit: 0 }])
   const removeRow = (tempId: string) => {
     if (rows.length <= 2) { toast.error('Minimum 2 stavke'); return }
     setRows(rows.filter((r) => r.tempId !== tempId))
   }
-
   const updateRow = (tempId: string, field: keyof JournalRow, value: string | number) => {
     setRows(rows.map((r) => (r.tempId === tempId ? { ...r, [field]: value } : r)))
   }
@@ -886,40 +1082,26 @@ function NalogTab() {
       else if (!description.trim()) toast.error('Opis je obavezan')
       return
     }
-
     setSubmitting(true)
     try {
-      const entries = rows
-        .filter((r) => r.debit > 0 || r.credit > 0)
-        .map((r) => ({
-          accountCode: r.accountCode,
-          debit: r.debit,
-          credit: r.credit,
-          description,
-          documentRef: documentRef || null,
-          partnerId: partnerId || null,
-          date: new Date(date).toISOString(),
-        }))
+      const entries = rows.filter((r) => r.debit > 0 || r.credit > 0).map((r) => ({
+        accountCode: r.accountCode, debit: r.debit, credit: r.credit, description,
+        documentRef: documentRef || null, partnerId: partnerId || null,
+        date: new Date(date).toISOString(),
+      }))
 
       const res = await fetch('/api/journal-entries', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entries }),
       })
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.saveError')); setSubmitting(false); return }
 
-      if (!res.ok) {
-        const err = await res.json()
-        toast.error(err.error || t('common.saveError'))
-        setSubmitting(false)
-        return
-      }
+      const result = await res.json()
+      toast.success(`Nalog ${result.voucherNumber} knjižen — ${entries.length} stavki`)
+      setLastVoucher(result.voucherNumber)
 
-      toast.success(`Nalog knjižen — ${entries.length} stavki`)
-
-      setDescription('')
-      setDocumentRef('')
-      setPartnerId('')
-      setDate(today)
+      setDescription(''); setDocumentRef(''); setPartnerId(''); setDate(today)
       setRows([
         { tempId: crypto.randomUUID(), accountCode: '', debit: 0, credit: 0 },
         { tempId: crypto.randomUUID(), accountCode: '', debit: 0, credit: 0 },
@@ -930,16 +1112,12 @@ function NalogTab() {
 
   return (
     <div className="space-y-6">
-      {/* Journal Entry Form */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <FilePenLine className="h-4 w-4" />
-            Nalog za knjiženje
+            <FilePenLine className="h-4 w-4" /> Nalog za knjiženje
           </CardTitle>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Kreirajte višestruke stavke knjiženja sa automatskom proverom ravnoteže
-          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">Kreirajte višestruke stavke knjiženja sa automatskom proverom ravnoteže</p>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Header fields */}
@@ -960,175 +1138,129 @@ function NalogTab() {
               <Label className="text-xs">Partner (opciono)</Label>
               <Select value={partnerId || 'none'} onValueChange={(v) => setPartnerId(v === 'none' ? '' : v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Izaberi partnera" />
+                  <SelectValue placeholder="Izaberite partnera" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Bez partnera</SelectItem>
-                  {partners.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                  ))}
+                  <SelectItem value="none">— Bez partnera —</SelectItem>
+                  {partners.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <Separator />
-
-          {/* Dynamic rows */}
-          <div className="space-y-3">
+          {/* Entry rows */}
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Stavke naloga
-              </Label>
-              <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={addRow}>
-                <Plus className="h-3.5 w-3.5" /> Dodaj stavku
+              <Label className="text-xs font-medium">Stavke nalogu</Label>
+              <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={addRow}>
+                <Plus className="h-3 w-3" /> Dodaj stavku
               </Button>
             </div>
-
-            <div className="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_40px] gap-2 px-1">
-              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Konto</span>
-              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide text-right">Duguje (RSD)</span>
-              <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide text-right">Potražuje (RSD)</span>
-              <span />
-            </div>
-
-            <div className="space-y-2">
-              {loadingAccounts ? (
-                <div className="space-y-2">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="text-xs w-[200px]">Konto</TableHead>
+                    <TableHead className="text-xs w-[130px] text-right">Duguje (RSD)</TableHead>
+                    <TableHead className="text-xs w-[130px] text-right">Potražuje (RSD)</TableHead>
+                    <TableHead className="text-xs w-[40px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row, idx) => (
+                    <TableRow key={row.tempId}>
+                      <TableCell className="py-1">
+                        <Select value={row.accountCode || ''} onValueChange={(v) => updateRow(row.tempId, 'accountCode', v)}>
+                          <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Izaberi konto" /></SelectTrigger>
+                          <SelectContent>
+                            {accounts.map((acc) => (<SelectItem key={acc.code} value={acc.code}>{acc.code} — {acc.name}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="py-1">
+                        <Input type="number" step="0.01" min="0" className="h-8 text-xs text-right" placeholder="0.00"
+                          value={row.debit || ''} onChange={(e) => updateRow(row.tempId, 'debit', Number(e.target.value) || 0)} />
+                      </TableCell>
+                      <TableCell className="py-1">
+                        <Input type="number" step="0.01" min="0" className="h-8 text-xs text-right" placeholder="0.00"
+                          value={row.credit || ''} onChange={(e) => updateRow(row.tempId, 'credit', Number(e.target.value) || 0)} />
+                      </TableCell>
+                      <TableCell className="py-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600"
+                          onClick={() => removeRow(row.tempId)} disabled={rows.length <= 2}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </div>
-              ) : (
-                rows.map((row, idx) => (
-                  <div key={row.tempId} className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_1fr_40px] gap-2 items-start">
-                    <div className="space-y-1">
-                      <span className="sm:hidden text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Konto</span>
-                      <Select value={row.accountCode} onValueChange={(v) => updateRow(row.tempId, 'accountCode', v)}>
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder={idx === 0 ? 'Duguje strana' : idx === 1 ? 'Potražuje strana' : 'Izaberi konto'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {accounts.map((acc) => (
-                            <SelectItem key={acc.code} value={acc.code}>
-                              <span className="font-mono text-xs mr-1.5">{acc.code}</span> — {acc.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="sm:hidden text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Duguje (RSD)</span>
-                      <Input type="number" step="0.01" min="0" placeholder="0.00" className="h-10 text-emerald-700 font-medium"
-                        value={row.debit || ''} onChange={(e) => updateRow(row.tempId, 'debit', parseFloat(e.target.value) || 0)} />
-                    </div>
-                    <div className="space-y-1">
-                      <span className="sm:hidden text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Potražuje (RSD)</span>
-                      <Input type="number" step="0.01" min="0" placeholder="0.00" className="h-10 text-red-600 font-medium"
-                        value={row.credit || ''} onChange={(e) => updateRow(row.tempId, 'credit', parseFloat(e.target.value) || 0)} />
-                    </div>
-                    <div className="flex items-end sm:items-start pt-1 sm:pt-0">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-600" onClick={() => removeRow(row.tempId)} disabled={rows.length <= 2}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
+                </TableBody>
+              </Table>
             </div>
 
-            {/* Totals bar */}
-            <div className="rounded-lg border bg-muted/30 p-4 mt-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-6">
-                  <div className="space-y-0.5">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Ukupno duguje</span>
-                    <p className="text-sm font-bold text-emerald-700">{formatRSD(totalDebit)}</p>
-                  </div>
-                  <div className="space-y-0.5">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Ukupno potražuje</span>
-                    <p className="text-sm font-bold text-red-600">{formatRSD(totalCredit)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {totalDebit === 0 && totalCredit === 0 ? (
-                    <Badge variant="outline" className="text-xs px-3 py-1 border-slate-300 text-slate-500">Unesite iznose</Badge>
-                  ) : isBalanced ? (
-                    <Badge variant="outline" className="text-xs px-3 py-1 bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> U ravnoteži ✓
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs px-3 py-1 bg-amber-50 text-amber-700 border-amber-200 gap-1">
-                      <AlertCircle className="h-3 w-3" /> Razlika: {formatRSD(difference)}
-                    </Badge>
-                  )}
-                </div>
+            {/* Balance indicator */}
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="flex items-center gap-4 text-xs">
+                <span className="text-muted-foreground">Ukupno duguje: <span className="font-bold text-emerald-700">{formatRSD(totalDebit)}</span></span>
+                <span className="text-muted-foreground">Ukupno potražuje: <span className="font-bold text-red-600">{formatRSD(totalCredit)}</span></span>
+              </div>
+              <div className="flex items-center gap-2">
+                {isBalanced ? (
+                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> U ravnoteži
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive" className="text-xs gap-1">
+                    <AlertCircle className="h-3 w-3" /> Razlika: {formatRSD(difference)}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Submit button */}
-          <div className="flex justify-end">
-            <Button onClick={handleSubmit} disabled={submitting || !canSubmit} className="gap-2 min-w-[200px]" size="lg">
-              {submitting ? (
-                <><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> Knjiženje...</>
-              ) : (
-                <><CheckCircle2 className="h-4 w-4" /> Knjiži nalog</>
-              )}
+          {/* Submit */}
+          <div className="flex gap-2">
+            <Button onClick={handleSubmit} className="flex-1 gap-2" disabled={!canSubmit || submitting}>
+              {submitting ? 'Knjiženje...' : 'Knjiži nalog'}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Recently posted entries */}
+      {/* Recent journal entries */}
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold">Poslednje knjižene stavke</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">Pregled nedavno knjiženih naloga</p>
-            </div>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={fetchRecentEntries}>
-              <RefreshCw className="h-3 w-3" /> Osveži
-            </Button>
-          </div>
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <Receipt className="h-4 w-4" /> Poslednji nalozi
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loadingRecent ? (
-            <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+            <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}</div>
           ) : (
             <div className="max-h-[300px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs w-[100px]">{t('common.date')}</TableHead>
-                    <TableHead className="text-xs w-[80px]">Konto</TableHead>
-                    <TableHead className="text-xs">Naziv konta</TableHead>
-                    <TableHead className="text-xs text-right w-[120px]">Duguje</TableHead>
-                    <TableHead className="text-xs text-right w-[120px]">Potražuje</TableHead>
-                    <TableHead className="text-xs">{t('common.description')}</TableHead>
-                    <TableHead className="text-xs w-[90px]">Dokument</TableHead>
+                    <TableHead className="text-xs w-[90px]">Datum</TableHead>
+                    <TableHead className="text-xs w-[100px]">Nalog</TableHead>
+                    <TableHead className="text-xs w-[70px]">Konto</TableHead>
+                    <TableHead className="text-xs text-right w-[110px]">Duguje</TableHead>
+                    <TableHead className="text-xs text-right w-[110px]">Potražuje</TableHead>
+                    <TableHead className="text-xs">Opis</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {recentEntries.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6 text-muted-foreground text-sm">Nema knjiženih stavki</TableCell>
-                    </TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-sm">Nema naloza</TableCell></TableRow>
                   ) : (
-                    recentEntries.slice(0, 20).map((entry) => (
+                    recentEntries.map((entry) => (
                       <TableRow key={entry.id}>
                         <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
-                        <TableCell className="text-xs font-mono font-medium">{entry.accountCode}</TableCell>
-                        <TableCell className="text-xs max-w-[140px] truncate">{tc(entry.account?.name || entry.accountCode)}</TableCell>
-                        <TableCell className={`text-xs text-right font-medium whitespace-nowrap ${entry.debit > 0 ? 'text-emerald-700' : 'text-muted-foreground'}`}>
-                          {entry.debit > 0 ? formatRSD(entry.debit) : '-'}
-                        </TableCell>
-                        <TableCell className={`text-xs text-right font-medium whitespace-nowrap ${entry.credit > 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
-                          {entry.credit > 0 ? formatRSD(entry.credit) : '-'}
-                        </TableCell>
-                        <TableCell className="text-xs max-w-[180px] truncate">{tc(entry.description)}</TableCell>
-                        <TableCell className="text-xs whitespace-nowrap">{entry.documentRef || '-'}</TableCell>
+                        <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
+                        <TableCell className="text-xs font-mono">{entry.accountCode}</TableCell>
+                        <TableCell className="text-xs text-right text-emerald-700">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
+                        <TableCell className="text-xs text-right text-red-600">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
+                        <TableCell className="text-xs max-w-[200px] truncate">{tc(entry.description)}</TableCell>
                       </TableRow>
                     ))
                   )}
@@ -1142,403 +1274,317 @@ function NalogTab() {
   )
 }
 
-// ─── Tab 4: Budžeti ──────────────────────────────────────────────────────────
+// ─── Tab: Budžeti ──────────────────────────────────────────────────────────────
 
-function BudzetiTab() {
+function BudzetiTab({ fiscalYear }: { fiscalYear: number }) {
   const { t } = useTranslation()
-  const { tc } = useContentTranslation()
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [loading, setLoading] = useState(true)
-  const [year, setYear] = useState(new Date().getFullYear().toString())
   const [budgets, setBudgets] = useState<BudgetItem[]>([])
-  const [showAddDialog, setShowAddDialog] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [submitting, setSubmitting] = useState(false)
+  const [editingBudget, setEditingBudget] = useState<BudgetItem | null>(null)
 
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      const res = await fetch('/api/accounts')
-      const data = await res.json()
-      setAccounts(data)
-      // Initialize budget items from prihodna and rashodna accounts
-      const budgetAccs = data.filter((a: Account) => a.type === 'prihodka' || a.type === 'rashodna')
-      setBudgets(budgetAccs.map((a: Account) => ({
-        id: crypto.randomUUID(),
-        accountCode: a.code,
-        accountName: a.name,
-        january: 0, february: 0, march: 0, april: 0,
-        may: 0, june: 0, july: 0, august: 0,
-        september: 0, october: 0, november: 0, december: 0,
-      })))
-      setLoading(false)
-    }
-    fetchAccounts()
+  const fetchBudgets = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch(`/api/budgets?year=${fiscalYear}`)
+    const data = await res.json()
+    setBudgets(data)
+    setLoading(false)
+  }, [fiscalYear])
+
+  const fetchAccounts = useCallback(async () => {
+    const res = await fetch('/api/accounts')
+    const data = await res.json()
+    setAccounts(data)
   }, [])
 
-  const updateBudget = (id: string, month: string, value: number) => {
-    setBudgets(budgets.map((b) => b.id === id ? { ...b, [month]: value } : b))
+  useEffect(() => { fetchBudgets(); fetchAccounts() }, [fetchBudgets, fetchAccounts])
+
+  const handleNew = () => { setEditingBudget(null); setViewMode('form') }
+  const handleEdit = (b: BudgetItem) => { setEditingBudget(b); setViewMode('form') }
+  const handleCancel = () => { setViewMode('list'); setEditingBudget(null) }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati budžet?')) return
+    try {
+      const res = await fetch(`/api/budgets/${id}`, { method: 'DELETE' })
+      if (res.ok) { toast.success('Budžet obrisan'); fetchBudgets() }
+      else { const err = await res.json(); toast.error(err.error || 'Greška') }
+    } catch { toast.error('Greška') }
   }
 
-  const addAccountRow = () => {
-    const available = accounts.filter((a) => a.type === 'prihodka' || a.type === 'rashodna')
-      .filter((a) => !budgets.some((b) => b.accountCode === a.code))
-    if (available.length > 0) {
-      const a = available[0]
-      setBudgets([...budgets, {
-        id: crypto.randomUUID(), accountCode: a.code, accountName: a.name,
-        january: 0, february: 0, march: 0, april: 0, may: 0, june: 0,
-        july: 0, august: 0, september: 0, october: 0, november: 0, december: 0,
-      }])
-    } else {
-      toast.info('Svi prihodni/rashodni konti su već dodati')
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setSubmitting(true)
+    const fd = new FormData(e.currentTarget)
+    const body = {
+      accountCode: fd.get('accountCode') as string,
+      year: fiscalYear,
+      name: (fd.get('name') as string) || undefined,
+      january: Number(fd.get('january')) || 0,
+      february: Number(fd.get('february')) || 0,
+      march: Number(fd.get('march')) || 0,
+      april: Number(fd.get('april')) || 0,
+      may: Number(fd.get('may')) || 0,
+      june: Number(fd.get('june')) || 0,
+      july: Number(fd.get('july')) || 0,
+      august: Number(fd.get('august')) || 0,
+      september: Number(fd.get('september')) || 0,
+      october: Number(fd.get('october')) || 0,
+      november: Number(fd.get('november')) || 0,
+      december: Number(fd.get('december')) || 0,
+      notes: (fd.get('notes') as string) || undefined,
     }
-    setShowAddDialog(false)
+
+    if (!body.accountCode) { toast.error('Konto je obavezan'); setSubmitting(false); return }
+
+    try {
+      if (editingBudget) {
+        const res = await fetch(`/api/budgets/${editingBudget.id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        })
+        if (res.ok) toast.success('Budžet ažuriran')
+        else { const err = await res.json(); toast.error(err.error || 'Greška'); return }
+      } else {
+        const res = await fetch('/api/budgets', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        })
+        if (res.ok) toast.success('Budžet kreiran')
+        else { const err = await res.json(); toast.error(err.error || 'Greška'); return }
+      }
+      setViewMode('list'); setEditingBudget(null); fetchBudgets()
+    } catch { toast.error('Greška pri čuvanju') } finally { setSubmitting(false) }
   }
 
-  const removeRow = (id: string) => {
-    setBudgets(budgets.filter((b) => b.id !== id))
-  }
-
-  const totals = MONTH_KEYS.reduce((acc: Record<string, number>, m: string) => {
-    acc[m] = budgets.reduce((s: number, i: BudgetItem) => s + (i[m] || 0), 0)
-    return acc
-  }, {})
-
-  const yearlyTotal = Object.values(totals).reduce((s: number, v) => s + v, 0)
-
-  // Split into income and expense
-  const incomeBudgets = budgets.filter((b) => {
-    const acc = accounts.find((a) => a.code === b.accountCode)
-    return acc?.type === 'prihodka'
-  })
-  const expenseBudgets = budgets.filter((b) => {
-    const acc = accounts.find((a) => a.code === b.accountCode)
-    return acc?.type === 'rashodna'
-  })
-
-  const incomeTotal = incomeBudgets.reduce((s, b) => s + MONTH_KEYS.reduce((ms, m) => ms + (b[m] || 0), 0), 0)
-  const expenseTotal = expenseBudgets.reduce((s, b) => s + MONTH_KEYS.reduce((ms, m) => ms + (b[m] || 0), 0), 0)
-  const netProfit = incomeTotal - expenseTotal
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-      </div>
-    )
-  }
+  const totalAnnual = budgets.reduce((s, b) => s + (b.totalAnnual || 0), 0)
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-sm font-semibold flex items-center gap-2"><PiggyBank className="h-4 w-4" />Budžetski plan — Plan vs Realizacija</h3>
-          <p className="text-[10px] text-muted-foreground">Godišnji budžet po kontima i mesecima</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={year} onValueChange={setYear}>
-            <SelectTrigger className="w-[100px] h-9"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {[2024, 2025, 2026].map((y) => (
-                <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+    <Card>
+      <CardHeader className="pb-3">
+        {viewMode === 'form' ? (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base font-semibold">{editingBudget ? 'Izmeni budžet' : 'Novi budžet'}</CardTitle>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <PiggyBank className="h-4 w-4" /> Budžeti za {fiscalYear}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {budgets.length} budžeta — Ukupno: {formatRSD(totalAnnual)}
+              </p>
+            </div>
+            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi budžet</Button>
+          </div>
+        )}
+      </CardHeader>
+      <CardContent>
+        {viewMode === 'form' ? (
+          <form onSubmit={handleSubmit} key={editingBudget?.id || 'new'} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Konto *</Label>
+                <Select name="accountCode" defaultValue={editingBudget?.accountCode || ''}>
+                  <SelectTrigger><SelectValue placeholder="Izaberite konto" /></SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((a) => (<SelectItem key={a.code} value={a.code}>{a.code} — {a.name}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Naziv (opciono)</Label>
+                <Input name="name" placeholder="npr. Budžet za nabavku" defaultValue={editingBudget?.name || ''} />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              {MONTH_KEYS.map((month, idx) => (
+                <div key={month} className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground">{MONTH_LABELS[idx]}</Label>
+                  <Input name={month} type="number" step="0.01" min="0" className="h-8 text-xs text-right"
+                    defaultValue={editingBudget ? (editingBudget as Record<string, unknown>)[month] || '' : ''} />
+                </div>
               ))}
-            </SelectContent>
-          </Select>
-          <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={addAccountRow}>
-            <Plus className="h-3 w-3" /> Dodaj kont
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-600" /> Planirani prihodi
-          </div>
-          <p className="text-lg font-bold text-emerald-700">{formatRSD(incomeTotal)}</p>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <TrendingDown className="h-3.5 w-3.5 text-red-600" /> Planirani rashodi
-          </div>
-          <p className="text-lg font-bold text-red-600">{formatRSD(expenseTotal)}</p>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <Scale className="h-3.5 w-3.5" /> Planirana dobit
-          </div>
-          <p className={`text-lg font-bold ${netProfit >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{formatRSD(netProfit)}</p>
-        </Card>
-      </div>
-
-      {/* Budget table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Napomene (opciono)</Label>
+              <Input name="notes" placeholder="Napomene" defaultValue={editingBudget?.notes || ''} />
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
+              <Button type="submit" className="flex-1" disabled={submitting}>{submitting ? t('common.saving') : 'Sačuvaj'}</Button>
+            </div>
+          </form>
+        ) : loading ? (
+          <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+        ) : budgets.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">Nema budžeta za {fiscalYear}. godinu</div>
+        ) : (
+          <div className="max-h-[520px] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-[10px] sticky left-0 bg-background min-w-[160px]">Konto</TableHead>
-                  {MONTH_KEYS.map((m: string, idx: number) => (
-                    <TableHead key={m} className="text-[10px] min-w-[90px] text-center">{t(`common.month_${idx + 1}`)}</TableHead>
+                  <TableHead className="text-xs w-[80px]">Konto</TableHead>
+                  <TableHead className="text-xs">Naziv</TableHead>
+                  {MONTH_LABELS.map(m => (
+                    <TableHead key={m} className="text-xs text-right w-[80px]">{m}</TableHead>
                   ))}
-                  <TableHead className="text-[10px] min-w-[90px] text-center font-bold">Ukupno</TableHead>
-                  <TableHead className="w-[40px]" />
+                  <TableHead className="text-xs text-right w-[100px]">Ukupno</TableHead>
+                  <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {budgets.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={15} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema prihodnih/rashodnih konta. Prvo kreirajte kontni plan.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  <>
-                    {budgets.map((item: BudgetItem) => {
-                      const rowTotal = MONTH_KEYS.reduce((s: number, m: string) => s + (item[m] || 0), 0)
-                      const acc = accounts.find((a) => a.code === item.accountCode)
-                      const isIncome = acc?.type === 'prihodka'
+                {budgets.map((b) => (
+                  <TableRow key={b.id}>
+                    <TableCell className="text-xs font-mono font-medium">{b.accountCode}</TableCell>
+                    <TableCell className="text-xs max-w-[120px] truncate">{b.name}</TableCell>
+                    {MONTH_KEYS.map(month => {
+                      const val = (b as Record<string, unknown>)[month] as number || 0
                       return (
-                        <TableRow key={item.id}>
-                          <TableCell className="text-xs sticky left-0 bg-background">
-                            <div className="flex items-center gap-1">
-                              <Badge variant="outline" className={`text-[8px] px-1 py-0 ${isIncome ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-                                {isIncome ? 'P' : 'R'}
-                              </Badge>
-                              <div>
-                                <div className="font-medium">{tc(item.accountName)}</div>
-                                <div className="text-[9px] text-muted-foreground font-mono">{item.accountCode}</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          {MONTH_KEYS.map((m: string) => (
-                            <TableCell key={m} className="text-xs text-center p-1">
-                              <Input type="number" className="h-7 text-xs text-center w-[80px] mx-auto" value={item[m] || ''} onChange={(e) => updateBudget(item.id, m, Number(e.target.value) || 0)} />
-                            </TableCell>
-                          ))}
-                          <TableCell className="text-xs text-center font-bold p-1">{formatRSD(rowTotal)}</TableCell>
-                          <TableCell className="p-1">
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600" onClick={() => removeRow(item.id)}>
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                        <TableCell key={month} className={`text-xs text-right whitespace-nowrap ${val > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {val > 0 ? formatRSD(val) : '-'}
+                        </TableCell>
                       )
                     })}
-                    <TableRow className="bg-muted/50 font-bold border-t-2">
-                      <TableCell className="text-xs sticky left-0 bg-muted/50">Ukupno</TableCell>
-                      {MONTH_KEYS.map((m: string) => (
-                        <TableCell key={m} className="text-xs text-center">{formatRSD(totals[m])}</TableCell>
-                      ))}
-                      <TableCell className="text-xs text-center">{formatRSD(yearlyTotal)}</TableCell>
-                      <TableCell />
-                    </TableRow>
-                  </>
-                )}
+                    <TableCell className="text-xs text-right font-bold whitespace-nowrap">{formatRSD(b.totalAnnual)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(b)}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDelete(b.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                <TableRow className="bg-muted/50 font-semibold border-t-2">
+                  <TableCell colSpan={2} className="text-xs font-bold">{t('common.total')}:</TableCell>
+                  {MONTH_KEYS.map(month => {
+                    const monthTotal = budgets.reduce((s, b) => s + ((b as Record<string, unknown>)[month] as number || 0), 0)
+                    return (
+                      <TableCell key={month} className="text-xs text-right font-bold">{monthTotal > 0 ? formatRSD(monthTotal) : '-'}</TableCell>
+                    )
+                  })}
+                  <TableCell className="text-xs text-right font-bold">{formatRSD(totalAnnual)}</TableCell>
+                  <TableCell />
+                </TableRow>
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
-// ─── Tab 5: Bruto Bilans (Trial Balance) ──────────────────────────────────────
+// ─── Tab: Bruto Bilans (Trial Balance) ────────────────────────────────────────
 
-function BrutoBilansTab() {
+function BrutoBilansTab({ fiscalYear }: { fiscalYear: number }) {
   const { t } = useTranslation()
-  const { tc, translateTexts } = useContentTranslation()
-  const [accounts, setAccounts] = useState<TrialBalanceAccount[]>([])
-  const [summary, setSummary] = useState<{ totalDebit: number; totalCredit: number; difference: number; isBalanced: boolean; accountCount: number } | null>(null)
+  const [data, setData] = useState<{ accounts: Array<{ code: string; name: string; type: string; entryCount: number; totalDebit: number; totalCredit: number; saldo: number }>; summary: { totalDebit: number; totalCredit: number; difference: number; isBalanced: boolean; accountCount: number } } | null>(null)
   const [loading, setLoading] = useState(true)
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
 
   useEffect(() => {
-    const fetchTrialBalance = async () => {
+    const fetchData = async () => {
       setLoading(true)
-      const params = new URLSearchParams()
-      if (dateFrom) params.set('from', dateFrom)
-      if (dateTo) params.set('to', dateTo)
+      const from = `${fiscalYear}-01-01`
+      const to = `${fiscalYear}-12-31`
+      const params = new URLSearchParams({ from, to })
       if (typeFilter) params.set('type', typeFilter)
       const res = await fetch(`/api/accounts/trial-balance?${params.toString()}`)
-      const data = await res.json()
-      setAccounts(data.accounts || [])
-      setSummary(data.summary || null)
+      const json = await res.json()
+      setData(json)
       setLoading(false)
     }
-    fetchTrialBalance()
-  }, [dateFrom, dateTo, typeFilter])
+    fetchData()
+  }, [fiscalYear, typeFilter])
 
-  useEffect(() => {
-    if (accounts.length > 0) {
-      translateTexts(accounts.map((a) => a.name).filter(Boolean))
-    }
-  }, [accounts, translateTexts])
-
-  // Group by account type
-  const grouped = accounts.reduce<Record<string, TrialBalanceAccount[]>>((acc, item) => {
-    const type = item.type || 'nepoznato'
-    if (!acc[type]) acc[type] = []
-    acc[type].push(item)
-    return acc
-  }, {})
-
-  const typeTotals = Object.entries(grouped).reduce<Record<string, { debit: number; credit: number; saldo: number }>>((acc, [type, accs]) => {
-    acc[type] = accs.reduce((s, a) => ({
-      debit: s.debit + a.totalDebit,
-      credit: s.credit + a.totalCredit,
-      saldo: s.saldo + a.saldo,
-    }), { debit: 0, credit: 0, saldo: 0 })
-    return acc
-  }, {})
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-      </div>
-    )
+  if (loading || !data) {
+    return <Card><CardContent className="p-6"><div className="space-y-3">{Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}</div></CardContent></Card>
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-sm font-semibold flex items-center gap-2"><Scale className="h-4 w-4" />Bruto Bilans (Trial Balance)</h3>
-          <p className="text-[10px] text-muted-foreground">Pregled stanja svih konta — saldo duguje/potražuje</p>
-        </div>
-        {summary && (
-          <Badge variant={summary.isBalanced ? 'default' : 'destructive'} className="text-xs">
-            {summary.isBalanced ? '✓ Bilans u ravnoteži' : '✗ Nije u ravnoteži!'}
-          </Badge>
-        )}
-      </div>
-
-      {/* Summary cards */}
-      {summary && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Card className="p-4">
-            <div className="text-xs text-muted-foreground mb-1">Ukupno duguje</div>
-            <p className="text-base font-bold text-emerald-700">{formatRSD(summary.totalDebit)}</p>
-          </Card>
-          <Card className="p-4">
-            <div className="text-xs text-muted-foreground mb-1">Ukupno potražuje</div>
-            <p className="text-base font-bold text-red-600">{formatRSD(summary.totalCredit)}</p>
-          </Card>
-          <Card className="p-4">
-            <div className="text-xs text-muted-foreground mb-1">Saldo</div>
-            <p className={`text-base font-bold ${summary.difference >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
-              {formatRSD(Math.abs(summary.difference))}
-            </p>
-          </Card>
-          <Card className="p-4">
-            <div className="text-xs text-muted-foreground mb-1">Konta sa stavkama</div>
-            <p className="text-base font-bold">{summary.accountCount} / {accounts.length + (accounts.length - summary.accountCount)}</p>
-          </Card>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <Input type="date" className="w-[160px] h-9" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder="Od" />
-        <Input type="date" className="w-[160px] h-9" value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder="Do" />
-        <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-[150px] h-9">
-            <SelectValue placeholder="Svi tipovi" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Svi tipovi</SelectItem>
-            {ACCOUNT_TYPES.map((at) => (
-              <SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Trial balance table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-[10px] w-[80px]">Konto</TableHead>
-                  <TableHead className="text-[10px]">Naziv</TableHead>
-                  <TableHead className="text-[10px] w-[80px]">Tip</TableHead>
-                  <TableHead className="text-[10px] w-[50px] text-center">St.</TableHead>
-                  <TableHead className="text-[10px] text-right w-[120px]">Duguje</TableHead>
-                  <TableHead className="text-[10px] text-right w-[120px]">Potražuje</TableHead>
-                  <TableHead className="text-[10px] text-right w-[120px]">Saldo</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Object.entries(grouped).map(([type, accs]) => {
-                  const typeBadge = getAccountTypeBadge(type)
-                  const tt = typeTotals[type]
-                  return (
-                    <Fragment key={type}>
-                      {/* Type header */}
-                      <TableRow className="bg-muted/20">
-                        <TableCell colSpan={4}>
-                          <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeBadge.color}`}>
-                            {typeBadge.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-right font-semibold text-emerald-700">{formatRSD(tt.debit)}</TableCell>
-                        <TableCell className="text-xs text-right font-semibold text-red-600">{formatRSD(tt.credit)}</TableCell>
-                        <TableCell className="text-xs text-right font-semibold">{formatRSD(tt.saldo)}</TableCell>
-                      </TableRow>
-                      {accs.map((acc) => {
-                        const hasData = acc.totalDebit > 0 || acc.totalCredit > 0
-                        return (
-                          <TableRow key={acc.id} className={hasData ? '' : 'opacity-50'}>
-                            <TableCell className="text-xs font-mono">{acc.code}</TableCell>
-                            <TableCell className="text-xs">{tc(acc.name)}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className={`text-[9px] px-1.5 ${typeBadge.color}`}>{typeBadge.label}</Badge>
-                            </TableCell>
-                            <TableCell className="text-xs text-center">{acc.entryCount}</TableCell>
-                            <TableCell className="text-xs text-right text-emerald-700 font-medium">{acc.totalDebit > 0 ? formatRSD(acc.totalDebit) : '-'}</TableCell>
-                            <TableCell className="text-xs text-right text-red-600 font-medium">{acc.totalCredit > 0 ? formatRSD(acc.totalCredit) : '-'}</TableCell>
-                            <TableCell className={`text-xs text-right font-bold ${acc.saldo > 0 ? 'text-emerald-700' : acc.saldo < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>
-                              {acc.saldo !== 0 ? formatRSD(acc.saldo) : '-'}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </Fragment>
-                  )
-                })}
-                {accounts.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      Nema podataka. Kreirajte kontni plan i knjižite stavke.
-                    </TableCell>
-                  </TableRow>
-                )}
-                {/* Grand total */}
-                {summary && (
-                  <TableRow className="bg-muted/50 font-bold border-t-2">
-                    <TableCell colSpan={4} className="text-xs text-right">UKUPNO:</TableCell>
-                    <TableCell className="text-xs text-right text-emerald-700">{formatRSD(summary.totalDebit)}</TableCell>
-                    <TableCell className="text-xs text-right text-red-600">{formatRSD(summary.totalCredit)}</TableCell>
-                    <TableCell className={`text-xs text-right ${summary.isBalanced ? 'text-emerald-700' : 'text-red-600'}`}>
-                      {formatRSD(Math.abs(summary.difference))}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Scale className="h-4 w-4" /> Bruto Bilans — {fiscalYear}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">Pregled svih konta sa saldom</p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <div className="flex items-center gap-2">
+            <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
+              <SelectTrigger className="w-[140px] h-8"><SelectValue placeholder="Svi tipovi" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Svi tipovi</SelectItem>
+                {ACCOUNT_TYPES.map((at) => (<SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>))}
+              </SelectContent>
+            </Select>
+            <Badge className={`text-xs ${data.summary.isBalanced ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+              {data.summary.isBalanced ? '✓ Bilans u ravnoteži' : `✗ Razlika: ${formatRSD(Math.abs(data.summary.difference))}`}
+            </Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Ukupno duguje</p>
+            <p className="text-sm font-bold text-emerald-700">{formatRSD(data.summary.totalDebit)}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Ukupno potražuje</p>
+            <p className="text-sm font-bold text-red-600">{formatRSD(data.summary.totalCredit)}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Razlika</p>
+            <p className={`text-sm font-bold ${Math.abs(data.summary.difference) < 0.01 ? 'text-emerald-700' : 'text-red-600'}`}>
+              {formatRSD(Math.abs(data.summary.difference))}
+            </p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-[10px] text-muted-foreground uppercase">Konta</p>
+            <p className="text-sm font-bold">{data.summary.accountCount}</p>
+          </div>
+        </div>
+        <div className="max-h-[450px] overflow-y-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs w-[80px]">Konto</TableHead>
+                <TableHead className="text-xs">Naziv</TableHead>
+                <TableHead className="text-xs w-[70px] text-center">Tip</TableHead>
+                <TableHead className="text-xs w-[60px] text-center">Stav.</TableHead>
+                <TableHead className="text-xs text-right w-[120px]">Duguje</TableHead>
+                <TableHead className="text-xs text-right w-[120px]">Potražuje</TableHead>
+                <TableHead className="text-xs text-right w-[120px]">Saldo</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.accounts.map((acc) => {
+                const typeBadge = getAccountTypeBadge(acc.type)
+                return (
+                  <TableRow key={acc.code}>
+                    <TableCell className="text-xs font-mono font-medium">{acc.code}</TableCell>
+                    <TableCell className="text-xs">{acc.name}</TableCell>
+                    <TableCell className="text-xs text-center">
+                      <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${typeBadge.color}`}>{typeBadge.label}</Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-center">{acc.entryCount}</TableCell>
+                    <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{acc.totalDebit > 0 ? formatRSD(acc.totalDebit) : '-'}</TableCell>
+                    <TableCell className="text-xs text-right text-red-600 whitespace-nowrap">{acc.totalCredit > 0 ? formatRSD(acc.totalCredit) : '-'}</TableCell>
+                    <TableCell className={`text-xs text-right font-semibold whitespace-nowrap ${acc.saldo >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                      {formatRSD(acc.saldo)}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
-
-

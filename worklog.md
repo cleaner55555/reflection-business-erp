@@ -128,3 +128,36 @@ Stage Summary:
 - Employees module now Odoo-level with HR dashboard, payroll filtering, attendance analytics, anniversaries
 - All lint checks pass
 - Phase 3 COMPLETE: All 7 modules improved (CRM, Accounting, Warehouse, Invoices, Partners, Projects, Employees)
+
+---
+Task ID: 3-ACT
+Agent: Main (direct)
+Task: Phase 3 - Accounting (Knjigovodstvo) Module Improvement
+
+Work Log:
+- Updated Prisma schema:
+  - JournalEntry: added voucherNumber, reconciled, reconciledAt, fiscalYear fields
+  - JournalEntry: added Partner relation (for partner sub-ledger support)
+  - New Budget model: accountCode, year, 12 month columns, totalAnnual, notes, @@unique([companyId, accountCode, year])
+  - Added Budget relation to Company
+- Updated /api/journal-entries/route.ts:
+  - GET: added voucherNumber, fiscalYear filters; include partner in response
+  - POST: auto-generate sequential voucher numbers (NAL-YY-NNNN format), auto-set fiscalYear
+  - PUT (batch): same voucher number for all entries in a batch, auto-set fiscalYear
+- Updated /api/journal-entries/[id]/route.ts: unchanged
+- Created /api/budgets/route.ts: GET (with year/accountCode filter), POST (auto-calc totalAnnual)
+- Created /api/budgets/[id]/route.ts: PUT (auto-recalc totalAnnual), DELETE
+- Created /api/accounts/statement/route.ts: per-account statement with opening balance, running balance, closing balance
+- Created /api/accounting/dashboard/route.ts: fiscal year KPIs (totalAssets, totalLiabilities, totalRevenue, totalExpenses, profit, totalEquity, totalEntries, totalAccounts, totalBudget, recentEntries)
+- Rebuilt Knjigovodstvo.tsx (~1500 lines) with 6 tabs:
+  - Pregled (NEW Dashboard): 8 KPI cards (assets, liabilities, revenue, expenses, profit/loss, equity, entries count, budget), recent journal entries table
+  - Glavna Knjiga: fiscal year filter, voucher number column, click-to-view account statement (Eye icon), account card/statement view with running balance
+  - Kontni Plan: same CRUD + import Serbian plan, added Eye button for account card view per account
+  - Nalog: same batch entry form, auto-generated voucher numbers displayed after posting, partner selector, balance indicator with CheckCircle2/AlertCircle
+  - Budžeti (IMPROVED): now persisted to DB via Budget model, full CRUD, monthly breakdown table with totals, filter by fiscal year
+  - Bruto Bilans: fiscal year filter, type filter, 4 summary cards, type badges per account
+
+Stage Summary:
+- Accounting module now Odoo-level with dashboard KPIs, account card/statement, voucher numbers, persistent budgets
+- All lint checks pass
+- Foundation for Phase 4 bank reconciliation, PDV reporting, fiscal period closing
