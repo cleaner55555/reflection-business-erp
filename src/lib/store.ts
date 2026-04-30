@@ -59,6 +59,12 @@ export type ModuleType =
   | 'plm'
   | 'ecommerce'
   | 'spreadsheet'
+  | 'beleske'
+  | 'odobrenja'
+  | 'vestine'
+  | 'ugovori'
+  | 'ocene'
+  | 'gamifikacija'
 
 export interface UserInfo {
   id: string
@@ -176,7 +182,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         'preporuke', 'podrska', 'terenski-servis', 'zakazivanja', 'planer',
         'drustvene-mreze', 'sms-marketing', 'dogadjaji', 'mkt-automatizacija',
         'ankete', 'chet', 'baza-znanja', 'website', 'blog', 'voip',
-        'iot', 'whatsapp', 'forum', 'plm', 'ecommerce', 'spreadsheet'
+        'iot', 'whatsapp', 'forum', 'plm', 'ecommerce', 'spreadsheet',
+        'beleske', 'odobrenja', 'vestine', 'ugovori', 'ocene', 'gamifikacija'
       ]
       modules.forEach(m => { permissions[m] = ['read', 'write', 'delete', 'admin'] })
     }

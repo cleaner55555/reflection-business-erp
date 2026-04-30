@@ -24,7 +24,8 @@ import {
   ThumbsUp, HeadphonesIcon, MapPin, CalendarClock, CalendarRange, Share2,
   MessageSquare, Megaphone, PartyPopper, Workflow, ClipboardCheck,
   MessageCircle, BookMarked, Globe2, PenLine, Phone, Wifi, MessageCircleReply,
-  UsersRound, Table2, ShoppingBag, GitBranch,
+  UsersRound, Table2, ShoppingBag, GitBranch, StickyNote, CheckCircle2,
+  Award, Star, Gamepad2, FileSignature, Target, BadgeCheck
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -88,6 +89,10 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
       { module: 'rent-a-car', icon: CarFront, labelKey: 'sidebar.rentACar' },
       { module: 'terenski-servis', icon: MapPin, labelKey: 'sidebar.fieldService' },
       { module: 'chet', icon: MessageCircle, labelKey: 'sidebar.discuss' },
+      { module: 'beleske', icon: StickyNote, labelKey: 'sidebar.notes' },
+      { module: 'odobrenja', icon: CheckCircle2, labelKey: 'sidebar.approvals' },
+      { module: 'vestine', icon: Award, labelKey: 'sidebar.skills' },
+      { module: 'ugovori', icon: FileSignature, labelKey: 'sidebar.contracts' },
       { module: 'website', icon: Globe2, labelKey: 'sidebar.website' },
       { module: 'blog', icon: PenLine, labelKey: 'sidebar.blog' },
       { module: 'voip', icon: Phone, labelKey: 'sidebar.voip' },
@@ -97,6 +102,8 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
       { module: 'plm', icon: GitBranch, labelKey: 'sidebar.plm' },
       { module: 'ecommerce', icon: ShoppingBag, labelKey: 'sidebar.ecommerce' },
       { module: 'spreadsheet', icon: Table2, labelKey: 'sidebar.spreadsheet' },
+      { module: 'ocene', icon: Star, labelKey: 'sidebar.rating' },
+      { module: 'gamifikacija', icon: Gamepad2, labelKey: 'sidebar.gamification' },
     ],
   },
   {

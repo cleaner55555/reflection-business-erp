@@ -652,7 +652,7 @@ Dashboard, Fakture, Partneri, Magacin, Knjigovodstvo, Finansije, BankSync, CRM, 
 | **5** | POS, Maloprodaja Sync, Cenovnici, Cash Register+ | ✅ Završeno |
 | **6** | WMS (lokacije, barkod, štampači, wave picking, prijem robe) | ✅ Završeno |
 | **7** | Shipping (multi-carrier, orders, tracking, carriers) | ✅ Završeno |
-| **8** | Marketplace (veleprodaja, maloprodaja, kupac, admin) | 📋 Planirano |
+| **8** | Marketplace (veleprodaja, maloprodaja, kupac, admin) | ✅ Završeno |
 | **9** | Website Builder, eCommerce, Blog | 📋 Planirano |
 | **10** | Manufacturing, PLM, Helpdesk, Field Service, HR, Maintenance, Quality, Expenses | 📋 Planirano |
 | **11** | Store Design System (Theme, Layout, Component Library) | 📋 Planirano |

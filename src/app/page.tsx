@@ -66,6 +66,12 @@ import { Forum } from '@/components/modules/Forum'
 import { PLM } from '@/components/modules/PLM'
 import { ECommerce } from '@/components/modules/ECommerce'
 import { Spreadsheet } from '@/components/modules/Spreadsheet'
+import { Beleške } from '@/components/modules/Beleške'
+import { Odobrenja } from '@/components/modules/Odobrenja'
+import { Veštine } from '@/components/modules/Veštine'
+import { Ugovori } from '@/components/modules/Ugovori'
+import { Ocene } from '@/components/modules/Ocene'
+import { Gamifikacija } from '@/components/modules/Gamifikacija'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -148,6 +154,12 @@ const modules: Record<string, React.ReactNode> = {
   plm: <PLM />,
   ecommerce: <ECommerce />,
   spreadsheet: <Spreadsheet />,
+  beleske: <Beleške />,
+  odobrenja: <Odobrenja />,
+  vestine: <Veštine />,
+  ugovori: <Ugovori />,
+  ocene: <Ocene />,
+  gamifikacija: <Gamifikacija />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -211,6 +223,12 @@ const moduleLabelKeys: Record<string, string> = {
   plm: 'sidebar.plm',
   ecommerce: 'sidebar.ecommerce',
   spreadsheet: 'sidebar.spreadsheet',
+  beleske: 'sidebar.notes',
+  odobrenja: 'sidebar.approvals',
+  vestine: 'sidebar.skills',
+  ugovori: 'sidebar.contracts',
+  ocene: 'sidebar.rating',
+  gamifikacija: 'sidebar.gamification',
 }
 
 // ============ INNER APP (needs i18n context) ============

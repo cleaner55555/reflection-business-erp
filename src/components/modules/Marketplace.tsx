@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/ui/switch'
+import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
@@ -118,7 +118,7 @@ export function Marketplace() {
   const [vendorDialogOpen, setVendorDialogOpen] = useState(false)
   const [orderDialogOpen, setOrderDialogOpen] = useState(false)
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
-  [const disputeDialogOpen, setDisputeDialogOpen] = useState(false)
+  const [disputeDialogOpen, setDisputeDialogOpen] = useState(false)
   const [vendorDetailOpen, setVendorDetailOpen] = useState(false)
   const [orderDetailOpen, setOrderDetailOpen] = useState(false)
   const [productDialogOpen, setProductDialogOpen] = useState(false)
@@ -308,7 +308,7 @@ export function Marketplace() {
     if (!activeCompanyId || !disputeForm.vendorId || !disputeForm.orderId) { showToast('Popunite polja'); return }
     try {
       const res = await fetch('/api/marketplace/disputes', {
-        method: 'POST', headers: { Content-Type: 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...disputeForm }),
       })
       if (res.ok) { setDisputeDialogOpen(false); setDisputeForm(emptyDispute); loadDisputes(); showToast('Spor kreiran') }
@@ -624,7 +624,7 @@ export function Marketplace() {
                           )}
                         </div>
                         <div className="flex items-center gap-1">
-                          {p.avgRating > 0 && <><Stars rating={Math.round(p.avgRating)} size="xs" /><span className="text-[10px] text-muted-foreground">({p.reviewCount})</span>}
+                          {p.avgRating > 0 && <><Stars rating={Math.round(p.avgRating)} size="xs" /><span className="text-[10px] text-muted-foreground">({p.reviewCount})</span></>}
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-2 text-[11px] text-muted-foreground">
@@ -942,6 +942,8 @@ export function Marketplace() {
                       <div className="space-y-4">
                         {dashData.topVendors.map((v: any, i: number) => {
                           const estimatedComm = v.totalSales * (v.commissionRate || 5) / 100
+                          const maxComm = Math.max(...dashData.topVendors.map((v2: any) => v2.totalSales * (v2.commissionRate || 5) / 100), 1)
+                          const barPct = v.totalSales > 0 ? Math.min((estimatedComm / maxComm) * 100, 100) : 0
                           return (
                             <div key={v.id} className="space-y-2">
                               <div className="flex items-center justify-between">
@@ -954,7 +956,7 @@ export function Marketplace() {
                                   <p className="text-[10px] text-muted-foreground">od {formatCurrency(v.totalSales)}</p>
                                 </div>
                               </div>
-                              <div className="w-full bg-muted rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${v.totalSales > 0 ? Math.min((estimatedComm / Math.max(...dashData.topVendors.map((v2: any) => v2.totalSales * (v2.commissionRate || 5) / 100), 1) * 100)} : 0}%` }} /></div>
+                              <div className="w-full bg-muted rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${barPct}%` }} /></div>
                             </div>
                           )
                         })}
@@ -1241,6 +1243,7 @@ export function Marketplace() {
                     {selectedItem.approvedAt && <div className="flex justify-between"><span className="text-muted-foreground">Odobrena:</span><span className="font-medium">{new Date(selectedItem.approvedAt).toLocaleDateString('sr-RS')}</span></div>}
                   </CardContent>
                 </Card>
+              </div>
               </>
             )}
         </DialogContent>
@@ -1330,7 +1333,7 @@ export function Marketplace() {
                 <Card>
                   <CardHeader className="pb-2"><CardTitle className="text-sm">Akcije</CardTitle></CardHeader>
                   <CardContent className="flex flex-wrap gap-2">
-                    {selectedItem.status === 'nacrt' && <><Button size="sm" variant="outline" onClick={() => handleOrderStatus(selectedItem.id, 'potvrđena')} className="border-blue-500 text-blue-600 hover:bg-blue-50">Potvrdi</Button>}
+                    {selectedItem.status === 'nacrt' && <><Button size="sm" variant="outline" onClick={() => handleOrderStatus(selectedItem.id, 'potvrđena')} className="border-blue-500 text-blue-600 hover:bg-blue-50">Potvrdi</Button></>}
                     {selectedItem.status === 'potvrđena' && <Button size="sm" variant="outline" onClick={() => handleOrderStatus(selectedItem.id, 'u_pripremi')} className="border-blue-500 text-blue-600 hover:bg-blue-50">U pripremi</Button>}
                     {selectedItem.status === 'u_pripremi' && <Button size="sm" variant="outline" onClick={() => handleOrderStatus(selectedItem.id, 'poslata')} className="border-blue-500 text-blue-600 hover:bg-blue-50">Pošalji</Button>}
                     {selectedItem.status === 'poslata' && <Button size="sm" variant="outline" onClick={() => handleOrderStatus(selectedItem.id, 'u_isporuci')} className="border-blue-500 text-blue-600 hover:bg-blue-50">U isporuci</Button>}
@@ -1341,6 +1344,7 @@ export function Marketplace() {
                     )}
                   </CardContent>
                 </Card>
+              </div>
               </>
             )}
         </DialogContent>
