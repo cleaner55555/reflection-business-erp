@@ -28,10 +28,10 @@
 
 ## Model Routing — ALWAYS APPLY
 ```
-haiku ($1/$5 per 1M)  → 80% of work:
+haiku ($0.15/$0.60 per 1M)  → 80% of work:
   read · search · explain · simple edits · Q&A · summaries · formatting
 
-sonnet ($3/$15 per 1M) → 20% of work:
+sonnet ($1.50/$7.50 per 1M) → 20% of work:
   architecture · security · complex debug · final review · novel problems
 
 NEVER use sonnet for tasks haiku can handle. 3-5x savings on 80% of work.
