@@ -23,7 +23,7 @@ import {
   CalendarDays, AlertTriangle, CheckCircle2, Filter,
   Grid3X3, List, Star, MoreVertical, FileUp, FileDown,
   Archive, Unlock, Lock, Copy, Link2, Share2, Printer,
-  BarChart3, PieChart, TrendingUp, File, FileSpreadsheet,
+  BarChart3, PieChart, TrendingUp, TrendingDown, File, FileSpreadsheet,
   FileImage, FileVideo, FileAudio, FileType2, X, ChevronRight,
   ChevronDown, Folder, TagIcon, Calendar, Users, HardDrive
 } from 'lucide-react'
@@ -433,7 +433,7 @@ export function Dokumenta() {
               <Button variant="outline" size="sm" onClick={() => {
                 const dir = sortBy === 'date' && sortDir === 'desc' ? 'asc' : 'desc'
                 setSortDir(dir as 'asc' | 'desc')
-              }}><SortDir === 'desc' ? TrendingUp : TrendingUp className="h-4 w-4 mr-1" /> {sortDir === 'desc' ? 'Noviji' : 'Stariji'}</Button>
+              }}>{sortDir === 'desc' ? <TrendingDown className="h-4 w-4 mr-1" /> : <TrendingUp className="h-4 w-4 mr-1" />} {sortDir === 'desc' ? 'Noviji' : 'Stariji'}</Button>
               <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}>
                 {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
               </Button>

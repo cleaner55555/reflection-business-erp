@@ -22,7 +22,7 @@ import {
   Users, Bell, BellOff, CheckCircle2, AlertTriangle, X,
   Calendar, List, Grid3X3, LayoutGrid, Copy, Star, Filter,
   MoreVertical, ChevronDown, Tag, Circle, Timer, Repeat,
-  Birthday, Briefcase, GraduationCap, Plane, Heart, Music,
+  Cake, Briefcase, GraduationCap, Plane, Heart, Music,
   Coffee, Dumbbell, ShoppingBag, Utensils, Car, Stethoscope,
   Home, Palette, Zap, Globe, Sun, Moon
 } from 'lucide-react'
@@ -64,7 +64,7 @@ const EVENT_TYPES = [
   { value: 'rok', label: 'Rok / Deadline', icon: Timer },
   { value: 'task', label: 'Zadatak', icon: CheckCircle2 },
   { value: 'podsetnik', label: 'Podsetnik', icon: Bell },
-  { value: 'rođendan', label: 'Rođendan', icon: Birthday },
+  { value: 'rođendan', label: 'Rođendan', icon: Cake },
   { value: 'putovanje', label: 'Putovanje', icon: Plane },
   { value: 'obuka', label: 'Obuka / Edukacija', icon: GraduationCap },
   { value: 'licni', label: 'Lično', icon: Heart },

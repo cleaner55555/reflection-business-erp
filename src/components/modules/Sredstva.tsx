@@ -319,7 +319,7 @@ export function Sredstva() {
                     const max = Math.max(...Object.values(stats.byCategory).map(d => d.value), 1)
                     return (
                       <div key={cat} className="flex items-center gap-3">
-                        <div className="w-28 flex items-center gap-1.5"><catInfo && <catInfo.icon className="h-3 w-3" /><span className="text-xs truncate">{cat}</span></div>
+                        <div className="w-28 flex items-center gap-1.5">{catInfo && <catInfo.icon className="h-3 w-3" />}<span className="text-xs truncate">{cat}</span></div>
                         <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${Math.round((data.value / max) * 100)}%` }} /></div>
                         <span className="text-xs font-mono w-20 text-right">{formatCurrency(data.value)}</span>
                         <Badge variant="outline" className="text-[10px]">{data.count}</Badge>

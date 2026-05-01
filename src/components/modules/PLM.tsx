@@ -36,7 +36,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   draft: { label: 'Nacrt', color: 'bg-gray-100 text-gray-700' },
   active: { label: 'Aktivan', color: 'bg-green-100 text-green-700' },
   under_review: { label: 'Na pregledu', color: 'bg-amber-100 text-amber-700' },
-  obsolete: { label: Zastareo', color: 'bg-red-100 text-red-700' },
+  obsolete: { label: 'Zastareo', color: 'bg-red-100 text-red-700' },
 }
 
 export function PLM() {
