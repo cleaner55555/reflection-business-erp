@@ -1,0 +1,6 @@
+wing: modules
+rooms:
+- name: backend
+  description: Files related to backend
+  keywords:
+  - backend
