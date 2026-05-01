@@ -133,6 +133,7 @@ model Company {
   mpDisputes          MpDispute[]
   mpProducts          MpProduct[]
   mpCoupons           MpCoupon[]
+  complaints          Complaint[]
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -2568,4 +2569,41 @@ model MpCoupon {
   vendor          MpVendor? @relation(fields: [vendorId], references: [id])
 
   @@unique([companyId, code])
+}
+
+model Complaint {
+  id                String   @id @default(cuid())
+  companyId         String
+  number            String
+  partnerName       String   @default("")
+  partnerEmail      String   @default("")
+  partnerPhone      String   @default("")
+  productCode       String   @default("")
+  productName       String   @default("")
+  batchNumber       String   @default("")
+  category          String   @default("other")
+  priority          String   @default("medium")
+  status            String   @default("new")
+  resolutionType    String   @default("")
+  subject           String   @default("")
+  description       String   @default("")
+  customerNote      String   @default("")
+  internalNote      String   @default("")
+  reportedBy        String   @default("")
+  assignedTo        String   @default("")
+  requestedResolution String  @default("replacement")
+  amountRequested   Float    @default(0)
+  amountApproved    Float    @default(0)
+  currency          String   @default("RSD")
+  deadline          DateTime?
+  resolvedAt        DateTime?
+  timeline          String   @default("[]")
+  attachments       String   @default("[]")
+  qualityScore      Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  company           Company  @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, number])
 }

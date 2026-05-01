@@ -360,6 +360,10 @@ export const translations: Record<string, TranslationMap> = {
       contracts: 'Уговори',
       rating: 'Оцене',
       gamification: 'Гамификација',
+      complaints: 'Рекламације',
+      tenders: 'Натечаји',
+      warranties: 'Гаранције',
+      serviceCenter: 'Сервис',
     },
 
     zakoni: {
@@ -1929,6 +1933,10 @@ export const translations: Record<string, TranslationMap> = {
       contracts: 'Ugovori',
       rating: 'Ocene',
       gamification: 'Gamifikacija',
+      complaints: 'Reklamacije',
+      tenders: 'Natečaji',
+      warranties: 'Garancije',
+      serviceCenter: 'Servis',
     },
 
     dashboard: {
@@ -3369,6 +3377,10 @@ export const translations: Record<string, TranslationMap> = {
       contracts: 'Contracts',
       rating: 'Rating',
       gamification: 'Gamification',
+      complaints: 'Complaints',
+      tenders: 'Tenders',
+      warranties: 'Warranties',
+      serviceCenter: 'Service Center',
     },
 
     zakoni: {

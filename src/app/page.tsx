@@ -72,6 +72,10 @@ import { Veštine } from '@/components/modules/Veštine'
 import { Ugovori } from '@/components/modules/Ugovori'
 import { Ocene } from '@/components/modules/Ocene'
 import { Gamifikacija } from '@/components/modules/Gamifikacija'
+import { Reklamacije } from '@/components/modules/Reklamacije'
+import { Natečaji } from '@/components/modules/Natečaji'
+import { Garancije } from '@/components/modules/Garancije'
+import { Servis } from '@/components/modules/Servis'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -160,6 +164,10 @@ const modules: Record<string, React.ReactNode> = {
   ugovori: <Ugovori />,
   ocene: <Ocene />,
   gamifikacija: <Gamifikacija />,
+  reklamacije: <Reklamacije />,
+  natečaji: <Natečaji />,
+  garancije: <Garancije />,
+  servis: <Servis />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -229,6 +237,10 @@ const moduleLabelKeys: Record<string, string> = {
   ugovori: 'sidebar.contracts',
   ocene: 'sidebar.rating',
   gamifikacija: 'sidebar.gamification',
+  reklamacije: 'sidebar.complaints',
+  natečaji: 'sidebar.tenders',
+  garancije: 'sidebar.warranties',
+  servis: 'sidebar.serviceCenter',
 }
 
 // ============ INNER APP (needs i18n context) ============
