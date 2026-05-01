@@ -364,6 +364,13 @@ export const translations: Record<string, TranslationMap> = {
       tenders: 'Натечаји',
       warranties: 'Гаранције',
       serviceCenter: 'Сервис',
+      compliance: 'Усклађеност',
+      loyalty: 'Програм лојалности',
+      workforce: 'Планер радне силе',
+      visitors: 'Посетиоци',
+      suggestions: 'Предлози',
+      appraisal: 'Таксација',
+      healthFund: 'Фонд здравља',
     },
 
     zakoni: {
@@ -1937,6 +1944,13 @@ export const translations: Record<string, TranslationMap> = {
       tenders: 'Natečaji',
       warranties: 'Garancije',
       serviceCenter: 'Servis',
+      compliance: 'Usklađenost',
+      loyalty: 'Program lojalnosti',
+      workforce: 'Planer radne sile',
+      visitors: 'Posetioci',
+      suggestions: 'Predlozi',
+      appraisal: 'Taksacija',
+      healthFund: 'Fond zdravlja',
     },
 
     dashboard: {
@@ -3381,6 +3395,13 @@ export const translations: Record<string, TranslationMap> = {
       tenders: 'Tenders',
       warranties: 'Warranties',
       serviceCenter: 'Service Center',
+      compliance: 'Compliance',
+      loyalty: 'Loyalty Program',
+      workforce: 'Workforce Planner',
+      visitors: 'Visitors',
+      suggestions: 'Suggestions',
+      appraisal: 'Appraisal',
+      healthFund: 'Health Fund',
     },
 
     zakoni: {

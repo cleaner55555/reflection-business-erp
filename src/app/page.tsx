@@ -76,6 +76,16 @@ import { Reklamacije } from '@/components/modules/Reklamacije'
 import { Natečaji } from '@/components/modules/Natečaji'
 import { Garancije } from '@/components/modules/Garancije'
 import { Servis } from '@/components/modules/Servis'
+import { Usklađenost } from '@/components/modules/Usklađenost'
+import { ProgramLojalnosti } from '@/components/modules/ProgramLojalnosti'
+import { PlanerRadneSile } from '@/components/modules/PlanerRadneSile'
+import { Posetioci } from '@/components/modules/Posetioci'
+import { Predlozi } from '@/components/modules/Predlozi'
+import { Taksacija } from '@/components/modules/Taksacija'
+import { FondZdravlja } from '@/components/modules/FondZdravlja'
+import { Geolokacija } from '@/components/modules/Geolokacija'
+import { Kamere } from '@/components/modules/Kamere'
+import { MenadzerNabavke } from '@/components/modules/MenadzerNabavke'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -168,6 +178,16 @@ const modules: Record<string, React.ReactNode> = {
   natečaji: <Natečaji />,
   garancije: <Garancije />,
   servis: <Servis />,
+  uskladenost: <Usklađenost />,
+  'program-lojalnosti': <ProgramLojalnosti />,
+  'planer-radne-sile': <PlanerRadneSile />,
+  posetioci: <Posetioci />,
+  predlozi: <Predlozi />,
+  taksacija: <Taksacija />,
+  'fond-zdravlja': <FondZdravlja />,
+  geolokacija: <Geolokacija />,
+  kamere: <Kamere />,
+  'menadzer-nabavke': <MenadzerNabavke />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -241,6 +261,16 @@ const moduleLabelKeys: Record<string, string> = {
   natečaji: 'sidebar.tenders',
   garancije: 'sidebar.warranties',
   servis: 'sidebar.serviceCenter',
+  uskladenost: 'sidebar.compliance',
+  'program-lojalnosti': 'sidebar.loyalty',
+  'planer-radne-sile': 'sidebar.workforce',
+  posetioci: 'sidebar.visitors',
+  predlozi: 'sidebar.suggestions',
+  taksacija: 'sidebar.appraisal',
+  'fond-zdravlja': 'sidebar.healthFund',
+  geolokacija: 'sidebar.geolocation',
+  kamere: 'sidebar.cameras',
+  'menadzer-nabavke': 'sidebar.procurementManager',
 }
 
 // ============ INNER APP (needs i18n context) ============

@@ -22,7 +22,7 @@ import {
   BarChart3, TrendingDown, ArrowUpRight, ArrowDownRight, X,
   Tag, Clock, MapPin, Building, Car, Laptop, Cpu, Printer,
   Sofa, HardHat, Truck, ScanBarcode, QrCode, Settings, Info,
-  FileText, Copy, Filter, Grid3X3, List, Zap, Shield, History
+  FileText, Copy, Filter, Grid3X3, List, Zap, Shield, History, ChevronRight
 } from 'lucide-react'
 import { formatDate, formatRSD } from '@/lib/helpers'
 

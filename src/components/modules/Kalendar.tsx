@@ -24,7 +24,7 @@ import {
   MoreVertical, ChevronDown, Tag, Circle, Timer, Repeat,
   Cake, Briefcase, GraduationCap, Plane, Heart, Music,
   Coffee, Dumbbell, ShoppingBag, Utensils, Car, Stethoscope,
-  Home, Palette, Zap, Globe, Sun, Moon
+  Home, Palette, Zap, Globe, Sun, Moon, BarChart3
 } from 'lucide-react'
 
 // ============ TYPES ============

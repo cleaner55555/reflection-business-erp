@@ -25,7 +25,7 @@ import {
   MessageSquare, Megaphone, PartyPopper, Workflow, ClipboardCheck,
   MessageCircle, BookMarked, Globe2, PenLine, Phone, Wifi, MessageCircleReply,
   UsersRound, Table2, ShoppingBag, GitBranch, StickyNote, CheckCircle2,
-  Award, Star, Gamepad2, FileSignature, Target, BadgeCheck, ShieldAlert, Gavel
+  Award, Star, Gamepad2, FileSignature, BadgeCheck, ShieldAlert, Gavel, Shield, Crown, UserCheck, Lightbulb, Target, Heart, Camera, PackageSearch
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -108,6 +108,16 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
       { module: 'natečaji', icon: Gavel, labelKey: 'sidebar.tenders' },
       { module: 'garancije', icon: ShieldCheck, labelKey: 'sidebar.warranties' },
       { module: 'servis', icon: Wrench, labelKey: 'sidebar.serviceCenter' },
+      { module: 'uskladenost', icon: Shield, labelKey: 'sidebar.compliance' },
+      { module: 'program-lojalnosti', icon: Crown, labelKey: 'sidebar.loyalty' },
+      { module: 'planer-radne-sile', icon: CalendarRange, labelKey: 'sidebar.workforce' },
+      { module: 'posetioci', icon: UserCheck, labelKey: 'sidebar.visitors' },
+      { module: 'predlozi', icon: Lightbulb, labelKey: 'sidebar.suggestions' },
+      { module: 'taksacija', icon: Target, labelKey: 'sidebar.appraisal' },
+      { module: 'fond-zdravlja', icon: Heart, labelKey: 'sidebar.healthFund' },
+      { module: 'geolokacija', icon: MapPin, labelKey: 'sidebar.geolocation' },
+      { module: 'kamere', icon: Camera, labelKey: 'sidebar.cameras' },
+      { module: 'menadzer-nabavke', icon: PackageSearch, labelKey: 'sidebar.procurementManager' },
     ],
   },
   {

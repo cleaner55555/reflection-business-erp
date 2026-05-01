@@ -118,6 +118,19 @@ const daysUntilExpiry = (date: string | null): number | null => {
   return Math.ceil(diff / (1000 * 60 * 60 * 24))
 }
 
+// ============ KPI CARD ============
+
+const Kpi = ({ label, value, icon: Icon, sub, color }: { label: string; value: string | number; icon: React.ElementType; sub?: string; color?: string }) => (
+  <Card className="p-4">
+    <div className="flex items-center justify-between mb-2">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <Icon className={`h-4 w-4 ${color || 'text-muted-foreground'}`} />
+    </div>
+    <p className="text-2xl font-bold">{value}</p>
+    {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+  </Card>
+)
+
 // ============ MAIN COMPONENT ============
 
 export function Dokumenta() {
@@ -169,24 +182,6 @@ export function Dokumenta() {
 
   // ============ DATA LOADING ============
 
-  const loadDocs = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (filterType !== 'all') params.set('type', filterType)
-      if (filterCategory !== 'all') params.set('category', filterCategory)
-      const res = await fetch(`/api/documents?${params}`)
-      if (res.ok) {
-        const data = await res.json()
-        setDocs(data)
-        computeStats(data)
-      }
-    } catch { /* silent */ }
-    setLoading(false)
-  }, [filterType, filterCategory])
-
-  useEffect(() => { loadDocs() }, [loadDocs])
-
   const computeStats = (data: Doc[]) => {
     const total = data.length
     const active = data.filter(d => d.status === 'aktivno').length
@@ -231,6 +226,24 @@ export function Dokumenta() {
       categoryMap, typeMap, expiring, recent, monthMap,
     })
   }
+
+  const loadDocs = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (filterType !== 'all') params.set('type', filterType)
+      if (filterCategory !== 'all') params.set('category', filterCategory)
+      const res = await fetch(`/api/documents?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        setDocs(data)
+        computeStats(data)
+      }
+    } catch { /* silent */ }
+    setLoading(false)
+  }, [filterType, filterCategory])
+
+  useEffect(() => { loadDocs() }, [loadDocs])
 
   // ============ FILTERED & SORTED DOCS ============
 
@@ -362,19 +375,6 @@ export function Dokumenta() {
     setFolderForm({ name: '', color: '#10b981', parentId: '' })
     showToast('Fascikla kreirana')
   }
-
-  // ============ KPI CARD ============
-
-  const Kpi = ({ label, value, icon: Icon, sub, color }: { label: string; value: string | number; icon: React.ElementType; sub?: string; color?: string }) => (
-    <Card className="p-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <Icon className={`h-4 w-4 ${color || 'text-muted-foreground'}`} />
-      </div>
-      <p className="text-2xl font-bold">{value}</p>
-      {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
-    </Card>
-  )
 
   // ============ RENDER ============
 

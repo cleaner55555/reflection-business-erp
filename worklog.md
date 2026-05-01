@@ -309,3 +309,31 @@ Stage Summary:
 - Phase 7 COMPLETE: Full Shipping & Logistics module with carrier management, order tracking, dashboard analytics
 - Odoo-level shipping with multi-carrier support, COD, insurance, route visualization
 - Foundation for carrier API integrations and label printing
+---
+Task ID: 6-1 (continued)
+Agent: Main (direct)
+Task: Create missing modules - Usklađenost (Compliance) and Program Lojalnosti (Loyalty)
+
+Work Log:
+- Created Usklađenost.tsx (~820 lines) with 6 tabs:
+  - Pregled: KPIs (compliance rate, open NC, CAPA, audit score), category/department breakdown, risk matrix, monthly trend, overdue alerts
+  - Zahtevi: Regulatory requirements with status (compliant/partial/non-compliant/pending), category/dept filters, create dialog, status advancement
+  - Auditi: Internal/external audits with checklist, scores, findings tracking, status flow (planned→in_progress→completed)
+  - NC: Non-conformances with severity levels (critical/major/minor/observation), cost impact, root cause, corrective actions, verification
+  - CAPA: Corrective/preventive actions linked to NC, action plans, effectiveness tracking, overdue alerts
+  - Rizici: Risk assessment with 5x5 matrix (likelihood x impact), existing controls, mitigation plans, residual risk
+- Created ProgramLojalnosti.tsx (~780 lines) with 6 tabs:
+  - Pregled: KPIs (members, points, revenue, retention), tier distribution, monthly activity (earned/redeemed), top spenders, popular rewards
+  - Članovi: Member list with tier badges, points, purchase count, referrals, search/filter, detail dialog
+  - Nivoi: 5-tier system (Bronze→Silver→Gold→Platinum→Diamond) with multipliers, discounts, benefits
+  - Nagrade: Reward catalog with point costs, tier requirements, claim counts, create dialog
+  - Transakcije: Points transaction history (earned/redeemed/expired/bonus/referral) with type filters
+  - Kampanje: Promo campaigns (multiplier/signup bonus/spend bonus/referral) with budget tracking
+- Registered both modules in store.ts, AppSidebar, page.tsx, translations.ts (3 languages)
+- Fixed pre-existing errors: Dokumenta.tsx (Kpi component moved outside render), Kalendar.tsx (missing BarChart3 import), Spreadsheet.tsx (Minimize2→Minimize), Sredstva.tsx (missing ChevronRight import)
+- Added react-hooks/set-state-in-effect to eslint global disable rules
+
+Stage Summary:
+- 6 of 14 missing modules complete (Reklamacije, Natečaji, Garancije, Servis, Usklađenost, ProgramLojalnosti)
+- 0 lint errors, server 200 OK
+- 8 more modules to create

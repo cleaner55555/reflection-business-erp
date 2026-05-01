@@ -18,7 +18,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Table2, Plus, RefreshCw, BarChart3, FileSpreadsheet,
   Download, Upload, Save, Calculator, Filter, ArrowRight,
-  ChevronDown, Maximize2, Bold, Italic, AlignLeft, AlignCenter,
+  ChevronDown, Maximize2, Minimize, Bold, Italic, AlignLeft, AlignCenter,
   AlignRight, Underline, Copy, Scissors, ClipboardPaste,
   Undo2, Redo2, Search, Replace, SortAsc, SortDesc, Type,
   DollarSign, Percent, Hash, Palette, Trash2, Eye, EyeOff,
@@ -1175,7 +1175,7 @@ export function Spreadsheet() {
           <Button variant="outline" size="sm" onClick={() => setLoadDialogOpen(true)}><Upload className="h-4 w-4 mr-1" /> Učitaj</Button>
           <Button variant="outline" size="sm" onClick={() => setExportDialogOpen(true)}><Download className="h-4 w-4 mr-1" /> Izvezi</Button>
           <Button variant="outline" size="sm" onClick={() => setIsFullscreen(!isFullscreen)}>
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
         </div>
       </div>
