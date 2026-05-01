@@ -86,6 +86,7 @@ import { FondZdravlja } from '@/components/modules/FondZdravlja'
 import { Geolokacija } from '@/components/modules/Geolokacija'
 import { Kamere } from '@/components/modules/Kamere'
 import { MenadzerNabavke } from '@/components/modules/MenadzerNabavke'
+import { CMS } from '@/components/modules/CMS'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -188,6 +189,7 @@ const modules: Record<string, React.ReactNode> = {
   geolokacija: <Geolokacija />,
   kamere: <Kamere />,
   'menadzer-nabavke': <MenadzerNabavke />,
+  cms: <CMS />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -271,6 +273,7 @@ const moduleLabelKeys: Record<string, string> = {
   geolokacija: 'sidebar.geolocation',
   kamere: 'sidebar.cameras',
   'menadzer-nabavke': 'sidebar.procurementManager',
+  cms: 'sidebar.cms',
 }
 
 // ============ INNER APP (needs i18n context) ============

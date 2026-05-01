@@ -25,7 +25,7 @@ import {
   MessageSquare, Megaphone, PartyPopper, Workflow, ClipboardCheck,
   MessageCircle, BookMarked, Globe2, PenLine, Phone, Wifi, MessageCircleReply,
   UsersRound, Table2, ShoppingBag, GitBranch, StickyNote, CheckCircle2,
-  Award, Star, Gamepad2, FileSignature, BadgeCheck, ShieldAlert, Gavel, Shield, Crown, UserCheck, Lightbulb, Target, Heart, Camera, PackageSearch
+  Award, Star, Gamepad2, FileSignature, BadgeCheck, ShieldAlert, Gavel, Shield, Crown, UserCheck, Lightbulb, Target, Heart, Camera, PackageSearch, FileCode
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -118,6 +118,7 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
       { module: 'geolokacija', icon: MapPin, labelKey: 'sidebar.geolocation' },
       { module: 'kamere', icon: Camera, labelKey: 'sidebar.cameras' },
       { module: 'menadzer-nabavke', icon: PackageSearch, labelKey: 'sidebar.procurementManager' },
+      { module: 'cms', icon: FileCode, labelKey: 'sidebar.cms' },
     ],
   },
   {

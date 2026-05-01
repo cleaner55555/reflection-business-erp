@@ -79,6 +79,7 @@ export type ModuleType =
   | 'geolokacija'
   | 'kamere'
   | 'menadzer-nabavke'
+  | 'cms'
 
 export interface UserInfo {
   id: string
@@ -197,7 +198,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         'drustvene-mreze', 'sms-marketing', 'dogadjaji', 'mkt-automatizacija',
         'ankete', 'chet', 'baza-znanja', 'website', 'blog', 'voip',
         'iot', 'whatsapp', 'forum', 'plm', 'ecommerce', 'spreadsheet',
-        'beleske', 'odobrenja', 'vestine', 'ugovori', 'ocene', 'gamifikacija', 'reklamacije', 'natečaji', 'garancije', 'servis', 'uskladenost', 'program-lojalnosti', 'planer-radne-sile', 'posetioci', 'predlozi', 'taksacija', 'fond-zdravlja', 'geolokacija', 'kamere', 'menadzer-nabavke'
+        'beleske', 'odobrenja', 'vestine', 'ugovori', 'ocene', 'gamifikacija', 'reklamacije', 'natečaji', 'garancije', 'servis', 'uskladenost', 'program-lojalnosti', 'planer-radne-sile', 'posetioci', 'predlozi', 'taksacija', 'fond-zdravlja', 'geolokacija', 'kamere', 'menadzer-nabavke', 'cms'
       ]
       modules.forEach(m => { permissions[m] = ['read', 'write', 'delete', 'admin'] })
     }
