@@ -547,6 +547,68 @@ Current → Target per module:
 1. All remaining modules under 1000 lines → enhance to Odoo+ level
 2. Priority: modules used in most sets first
 
+### Phase E2: Refaktoring — Podela fajlova i optimizacija (2-3 days)
+
+> ⚠️ URADITI POSLE Phase D i E — kada su SVI moduli finalni!
+> Zbog toga što se prave novi moduli, deljenje fajlova pre toga znači dupli rad.
+
+#### E2.1 — Pronađi najveće fajlove
+```bash
+find src/components/modules -name "*.tsx" -o -name "*.ts" | xargs wc -l | sort -rn | head -30
+```
+
+#### E2.2 — Podeli svaki fajl preko 800 linija
+
+**Struktura podele:**
+```
+modules/module-name/
+├── index.tsx          ← samo import/export
+├── ModuleMain.tsx     ← glavni render (JSX return)
+├── ModuleDialogs.tsx  ← svi Dialog elementi
+├── ModuleTable.tsx    ← tabela/lista
+├── ModuleForm.tsx     ← forme
+├── useModule.ts       ← useState, useEffect, useCallback, logika
+└── types.ts           ← interfejsi i tipovi
+```
+
+**Pravila podele:**
+- ✅ SAMO fizički premesti kod u manje fajlove
+- ✅ Svaki fajl mora biti IDENTIČAN originalu po funkcionalnosti
+- ❌ NE menjaj funkcionalnost
+- ❌ NE uklanjaj feature-e
+- ❌ NE uprošćavaj logiku
+- ❌ NE smanjuj broj linija da bi izgledalo bolje
+- Iskopiraj kod — ne prepisuj, ne menjaj
+- Iseci delove i stavi u odgovarajuće fajlove
+- Dodaj import/export između fajlova
+- `index.tsx` = `export { default } from './ModuleMain'`
+
+#### E2.3 — Optimizacija (bez uprošćavanja)
+- Dodaj `useMemo` gde se heavy kalkulacija radi bez njega
+- Dodaj `useCallback` na event handlere koji se prosleđuju kao props
+- Zameni `any` sa pravim TypeScript tipovima gde je očigledno
+- NE menjaj logiku, samo dodaj memoizaciju
+
+#### E2.4 — Build check nakon svake podele
+```bash
+bun run lint
+```
+Ako ima grešaka — popravi SAMO greške, ne diraj ostali kod.
+
+#### E2.5 — Ažuriranje importa
+Svaki split fajl zahteva ažuriranje:
+- `src/lib/store.ts` — import putanja
+- `src/app/page.tsx` — dynamic import putanja
+- `src/components/modules/AppSidebar.tsx` — ako treba
+- `src/lib/translations.ts` — ako treba
+
+#### E2.6 — Procena posla
+```
+Trenutno fajlova preko 800 linija: ~60 komada
+Svaki → 6-7 podfajlova = ~360-420 novih fajlova
+Nakon Phase D (+~25 novih modula): ~85 fajlova za deliti = ~500-600 podfajlova
+```
+
 ### Phase F: Backend (separate project, 2-4 weeks)
 1. Auth system
 2. PostgreSQL migration
@@ -589,19 +651,23 @@ npm install react-rnd
 
 ## 8. SUMMARY
 
-| Phase | Task | Estimated |
-|---|---|---|
-| A | Window Manager + Virtual Desktops | 2-3 days |
-| B | Module Sets (10 industry templates) | 1-2 days |
-| C | Brand Cleanup | 0.5 days |
-| D | Create Missing Modules (20+) | 3-5 days |
-| E | Enhance Shell Modules (15+) | 3-5 days |
-| F | Backend & Infrastructure | 2-4 weeks |
+| Phase | Task | Estimated | Status |
+|---|---|---|---|
+| E | Enhance Shell Modules (15+) | 3-5 days | 🔄 IN PROGRESS |
+| D | Create Missing Modules (20+) | 3-5 days | ⬅️ NEXT |
+| A | Window Manager + Virtual Desktops | 2-3 days | ⬜ Pending |
+| B | Module Sets (10 industry templates) | 1-2 days | ⬜ Pending |
+| C | Brand Cleanup | 0.5 days | ⬜ Pending |
+| E2 | **Refaktoring — Podela fajlova** | 2-3 days | ⬜ Pending |
+| F | Backend & Infrastructure | 2-4 weeks | ⬜ Pending |
+| G | English Refactoring (file names + code) | 1-2 days | ⬜ Pending |
 
-**Total Frontend: ~10-16 days**  
+**Total Frontend: ~14-22 days**  
 **Total Backend: ~2-4 weeks (separate phase)**
+
+> **Trenutni fokus:** Phase E — enhancment preostalih modula na 1000+ linija
 
 ---
 
-*Last updated: 2025-05-01*  
-*Status: Planning phase — awaiting approval to begin development*
+*Last updated: 2025-06-12*  
+*Status: Phase E — Enhancing shell modules to Odoo+ level*
