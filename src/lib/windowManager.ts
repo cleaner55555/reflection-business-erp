@@ -51,7 +51,7 @@ export interface DesktopSettings {
   gridSize: number
 }
 
-const DEFAULT_SETTINGS: DesktopSettings = {
+export const DEFAULT_SETTINGS: DesktopSettings = {
   wallpaper: 'gradient-blue',
   iconSize: 'medium',
   dockStyle: 'compact',

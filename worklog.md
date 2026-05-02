@@ -486,3 +486,18 @@ Stage Summary:
 - All settings persisted to localStorage
 - Smooth animations (slide-in, zoom-in, fade)
 - 0 compilation errors
+---
+Task ID: 6
+Agent: Main (direct)
+Task: Fix runtime error — Dock is not defined
+
+Work Log:
+- Diagnosed error: `Dock is not defined` at DesktopMode.tsx:234 — the Dock component existed at `src/components/window-manager/Dock.tsx` but was not imported in DesktopMode.tsx
+- Fixed by adding `import { Dock } from './Dock'` to DesktopMode.tsx imports
+- Also discovered `DEFAULT_SETTINGS` was not exported from `src/lib/windowManager.ts` but was imported by `DesktopSettingsPanel.tsx` — added `export` keyword
+- Verified dev server reloads cleanly with no errors after fix
+
+Stage Summary:
+- Two missing export/import issues fixed
+- Desktop mode now renders correctly with Dock taskbar at bottom
+- DesktopSettingsPanel can import DEFAULT_SETTINGS without error
