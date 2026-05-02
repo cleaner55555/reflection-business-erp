@@ -1,27 +1,19 @@
 'use client'
 
 import { useWindowManager } from '@/lib/windowManager'
-import { menuGroups } from '@/components/modules/AppSidebar'
-import { useAppStore } from '@/lib/store'
-import type { ModuleType } from '@/lib/store'
+import { useTranslation } from '@/lib/i18n'
 import { openAppLauncher } from '@/components/modules/AppLauncher'
 import {
   LayoutGrid,
-  Monitor,
-  MonitorOff,
   Layers,
   Columns2,
-  Plus,
-  X,
+  Menu,
 } from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from '@/lib/i18n'
 
 export function Dock() {
-  const { windows, minimizeWindow, focusWindow, cascadeWindows, tileWindows, isDesktopMode, toggleDesktopMode } =
+  const { windows, minimizeWindow, focusWindow, cascadeWindows, tileWindows, toggleStartMenu, startMenuOpen } =
     useWindowManager()
   const { t } = useTranslation()
-  const [showDesktopMenu, setShowDesktopMenu] = useState(false)
 
   const handleWindowClick = (id: string) => {
     const win = windows.find((w) => w.id === id)
@@ -32,31 +24,23 @@ export function Dock() {
     }
   }
 
-  const handleOpenModule = (module: ModuleType) => {
-    const allMenuItems = menuGroups.flatMap((g) => g.items)
-    const item = allMenuItems.find((m) => m.module === module)
-    if (item) {
-      const { openWindow } = useWindowManager.getState()
-      openWindow(module, t(item.labelKey), module)
-    }
-  }
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-14 bg-background/95 backdrop-blur-md border-t border-border/60 flex items-center px-2 z-[100000] select-none">
-      {/* Desktop toggle */}
+    <div className="fixed bottom-0 left-0 right-0 h-12 bg-background/80 backdrop-blur-md border-t border-border/50 flex items-center px-2 z-[100000] select-none">
+      {/* Left — Start Menu button */}
       <button
-        onClick={toggleDesktopMode}
-        className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-accent transition-colors mr-1"
-        title={isDesktopMode ? 'Normalan režim' : 'Desktop režim'}
+        onClick={toggleStartMenu}
+        className={`flex items-center justify-center w-10 h-10 rounded-lg hover:bg-accent transition-colors mr-1 ${
+          startMenuOpen ? 'bg-accent text-accent-foreground' : ''
+        }`}
+        title="Meni modula"
       >
-        {isDesktopMode ? (
-          <MonitorOff className="w-4 h-4 text-muted-foreground" />
-        ) : (
-          <Monitor className="w-4 h-4 text-muted-foreground" />
-        )}
+        <Menu className="w-4 h-4 text-muted-foreground" />
       </button>
 
-      {/* Window list */}
+      {/* Separator */}
+      <div className="w-px h-6 bg-border/40 mx-1" />
+
+      {/* Center — Window list */}
       <div className="flex items-center gap-1 flex-1 overflow-x-auto px-1">
         {windows.map((win) => {
           const isActive = !win.isMinimized
@@ -72,7 +56,7 @@ export function Dock() {
               title={win.title}
             >
               <span className="truncate max-w-[120px]">{win.title}</span>
-              {/* Active dot */}
+              {/* Active indicator */}
               {isActive && (
                 <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary" />
               )}
@@ -81,8 +65,11 @@ export function Dock() {
         })}
       </div>
 
+      {/* Separator */}
+      <div className="w-px h-6 bg-border/40 mx-1" />
+
       {/* Right section */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         {/* Cascade */}
         <button
           onClick={cascadeWindows}
@@ -101,7 +88,7 @@ export function Dock() {
           <Columns2 className="w-4 h-4 text-muted-foreground" />
         </button>
 
-        {/* App launcher */}
+        {/* App launcher (fullscreen grid) */}
         <button
           onClick={() => openAppLauncher()}
           className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-accent transition-colors"

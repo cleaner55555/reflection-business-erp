@@ -18,7 +18,7 @@ import {
   UsersRound, Table2, ShoppingBag, GitBranch, StickyNote, CheckCircle2,
   Award, Star, Gamepad2, FileSignature, ShieldAlert, Gavel, Shield, Crown,
   UserCheck, Lightbulb, Target, Heart, Camera, PackageSearch, FileCode,
-  Search, Command, X,
+  Search, Command, X, Plus, Monitor as MonitorIcon,
 } from 'lucide-react'
 import { type LucideIcon } from 'lucide-react'
 
@@ -187,6 +187,17 @@ export function AppLauncher() {
     setOpen(false)
   }
 
+  const handleSendToDesktop = (e: React.MouseEvent, id: ModuleType) => {
+    e.stopPropagation()
+    const { addShortcut } = useWindowManager.getState()
+    addShortcut(id)
+  }
+
+  const isOnDesktop = (id: ModuleType) => {
+    const { desktopShortcuts } = useWindowManager.getState()
+    return desktopShortcuts.some((s) => s.module === id)
+  }
+
   if (!open) return null
 
   return (
@@ -256,12 +267,13 @@ export function AppLauncher() {
                   {modules.map((m) => {
                     const isActive = activeModule === m.id
                     const Icon = m.icon
+                    const onDesktop = isDesktopMode && isOnDesktop(m.id)
                     return (
                       <button
                         key={m.id}
                         onClick={() => handleSelect(m.id)}
                         className={`
-                          flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm
+                          relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm
                           transition-all duration-150
                           ${isActive
                             ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-sm'
@@ -271,6 +283,19 @@ export function AppLauncher() {
                       >
                         <Icon className="h-4 w-4 shrink-0 opacity-70" />
                         <span className="truncate text-xs font-medium">{t(m.labelKey)}</span>
+                        {/* Send to Desktop button — visible only in desktop mode */}
+                        {isDesktopMode && !onDesktop && (
+                          <span
+                            onClick={(e) => handleSendToDesktop(e, m.id)}
+                            className="ml-auto shrink-0 flex items-center justify-center w-5 h-5 rounded bg-white/80 dark:bg-black/80 hover:bg-primary hover:text-primary-foreground transition-colors"
+                            title="Pošalji na desktop"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </span>
+                        )}
+                        {onDesktop && (
+                          <MonitorIcon className="ml-auto shrink-0 w-3 h-3 text-primary/50" />
+                        )}
                       </button>
                     )
                   })}

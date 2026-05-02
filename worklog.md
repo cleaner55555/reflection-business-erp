@@ -425,3 +425,39 @@ Stage Summary:
 - Desktop icons provide quick access to 14 most-used modules
 - Clicking any module in sidebar or desktop opens it as a floating window
 - Dock at bottom shows open windows with minimize/restore functionality
+---
+Task ID: 4
+Agent: Main Agent
+Task: Desktop icons draggable, Send to Desktop, Start Menu bottom-left, context menu delete, window padding, semi-transparent menus
+
+Work Log:
+- Updated `src/lib/windowManager.ts`: Added `DesktopShortcut` interface, `desktopShortcuts` state (persisted to localStorage), `addShortcut()`, `removeShortcut()`, `updateShortcutPosition()`, `startMenuOpen`/`toggleStartMenu` state
+- Rewrote `src/components/window-manager/DesktopMode.tsx`:
+  - Removed left sidebar completely (no more confusing sidebar toggle)
+  - Top bar: logo+company name on LEFT, all controls (search, language, theme, exit desktop mode, user menu) on RIGHT
+  - Desktop area: draggable shortcut icons with pointer events, right-click context menu to delete shortcuts
+  - DesktopIcon sub-component: handles drag (PointerDown/Move/Up), saves position to localStorage, click to open module
+- Created `src/components/window-manager/StartMenu.tsx`:
+  - Semi-transparent panel (bg-background/85 backdrop-blur-xl) rising from bottom-left
+  - Search bar, collapsible group headers, all 125 modules
+  - Hover-reveal "+" button on each module to "Send to Desktop"
+  - Desktop indicator icon for modules already on desktop
+- Updated `src/components/window-manager/Dock.tsx`:
+  - Added Start Menu button (☰ icon) on far left
+  - Removed desktop mode toggle from Dock (moved to top-right in top bar)
+  - App launcher button on far right (grid icon for fullscreen module browser)
+- Updated `src/components/window-manager/WindowFrame.tsx`:
+  - Added `p-4` padding to content area so content doesn't touch window edges
+- Updated `src/components/modules/AppLauncher.tsx`:
+  - Added "Send to Desktop" (+) button on each module in desktop mode
+  - Desktop indicator icon for modules already on desktop
+  - Renamed `Monitor` to `MonitorIcon` to avoid naming conflicts
+
+Stage Summary:
+- Desktop icons are fully draggable with positions persisted to localStorage
+- Right-click on any desktop icon shows "Obriši prečicu" (Delete shortcut) context menu
+- Start Menu (☰) in bottom-left Dock opens a semi-transparent module browser with all 125 modules
+- "Send to Desktop" (+) button available in Start Menu (hover) and AppLauncher (always in desktop mode)
+- Window content now has 16px padding (p-4) so modules don't touch window edges
+- Exit desktop mode button is ONLY in top-right corner of top bar (no confusing duplicates)
+- All menus are semi-transparent with backdrop blur

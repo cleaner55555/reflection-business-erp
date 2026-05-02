@@ -288,8 +288,8 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-auto">
+        {/* Content — with padding so content doesn't touch edges */}
+        <div className="flex-1 overflow-auto p-4">
           {moduleComponents[windowData.moduleId] || (
             <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
               Modul &quot;{windowData.moduleId}&quot; nije pronađen

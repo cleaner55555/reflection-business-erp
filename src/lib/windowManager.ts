@@ -32,6 +32,12 @@ export interface VirtualDesktop {
   name: string
 }
 
+export interface DesktopShortcut {
+  module: ModuleType
+  x: number
+  y: number
+}
+
 interface WindowManagerState {
   // Desktop mode toggle
   isDesktopMode: boolean
@@ -72,6 +78,17 @@ interface WindowManagerState {
   cascadeWindows: () => void
   tileWindows: () => void
 
+  // Desktop shortcuts
+  desktopShortcuts: DesktopShortcut[]
+  addShortcut: (module: ModuleType) => void
+  removeShortcut: (module: ModuleType) => void
+  updateShortcutPosition: (module: ModuleType, x: number, y: number) => void
+
+  // Start menu
+  startMenuOpen: boolean
+  setStartMenuOpen: (open: boolean) => void
+  toggleStartMenu: () => void
+
   // Helpers
   getWindowsForDesktop: () => WindowState[]
   getWindowById: (id: string) => WindowState | undefined
@@ -85,12 +102,27 @@ function generateWindowId(): string {
 }
 
 function getDesktopOffset(index: number): { x: number; y: number } {
-  const baseX = 80
+  const baseX = 120
   const baseY = 40
   const step = 30
   return {
     x: baseX + (index % 10) * step,
     y: baseY + (index % 10) * step,
+  }
+}
+
+function loadShortcuts(): DesktopShortcut[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem('desktopShortcuts')
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return []
+}
+
+function saveShortcuts(shortcuts: DesktopShortcut[]) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('desktopShortcuts', JSON.stringify(shortcuts))
   }
 }
 
@@ -122,6 +154,39 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
     { id: 'desktop-3', name: 'Analitika' },
   ],
   activeDesktopId: 'desktop-1',
+
+  // Desktop shortcuts (persisted)
+  desktopShortcuts: loadShortcuts(),
+  addShortcut: (module) => {
+    const shortcuts = get().desktopShortcuts
+    if (shortcuts.some((s) => s.module === module)) return // already exists
+    const index = shortcuts.length
+    const newShortcut: DesktopShortcut = {
+      module,
+      x: 20 + (index % 6) * 84,
+      y: 20 + Math.floor(index / 6) * 84,
+    }
+    const updated = [...shortcuts, newShortcut]
+    saveShortcuts(updated)
+    set({ desktopShortcuts: updated })
+  },
+  removeShortcut: (module) => {
+    const updated = get().desktopShortcuts.filter((s) => s.module !== module)
+    saveShortcuts(updated)
+    set({ desktopShortcuts: updated })
+  },
+  updateShortcutPosition: (module, x, y) => {
+    const updated = get().desktopShortcuts.map((s) =>
+      s.module === module ? { ...s, x, y } : s
+    )
+    saveShortcuts(updated)
+    set({ desktopShortcuts: updated })
+  },
+
+  // Start menu
+  startMenuOpen: false,
+  setStartMenuOpen: (open) => set({ startMenuOpen: open }),
+  toggleStartMenu: () => set({ startMenuOpen: !get().startMenuOpen }),
 
   // Open window
   openWindow: (moduleId, title, icon) => {
@@ -242,8 +307,9 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
   // Snap
   snapWindow: (id, zone, containerWidth, containerHeight) => {
     const dockHeight = 56
-    const usableHeight = containerHeight - dockHeight
-    let x = 0, y = 0, width = containerWidth, height = usableHeight
+    const topBarHeight = 48
+    const usableHeight = containerHeight - dockHeight - topBarHeight
+    let x = 0, y = topBarHeight, width = containerWidth, height = usableHeight
 
     if (zone === 'left') {
       width = containerWidth / 2
@@ -260,12 +326,12 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
       width = containerWidth / 2
       height = usableHeight / 2
     } else if (zone === 'bottom-left') {
-      y = usableHeight / 2
+      y = topBarHeight + usableHeight / 2
       width = containerWidth / 2
       height = usableHeight / 2
     } else if (zone === 'bottom-right') {
       x = containerWidth / 2
-      y = usableHeight / 2
+      y = topBarHeight + usableHeight / 2
       width = containerWidth / 2
       height = usableHeight / 2
     }
@@ -292,11 +358,6 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
   },
   removeDesktop: (id) => {
     if (get().desktops.length <= 1) return
-    const wins = get().windows.filter((w) => {
-      // Move windows to first desktop
-      return true // we'll handle in moveWindowToDesktop
-    })
-    // Move all windows from this desktop to the first one
     set({
       desktops: get().desktops.filter((d) => d.id !== id),
       activeDesktopId: get().activeDesktopId === id ? get().desktops[0].id : get().activeDesktopId,
@@ -306,17 +367,18 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
     set({ activeDesktopId: id })
   },
   moveWindowToDesktop: (windowId, desktopId) => {
-    // Currently single-window-per-desktop is simplified; we just manage via frontend state
-    // For now, windows exist across all desktops (simplified approach)
+    // Simplified: windows exist across all desktops
   },
 
   // Cascade windows
   cascadeWindows: () => {
     const windows = get().windows.filter((w) => !w.isMinimized)
+    const topBarH = 48
+    const dockH = 56
     const updated = windows.map((w, i) => ({
       ...w,
       x: 60 + i * 30,
-      y: 30 + i * 30,
+      y: topBarH + 30 + i * 30,
       width: 800,
       height: 500,
       isMaximized: false,
@@ -337,8 +399,10 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
     const visible = get().windows.filter((w) => !w.isMinimized)
     if (visible.length === 0) return
 
+    const topBarH = 48
+    const dockH = 56
     const containerWidth = typeof window !== 'undefined' ? window.innerWidth : 1920
-    const containerHeight = typeof window !== 'undefined' ? window.innerHeight - 56 : 1080 - 56
+    const containerHeight = typeof window !== 'undefined' ? window.innerHeight - topBarH - dockH : 1080 - topBarH - dockH
 
     const cols = Math.ceil(Math.sqrt(visible.length))
     const rows = Math.ceil(visible.length / cols)
@@ -351,7 +415,7 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
       return {
         ...w,
         x: col * tileW,
-        y: row * tileH,
+        y: topBarH + row * tileH,
         width: tileW,
         height: tileH,
         isMaximized: false,
