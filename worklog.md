@@ -501,3 +501,24 @@ Stage Summary:
 - Two missing export/import issues fixed
 - Desktop mode now renders correctly with Dock taskbar at bottom
 - DesktopSettingsPanel can import DEFAULT_SETTINGS without error
+---
+Task ID: 7
+Agent: Main (direct)
+Task: Fix desktop icon drag-and-drop — icons "running away" from cursor
+
+Work Log:
+- Diagnosed root cause: React state (useState) for `dragStart` and `pos` doesn't update synchronously between fast pointer events
+- With snap-to-grid (gridSize=88), stale state caused icon to oscillate between grid cells (e.g., x=0 ↔ x=88) creating "running away" effect
+- Rewrote DesktopIcon drag system using refs for real-time tracking:
+  - `posRef` and `dragStartRef` — updated synchronously on every pointer move
+  - `isDraggingRef` — avoids stale boolean checks
+  - `pos` state — only updated for React rendering
+- Added `transition: 'none'` during drag to prevent CSS transition lag
+- Wrapped handlers in `useCallback` for stable references
+- Cleaned up unnecessary useEffect
+
+Stage Summary:
+- Desktop icons now drag smoothly without "running away" — refs provide immediate position tracking
+- Grid snapping works correctly without oscillation
+- CSS transitions disabled during drag for instant visual feedback
+- All compiles clean, no errors
