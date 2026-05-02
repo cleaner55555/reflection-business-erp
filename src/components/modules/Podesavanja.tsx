@@ -10,11 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook } from 'lucide-react'
+import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/helpers'
 import { useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
 import { useThemeStore, DEFAULT_THEME } from '@/lib/theme'
+import { openAISetupWizard } from '@/components/modules/AISetupWizard'
 import { UserManagement } from './UserManagement'
 import { ApiKeyManagement } from './ApiKeyManagement'
 import { PermissionsEditor } from './PermissionsEditor'
@@ -593,6 +594,10 @@ export function Podesavanja() {
                 {enabledCount}/{modules.length} {t('settings.active')}
               </Badge>
             </div>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => openAISetupWizard()}>
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Setup
+            </Button>
           </div>
 
           {modulesLoading ? (

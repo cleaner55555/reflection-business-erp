@@ -88,6 +88,7 @@ import { Kamere } from '@/components/modules/Kamere'
 import { MenadzerNabavke } from '@/components/modules/MenadzerNabavke'
 import { CMS } from '@/components/modules/CMS'
 import { AppLauncher, openAppLauncher } from '@/components/modules/AppLauncher'
+import { AISetupWizard, openAISetupWizard } from '@/components/modules/AISetupWizard'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -436,6 +437,8 @@ function AppContent() {
       <AIAssistant />
       {/* App Launcher - fullscreen module grid */}
       <AppLauncher />
+      {/* AI Setup Wizard - first login module selection */}
+      <AISetupWizard />
     </>
   )
 }

@@ -143,6 +143,7 @@ export function AppSidebar() {
   const { t } = useTranslation()
   const logo = useThemeStore((s) => s.logo)
   const companyName = useThemeStore((s) => s.companyName)
+  const isModuleEnabled = useAppStore((s) => s.isModuleEnabled)
 
   const handleModuleClick = (module: ModuleType) => {
     setActiveModule(module)
@@ -187,14 +188,16 @@ export function AppSidebar() {
             <SidebarMenu>
               {group.items.map((item) => (
                 <SidebarMenuItem key={item.module}>
-                  <SidebarMenuButton
-                    isActive={activeModule === item.module}
-                    onClick={() => handleModuleClick(item.module)}
-                    tooltip={t(item.labelKey)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{t(item.labelKey)}</span>
-                  </SidebarMenuButton>
+                  {isModuleEnabled(item.module) ? (
+                    <SidebarMenuButton
+                      isActive={activeModule === item.module}
+                      onClick={() => handleModuleClick(item.module)}
+                      tooltip={t(item.labelKey)}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{t(item.labelKey)}</span>
+                    </SidebarMenuButton>
+                  ) : null}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

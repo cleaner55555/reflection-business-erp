@@ -108,6 +108,13 @@ interface AppState {
   activeModule: ModuleType
   setActiveModule: (module: ModuleType) => void
 
+  // Enabled modules (empty = all enabled)
+  enabledModules: string[] | null
+  setEnabledModules: (modules: string[]) => void
+  isModuleEnabled: (module: string) => boolean
+  isSetupComplete: boolean
+  setSetupComplete: (complete: boolean) => void
+
   // Multi-tenant
   activeCompanyId: string | null
   activeCompanyName: string | null
@@ -126,6 +133,36 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Module navigation
   activeModule: 'dashboard',
   setActiveModule: (module) => set({ activeModule: module }),
+
+  // Enabled modules
+  enabledModules: (() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const stored = localStorage.getItem('enabledModules')
+      return stored ? JSON.parse(stored) : null
+    } catch { return null }
+  })(),
+  setEnabledModules: (modules) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('enabledModules', JSON.stringify(modules))
+    }
+    set({ enabledModules: modules, setupComplete: true })
+  },
+  isModuleEnabled: (module) => {
+    const enabled = get().enabledModules
+    if (!enabled || enabled.length === 0) return true // all enabled
+    return enabled.includes(module)
+  },
+  isSetupComplete: (() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('setupComplete') === 'true'
+  })(),
+  setSetupComplete: (complete) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('setupComplete', String(complete))
+    }
+    set({ setupComplete: complete })
+  },
 
   // Multi-tenant - load from localStorage on init
   activeCompanyId: typeof window !== 'undefined' ? localStorage.getItem('activeCompanyId') : null,

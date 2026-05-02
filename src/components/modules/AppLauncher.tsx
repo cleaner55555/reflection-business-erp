@@ -119,6 +119,7 @@ export function AppLauncher() {
   const { activeModule, setActiveModule } = useAppStore()
   const { t } = useTranslation()
   const companyName = useThemeStore((s) => s.companyName)
+  const isModuleEnabled = useAppStore((s) => s.isModuleEnabled)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { _setOpen = setOpen }, [setOpen])
@@ -158,10 +159,11 @@ export function AppLauncher() {
 
   // Filter modules by search
   const filtered = useMemo(() => {
-    if (!search.trim()) return allModules
+    let list = allModules.filter(m => isModuleEnabled(m.id))
+    if (!search.trim()) return list
     const q = search.toLowerCase()
-    return allModules.filter(m => t(m.labelKey).toLowerCase().includes(q) || m.id.includes(q))
-  }, [search, t])
+    return list.filter(m => t(m.labelKey).toLowerCase().includes(q) || m.id.includes(q))
+  }, [search, t, isModuleEnabled])
 
   // Group by category
   const grouped = useMemo(() => {
