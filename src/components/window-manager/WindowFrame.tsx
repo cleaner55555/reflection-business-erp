@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useWindowManager, type WindowState, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
+import { useWindowManager, type WindowState, type SnapZone, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
 import { moduleComponents } from '@/lib/moduleMap'
 import { menuGroups } from '@/components/modules/AppSidebar'
 import {
@@ -11,6 +11,54 @@ import {
   X,
   Copy,
 } from 'lucide-react'
+
+const SNAP_THRESHOLD = 12
+const RESTORE_WIDTH = 960
+const RESTORE_HEIGHT = 620
+
+function detectSnapZone(
+  mouseX: number,
+  mouseY: number,
+  screenW: number,
+  screenH: number
+): SnapZone | null {
+  const inLeft = mouseX <= SNAP_THRESHOLD
+  const inRight = mouseX >= screenW - SNAP_THRESHOLD
+  const inTop = mouseY <= STATUS_BAR_HEIGHT + SNAP_THRESHOLD
+  const inBottom = mouseY >= screenH - DOCK_HEIGHT - SNAP_THRESHOLD
+
+  if (inTop && inLeft) return 'top-left'
+  if (inTop && inRight) return 'top-right'
+  if (inBottom && inLeft) return 'bottom-left'
+  if (inBottom && inRight) return 'bottom-right'
+  if (inLeft) return 'left'
+  if (inRight) return 'right'
+  if (inTop) return 'top-left' // full width = treat as top area
+
+  return null
+}
+
+function getSnapPreviewRect(
+  zone: SnapZone,
+  screenW: number,
+  screenH: number
+): { x: number; y: number; w: number; h: number } {
+  const dockH = DOCK_HEIGHT + 4
+  const topH = STATUS_BAR_HEIGHT
+  const usableW = screenW - 4
+  const usableH = screenH - dockH - topH
+  const g = 2
+
+  switch (zone) {
+    case 'left': return { x: 2, y: topH, w: usableW / 2 - g, h: usableH }
+    case 'right': return { x: usableW / 2 + g, y: topH, w: usableW / 2 - g, h: usableH }
+    case 'top-left': return { x: 2, y: topH, w: usableW / 2 - g, h: usableH / 2 - g / 2 }
+    case 'top-right': return { x: usableW / 2 + g, y: topH, w: usableW / 2 - g, h: usableH / 2 - g / 2 }
+    case 'bottom-left': return { x: 2, y: topH + usableH / 2 + g / 2, w: usableW / 2 - g, h: usableH / 2 - g / 2 }
+    case 'bottom-right': return { x: usableW / 2 + g, y: topH + usableH / 2 + g / 2, w: usableW / 2 - g, h: usableH / 2 - g / 2 }
+  default: return { x: 0, y: 0, w: 0, h: 0 }
+  }
+}
 
 interface WindowFrameProps {
   windowData: WindowState
@@ -25,16 +73,18 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
     focusWindow,
     updateWindowPosition,
     updateWindowSize,
+    snapWindow,
+    clearSnap,
     topZIndex,
   } = useWindowManager()
 
   const frameRef = useRef<HTMLDivElement>(null)
   const titleBarRef = useRef<HTMLDivElement>(null)
 
-  // Snap removed — was causing drag to get stuck
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [snapPreview, setSnapPreview] = useState<SnapZone | null>(null)
 
   // Mark as mounted after first render to avoid re-animating on drag/resize re-renders
   useEffect(() => {
@@ -46,8 +96,9 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
   // Determine if this window is the focused (top) window
   const isFocused = windowData.zIndex === topZIndex && !windowData.isMinimized
 
-  // ===== DRAG: native window events =====
-
+  // ===== DRAG: native window events (with snap) =====
+  // Track the pre-snap dimensions so we can restore them on unsnap
+  const preSnapRef = useRef<{ width: number; height: number } | null>(null)
 
   useEffect(() => {
     const titleBar = titleBarRef.current
@@ -55,7 +106,6 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
     const onDown = (e: PointerEvent) => {
       if (e.button !== 0) return
-      if (windowData.isMaximized) return
 
       // Don't start drag if clicking on a button (close, minimize, maximize)
       const target = e.target as HTMLElement
@@ -66,23 +116,59 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
       focusWindow(windowData.id)
 
       setIsDragging(true)
+      const store = useWindowManager.getState()
+      const win = store.windows.find(w => w.id === windowData.id)
+      if (!win) return
 
-      const startX = e.clientX
-      const startY = e.clientY
-      const win = useWindowManager.getState().windows.find(w => w.id === windowData.id)
-      const originX = win?.x ?? windowData.x
-      const originY = win?.y ?? windowData.y
+      // === UNSNAP: If window is snapped or maximized, restore to normal size first ===
+      let startX: number, startY: number, originX: number, originY: number
+
+      if (win.snapZone || win.isMaximized) {
+        clearSnap(windowData.id)
+        // Use remembered pre-snap size, or defaults
+        const restoreW = preSnapRef.current?.width ?? RESTORE_WIDTH
+        const restoreH = preSnapRef.current?.height ?? RESTORE_HEIGHT
+        // Position window so cursor is centered on the title bar
+        startX = e.clientX
+        startY = e.clientY
+        originX = Math.max(0, e.clientX - restoreW / 2)
+        originY = Math.max(STATUS_BAR_HEIGHT - 36, e.clientY - 20)
+        updateWindowSize(windowData.id, restoreW, restoreH)
+        updateWindowPosition(windowData.id, originX, originY)
+      } else {
+        startX = e.clientX
+        startY = e.clientY
+        originX = win.x
+        originY = win.y
+        // Remember current size for when we snap
+        preSnapRef.current = { width: win.width, height: win.height }
+      }
+
+      const screenW = window.innerWidth
+      const screenH = window.innerHeight
 
       const onMove = (ev: PointerEvent) => {
         const dx = ev.clientX - startX
         const dy = ev.clientY - startY
         updateWindowPosition(windowData.id, originX + dx, originY + dy)
+
+        // Detect snap zone for preview
+        const zone = detectSnapZone(ev.clientX, ev.clientY, screenW, screenH)
+        setSnapPreview(zone)
       }
 
-      const onUp = () => {
+      const onUp = (ev: PointerEvent) => {
         window.removeEventListener('pointermove', onMove)
         window.removeEventListener('pointerup', onUp)
         setIsDragging(false)
+        setSnapPreview(null)
+
+        // Check if we should snap
+        const zone = detectSnapZone(ev.clientX, ev.clientY, screenW, screenH)
+        if (zone) {
+          preSnapRef.current = { width: RESTORE_WIDTH, height: RESTORE_HEIGHT }
+          snapWindow(windowData.id, zone, screenW, screenH)
+        }
       }
 
       window.addEventListener('pointermove', onMove)
@@ -91,8 +177,8 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
     titleBar.addEventListener('pointerdown', onDown)
     return () => titleBar.removeEventListener('pointerdown', onDown)
-    // Only re-attach when window ID or isMaximized changes — NOT on every position update
-  }, [windowData.id, windowData.isMaximized])
+    // Only re-attach when window ID changes — NOT on every position/maximize update
+  }, [windowData.id])
 
   // ===== RESIZE: native window events =====
   const resizeHandlesRef = useRef<Map<string, HTMLElement>>(new Map())
@@ -107,7 +193,6 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
     const onDown = (e: PointerEvent, direction: string) => {
       if (e.button !== 0) return
-      if (windowData.isMaximized) return
       e.preventDefault()
       e.stopPropagation()
       focusWindow(windowData.id)
@@ -117,6 +202,12 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
       const startY = e.clientY
       // Read current window dimensions from store (always fresh)
       const win = useWindowManager.getState().windows.find(w => w.id === windowData.id)
+
+      // Unsnap if snapped — allow resizing freely
+      if (win?.snapZone) {
+        clearSnap(windowData.id)
+      }
+      if (win?.isMaximized) return
       const originX = win?.x ?? windowData.x
       const originY = win?.y ?? windowData.y
       const originW = win?.width ?? windowData.width
@@ -189,6 +280,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
   if (windowData.isMinimized) return null
 
+  const isSnapped = !!windowData.snapZone && !windowData.isMaximized
   const style: React.CSSProperties = windowData.isMaximized
     ? {
         position: 'absolute',
@@ -208,6 +300,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
         zIndex: windowData.zIndex,
         minWidth: windowData.minWidth,
         minHeight: windowData.minHeight,
+        borderRadius: isSnapped ? 8 : undefined,
       }
 
   // Shadow class based on focus and drag state
@@ -217,11 +310,29 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
       ? 'shadow-2xl shadow-black/25'
       : 'shadow-xl shadow-black/10 opacity-[0.97]'
 
+  // Snap preview rectangle (renders during drag near edges)
+  const previewRect = snapPreview
+    ? getSnapPreviewRect(snapPreview, window.innerWidth, window.innerHeight)
+    : null
+
   return (
     <>
+      {/* Snap zone preview overlay */}
+      {previewRect && previewRect.w > 0 && (
+        <div
+          className="fixed pointer-events-none border-2 border-primary/50 bg-primary/8 rounded-lg z-[99999]"
+          style={{
+            left: previewRect.x,
+            top: previewRect.y,
+            width: previewRect.w,
+            height: previewRect.h,
+            transition: 'all 150ms ease-out',
+          }}
+        />
+      )}
       <motion.div
         ref={frameRef}
-        className={`flex flex-col overflow-hidden bg-background border border-border/50 rounded-xl ${shadowClass}`}
+        className={`flex flex-col overflow-hidden bg-background border border-border/50 ${isSnapped ? 'rounded-lg' : 'rounded-xl'} ${shadowClass}`}
         style={{
           ...style,
           transition: (isDragging || isResizing) ? 'none' : 'box-shadow 200ms ease, opacity 200ms ease',
@@ -309,5 +420,3 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
     </>
   )
 }
-
-
