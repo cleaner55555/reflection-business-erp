@@ -15,6 +15,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { openAppLauncher } from '@/components/modules/AppLauncher'
 import {
   LayoutDashboard, Wallet, FileText, Warehouse, ShoppingCart, Users, BarChart3,
   HeartHandshake, CalendarDays, UserCog, FolderKanban, Building2, Files,
@@ -25,7 +26,8 @@ import {
   MessageSquare, Megaphone, PartyPopper, Workflow, ClipboardCheck,
   MessageCircle, BookMarked, Globe2, PenLine, Phone, Wifi, MessageCircleReply,
   UsersRound, Table2, ShoppingBag, GitBranch, StickyNote, CheckCircle2,
-  Award, Star, Gamepad2, FileSignature, BadgeCheck, ShieldAlert, Gavel, Shield, Crown, UserCheck, Lightbulb, Target, Heart, Camera, PackageSearch, FileCode
+  Award, Star, Gamepad2, FileSignature, BadgeCheck, ShieldAlert, Gavel, Shield, Crown, UserCheck, Lightbulb, Target, Heart, Camera, PackageSearch, FileCode,
+  LayoutGrid
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -200,7 +202,20 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-2">
+        {/* Launcher button - dots grid, visible when sidebar is collapsed */}
+        <button
+          onClick={() => openAppLauncher()}
+          className="group-data-[collapsible=icon]:flex hidden w-full items-center justify-center rounded-lg p-2 hover:bg-sidebar-accent transition-colors"
+          title="Prikaži sve module"
+        >
+          <div className="grid grid-cols-3 gap-[3px]">
+            {[...Array(9)].map((_, i) => (
+              <span key={i} className="block h-[3px] w-[3px] rounded-full bg-sidebar-foreground/60" />
+            ))}
+          </div>
+        </button>
+        {/* Company info - visible when sidebar is expanded */}
         <div className="group-data-[collapsible=icon]:hidden flex items-center gap-2 rounded-lg bg-sidebar-accent p-3">
           {logo ? (
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full overflow-hidden">

@@ -4,13 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useAppStore, type ModuleType } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { useTranslation } from '@/lib/i18n'
-import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   LayoutDashboard, Wallet, FileText, Warehouse, ShoppingCart, Users, BarChart3,
   HeartHandshake, CalendarDays, UserCog, FolderKanban, Building2, Files,
@@ -27,7 +21,6 @@ import {
 } from 'lucide-react'
 import { type LucideIcon } from 'lucide-react'
 
-// Module definition with icon
 interface ModuleDef {
   id: ModuleType
   icon: LucideIcon
@@ -116,7 +109,7 @@ const allModules: ModuleDef[] = [
   { id: 'podesavanja', icon: Settings, labelKey: 'sidebar.settings', group: 'Sistem' },
 ]
 
-// Export open function for the floating button
+// Export open function for the sidebar dots button
 let _setOpen: (open: boolean) => void = () => {}
 export function openAppLauncher() { _setOpen(true) }
 
@@ -128,7 +121,6 @@ export function AppLauncher() {
   const companyName = useThemeStore((s) => s.companyName)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Expose setOpen
   useEffect(() => { _setOpen = setOpen }, [setOpen])
 
   // Focus input on open
@@ -137,6 +129,19 @@ export function AppLauncher() {
       setTimeout(() => inputRef.current?.focus(), 100)
       setSearch('')
     }
+  }, [open])
+
+  // ESC to close
+  useEffect(() => {
+    if (!open) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [open])
 
   // Keyboard shortcut: Ctrl/Cmd + K
@@ -173,49 +178,72 @@ export function AppLauncher() {
     setOpen(false)
   }
 
+  if (!open) return null
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="flex flex-col sm:max-w-3xl max-h-[85vh] p-0 gap-0">
+    <div
+      className="fixed inset-0 z-[100] flex flex-col animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setOpen(false)
+      }}
+    >
+      {/* Fullscreen overlay - white in light mode, black in dark mode */}
+      <div className="fixed inset-0 bg-white dark:bg-black" />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col h-full">
         {/* Search header */}
-        <div className="flex items-center gap-3 border-b px-4 py-3 shrink-0">
-          <Search className="h-5 w-5 text-muted-foreground shrink-0" />
-          <input
-            ref={inputRef}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Pretraži module... (Ctrl+K)"
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="text-muted-foreground hover:text-foreground">
-              <X className="h-4 w-4" />
-            </button>
-          )}
-          <kbd className="hidden sm:inline-flex h-5 shrink-0 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            ESC
-          </kbd>
+        <div className="shrink-0 border-b border-gray-200 dark:border-gray-800">
+          <div className="mx-auto max-w-4xl px-4 py-4">
+            <div className="flex items-center gap-3">
+              <Search className="h-5 w-5 text-gray-400 dark:text-gray-500 shrink-0" />
+              <input
+                ref={inputRef}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Pretraži module..."
+                className="flex-1 bg-transparent text-base text-gray-900 dark:text-gray-100 outline-none placeholder:text-gray-400 dark:placeholder:text-gray-600"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+              <button
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-1.5 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+              >
+                ESC
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Module grid */}
-        <ScrollArea className="flex-1 overflow-auto">
-          <div className="px-4 py-3 space-y-5">
-            {!search && (
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Svi moduli — {allModules.length}
-                </h3>
-                <Badge variant="secondary" className="text-[10px]">
-                  {companyName || 'Reflection Business'}
+        {/* Module grid - scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-4xl px-4 py-4 space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Svi moduli
+              </h2>
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="text-[10px] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+                  {filtered.length} od {allModules.length}
                 </Badge>
+                <span className="text-xs text-gray-400 dark:text-gray-600">
+                  {companyName || 'Reflection Business'}
+                </span>
               </div>
-            )}
+            </div>
 
+            {/* Module groups */}
             {Object.entries(grouped).map(([group, modules]) => (
               <div key={group}>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                  {group} ({modules.length})
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-600 mb-2">
+                  {group}
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
                   {modules.map((m) => {
                     const isActive = activeModule === m.id
                     const Icon = m.icon
@@ -225,14 +253,14 @@ export function AppLauncher() {
                         onClick={() => handleSelect(m.id)}
                         className={`
                           flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm
-                          transition-all duration-150 select-text
+                          transition-all duration-150
                           ${isActive
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'hover:bg-accent hover:text-accent-foreground'
+                            ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-sm'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900'
                           }
                         `}
                       >
-                        <Icon className={`h-4 w-4 shrink-0 ${isActive ? '' : 'text-muted-foreground'}`} />
+                        <Icon className="h-4 w-4 shrink-0 opacity-70" />
                         <span className="truncate text-xs font-medium">{t(m.labelKey)}</span>
                       </button>
                     )
@@ -241,30 +269,29 @@ export function AppLauncher() {
               </div>
             ))}
 
+            {/* No results */}
             {filtered.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Search className="h-8 w-8 mb-2" />
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-600">
+                <Search className="h-10 w-10 mb-3 opacity-40" />
                 <p className="text-sm">Nema rezultata za &quot;{search}&quot;</p>
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t px-4 py-2 shrink-0">
-          <p className="text-[10px] text-muted-foreground">
-            {filtered.length} od {allModules.length} modula
-          </p>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <Command className="h-3 w-3" />
-            <span>K</span>
-            <span className="mx-1">·</span>
-            <span>↑↓ navigacija</span>
-            <span className="mx-1">·</span>
-            <span>Enter odabir</span>
+        <div className="shrink-0 border-t border-gray-200 dark:border-gray-800">
+          <div className="mx-auto max-w-4xl px-4 py-2 flex items-center justify-between">
+            <p className="text-[10px] text-gray-400 dark:text-gray-600">
+              Klik na modul · ESC za zatvaranje
+            </p>
+            <div className="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-600">
+              <Command className="h-3 w-3" />
+              <span>K</span>
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   )
 }
