@@ -583,7 +583,38 @@ function TypesTab() {
       <div className="flex justify-between items-center"><h3 className="text-sm font-medium">Tipovi sadržaja ({types.length})</h3><Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Novi tip</Button></div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {types.map(t => (
-{/* eslint-disable-next-line jsx-a11y/alt-text */}<div><p className="text-sm font-medium">{t.name}</p><p className="text-[10px] text-muted-foreground">/{t.slug}</p></div></div><Badge variant="outline" className="text-[10px]">{t.itemCount}</Badge></div><p className="text-xs text-muted-foreground mb-3">{t.description}</p><div className="space-y-1 mb-3"><p className="text-[10px] font-medium text-muted-foreground">Polja ({t.fields.length}):</p>{t.fields.map(f => <div key={f.id} className="flex items-center gap-2 text-xs"><Badge variant="outline" className="text-[9px]">{f.type}</Badge><span>{f.name}</span>{f.required && <span className="text-red-400">*</span>}</div>)}</div><div className="flex gap-2 mt-3"><Button variant="outline" size="sm" className="text-xs flex-1"><Edit3 className="h-3 w-3 mr-1" /> Izmeni</Button><Button variant="outline" size="sm" className="text-xs text-destructive" onClick={() => handleDelete(t.id)}><Trash2 className="h-3 w-3" /></Button></div></Card>
+          <Card key={t.id}>
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium">{t.name}</p>
+                  <p className="text-[10px] text-muted-foreground">/{t.slug}</p>
+                </div>
+                <Badge variant="outline" className="text-[10px]">{t.itemCount}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground mb-3">{t.description}</p>
+              <div className="space-y-1 mb-3">
+                <p className="text-[10px] font-medium text-muted-foreground">Polja ({t.fields.length}):</p>
+                {t.fields.map(f => (
+                  <div key={f.id} className="flex items-center gap-2 text-xs">
+                    <Badge variant="outline" className="text-[9px]">{f.type}</Badge>
+                    <span>{f.name}</span>
+                    {f.required && <span className="text-red-400">*</span>}
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-3">
+                <Button variant="outline" size="sm" className="text-xs flex-1">
+                  <Edit3 className="h-3 w-3 mr-1" /> Izmeni
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs text-destructive" onClick={() => handleDelete(t.id)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>Novi tip sadržaja</DialogTitle></DialogHeader><div className="space-y-4"><div className="space-y-2"><Label>Naziv</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div><div className="space-y-2"><Label>Opis</Label><Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div></div><DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreate}>Kreiraj</Button></DialogFooter></DialogContent></Dialog>
