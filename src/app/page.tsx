@@ -357,6 +357,7 @@ function AppContent() {
   }
 
   return (
+    <>
     <SidebarProvider className="h-svh overflow-hidden">
       <AppSidebar />
       <SidebarInset className="flex-1 flex flex-col overflow-hidden">
@@ -432,6 +433,7 @@ function AppContent() {
 
       {/* AI Assistant - outside SidebarProvider to prevent dialog conflicts */}
       <AIAssistant />
+    </>
   )
 }
 
