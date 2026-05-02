@@ -80,6 +80,61 @@ export type ModuleType =
   | 'kamere'
   | 'menadzer-nabavke'
   | 'cms'
+  // --- Education (6) ---
+  | 'obaveze'
+  | 'prijave'
+  | 'raspored'
+  | 'biblioteka'
+  | 'ucionica'
+  | 'skolarina'
+  // --- Healthcare (4) ---
+  | 'pacijenti'
+  | 'kartoni'
+  | 'recepti'
+  | 'laboratorija'
+  // --- Hospitality (5) ---
+  | 'rezervacije'
+  | 'jelovnik'
+  | 'kuhinja'
+  | 'narudzbe'
+  | 'dostava'
+  // --- Construction (5) ---
+  | 'gradiliste'
+  | 'projektovanje'
+  | 'subodradaci'
+  | 'merenja'
+  | 'bezbednost'
+  // --- Logistics (5) ---
+  | 'rute'
+  | 'utovar-istovar'
+  | 'carinski-dokument'
+  | 'kamioni'
+  | 'pakovanje'
+  // --- Real Estate (4) ---
+  | 'nekretnine'
+  | 'iznajmljivanje'
+  | 'pregledi-nekretnine'
+  | 'komunalije'
+  // --- Production+ (3) ---
+  | 'radni-nalozi'
+  | 'normativ'
+  | 'etikete'
+  // --- Retail (8) ---
+  | 'barkod'
+  | 'cenovnici'
+  | 'kuponi'
+  | 'recenzije'
+  | 'seo'
+  | 'naplate'
+  | 'povrat'
+  | 'blagajna'
+  // --- Services (6) ---
+  | 'vremenski-trag'
+  | 'fakturisanje-vremena'
+  | 'klijentski-portal'
+  | 'automatizacija'
+  | 'poslovnice'
+  | 'backup'
 
 export interface UserInfo {
   id: string
@@ -235,7 +290,16 @@ export const useAppStore = create<AppState>((set, get) => ({
         'drustvene-mreze', 'sms-marketing', 'dogadjaji', 'mkt-automatizacija',
         'ankete', 'chet', 'baza-znanja', 'website', 'blog', 'voip',
         'iot', 'whatsapp', 'forum', 'plm', 'ecommerce', 'spreadsheet',
-        'beleske', 'odobrenja', 'vestine', 'ugovori', 'ocene', 'gamifikacija', 'reklamacije', 'natečaji', 'garancije', 'servis', 'uskladenost', 'program-lojalnosti', 'planer-radne-sile', 'posetioci', 'predlozi', 'taksacija', 'fond-zdravlja', 'geolokacija', 'kamere', 'menadzer-nabavke', 'cms'
+        'beleske', 'odobrenja', 'vestine', 'ugovori', 'ocene', 'gamifikacija', 'reklamacije', 'natečaji', 'garancije', 'servis', 'uskladenost', 'program-lojalnosti', 'planer-radne-sile', 'posetioci', 'predlozi', 'taksacija', 'fond-zdravlja', 'geolokacija', 'kamere', 'menadzer-nabavke', 'cms',
+        'obaveze', 'prijave', 'raspored', 'biblioteka', 'ucionica', 'skolarina',
+        'pacijenti', 'kartoni', 'recepti', 'laboratorija',
+        'rezervacije', 'jelovnik', 'kuhinja', 'narudzbe', 'dostava',
+        'gradiliste', 'projektovanje', 'subodradaci', 'merenja', 'bezbednost',
+        'rute', 'utovar-istovar', 'carinski-dokument', 'kamioni', 'pakovanje',
+        'nekretnine', 'iznajmljivanje', 'pregledi-nekretnine', 'komunalije',
+        'radni-nalozi', 'normativ', 'etikete',
+        'barkod', 'cenovnici', 'kuponi', 'recenzije', 'seo', 'naplate', 'povrat', 'blagajna',
+        'vremenski-trag', 'fakturisanje-vremena', 'klijentski-portal', 'automatizacija', 'poslovnice', 'backup'
       ]
       modules.forEach(m => { permissions[m] = ['read', 'write', 'delete', 'admin'] })
     }

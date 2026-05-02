@@ -87,6 +87,53 @@ import { Geolokacija } from '@/components/modules/Geolokacija'
 import { Kamere } from '@/components/modules/Kamere'
 import { MenadzerNabavke } from '@/components/modules/MenadzerNabavke'
 import { CMS } from '@/components/modules/CMS'
+// --- New modules (46) ---
+import { Obaveze } from '@/components/modules/Obaveze'
+import { Prijave } from '@/components/modules/Prijave'
+import { Raspored } from '@/components/modules/Raspored'
+import { Biblioteka } from '@/components/modules/Biblioteka'
+import { Ucionica } from '@/components/modules/Ucionica'
+import { Skolarina } from '@/components/modules/Skolarina'
+import { Pacijenti } from '@/components/modules/Pacijenti'
+import { Kartoni } from '@/components/modules/Kartoni'
+import { Recepti } from '@/components/modules/Recepti'
+import { Laboratorija } from '@/components/modules/Laboratorija'
+import { Rezervacije } from '@/components/modules/Rezervacije'
+import { Jelovnik } from '@/components/modules/Jelovnik'
+import { Kuhinja } from '@/components/modules/Kuhinja'
+import { Narudzbe } from '@/components/modules/Narudzbe'
+import { DostavaModul } from '@/components/modules/DostavaModul'
+import { Gradiliste } from '@/components/modules/Gradiliste'
+import { Projektovanje } from '@/components/modules/Projektovanje'
+import { Subodradaci } from '@/components/modules/Subodradaci'
+import { Merenja } from '@/components/modules/Merenja'
+import { Bezbednost } from '@/components/modules/Bezbednost'
+import { Rute } from '@/components/modules/Rute'
+import { UtovarIstovar } from '@/components/modules/UtovarIstovar'
+import { CarinskiDokument } from '@/components/modules/CarinskiDokument'
+import { Kamioni } from '@/components/modules/Kamioni'
+import { Pakovanje } from '@/components/modules/Pakovanje'
+import { Nekretnine } from '@/components/modules/Nekretnine'
+import { Iznajmljivanje } from '@/components/modules/Iznajmljivanje'
+import { PreglediNekretnine } from '@/components/modules/PreglediNekretnine'
+import { Komunalije } from '@/components/modules/Komunalije'
+import { RadniNalozi } from '@/components/modules/RadniNalozi'
+import { Normativ } from '@/components/modules/Normativ'
+import { Etikete } from '@/components/modules/Etikete'
+import { Barkod } from '@/components/modules/Barkod'
+import { Cenovnici } from '@/components/modules/Cenovnici'
+import { Kuponi } from '@/components/modules/Kuponi'
+import { Recenzije } from '@/components/modules/Recenzije'
+import { SEO } from '@/components/modules/SEO'
+import { Naplate } from '@/components/modules/Naplate'
+import { Povrat } from '@/components/modules/Povrat'
+import { Blagajna } from '@/components/modules/Blagajna'
+import { VremenskiTrag } from '@/components/modules/VremenskiTrag'
+import { FakturisanjeVremena } from '@/components/modules/FakturisanjeVremena'
+import { KlijentskiPortal } from '@/components/modules/KlijentskiPortal'
+import { Automatizacija } from '@/components/modules/Automatizacija'
+import { Poslovnice } from '@/components/modules/Poslovnice'
+import { Backup } from '@/components/modules/Backup'
 import { AppLauncher, openAppLauncher } from '@/components/modules/AppLauncher'
 import { AISetupWizard, openAISetupWizard } from '@/components/modules/AISetupWizard'
 import { AuthPage } from '@/components/modules/AuthPage'
@@ -143,7 +190,7 @@ const modules: Record<string, React.ReactNode> = {
   marketplace: <Marketplace />,
   ponude: <Ponude />,
   pretplate: <Pretplate />,
-  troškovi: <Troškovi />,
+  troskovi: <Troškovi />,
   potpisi: <Potpisi />,
   proizvodnja: <Proizvodnja />,
   kvalitet: <Kvalitet />,
@@ -192,6 +239,53 @@ const modules: Record<string, React.ReactNode> = {
   kamere: <Kamere />,
   'menadzer-nabavke': <MenadzerNabavke />,
   cms: <CMS />,
+  // --- New modules (46) ---
+  obaveze: <Obaveze />,
+  prijave: <Prijave />,
+  raspored: <Raspored />,
+  biblioteka: <Biblioteka />,
+  ucionica: <Ucionica />,
+  skolarina: <Skolarina />,
+  pacijenti: <Pacijenti />,
+  kartoni: <Kartoni />,
+  recepti: <Recepti />,
+  laboratorija: <Laboratorija />,
+  rezervacije: <Rezervacije />,
+  jelovnik: <Jelovnik />,
+  kuhinja: <Kuhinja />,
+  narudzbe: <Narudzbe />,
+  dostava: <DostavaModul />,
+  gradiliste: <Gradiliste />,
+  projektovanje: <Projektovanje />,
+  subodradaci: <Subodradaci />,
+  merenja: <Merenja />,
+  bezbednost: <Bezbednost />,
+  rute: <Rute />,
+  'utovar-istovar': <UtovarIstovar />,
+  'carinski-dokument': <CarinskiDokument />,
+  kamioni: <Kamioni />,
+  pakovanje: <Pakovanje />,
+  nekretnine: <Nekretnine />,
+  iznajmljivanje: <Iznajmljivanje />,
+  'pregledi-nekretnine': <PreglediNekretnine />,
+  komunalije: <Komunalije />,
+  'radni-nalozi': <RadniNalozi />,
+  normativ: <Normativ />,
+  etikete: <Etikete />,
+  barkod: <Barkod />,
+  cenovnici: <Cenovnici />,
+  kuponi: <Kuponi />,
+  recenzije: <Recenzije />,
+  seo: <SEO />,
+  naplate: <Naplate />,
+  povrat: <Povrat />,
+  blagajna: <Blagajna />,
+  'vremenski-trag': <VremenskiTrag />,
+  'fakturisanje-vremena': <FakturisanjeVremena />,
+  'klijentski-portal': <KlijentskiPortal />,
+  automatizacija: <Automatizacija />,
+  poslovnice: <Poslovnice />,
+  backup: <Backup />,
 }
 
 // ============ MODULE LABEL KEYS (for i18n) ============
@@ -227,7 +321,7 @@ const moduleLabelKeys: Record<string, string> = {
   marketplace: 'sidebar.marketplace',
   ponude: 'sidebar.quotes',
   pretplate: 'sidebar.subscriptions',
-  troškovi: 'sidebar.expenses',
+  troskovi: 'sidebar.expenses',
   potpisi: 'sidebar.sign',
   proizvodnja: 'sidebar.manufacturing',
   kvalitet: 'sidebar.quality',
@@ -276,6 +370,53 @@ const moduleLabelKeys: Record<string, string> = {
   kamere: 'sidebar.cameras',
   'menadzer-nabavke': 'sidebar.procurementManager',
   cms: 'sidebar.cms',
+  // --- New module labels (46) ---
+  obaveze: 'sidebar.homework',
+  prijave: 'sidebar.enrollment',
+  raspored: 'sidebar.timetable',
+  biblioteka: 'sidebar.library',
+  ucionica: 'sidebar.classroom',
+  skolarina: 'sidebar.tuition',
+  pacijenti: 'sidebar.patients',
+  kartoni: 'sidebar.medicalRecords',
+  recepti: 'sidebar.prescriptions',
+  laboratorija: 'sidebar.laboratory',
+  rezervacije: 'sidebar.reservations',
+  jelovnik: 'sidebar.menu',
+  kuhinja: 'sidebar.kitchen',
+  narudzbe: 'sidebar.orders',
+  dostava: 'sidebar.delivery',
+  gradiliste: 'sidebar.siteDiary',
+  projektovanje: 'sidebar.blueprints',
+  subodradaci: 'sidebar.subcontractors',
+  merenja: 'sidebar.surveying',
+  bezbednost: 'sidebar.safety',
+  rute: 'sidebar.routes',
+  'utovar-istovar': 'sidebar.loading',
+  'carinski-dokument': 'sidebar.customs',
+  kamioni: 'sidebar.trucks',
+  pakovanje: 'sidebar.packing',
+  nekretnine: 'sidebar.properties',
+  iznajmljivanje: 'sidebar.rentals',
+  'pregledi-nekretnine': 'sidebar.viewings',
+  komunalije: 'sidebar.utilities',
+  'radni-nalozi': 'sidebar.workOrders',
+  normativ: 'sidebar.standards',
+  etikete: 'sidebar.labels',
+  barkod: 'sidebar.barcode',
+  cenovnici: 'sidebar.priceLists',
+  kuponi: 'sidebar.coupons',
+  recenzije: 'sidebar.reviews',
+  seo: 'sidebar.seo',
+  naplate: 'sidebar.payments',
+  povrat: 'sidebar.returns',
+  blagajna: 'sidebar.cashRegister',
+  'vremenski-trag': 'sidebar.timeTracking',
+  'fakturisanje-vremena': 'sidebar.timeBilling',
+  'klijentski-portal': 'sidebar.clientPortal',
+  automatizacija: 'sidebar.automation',
+  poslovnice: 'sidebar.branches',
+  backup: 'sidebar.backup',
 }
 
 // ============ INNER APP (needs i18n context) ============

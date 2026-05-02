@@ -27,7 +27,12 @@ import {
   MessageCircle, BookMarked, Globe2, PenLine, Phone, Wifi, MessageCircleReply,
   UsersRound, Table2, ShoppingBag, GitBranch, StickyNote, CheckCircle2,
   Award, Star, Gamepad2, FileSignature, BadgeCheck, ShieldAlert, Gavel, Shield, Crown, UserCheck, Lightbulb, Target, Heart, Camera, PackageSearch, FileCode,
-  LayoutGrid
+  LayoutGrid,
+  // New module icons
+  BookOpenCheck, ClipboardPlus, Library, School, UserRound, FileHeart, Pill, Microscope,
+  CalendarCheck, ChefHat, ArrowLeftRight, Stamp, Route, PackageCheck, Building, KeyRound, Eye, Zap,
+  Ruler, Move, TruckIcon, ScanBarcode, ListChecks, Ticket, StarHalf, SearchCode, Bot, DatabaseBackup, Calculator, Clock, Timer,
+  HardHat, RotateCcw, Tag, FileCheck
 } from 'lucide-react'
 
 const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
@@ -123,6 +128,105 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
       { module: 'cms', icon: FileCode, labelKey: 'sidebar.cms' },
     ],
   },
+  // --- EDUCATION ---
+  {
+    labelKey: 'sidebar.group_education',
+    items: [
+      { module: 'obaveze', icon: BookOpenCheck, labelKey: 'sidebar.homework' },
+      { module: 'prijave', icon: ClipboardPlus, labelKey: 'sidebar.enrollment' },
+      { module: 'raspored', icon: CalendarDays, labelKey: 'sidebar.timetable' },
+      { module: 'biblioteka', icon: Library, labelKey: 'sidebar.library' },
+      { module: 'ucionica', icon: School, labelKey: 'sidebar.classroom' },
+      { module: 'skolarina', icon: GraduationCap, labelKey: 'sidebar.tuition' },
+    ],
+  },
+  // --- HEALTHCARE ---
+  {
+    labelKey: 'sidebar.group_healthcare',
+    items: [
+      { module: 'pacijenti', icon: UserRound, labelKey: 'sidebar.patients' },
+      { module: 'kartoni', icon: FileHeart, labelKey: 'sidebar.medicalRecords' },
+      { module: 'recepti', icon: Pill, labelKey: 'sidebar.prescriptions' },
+      { module: 'laboratorija', icon: Microscope, labelKey: 'sidebar.laboratory' },
+    ],
+  },
+  // --- HOSPITALITY ---
+  {
+    labelKey: 'sidebar.group_hospitality',
+    items: [
+      { module: 'rezervacije', icon: CalendarCheck, labelKey: 'sidebar.reservations' },
+      { module: 'jelovnik', icon: UtensilsCrossed, labelKey: 'sidebar.menu' },
+      { module: 'kuhinja', icon: ChefHat, labelKey: 'sidebar.kitchen' },
+      { module: 'narudzbe', icon: ShoppingBag, labelKey: 'sidebar.orders' },
+      { module: 'dostava', icon: Truck, labelKey: 'sidebar.delivery' },
+    ],
+  },
+  // --- CONSTRUCTION ---
+  {
+    labelKey: 'sidebar.group_construction',
+    items: [
+      { module: 'gradiliste', icon: HardHat, labelKey: 'sidebar.siteDiary' },
+      { module: 'projektovanje', icon: Ruler, labelKey: 'sidebar.blueprints' },
+      { module: 'subodradaci', icon: Users, labelKey: 'sidebar.subcontractors' },
+      { module: 'merenja', icon: Move, labelKey: 'sidebar.surveying' },
+      { module: 'bezbednost', icon: ShieldAlert, labelKey: 'sidebar.safety' },
+    ],
+  },
+  // --- LOGISTICS ---
+  {
+    labelKey: 'sidebar.group_logistics',
+    items: [
+      { module: 'rute', icon: Route, labelKey: 'sidebar.routes' },
+      { module: 'utovar-istovar', icon: ArrowLeftRight, labelKey: 'sidebar.loading' },
+      { module: 'carinski-dokument', icon: Stamp, labelKey: 'sidebar.customs' },
+      { module: 'kamioni', icon: TruckIcon, labelKey: 'sidebar.trucks' },
+      { module: 'pakovanje', icon: PackageCheck, labelKey: 'sidebar.packing' },
+    ],
+  },
+  // --- REAL ESTATE ---
+  {
+    labelKey: 'sidebar.group_realestate',
+    items: [
+      { module: 'nekretnine', icon: Building, labelKey: 'sidebar.properties' },
+      { module: 'iznajmljivanje', icon: KeyRound, labelKey: 'sidebar.rentals' },
+      { module: 'pregledi-nekretnine', icon: Eye, labelKey: 'sidebar.viewings' },
+      { module: 'komunalije', icon: Zap, labelKey: 'sidebar.utilities' },
+    ],
+  },
+  // --- PRODUCTION+ ---
+  {
+    labelKey: 'sidebar.group_production',
+    items: [
+      { module: 'radni-nalozi', icon: ClipboardList, labelKey: 'sidebar.workOrders' },
+      { module: 'normativ', icon: FileCheck, labelKey: 'sidebar.standards' },
+      { module: 'etikete', icon: Tag, labelKey: 'sidebar.labels' },
+    ],
+  },
+  // --- RETAIL ---
+  {
+    labelKey: 'sidebar.group_retail',
+    items: [
+      { module: 'barkod', icon: ScanBarcode, labelKey: 'sidebar.barcode' },
+      { module: 'cenovnici', icon: ListChecks, labelKey: 'sidebar.priceLists' },
+      { module: 'kuponi', icon: Ticket, labelKey: 'sidebar.coupons' },
+      { module: 'recenzije', icon: StarHalf, labelKey: 'sidebar.reviews' },
+      { module: 'seo', icon: SearchCode, labelKey: 'sidebar.seo' },
+      { module: 'naplate', icon: CreditCard, labelKey: 'sidebar.payments' },
+      { module: 'povrat', icon: RotateCcw, labelKey: 'sidebar.returns' },
+      { module: 'blagajna', icon: Calculator, labelKey: 'sidebar.cashRegister' },
+    ],
+  },
+  // --- SERVICES ---
+  {
+    labelKey: 'sidebar.group_services',
+    items: [
+      { module: 'vremenski-trag', icon: Clock, labelKey: 'sidebar.timeTracking' },
+      { module: 'fakturisanje-vremena', icon: Timer, labelKey: 'sidebar.timeBilling' },
+      { module: 'klijentski-portal', icon: Globe2, labelKey: 'sidebar.clientPortal' },
+      { module: 'automatizacija', icon: Bot, labelKey: 'sidebar.automation' },
+      { module: 'poslovnice', icon: Store, labelKey: 'sidebar.branches' },
+    ],
+  },
   {
     labelKey: 'sidebar.group_analytics',
     items: [
@@ -133,7 +237,10 @@ const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.E
   },
   {
     labelKey: 'sidebar.group_system',
-    items: [{ module: 'podesavanja', icon: Settings, labelKey: 'sidebar.settings' }],
+    items: [
+      { module: 'podesavanja', icon: Settings, labelKey: 'sidebar.settings' },
+      { module: 'backup', icon: DatabaseBackup, labelKey: 'sidebar.backup' },
+    ],
   },
 ]
 
