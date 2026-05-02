@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { useWindowManager, type DesktopShortcut, type WallpaperStyle, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -15,7 +16,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { UserMenu } from '@/components/modules/UserMenu'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { NotificationBell } from '@/components/modules/NotificationBell'
-import { MonitorOff, Trash2, Monitor, LayoutGrid, Grid3X3, Maximize2 } from 'lucide-react'
+import { MonitorOff, Trash2, Monitor, LayoutGrid, Grid3X3, Maximize2, ImageIcon, Eye, RefreshCw, Info } from 'lucide-react'
 import { ALL_LANGUAGES } from '@/lib/i18n'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -41,7 +42,7 @@ function getWallpaperClass(style: WallpaperStyle): string {
 export function DesktopMode() {
   const {
     windows, openWindow, toggleDesktopMode, desktopShortcuts, removeShortcut, updateShortcutPosition,
-    desktopSettings,
+    desktopSettings, setSettingsOpen,
   } = useWindowManager()
   const { t, locale, setLocale } = useTranslation()
   const allMenuItems = useMemo(() => menuGroups.flatMap((g) => g.items), [])
@@ -49,6 +50,7 @@ export function DesktopMode() {
   const companyName = useThemeStore((s) => s.companyName)
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; module: ModuleType } | null>(null)
+  const [desktopContextMenu, setDesktopContextMenu] = useState<{ x: number; y: number } | null>(null)
   const [activeLangs, setActiveLangs] = useState<string[]>(DEFAULT_ACTIVE_LANGS)
   const activeCompanyId = useAppStore((s) => s.activeCompanyId)
 
@@ -93,6 +95,14 @@ export function DesktopMode() {
     return () => window.removeEventListener('click', handler)
   }, [contextMenu])
 
+  // Dismiss desktop context menu on click
+  useEffect(() => {
+    if (!desktopContextMenu) return
+    const handler = () => setDesktopContextMenu(null)
+    window.addEventListener('click', handler)
+    return () => window.removeEventListener('click', handler)
+  }, [desktopContextMenu])
+
   const visibleWindows = windows.filter((w) => !w.isMinimized)
 
   const wallpaperBg = getWallpaperClass(desktopSettings.wallpaper)
@@ -103,7 +113,9 @@ export function DesktopMode() {
       className={`fixed inset-0 flex flex-col overflow-hidden ${wallpaperBg}`}
       onContextMenu={(e) => {
         if ((e.target as HTMLElement).closest('[data-shortcut]')) return
+        e.preventDefault()
         setContextMenu(null)
+        setDesktopContextMenu({ x: e.clientX, y: e.clientY })
       }}
     >
       {/* Dots pattern overlay */}
@@ -206,11 +218,13 @@ export function DesktopMode() {
         )}
 
         {/* Windows */}
-        {visibleWindows.map((win) => (
-          <WindowFrame key={win.id} windowData={win} />
-        ))}
+        <AnimatePresence>
+          {visibleWindows.map((win) => (
+            <WindowFrame key={win.id} windowData={win} />
+          ))}
+        </AnimatePresence>
 
-        {/* Context menu */}
+        {/* Shortcut context menu */}
         {contextMenu && (
           <div
             className="fixed bg-background/90 backdrop-blur-xl border border-border/40 rounded-xl shadow-2xl py-1.5 z-[100050] min-w-[180px] animate-in fade-in zoom-in-95 duration-100"
@@ -222,6 +236,44 @@ export function DesktopMode() {
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Obriši prečicu</span>
+            </button>
+          </div>
+        )}
+
+        {/* Desktop context menu (empty space right-click) */}
+        {desktopContextMenu && (
+          <div
+            className="fixed bg-background/90 backdrop-blur-xl border border-border/40 rounded-xl shadow-2xl py-1.5 z-[100050] min-w-[200px] animate-in fade-in zoom-in-95 duration-100"
+            style={{ left: desktopContextMenu.x, top: desktopContextMenu.y }}
+          >
+            <button
+              onClick={() => { setSettingsOpen(true); setDesktopContextMenu(null) }}
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+            >
+              <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>Promeni pozadinu</span>
+            </button>
+            <button
+              onClick={() => { setSettingsOpen(true); setDesktopContextMenu(null) }}
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+            >
+              <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>Prikaz</span>
+            </button>
+            <div className="h-px bg-border/30 mx-2 my-1" />
+            <button
+              onClick={() => { setDesktopContextMenu(null) }}
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>Osveži</span>
+            </button>
+            <button
+              onClick={() => { setDesktopContextMenu(null) }}
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-xs text-foreground hover:bg-accent/50 rounded-lg transition-colors"
+            >
+              <Info className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>O desktop režimu</span>
             </button>
           </div>
         )}
@@ -266,7 +318,7 @@ function DesktopIcon({
 
   // Keep ref in sync with rendered pos
   const posRef = useRef(pos)
-  posRef.current = pos
+  useEffect(() => { posRef.current = pos }, [pos])
 
   const item = allMenuItems.find((m) => m.module === shortcut.module)
   const Icon = item?.icon || Monitor

@@ -91,6 +91,8 @@ interface WindowManagerState {
 
   cascadeWindows: () => void
   tileWindows: () => void
+  minimizeAllWindows: () => void
+  restoreAllWindows: () => void
 
   desktopShortcuts: DesktopShortcut[]
   addShortcut: (module: ModuleType) => void
@@ -113,6 +115,7 @@ interface WindowManagerState {
 
   getWindowsForDesktop: () => WindowState[]
   getWindowById: (id: string) => WindowState | undefined
+  allMinimized: () => boolean
 }
 
 let _windowCounter = 0
@@ -358,4 +361,23 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
 
   getWindowsForDesktop: () => get().windows,
   getWindowById: (id) => get().windows.find((w) => w.id === id),
+
+  minimizeAllWindows: () => set({
+    windows: get().windows.map((w) => w.isMinimized ? w : { ...w, isMinimized: true }),
+  }),
+
+  restoreAllWindows: () => {
+    const newZ = get().topZIndex
+    const updated = get().windows.map((w, i) => ({
+      ...w,
+      isMinimized: false,
+      zIndex: newZ + i + 1,
+    }))
+    set({
+      windows: updated,
+      topZIndex: newZ + updated.length,
+    })
+  },
+
+  allMinimized: () => get().windows.length > 0 && get().windows.every((w) => w.isMinimized),
 }))

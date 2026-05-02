@@ -433,6 +433,20 @@ export const translations: Record<string, TranslationMap> = {
       backup: 'Бекап',
     },
 
+    dock: {
+      preview: 'Преглед',
+      minimized: 'Минимизовано',
+      clickToRestore: 'Кликните да вратите',
+      showDesktop: 'Прикажи радну површину',
+      restoreWindows: 'Врати све прозоре',
+      closeWindow: 'Затвори',
+      allModules: 'Сви модули',
+      cascade: 'Каскадно',
+      tile: 'Плочице',
+      noWindows: 'Нема отворених прозора',
+      dimensions: '{width} × {height}',
+    },
+
     zakoni: {
       title: 'Закони и Порези',
       subtitle: 'Глобална база poreskih zakона и регулитиве за 26+ zemalja',
@@ -2519,6 +2533,20 @@ export const translations: Record<string, TranslationMap> = {
       backup: 'Bekap',
     },
 
+    dock: {
+      preview: 'Pregled',
+      minimized: 'Minimizovano',
+      clickToRestore: 'Kliknite da vratite',
+      showDesktop: 'Prikaži radnu površinu',
+      restoreWindows: 'Vrati sve prozore',
+      closeWindow: 'Zatvori',
+      allModules: 'Svi moduli',
+      cascade: 'Kaskadno',
+      tile: 'Pločice',
+      noWindows: 'Nema otvorenih prozora',
+      dimensions: '{width} × {height}',
+    },
+
     dashboard: {
       title: 'Pregled',
       subtitle: 'Pregled poslovanja i ključnih performansi',
@@ -4474,6 +4502,20 @@ export const translations: Record<string, TranslationMap> = {
       automation: 'Automation',
       branches: 'Branches',
       backup: 'Backup',
+    },
+
+    dock: {
+      preview: 'Preview',
+      minimized: 'Minimized',
+      clickToRestore: 'Click to restore',
+      showDesktop: 'Show Desktop',
+      restoreWindows: 'Restore All Windows',
+      closeWindow: 'Close',
+      allModules: 'All Modules',
+      cascade: 'Cascade',
+      tile: 'Tile',
+      noWindows: 'No open windows',
+      dimensions: '{width} × {height}',
     },
 
     zakoni: {

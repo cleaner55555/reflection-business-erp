@@ -347,7 +347,10 @@ function AppContent() {
                 transition={{ duration: 0.2 }}
                 className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8"
               >
-                {moduleComponents[activeModule]}
+                {(() => {
+                  const Module = moduleComponents[activeModule]
+                  return Module ? <Module /> : null
+                })()}
               </motion.div>
             </AnimatePresence>
           </div>

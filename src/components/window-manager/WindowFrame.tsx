@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { useWindowManager, type WindowState, type SnapZone, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
 import { moduleComponents } from '@/lib/moduleMap'
 import { menuGroups } from '@/components/modules/AppSidebar'
@@ -27,6 +28,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
     updateWindowPosition,
     updateWindowSize,
     snapWindow,
+    topZIndex,
   } = useWindowManager()
 
   const frameRef = useRef<HTMLDivElement>(null)
@@ -35,6 +37,17 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
   const [snapIndicator, setSnapIndicator] = useState<SnapZone>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Mark as mounted after first render to avoid re-animating on drag/resize re-renders
+  useEffect(() => {
+    // Small delay so the initial animation has time to play
+    const timer = requestAnimationFrame(() => setMounted(true))
+    return () => cancelAnimationFrame(timer)
+  }, [])
+
+  // Determine if this window is the focused (top) window
+  const isFocused = windowData.zIndex === topZIndex && !windowData.isMinimized
 
   // ===== DRAG: native window events =====
   const snapIndicatorRef = useRef<SnapZone>(null)
@@ -104,7 +117,6 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
     titleBar.addEventListener('pointerdown', onDown)
     return () => titleBar.removeEventListener('pointerdown', onDown)
     // Only re-attach when window ID or isMaximized changes — NOT on every position update
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowData.id, windowData.isMaximized])
 
   // ===== RESIZE: native window events =====
@@ -184,7 +196,6 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
       }
     }
     // Only re-attach when window ID or isMaximized changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowData.id, windowData.isMaximized])
 
   // Double-click title bar to maximize/restore
@@ -224,26 +235,35 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
         minHeight: windowData.minHeight,
       }
 
+  // Shadow class based on focus and drag state
+  const shadowClass = isDragging
+    ? 'shadow-none'
+    : isFocused
+      ? 'shadow-2xl shadow-black/25'
+      : 'shadow-xl shadow-black/10 opacity-[0.97]'
+
   return (
     <>
       {/* Snap indicator overlay */}
       {isDragging && snapIndicator && <SnapPreview zone={snapIndicator} />}
 
-      <div
+      <motion.div
         ref={frameRef}
-        className={`flex flex-col overflow-hidden bg-background border border-border/50 shadow-2xl rounded-xl ${
-          isDragging ? 'shadow-none scale-[1.01] transition-shadow duration-75' : isResizing ? 'shadow-xl' : 'shadow-xl'
-        }`}
+        className={`flex flex-col overflow-hidden bg-background border border-border/50 rounded-xl ${shadowClass}`}
         style={{
           ...style,
-          transition: (isDragging || isResizing) ? 'none' : 'box-shadow 150ms ease',
+          transition: (isDragging || isResizing) ? 'none' : 'box-shadow 200ms ease, opacity 200ms ease',
         }}
+        initial={!mounted ? { scale: 0.92, opacity: 0 } : false}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.92, opacity: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
         onMouseDown={() => focusWindow(windowData.id)}
       >
         {/* Title bar */}
         <div
           ref={titleBarRef}
-          className="flex items-center h-10 px-3 bg-muted/40 backdrop-blur-sm border-b border-border/30 cursor-grab active:cursor-grabbing select-none shrink-0 rounded-t-xl"
+          className="flex items-center h-10 px-3 bg-background/60 backdrop-blur-xl border-b border-border/30 border-t border-primary/10 cursor-grab active:cursor-grabbing select-none shrink-0 rounded-t-xl"
           onDoubleClick={handleTitleDoubleClick}
         >
           {/* Module icon + title */}
@@ -265,7 +285,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                windowData.isMaximized ? restoreWindow(windowData.id) : maximizeWindow(windowData.id)
+                if (windowData.isMaximized) { restoreWindow(windowData.id) } else { maximizeWindow(windowData.id) }
               }}
               className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-foreground/5 transition-colors"
               title={windowData.isMaximized ? 'Vrati' : 'Maksimizuj'}
@@ -278,7 +298,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); closeWindow(windowData.id) }}
-              className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-red-500/80 hover:text-white transition-colors"
+              className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-red-500 hover:text-white hover:scale-110 transition-all duration-150"
               title="Zatvori"
             >
               <X className="w-3.5 h-3.5 text-foreground/40" />
@@ -288,11 +308,14 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-4 bg-background rounded-b-xl">
-          {moduleComponents[windowData.moduleId] || (
-            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-              Modul &quot;{windowData.moduleId}&quot; nije pronađen
-            </div>
-          )}
+          {(() => {
+            const Module = moduleComponents[windowData.moduleId]
+            return Module ? <Module /> : (
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                Modul &quot;{windowData.moduleId}&quot; nije pronađen
+              </div>
+            )
+          })()}
         </div>
 
         {/* Resize handles */}
@@ -310,7 +333,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
             <div ref={(el) => registerHandle('se', el)} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize touch-none" />
           </>
         )}
-      </div>
+      </motion.div>
     </>
   )
 }

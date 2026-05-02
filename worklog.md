@@ -545,3 +545,100 @@ Stage Summary:
 - Close/Min/Max buttons: Fixed — drag doesn't intercept button clicks anymore
 - Snap gap: Removed — windows now flush to status bar
 - Dock close buttons + hover preview: Already implemented, verified working
+---
+Task ID: 8
+Agent: Main (direct)
+Task: Fix critical bug — moduleMap creates React element instances instead of component factories
+
+Work Log:
+- Diagnosed root cause: `moduleMap.tsx` stored JSX element instances (`<Dashboard />`) in `Record<string, React.ReactNode>`, meaning React tried to mount the SAME element instance in two places when the same module was opened in multiple windows
+- Fixed `src/lib/moduleMap.tsx`: Changed type from `Record<string, React.ReactNode>` to `Record<string, React.ComponentType>`, replaced all 125 JSX instances (`<Component />`) with bare component references (`Component`)
+- Updated `src/components/window-manager/WindowFrame.tsx`: Changed content rendering from direct reference (`moduleComponents[id]`) to factory pattern via IIFE (`const Module = moduleComponents[id]; return Module ? <Module /> : fallback`)
+- Updated `src/app/page.tsx`: Same factory pattern fix for sidebar mode module rendering (line 350)
+- Verified lint: 0 new errors (1 pre-existing error in DesktopMode.tsx ref-during-render, unrelated)
+- All 125 module entries preserved with identical keys
+
+Stage Summary:
+- Critical bug fixed: Multiple windows of the same module now create independent component instances
+- Root cause: Shared React element instances being mounted in multiple DOM locations
+- Fix: Component factory pattern — store component references, instantiate fresh JSX per mount
+- 3 files modified: moduleMap.tsx, WindowFrame.tsx, page.tsx
+---
+Task ID: DOCK-1
+Agent: Main (direct)
+Task: Improve Dock component — preview popup, middle-click close, visual feedback, show desktop, clock
+
+Work Log:
+- Updated `src/lib/windowManager.ts`: Added `minimizeAllWindows()`, `restoreAllWindows()`, `allMinimized()` functions to WindowManagerState interface and implementation
+- Added i18n translations for dock in all 3 locales (SR, SR-LATN, EN):
+  - Keys: preview, minimized, clickToRestore, showDesktop, restoreWindows, closeWindow, allModules, cascade, tile, noWindows, dimensions
+- Rewrote `src/components/window-manager/Dock.tsx` with 5 improvements:
+  1. **Better hover preview popup** (200×120px):
+     - Module icon (24px) centered in preview with muted background
+     - Module title text below icon
+     - Window dimensions (e.g., "960 × 620") using i18n template
+     - Minimized state: dimmed overlay + amber "kliknite da vratite" label
+     - Non-minimized: colored accent bar at top matching module category (15 category colors)
+     - Scale-up animation on appear via CSS keyframe
+     - `pointer-events-auto` with click-to-focus handler
+  2. **Middle-click to close**: `onAuxClick` handler on dock tabs closes window on middle mouse button
+  3. **Better visual feedback**:
+     - Active windows: brighter indicator dot (w-3.5), subtle glow shadow underneath
+     - Minimized windows: opacity-60 dimmed state
+     - Hover glow: wider and more prominent (w-7) for active windows
+  4. **Show Desktop button**:
+     - Thin vertical separator + Minimize icon button before right section
+     - Click minimizes all windows; click again restores all
+     - Amber highlight when all minimized, indicating restore action
+     - Only visible when windows exist
+  5. **Clock frequency**: Changed from 10000ms to 1000ms, format includes seconds
+- Imported `useTranslation` from `@/lib/i18n` for all labels
+- All lint checks pass (0 errors, 34 pre-existing warnings)
+
+Stage Summary:
+- Dock now has rich preview popups, middle-click close, visual state feedback, show desktop toggle
+- windowManager extended with minimize/restore all + allMinimized check
+- i18n support for all dock labels in 3 languages
+- 0 new lint errors
+---
+Task ID: WM-ANIM-1
+Agent: Main (direct)
+Task: Window open/close animations + desktop context menu + visual polish
+
+Work Log:
+- Updated `src/components/window-manager/WindowFrame.tsx`:
+  - Wrapped window div in `motion.div` with framer-motion open/close animations:
+    - Initial: `scale: 0.92, opacity: 0` → Animate: `scale: 1, opacity: 1`
+    - Exit: `scale: 0.92, opacity: 0` with `duration: 0.2, ease: 'easeOut'`
+    - Uses local `mounted` state (set via `requestAnimationFrame`) to avoid re-animating during drag/resize re-renders
+  - Title bar glassmorphism upgraded: `bg-background/60 backdrop-blur-xl` + `border-t border-primary/10` glow
+  - Window shadow made dramatic and focus-aware:
+    - Focused (top window): `shadow-2xl shadow-black/25`
+    - Unfocused: `shadow-xl shadow-black/10 opacity-[0.97]` (dimmed)
+    - During drag: `shadow-none`
+  - Close button hover made dramatic: `hover:bg-red-500 hover:text-white hover:scale-110 transition-all duration-150`
+  - Subscribed to `topZIndex` from store to detect focused window
+  - Fixed: ternary expression → if/else to fix `@typescript-eslint/no-unused-expressions` warning
+  - Cleaned up unused `eslint-disable-next-line` directives
+
+- Updated `src/components/window-manager/DesktopMode.tsx`:
+  - Added `AnimatePresence` from framer-motion wrapping window list for exit animations
+  - Added new `desktopContextMenu` state for right-clicking empty desktop space
+  - Desktop context menu with 4 options:
+    - "Promeni pozadinu" (ImageIcon) → opens DesktopSettingsPanel via `setSettingsOpen(true)`
+    - "Prikaz" (Eye icon) → opens DesktopSettingsPanel
+    - "Osveži" (RefreshCw icon) → closes menu
+    - "O desktop režimu" (Info icon) → closes menu
+  - Separator line between settings and utility items
+  - Dismiss effect: `useEffect` adds click listener to close menu
+  - Updated `onContextMenu` handler: calls `e.preventDefault()` and opens desktop context menu when not clicking a shortcut
+  - Fixed `posRef.current = pos` ref-during-render error → moved to `useEffect`
+  - Renamed `Image` import to `ImageIcon` to fix jsx-a11y false positive
+
+Stage Summary:
+- Windows now animate smoothly on open (scale+fade) and close (reverse)
+- Focus-aware shadow: focused windows prominent, unfocused windows dimmed
+- Glassmorphism title bar with primary/10 top border glow
+- Close button has dramatic red hover with scale-up effect
+- Desktop right-click context menu with wallpaper/display/refresh/about options
+- 0 lint errors, dev server 200 OK
