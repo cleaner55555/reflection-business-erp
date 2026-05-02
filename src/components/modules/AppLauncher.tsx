@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useAppStore, type ModuleType } from '@/lib/store'
+import { useWindowManager } from '@/lib/windowManager'
 import { useThemeStore } from '@/lib/theme'
 import { useTranslation } from '@/lib/i18n'
 import { Badge } from '@/components/ui/badge'
@@ -117,6 +118,7 @@ export function AppLauncher() {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const { activeModule, setActiveModule } = useAppStore()
+  const { isDesktopMode } = useWindowManager()
   const { t } = useTranslation()
   const companyName = useThemeStore((s) => s.companyName)
   const isModuleEnabled = useAppStore((s) => s.isModuleEnabled)
@@ -176,7 +178,12 @@ export function AppLauncher() {
   }, [filtered])
 
   const handleSelect = (id: ModuleType) => {
-    setActiveModule(id)
+    if (isDesktopMode) {
+      const { openWindow } = useWindowManager.getState()
+      openWindow(id, t(allModules.find(m => m.id === id)?.labelKey || id), id)
+    } else {
+      setActiveModule(id)
+    }
     setOpen(false)
   }
 
