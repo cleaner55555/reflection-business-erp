@@ -237,7 +237,7 @@ export function DesktopMode() {
   )
 }
 
-// ===== Draggable Desktop Icon with grid snap =====
+// ===== Draggable Desktop Icon — uses native window events for reliable drag =====
 function DesktopIcon({
   shortcut, allMenuItems, windows, onOpen,
   iconSize, showLabel, snapToGrid, gridSize, onContextMenu,
@@ -257,75 +257,102 @@ function DesktopIcon({
   const [pos, setPos] = useState({ x: shortcut.x, y: shortcut.y })
   const iconRef = useRef<HTMLDivElement>(null)
 
-  // Refs for real-time tracking (React state is too slow for pointer events)
+  // All drag state in refs — never stale
   const didDrag = useRef(false)
-  const isDraggingRef = useRef(false)
-  const dragStartRef = useRef({ x: 0, y: 0 })
-  const posRef = useRef({ x: shortcut.x, y: shortcut.y })
+  const startX = useRef(0)
+  const startY = useRef(0)
+  const originX = useRef(0)
+  const originY = useRef(0)
+
+  // Keep ref in sync with rendered pos
+  const posRef = useRef(pos)
+  posRef.current = pos
 
   const item = allMenuItems.find((m) => m.module === shortcut.module)
   const Icon = item?.icon || Monitor
   const isOpen = windows.some((w) => w.moduleId === shortcut.module && !w.isMinimized)
 
-  // Sync position from shortcut props (external changes)
+  // Sync from shortcut props
   useEffect(() => {
     const p = { x: shortcut.x, y: shortcut.y }
     setPos(p)
-    posRef.current = p
   }, [shortcut.x, shortcut.y])
 
-  const snap = useCallback((x: number, y: number) => {
-    if (!snapToGrid) return { x, y }
-    return {
-      x: Math.round(x / gridSize) * gridSize,
-      y: Math.round(y / gridSize) * gridSize,
+  useEffect(() => {
+    const el = iconRef.current
+    if (!el) return
+
+    const snap = (x: number, y: number) => {
+      if (!snapToGrid) return { x, y }
+      return {
+        x: Math.round(x / gridSize) * gridSize,
+        y: Math.round(y / gridSize) * gridSize,
+      }
     }
-  }, [snapToGrid, gridSize])
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button === 2) return
-    e.preventDefault()
-    didDrag.current = false
-    isDraggingRef.current = false
-    dragStartRef.current = { x: e.clientX, y: e.clientY }
-    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-  }, [])
+    const onDown = (e: PointerEvent) => {
+      // Only left button
+      if (e.button !== 0) return
+      e.preventDefault()
+      e.stopPropagation()
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    // Always read from refs — never from stale React state
-    const dx = e.clientX - dragStartRef.current.x
-    const dy = e.clientY - dragStartRef.current.y
+      didDrag.current = false
+      startX.current = e.clientX
+      startY.current = e.clientY
+      originX.current = posRef.current.x
+      originY.current = posRef.current.y
 
-    if (!isDraggingRef.current && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-      didDrag.current = true
-      isDraggingRef.current = true
+      // Move the icon to the very front
+      el.style.zIndex = '50'
       setIsDragging(true)
+
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
     }
 
-    if (!didDrag.current) return
+    const onMove = (e: PointerEvent) => {
+      const dx = e.clientX - startX.current
+      const dy = e.clientY - startY.current
 
-    const currentPos = posRef.current
-    const maxX = window.innerWidth - gridSize
-    const maxY = window.innerHeight - STATUS_BAR_HEIGHT - DOCK_HEIGHT - gridSize
-    const newX = Math.max(0, Math.min(currentPos.x + dx, maxX))
-    const newY = Math.max(0, Math.min(currentPos.y + dy, maxY))
-    const snapped = snap(newX, newY)
+      if (!didDrag.current) {
+        if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return
+        didDrag.current = true
+      }
 
-    // Update refs immediately (synchronous) for next event
-    posRef.current = snapped
-    dragStartRef.current = { x: e.clientX, y: e.clientY }
+      const maxX = window.innerWidth - gridSize
+      const maxY = window.innerHeight - STATUS_BAR_HEIGHT - DOCK_HEIGHT - gridSize
+      const rawX = originX.current + dx
+      const rawY = originY.current + dy
+      const clampedX = Math.max(0, Math.min(rawX, maxX))
+      const clampedY = Math.max(0, Math.min(rawY, maxY))
+      const snapped = snap(clampedX, clampedY)
 
-    // Update state for rendering
-    setPos(snapped)
-  }, [snap, gridSize])
-
-  const handlePointerUp = useCallback(() => {
-    if (didDrag.current) {
-      updateShortcutPosition(shortcut.module, posRef.current.x, posRef.current.y)
+      setPos(snapped)
     }
-    isDraggingRef.current = false
-    setIsDragging(false)
-  }, [shortcut.module, updateShortcutPosition])
+
+    const onUp = () => {
+      el.style.zIndex = ''
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+
+      // Small delay to avoid click firing right after drag
+      if (didDrag.current) {
+        updateShortcutPosition(shortcut.module, posRef.current.x, posRef.current.y)
+        // Keep isDragging true briefly to swallow the click
+        setTimeout(() => setIsDragging(false), 50)
+      } else {
+        setIsDragging(false)
+      }
+    }
+
+    el.addEventListener('pointerdown', onDown)
+
+    return () => {
+      el.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+  }, [shortcut.module, snapToGrid, gridSize, updateShortcutPosition])
 
   const { t } = useTranslation()
   const displayLabel = item ? t(item.labelKey) : String(shortcut.module)
@@ -339,20 +366,17 @@ function DesktopIcon({
     <div
       ref={iconRef}
       data-shortcut={shortcut.module}
-      className={`absolute z-10 select-none ${isDragging ? 'opacity-70 scale-105' : 'opacity-100 hover:opacity-100'}`}
+      className={`absolute z-10 select-none cursor-grab active:cursor-grabbing touch-none ${isDragging ? 'opacity-70 scale-105' : 'opacity-100 hover:opacity-100'}`}
       style={{ left: pos.x, top: pos.y, transition: isDragging ? 'none' : 'opacity 150ms ease' }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
       onContextMenu={(e) => onContextMenu(e, shortcut.module)}
+      onClick={() => { if (!didDrag.current && !isDragging) onOpen(shortcut.module) }}
     >
-      <button
-        onClick={() => { if (!didDrag.current) onOpen(shortcut.module) }}
-        className={`flex flex-col items-center justify-center ${sizeMap[iconSize]} rounded-2xl hover:bg-accent/40 active:scale-95 transition-all duration-150 cursor-pointer`}
+      <div
+        className={`flex flex-col items-center justify-center ${sizeMap[iconSize]} rounded-2xl hover:bg-accent/40 transition-colors duration-150`}
         title={displayLabel}
       >
         <div
-          className={`flex items-center justify-center ${iconBoxMap[iconSize]} rounded-xl mb-0.5 transition-shadow duration-150 shadow-sm ${
+          className={`flex items-center justify-center ${iconBoxMap[iconSize]} rounded-xl mb-0.5 shadow-sm transition-shadow duration-150 ${
             isOpen
               ? 'bg-primary/15 text-primary ring-1 ring-primary/20'
               : 'bg-background/70 text-foreground/70 hover:bg-background/90 backdrop-blur-sm'
@@ -365,7 +389,7 @@ function DesktopIcon({
             {displayLabel}
           </span>
         )}
-      </button>
+      </div>
     </div>
   )
 }
