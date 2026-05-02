@@ -271,9 +271,15 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
     })
   },
 
-  updateWindowPosition: (id, x, y) => set({
-    windows: get().windows.map((w) => w.id === id ? { ...w, x, y } : w)
-  }),
+  updateWindowPosition: (id, x, y) => {
+    // Clamp: don't let title bar go above status bar, don't let window go below dock
+    const minY = STATUS_BAR_HEIGHT - 36 // allow title bar to overlap status bar slightly
+    const maxY = typeof window !== 'undefined' ? window.innerHeight - DOCK_HEIGHT - 60 : 800
+    const clampedY = Math.max(minY, Math.min(y, maxY))
+    set({
+      windows: get().windows.map((w) => w.id === id ? { ...w, x, y: clampedY } : w)
+    })
+  },
 
   updateWindowSize: (id, width, height) => set({
     windows: get().windows.map((w) =>
@@ -316,7 +322,7 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
 
   cascadeWindows: () => {
     const wins = get().windows.filter((w) => !w.isMinimized)
-    const topH = STATUS_BAR_HEIGHT
+    const topH = STATUS_BAR_HEIGHT + 8
     const updated = wins.map((w, i) => ({
       ...w, x: 80 + i * 30, y: topH + 20 + i * 30,
       width: 800, height: 500, isMaximized: false, snapZone: null,
