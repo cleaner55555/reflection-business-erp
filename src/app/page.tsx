@@ -87,6 +87,7 @@ import { Geolokacija } from '@/components/modules/Geolokacija'
 import { Kamere } from '@/components/modules/Kamere'
 import { MenadzerNabavke } from '@/components/modules/MenadzerNabavke'
 import { CMS } from '@/components/modules/CMS'
+import { AppLauncher, openAppLauncher } from '@/components/modules/AppLauncher'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
@@ -102,7 +103,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Languages, Loader2 } from 'lucide-react'
+import { Languages, Loader2, Command } from 'lucide-react'
 import { useState } from 'react'
 
 // Default active languages if not configured
@@ -433,6 +434,16 @@ function AppContent() {
 
       {/* AI Assistant - outside SidebarProvider to prevent dialog conflicts */}
       <AIAssistant />
+      {/* App Launcher - fullscreen module grid */}
+      <AppLauncher />
+      {/* Floating launcher button - bottom right */}
+      <button
+        onClick={() => openAppLauncher()}
+        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200"
+        title="Prikaži sve module (Ctrl+K)"
+      >
+        <Command className="h-5 w-5" />
+      </button>
     </>
   )
 }
