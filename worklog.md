@@ -359,3 +359,46 @@ Stage Summary:
 - Sidebar entries: 124 navigable modules organized in 15 groups
 - New sidebar groups: Education, Healthcare, Hospitality, Construction, Logistics, Real Estate, Production+, Retail, Services
 - All builds pass with 0 errors
+
+---
+Task ID: A-1
+Agent: Main (direct)
+Task: Phase A - OS Layout / Window Manager / Virtual Desktop
+
+Work Log:
+- Created Zustand window manager store (`src/lib/windowManager.ts`) with:
+  - Window state management (open/close/minimize/maximize/restore/focus)
+  - Drag and resize position/size updates
+  - Snap zones (left/right/top-left/top-right/bottom-left/bottom-right)
+  - Virtual desktops (3 default: Glavni, Komunikacija, Analitika)
+  - Cascade and Tile window arrangements
+  - Desktop mode toggle persisted to localStorage
+- Created WindowFrame component (`src/components/window-manager/WindowFrame.tsx`) with:
+  - Native pointer event drag on title bar
+  - 8-direction resize handles (edges + corners)
+  - Minimize/Maximize/Close buttons
+  - Double-click title bar to toggle maximize
+  - Snap preview overlay when dragging to edges
+  - Z-index management (click to bring to front)
+- Created Dock/Taskbar component (`src/components/window-manager/Dock.tsx`) with:
+  - Window list with active indicator dots
+  - Click to minimize/restore windows
+  - Desktop mode toggle button
+  - Cascade and Tile arrangement buttons
+  - App launcher button
+- Created DesktopMode container (`src/components/window-manager/DesktopMode.tsx`) with:
+  - Gradient background (muted/60 → background → muted/40)
+  - Desktop shortcuts grid (7 quick-access modules)
+  - Double-click to open modules as windows
+  - Renders all open windows via WindowFrame
+- Extracted module map to `src/lib/moduleMap.tsx` to avoid circular dependency
+- Exported `menuGroups` from AppSidebar.tsx for reuse
+- Integrated into page.tsx with desktop mode toggle button in header
+- Desktop mode shows full-screen OS layout; normal mode shows sidebar layout
+- Fixed Usklađenost JSX syntax error in moduleMap.tsx
+
+Stage Summary:
+- Phase A COMPLETE: Full OS Layout / Window Manager implemented
+- Features: draggable windows, resize, snap zones, cascade/tile, dock taskbar, desktop shortcuts
+- Toggle between normal sidebar mode and OS desktop mode via Monitor icon in header
+- 0 lint errors, server 200 OK

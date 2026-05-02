@@ -35,7 +35,7 @@ import {
   HardHat, RotateCcw, Tag, FileCheck
 } from 'lucide-react'
 
-const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
+export const menuGroups: { labelKey: string; items: { module: ModuleType; icon: React.ElementType; labelKey: string }[] }[] = [
   {
     labelKey: 'sidebar.group_overview',
     items: [{ module: 'dashboard', icon: LayoutDashboard, labelKey: 'sidebar.dashboard' }],
