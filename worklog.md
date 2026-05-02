@@ -402,3 +402,26 @@ Stage Summary:
 - Features: draggable windows, resize, snap zones, cascade/tile, dock taskbar, desktop shortcuts
 - Toggle between normal sidebar mode and OS desktop mode via Monitor icon in header
 - 0 lint errors, server 200 OK
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix OS Layout — sidebar missing in desktop mode, all modules should be accessible
+
+Work Log:
+- Diagnosed the issue: page.tsx line 254 returns only `<DesktopMode />` when `isDesktopMode` is true, completely removing the SidebarProvider + AppSidebar
+- User reported: "ima kao ekran.... ali se ne pojavljuje meni sa leve strane.... i ne radi...." and "postavke treba da ima svi moduli"
+- Completely rewrote `DesktopMode.tsx` with a proper desktop OS layout:
+  - **Top bar**: Company logo/name, sidebar toggle, language switcher, search, theme toggle, desktop mode exit button, user menu
+  - **Left sidebar** (w-72, collapsible): Search bar to filter modules, ALL 125 modules organized by groups from `menuGroups`, collapsible group headers, open-window indicators
+  - **Desktop area**: Quick-access icons (14 shortcuts from all menu items), windows rendered as WindowFrame components
+  - **Dock**: Bottom taskbar with open windows, cascade/tile buttons, app launcher
+- Cleaned up unused imports (Monitor, Pin)
+- Dev server compiled successfully with 0 new errors
+
+Stage Summary:
+- Desktop mode now has a persistent left sidebar showing ALL 125 modules organized by category
+- Sidebar is searchable and groups are collapsible
+- Top bar has all necessary controls (language, theme, search, user menu, desktop toggle)
+- Desktop icons provide quick access to 14 most-used modules
+- Clicking any module in sidebar or desktop opens it as a floating window
+- Dock at bottom shows open windows with minimize/restore functionality
