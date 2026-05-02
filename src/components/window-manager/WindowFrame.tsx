@@ -16,6 +16,7 @@ interface WindowFrameProps {
 }
 
 const SNAP_THRESHOLD = 12
+const SNAP_GAP = 8 // gap between status bar and snapped window
 
 export function WindowFrame({ windowData }: WindowFrameProps) {
   const {
@@ -27,164 +28,152 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
     updateWindowPosition,
     updateWindowSize,
     snapWindow,
-    clearSnap,
   } = useWindowManager()
 
   const frameRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef<{
-    startX: number
-    startY: number
-    windowX: number
-    windowY: number
-  } | null>(null)
-
-  const resizeRef = useRef<{
-    startX: number
-    startY: number
-    windowX: number
-    windowY: number
-    windowW: number
-    windowH: number
-    direction: string
-  } | null>(null)
+  const titleBarRef = useRef<HTMLDivElement>(null)
 
   const [snapIndicator, setSnapIndicator] = useState<SnapZone>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [isResizing, setIsResizing] = useState(false)
 
-  // Drag handlers
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      if (windowData.isMaximized) return
-      e.preventDefault()
-      focusWindow(windowData.id)
-      dragRef.current = {
-        startX: e.clientX,
-        startY: e.clientY,
-        windowX: windowData.x,
-        windowY: windowData.y,
-      }
-      setIsDragging(true)
-      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-    },
-    [windowData.id, windowData.x, windowData.y, windowData.isMaximized, focusWindow]
-  )
+  // ===== DRAG: native window events =====
+  const snapIndicatorRef = useRef<SnapZone>(null)
 
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!dragRef.current) return
-      const dx = e.clientX - dragRef.current.startX
-      const dy = e.clientY - dragRef.current.startY
-      const newX = dragRef.current.windowX + dx
-      const newY = dragRef.current.windowY + dy
+  useEffect(() => {
+    const titleBar = titleBarRef.current
+    if (!titleBar) return
 
-      updateWindowPosition(windowData.id, newX, newY)
-
-      // Snap detection
-      const containerWidth = window.innerWidth
-      const containerHeight = window.innerHeight
-
-      if (e.clientX <= SNAP_THRESHOLD) {
-        if (e.clientY <= SNAP_THRESHOLD) {
-          setSnapIndicator('top-left')
-        } else if (e.clientY >= containerHeight - SNAP_THRESHOLD) {
-          setSnapIndicator('bottom-left')
-        } else {
-          setSnapIndicator('left')
-        }
-      } else if (e.clientX >= containerWidth - SNAP_THRESHOLD) {
-        if (e.clientY <= SNAP_THRESHOLD) {
-          setSnapIndicator('top-right')
-        } else if (e.clientY >= containerHeight - SNAP_THRESHOLD) {
-          setSnapIndicator('bottom-right')
-        } else {
-          setSnapIndicator('right')
-        }
-      } else {
-        setSnapIndicator(null)
-      }
-    },
-    [windowData.id, updateWindowPosition]
-  )
-
-  const handlePointerUp = useCallback(
-    (e: React.PointerEvent) => {
-      if (!dragRef.current) return
-
-      // Apply snap if detected
-      if (snapIndicator) {
-        const containerWidth = window.innerWidth
-        const containerHeight = window.innerHeight
-        snapWindow(windowData.id, snapIndicator, containerWidth, containerHeight)
-      }
-
-      dragRef.current = null
-      setIsDragging(false)
-      setSnapIndicator(null)
-    },
-    [windowData.id, snapIndicator, snapWindow]
-  )
-
-  // Resize handlers
-  const handleResizePointerDown = useCallback(
-    (e: React.PointerEvent, direction: string) => {
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return
       if (windowData.isMaximized) return
       e.preventDefault()
       e.stopPropagation()
       focusWindow(windowData.id)
-      resizeRef.current = {
-        startX: e.clientX,
-        startY: e.clientY,
-        windowX: windowData.x,
-        windowY: windowData.y,
-        windowW: windowData.width,
-        windowH: windowData.height,
-        direction,
+
+      setIsDragging(true)
+      snapIndicatorRef.current = null
+
+      const startX = e.clientX
+      const startY = e.clientY
+      const originX = windowData.x
+      const originY = windowData.y
+
+      const onMove = (ev: PointerEvent) => {
+        const dx = ev.clientX - startX
+        const dy = ev.clientY - startY
+        updateWindowPosition(windowData.id, originX + dx, originY + dy)
+
+        // Snap detection
+        const cw = window.innerWidth
+        const ch = window.innerHeight
+        let snap: SnapZone = null
+
+        if (ev.clientX <= SNAP_THRESHOLD) {
+          snap = ev.clientY <= SNAP_THRESHOLD ? 'top-left' : ev.clientY >= ch - SNAP_THRESHOLD ? 'bottom-left' : 'left'
+        } else if (ev.clientX >= cw - SNAP_THRESHOLD) {
+          snap = ev.clientY <= SNAP_THRESHOLD ? 'top-right' : ev.clientY >= ch - SNAP_THRESHOLD ? 'bottom-right' : 'right'
+        }
+
+        snapIndicatorRef.current = snap
+        setSnapIndicator(snap)
       }
-      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-    },
-    [windowData, focusWindow]
-  )
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('pointerup', onUp)
+        setIsDragging(false)
+
+        if (snapIndicatorRef.current) {
+          snapWindow(windowData.id, snapIndicatorRef.current, window.innerWidth, window.innerHeight)
+        }
+        setSnapIndicator(null)
+        snapIndicatorRef.current = null
+      }
+
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
+    }
+
+    titleBar.addEventListener('pointerdown', onDown)
+    return () => titleBar.removeEventListener('pointerdown', onDown)
+  }, [windowData.id, windowData.x, windowData.y, windowData.isMaximized, focusWindow, updateWindowPosition, snapWindow])
+
+  // ===== RESIZE: native window events =====
+  const resizeHandlesRef = useRef<Map<string, HTMLElement>>(new Map())
+
+  const registerHandle = useCallback((dir: string, el: HTMLElement | null) => {
+    if (el) resizeHandlesRef.current.set(dir, el)
+    else resizeHandlesRef.current.delete(dir)
+  }, [])
 
   useEffect(() => {
-    if (!resizeRef.current) return
+    const handles = resizeHandlesRef.current
 
-    const handleMove = (e: PointerEvent) => {
-      const r = resizeRef.current
-      if (!r) return
+    const onDown = (e: PointerEvent, direction: string) => {
+      if (e.button !== 0) return
+      if (windowData.isMaximized) return
+      e.preventDefault()
+      e.stopPropagation()
+      focusWindow(windowData.id)
 
-      const dx = e.clientX - r.startX
-      const dy = e.clientY - r.startY
-      let newX = r.windowX
-      let newY = r.windowY
-      let newW = r.windowW
-      let newH = r.windowH
+      setIsResizing(true)
+      const startX = e.clientX
+      const startY = e.clientY
+      const originX = windowData.x
+      const originY = windowData.y
+      const originW = windowData.width
+      const originH = windowData.height
+      const minW = windowData.minWidth
+      const minH = windowData.minHeight
 
-      if (r.direction.includes('e')) newW = Math.max(windowData.minWidth, r.windowW + dx)
-      if (r.direction.includes('w')) {
-        newW = Math.max(windowData.minWidth, r.windowW - dx)
-        newX = r.windowX + (r.windowW - newW)
+      const onMove = (ev: PointerEvent) => {
+        const dx = ev.clientX - startX
+        const dy = ev.clientY - startY
+        let newX = originX
+        let newY = originY
+        let newW = originW
+        let newH = originH
+
+        if (direction.includes('e')) newW = Math.max(minW, originW + dx)
+        if (direction.includes('w')) {
+          newW = Math.max(minW, originW - dx)
+          newX = originX + (originW - newW)
+        }
+        if (direction.includes('s')) newH = Math.max(minH, originH + dy)
+        if (direction.includes('n')) {
+          newH = Math.max(minH, originH - dy)
+          newY = originY + (originH - newH)
+        }
+
+        updateWindowPosition(windowData.id, newX, newY)
+        updateWindowSize(windowData.id, newW, newH)
       }
-      if (r.direction.includes('s')) newH = Math.max(windowData.minHeight, r.windowH + dy)
-      if (r.direction.includes('n')) {
-        newH = Math.max(windowData.minHeight, r.windowH - dy)
-        newY = r.windowY + (r.windowH - newH)
+
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('pointerup', onUp)
+        setIsResizing(false)
       }
 
-      updateWindowPosition(windowData.id, newX, newY)
-      updateWindowSize(windowData.id, newW, newH)
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
     }
 
-    const handleUp = () => {
-      resizeRef.current = null
+    const handleMap = new Map<string, (e: PointerEvent) => void>()
+    for (const [dir, el] of handles) {
+      const handler = (e: PointerEvent) => onDown(e, dir)
+      handleMap.set(dir, handler)
+      el.addEventListener('pointerdown', handler)
     }
 
-    window.addEventListener('pointermove', handleMove)
-    window.addEventListener('pointerup', handleUp)
     return () => {
-      window.removeEventListener('pointermove', handleMove)
-      window.removeEventListener('pointerup', handleUp)
+      for (const [dir, el] of handles) {
+        const handler = handleMap.get(dir)
+        if (handler) el.removeEventListener('pointerdown', handler)
+      }
     }
-  }, [windowData.id, windowData.minWidth, windowData.minHeight, updateWindowPosition, updateWindowSize])
+  }, [windowData.id, windowData.x, windowData.y, windowData.width, windowData.height, windowData.minWidth, windowData.minHeight, windowData.isMaximized, focusWindow, updateWindowPosition, updateWindowSize])
 
   // Double-click title bar to maximize/restore
   const handleTitleDoubleClick = useCallback(() => {
@@ -230,18 +219,19 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
       <div
         ref={frameRef}
-        className={`flex flex-col overflow-hidden bg-background border border-border/50 shadow-2xl rounded-xl transition-shadow duration-150 ${
-          isDragging ? 'shadow-none scale-[1.01]' : 'shadow-xl'
+        className={`flex flex-col overflow-hidden bg-background border border-border/50 shadow-2xl rounded-xl ${
+          isDragging ? 'shadow-none scale-[1.01] transition-shadow duration-75' : isResizing ? 'shadow-xl' : 'shadow-xl'
         }`}
-        style={style}
+        style={{
+          ...style,
+          transition: (isDragging || isResizing) ? 'none' : 'box-shadow 150ms ease',
+        }}
         onMouseDown={() => focusWindow(windowData.id)}
       >
-        {/* Title bar — macOS-like traffic lights feel */}
+        {/* Title bar */}
         <div
+          ref={titleBarRef}
           className="flex items-center h-10 px-3 bg-muted/40 backdrop-blur-sm border-b border-border/30 cursor-grab active:cursor-grabbing select-none shrink-0 rounded-t-xl"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
           onDoubleClick={handleTitleDoubleClick}
         >
           {/* Module icon + title */}
@@ -285,7 +275,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-4 bg-background">
+        <div className="flex-1 overflow-auto p-4 bg-background rounded-b-xl">
           {moduleComponents[windowData.moduleId] || (
             <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
               Modul &quot;{windowData.moduleId}&quot; nije pronađen
@@ -296,40 +286,16 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
         {/* Resize handles */}
         {!windowData.isMaximized && (
           <>
-            {/* Edges */}
-            <div
-              className="absolute top-0 left-0 right-0 h-1 cursor-n-resize"
-              onPointerDown={(e) => handleResizePointerDown(e, 'n')}
-            />
-            <div
-              className="absolute bottom-0 left-0 right-0 h-1 cursor-s-resize"
-              onPointerDown={(e) => handleResizePointerDown(e, 's')}
-            />
-            <div
-              className="absolute top-0 left-0 bottom-0 w-1 cursor-w-resize"
-              onPointerDown={(e) => handleResizePointerDown(e, 'w')}
-            />
-            <div
-              className="absolute top-0 right-0 bottom-0 w-1 cursor-e-resize"
-              onPointerDown={(e) => handleResizePointerDown(e, 'e')}
-            />
-            {/* Corners */}
-            <div
-              className="absolute top-0 left-0 w-3 h-3 cursor-nw-resize"
-              onPointerDown={(e) => handleResizePointerDown(e, 'nw')}
-            />
-            <div
-              className="absolute top-0 right-0 w-3 h-3 cursor-ne-resize"
-              onPointerDown={(e) => handleResizePointerDown(e, 'ne')}
-            />
-            <div
-              className="absolute bottom-0 left-0 w-3 h-3 cursor-sw-resize"
-              onPointerDown={(e) => handleResizePointerDown(e, 'sw')}
-            />
-            <div
-              className="absolute bottom-0 right-0 w-3 h-3 cursor-se-resize"
-              onPointerDown={(e) => handleResizePointerDown(e, 'se')}
-            />
+            {/* Edges — 4px hit area for easier grabbing */}
+            <div ref={(el) => registerHandle('n', el)} className="absolute top-0 left-2 right-2 h-1 cursor-n-resize touch-none" />
+            <div ref={(el) => registerHandle('s', el)} className="absolute bottom-0 left-2 right-2 h-1 cursor-s-resize touch-none" />
+            <div ref={(el) => registerHandle('w', el)} className="absolute top-2 left-0 bottom-2 w-1 cursor-w-resize touch-none" />
+            <div ref={(el) => registerHandle('e', el)} className="absolute top-2 right-0 bottom-2 w-1 cursor-e-resize touch-none" />
+            {/* Corners — bigger hit area */}
+            <div ref={(el) => registerHandle('nw', el)} className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize touch-none" />
+            <div ref={(el) => registerHandle('ne', el)} className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize touch-none" />
+            <div ref={(el) => registerHandle('sw', el)} className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize touch-none" />
+            <div ref={(el) => registerHandle('se', el)} className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize touch-none" />
           </>
         )}
       </div>
@@ -339,29 +305,32 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
 // Snap preview overlay
 function SnapPreview({ zone }: { zone: SnapZone }) {
+  const topH = STATUS_BAR_HEIGHT + SNAP_GAP
+  const dockH = DOCK_HEIGHT + 4
   const cw = typeof window !== 'undefined' ? window.innerWidth : 1920
-  const ch = typeof window !== 'undefined' ? window.innerHeight - 56 : 1024
+  const ch = typeof window !== 'undefined' ? window.innerHeight : 1024
+  const usableH = ch - topH - dockH
 
   let style: React.CSSProperties = {}
 
   if (zone === 'left') {
-    style = { position: 'fixed', top: 0, left: 0, width: cw / 2, height: ch }
+    style = { position: 'fixed', top: topH, left: 4, width: (cw - 8) / 2, height: usableH }
   } else if (zone === 'right') {
-    style = { position: 'fixed', top: 0, left: cw / 2, width: cw / 2, height: ch }
+    style = { position: 'fixed', top: topH, left: cw / 2, width: (cw - 8) / 2, height: usableH }
   } else if (zone === 'top-left') {
-    style = { position: 'fixed', top: 0, left: 0, width: cw / 2, height: ch / 2 }
+    style = { position: 'fixed', top: topH, left: 4, width: (cw - 8) / 2, height: usableH / 2 }
   } else if (zone === 'top-right') {
-    style = { position: 'fixed', top: 0, left: cw / 2, width: cw / 2, height: ch / 2 }
+    style = { position: 'fixed', top: topH, left: cw / 2, width: (cw - 8) / 2, height: usableH / 2 }
   } else if (zone === 'bottom-left') {
-    style = { position: 'fixed', top: ch / 2, left: 0, width: cw / 2, height: ch / 2 }
+    style = { position: 'fixed', top: topH + usableH / 2, left: 4, width: (cw - 8) / 2, height: usableH / 2 }
   } else if (zone === 'bottom-right') {
-    style = { position: 'fixed', top: ch / 2, left: cw / 2, width: cw / 2, height: ch / 2 }
+    style = { position: 'fixed', top: topH + usableH / 2, left: cw / 2, width: (cw - 8) / 2, height: usableH / 2 }
   }
 
   return (
     <div
-      className="fixed bg-primary/10 border-2 border-primary/40 rounded-lg pointer-events-none transition-all duration-150 z-[99999]"
-      style={style}
+      className="fixed bg-primary/10 border-2 border-primary/40 rounded-lg pointer-events-none z-[99999]"
+      style={{ ...style, transition: 'all 150ms ease' }}
     />
   )
 }
