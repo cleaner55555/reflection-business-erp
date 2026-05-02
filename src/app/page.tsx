@@ -357,18 +357,17 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background px-4">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <h2 className="text-sm font-medium text-foreground">
-                {t(moduleLabelKeys[activeModule] || activeModule)}
-              </h2>
-            </div>
+    <SidebarProvider className="h-svh overflow-hidden">
+      <AppSidebar />
+      <SidebarInset className="flex-1 flex flex-col overflow-hidden">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background px-4">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <h2 className="text-sm font-medium text-foreground">
+              {t(moduleLabelKeys[activeModule] || activeModule)}
+            </h2>
+          </div>
             <div className="flex items-center gap-2">
               {/* Company Switcher */}
               <CompanySwitcher />
@@ -411,7 +410,7 @@ function AppContent() {
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto bg-background/50">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-background/50">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeModule}
@@ -424,7 +423,7 @@ function AppContent() {
                 {modules[activeModule]}
               </motion.div>
             </AnimatePresence>
-          </main>
+          </div>
 
           <Footer />
 
@@ -433,7 +432,6 @@ function AppContent() {
 
       {/* AI Assistant - outside SidebarProvider to prevent dialog conflicts */}
       <AIAssistant />
-    </div>
   )
 }
 
