@@ -461,3 +461,28 @@ Stage Summary:
 - Window content now has 16px padding (p-4) so modules don't touch window edges
 - Exit desktop mode button is ONLY in top-right corner of top bar (no confusing duplicates)
 - All menus are semi-transparent with backdrop blur
+---
+Task ID: 5
+Agent: Main Agent
+Task: Samsung DeX redesign + WordPress-style OS Settings + Polish
+
+Work Log:
+- Completely rewrote all window-manager components inspired by Samsung DeX and WordPress desktop plugin:
+- `src/lib/windowManager.ts`: Added `DesktopSettings` interface (wallpaper, iconSize, dockStyle, showLabels, snapToGrid, gridSize), exported constants `DOCK_HEIGHT=56` and `STATUS_BAR_HEIGHT=32`, persisted settings to localStorage, `drawerOpen`/`settingsOpen` state
+- `src/components/window-manager/Dock.tsx` → Samsung DeX style: thin bar (56px), app drawer trigger (grid icon) on left with running-count badge, running apps as round-square icons (not text tabs), system tray with clock/date on right, cascade/tile/settings buttons, compact vs expanded modes
+- `src/components/window-manager/AppDrawer.tsx` (NEW, replaces StartMenu.tsx): Samsung-style app drawer sliding up from bottom dock, grid of all 125 modules as round-square icons, group tab pills (Svi, Poslovanje, CRM, etc.), search bar, "+" hover button to send to desktop, footer with settings link
+- `src/components/window-manager/DesktopSettingsPanel.tsx` (NEW): WordPress-style settings dialog, wallpaper picker (8 options: blue/green/purple/warm gradients, dark/light solid, dots, mesh), icon size (small/medium/large), dock style (compact/expanded), show/hide labels toggle, snap-to-grid toggle
+- `src/components/window-manager/DesktopMode.tsx`: Samsung-style minimal status bar (32px) with logo, company name, all controls right-aligned, wallpaper system (8 styles), dot pattern overlay option, grid-snapped draggable icons, empty desktop hint
+- `src/components/window-manager/WindowFrame.tsx`: Module icon in titlebar, rounded-xl corners, larger titlebar (40px), backdrop-blur titlebar, better close button (red hover), scale effect on drag, proper maximize accounting for status bar + dock
+- Deleted `src/components/window-manager/StartMenu.tsx` (replaced by AppDrawer)
+
+Stage Summary:
+- Full Samsung DeX-inspired redesign: thin status bar, icon-based dock, app drawer from bottom
+- WordPress-style settings panel with wallpaper, icon size, dock style, grid options
+- 8 wallpaper choices, 3 icon sizes, 2 dock styles, label toggle, snap-to-grid
+- Grid snapping for desktop icons with configurable grid size
+- Running apps shown as icons in dock (not text tabs)
+- System tray with real clock in dock
+- All settings persisted to localStorage
+- Smooth animations (slide-in, zoom-in, fade)
+- 0 compilation errors

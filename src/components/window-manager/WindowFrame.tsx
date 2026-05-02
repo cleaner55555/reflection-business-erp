@@ -1,14 +1,14 @@
 'use client'
 
 import { useCallback, useRef, useEffect, useState } from 'react'
-import { useWindowManager, type WindowState, type SnapZone } from '@/lib/windowManager'
+import { useWindowManager, type WindowState, type SnapZone, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
 import { moduleComponents } from '@/lib/moduleMap'
+import { menuGroups } from '@/components/modules/AppSidebar'
 import {
   Minus,
   Square,
   X,
   Copy,
-  Maximize2,
 } from 'lucide-react'
 
 interface WindowFrameProps {
@@ -195,16 +195,20 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
     }
   }, [windowData.id, windowData.isMaximized, maximizeWindow, restoreWindow])
 
-  // Minimized = don't render the window body
+  // Get module icon for titlebar
+  const allMenuItems = menuGroups.flatMap((g) => g.items)
+  const moduleItem = allMenuItems.find((m) => m.module === windowData.moduleId)
+  const ModuleIcon = moduleItem?.icon
+
   if (windowData.isMinimized) return null
 
   const style: React.CSSProperties = windowData.isMaximized
     ? {
         position: 'absolute',
-        top: 0,
+        top: STATUS_BAR_HEIGHT,
         left: 0,
         width: '100%',
-        height: 'calc(100% - 56px)',
+        height: `calc(100% - ${STATUS_BAR_HEIGHT + DOCK_HEIGHT}px)`,
         zIndex: windowData.zIndex,
         borderRadius: 0,
       }
@@ -226,70 +230,62 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
       <div
         ref={frameRef}
-        className={`flex flex-col overflow-hidden bg-background border border-border/80 shadow-2xl rounded-lg transition-shadow duration-150 ${
-          isDragging ? 'shadow-none' : 'shadow-xl'
+        className={`flex flex-col overflow-hidden bg-background border border-border/50 shadow-2xl rounded-xl transition-shadow duration-150 ${
+          isDragging ? 'shadow-none scale-[1.01]' : 'shadow-xl'
         }`}
         style={style}
         onMouseDown={() => focusWindow(windowData.id)}
       >
-        {/* Title bar */}
+        {/* Title bar — macOS-like traffic lights feel */}
         <div
-          className="flex items-center h-9 px-3 bg-muted/80 border-b border-border/50 cursor-grab active:cursor-grabbing select-none shrink-0"
+          className="flex items-center h-10 px-3 bg-muted/40 backdrop-blur-sm border-b border-border/30 cursor-grab active:cursor-grabbing select-none shrink-0 rounded-t-xl"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onDoubleClick={handleTitleDoubleClick}
         >
-          {/* Module icon */}
-          <span className="text-xs font-medium text-muted-foreground mr-2 truncate max-w-[200px]">
+          {/* Module icon + title */}
+          {ModuleIcon && (
+            <ModuleIcon className="w-3.5 h-3.5 text-muted-foreground mr-2 shrink-0" />
+          )}
+          <span className="text-xs font-medium text-foreground/70 mr-auto truncate max-w-[200px]">
             {windowData.title}
           </span>
-          <div className="flex-1" />
           {/* Window controls */}
           <div className="flex items-center gap-0.5">
             <button
-              onClick={(e) => {
-                e.stopPropagation()
-                minimizeWindow(windowData.id)
-              }}
-              className="flex items-center justify-center w-7 h-7 rounded hover:bg-accent transition-colors"
+              onClick={(e) => { e.stopPropagation(); minimizeWindow(windowData.id) }}
+              className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-foreground/5 transition-colors"
               title="Minimizuj"
             >
-              <Minus className="w-3.5 h-3.5 text-muted-foreground" />
+              <Minus className="w-3.5 h-3.5 text-foreground/40" />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                if (windowData.isMaximized) {
-                  restoreWindow(windowData.id)
-                } else {
-                  maximizeWindow(windowData.id)
-                }
+                windowData.isMaximized ? restoreWindow(windowData.id) : maximizeWindow(windowData.id)
               }}
-              className="flex items-center justify-center w-7 h-7 rounded hover:bg-accent transition-colors"
+              className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-foreground/5 transition-colors"
               title={windowData.isMaximized ? 'Vrati' : 'Maksimizuj'}
             >
               {windowData.isMaximized ? (
-                <Copy className="w-3 h-3 text-muted-foreground" />
+                <Copy className="w-3 h-3 text-foreground/40" />
               ) : (
-                <Square className="w-3 h-3 text-muted-foreground" />
+                <Square className="w-3 h-3 text-foreground/40" />
               )}
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation()
-                closeWindow(windowData.id)
-              }}
-              className="flex items-center justify-center w-7 h-7 rounded hover:bg-destructive hover:text-destructive-foreground transition-colors"
+              onClick={(e) => { e.stopPropagation(); closeWindow(windowData.id) }}
+              className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-red-500/80 hover:text-white transition-colors"
               title="Zatvori"
             >
-              <X className="w-3.5 h-3.5 text-muted-foreground group-hover:text-destructive-foreground" />
+              <X className="w-3.5 h-3.5 text-foreground/40" />
             </button>
           </div>
         </div>
 
-        {/* Content — with padding so content doesn't touch edges */}
-        <div className="flex-1 overflow-auto p-4">
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-4 bg-background">
           {moduleComponents[windowData.moduleId] || (
             <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
               Modul &quot;{windowData.moduleId}&quot; nije pronađen
