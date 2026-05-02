@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useWindowManager, type WindowState, type SnapZone, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
+import { useWindowManager, type WindowState, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
 import { moduleComponents } from '@/lib/moduleMap'
 import { menuGroups } from '@/components/modules/AppSidebar'
 import {
@@ -16,8 +16,6 @@ interface WindowFrameProps {
   windowData: WindowState
 }
 
-const SNAP_THRESHOLD = 16
-
 export function WindowFrame({ windowData }: WindowFrameProps) {
   const {
     closeWindow,
@@ -27,14 +25,13 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
     focusWindow,
     updateWindowPosition,
     updateWindowSize,
-    snapWindow,
     topZIndex,
   } = useWindowManager()
 
   const frameRef = useRef<HTMLDivElement>(null)
   const titleBarRef = useRef<HTMLDivElement>(null)
 
-  const [snapIndicator, setSnapIndicator] = useState<SnapZone>(null)
+  // Snap removed — was causing drag to get stuck
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -50,7 +47,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
   const isFocused = windowData.zIndex === topZIndex && !windowData.isMinimized
 
   // ===== DRAG: native window events =====
-  const snapIndicatorRef = useRef<SnapZone>(null)
+
 
   useEffect(() => {
     const titleBar = titleBarRef.current
@@ -69,11 +66,9 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
       focusWindow(windowData.id)
 
       setIsDragging(true)
-      snapIndicatorRef.current = null
 
       const startX = e.clientX
       const startY = e.clientY
-      // Read current window position directly from store (always fresh)
       const win = useWindowManager.getState().windows.find(w => w.id === windowData.id)
       const originX = win?.x ?? windowData.x
       const originY = win?.y ?? windowData.y
@@ -82,32 +77,12 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
         const dx = ev.clientX - startX
         const dy = ev.clientY - startY
         updateWindowPosition(windowData.id, originX + dx, originY + dy)
-
-        // Snap detection — cursor at screen edges
-        const cw = window.innerWidth
-        const ch = window.innerHeight
-        let snap: SnapZone = null
-
-        if (ev.clientX <= SNAP_THRESHOLD) {
-          snap = ev.clientY <= SNAP_THRESHOLD ? 'top-left' : ev.clientY >= ch - SNAP_THRESHOLD ? 'bottom-left' : 'left'
-        } else if (ev.clientX >= cw - SNAP_THRESHOLD) {
-          snap = ev.clientY <= SNAP_THRESHOLD ? 'top-right' : ev.clientY >= ch - SNAP_THRESHOLD ? 'bottom-right' : 'right'
-        }
-
-        snapIndicatorRef.current = snap
-        setSnapIndicator(snap)
       }
 
       const onUp = () => {
         window.removeEventListener('pointermove', onMove)
         window.removeEventListener('pointerup', onUp)
         setIsDragging(false)
-
-        if (snapIndicatorRef.current) {
-          snapWindow(windowData.id, snapIndicatorRef.current, window.innerWidth, window.innerHeight)
-        }
-        setSnapIndicator(null)
-        snapIndicatorRef.current = null
       }
 
       window.addEventListener('pointermove', onMove)
@@ -244,9 +219,6 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
   return (
     <>
-      {/* Snap indicator overlay */}
-      {isDragging && snapIndicator && <SnapPreview zone={snapIndicator} />}
-
       <motion.div
         ref={frameRef}
         className={`flex flex-col overflow-hidden bg-background border border-border/50 rounded-xl ${shadowClass}`}
@@ -338,35 +310,4 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
   )
 }
 
-// Snap preview overlay — shows where the window will snap
-function SnapPreview({ zone }: { zone: SnapZone }) {
-  const topH = STATUS_BAR_HEIGHT
-  const dockH = DOCK_HEIGHT + 4
-  const cw = typeof window !== 'undefined' ? window.innerWidth : 1920
-  const ch = typeof window !== 'undefined' ? window.innerHeight : 1024
-  const usableH = ch - topH - dockH
-  const gap = 4 // small gap between preview and edges
 
-  let style: React.CSSProperties = {}
-
-  if (zone === 'left') {
-    style = { position: 'fixed', top: topH, left: gap, width: (cw - gap * 3) / 2, height: usableH - gap }
-  } else if (zone === 'right') {
-    style = { position: 'fixed', top: topH, left: (cw + gap) / 2, width: (cw - gap * 3) / 2, height: usableH - gap }
-  } else if (zone === 'top-left') {
-    style = { position: 'fixed', top: topH, left: gap, width: (cw - gap * 3) / 2, height: (usableH - gap) / 2 }
-  } else if (zone === 'top-right') {
-    style = { position: 'fixed', top: topH, left: (cw + gap) / 2, width: (cw - gap * 3) / 2, height: (usableH - gap) / 2 }
-  } else if (zone === 'bottom-left') {
-    style = { position: 'fixed', top: topH + (usableH - gap) / 2 + gap / 2, left: gap, width: (cw - gap * 3) / 2, height: (usableH - gap) / 2 - gap / 2 }
-  } else if (zone === 'bottom-right') {
-    style = { position: 'fixed', top: topH + (usableH - gap) / 2 + gap / 2, left: (cw + gap) / 2, width: (cw - gap * 3) / 2, height: (usableH - gap) / 2 - gap / 2 }
-  }
-
-  return (
-    <div
-      className="fixed bg-primary/10 border-2 border-primary/40 rounded-lg pointer-events-none z-[99999]"
-      style={{ ...style, transition: 'all 150ms ease' }}
-    />
-  )
-}
