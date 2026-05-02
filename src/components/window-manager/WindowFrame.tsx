@@ -15,8 +15,7 @@ interface WindowFrameProps {
   windowData: WindowState
 }
 
-const SNAP_THRESHOLD = 12
-const SNAP_GAP = 8 // gap between status bar and snapped window
+const SNAP_THRESHOLD = 16
 
 export function WindowFrame({ windowData }: WindowFrameProps) {
   const {
@@ -47,6 +46,11 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
     const onDown = (e: PointerEvent) => {
       if (e.button !== 0) return
       if (windowData.isMaximized) return
+
+      // Don't start drag if clicking on a button (close, minimize, maximize)
+      const target = e.target as HTMLElement
+      if (target.closest('button')) return
+
       e.preventDefault()
       e.stopPropagation()
       focusWindow(windowData.id)
@@ -56,15 +60,17 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
       const startX = e.clientX
       const startY = e.clientY
-      const originX = windowData.x
-      const originY = windowData.y
+      // Read current window position directly from store (always fresh)
+      const win = useWindowManager.getState().windows.find(w => w.id === windowData.id)
+      const originX = win?.x ?? windowData.x
+      const originY = win?.y ?? windowData.y
 
       const onMove = (ev: PointerEvent) => {
         const dx = ev.clientX - startX
         const dy = ev.clientY - startY
         updateWindowPosition(windowData.id, originX + dx, originY + dy)
 
-        // Snap detection
+        // Snap detection — cursor at screen edges
         const cw = window.innerWidth
         const ch = window.innerHeight
         let snap: SnapZone = null
@@ -97,7 +103,9 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
     titleBar.addEventListener('pointerdown', onDown)
     return () => titleBar.removeEventListener('pointerdown', onDown)
-  }, [windowData.id, windowData.x, windowData.y, windowData.isMaximized, focusWindow, updateWindowPosition, snapWindow])
+    // Only re-attach when window ID or isMaximized changes — NOT on every position update
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowData.id, windowData.isMaximized])
 
   // ===== RESIZE: native window events =====
   const resizeHandlesRef = useRef<Map<string, HTMLElement>>(new Map())
@@ -120,12 +128,14 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
       setIsResizing(true)
       const startX = e.clientX
       const startY = e.clientY
-      const originX = windowData.x
-      const originY = windowData.y
-      const originW = windowData.width
-      const originH = windowData.height
-      const minW = windowData.minWidth
-      const minH = windowData.minHeight
+      // Read current window dimensions from store (always fresh)
+      const win = useWindowManager.getState().windows.find(w => w.id === windowData.id)
+      const originX = win?.x ?? windowData.x
+      const originY = win?.y ?? windowData.y
+      const originW = win?.width ?? windowData.width
+      const originH = win?.height ?? windowData.height
+      const minW = win?.minWidth ?? windowData.minWidth
+      const minH = win?.minHeight ?? windowData.minHeight
 
       const onMove = (ev: PointerEvent) => {
         const dx = ev.clientX - startX
@@ -173,7 +183,9 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
         if (handler) el.removeEventListener('pointerdown', handler)
       }
     }
-  }, [windowData.id, windowData.x, windowData.y, windowData.width, windowData.height, windowData.minWidth, windowData.minHeight, windowData.isMaximized, focusWindow, updateWindowPosition, updateWindowSize])
+    // Only re-attach when window ID or isMaximized changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowData.id, windowData.isMaximized])
 
   // Double-click title bar to maximize/restore
   const handleTitleDoubleClick = useCallback(() => {
@@ -303,28 +315,29 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
   )
 }
 
-// Snap preview overlay
+// Snap preview overlay — shows where the window will snap
 function SnapPreview({ zone }: { zone: SnapZone }) {
-  const topH = STATUS_BAR_HEIGHT + SNAP_GAP
+  const topH = STATUS_BAR_HEIGHT
   const dockH = DOCK_HEIGHT + 4
   const cw = typeof window !== 'undefined' ? window.innerWidth : 1920
   const ch = typeof window !== 'undefined' ? window.innerHeight : 1024
   const usableH = ch - topH - dockH
+  const gap = 4 // small gap between preview and edges
 
   let style: React.CSSProperties = {}
 
   if (zone === 'left') {
-    style = { position: 'fixed', top: topH, left: 4, width: (cw - 8) / 2, height: usableH }
+    style = { position: 'fixed', top: topH, left: gap, width: (cw - gap * 3) / 2, height: usableH - gap }
   } else if (zone === 'right') {
-    style = { position: 'fixed', top: topH, left: cw / 2, width: (cw - 8) / 2, height: usableH }
+    style = { position: 'fixed', top: topH, left: (cw + gap) / 2, width: (cw - gap * 3) / 2, height: usableH - gap }
   } else if (zone === 'top-left') {
-    style = { position: 'fixed', top: topH, left: 4, width: (cw - 8) / 2, height: usableH / 2 }
+    style = { position: 'fixed', top: topH, left: gap, width: (cw - gap * 3) / 2, height: (usableH - gap) / 2 }
   } else if (zone === 'top-right') {
-    style = { position: 'fixed', top: topH, left: cw / 2, width: (cw - 8) / 2, height: usableH / 2 }
+    style = { position: 'fixed', top: topH, left: (cw + gap) / 2, width: (cw - gap * 3) / 2, height: (usableH - gap) / 2 }
   } else if (zone === 'bottom-left') {
-    style = { position: 'fixed', top: topH + usableH / 2, left: 4, width: (cw - 8) / 2, height: usableH / 2 }
+    style = { position: 'fixed', top: topH + (usableH - gap) / 2 + gap / 2, left: gap, width: (cw - gap * 3) / 2, height: (usableH - gap) / 2 - gap / 2 }
   } else if (zone === 'bottom-right') {
-    style = { position: 'fixed', top: topH + usableH / 2, left: cw / 2, width: (cw - 8) / 2, height: usableH / 2 }
+    style = { position: 'fixed', top: topH + (usableH - gap) / 2 + gap / 2, left: (cw + gap) / 2, width: (cw - gap * 3) / 2, height: (usableH - gap) / 2 - gap / 2 }
   }
 
   return (

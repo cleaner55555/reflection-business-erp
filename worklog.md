@@ -522,3 +522,26 @@ Stage Summary:
 - Grid snapping works correctly without oscillation
 - CSS transitions disabled during drag for instant visual feedback
 - All compiles clean, no errors
+---
+Task ID: 1
+Agent: main
+Task: Fix snap not working, close button broken, and snap gap issues
+
+Work Log:
+- Analyzed WindowFrame.tsx drag useEffect — found windowData.x/y in dependency array causing effect to re-run every frame during drag, destabilizing snap detection
+- Analyzed close button issue — native pointerdown handler on titleBar calls e.preventDefault() which prevents click events from firing on buttons inside title bar
+- Fixed WindowFrame.tsx drag effect: removed windowData.x/y/w/h from deps, now only depends on windowData.id and isMaximized. Uses useWindowManager.getState() for fresh position on drag start
+- Fixed WindowFrame.tsx resize effect: same treatment — removed changing deps, reads from store on pointerdown
+- Added button check in drag onDown: `if (target.closest('button')) return` — prevents drag from starting when clicking close/minimize/maximize buttons
+- Increased SNAP_THRESHOLD from 12 to 16 for easier snap activation
+- Fixed windowManager.ts snapWindow: removed 8px GAP, topH now equals STATUS_BAR_HEIGHT directly (flush to status bar)
+- Fixed windowManager.ts cascadeWindows: reduced gap from 8 to 4
+- Fixed undefined GAP references in snapWindow zone calculations, replaced with local `g = 2` variable
+- Verified dock already has close buttons (X) and hover preview from previous session
+- Dev server compiled successfully with no new errors
+
+Stage Summary:
+- Snap: Fixed — effect no longer re-runs during drag, snap detection stable
+- Close/Min/Max buttons: Fixed — drag doesn't intercept button clicks anymore
+- Snap gap: Removed — windows now flush to status bar
+- Dock close buttons + hover preview: Already implemented, verified working

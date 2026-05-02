@@ -288,19 +288,19 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
   }),
 
   snapWindow: (id, zone, containerWidth, containerHeight) => {
-    const GAP = 8 // padding around snapped windows
     const dockH = DOCK_HEIGHT + 4
-    const topH = STATUS_BAR_HEIGHT + GAP
-    const usableW = containerWidth - GAP * 2
+    const topH = STATUS_BAR_HEIGHT
+    const usableW = containerWidth - 4
     const usableH = containerHeight - dockH - topH
-    let x = GAP, y = topH, width = usableW, height = usableH
+    let x = 2, y = topH, width = usableW, height = usableH
 
-    if (zone === 'left') { width = usableW / 2; height = usableH }
-    else if (zone === 'right') { x = GAP + usableW / 2; width = usableW / 2; height = usableH }
-    else if (zone === 'top-left') { width = usableW / 2; height = usableH / 2 }
-    else if (zone === 'top-right') { x = GAP + usableW / 2; width = usableW / 2; height = usableH / 2 }
-    else if (zone === 'bottom-left') { y = topH + usableH / 2; width = usableW / 2; height = usableH / 2 }
-    else if (zone === 'bottom-right') { x = GAP + usableW / 2; y = topH + usableH / 2; width = usableW / 2; height = usableH / 2 }
+    const g = 2 // tiny gap between side-by-side snapped windows
+    if (zone === 'left') { width = usableW / 2 - g; height = usableH }
+    else if (zone === 'right') { x = usableW / 2 + g; width = usableW / 2 - g; height = usableH }
+    else if (zone === 'top-left') { width = usableW / 2 - g; height = usableH / 2 - g / 2 }
+    else if (zone === 'top-right') { x = usableW / 2 + g; width = usableW / 2 - g; height = usableH / 2 - g / 2 }
+    else if (zone === 'bottom-left') { y = topH + usableH / 2 + g / 2; width = usableW / 2 - g; height = usableH / 2 - g / 2 }
+    else if (zone === 'bottom-right') { x = usableW / 2 + g; y = topH + usableH / 2 + g / 2; width = usableW / 2 - g; height = usableH / 2 - g / 2 }
 
     set({ windows: get().windows.map((w) => w.id === id ? { ...w, x, y, width, height, snapZone: zone, isMaximized: false } : w) })
   },
@@ -322,7 +322,7 @@ export const useWindowManager = create<WindowManagerState>((set, get) => ({
 
   cascadeWindows: () => {
     const wins = get().windows.filter((w) => !w.isMinimized)
-    const topH = STATUS_BAR_HEIGHT + 8
+    const topH = STATUS_BAR_HEIGHT + 4
     const updated = wins.map((w, i) => ({
       ...w, x: 80 + i * 30, y: topH + 20 + i * 30,
       width: 800, height: 500, isMaximized: false, snapZone: null,
