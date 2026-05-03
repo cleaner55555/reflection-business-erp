@@ -642,3 +642,29 @@ Stage Summary:
 - Close button has dramatic red hover with scale-up effect
 - Desktop right-click context menu with wallpaper/display/refresh/about options
 - 0 lint errors, dev server 200 OK
+
+---
+Task ID: G-1
+Agent: Main (direct)
+Task: Phase G - English Refactoring (rename all module files from Serbian/Cyrillic to English)
+
+Work Log:
+- Analyzed all 148 module files in src/components/modules/
+- Identified 110 files needing rename (Serbian/Cyrillic → English)
+- Created comprehensive rename mapping covering all module types
+- Used git mv for all renames to preserve git history
+- Key renames: Fakture→Invoices, Magacin→Inventory, Knjigovodstvo→Accounting, Partneri→Contacts, Zaposleni→Employees, KafeRestoran→Restaurant, Podesavanja→Settings, etc.
+- Updated moduleMap.tsx: all 106 imports updated to new file paths, component name references preserved
+- Fixed internal imports: Employees.tsx→EmployeesEnhanced, Inventory.tsx→InventoryEnhanced, Invoices.tsx→InvoicesEnhanced
+- ModuleType string IDs in store.ts left unchanged (internal identifiers, separate refactoring step)
+- UI component files (AppSidebar, AppLauncher, Footer, UserMenu, etc.) NOT renamed
+- ESLint: 0 errors on all affected files
+- Dev server: GET / 200, compiles successfully
+- Git commit: 8726fce
+
+Stage Summary:
+- Phase G COMPLETE: All 110 module files renamed from Serbian/Cyrillic to English
+- 109 files changed in git, all via git mv (history preserved)
+- Function export names inside files remain Serbian (next step: Phase G2)
+- Zero functionality changes - pure file rename
+- Next: Phase D (enhance 46 placeholder modules) now all in English
