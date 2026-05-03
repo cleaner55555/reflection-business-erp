@@ -261,7 +261,7 @@ Dashboard, Fakture, Partneri, Magacin, Knjigovodstvo, Finansije, BankSync, CRM, 
 
 ## Faza 8: Marketplace Platforma
 
-### 8.1 Marketplace Core (Kao Ananas.rs)
+### 8.1 Marketplace Core
 - [ ] Multi-tenant marketplace arhitektura
 - [ ] Više veleprodaja na jednom mestu
 - [ ] Svaka veleprodaja ima svoje maloprodaje unutar marketplace-a
@@ -271,7 +271,7 @@ Dashboard, Fakture, Partneri, Magacin, Knjigovodstvo, Finansije, BankSync, CRM, 
 - [ ] Kupovina od više prodavaca u jednoj narudžbi
 
 ### 8.2 Veleprodaja Portal (Wholesaler Portal)
-- [ ] Portal za veleprodaju (kao Ananas wportal)
+- [ ] Portal za veleprodaju
 - [ ] Upload proizvoda (CSV, Excel, API)
 - [ ] Upravljanje cenama i zalihama
 - [ ] Narudžbenice od maloprodaja

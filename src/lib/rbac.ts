@@ -19,7 +19,7 @@ export interface Permissions {
   [module: string]: PermissionAction[]
 }
 
-// ─── Default role permissions (Odoo-style) ──────────────────────────────────
+// ─── Default role permissions ──────────────────────────────────
 
 export const DEFAULT_ROLES: Record<string, { displayName: string; description: string; permissions: Permissions }> = {
   admin: {

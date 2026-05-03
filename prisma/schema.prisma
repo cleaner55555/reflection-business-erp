@@ -1432,7 +1432,7 @@ model IntegrationJob {
   companyId     String
   type          String   // import, export
   entityType    String   // partners, products, transactions, contacts, invoices, stock
-  source        String   @default("custom") // biznis_navigator, pantheon, minimax, eFakture, custom
+  source        String   @default("custom") // external_accounting_1, external_accounting_2, external_accounting_3, einvoice_system, custom
   status        String   @default("pending") // pending, processing, completed, failed, partial
   totalRows     Int      @default(0)
   successRows   Int      @default(0)
@@ -1456,7 +1456,7 @@ model SyncConnector {
   id              String   @id @default(cuid())
   companyId       String
   name            String
-  type            String   // biznis_navigator, pantheon, minimax, efakture, sap, biznisoft, custom_api
+  type            String   // external_accounting_1, external_accounting_2, external_accounting_3, einvoice_system, enterprise_erp, custom_api
   direction       String   @default("import") // import, export, bidirectional
   isActive        Boolean  @default(false)
   status          String   @default("disconnected") // disconnected, connected, syncing, error
@@ -1782,7 +1782,7 @@ model ShippingEvent {
 
 
 // =============================================
-// Faza 8-9: NOVI MODULI (Odoo parity)
+// Faza 8-9: NOVI MODULI (full feature set)
 // =============================================
 
 // ============ SALES / PONUDE ============

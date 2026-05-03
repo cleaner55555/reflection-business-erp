@@ -5,10 +5,10 @@ import {
   parseBNCSV,
   transformValue,
   type BNCSVData,
-} from '@/lib/migration/biznis-navigator'
+} from '@/lib/migration/legacy-accounting'
 
 // ==================== SCAN ENDPOINT ====================
-// POST /api/migration/biznis-navigator/scan
+// POST /api/migration/legacy-accounting/scan
 // Scans uploaded CSV files and returns structure with auto-mapping
 
 export async function POST(request: NextRequest) {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 }
 
 // ==================== IMPORT ENDPOINT ====================
-// POST /api/migration/biznis-navigator/import
+// POST /api/migration/legacy-accounting/import
 // Imports selected entities from uploaded CSV data
 
 export async function PUT(request: NextRequest) {
@@ -117,7 +117,7 @@ export async function PUT(request: NextRequest) {
         data: {
           type: 'import',
           entityType: targetEntity,
-          source: 'biznis_navigator',
+          source: 'external_accounting',
           status: result.failedRows === 0 ? 'completed' : result.successRows > 0 ? 'partial' : 'failed',
           totalRows: result.totalRows,
           successRows: result.successRows,
@@ -156,15 +156,15 @@ export async function PUT(request: NextRequest) {
 }
 
 // ==================== UNDO ENDPOINT ====================
-// POST /api/migration/biznis-navigator/undo
-// Undoes the last migration by deleting the most recent BN integration jobs' imported records
+// POST /api/migration/legacy-accounting/undo
+// Undoes the last migration by deleting the most recent integration jobs' imported records
 
 export async function DELETE(request: NextRequest) {
   try {
     // Find the last BN migration job
     const lastJob = await db.integrationJob.findFirst({
       where: {
-        source: 'biznis_navigator',
+        source: 'external_accounting',
         type: 'import',
         status: { in: ['completed', 'partial'] },
       },

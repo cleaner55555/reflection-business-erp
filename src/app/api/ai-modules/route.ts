@@ -54,7 +54,7 @@ const ALL_MODULES = [
   { id: 'blog', label: 'Blog' },
   { id: 'voip', label: 'VoIP (telefonija)' },
   { id: 'iot', label: 'IoT (senzori, uredjaji)' },
-  { id: 'whatsapp', label: 'WhatsApp (komunikacija)' },
+  { id: 'whatsapp', label: 'Poruke (komunikacija)' },
   { id: 'forum', label: 'Forum (diskusije)' },
   { id: 'plm', label: 'PLM (upravljanje životnim ciklusom)' },
   { id: 'ecommerce', label: 'ECommerce (online prodaja)' },

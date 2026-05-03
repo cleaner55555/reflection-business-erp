@@ -51,7 +51,7 @@ import { WebsiteBuilder } from '@/components/modules/WebsiteBuilder'
 import { BlogModul } from '@/components/modules/Blog'
 import { VoIP } from '@/components/modules/VoIP'
 import { IoT } from '@/components/modules/IoT'
-import { WhatsApp } from '@/components/modules/WhatsApp'
+import { Messaging } from '@/components/modules/Messaging'
 import { Forum } from '@/components/modules/Forum'
 import { PLM } from '@/components/modules/PLM'
 import { ECommerce } from '@/components/modules/ECommerce'
@@ -178,7 +178,7 @@ export const moduleComponents: Record<string, React.ComponentType> = {
   blog: BlogModul,
   voip: VoIP,
   iot: IoT,
-  whatsapp: WhatsApp,
+  whatsapp: Messaging,
   forum: Forum,
   plm: PLM,
   ecommerce: ECommerce,

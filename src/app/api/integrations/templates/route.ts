@@ -13,10 +13,10 @@ interface Template {
 }
 
 const templates: Template[] = [
-  // ───── Biznis Navigator ─────
+  // ───── Spoljni knjigovodstveni sistem 1 ─────
   {
-    source: 'biznis_navigator',
-    sourceLabel: 'Biznis Navigator',
+    source: 'external_accounting_1',
+    sourceLabel: 'Spoljni sistem 1',
     entityType: 'partners',
     entityTypeLabel: 'Partneri',
     mapping: {
@@ -34,8 +34,8 @@ const templates: Template[] = [
     },
   },
   {
-    source: 'biznis_navigator',
-    sourceLabel: 'Biznis Navigator',
+    source: 'external_accounting_1',
+    sourceLabel: 'Spoljni sistem 1',
     entityType: 'products',
     entityTypeLabel: 'Proizvodi',
     mapping: {
@@ -51,10 +51,10 @@ const templates: Template[] = [
     },
   },
 
-  // ───── Pantheon ─────
+  // ───── Spoljni sistem 2 ─────
   {
-    source: 'pantheon',
-    sourceLabel: 'Pantheon',
+    source: 'external_accounting_2',
+    sourceLabel: 'Spoljni sistem 2',
     entityType: 'partners',
     entityTypeLabel: 'Partneri',
     mapping: {
@@ -72,8 +72,8 @@ const templates: Template[] = [
     },
   },
   {
-    source: 'pantheon',
-    sourceLabel: 'Pantheon',
+    source: 'external_accounting_2',
+    sourceLabel: 'Spoljni sistem 2',
     entityType: 'products',
     entityTypeLabel: 'Proizvodi',
     mapping: {
@@ -89,10 +89,10 @@ const templates: Template[] = [
     },
   },
 
-  // ───── Minimax ─────
+  // ───── Spoljni knjigovodstveni sistem 3 ─────
   {
-    source: 'minimax',
-    sourceLabel: 'Minimax',
+    source: 'external_accounting_3',
+    sourceLabel: 'Spoljni sistem 3',
     entityType: 'partners',
     entityTypeLabel: 'Partneri',
     mapping: {
@@ -110,8 +110,8 @@ const templates: Template[] = [
     },
   },
   {
-    source: 'minimax',
-    sourceLabel: 'Minimax',
+    source: 'external_accounting_3',
+    sourceLabel: 'Spoljni sistem 3',
     entityType: 'products',
     entityTypeLabel: 'Proizvodi',
     mapping: {
@@ -127,10 +127,10 @@ const templates: Template[] = [
     },
   },
 
-  // ───── eFakture ─────
+  // ───── eFakturisanje (SEF) ─────
   {
-    source: 'eFakture',
-    sourceLabel: 'eFakture',
+    source: 'einvoice_system',
+    sourceLabel: 'eFakturisanje',
     entityType: 'partners',
     entityTypeLabel: 'Partneri',
     mapping: {
@@ -145,8 +145,8 @@ const templates: Template[] = [
     },
   },
   {
-    source: 'eFakture',
-    sourceLabel: 'eFakture',
+    source: 'einvoice_system',
+    sourceLabel: 'eFakturisanje',
     entityType: 'transactions',
     entityTypeLabel: 'Transakcije',
     mapping: {

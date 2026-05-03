@@ -55,7 +55,7 @@ import { useTranslation } from '@/lib/i18n'
 // ==================== TYPES ====================
 
 type MigrationStep = 1 | 2 | 3 | 4
-type MigrationSource = 'biznis_navigator' | 'custom'
+type MigrationSource = 'external_accounting' | 'custom'
 
 interface ScannedFile {
   fileName: string
@@ -164,7 +164,7 @@ function MigrationFlow() {
       const fd = new FormData()
       Array.from(files).forEach(f => fd.append('files', f))
 
-      const res = await fetch('/api/migration/biznis-navigator', { method: 'POST', body: fd })
+      const res = await fetch('/api/migration/legacy-accounting', { method: 'POST', body: fd })
       if (!res.ok) {
         const err = await res.json()
         toast.error(err.error || t('common.error'))
@@ -276,7 +276,7 @@ function MigrationFlow() {
           targetEntity: f.selectedTarget,
         }))
 
-        const importRes = await fetch('/api/migration/biznis-navigator', {
+        const importRes = await fetch('/api/migration/legacy-accounting', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -374,7 +374,7 @@ function MigrationFlow() {
     if (!confirm(t('migrationUndoConfirm'))) return
     setLoading(true)
     try {
-      const res = await fetch('/api/migration/biznis-navigator', { method: 'DELETE' })
+      const res = await fetch('/api/migration/legacy-accounting', { method: 'DELETE' })
       if (res.ok) {
         const data = await res.json()
         toast.success(`${t('migrationUndoSuccess')} (${data.deletedCount} records)`)
@@ -464,13 +464,13 @@ function MigrationFlow() {
               <p className="text-sm text-muted-foreground">{t('migrationChooseSource')}</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Biznis Navigator card */}
+                {/* Spoljni knjigovodstveni sistem card */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => { setSource('biznis_navigator'); goNext() }}
+                  onClick={() => { setSource('external_accounting'); goNext() }}
                   className={`relative text-left p-5 rounded-xl border-2 transition-all ${
-                    source === 'biznis_navigator'
+                    source === 'external_accounting'
                       ? 'border-primary bg-primary/5 shadow-sm'
                       : 'border-muted-foreground/20 hover:border-primary/50 hover:shadow-sm'
                   }`}
@@ -558,7 +558,7 @@ function MigrationFlow() {
                 </div>
               </div>
 
-              {source === 'biznis_navigator' && (
+              {source === 'external_accounting' && (
                 <div className="space-y-3">
                   {/* DB Path input */}
                   <div className="space-y-2">

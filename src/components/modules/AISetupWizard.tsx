@@ -81,7 +81,7 @@ const MODULE_GROUPS: Record<string, { id: string; label: string; icon: string }[
     { id: 'blog', label: 'Blog', icon: 'PenLine' },
     { id: 'voip', label: 'VoIP', icon: 'Phone' },
     { id: 'iot', label: 'IoT', icon: 'Wifi' },
-    { id: 'whatsapp', label: 'WhatsApp', icon: 'MessageCircleReply' },
+    { id: 'whatsapp', label: 'Poruke', icon: 'MessageCircleReply' },
     { id: 'forum', label: 'Forum', icon: 'UsersRound' },
     { id: 'plm', label: 'PLM', icon: 'GitBranch' },
     { id: 'ecommerce', label: 'ECommerce', icon: 'ShoppingBag' },

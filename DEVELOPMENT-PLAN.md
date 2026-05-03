@@ -60,7 +60,7 @@
 | **Shipping & Delivery** | Delivery Carrier | ShipStation-sličan, GLOBALNE pošte | 🔴 P1 |
 | **Warehouse Bins/Locations** | Inventory Locations | Polica→Sprat→Soba→Zgrada | 🔴 P1 |
 | **Barcode/Scanner Support** | Barcode Scanner | Skeniranje, štampa nalepnica | 🔴 P1 |
-| **Multi-Vendor Marketplace** | — (3rd party) | Ananas.rs model, multitenant | 🔴 P1 |
+| **Multi-Vendor Marketplace** | — (3rd party) | Multitenant model | 🔴 P1 |
 | **Subscriptions** | Subscriptions | Periodične fakture | 🟡 P2 |
 | **Field Service** | Field Service | Servis na terenu | 🟡 P2 |
 | **Helpdesk** | Helpdesk | Tiketi, SLA | 🟡 P2 |

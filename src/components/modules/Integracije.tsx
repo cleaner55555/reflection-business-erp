@@ -58,7 +58,7 @@ import { MigrationWizard } from './MigrationWizard'
 // ==================== TYPES ====================
 
 type EntityType = 'partners' | 'products' | 'transactions' | 'contacts'
-type SourceType = 'custom' | 'biznis_navigator' | 'pantheon' | 'minimax' | 'efakture' | 'sap' | 'reflection'
+type SourceType = 'custom' | 'external_accounting_1' | 'external_accounting_2' | 'external_accounting_3' | 'einvoice_system' | 'enterprise_erp' | 'reflection'
 type ImportStep = 1 | 2 | 3
 type JobStatus = 'completed' | 'partial' | 'failed' | 'pending'
 
@@ -125,12 +125,12 @@ interface SyncConnector {
 }
 
 const CONNECTOR_TYPES: Record<string, string> = {
-  biznis_navigator: 'Biznis Navigator',
-  pantheon: 'Pantheon',
-  minimax: 'Minimax',
-  efakture: 'eFakture (SEF)',
-  sap: 'SAP',
-  biznisoft: 'BizniSoft',
+  external_accounting_1: 'Spoljni knjigovodstveni sistem 1',
+  external_accounting_2: 'Spoljni knjigovodstveni sistem 2',
+  external_accounting_3: 'Spoljni knjigovodstveni sistem 3',
+  einvoice_system: 'eFakturisanje (SEF)',
+  enterprise_erp: 'Enterprise ERP',
+  external_accounting_4: 'Spoljni knjigovodstveni sistem 4',
   custom_api: 'Custom API',
 }
 
@@ -265,7 +265,7 @@ function ConnectionsTab() {
 
   // Form state
   const [formName, setFormName] = useState('')
-  const [formType, setFormType] = useState('biznis_navigator')
+  const [formType, setFormType] = useState('external_accounting_1')
   const [formDirection, setFormDirection] = useState('import')
   const [formHostUrl, setFormHostUrl] = useState('')
   const [formApiKey, setFormApiKey] = useState('')
@@ -288,7 +288,7 @@ function ConnectionsTab() {
 
   const resetForm = () => {
     setFormName('')
-    setFormType('biznis_navigator')
+    setFormType('external_accounting_1')
     setFormDirection('import')
     setFormHostUrl('')
     setFormApiKey('')
@@ -453,7 +453,7 @@ function ConnectionsTab() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs">{t('integrations.connectorName')} *</Label>
-                <input className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Biznis Navigator - Test" />
+                <input className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Spoljni sistem - Test" />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">{t('integrations.connectorType')}</Label>
@@ -973,11 +973,11 @@ function ImportWizard() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="custom">{t('integrations.source_custom')}</SelectItem>
-                      <SelectItem value="biznis_navigator">{t('integrations.source_biznis_navigator')}</SelectItem>
-                      <SelectItem value="pantheon">{t('integrations.source_pantheon')}</SelectItem>
-                      <SelectItem value="minimax">{t('integrations.source_minimax')}</SelectItem>
-                      <SelectItem value="efakture">{t('integrations.source_efakture')}</SelectItem>
-                      <SelectItem value="sap">{t('integrations.source_sap')}</SelectItem>
+                      <SelectItem value="external_accounting_1">{t('integrations.source_external_accounting_1')}</SelectItem>
+                      <SelectItem value="external_accounting_2">{t('integrations.source_external_accounting_2')}</SelectItem>
+                      <SelectItem value="external_accounting_3">{t('integrations.source_external_accounting_3')}</SelectItem>
+                      <SelectItem value="einvoice_system">{t('integrations.source_einvoice_system')}</SelectItem>
+                      <SelectItem value="enterprise_erp">{t('integrations.source_enterprise_erp')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

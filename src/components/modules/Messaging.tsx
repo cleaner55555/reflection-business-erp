@@ -35,7 +35,7 @@ import { toast } from 'sonner'
 
 // ============ TYPES ============
 
-interface WhatsAppMessage {
+interface MessagingMessage {
   id: string
   conversationId: string
   contactName: string
@@ -63,10 +63,10 @@ interface Conversation {
   assignedTo: string | null
   tags: string[]
   isStarred: boolean
-  messages: WhatsAppMessage[]
+  messages: MessagingMessage[]
 }
 
-interface WhatsAppTemplate {
+interface MessagingTemplate {
   id: string
   name: string
   category: string
@@ -92,7 +92,7 @@ interface AutoReply {
   createdAt: string
 }
 
-interface WhatsAppCampaign {
+interface MessagingCampaign {
   id: string
   name: string
   templateId: string | null
@@ -203,7 +203,7 @@ const DEMO_CONVERSATIONS: Conversation[] = [
   },
 ]
 
-const DEMO_TEMPLATES: WhatsAppTemplate[] = [
+const DEMO_TEMPLATES: MessagingTemplate[] = [
   { id: 't1', name: 'Dobrodošlica', category: 'marketing', language: 'sr', status: 'approved', body: 'Dobrodošli u {{1}}! Hvala što ste nas izabrali. Vaš nalog je kreiran. Možete pregledati naše proizvode na {{2}}', variables: 2, createdAt: '2024-01-15', usedCount: 342, lastUsedAt: new Date().toISOString() },
   { id: 't2', name: 'Potvrda narudžbe', category: 'transactional', language: 'sr', status: 'approved', body: 'Vaša narudžba {{1}} je zaprimljena! Ukupan iznos: {{2}} RSD. Predviđena dostava: {{3}} radnih dana. Hvala na poverenju!', variables: 3, createdAt: '2024-01-15', usedCount: 1256, lastUsedAt: new Date(Date.now() - 3600000).toISOString() },
   { id: 't3', name: 'Status isporuke', category: 'utility', language: 'sr', status: 'approved', body: 'Vaša pošiljka {{1}} je {{2}}. Broj pošiljke: {{3}}. Pratite na: {{4}}', variables: 4, createdAt: '2024-02-20', usedCount: 890, lastUsedAt: new Date(Date.now() - 7200000).toISOString() },
@@ -220,7 +220,7 @@ const DEMO_AUTO_REPLIES: AutoReply[] = [
   { id: 'a5', name: 'Kontakt info', description: 'Osnovni kontakt podaci', trigger: 'keyword', keyword: 'adresa,telefon,kontakt,lokacija', response: '📍 Adresa: Beograd, Bulevar Kralja Aleksandra 123\n📞 Telefon: +381 11 123 4567\n📧 Email: info@reflection.rs\n🕐 Radno vreme: Pon-Pet 9-17h', delaySeconds: 0, enabled: false, matchCount: 45, createdAt: '2024-04-05' },
 ]
 
-const DEMO_CAMPAIGNS: WhatsAppCampaign[] = [
+const DEMO_CAMPAIGNS: MessagingCampaign[] = [
   { id: 'cmp1', name: 'Najava zimskog kataloga', templateId: 't6', status: 'completed', recipientCount: 1250, sentCount: 1250, deliveredCount: 1198, readCount: 876, failedCount: 52, scheduledAt: '2024-12-01T10:00:00Z', createdAt: '2024-11-25', completedAt: '2024-12-01T10:30:00Z' },
   { id: 'cmp2', name: 'Popust za postojeće klijente', templateId: 't6', status: 'completed', recipientCount: 890, sentCount: 890, deliveredCount: 865, readCount: 723, failedCount: 25, scheduledAt: '2025-01-10T09:00:00Z', createdAt: '2025-01-05', completedAt: '2025-01-10T09:15:00Z' },
   { id: 'cmp3', name: 'Valentinska ponuda', templateId: null, status: 'draft', recipientCount: 0, sentCount: 0, deliveredCount: 0, readCount: 0, failedCount: 0, scheduledAt: null, createdAt: '2025-01-20', completedAt: null },
@@ -241,15 +241,15 @@ const KpiCard = ({ label, value, icon: Icon, sub, color, bg }: { label: string; 
 
 // ============ MAIN ============
 
-export function WhatsApp() {
+export function Messaging() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 
   // Data
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [templates, setTemplates] = useState<WhatsAppTemplate[]>([])
+  const [templates, setTemplates] = useState<MessagingTemplate[]>([])
   const [autoReplies, setAutoReplies] = useState<AutoReply[]>([])
-  const [campaigns, setCampaigns] = useState<WhatsAppCampaign[]>([])
+  const [campaigns, setCampaigns] = useState<MessagingCampaign[]>([])
   const [loading, setLoading] = useState(true)
 
   // View
@@ -268,7 +268,7 @@ export function WhatsApp() {
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
   const [autoReplyDialogOpen, setAutoReplyDialogOpen] = useState(false)
   const [campaignDialogOpen, setCampaignDialogOpen] = useState(false)
-  const [editingTemplate, setEditingTemplate] = useState<WhatsAppTemplate | null>(null)
+  const [editingTemplate, setEditingTemplate] = useState<MessagingTemplate | null>(null)
   const [editingAutoReply, setEditingAutoReply] = useState<AutoReply | null>(null)
 
   // Forms
@@ -345,7 +345,7 @@ export function WhatsApp() {
 
   const handleSendReply = () => {
     if (!replyText.trim() || !selectedConv) return
-    const newMsg: WhatsAppMessage = {
+    const newMsg: MessagingMessage = {
       id: `m-${Date.now()}`, conversationId: selectedConv.id, contactName: selectedConv.contactName,
       contactPhone: selectedConv.contactPhone, contactAvatar: null, direction: 'outbound',
       type: 'text', content: replyText, status: 'sent', timestamp: new Date().toISOString(),
@@ -362,7 +362,7 @@ export function WhatsApp() {
 
   const handleNewMessage = () => {
     if (!newMsgPhone.trim() || !newMsgText.trim()) return
-    const newMsg: WhatsAppMessage = {
+    const newMsg: MessagingMessage = {
       id: `m-${Date.now()}`, conversationId: `c-${Date.now()}`, contactName: newMsgPhone,
       contactPhone: newMsgPhone, contactAvatar: null, direction: 'outbound',
       type: 'text', content: newMsgText, status: 'sent', timestamp: new Date().toISOString(),
@@ -389,7 +389,7 @@ export function WhatsApp() {
   const handleSaveTemplate = () => {
     if (!templateForm.name.trim() || !templateForm.body.trim()) { showToast('Naziv i sadržaj su obavezni'); return }
     const varCount = (templateForm.body.match(/\{\{(\d+)\}\}/g) || []).length
-    const tpl: WhatsAppTemplate = {
+    const tpl: MessagingTemplate = {
       id: editingTemplate?.id || `t-${Date.now()}`, name: templateForm.name, category: templateForm.category,
       language: templateForm.language, status: 'pending', body: templateForm.body,
       variables: varCount, createdAt: new Date().toISOString().split('T')[0], usedCount: editingTemplate?.usedCount || 0,
@@ -440,9 +440,9 @@ export function WhatsApp() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <MessageCircleReply className="h-6 w-6 text-green-600" /> WhatsApp
+            <MessageCircleReply className="h-6 w-6 text-green-600" /> Business Poruke
           </h1>
-          <p className="text-sm text-muted-foreground">WhatsApp Business integracija za komunikaciju sa klijentima</p>
+          <p className="text-sm text-muted-foreground">Business Poruke integracija za komunikaciju sa klijentima</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button size="sm" onClick={() => setNewMsgDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Nova poruka</Button>
@@ -619,9 +619,9 @@ export function WhatsApp() {
             </CardContent>
           </Card>
 
-          {/* WhatsApp Business Features */}
+          {/* Business Poruke Features */}
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-sm">WhatsApp Business mogućnosti</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-sm">Business Poruke mogućnosti</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
@@ -844,7 +844,7 @@ export function WhatsApp() {
         {/* ===== SETTINGS ===== */}
         <TabsContent value="settings" className="space-y-4">
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-sm">WhatsApp Business API</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-sm">Business Poruke API</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label className="text-xs">Business Phone Number ID</Label><Input defaultValue="123456789012345" disabled /></div>
@@ -880,7 +880,7 @@ export function WhatsApp() {
       {/* New Message */}
       <Dialog open={newMsgDialogOpen} onOpenChange={setNewMsgDialogOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova WhatsApp poruka</DialogTitle><DialogDescription>Pošaljite poruku novom ili postojećem kontaktu</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Nova poruka</DialogTitle><DialogDescription>Pošaljite poruku novom ili postojećem kontaktu</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Broj primaoca *</Label><Input value={newMsgPhone} onChange={(e) => setNewMsgPhone(e.target.value)} placeholder="+3816XXXXXXXX" /></div>
             <div className="space-y-2"><Label className="text-xs">Poruka *</Label><Textarea value={newMsgText} onChange={(e) => setNewMsgText(e.target.value)} rows={4} placeholder="Vaša poruka..." /></div>
@@ -927,7 +927,7 @@ export function WhatsApp() {
       {/* New Campaign */}
       <Dialog open={campaignDialogOpen} onOpenChange={setCampaignDialogOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova WhatsApp kampanja</DialogTitle><DialogDescription>Kreirajte broadcast kampanju za masovno slanje poruka</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Nova kampanja</DialogTitle><DialogDescription>Kreirajte broadcast kampanju za masovno slanje poruka</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Naziv kampanje *</Label><Input placeholder="npr. Najama zimskog kataloga" /></div>
             <div className="space-y-2">
@@ -956,7 +956,7 @@ export function WhatsApp() {
             <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800">
               <AlertCircle className="h-4 w-4 text-amber-600" />
               <AlertDescription className="text-amber-700 dark:text-amber-400 text-xs">
-                WhatsApp Business dozvoljava broadcast samo za kontakte koji su vas prethodno kontaktirali. Maksimalno 10.000 primalaca po kampanji.
+                Business Poruke dozvoljava broadcast samo za kontakte koji su vas prethodno kontaktirali. Maksimalno 10.000 primalaca po kampanji.
               </AlertDescription>
             </Alert>
           </div>
