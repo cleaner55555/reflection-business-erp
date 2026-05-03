@@ -668,3 +668,29 @@ Stage Summary:
 - Function export names inside files remain Serbian (next step: Phase G2)
 - Zero functionality changes - pure file rename
 - Next: Phase D (enhance 46 placeholder modules) now all in English
+
+---
+Task ID: Phase-H
+Agent: Main (direct)
+Task: Phase H - Remove all third-party brand names from codebase
+
+Work Log:
+- Searched entire codebase for brand references (Ananas, Odoo, SAP, WhatsApp, Biznis Navigator, Pantheon, Minimax, BizniSoft)
+- Deleted ananas_search.json (competitor research artifact)
+- Renamed WhatsApp.tsx → Messaging.tsx, updated export/imports/interfaces
+- Renamed biznis-navigator migration files → legacy-accounting
+- Removed Odoo comments from rbac.ts and prisma/schema.prisma
+- Replaced 6 brand source types in Integracije.tsx with generic identifiers
+- Updated translations.ts: 30 value changes across 3 language sections (sr-Cyrl, sr-Latn, en)
+- Updated Forum.tsx demo content (SAP → generic ERP references)
+- Updated API integration templates, MigrationWizard.tsx, AISetupWizard.tsx
+- Updated migration API route imports and source identifiers
+
+Stage Summary:
+- Git commit: 717a395 - "chore: remove all third-party brand names from codebase"
+- 16 files changed, 129 insertions, 161 deletions
+- ESLint: 0 errors, 31 warnings (all pre-existing)
+- Server: GET / 200 ✅
+- Zero remaining brand references in src/ and prisma/
+- ModuleType string IDs preserved (internal identifiers)
+- eFakture government system API references in Invoices.tsx preserved
