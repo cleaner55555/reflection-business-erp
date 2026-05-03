@@ -39,7 +39,7 @@ import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { ReportDownloadButton } from './ReportDownloadButton'
-import { LotoviTab, InventuraTab, TransferiTab } from './MagacinEnhanced'
+import { LotoviTab, InventuraTab, TransferiTab } from './InventoryEnhanced'
 import { BarkodiTab, ZoneMapTab, PickingTab, PrijemTab } from './WmsEnhanced'
 
 // ==================== INTERFACES ====================

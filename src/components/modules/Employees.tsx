@@ -21,7 +21,7 @@ import {
 import { toast } from 'sonner'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { formatRSD, formatDate } from '@/lib/helpers'
-import { OceneTab, OrganigramTab } from './ZaposleniEnhanced'
+import { OceneTab, OrganigramTab } from './EmployeesEnhanced'
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 

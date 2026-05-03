@@ -50,7 +50,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { RecurringInvoices } from './RecurringInvoices'
-import { RateOtplateTab, FiskalizacijaTab } from './FaktureEnhanced'
+import { RateOtplateTab, FiskalizacijaTab } from './InvoicesEnhanced'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { ReportDownloadButton } from './ReportDownloadButton'
