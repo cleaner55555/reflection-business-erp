@@ -1,0 +1,225 @@
+export const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  active: { label: 'Aktivna', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  expiring_soon: { label: 'Uskoro istice', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+  expired: { label: 'Istekla', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  voided: { label: 'Poništena', color: 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400' },
+  claimed: { label: 'Reklamacija', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
+}
+
+export const CATEGORY_CONFIG: Record<string, { label: string; icon: string }> = {
+  electronics: { label: 'Elektronika', icon: '💻' },
+  appliances: { label: 'Bela tehnika', icon: '🔌' },
+  vehicles: { label: 'Vozila', icon: '🚗' },
+  machinery: { label: 'Mašine', icon: '⚙️' },
+  tools: { label: 'Alati', icon: '🔧' },
+  furniture: { label: 'Nameštaj', icon: '🪑' },
+  it_equipment: { label: 'IT oprema', icon: '🖥️' },
+  other: { label: 'Ostalo', icon: '📋' },
+}
+
+export const TYPE_CONFIG: Record<string, string> = {
+  manufacturer: 'Proizvođač',
+  seller: 'Prodavac',
+  extended: 'Proširena',
+  insurance: 'Osiguranje',
+}
+
+export const CLAIM_STATUS: Record<string, { label: string; color: string }> = {
+  pending: { label: 'Na čekanju', color: 'bg-amber-100 text-amber-700' },
+  in_progress: { label: 'U procesu', color: 'bg-blue-100 text-blue-700' },
+  approved: { label: 'Odobreno', color: 'bg-green-100 text-green-700' },
+  rejected: { label: 'Odbijeno', color: 'bg-red-100 text-red-700' },
+  resolved: { label: 'Rešeno', color: 'bg-emerald-100 text-emerald-700' },
+}
+
+export const formatCurrency = (val: number) => `${val.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD`;
+
+export const getDaysLeft = (endDate: string) => {
+  const diff = new Date(endDate).getTime() - Date.now()
+  return Math.ceil(diff / (1000 * 60 * 60 * 24))
+}
+
+export const getStatus = (endDate: string, claims: WarrantyClaim[]): string => {
+  if (claims.some((c) => c.status === 'pending' || c.status === 'in_progress')) return 'claimed'
+  const days = getDaysLeft(endDate)
+  if (days < 0) return 'expired'
+  if (days <= 90) return 'expiring_soon'
+  return 'active'
+}
+
+export const mockWarranties: Warranty[] = [
+  {
+    id: 'wr-1', number: 'GAR-2025-001', productName: 'Dell PowerEdge R750xs', productCode: 'SRV-750', serialNumber: 'SN-DEL-2024-00123', batchNumber: 'BT-2024-015',
+    partnerName: 'Nikola Petrović', partnerEmail: 'nikola@email.com', partnerPhone: '+381631234567',
+    category: 'it_equipment', warrantyType: 'manufacturer', durationMonths: 36,
+    startDate: '2024-03-15', endDate: '2027-03-15', extendedEndDate: null, status: 'active',
+    coverageDescription: 'Kompletna hardverska garancija uključujući diskove, memoriju, procesor i mrežne kartice.',
+    exclusions: ['Softverski problemi', 'Fizičko oštećenje', 'Prekomerno zagrevanje usled loše ventilacije'],
+    provider: 'Dell Technologies Srbija', providerPhone: '+381113456789', providerEmail: 'support@dell.rs',
+    purchaseDate: '2024-03-10', purchasePrice: 350000, currency: 'RSD', invoiceNumber: 'INV-2024-0456',
+    terms: 'On-site repair sa sledećeg radnog dana. Rezervni delovi uključeni.', notes: '',
+    claims: [], createdAt: '2024-03-15T10:00:00', updatedAt: '2024-03-15T10:00:00',
+  },
+  {
+    id: 'wr-2', number: 'GAR-2024-012', productName: 'Bosch Dishwasher SMS6ECI01E', productCode: 'BT-SMS6', serialNumber: 'SN-BOS-2023-45678', batchNumber: 'BT-2023-178',
+    partnerName: 'Jelena Marković', partnerEmail: 'jelena.m@gmail.com', partnerPhone: '+381647890123',
+    category: 'appliances', warrantyType: 'manufacturer', durationMonths: 24,
+    startDate: '2023-06-20', endDate: '2025-06-20', extendedEndDate: null, status: 'expiring_soon',
+    coverageDescription: 'Garancija pokriva sve proizvodne greške mašine za sudove.',
+    exclusions: ['Mehaničko oštećenje', 'Nepravilno postavljanje', 'Korišćenje pogrešnih deterdženata'],
+    provider: 'Bosch Srbija', providerPhone: '+381118765432', providerEmail: 'garancija@bosch.rs',
+    purchaseDate: '2023-06-18', purchasePrice: 85000, currency: 'RSD', invoiceNumber: 'INV-2023-1234',
+    terms: 'Besplatan servis i rezervni delovi.', notes: 'Kupac je zainteresovan za produženje garancije.',
+    claims: [
+      { id: 'cl-1', date: '2024-01-10', description: 'Ne greje vodu dovoljno', status: 'resolved', cost: 0, resolvedDate: '2024-01-15' },
+    ],
+    createdAt: '2023-06-20T10:00:00', updatedAt: '2024-01-15T16:00:00',
+  },
+  {
+    id: 'wr-3', number: 'GAR-2023-008', productName: 'VW Golf 8 1.5 TSI', productCode: 'VW-G8-15', serialNumber: 'WVWZZZAUZPW123456', batchNumber: '',
+    partnerName: 'Dragan Stanković', partnerEmail: 'dragan.s@email.com', partnerPhone: '+381635556677',
+    category: 'vehicles', warrantyType: 'manufacturer', durationMonths: 24,
+    startDate: '2022-09-01', endDate: '2024-09-01', extendedEndDate: '2025-09-01', status: 'active',
+    coverageDescription: 'Fabrička garancija + 12 meseci produžene garancije.',
+    exclusions: ['Gume i kočioni diskovi', 'Ulje i filteri', 'Osvetljenje'],
+    provider: 'Volkswagen Srbija', providerPhone: '+381112345678', providerEmail: 'garancija@vw.rs',
+    purchaseDate: '2022-08-28', purchasePrice: 2800000, currency: 'RSD', invoiceNumber: 'INV-2022-4567',
+    terms: 'Servis samo u autorizovanim servisima VW.', notes: 'Produžena garancija aktivirana septembra 2024.',
+    claims: [
+      { id: 'cl-2', date: '2023-12-05', description: 'Problemi sa DSG menjačem', status: 'resolved', cost: 0, resolvedDate: '2023-12-20' },
+      { id: 'cl-3', date: '2024-03-10', description: 'Zvučnik na vratima vozača pravi šum', status: 'pending', cost: 0, resolvedDate: null },
+    ],
+    createdAt: '2022-09-01T10:00:00', updatedAt: '2024-03-10T11:00:00',
+  },
+  {
+    id: 'wr-4', number: 'GAR-2022-025', productName: 'Makita HR2470 Rotary Hammer', productCode: 'MK-HR247', serialNumber: 'SN-MKT-2022-11111', batchNumber: 'BT-2022-045',
+    partnerName: 'Milan Jovanović', partnerEmail: 'milan.j@yahoo.com', partnerPhone: '+381601112233',
+    category: 'tools', warrantyType: 'manufacturer', durationMonths: 12,
+    startDate: '2022-05-10', endDate: '2023-05-10', extendedEndDate: null, status: 'expired',
+    coverageDescription: 'Standardna garancija za električne alate Makita.',
+    exclusions: ['Normalno habanje', 'Oštećenje usled pada', 'Nepravilna upotreba'],
+    provider: 'Makita Srbija', providerPhone: '+381119876543', providerEmail: 'info@makita.rs',
+    purchaseDate: '2022-05-08', purchasePrice: 45000, currency: 'RSD', invoiceNumber: 'INV-2022-0890',
+    terms: 'Zamena defektnih delova.', notes: '',
+    claims: [
+      { id: 'cl-4', date: '2022-11-15', description: 'Kucanje se zaječi nakon 30 min rada', status: 'resolved', cost: 0, resolvedDate: '2022-11-25' },
+    ],
+    createdAt: '2022-05-10T10:00:00', updatedAt: '2022-11-25T14:00:00',
+  },
+  {
+    id: 'wr-5', number: 'GAR-2024-003', productName: 'Samsung 65" QLED TV QE65Q80C', productCode: 'SAM-Q80-65', serialNumber: 'SN-SAM-2024-22222', batchNumber: 'BT-2024-089',
+    partnerName: 'Ana Đorđević', partnerEmail: 'ana.d@email.com', partnerPhone: '+381644445555',
+    category: 'electronics', warrantyType: 'extended', durationMonths: 36,
+    startDate: '2024-01-20', endDate: '2027-01-20', extendedEndDate: null, status: 'active',
+    coverageDescription: 'Proizvođačka garancija 24 meseca + 12 meseci produžene.',
+    exclusions: ['Oštećenje ekrana (fizičko)', 'Problem sa mrežom/strujom', 'Neovlašćeni servis'],
+    provider: 'Samsung Srbija', providerPhone: '+381111122233', providerEmail: 'support@samsung.rs',
+    purchaseDate: '2024-01-18', purchasePrice: 180000, currency: 'RSD', invoiceNumber: 'INV-2024-0234',
+    terms: 'On-site servis za TV veće od 55".', notes: 'Produžena garancija kupljena u momentu kupovine.',
+    claims: [], createdAt: '2024-01-20T10:00:00', updatedAt: '2024-01-20T10:00:00',
+  },
+  {
+    id: 'wr-6', number: 'GAR-2023-015', productName: 'IKEA KALLAX Shelving Unit', productCode: 'IKE-KAL-4', serialNumber: '', batchNumber: 'BT-2023-234',
+    partnerName: 'Sara Ilić', partnerEmail: 'sara.ilic@email.com', partnerPhone: '+381655556666',
+    category: 'furniture', warrantyType: 'seller', durationMonths: 10,
+    startDate: '2023-04-01', endDate: '2024-04-01', extendedEndDate: null, status: 'expired',
+    coverageDescription: 'Garancija na strukturalne defekte nameštaja.',
+    exclusions: ['Normalno habanje', 'Vlažnost i sunce', 'Nepravilno sastavljanje'],
+    provider: 'IKEA Srbija', providerPhone: '+381113333444', providerEmail: 'servis@ikea.rs',
+    purchaseDate: '2023-03-28', purchasePrice: 15000, currency: 'RSD', invoiceNumber: 'INV-2023-0567',
+    terms: 'Zamena defektnih delova ili kompletnog proizvoda.', notes: '',
+    claims: [], createdAt: '2023-04-01T10:00:00', updatedAt: '2023-04-01T10:00:00',
+  },
+]
+
+export const mockStats: WarrantyStats = {
+  total: 234, active: 145, expiringSoon: 28, expired: 51, totalValue: 12500000, avgDuration: 24,
+  byCategory: [
+    { category: 'electronics', count: 65, label: 'Elektronika' },
+    { category: 'appliances', count: 48, label: 'Bela tehnika' },
+    { category: 'it_equipment', count: 38, label: 'IT oprema' },
+    { category: 'vehicles', count: 28, label: 'Vozila' },
+    { category: 'tools', count: 22, label: 'Alati' },
+    { category: 'machinery', count: 15, label: 'Mašine' },
+    { category: 'furniture', count: 12, label: 'Nameštaj' },
+    { category: 'other', count: 6, label: 'Ostalo' },
+  ],
+  byProvider: [
+    { provider: 'Samsung Srbija', count: 42 },
+    { provider: 'Bosch Srbija', count: 35 },
+    { provider: 'Dell Technologies', count: 28 },
+    { provider: 'Volkswagen Srbija', count: 18 },
+    { provider: 'Makita Srbija', count: 15 },
+  ],
+  monthlyExpiry: [
+    { month: 'Feb', count: 5 },
+    { month: 'Mar', count: 8 },
+    { month: 'Apr', count: 12 },
+    { month: 'Maj', count: 6 },
+    { month: 'Jun', count: 9 },
+    { month: 'Jul', count: 4 },
+  ],
+  claimStats: { total: 87, resolved: 72, pending: 15, totalCost: 450000 },
+}
+
+export const { activeCompanyId } = useAppStore();
+
+export const { t } = useTranslation();
+
+export const emptyForm = {
+    productName: '', productCode: '', serialNumber: '', batchNumber: '',
+    partnerName: '', partnerEmail: '', partnerPhone: '',
+    category: 'electronics', warrantyType: 'manufacturer', durationMonths: '24',
+    startDate: '', provider: '', providerPhone: '', providerEmail: '',
+    purchaseDate: '', purchasePrice: '', invoiceNumber: '', coverageDescription: '', notes: '',
+  }
+
+export const res = await fetch(`/api/warranties?companyId=${activeCompanyId}&limit=100`);
+
+export const res = await fetch(`/api/warranties/stats?companyId=${activeCompanyId}`);
+
+export const enrichedWarranties = warranties.map((w) => ({ ...w, status: getStatus(w.endDate, w.claims) }));
+
+export const filtered = enrichedWarranties.filter((w) => {
+    if (activeTab === 'active' && w.status !== 'active' && w.status !== 'expiring_soon') return false
+    if (activeTab === 'expired' && w.status !== 'expired' && w.status !== 'voided') return false
+    if (activeTab === 'claimed' && w.status !== 'claimed') return false
+    if (categoryFilter !== 'all' && w.category !== categoryFilter) return false
+    if (typeFilter !== 'all' && w.warrantyType !== typeFilter) return false
+    if (search) {
+      const s = search.toLowerCase()
+      return w.number.toLowerCase().includes(s) || w.productName.toLowerCase().includes(s) || w.partnerName.toLowerCase().includes(s) || w.serialNumber.toLowerCase().includes(s)
+    }
+    return true
+  });
+
+export const handleCreate = async () => {
+    if (!activeCompanyId || !form.productName.trim()) return
+    try {
+      const res = await fetch('/api/warranties', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId: activeCompanyId, ...form, purchasePrice: parseFloat(form.purchasePrice) || 0 }),
+      })
+      if (res.ok) { setCreateOpen(false); setForm(emptyForm); loadWarranties(); loadStats(); toast.success('Garancija kreirana') }
+    } catch { /* silent */ }
+  }
+
+export const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati garanciju?')) return
+    await fetch(`/api/warranties?id=${id}`, { method: 'DELETE' })
+    loadWarranties(); loadStats()
+  }
+
+export const getWarrantyProgress = (w: Warranty) => {
+    const totalDays = new Date(w.endDate).getTime() - new Date(w.startDate).getTime()
+    const elapsed = Date.now() - new Date(w.startDate).getTime()
+    return totalDays > 0 ? Math.min(100, Math.max(0, (elapsed / totalDays) * 100)) : 100
+  }
+
+export const sCfg = STATUS_CONFIG[w.status]
+
+export const cCfg = CATEGORY_CONFIG[w.category]
+
+export const daysLeft = getDaysLeft(w.endDate);
+
+export const progress = getWarrantyProgress(w);

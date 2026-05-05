@@ -1,0 +1,152 @@
+export const SHIFT_TYPES: Record<string, { label: string; color: string }> = {
+  morning: { label: 'Jutarnja', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+  afternoon: { label: 'Popodnevna', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
+  night: { label: 'Noćna', color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
+  weekend: { label: 'Vikend', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  holiday: { label: 'Praznik', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  overtime: { label: 'Prekovremeno', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+}
+
+export const DAYS = ['Ponedeljak', 'Utorak', 'Sreda', 'Četvrtak', 'Petak', 'Subota', 'Nedelja']
+
+export const DAYS_SHORT = ['Pon', 'Uto', 'Sre', 'Čet', 'Pet', 'Sub', 'Ned']
+
+export const DEPARTMENTS = ['Proizvodnja', 'Magacin', 'Prodaja', 'IT', 'Marketing', 'HR', 'Bezbednost']
+
+export const LOCATIONS = ['Fabrika A', 'Fabrika B', 'Magacin Centralni', 'Retail BG', 'Retail NS', 'Kancelarija']
+
+export const POSITIONS = ['Operater', 'Tehničar', 'Supervizor', 'Koordinator', 'Menadžer', 'Inženjer', 'Administrator']
+
+export const SKILLS = ['CNC operacija', 'Zavarivanje', 'Elektronika', 'Vozač B kategorije', 'Forklift', 'QA Kontrola', 'Programiranje', 'Dizajn', 'Prodaja', 'Markteting']
+
+export const formatCurrency = (val: number) => `${val.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD`;
+
+export const mockEmployees: Employee[] = [
+  { id: 'e-1', name: 'Marko Petrović', department: 'Proizvodnja', position: 'Tehničar', email: 'marko@company.rs', phone: '+381631112233', skills: ['CNC operacija', 'QA Kontrola'], availability: 'full', maxHours: 40, currentHours: 38, hourlyRate: 1200, status: 'active' },
+  { id: 'e-2', name: 'Ana Nikolić', department: 'Proizvodnja', position: 'Operater', email: 'ana@company.rs', phone: '+381642233445', skills: ['Zavarivanje'], availability: 'full', maxHours: 40, currentHours: 40, hourlyRate: 1100, status: 'active' },
+  { id: 'e-3', name: 'Jelena Stanković', department: 'Magacin', position: 'Koordinator', email: 'jelena@company.rs', phone: '+381653344556', skills: ['Forklift', 'QA Kontrola'], availability: 'full', maxHours: 40, currentHours: 36, hourlyRate: 1300, status: 'active' },
+  { id: 'e-4', name: 'Petar Jovanović', department: 'Magacin', position: 'Operater', email: 'petar@company.rs', phone: '+381664455667', skills: ['Forklift'], availability: 'full', maxHours: 40, currentHours: 42, hourlyRate: 1000, status: 'active' },
+  { id: 'e-5', name: 'Ivana Đorđević', department: 'Prodaja', position: 'Menadžer', email: 'ivana@company.rs', phone: '+381675566778', skills: ['Prodaja'], availability: 'full', maxHours: 40, currentHours: 35, hourlyRate: 1500, status: 'active' },
+  { id: 'e-6', name: 'Nikola Milić', department: 'IT', position: 'Inženjer', email: 'nikola@company.rs', phone: '+381686677889', skills: ['Programiranje'], availability: 'full', maxHours: 40, currentHours: 40, hourlyRate: 2000, status: 'active' },
+  { id: 'e-7', name: 'Sara Kovačević', department: 'Marketing', position: 'Administrator', email: 'sara@company.rs', phone: '+381697788990', skills: ['Dizajn', 'Markteting'], availability: 'part', maxHours: 20, currentHours: 18, hourlyRate: 1400, status: 'active' },
+  { id: 'e-8', name: 'Dragan Ilić', department: 'Bezbednost', position: 'Supervizor', email: 'dragan@company.rs', phone: '+381608899001', skills: ['Vozač B kategorije'], availability: 'full', maxHours: 40, currentHours: 44, hourlyRate: 1100, status: 'active' },
+  { id: 'e-9', name: 'Milica Radovanović', department: 'Proizvodnja', position: 'Operater', email: 'milica@company.rs', phone: '+381619900112', skills: ['CNC operacija', 'Zavarivanje'], availability: 'full', maxHours: 40, currentHours: 0, hourlyRate: 1050, status: 'on_leave' },
+  { id: 'e-10', name: 'Stefan Marković', department: 'HR', position: 'Menadžer', email: 'stefan@company.rs', phone: '+381620011223', skills: [], availability: 'full', maxHours: 40, currentHours: 38, hourlyRate: 1600, status: 'active' },
+]
+
+export const mockShifts: Shift[] = [
+  { id: 'sh-1', employeeId: 'e-1', employeeName: 'Marko Petrović', date: '2025-01-20', startTime: '06:00', endTime: '14:00', type: 'morning', location: 'Fabrika A', department: 'Proizvodnja', status: 'confirmed', notes: '', breakMinutes: 30, overtimeMinutes: 0 },
+  { id: 'sh-2', employeeId: 'e-2', employeeName: 'Ana Nikolić', date: '2025-01-20', startTime: '06:00', endTime: '14:00', type: 'morning', location: 'Fabrika A', department: 'Proizvodnja', status: 'confirmed', notes: 'Kontrola kvaliteta', breakMinutes: 30, overtimeMinutes: 0 },
+  { id: 'sh-3', employeeId: 'e-3', employeeName: 'Jelena Stanković', date: '2025-01-20', startTime: '07:00', endTime: '15:00', type: 'morning', location: 'Magacin Centralni', department: 'Magacin', status: 'confirmed', notes: '', breakMinutes: 30, overtimeMinutes: 0 },
+  { id: 'sh-4', employeeId: 'e-4', employeeName: 'Petar Jovanović', date: '2025-01-20', startTime: '14:00', endTime: '22:00', type: 'afternoon', location: 'Magacin Centralni', department: 'Magacin', status: 'pending', notes: 'Prekovremeni sati', breakMinutes: 30, overtimeMinutes: 120 },
+  { id: 'sh-5', employeeId: 'e-5', employeeName: 'Ivana Đorđević', date: '2025-01-20', startTime: '09:00', endTime: '17:00', type: 'morning', location: 'Retail BG', department: 'Prodaja', status: 'confirmed', notes: '', breakMinutes: 60, overtimeMinutes: 0 },
+  { id: 'sh-6', employeeId: 'e-6', employeeName: 'Nikola Milić', date: '2025-01-20', startTime: '09:00', endTime: '17:00', type: 'morning', location: 'Kancelarija', department: 'IT', status: 'confirmed', notes: '', breakMinutes: 30, overtimeMinutes: 0 },
+  { id: 'sh-7', employeeId: 'e-8', employeeName: 'Dragan Ilić', date: '2025-01-20', startTime: '22:00', endTime: '06:00', type: 'night', location: 'Fabrika A', department: 'Bezbednost', status: 'confirmed', notes: '', breakMinutes: 60, overtimeMinutes: 240 },
+  { id: 'sh-8', employeeId: 'e-1', employeeName: 'Marko Petrović', date: '2025-01-21', startTime: '06:00', endTime: '14:00', type: 'morning', location: 'Fabrika A', department: 'Proizvodnja', status: 'draft', notes: '', breakMinutes: 30, overtimeMinutes: 0 },
+  { id: 'sh-9', employeeId: 'e-2', employeeName: 'Ana Nikolić', date: '2025-01-21', startTime: '14:00', endTime: '22:00', type: 'afternoon', location: 'Fabrika A', department: 'Proizvodnja', status: 'draft', notes: '', breakMinutes: 30, overtimeMinutes: 0 },
+  { id: 'sh-10', employeeId: 'e-7', employeeName: 'Sara Kovačević', date: '2025-01-21', startTime: '10:00', endTime: '14:00', type: 'morning', location: 'Kancelarija', department: 'Marketing', status: 'draft', notes: 'Part-time', breakMinutes: 0, overtimeMinutes: 0 },
+]
+
+export const mockStats: WorkforceStats = {
+  totalEmployees: 10, activeEmployees: 9, overtimeAlerts: 3, coverageGaps: 2,
+  laborCost: 585600, utilizationRate: 88, absenceRate: 10,
+  departments: [
+    { name: 'Proizvodnja', count: 3, avgHours: 37 },
+    { name: 'Magacin', count: 2, avgHours: 39 },
+    { name: 'Prodaja', count: 1, avgHours: 35 },
+    { name: 'IT', count: 1, avgHours: 40 },
+    { name: 'Marketing', count: 1, avgHours: 18 },
+    { name: 'Bezbednost', count: 1, avgHours: 44 },
+    { name: 'HR', count: 1, avgHours: 38 },
+  ],
+  weeklyHours: [
+    { day: 'Pon', scheduled: 72, actual: 68 },
+    { day: 'Uto', scheduled: 72, actual: 70 },
+    { day: 'Sre', scheduled: 70, actual: 65 },
+    { day: 'Čet', scheduled: 72, actual: 72 },
+    { day: 'Pet', scheduled: 68, actual: 60 },
+    { day: 'Sub', scheduled: 20, actual: 18 },
+    { day: 'Ned', scheduled: 0, actual: 0 },
+  ],
+  skillGaps: [
+    { skill: 'CNC operacija', needed: 5, available: 2 },
+    { skill: 'Zavarivanje', needed: 3, available: 2 },
+    { skill: 'Forklift', needed: 3, available: 2 },
+    { skill: 'QA Kontrola', needed: 2, available: 2 },
+    { skill: 'Programiranje', needed: 2, available: 1 },
+  ],
+}
+
+export const { activeCompanyId } = useAppStore();
+
+export const { t } = useTranslation();
+
+export const emptyShiftForm = { employeeId: '', date: '', startTime: '08:00', endTime: '16:00', type: 'morning', location: LOCATIONS[0], department: DEPARTMENTS[0], notes: '', breakMinutes: '30' }
+
+export const res = await fetch(`/api/workforce?companyId=${activeCompanyId}`);
+
+export const getWeekDates = () => {
+    const today = new Date()
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - today.getDay() + 1 + (weekOffset * 7))
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(monday)
+      d.setDate(monday.getDate() + i)
+      return d.toISOString().split('T')[0]
+    })
+  }
+
+export const weekDates = getWeekDates();
+
+export const getShiftsForDate = (date: string) => shifts.filter((s) => s.date === date);
+
+export const getShiftsForEmployee = (empId: string) => shifts.filter((s) => s.employeeId === empId);
+
+export const handleCreateShift = async () => {
+    if (!activeCompanyId || !shiftForm.employeeId || !shiftForm.date) return
+    try {
+      const emp = employees.find((e) => e.id === shiftForm.employeeId)
+      const res = await fetch('/api/workforce', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId: activeCompanyId, ...shiftForm, employeeName: emp?.name || '', status: 'draft' }),
+      })
+      if (res.ok) { setCreateOpen(false); setShiftForm(emptyShiftForm); loadData(); toast.success('Smena kreirana') }
+    } catch { /* silent */ }
+  }
+
+export const handleStatusChange = async (shiftId: string, status: string) => {
+    try { await fetch('/api/workforce', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: shiftId, status }) }); loadData(); toast.success('Status ažuriran') }
+    catch { /* silent */ }
+  }
+
+export const handleDeleteShift = async (id: string) => {
+    if (!confirm('Obrisati smenu?')) return
+    await fetch(`/api/workforce?id=${id}`, { method: 'DELETE' })
+    loadData()
+  }
+
+export const activeEmps = employees.filter((e) => e.status === 'active');
+
+export const max = Math.max(...stats.weeklyHours.map((x) => x.scheduled), 1);
+
+export const pct = (d.avgHours / 40) * 100;
+
+export const hasGap = g.available < g.needed;
+
+export const dayShifts = getShiftsForDate(date).filter((s) => s.employeeId === emp.id);
+
+export const st = SHIFT_TYPES[s.type]
+
+export const pct = (e.currentHours / e.maxHours) * 100;
+
+export const empShifts = getShiftsForEmployee(e.id);
+
+export const otShifts = shifts.filter((s) => s.overtimeMinutes > 0);
+
+export const overloadedEmps = activeEmps.filter((e) => e.currentHours > e.maxHours);
+
+export const st = SHIFT_TYPES[s.type]
+
+export const emp = employees.find((e) => e.id === s.employeeId);
+
+export const otCost = (s.overtimeMinutes / 60) * (emp?.hourlyRate || 0) * 1.5;
