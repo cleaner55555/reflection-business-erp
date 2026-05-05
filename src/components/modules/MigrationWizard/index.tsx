@@ -175,7 +175,7 @@ function MigrationFlow() {
       const scanned: ScannedFile[] = (data.results || []).map((r: any) => ({
         ...r,
         selectedTarget: r.detectedTable
-          ? (BN_TARGET_MAP[r.detectedTable] || r.detectedTable)
+          ? (LEGACY_TARGET_MAP[r.detectedTable] || r.detectedTable)
           : '',
       }))
 
@@ -1096,7 +1096,7 @@ function MigrationGuide() {
 
 // ==================== CONSTANTS ====================
 
-const BN_TARGET_MAP: Record<string, string> = {
+const LEGACY_TARGET_MAP: Record<string, string> = {
   PARTNER: 'partners',
   ROBA: 'products',
   DOKUMENT: 'invoices',

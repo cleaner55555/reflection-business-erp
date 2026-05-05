@@ -63,7 +63,7 @@ export const handleFilesSelected = async (files: FileList | File[]) => {
       const scanned: ScannedFile[] = (data.results || []).map((r: any) => ({
         ...r,
         selectedTarget: r.detectedTable
-          ? (BN_TARGET_MAP[r.detectedTable] || r.detectedTable)
+          ? (LEGACY_TARGET_MAP[r.detectedTable] || r.detectedTable)
           : '',
       }))
 
@@ -311,7 +311,7 @@ export const guideSteps = [
     { step: 5, title: t('migrationGuideStep5'), desc: t('migrationGuideStep5Desc') },
   ]
 
-export const BN_TARGET_MAP: Record<string, string> = {
+export const LEGACY_TARGET_MAP: Record<string, string> = {
   PARTNER: 'partners',
   ROBA: 'products',
   DOKUMENT: 'invoices',

@@ -62,7 +62,7 @@ function MigrationFlow() {
       const scanned: ScannedFile[] = (data.results || []).map((r: any) => ({
         ...r,
         selectedTarget: r.detectedTable
-          ? (BN_TARGET_MAP[r.detectedTable] || r.detectedTable)
+          ? (LEGACY_TARGET_MAP[r.detectedTable] || r.detectedTable)
           : '',
       }))
 

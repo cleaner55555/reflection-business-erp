@@ -1,28 +1,27 @@
-// ==================== BIZNIS NAVIGATOR SCHEMA MAPPER ====================
-// Comprehensive mapping of BN database tables/columns to our Prisma schema.
-// BN stores data in Firebird SQL (.FDB) database.
-// Users can export from BN using its built-in CSV export tool.
+// ==================== LEGACY ACCOUNTING SCHEMA MAPPER ====================
+// Comprehensive mapping of external accounting database tables/columns to our Prisma schema.
+// Supports CSV import from various legacy accounting systems.
 
 // ==================== TABLE MAPPINGS ====================
 
-export interface BNFieldMapping {
+export interface LegacyFieldMapping {
   bnColumn: string
   ourField: string
   required: boolean
   transform?: 'string' | 'number' | 'date' | 'float'
 }
 
-export interface BNTableMapping {
+export interface LegacyTableMapping {
   bnTable: string
   target: string
   label: string
   labelSr: string
   icon: string
   fields: Record<string, string>  // BN column → Our field
-  fieldDefinitions: BNFieldMapping[]
+  fieldDefinitions: LegacyFieldMapping[]
 }
 
-export const BN_TABLE_MAPPINGS: BNTableMapping[] = [
+export const LEGACY_TABLE_MAPPINGS: LegacyTableMapping[] = [
   // ==================== PARTNER ====================
   {
     bnTable: 'PARTNER',
@@ -197,17 +196,17 @@ export const BN_TABLE_MAPPINGS: BNTableMapping[] = [
 // ==================== QUICK LOOKUP MAPS ====================
 
 // BN column name → Our field name (for auto-mapping)
-export const BN_COLUMN_TO_FIELD: Record<string, string> = {}
-for (const mapping of BN_TABLE_MAPPINGS) {
+export const LEGACY_COLUMN_TO_FIELD: Record<string, string> = {}
+for (const mapping of LEGACY_TABLE_MAPPINGS) {
   for (const [bnCol, ourField] of Object.entries(mapping.fields)) {
-    if (!BN_COLUMN_TO_FIELD[bnCol]) {
-      BN_COLUMN_TO_FIELD[bnCol] = ourField
+    if (!LEGACY_COLUMN_TO_FIELD[bnCol]) {
+      LEGACY_COLUMN_TO_FIELD[bnCol] = ourField
     }
   }
 }
 
 // Our field name → human-readable label
-export const BN_FIELD_LABELS: Record<string, string> = {
+export const LEGACY_FIELD_LABELS: Record<string, string> = {
   name: 'Name (naziv)',
   pib: 'PIB',
   maticniBr: 'Matični broj',
@@ -254,7 +253,7 @@ export const BN_FIELD_LABELS: Record<string, string> = {
 // ==================== ENTITY DETECTION ====================
 
 // Detect BN table from CSV filename
-export function detectBNTableFromFilename(filename: string): BNTableMapping | null {
+export function detectLegacyTableFromFilename(filename: string): LegacyTableMapping | null {
   const normalized = filename.toLowerCase().replace(/[^a-z0-9_]/g, '')
 
   const aliases: Record<string, string[]> = {
@@ -269,7 +268,7 @@ export function detectBNTableFromFilename(filename: string): BNTableMapping | nu
   for (const [table, fileAliases] of Object.entries(aliases)) {
     for (const alias of fileAliases) {
       if (normalized.includes(alias)) {
-        return BN_TABLE_MAPPINGS.find(m => m.bnTable === table) || null
+        return LEGACY_TABLE_MAPPINGS.find(m => m.bnTable === table) || null
       }
     }
   }
@@ -338,12 +337,12 @@ export function transformValue(value: string | null | undefined, type: 'string' 
 
 // ==================== CSV PARSING ====================
 
-export interface BNCSVData {
+export interface LegacyCSVData {
   headers: string[]
   rows: Record<string, string>[]
   totalRows: number
   fileName: string
-  detectedTable: BNTableMapping | null
+  detectedTable: LegacyTableMapping | null
   autoMapping: Record<string, string>  // csv header → our field
 }
 
@@ -384,7 +383,7 @@ function parseCSVLine(line: string, delimiter: string): string[] {
   return result
 }
 
-export function parseBNCSV(content: string, fileName: string): BNCSVData {
+export function parseLegacyCSV(content: string, fileName: string): LegacyCSVData {
   const delimiter = detectDelimiter(content)
   const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0)
 
@@ -412,7 +411,7 @@ export function parseBNCSV(content: string, fileName: string): BNCSVData {
   }
 
   // Detect target table from filename
-  const detectedTable = detectBNTableFromFilename(fileName)
+  const detectedTable = detectLegacyTableFromFilename(fileName)
 
   // Build auto-mapping: CSV header → our field
   const autoMapping: Record<string, string> = {}
@@ -453,8 +452,8 @@ export interface ImportValidation {
   requiredFieldsMissing: string[]
 }
 
-export function validateBNImport(
-  csvData: BNCSVData,
+export function validateLegacyImport(
+  csvData: LegacyCSVData,
   targetEntity: string,
   fieldMapping: Record<string, string>
 ): ImportValidation {
@@ -463,7 +462,7 @@ export function validateBNImport(
   const present: string[] = []
   const missing: string[] = []
 
-  const mapping = BN_TABLE_MAPPINGS.find(m => m.target === targetEntity)
+  const mapping = LEGACY_TABLE_MAPPINGS.find(m => m.target === targetEntity)
 
   if (!mapping) {
     errors.push(`Unknown target entity: ${targetEntity}`)

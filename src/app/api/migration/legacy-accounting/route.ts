@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import {
-  BN_TABLE_MAPPINGS,
-  parseBNCSV,
+  LEGACY_TABLE_MAPPINGS,
+  parseLegacyCSV,
   transformValue,
-  type BNCSVData,
+  type LegacyCSVData,
 } from '@/lib/migration/legacy-accounting'
 
 // ==================== SCAN ENDPOINT ====================
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         continue
       }
 
-      const csvData: BNCSVData = parseBNCSV(content, file.name)
+      const csvData: LegacyCSVData = parseLegacyCSV(content, file.name)
 
       results.push({
         fileName: csvData.fileName,
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       success: true,
       filesProcessed: results.length,
       results,
-      availableTargets: BN_TABLE_MAPPINGS.map(m => ({
+      availableTargets: LEGACY_TABLE_MAPPINGS.map(m => ({
         bnTable: m.bnTable,
         target: m.target,
         label: m.label,
@@ -239,8 +239,8 @@ async function importEntity(
   fieldMapping: Record<string, string>,
   options: { skipDuplicates?: boolean }
 ) {
-  const csvData = parseBNCSV(csvContent, fileName)
-  const tableMapping = BN_TABLE_MAPPINGS.find(m => m.target === targetEntity)
+  const csvData = parseLegacyCSV(csvContent, fileName)
+  const tableMapping = LEGACY_TABLE_MAPPINGS.find(m => m.target === targetEntity)
 
   let successRows = 0
   let failedRows = 0
