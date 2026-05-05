@@ -1,164 +1,100 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger
-} from '@/components/ui/dialog'
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '@/components/ui/table'
-import { Globe } from 'lucide-react'
-import { Plus, Search } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Globe, FileText, DollarSign, Package, Truck, MessageSquare, Clock, CheckCircle2, Download, Eye, CreditCard } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatRSD, formatDate } from '@/lib/helpers'
 
-const mockData = [
-  { id: '1', name: ' Firma A', status: 'active', date: '2024-01-15', value: '15 док.' },
-  { id: '2', name: 'Firma B', status: 'pending', date: '2024-02-20', value: '23 док.' },
-  { id: '3', name: 'Firma C', status: 'completed', date: '2024-03-10', value: '8 док.' },
-  { id: '4', name: 'Firma D', status: 'active', date: '2024-04-05', value: '31 док.' },
-  { id: '5', name: 'Firma E', status: 'pending', date: '2024-05-12', value: '12 док.' },
+interface PortalInvoice { id: string; number: string; amount: number; status: string; date: string; dueDate: string }
+interface PortalOrder { id: string; items: number; total: number; status: string; date: string; deliveryDate: string | null }
+interface PortalTicket { id: string; subject: string; status: 'open' | 'in_progress' | 'resolved' | 'closed'; priority: string; createdAt: string; updatedAt: string }
+interface PortalDoc { id: string; name: string; type: string; size: string; date: string; category: string }
+
+const INVOICES: PortalInvoice[] = [
+  { id: '1', number: 'F-2024-0234', amount: 125000, status: 'poslata', date: '2024-06-01', dueDate: '2024-06-30' },
+  { id: '2', number: 'F-2024-0230', amount: 89500, status: 'placena', date: '2024-05-15', dueDate: '2024-06-15' },
+  { id: '3', number: 'F-2024-0225', amount: 210000, status: 'prekocena', date: '2024-04-10', dueDate: '2024-05-10' },
 ]
 
+const ORDERS: PortalOrder[] = [
+  { id: '1', items: 5, total: 45000, status: 'isporuceno', date: '2024-06-10', deliveryDate: '2024-06-12' },
+  { id: '2', items: 3, total: 28000, status: 'u_toku', date: '2024-06-14', deliveryDate: null },
+  { id: '3', items: 8, total: 92000, status: 'nacrt', date: '2024-06-15', deliveryDate: null },
+]
+
+const TICKETS: PortalTicket[] = [
+  { id: '1', subject: 'Problem sa fakturisanjem', status: 'open', priority: 'high', createdAt: '2024-06-15T10:00:00', updatedAt: '2024-06-15T10:00:00' },
+  { id: '2', subject: 'Zahtev za novi artikal', status: 'in_progress', priority: 'medium', createdAt: '2024-06-13T14:00:00', updatedAt: '2024-06-14T09:00:00' },
+  { id: '3', subject: 'Pitanje o ceni', status: 'resolved', priority: 'low', createdAt: '2024-06-10T08:00:00', updatedAt: '2024-06-11T16:00:00' },
+]
+
+const DOCS: PortalDoc[] = [
+  { id: '1', name: 'Ugovor 2024.pdf', type: 'pdf', size: '2.4 MB', date: '2024-01-15', category: 'Ugovori' },
+  { id: '2', name: 'Cenovnik 2024.pdf', type: 'pdf', size: '890 KB', date: '2024-03-01', category: 'Cenovnici' },
+  { id: '3', name: 'Specifikacija proizvoda.xlsx', type: 'xlsx', size: '1.2 MB', date: '2024-05-20', category: 'Specifikacije' },
+]
+
+function getInvStatusBadge(s: string) {
+  const map: Record<string, { color: string; label: string }> = {
+    placena: { color: 'bg-emerald-100 text-emerald-800', label: 'Plaćena' },
+    poslata: { color: 'bg-blue-100 text-blue-800', label: 'Poslata' },
+    prekocena: { color: 'bg-red-100 text-red-800', label: 'Prekoračena' },
+    nacrt: { color: 'bg-slate-100 text-slate-600', label: 'Načrt' },
+  }
+  const r = map[s] || map.nacrt; return <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge>
+}
+
+function getTicketStatus(s: string) {
+  const map: Record<string, { color: string; label: string }> = {
+    open: { color: 'bg-red-100 text-red-800', label: 'Otvoren' },
+    in_progress: { color: 'bg-amber-100 text-amber-800', label: 'U toku' },
+    resolved: { color: 'bg-emerald-100 text-emerald-800', label: 'Rešeno' },
+    closed: { color: 'bg-slate-100 text-slate-600', label: 'Zatvoren' },
+  }
+  const r = map[s] || map.open; return <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge>
+}
+
 export function KlijentskiPortal() {
-  const [search, setSearch] = useState('')
-  const [open, setOpen] = useState(false)
-  const [data, setData] = useState(mockData)
-  const [formData, setFormData] = useState({ name: '', value: '' })
+  const [loading, setLoading] = useState(true)
 
-  const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  )
+  useEffect(() => { setTimeout(() => setLoading(false), 200) }, [])
 
-  const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-  const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-  const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div></div>
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Клијентски портал</h1>
-          <p className="text-sm text-muted-foreground">SUBКлијентски портал</p>
-        </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" />Додај</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Додај</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Назив</label>
-                <Input
-                  placeholder="Унесите назив..."
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Вредност</label>
-                <Input
-                  placeholder="Унесите вредност..."
-                  value={formData.value}
-                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Откажи</Button>
-              <Button onClick={handleAdd}>Сачувај</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><Globe className="h-6 w-6" />Клијентски портал</h1><p className="text-sm text-muted-foreground">Портал за партнере — fakture, narudžbe, dokumenta i podrška</p></div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-blue-600 mb-1"><FileText className="h-3.5 w-3.5" />Fakture</div><p className="text-2xl font-bold">{INVOICES.length}</p><p className="text-[10px] text-muted-foreground">{formatRSD(INVOICES.reduce((s, i) => s + i.amount, 0))}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-amber-600 mb-1"><Package className="h-3.5 w-3.5" />Narudžbe</div><p className="text-2xl font-bold">{ORDERS.length}</p><p className="text-[10px] text-muted-foreground">{ORDERS.filter(o => o.status === 'u_toku').length} aktivnih</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-red-600 mb-1"><MessageSquare className="h-3.5 w-3.5" />Tiketi</div><p className="text-2xl font-bold">{TICKETS.length}</p><p className="text-[10px] text-muted-foreground">{TICKETS.filter(t => t.status === 'open').length} otvorenih</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><CreditCard className="h-3.5 w-3.5" />Dugovanje</div><p className="text-lg font-bold text-red-700">{formatRSD(INVOICES.filter(i => i.status !== 'placena').reduce((s, i) => s + i.amount, 0))}</p></Card>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Укупно</CardTitle><Globe className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{data.length}</div><p className="text-xs text-muted-foreground">укупних ставки</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Активних</CardTitle><Globe className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{data.filter(d => d.status === 'active').length}</div><p className="text-xs text-muted-foreground">тренутно активних</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">На чекању</CardTitle><Globe className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{data.filter(d => d.status === 'pending').length}</div><p className="text-xs text-muted-foreground">чека обраду</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Завршено</CardTitle><Globe className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{data.filter(d => d.status === 'completed').length}</div><p className="text-xs text-muted-foreground">овог месеца</p></CardContent></Card>
-      </div>
+      <Tabs defaultValue="fakture" className="space-y-4">
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="fakture" className="gap-1.5 text-xs"><FileText className="h-3.5 w-3.5" />Fakture</TabsTrigger>
+          <TabsTrigger value="narudzbe" className="gap-1.5 text-xs"><Package className="h-3.5 w-3.5" />Narudžbe</TabsTrigger>
+          <TabsTrigger value="podrska" className="gap-1.5 text-xs"><MessageSquare className="h-3.5 w-3.5" />Подршка</TabsTrigger>
+          <TabsTrigger value="dokumenta" className="gap-1.5 text-xs"><Download className="h-3.5 w-3.5" />Dokumenta</TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle>Списак</CardTitle>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Претрага..."
-                className="pl-8"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Назив</TableHead>
-                <TableHead className="hidden sm:table-cell">Статус</TableHead>
-                <TableHead className="hidden md:table-cell">Датум</TableHead>
-                <TableHead className="hidden lg:table-cell">Вредност</TableHead>
-                <TableHead className="text-right">Акције</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Нема података</TableCell></TableRow>
-              ) : (
-                filtered.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{getStatusBadge(item.status)}</TableCell>
-                    <TableCell className="hidden md:table-cell">{item.date}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{item.value}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDelete(item.id)}>Обриши</Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        <TabsContent value="fakture"><Card><CardContent className="pt-6"><Table><TableHeader><TableRow><TableHead className="text-xs">Broj</TableHead><TableHead className="text-xs">Iznos</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs hidden sm:table-cell">Datum</TableHead><TableHead className="text-xs hidden sm:table-cell">Rok</TableHead><TableHead className="text-xs text-right"></TableHead></TableRow></TableHeader><TableBody>{INVOICES.map(inv => (<TableRow key={inv.id}><TableCell className="text-xs font-mono">{inv.number}</TableCell><TableCell className="text-xs font-bold">{formatRSD(inv.amount)}</TableCell><TableCell>{getInvStatusBadge(inv.status)}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(inv.date)}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(inv.dueDate)}</TableCell><TableCell className="text-right"><Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => toast.info('Preuzimanje fakture...')}><Download className="h-3 w-3" />PDF</Button></TableCell></TableRow>))}</TableBody></Table></CardContent></Card></TabsContent>
+
+        <TabsContent value="narudzbe"><Card><CardContent className="pt-6"><Table><TableHeader><TableRow><TableHead className="text-xs">ID</TableHead><TableHead className="text-xs">Stavki</TableHead><TableHead className="text-xs">Iznos</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs hidden sm:table-cell">Datum</TableHead><TableHead className="text-xs hidden sm:table-cell">Isporuka</TableHead></TableRow></TableHeader><TableBody>{ORDERS.map(o => (<TableRow key={o.id}><TableCell className="text-xs font-mono">ORD-{o.id.padStart(4, '0')}</TableCell><TableCell className="text-xs">{o.items}</TableCell><TableCell className="text-xs font-bold">{formatRSD(o.total)}</TableCell><TableCell><Badge variant="outline" className="text-[10px]">{o.status.replace('_', ' ')}</Badge></TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(o.date)}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{o.deliveryDate ? formatDate(o.deliveryDate) : '—'}</TableCell></TableRow>))}</TableBody></Table></CardContent></Card></TabsContent>
+
+        <TabsContent value="podrska"><Card><CardContent className="pt-6"><Table><TableHeader><TableRow><TableHead className="text-xs">Tema</TableHead><TableHead className="text-xs">Prioritet</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs hidden sm:table-cell">Kreiran</TableHead><TableHead className="text-xs hidden sm:table-cell">Ažuriran</TableHead></TableRow></TableHeader><TableBody>{TICKETS.map(t => (<TableRow key={t.id}><TableCell className="text-xs font-medium">{t.subject}</TableCell><TableCell><Badge variant="outline" className="text-[10px]">{t.priority}</Badge></TableCell><TableCell>{getTicketStatus(t.status)}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(t.createdAt)}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(t.updatedAt)}</TableCell></TableRow>))}</TableBody></Table></CardContent></Card></TabsContent>
+
+        <TabsContent value="dokumenta"><Card><CardContent className="pt-6"><Table><TableHeader><TableRow><TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs hidden sm:table-cell">Kategorija</TableHead><TableHead className="text-xs hidden md:table-cell">Veličina</TableHead><TableHead className="text-xs hidden sm:table-cell">Datum</TableHead><TableHead className="text-xs text-right"></TableHead></TableRow></TableHeader><TableBody>{DOCS.map(d => (<TableRow key={d.id}><TableCell className="text-xs font-medium flex items-center gap-2"><FileText className="h-3.5 w-3.5 text-muted-foreground" />{d.name}</TableCell><TableCell className="hidden sm:table-cell"><Badge variant="outline" className="text-[10px]">{d.category}</Badge></TableCell><TableCell className="hidden md:table-cell text-xs text-muted-foreground">{d.size}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(d.date)}</TableCell><TableCell className="text-right"><Button variant="ghost" size="sm" className="text-xs gap-1" onClick={() => toast.info('Preuzimanje...')}><Download className="h-3 w-3" /></Button></TableCell></TableRow>))}</TableBody></Table></CardContent></Card></TabsContent>
+      </Tabs>
     </div>
   )
 }
-
