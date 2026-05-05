@@ -228,7 +228,7 @@ function InvoiceDashboard() {
     setLoading(false)
   }, [])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => { fetchInvoices() }, [fetchInvoices])
 
   const stats = useMemo(() => {

@@ -543,7 +543,7 @@ function PrijemTab() {
     setOrders(o); setProducts(p); setLocations(l); setLoading(false)
   }, [])
 
-  useEffect(() => { loadData() }, []) // eslint-disable-line react-hooks/set-state-in-effect
+  useEffect(() => { loadData() }, [])  
 
   const handleCreate = async () => {
     const res = await fetch('/api/wms/receiving', {

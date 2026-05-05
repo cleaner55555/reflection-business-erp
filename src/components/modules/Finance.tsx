@@ -627,7 +627,7 @@ function DnevnikTab() {
   }, [typeFilter])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: fetch data on mount / filter change
+     
     fetchJournal()
   }, [fetchJournal])
 

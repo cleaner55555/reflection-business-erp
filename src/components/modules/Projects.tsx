@@ -984,7 +984,7 @@ function TimesheetView() {
     fetch('/api/projects').then(r => r.json()).then(setProjects)
   }, [])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => { fetchTsEntries() }, [fetchTsEntries, refreshKey])
 
   const allTasks = useMemo(() => {
