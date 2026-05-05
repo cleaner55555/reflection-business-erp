@@ -180,7 +180,7 @@ export function Rezervacije() {
                   <div className="grid gap-2"><Label className="text-xs">Depozit (RSD)</Label><Input className="text-xs" type="number" value={form.deposit || ''} onChange={e => setForm({ ...form, deposit: Number(e.target.value) })} /></div>
                 </div>
                 <div className="grid gap-2"><Label className="text-xs">Specijalni zahtevi</Label><Input className="text-xs" value={form.specialRequests || ''} onChange={e => setForm({ ...form, specialRequests: e.target.value })} /></div>
-                <Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4"">Kreiraj rezervaciju</Button>
+                <Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Kreiraj rezervaciju</Button>
               </div>
             </CardContent>
           </Card>

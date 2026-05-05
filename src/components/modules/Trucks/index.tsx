@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   Truck, FileCheck, Wrench, DollarSign,
   AlertTriangle, Fuel, MapPin, Clock, TrendingUp,
-  ShieldCheck, CarFront, Zap, BarChart3,
+  ShieldCheck, CarFront, Zap, BarChart3, Activity,
 } from 'lucide-react'
 import type {
   Truck as TruckType,
