@@ -10,123 +10,240 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, Filter } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, UtensilsCrossed, Star } from 'lucide-react'
 import { toast } from 'sonner'
-import { formatDate } from '@/lib/helpers'
 
-const INITIAL = [
-  { id: '1', name: 'Zapis 1', description: 'Prvi test zapis', status: 'active', date: '2024-06-15', value: '1000' },
-  { id: '2', name: 'Zapis 2', description: 'Drugi test zapis', status: 'completed', date: '2024-06-14', value: '2500' },
-  { id: '3', name: 'Zapis 3', description: 'Treći test zapis', status: 'pending', date: '2024-06-13', value: '800' },
-  { id: '4', name: 'Zapis 4', description: 'Četvrti zapis', status: 'cancelled', date: '2024-06-12', value: '3200' },
-  { id: '5', name: 'Zapis 5', description: 'Peti test zapis', status: 'active', date: '2024-06-11', value: '1500' },
-  { id: '6', name: 'Zapis 6', description: 'Šesti zapis', status: 'completed', date: '2024-06-10', value: '4100' },
+type MenuItem = {
+  id: string
+  name: string
+  description: string
+  category: 'appetizer' | 'soup' | 'salad' | 'main_course' | 'dessert' | 'drink' | 'side_dish' | 'breakfast' | 'grill'
+  price: number
+  preparationTime: number
+  calories: number
+  isVegetarian: boolean
+  isVegan: boolean
+  isGlutenFree: boolean
+  isSpicy: boolean
+  isAvailable: boolean
+  allergens: string[]
+  ingredients: string[]
+  rating: number
+  orderCount: number
+  notes: string
+}
+
+const INITIAL: MenuItem[] = [
+  { id: '1', name: 'Ćevapi sa lepinjom', description: '5 ćevapa od mešanog mesa, lepinja, luk, kajmak', category: 'grill', price: 850, preparationTime: 20, calories: 780, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Mleko', 'Jaja'], ingredients: ['Govedina', 'Svinjetina', 'Luk', 'So', 'Biber'], rating: 4.8, orderCount: 342, notes: 'Najprodavaniji artikal' },
+  { id: '2', name: 'Pljeskavica sa kajmakom', description: 'Pljeskavica od goveđeg mesa, domaći kajmak, lepinja', category: 'grill', price: 780, preparationTime: 18, calories: 720, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Mleko'], ingredients: ['Govedina', 'So', 'Biber', 'Luk'], rating: 4.7, orderCount: 285, notes: '' },
+  { id: '3', name: 'Pasulj prebranac', description: 'Tradicionalno srpsko jelo od pasulja sa suvim mesom', category: 'main_course', price: 650, preparationTime: 45, calories: 450, isVegetarian: false, isVegan: false, isGlutenFree: true, isSpicy: true, isAvailable: true, allergens: [], ingredients: ['Pasulj', 'Suvo meso', 'Luk', 'Biber', 'Lovor'], rating: 4.5, orderCount: 198, notes: 'Sezonsko — svaki dan' },
+  { id: '4', name: 'Šopska salata', description: 'Tomat, krastavac, paprika, luk, sirevi, maslinovo ulje', category: 'salad', price: 420, preparationTime: 10, calories: 180, isVegetarian: true, isVegan: false, isGlutenFree: true, isSpicy: false, isAvailable: true, allergens: ['Mleko'], ingredients: ['Tomat', 'Krastavac', 'Paprika', 'Luk', 'Sirevi', 'Maslinovo ulje'], rating: 4.6, orderCount: 267, notes: '' },
+  { id: '5', name: 'Teleća čorba', description: 'Teleća supa sa povrćem i domaćim rezancima', category: 'soup', price: 480, preparationTime: 30, calories: 280, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Jaja'], ingredients: ['Teletina', 'Šargarepa', 'Krompir', 'Peršun', 'Rezanci'], rating: 4.7, orderCount: 156, notes: '' },
+  { id: '6', name: 'Krem čorba od bundeve', description: 'Bundeva, pavlaka, toast', category: 'soup', price: 380, preparationTime: 25, calories: 220, isVegetarian: true, isVegan: false, isGlutenFree: true, isSpicy: false, isAvailable: true, allergens: ['Mleko', 'Gluten'], ingredients: ['Bundeva', 'Pavlaka', 'Luk', 'Začini'], rating: 4.3, orderCount: 89, notes: '' },
+  { id: '7', name: 'Palacinci sa džemom', description: '4 palacinke sa marmeladom od šljiva', category: 'dessert', price: 350, preparationTime: 15, calories: 380, isVegetarian: true, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Jaja', 'Mleko'], ingredients: ['Brašno', 'Jaja', 'Mleko', 'Marmelada'], rating: 4.4, orderCount: 134, notes: '' },
+  { id: '8', name: 'Krofne', description: '4 domaće krofne sa šećerom u prahu', category: 'dessert', price: 320, preparationTime: 12, calories: 420, isVegetarian: true, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: false, allergens: ['Gluten', 'Jaja', 'Mleko'], ingredients: ['Brašno', 'Jaja', 'Mleko', 'Kvasac', 'Ulje'], rating: 4.2, orderCount: 98, notes: 'Privremeno nedostupno — nedostatak kvasca' },
+  { id: '9', name: 'Domaći sok od šljive', description: '0.25L sveži sok od šljiva', category: 'drink', price: 200, preparationTime: 3, calories: 110, isVegetarian: true, isVegan: true, isGlutenFree: true, isSpicy: false, isAvailable: true, allergens: [], ingredients: ['Šljive', 'Šećer', 'Voda'], rating: 4.1, orderCount: 210, notes: '' },
+  { id: '10', name: 'Domaći kajmak sa hlebom', description: '200g domaćeg kajmaka, hleb', category: 'appetizer', price: 380, preparationTime: 5, calories: 350, isVegetarian: true, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Mleko', 'Gluten'], ingredients: ['Kajmak', 'Hleb'], rating: 4.6, orderCount: 178, notes: '' },
+  { id: '11', name: 'Grah sa kobasicom', description: 'Belo graho, kobasice, dimljeni meso', category: 'main_course', price: 620, preparationTime: 50, calories: 520, isVegetarian: false, isVegan: false, isGlutenFree: true, isSpicy: true, isAvailable: true, allergens: [], ingredients: ['Grah', 'Kobasice', 'Dimljeno meso', 'Luk', 'Biber'], rating: 4.5, orderCount: 145, notes: '' },
+  { id: '12', name: 'Srem burger', description: 'Govedinski pljeskavica, slanina, kačkavalj, luk, sos', category: 'grill', price: 920, preparationTime: 22, calories: 890, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Mleko', 'Jaja', 'Senf'], ingredients: ['Govedina', 'Slanina', 'Kačkavalj', 'Luk', 'Sos'], rating: 4.9, orderCount: 267, notes: 'Novo na meniju — od juna 2024' },
 ]
 
-const STATUSES: Record<string, { color: string; label: string }> = {
-  active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' },
-  completed: { color: 'bg-blue-100 text-blue-800', label: 'Završen' },
-  pending: { color: 'bg-amber-100 text-amber-800', label: 'Na чekanju' },
-  cancelled: { color: 'bg-red-100 text-red-800', label: 'Otkazan' },
-  in_progress: { color: 'bg-amber-100 text-amber-800', label: 'U току' },
+const CATEGORIES: Record<string, { label: string }> = {
+  appetizer: { label: 'Predjelo' }, soup: { label: 'Supa' }, salad: { label: 'Salata' }, main_course: { label: 'Glavno jelo' }, dessert: { label: 'Desert' }, drink: { label: 'Piće' }, side_dish: { label: 'Prilog' }, breakfast: { label: 'Doručak' }, grill: { label: 'Roštilj' },
 }
 
-function getStatusBadge(s: string) {
-  const r = STATUSES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
-}
+function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
 export function Jelovnik() {
-  const [data, setData] = useState(INITIAL)
+  const [data, setData] = useState<MenuItem[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [availabilityFilter, setAvailabilityFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editItem, setEditItem] = useState<MenuItem | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
+  const [form, setForm] = useState<Partial<MenuItem>>({})
+  const [activeTab, setActiveTab] = useState('pregled')
 
   useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
 
   const filtered = data.filter(item => {
-    const matchSearch = !search || Object.values(item).some(v => String(v).toLowerCase().includes(search.toLowerCase()))
-    const matchStatus = !statusFilter || item.status === statusFilter
-    return matchSearch && matchStatus
+    const matchSearch = !search || [item.name, item.description, item.ingredients.join(' ')].some(v => v.toLowerCase().includes(search.toLowerCase()))
+    const matchCategory = !categoryFilter || item.category === categoryFilter
+    const matchAvailability = !availabilityFilter || (availabilityFilter === 'available' ? item.isAvailable : !item.isAvailable)
+    return matchSearch && matchCategory && matchAvailability
   })
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
+  const handleDelete = (id: string) => { if (!confirm('Obrisati artikal?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Artikal obrisan') }
+
+  const openCreate = () => {
+    setEditItem(null)
+    setForm({ name: '', description: '', category: 'main_course', price: 0, preparationTime: 15, calories: 0, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: [], ingredients: [], rating: 0, orderCount: 0, notes: '' })
+    setDialogOpen(true)
+  }
+
+  const openEdit = (item: MenuItem) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
+
+  const handleSave = () => {
+    if (!form.name) { toast.error('Unesite naziv'); return }
+    if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as MenuItem : i)); toast.success('Artikal ažuriran') }
+    else { setData(prev => [{ id: Date.now().toString(), ...form } as MenuItem, ...prev]); toast.success('Artikal kreiran') }
+    setDialogOpen(false)
+  }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
-
   const detailItem = detailId ? data.find(i => i.id === detailId) : null
+  const availableCount = data.filter(i => i.isAvailable).length
+  const topRated = [...data].sort((a, b) => b.rating - a.rating)[0]
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div><h1 className="text-2xl font-bold tracking-tight">Модул</h1><p className="text-sm text-muted-foreground">Управљање подацима</p></div>
-        <Button size="sm" className="gap-2" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4" />Novi</Button>
+        <div><h1 className="text-2xl font-bold tracking-tight">Jelovnik</h1><p className="text-sm text-muted-foreground">Upravljanje jelovnikom i cenama</p></div>
+        <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novo jelo</Button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Укупно</div><p className="text-2xl font-bold">{data.length}</p></Card>
-        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Активних</div><p className="text-2xl font-bold text-emerald-700">{data.filter(i => i.status === 'active').length}</p></Card>
-        <Card className="p-4"><div className="text-xs text-blue-600 mb-1">Завршених</div><p className="text-2xl font-bold text-blue-700">{data.filter(i => i.status === 'completed').length}</p></Card>
-        <Card className="p-4"><div className="text-xs text-amber-600 mb-1">На чекању</div><p className="text-2xl font-bold text-amber-700">{data.filter(i => i.status === 'pending').length}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><UtensilsCrossed className="h-3 w-3" />Ukupno</div><p className="text-2xl font-bold">{data.length}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Dostupnih</div><p className="text-2xl font-bold text-emerald-700">{availableCount}</p></Card>
+        <Card className="p-4"><div className="text-xs text-amber-600 mb-1 flex items-center gap-1"><Star className="h-3 w-3" />Najbolje ocenjeno</div><p className="text-xs font-bold text-amber-700">{topRated?.name || '—'} ({topRated?.rating})</p></Card>
+        <Card className="p-4"><div className="text-xs text-blue-600 mb-1">Prosek cena</div><p className="text-2xl font-bold text-blue-700">{formatRSD(data.reduce((s, i) => s + i.price, 0) / data.length)}</p></Card>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="text-base">Lista</CardTitle>
-            <div className="flex gap-2 items-center">
-              <div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-44 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div>
-              <Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="max-h-[480px] overflow-y-auto">
-            <Table>
-              <TableHeader><TableRow><TableHead className="text-xs">Nazив</TableHead><TableHead className="text-xs hidden sm:table-cell">Opis</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs hidden md:table-cell">Datum</TableHead><TableHead className="text-xs hidden lg:table-cell">Vrednost</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">Nema podataka</TableCell></TableRow> : filtered.map(item => (
-                  <TableRow key={item.id}>
-                    <TableCell className="text-xs font-medium">{item.name}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{item.description}</TableCell>
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{formatDate(item.date)}</TableCell>
-                    <TableCell className="text-xs hidden lg:table-cell">{item.value}</TableCell>
-                    <TableCell className="text-right"><div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                    </div></TableCell>
-                  </TableRow>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
+
+        <TabsContent value="pregled" className="mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <CardTitle className="text-base">Jelovnik</CardTitle>
+                <div className="flex gap-2 items-center flex-wrap">
+                  <div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-44 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div>
+                  <Select value={categoryFilter || 'all'} onValueChange={v => setCategoryFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Sve</SelectItem><SelectItem value="grill">Roštilj</SelectItem><SelectItem value="main_course">Glavno</SelectItem><SelectItem value="soup">Supa</SelectItem><SelectItem value="salad">Salata</SelectItem><SelectItem value="dessert">Desert</SelectItem><SelectItem value="drink">Piće</SelectItem></SelectContent></Select>
+                  <Select value={availabilityFilter || 'all'} onValueChange={v => setAvailabilityFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem><SelectItem value="available">Dostupno</SelectItem><SelectItem value="unavailable">Nedostupno</SelectItem></SelectContent></Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-[480px] overflow-y-auto">
+                <Table>
+                  <TableHeader><TableRow><TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs hidden sm:table-cell">Kategorija</TableHead><TableHead className="text-xs hidden md:table-cell">Opis</TableHead><TableHead className="text-xs hidden md:table-cell">Cena</TableHead><TableHead className="text-xs hidden lg:table-cell">Ocene</TableHead><TableHead className="text-xs">Tagovi</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema artikala</TableCell></TableRow> : filtered.map(item => (
+                      <TableRow key={item.id} className={!item.isAvailable ? 'opacity-60' : ''}>
+                        <TableCell className="text-xs font-medium">{item.name}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{CATEGORIES[item.category]?.label}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground hidden md:table-cell max-w-[160px] truncate">{item.description}</TableCell>
+                        <TableCell className="text-xs font-semibold hidden md:table-cell">{formatRSD(item.price)}</TableCell>
+                        <TableCell className="text-xs hidden lg:table-cell"><div className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-500 fill-amber-500" /><span>{item.rating}</span><span className="text-muted-foreground">({item.orderCount})</span></div></TableCell>
+                        <TableCell><div className="flex flex-wrap gap-0.5">
+                          {item.isVegetarian && <Badge className="text-[9px] bg-green-100 text-green-700">Veg</Badge>}
+                          {item.isVegan && <Badge className="text-[9px] bg-green-100 text-green-700">Vegan</Badge>}
+                          {item.isSpicy && <Badge className="text-[9px] bg-red-100 text-red-700">Ljuto</Badge>}
+                          {!item.isAvailable && <Badge className="text-[9px] bg-gray-100 text-gray-700">N/A</Badge>}
+                        </div></TableCell>
+                        <TableCell className="text-right"><div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        </div></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="dodaj" className="mt-4">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Novo jelo</CardTitle></CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+                  <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'main_course'} onValueChange={v => setForm({ ...form, category: v as MenuItem['category'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="grid gap-2 sm:col-span-2"><Label className="text-xs">Opis</Label><Input className="text-xs" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+                  <div className="grid gap-2"><Label className="text-xs">Cena (RSD)</Label><Input className="text-xs" type="number" value={form.price || ''} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></div>
+                  <div className="grid gap-2"><Label className="text-xs">Vreme pripreme (min)</Label><Input className="text-xs" type="number" value={form.preparationTime || ''} onChange={e => setForm({ ...form, preparationTime: Number(e.target.value) })} /></div>
+                  <div className="grid gap-2"><Label className="text-xs">Kalorije</Label><Input className="text-xs" type="number" value={form.calories || ''} onChange={e => setForm({ ...form, calories: Number(e.target.value) })} /></div>
+                  <div className="grid gap-2"><Label className="text-xs">Sastojci (zarez)</Label><Input className="text-xs" value={(form.ingredients || []).join(', ')} onChange={e => setForm({ ...form, ingredients: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} /></div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Label className="text-xs flex items-center gap-1"><input type="checkbox" checked={form.isVegetarian || false} onChange={e => setForm({ ...form, isVegetarian: e.target.checked })} />Vegetarijansko</Label>
+                  <Label className="text-xs flex items-center gap-1"><input type="checkbox" checked={form.isVegan || false} onChange={e => setForm({ ...form, isVegan: e.target.checked })} />Vegansko</Label>
+                  <Label className="text-xs flex items-center gap-1"><input type="checkbox" checked={form.isSpicy || false} onChange={e => setForm({ ...form, isSpicy: e.target.checked })} />Ljuto</Label>
+                </div>
+                <Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Dodaj jelo</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="uredi" className="mt-4">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Uredi jelovnik</CardTitle></CardHeader>
+            <CardContent>
+              <div className="max-h-[500px] overflow-y-auto space-y-3">
+                {data.map(item => (
+                  <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span><Badge className="text-[10px] bg-muted">{CATEGORIES[item.category]?.label}</Badge>{!item.isAvailable && <Badge className="text-[10px] bg-gray-100 text-gray-700">N/A</Badge>}</div>
+                      <p className="text-xs text-muted-foreground truncate">{formatRSD(item.price)} — {item.description}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Detalji</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader><DialogTitle>{detailItem?.name}</DialogTitle></DialogHeader>
           {detailItem && (
             <div className="space-y-3">
-              {Object.entries(detailItem).filter(([k]) => k !== 'id').map(([key, val]) => (
-                <div key={key} className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs text-muted-foreground">{key}</span><span className="text-xs font-medium">{key === 'status' ? getStatusBadge(String(val)) : String(val)}</span></div>
-              ))}
+              <p className="text-sm text-muted-foreground">{detailItem.description}</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  ['Kategorija', CATEGORIES[detailItem.category]?.label],
+                  ['Cena', formatRSD(detailItem.price)],
+                  ['Vreme pripreme', `${detailItem.preparationTime} min`],
+                  ['Kalorije', `${detailItem.calories} kcal`],
+                  ['Ocena', `${detailItem.rating}/5 (${detailItem.orderCount} narudžbi)`],
+                  ['Dostupno', detailItem.isAvailable ? 'Da' : 'Ne'],
+                  ['Vegetarijansko', detailItem.isVegetarian ? 'Da' : 'Ne'],
+                  ['Vegansko', detailItem.isVegan ? 'Da' : 'Ne'],
+                ].map(([label, val]) => (
+                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                ))}
+              </div>
+              <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Sastojci</div><div className="flex flex-wrap gap-1">{detailItem.ingredients.map(ing => <Badge key={ing} className="text-[10px] bg-muted">{ing}</Badge>)}</div></div>
+              {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-[10px] text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-[10px] bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
             </div>
           )}
         </DialogContent>
       </Dialog>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[450px]">
-          <DialogHeader><DialogTitle>Novi zapis</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Novo jelo'}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2"><Label className="text-xs">Nazив</Label><Input placeholder="Naziv..." /></div>
-            <div className="grid gap-2"><Label className="text-xs">Opis</Label><Input placeholder="Opis..." /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Cena</Label><Input className="text-xs" type="number" value={form.price || ''} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'main_course'} onValueChange={v => setForm({ ...form, category: v as MenuItem['category'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+              <div className="grid gap-2"><Label className="text-xs">Dostupno</Label><Select value={form.isAvailable ? 'yes' : 'no'} onValueChange={v => setForm({ ...form, isAvailable: v === 'yes' })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yes">Da</SelectItem><SelectItem value="no">Ne</SelectItem></SelectContent></Select></div>
+            </div>
+            <div className="grid gap-2"><Label className="text-xs">Opis</Label><Input className="text-xs" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button onClick={() => { toast.success('Kreirano'); setDialogOpen(false) }}>Kreiraj</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
