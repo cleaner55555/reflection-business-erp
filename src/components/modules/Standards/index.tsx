@@ -36,7 +36,7 @@ function getStatusBadge(s: string) {
   return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
 }
 
-export function PLACEHOLDER_Modul() {
+export function Normativ() {
   const [data, setData] = useState(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
