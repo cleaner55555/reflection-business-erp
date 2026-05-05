@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Search, Trash2, Pencil, Eye, CreditCard, CheckCircle2, AlertTriangle, Clock } from 'lucide-react'; import { toast } from 'sonner'; import { formatDate } from '@/lib/helpers'
 
-type Payment = { id: string; invoiceNo: string; client: string; amount: number; currency: string; date: string; dueDate: string; paidDate: string; method: 'bank_transfer' | 'cash' 'card' | 'standing_order'; status: 'paid' | 'pending' | 'overdue' | 'partial' | 'cancelled'; reference: string; category: 'invoice' | 'salary' | 'rent' | 'supplier' | 'utility' | 'other'; notes: string }
+type Payment = { id: string; invoiceNo: string; client: string; amount: number; currency: string; date: string; dueDate: string; paidDate: string; method: 'bank_transfer' | 'cash' | 'card' | 'standing_order'; status: 'paid' | 'pending' | 'overdue' | 'partial' | 'cancelled'; reference: string; category: 'invoice' | 'salary' | 'rent' | 'supplier' | 'utility' | 'other'; notes: string }
 const INITIAL: Payment[] = [
   { id: '1', invoiceNo: 'Fak-2024-001', client: 'Fabrika "Zvezda"', amount: 185000, currency: 'RSD', date: '2024-06-14', dueDate: '2024-06-28', paidDate: '2024-06-25', method: 'bank_transfer', status: 'paid', reference: 'REF-2024-11111', category: 'invoice', notes: 'Za narudžbu NAR-2024-001 — plaćeno na vreme' },
   { id: '2', invoiceNo: 'Fak-2024-002', client: 'IT Solutions DOO', amount: 285000, currency: 'RSD', date: '2024-06-16', dueDate: '2024-06-30', paidDate: '', method: 'bank_transfer', status: 'pending', reference: 'REF-2024-22222', category: 'invoice', notes: '' },
