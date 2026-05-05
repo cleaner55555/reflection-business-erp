@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/inventory_and_mrp/barcode/setup/software.html",
+    "name": "Product and location barcodes — Odoo 19.0 documentation",
+    "snippet": "Product and location barcodes ¶. Inventory operations like product configuration can be streamlined by taking advantage of barcode scanning features.\nTo print barcodes for locations , go to Inventory app ‣ Configuration ‣ Settings, scroll down to the Warehouse section and click Locations . Tick the boxes ...",
+    "host_name": "www.odoo.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo-bs.com/blog/usa-4/barcode-scanning-in-odoo-how-to-optimize-your-warehouse-operations-438",
+    "name": "Barcode Scanning in Odoo | OBS Solutions",
+    "snippet": "Oct 7, 2025 — Odoo Barcode Scanning allows all warehouse operations to be executed via barcode inventory management. From scanning delivery slips to ...\n7 Oct 2025 — Odoo Barcode Scanning allows all warehouse operations to be executed via barcode inventory management. From scanning delivery slips to ...",
+    "host_name": "www.odoo-bs.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/18.0/sv/applications/inventory_and_mrp/barcode/setup/software.html",
+    "name": "Product and location barcodes — Odoo 18.0 documentation",
+    "snippet": "Navigate to Inventory app ‣ Configuration ‣ Settings. In the Barcode section, select the Barcode Scanner option. Be sure to click Save. Barcode nomenclature ...",
+    "host_name": "www.odoo.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://kadimagroup.ca/barcode-scanning-in-odoo-the-warehouse-setup-checklist-that-saves-weeks",
+    "name": "Barcode Scanning in Odoo: The Warehouse Setup Checklist",
+    "snippet": "2) Enable the right Odoo inventory features before label work begins · 3) Standardize what ...",
+    "host_name": "kadimagroup.ca",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/forum/help-1/warehouse-picking-scanning-barcode-procedures-267638",
+    "name": "Warehouse Picking, Scanning, Barcode Procedures",
+    "snippet": "Hello,. In our warehouse , our team members are now using scanners to pick , pack, and ship the delivery orders (3 step process).\nEmployee needs to pick Product B. Employee comes and scans Location 2, then scans Product A, then upon validation Location 2 shows -1 stock of Product A. How ...",
+    "host_name": "www.odoo.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odiware.com/blog/how-to-use-barcode-scanning-in-odoo-18-inventory",
+    "name": "How to Use Barcode Scanning in Odoo 18 Inventory",
+    "snippet": "Sep 3, 2025 — In Odoo 18, the Barcode app (integrated with Inventory ) lets you scan products, locations , lots/serials, operation commands and process receipts ...\n3 Sept 2025 — In Odoo 18, the Barcode app (integrated with Inventory ) lets you scan products, locations , lots/serials, operation commands and process receipts ...",
+    "host_name": "www.odiware.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mastersoftwaresolutions.com/odoo-inventory-barcode-scanning-to-improve-stock-management",
+    "name": "Odoo Inventory Barcode Scanning to Improve Stock",
+    "snippet": "Jul 4, 2025 — The Odoo inventory barcode module can automate product receiving, picking, counting, and searching , reducing errors, saving time, and improving inventory ...",
+    "host_name": "www.mastersoftwaresolutions.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odooskillz.com/ar/blog/%D8%A7%D9%84%D8%B3%D9%81%D8%B1-1/odoo-barcode-warehouse-implementation-guide-337?srsltid=AfmBOop73aLK5X_RMEaAwiKoQvn1d3JyQAn9CWTOPG2pAhuT3y9K5w7x",
+    "name": "Odoo Barcode Warehouse Implementation Guide",
+    "snippet": "Step-by-step guide to implementing barcode scanning in Odoo warehouses. Hardware selection, configuration, mobile app setup, and troubleshooting for 99% ...",
+    "host_name": "www.odooskillz.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]
