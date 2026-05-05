@@ -1,156 +1,49 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Badge } from '@/components/ui/badge'; import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tag, Plus, Search, Trash2, Pencil, Printer, Download, Package, BarChart3 } from 'lucide-react'
-import { toast } from 'sonner'
-import { formatDate } from '@/lib/helpers'
+import { Plus, Search, Trash2, Pencil, Eye, Tag, Printer } from 'lucide-react'; import { toast } from 'sonner'; import { formatDate } from '@/lib/helpers'
 
-interface LabelItem {
-  id: string
-  name: string
-  type: 'product' | 'shipping' | 'price' | 'barcode' | 'custom'
-  width: number
-  height: number
-  template: string
-  productId: string | null
-  quantity: number
-  printed: number
-  createdAt: string
-}
-
-const TYPES: Record<string, string> = {
-  product: 'Proizvod', shipping: 'Transportna', price: 'Cenovna', barcode: 'Barkod', custom: 'Prilagođena'
-}
-
-const TEMPLATES = [
-  { value: 'standard', label: 'Standardni (60×40mm)' },
-  { value: 'small', label: 'Mali (40×25mm)' },
-  { value: 'large', label: 'Veliki (100×70mm)' },
-  { value: 'a4', label: 'A4 list' },
-]
-
+type LabelItem = { id: string; name: string; sku: string; category: 'product' | 'shipping' | 'promotion' | 'barcode' | 'qr' | 'price' | 'warning' | 'ingredient'; status: 'active' | 'inactive'; size: string; material: string; color: string; quantity: number; costPerUnit: number; printDate: string; notes: string }
 const INITIAL: LabelItem[] = [
-  { id: '1', name: 'Hleb beli 500g', type: 'product', width: 60, height: 40, template: 'standard', productId: 'prod-001', quantity: 100, printed: 75, createdAt: '2024-06-10T10:00:00' },
-  { id: '2', name: 'Mleko 1L', type: 'product', width: 60, height: 40, template: 'standard', productId: 'prod-002', quantity: 150, printed: 150, createdAt: '2024-06-10T10:05:00' },
-  { id: '3', name: 'Isporuka BG-NS', type: 'shipping', width: 100, height: 70, template: 'large', productId: null, quantity: 20, printed: 18, createdAt: '2024-06-12T14:00:00' },
-  { id: '4', name: 'Kafa zrna 250g', type: 'price', width: 40, height: 25, template: 'small', productId: 'prod-003', quantity: 50, printed: 30, createdAt: '2024-06-13T09:00:00' },
-  { id: '5', name: 'Dokument paket', type: 'custom', width: 100, height: 70, template: 'a4', productId: null, quantity: 10, printed: 10, createdAt: '2024-06-14T11:00:00' },
+  { id: '1', name: 'Etiketa — Kafa Premium 250g', sku: 'ETK-KAF-001', category: 'product', status: 'active', size: '80x50mm', material: 'Samolepljiva', color: 'Bela', quantity: 5000, costPerUnit: 2.5, printDate: '2024-06-10', notes: 'Logo + sastojci + RSD cena + barkod' },
+  { id: '2', name: 'Etiketa — Čaj Zeleni 100g', sku: 'ETK-CAJ-002', category: 'product', status: 'active', size: '60x40mm', material: 'Samolepljiva', color: 'Bela', quantity: 3000, costPerUnit: 1.8, printDate: '2024-06-10', notes: '' },
+  { id: '3', name: 'Transportna etiketa — Standard', sku: 'ETK-TRN-001', category: 'shipping', status: 'active', size: '100x60mm', material: 'Standardni papir', color: 'Bela', quantity: 10000, costPerUnit: 1.2, printDate: '2024-06-05', notes: 'Ime primaoca, adresa, barkod' },
+  { id: '4', name: 'Promo etiketa — Letnja akcija', sku: 'ETK-PRO-001', category: 'promotion', status: 'active', size: '90x60mm', material: 'Glossy', color: 'Žuta', quantity: 2000, costPerUnit: 3.5, printDate: '2024-06-12', notes: 'Popust 30% — letnja kampanja' },
+  { id: '5', name: 'Upozorenje — Čuva se od dece', sku: 'ETK-UPO-001', category: 'warning', status: 'active', size: '100x70mm', material: 'Vinil', color: 'Crveno-bela', quantity: 500, costPerUnit: 5.0, printDate: '2024-05-20', notes: 'Za staklene boce' },
+  { id: '6', name: 'Cenovnik — Kafe bar', sku: 'ETK-CEN-001', category: 'price', status: 'active', size: 'A5', material: 'Običan papir', color: 'Bezboj', quantity: 50, costPerUnit: 15, printDate: '2024-06-01', notes: 'Stoni cenovnik — obnovljen mesečno' },
+  { id: '7', name: 'QR kod — Jelovnik', sku: 'ETK-QR-001', category: 'qr', status: 'inactive', size: '40x40mm', material: 'Vinil', color: 'Crna', quantity: 20, costPerUnit: 4.0, printDate: '2024-03-15', notes: 'Link ka digitalnom jelovniku — zamijenjen novim dizajnom' },
+  { id: '8', name: 'Barkod — Univerzalni EAN-13', sku: 'ETK-BRK-001', category: 'barcode', status: 'active', size: '40x25mm', material: 'Samolepljiva', color: 'Bela', quantity: 8000, costPerUnit: 0.8, printDate: '2024-06-14', notes: 'Za sve proizvode sa barkodom' },
 ]
+const CATEGORIES: Record<string, string> = { product: 'Proizvod', shipping: 'Transport', promotion: 'Promocija', barcode: 'Barkod', qr: 'QR kod', price: 'Cena', warning: 'Upozorenje', ingredient: 'Sastojci' }
+const STATUSES: Record<string, { color: string; label: string }> = { active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivna' }, inactive: { color: 'bg-gray-100 text-gray-800', label: 'Neaktivna' } }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
 export function Etikete() {
-  const [items, setItems] = useState<LabelItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<LabelItem | null>(null)
-  const [formData, setFormData] = useState({ name: '', type: 'product' as LabelItem['type'], width: 60, height: 40, template: 'standard', quantity: 100 })
+  const [data, setData] = useState<LabelItem[]>(INITIAL); const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState(''); const [catFilter, setCatFilter] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<LabelItem | null>(null)
+  const [detailId, setDetailId] = useState<string | null>(null); const [form, setForm] = useState<Partial<LabelItem>>({}); const [activeTab, setActiveTab] = useState('pregled')
+  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const filtered = data.filter(i => { const ms = !search || [i.name, i.sku, i.category].some(v => v.toLowerCase().includes(search.toLowerCase())); const mc = !catFilter || i.category === catFilter; return ms && mc })
+  const handleDelete = (id: string) => { if (!confirm('Obrisati?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
+  const openCreate = () => { setEditItem(null); setForm({ name: '', sku: '', category: 'product', status: 'active', size: '', material: 'Samolepljiva', color: 'Bela', quantity: 1000, costPerUnit: 1, printDate: new Date().toISOString().split('T')[0], notes: '' }); setDialogOpen(true) }
+  const openEdit = (item: LabelItem) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
+  const handleSave = () => { if (!form.name) { toast.error('Unesite naziv'); return }; if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as LabelItem : i)); toast.success('Ažurirano') } else { setData(prev => [{ id: Date.now().toString(), ...form } as LabelItem, ...prev]); toast.success('Kreirano') }; setDialogOpen(false) }
+  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
+  const detailItem = detailId ? data.find(i => i.id === detailId) : null
 
-  useEffect(() => { setLoading(true); setTimeout(() => { setItems(INITIAL); setLoading(false) }, 200) }, [])
-
-  const filtered = items.filter(i => {
-    return (!search || i.name.toLowerCase().includes(search.toLowerCase())) && (!typeFilter || i.type === typeFilter)
-  })
-
-  const stats = { total: items.length, product: items.filter(i => i.type === 'product').length, shipping: items.filter(i => i.type === 'shipping').length, totalPrinted: items.reduce((s, i) => s + i.printed, 0), remaining: items.reduce((s, i) => s + (i.quantity - i.printed), 0) }
-
-  const handleNew = () => { setEditing(null); setFormData({ name: '', type: 'product', width: 60, height: 40, template: 'standard', quantity: 100 }); setDialogOpen(true) }
-  const handleEdit = (item: LabelItem) => { setEditing(item); setFormData({ name: item.name, type: item.type, width: item.width, height: item.height, template: item.template, quantity: item.quantity }); setDialogOpen(true) }
-
-  const handleSave = () => {
-    if (!formData.name) { toast.error('Unesite naziv'); return }
-    if (editing) { setItems(prev => prev.map(i => i.id === editing.id ? { ...i, ...formData } : i)); toast.success('Etiketa ažurirana') }
-    else { setItems(prev => [{ id: `lbl-${Date.now()}`, ...formData, productId: null, printed: 0, createdAt: new Date().toISOString() }, ...prev]); toast.success('Etiketa kreirana') }
-    setDialogOpen(false)
-  }
-
-  const handleDelete = (id: string) => { if (!confirm('Obrisati etiketu?')) return; setItems(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
-
-  const handlePrint = (id: string) => {
-    setItems(prev => prev.map(i => i.id === id ? { ...i, printed: Math.min(i.printed + 10, i.quantity) } : i))
-    toast.success('Etikete odštampane')
-  }
-
-  const handlePrintAll = () => {
-    setItems(prev => prev.map(i => ({ ...i, printed: i.quantity })))
-    toast.success('Sve etikete odštampane')
-  }
-
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64" /></div>
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><Tag className="h-6 w-6" />Етикете</h1><p className="text-sm text-muted-foreground">Генерисање и штампање етикета за производе и пошиљке</p></div>
-        <div className="flex gap-2"><Button variant="outline" size="sm" className="gap-2" onClick={handlePrintAll}><Printer className="h-4 w-4" />Штампај sve</Button><Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" />Nova etiketa</Button></div>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Tag className="h-3.5 w-3.5" />Ukupno</div><p className="text-2xl font-bold">{stats.total}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-blue-600 mb-1"><Package className="h-3.5 w-3.5" />Proizvodi</div><p className="text-2xl font-bold">{stats.product}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-amber-600 mb-1"><BarChart3 className="h-3.5 w-3.5" />Transportne</div><p className="text-2xl font-bold">{stats.shipping}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-emerald-600 mb-1"><Printer className="h-3.5 w-3.5" />Odštampano</div><p className="text-2xl font-bold">{stats.totalPrinted}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Download className="h-3.5 w-3.5" />Preostalo</div><p className="text-2xl font-bold">{stats.remaining}</p></Card>
-      </div>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="text-base">Lista etiketa</CardTitle>
-            <div className="flex gap-2 items-center">
-              <div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-44 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div>
-              <Select value={typeFilter || 'all'} onValueChange={v => setTypeFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-36 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi tipovi</SelectItem>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="max-h-[480px] overflow-y-auto">
-            <Table>
-              <TableHeader><TableRow><TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs hidden sm:table-cell">Tip</TableHead><TableHead className="text-xs hidden md:table-cell">Dimenzije</TableHead><TableHead className="text-xs hidden sm:table-cell">Količina</TableHead><TableHead className="text-xs hidden lg:table-cell">Datum</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-sm">Nema etiketa</TableCell></TableRow> : filtered.map(item => (
-                  <TableRow key={item.id}>
-                    <TableCell><p className="text-xs font-medium">{item.name}</p><p className="text-[10px] text-muted-foreground">{TEMPLATES.find(t => t.value === item.template)?.label || item.template}</p></TableCell>
-                    <TableCell className="hidden sm:table-cell"><Badge variant="outline" className="text-[10px]">{TYPES[item.type]}</Badge></TableCell>
-                    <TableCell className="hidden md:table-cell text-xs font-mono">{item.width}×{item.height}mm</TableCell>
-                    <TableCell className="hidden sm:table-cell"><div className="text-xs"><span className={item.printed >= item.quantity ? 'text-emerald-600 font-semibold' : ''}>{item.printed}</span><span className="text-muted-foreground"> / {item.quantity}</span></div></TableCell>
-                    <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{formatDate(item.createdAt)}</TableCell>
-                    <TableCell className="text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(item.id)}><Printer className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[450px]">
-          <DialogHeader><DialogTitle>{editing ? 'Izmeni etiketu' : 'Nova etiketa'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.type} onValueChange={v => setFormData(p => ({ ...p, type: v as LabelItem['type'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Šablon</Label><Select value={formData.template} onValueChange={v => setFormData(p => ({ ...p, template: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Širina (mm)</Label><Input type="number" value={formData.width} onChange={e => setFormData(p => ({ ...p, width: parseInt(e.target.value) || 0 }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Visina (mm)</Label><Input type="number" value={formData.height} onChange={e => setFormData(p => ({ ...p, height: parseInt(e.target.value) || 0 }))} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Količina</Label><Input type="number" value={formData.quantity} onChange={e => setFormData(p => ({ ...p, quantity: parseInt(e.target.value) || 0 }))} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button onClick={handleSave}>{editing ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
+  return (<div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div><h1 className="text-2xl font-bold tracking-tight">Etikete</h1><p className="text-sm text-muted-foreground">Upravljanje etiketama, barkodovima i oznakama</p></div><Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Nova etiketa</Button></div>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3"><Card className="p-4"><div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Tag className="h-3 w-3" />Ukupno</div><p className="text-2xl font-bold">{data.length}</p></Card><Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Aktivnih</div><p className="text-2xl font-bold text-emerald-700">{data.filter(i => i.status === 'active').length}</p></Card><Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno komada</div><p className="text-2xl font-bold">{data.reduce((s, i) => s + i.quantity, 0).toLocaleString()}</p></Card><Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupna cena</div><p className="text-lg font-bold">{new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(data.reduce((s, i) => s + i.quantity * i.costPerUnit, 0))}</p></Card></div>
+    <Tabs value={activeTab} onValueChange={setActiveTab}><TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
+      <TabsContent value="pregled" className="mt-4"><Card><CardHeader className="pb-3"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><CardTitle className="text-base">Lista etiketa</CardTitle><div className="flex gap-2 items-center"><div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-44 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div><Select value={catFilter || 'all'} onValueChange={v => setCatFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Sve</SelectItem><SelectItem value="product">Proizvod</SelectItem><SelectItem value="shipping">Transport</SelectItem><SelectItem value="promotion">Promocija</SelectItem><SelectItem value="barcode">Barkod</SelectItem><SelectItem value="qr">QR kod</SelectItem></SelectContent></Select></div></div></CardHeader><CardContent><div className="max-h-[480px] overflow-y-auto"><Table><TableHeader><TableRow><TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs hidden sm:table-cell">SKU</TableHead><TableHead className="text-xs hidden md:table-cell">Kategorija</TableHead><TableHead className="text-xs hidden md:table-cell">Količina</TableHead><TableHead className="text-xs hidden lg:table-cell">Dimenzije</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader><TableBody>{filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema</TableCell></TableRow> : filtered.map(item => (<TableRow key={item.id}><TableCell className="text-xs font-medium">{item.name}</TableCell><TableCell className="text-xs font-mono text-muted-foreground hidden sm:table-cell">{item.sku}</TableCell><TableCell className="text-xs hidden md:table-cell">{CATEGORIES[item.category]}</TableCell><TableCell className="text-xs hidden md:table-cell">{item.quantity.toLocaleString()}</TableCell><TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{item.size} — {item.material}</TableCell><TableCell>{getStatusBadge(item.status)}</TableCell><TableCell className="text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell></TableRow>))}</TableBody></Table></div></CardContent></Card></TabsContent>
+      <TabsContent value="dodaj" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Nova etiketa</CardTitle></CardHeader><CardContent><div className="grid gap-4"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'product'} onValueChange={v => setForm({ ...form, category: v as LabelItem['category'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Dimenzije</Label><Input className="text-xs" value={form.size || ''} onChange={e => setForm({ ...form, size: e.target.value })} placeholder="80x50mm" /></div><div className="grid gap-2"><Label className="text-xs">Količina</Label><Input className="text-xs" type="number" value={form.quantity || ''} onChange={e => setForm({ ...form, quantity: Number(e.target.value) })} /></div><div className="grid gap-2"><Label className="text-xs">Cena/kom (RSD)</Label><Input className="text-xs" type="number" step="0.01" value={form.costPerUnit || ''} onChange={e => setForm({ ...form, costPerUnit: Number(e.target.value) })} /></div><div className="grid gap-2"><Label className="text-xs">Materijal</Label><Input className="text-xs" value={form.material || ''} onChange={e => setForm({ ...form, material: e.target.value })} /></div></div><Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Dodaj</Button></div></CardContent></Card></TabsContent>
+      <TabsContent value="uredi" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Uredi</CardTitle></CardHeader><CardContent><div className="max-h-[500px] overflow-y-auto space-y-3">{data.map(item => (<div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg"><div className="flex-1 min-w-0"><div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span>{getStatusBadge(item.status)}<Badge className="text-[10px] bg-muted">{CATEGORIES[item.category]}</Badge></div><p className="text-xs text-muted-foreground truncate">{item.quantity} kom — {item.size}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div>))}</div></CardContent></Card></TabsContent>
+    </Tabs>
+    <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>Detalji</DialogTitle></DialogHeader>{detailItem && (<div className="space-y-3"><h3 className="text-sm font-semibold">{detailItem.name}</h3><div className="grid grid-cols-2 gap-3">{[['SKU', detailItem.sku],['Kategorija', CATEGORIES[detailItem.category]],['Dimenzije', detailItem.size],['Materijal', detailItem.material],['Boja', detailItem.color],['Količina', detailItem.quantity.toLocaleString()],['Cena/kom', `${detailItem.costPerUnit} RSD`],['Ukupno', `${(detailItem.quantity * detailItem.costPerUnit).toLocaleString()} RSD`],['Štampa', formatDate(detailItem.printDate)]].map(([l, v]) => (<div key={l} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{l}</div><div className="text-xs font-medium">{v}</div></div>))}</div><div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div></div>)}</DialogContent></Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Nova'}</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="grid grid-cols-2 gap-3"><div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as LabelItem['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivna</SelectItem><SelectItem value="inactive">Neaktivna</SelectItem></SelectContent></Select></div></div></div><DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
+  </div>)
 }

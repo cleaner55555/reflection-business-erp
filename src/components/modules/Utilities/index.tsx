@@ -1,138 +1,65 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
-import { Settings, Database, Server, HardDrive, Clock, ShieldCheck, AlertTriangle, RefreshCw, Activity, Cpu, MemoryStick, Globe, Zap, Users, FileText, Trash2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Plus, Search, Trash2, Pencil, Eye, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatDate } from '@/lib/helpers'
 
-interface SystemInfo {
-  version: string
-  uptime: string
-  lastBackup: string
-  dbSize: string
-  activeUsers: number
-  totalModules: number
-  apiCalls: number
-  memory: number
-  cpu: number
+type Utility = {
+  id: string; name: string; provider: string; accountNo: string; type: 'electricity' | 'water' | 'gas' | 'heating' | 'internet' | 'phone' | 'waste' | 'tv'
+  status: 'active' | 'disconnected' | 'overdue' | 'pending'; monthlyAmount: number; lastReading: number; lastReadingDate: string
+  lastBillDate: string; lastBillAmount: number; dueDate: string; paidDate: string; location: string; notes: string
 }
 
-const SYSTEM: SystemInfo = {
-  version: '2.4.1',
-  uptime: '15d 7h 32m',
-  lastBackup: '2024-06-15 02:00',
-  dbSize: '245 MB',
-  activeUsers: 12,
-  totalModules: 148,
-  apiCalls: 15420,
-  memory: 67,
-  cpu: 23,
-}
-
-const RECENT_LOGS = [
-  { time: '10:32:15', level: 'info', message: 'API: GET /api/invoices — 200 OK (145ms)' },
-  { time: '10:32:10', level: 'info', message: 'Backup automatski započet' },
-  { time: '10:31:45', level: 'warn', message: 'Spori upit: /api/reports/dashboard — 2.3s' },
-  { time: '10:30:00', level: 'info', message: 'Korisnik admin@reflection.rs ulogovan' },
-  { time: '10:28:30', level: 'error', message: 'API: POST /api/email — 500 SMTP greška' },
-  { time: '10:25:00', level: 'info', message: 'Zakazani izveštaj generisan' },
-  { time: '10:20:00', level: 'info', message: 'Backup završen — 245 MB (4m 32s)' },
-  { time: '10:15:00', level: 'info', message: 'Baza ažurirana: 3 nova zapisa' },
+const INITIAL: Utility[] = [
+  { id: '1', name: 'Struja — Glavna zgrada', provider: 'EPS Distribucija', accountNo: 'EPS-2024-00123', type: 'electricity', status: 'active', monthlyAmount: 35000, lastReading: 45678, lastReadingDate: '2024-06-01', lastBillDate: '2024-06-05', lastBillAmount: 38500, dueDate: '2024-06-20', paidDate: '2024-06-18', location: 'Glavna zgrada — priključak 1', notes: '' },
+  { id: '2', name: 'Voda — Glavna zgrada', provider: 'Beogradski vodovod', accountNo: 'BV-2024-04567', type: 'water', status: 'active', monthlyAmount: 8500, lastReading: 1234, lastReadingDate: '2024-06-01', lastBillDate: '2024-06-08', lastBillAmount: 7200, dueDate: '2024-06-25', paidDate: '', location: 'Glavna zgrada — priključak 2', notes: 'Zimski period — manja potrošnja' },
+  { id: '3', name: 'Gas — Magacin', provider: 'Srbijagas', accountNo: 'SG-2024-07890', type: 'gas', status: 'overdue', monthlyAmount: 18000, lastReading: 8901, lastReadingDate: '2024-05-01', lastBillDate: '2024-05-28', lastBillAmount: 22000, dueDate: '2024-06-10', paidDate: '', location: 'Magacin B — priključak 1', notes: 'Kasni sa plaćanjem — kažnjeni kamatama' },
+  { id: '4', name: 'Internet + TV — Biro', provider: 'SBB', accountNo: 'SBB-2024-11223', type: 'internet', status: 'active', monthlyAmount: 4500, lastReading: 0, lastReadingDate: '', lastBillDate: '2024-06-01', lastBillAmount: 4500, dueDate: '2024-06-15', paidDate: '2024-06-12', location: 'Biro — 3. sprat', notes: '100/10 Mbps + TV paket' },
+  { id: '5', name: 'Telefon — Kancelarija', provider: 'mts Business', accountNo: 'MTS-2024-33445', type: 'phone', status: 'active', monthlyAmount: 3200, lastReading: 0, lastReadingDate: '', lastBillDate: '2024-06-01', lastBillAmount: 3200, dueDate: '2024-06-15', paidDate: '2024-06-14', location: 'Kancelarija — 2. sprat', notes: 'Fiksni + 4 mobilna broja' },
+  { id: '6', name: 'Grejanje — Depo', provider: 'Beogradske elektrane', accountNo: 'BE-2024-55667', type: 'heating', status: 'disconnected', monthlyAmount: 0, lastReading: 0, lastReadingDate: '2024-04-01', lastBillDate: '2024-04-10', lastBillAmount: 0, dueDate: '', paidDate: '2024-04-08', location: 'Depo — sezonski', notes: 'Sezonski — uključeno novembar-mart' },
+  { id: '7', name: 'Komunalni otpad', provider: 'Gradska čistoća', accountNo: 'GC-2024-88901', type: 'waste', status: 'active', monthlyAmount: 5500, lastReading: 0, lastReadingDate: '', lastBillDate: '2024-06-01', lastBillAmount: 5500, dueDate: '2024-06-20', paidDate: '', location: 'Sve lokacije', notes: '5 kontejnera' },
+  { id: '8', name: 'Struja — Magacin B', provider: 'EPS Distribucija', accountNo: 'EPS-2024-22334', type: 'electricity', status: 'pending', monthlyAmount: 15000, lastReading: 22100, lastReadingDate: '2024-06-05', lastBillDate: '', lastBillAmount: 0, dueDate: '', paidDate: '', location: 'Magacin B — priključak 1', notes: 'Novi priključak — čeka se EPS aktivanje' },
 ]
 
-function getLogColor(level: string) {
-  return level === 'error' ? 'text-red-600 bg-red-50' : level === 'warn' ? 'text-amber-600 bg-amber-50' : 'text-slate-600 bg-slate-50'
-}
+const TYPES: Record<string, string> = { electricity: 'Struja', water: 'Voda', gas: 'Gas', heating: 'Grejanje', internet: 'Internet', phone: 'Telefon', waste: 'Otpad', tv: 'TV' }
+const STATUSES: Record<string, { color: string; label: string }> = { active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' }, disconnected: { color: 'bg-gray-100 text-gray-800', label: 'Isključeno' }, overdue: { color: 'bg-red-100 text-red-800', label: 'Kasni' }, pending: { color: 'bg-amber-100 text-amber-800', label: 'Na čekanju' } }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
-export function Alati() {
+export function Komunalije() {
+  const [data, setData] = useState<Utility[]>(INITIAL)
   const [loading, setLoading] = useState(true)
-  const [clearingCache, setClearingCache] = useState(false)
-  const [runningDiagnostics, setRunningDiagnostics] = useState(false)
+  const [search, setSearch] = useState(''); const [typeFilter, setTypeFilter] = useState(''); const [statusFilter, setStatusFilter] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<Utility | null>(null)
+  const [detailId, setDetailId] = useState<string | null>(null); const [form, setForm] = useState<Partial<Utility>>({}); const [activeTab, setActiveTab] = useState('pregled')
+  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const filtered = data.filter(i => { const ms = !search || [i.name, i.provider, i.location].some(v => v.toLowerCase().includes(search.toLowerCase())); const mt = !typeFilter || i.type === typeFilter; const ms2 = !statusFilter || i.status === statusFilter; return ms && mt && ms2 })
+  const handleDelete = (id: string) => { if (!confirm('Obrisati?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
+  const openCreate = () => { setEditItem(null); setForm({ name: '', provider: '', accountNo: '', type: 'electricity', status: 'active', monthlyAmount: 0, location: '', notes: '' }); setDialogOpen(true) }
+  const openEdit = (item: Utility) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
+  const handleSave = () => { if (!form.name) { toast.error('Unesite naziv'); return }; if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Utility : i)); toast.success('Ažurirano') } else { setData(prev => [{ id: Date.now().toString(), ...form } as Utility, ...prev]); toast.success('Kreirano') }; setDialogOpen(false) }
+  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
+  const detailItem = detailId ? data.find(i => i.id === detailId) : null
+  const monthlyTotal = data.filter(i => i.status === 'active').reduce((s, i) => s + i.monthlyAmount, 0)
 
-  useEffect(() => { setTimeout(() => setLoading(false), 200) }, [])
-
-  const handleClearCache = () => {
-    setClearingCache(true)
-    toast.info('Čišćenje keša...')
-    setTimeout(() => { setClearingCache(false); toast.success('Keš očišćen') }, 2000)
-  }
-
-  const handleDiagnostics = () => {
-    setRunningDiagnostics(true)
-    toast.info('Dijagnostika u toku...')
-    setTimeout(() => { setRunningDiagnostics(false); toast.success('Dijagnostika završena — sve OK') }, 3000)
-  }
-
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-48" /><div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div></div>
-
-  return (
-    <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><Settings className="h-6 w-6" />Алати и систем</h1><p className="text-sm text-muted-foreground">Системске информације, логови и алати за одржавање</p></div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Cpu className="h-3.5 w-3.5" />CPU</div><p className="text-2xl font-bold">{SYSTEM.cpu}%</p><div className="h-1.5 bg-muted rounded-full mt-2 overflow-hidden"><div className="h-full bg-emerald-500 rounded-full" style={{ width: `${SYSTEM.cpu}%` }} /></div></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><MemoryStick className="h-3.5 w-3.5" />RAM</div><p className="text-2xl font-bold">{SYSTEM.memory}%</p><div className="h-1.5 bg-muted rounded-full mt-2 overflow-hidden"><div className="h-full bg-amber-500 rounded-full" style={{ width: `${SYSTEM.memory}%` }} /></div></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Database className="h-3.5 w-3.5" />Baza</div><p className="text-2xl font-bold">{SYSTEM.dbSize}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Users className="h-3.5 w-3.5" />Aktivnih</div><p className="text-2xl font-bold">{SYSTEM.activeUsers}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Zap className="h-3.5 w-3.5" />API poziva</div><p className="text-2xl font-bold">{SYSTEM.apiCalls.toLocaleString()}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Clock className="h-3.5 w-3.5" />Uptime</div><p className="text-sm font-bold">{SYSTEM.uptime}</p></Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Server className="h-4 w-4" />Системске информације</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {[
-                { label: 'Verzija', value: `v${SYSTEM.version}` },
-                { label: 'Baza podataka', value: 'SQLite + Prisma' },
-                { label: 'Framework', value: 'Next.js 16' },
-                { label: 'Moduli', value: `${SYSTEM.totalModules} aktivnih` },
-                { label: 'Poslednji backup', value: SYSTEM.lastBackup },
-                { label: 'Veličina baze', value: SYSTEM.dbSize },
-              ].map(item => (
-                <div key={item.label} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                  <span className="text-xs text-muted-foreground">{item.label}</span>
-                  <span className="text-xs font-medium">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between"><CardTitle className="text-sm font-semibold flex items-center gap-2"><ShieldCheck className="h-4 w-4" />Алати</CardTitle></div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm" className="gap-2 text-xs h-9" onClick={handleClearCache} disabled={clearingCache}>{clearingCache ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />Очисти keš</Button>
-              <Button variant="outline" size="sm" className="gap-2 text-xs h-9" onClick={handleDiagnostics} disabled={runningDiagnostics}>{runningDiagnostics ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Activity className="h-3.5 w-3.5" />Dijagnostika</Button>
-              <Button variant="outline" size="sm" className="gap-2 text-xs h-9" onClick={() => toast.info('Export podataka...')}><FileText className="h-3.5 w-3.5" />Export</Button>
-              <Button variant="outline" size="sm" className="gap-2 text-xs h-9" onClick={() => toast.info('Reindex započet...')}><Database className="h-3.5 w-3.5" />Reindex</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Activity className="h-4 w-4" />Системски лог (задњих 50)</CardTitle></CardHeader>
-        <CardContent>
-          <div className="max-h-[400px] overflow-y-auto space-y-1">
-            {RECENT_LOGS.map((log, i) => (
-              <div key={i} className={`flex items-start gap-3 p-2 rounded text-xs font-mono ${getLogColor(log.level)}`}>
-                <span className="text-muted-foreground whitespace-nowrap">{log.time}</span>
-                <Badge className="text-[9px] px-1.5 py-0 h-4" variant={log.level === 'error' ? 'destructive' : log.level === 'warn' ? 'secondary' : 'outline'}>{log.level.toUpperCase()}</Badge>
-                <span className="flex-1">{log.message}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+  return (<div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div><h1 className="text-2xl font-bold tracking-tight">Komunalije</h1><p className="text-sm text-muted-foreground">Upravljanje komunalnim računima</p></div><Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novi račun</Button></div>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3"><Card className="p-4"><div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Zap className="h-3 w-3" />Ukupno</div><p className="text-2xl font-bold">{data.length}</p></Card><Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Aktivnih</div><p className="text-2xl font-bold text-emerald-700">{data.filter(i => i.status === 'active').length}</p></Card><Card className="p-4"><div className="text-xs text-red-600 mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Kasni</div><p className="text-2xl font-bold text-red-700">{data.filter(i => i.status === 'overdue').length}</p></Card><Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Mesečno</div><p className="text-lg font-bold">{formatRSD(monthlyTotal)}</p></Card></div>
+    <Tabs value={activeTab} onValueChange={setActiveTab}><TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
+      <TabsContent value="pregled" className="mt-4"><Card><CardHeader className="pb-3"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><CardTitle className="text-base">Lista</CardTitle><div className="flex gap-2 items-center"><div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-44 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div><Select value={typeFilter || 'all'} onValueChange={v => setTypeFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select><Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem><SelectItem value="active">Aktivan</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="disconnected">Isključeno</SelectItem></SelectContent></Select></div></div></CardHeader><CardContent><div className="max-h-[480px] overflow-y-auto"><Table><TableHeader><TableRow><TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs hidden sm:table-cell">Dobavljač</TableHead><TableHead className="text-xs hidden md:table-cell">Tip</TableHead><TableHead className="text-xs hidden md:table-cell">Iznos</TableHead><TableHead className="text-xs hidden lg:table-cell">Rok</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader><TableBody>{filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema</TableCell></TableRow> : filtered.map(item => (<TableRow key={item.id}><TableCell className="text-xs font-medium">{item.name}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{item.provider}</TableCell><TableCell className="text-xs hidden md:table-cell">{TYPES[item.type]}</TableCell><TableCell className="text-xs font-semibold hidden md:table-cell">{formatRSD(item.monthlyAmount)}</TableCell><TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{item.dueDate ? formatDate(item.dueDate) : '—'}</TableCell><TableCell>{getStatusBadge(item.status)}</TableCell><TableCell className="text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell></TableRow>))}</TableBody></Table></div></CardContent></Card></TabsContent>
+      <TabsContent value="dodaj" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Novi račun</CardTitle></CardHeader><CardContent><div className="grid gap-4"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Dobavljač</Label><Input className="text-xs" value={form.provider || ''} onChange={e => setForm({ ...form, provider: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'electricity'} onValueChange={v => setForm({ ...form, type: v as Utility['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Mesečni iznos</Label><Input className="text-xs" type="number" value={form.monthlyAmount || ''} onChange={e => setForm({ ...form, monthlyAmount: Number(e.target.value) })} /></div><div className="grid gap-2"><Label className="text-xs">Lokacija</Label><Input className="text-xs" value={form.location || ''} onChange={e => setForm({ ...form, location: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Br. računa</Label><Input className="text-xs" value={form.accountNo || ''} onChange={e => setForm({ ...form, accountNo: e.target.value })} /></div></div><Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Dodaj</Button></div></CardContent></Card></TabsContent>
+      <TabsContent value="uredi" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Uredi</CardTitle></CardHeader><CardContent><div className="max-h-[500px] overflow-y-auto space-y-3">{data.map(item => (<div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg"><div className="flex-1 min-w-0"><div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span>{getStatusBadge(item.status)}<Badge className="text-[10px] bg-muted">{TYPES[item.type]}</Badge></div><p className="text-xs text-muted-foreground truncate">{item.provider} — {formatRSD(item.monthlyAmount)}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div>))}</div></CardContent></Card></TabsContent>
+    </Tabs>
+    <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>Detalji</DialogTitle></DialogHeader>{detailItem && (<div className="space-y-3"><h3 className="text-sm font-semibold">{detailItem.name}</h3><div className="grid grid-cols-2 gap-3">{[['Dobavljač', detailItem.provider],['Br. računa', detailItem.accountNo],['Tip', TYPES[detailItem.type]],['Mesečni iznos', formatRSD(detailItem.monthlyAmount)],['Zadnji račun', detailItem.lastBillAmount ? formatRSD(detailItem.lastBillAmount) : '—'],['Datum računa', formatDate(detailItem.lastBillDate)],['Rok plaćanja', detailItem.dueDate ? formatDate(detailItem.dueDate) : '—'],['Plaćeno', detailItem.paidDate ? formatDate(detailItem.paidDate) : 'Ne'],['Lokacija', detailItem.location]].map(([l, v]) => (<div key={l} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{l}</div><div className="text-xs font-medium">{v || '—'}</div></div>))}</div><div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div></div>)}</DialogContent></Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Novi'}</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="grid grid-cols-2 gap-3"><div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as Utility['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="disconnected">Isključeno</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input className="text-xs" type="number" value={form.monthlyAmount || ''} onChange={e => setForm({ ...form, monthlyAmount: Number(e.target.value) })} /></div><div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'electricity'} onValueChange={v => setForm({ ...form, type: v as Utility['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div></div></div><DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
+  </div>)
 }
