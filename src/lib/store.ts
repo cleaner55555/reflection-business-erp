@@ -136,6 +136,8 @@ export type ModuleType =
   | 'poslovnice'
   | 'backup'
 
+import { type IndustryId } from './industrySets'
+
 export interface UserInfo {
   id: string
   email: string
@@ -163,6 +165,10 @@ interface AppState {
   activeModule: ModuleType
   setActiveModule: (module: ModuleType) => void
 
+  // Industry set
+  industrySet: IndustryId | null
+  setIndustrySet: (industry: IndustryId) => void
+
   // Enabled modules (empty = all enabled)
   enabledModules: string[] | null
   setEnabledModules: (modules: string[]) => void
@@ -188,6 +194,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Module navigation
   activeModule: 'dashboard',
   setActiveModule: (module) => set({ activeModule: module }),
+
+  // Industry set
+  industrySet: (() => {
+    if (typeof window === 'undefined') return null
+    return (localStorage.getItem('industrySet') as IndustryId) || null
+  })(),
+  setIndustrySet: (industry) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('industrySet', industry)
+    }
+    set({ industrySet: industry })
+  },
 
   // Enabled modules
   enabledModules: (() => {
