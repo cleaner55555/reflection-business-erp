@@ -1,164 +1,198 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger
-} from '@/components/ui/dialog'
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '@/components/ui/table'
-import { ScanBarcode } from 'lucide-react'
-import { Plus, Search } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { ScanBarcode, Plus, Search, Trash2, Pencil, Printer, Download, QrCode, Barcode, Tag, Package, AlertTriangle } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatDate } from '@/lib/helpers'
 
-const mockData = [
-  { id: '1', name: 'PROD-001', status: 'active', date: '2024-01-15', value: 'EAN-13' },
-  { id: '2', name: 'PROD-002', status: 'pending', date: '2024-02-20', value: 'EAN-13' },
-  { id: '3', name: 'PROD-003', status: 'completed', date: '2024-03-10', value: 'Code128' },
-  { id: '4', name: 'PROD-004', status: 'active', date: '2024-04-05', value: 'QR' },
-  { id: '5', name: 'PROD-005', status: 'pending', date: '2024-05-12', value: 'EAN-13' },
+interface BarcodeItem {
+  id: string
+  code: string
+  type: 'EAN13' | 'EAN8' | 'QR' | 'CODE128' | 'UPC'
+  productName: string
+  productId: string
+  category: string
+  createdAt: string
+}
+
+const INITIAL_ITEMS: BarcodeItem[] = [
+  { id: '1', code: '8601234567890', type: 'EAN13', productName: 'Hleb beli 500g', productId: 'prod-001', category: 'Hrana', createdAt: '2024-06-01T10:00:00' },
+  { id: '2', code: '8609876543210', type: 'EAN13', productName: 'Mleko 1L', productId: 'prod-002', category: 'Piće', createdAt: '2024-06-01T10:05:00' },
+  { id: '3', code: '8601112223334', type: 'EAN13', productName: 'Kafa zrna 250g', productId: 'prod-003', category: 'Hrana', createdAt: '2024-06-02T09:00:00' },
+  { id: '4', code: '8605556667778', type: 'EAN13', productName: 'Šećer 1kg', productId: 'prod-004', category: 'Hrana', createdAt: '2024-06-03T11:00:00' },
+  { id: '5', code: 'QR-INV-001', type: 'QR', productName: 'Faktura F-2024-0234', productId: 'inv-234', category: 'Fakture', createdAt: '2024-06-10T14:00:00' },
+  { id: '6', code: 'CODE128-001', type: 'CODE128', productName: 'Paket — dokumenta', productId: 'pkg-001', category: 'Logistika', createdAt: '2024-06-12T08:00:00' },
+  { id: '7', code: '8607778889990', type: 'EAN8', productName: 'Cokolada 100g', productId: 'prod-015', category: 'Hrana', createdAt: '2024-06-13T16:00:00' },
+  { id: '8', code: '8602223334445', type: 'EAN13', productName: 'Ulje 1L', productId: 'prod-008', category: 'Hrana', createdAt: '2024-06-14T10:30:00' },
 ]
 
+function getTypeBadge(type: string) {
+  const map: Record<string, { color: string; label: string }> = {
+    EAN13: { color: 'bg-blue-100 text-blue-800', label: 'EAN-13' },
+    EAN8: { color: 'bg-emerald-100 text-emerald-800', label: 'EAN-8' },
+    QR: { color: 'bg-violet-100 text-violet-800', label: 'QR Code' },
+    CODE128: { color: 'bg-amber-100 text-amber-800', label: 'Code 128' },
+    UPC: { color: 'bg-rose-100 text-rose-800', label: 'UPC-A' },
+  }
+  const s = map[type] || map.EAN13
+  return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
+}
+
 export function Barkod() {
+  const [items, setItems] = useState<BarcodeItem[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [open, setOpen] = useState(false)
-  const [data, setData] = useState(mockData)
-  const [formData, setFormData] = useState({ name: '', value: '' })
+  const [typeFilter, setTypeFilter] = useState('')
+  const [catFilter, setCatFilter] = useState('')
+  const [scanInput, setScanInput] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editing, setEditing] = useState<BarcodeItem | null>(null)
+  const [formData, setFormData] = useState({ code: '', type: 'EAN13' as BarcodeItem['type'], productName: '', productId: '', category: '' })
+  const [printMode, setPrintMode] = useState(false)
+  const [selectedForPrint, setSelectedForPrint] = useState<Set<string>>(new Set())
 
-  const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  )
+  useEffect(() => { setLoading(true); setTimeout(() => { setItems(INITIAL_ITEMS); setLoading(false) }, 200) }, [])
 
-  const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
+  const categories = [...new Set(items.map(i => i.category))]
+
+  const filtered = items.filter(i => {
+    const matchSearch = !search || i.code.includes(search) || i.productName.toLowerCase().includes(search.toLowerCase())
+    const matchType = !typeFilter || i.type === typeFilter
+    const matchCat = !catFilter || i.category === catFilter
+    return matchSearch && matchType && matchCat
+  })
+
+  const handleScan = () => {
+    if (!scanInput) return
+    const found = items.find(i => i.code === scanInput)
+    if (found) { toast.success(`Pronađeno: ${found.productName}`, { description: found.code }) }
+    else { toast.error('Barkod nije pronađen', { description: scanInput }) }
+    setScanInput('')
+  }
+
+  const handleNew = () => { setEditing(null); setFormData({ code: '', type: 'EAN13', productName: '', productId: '', category: '' }); setDialogOpen(true) }
+  const handleEdit = (item: BarcodeItem) => { setEditing(item); setFormData({ code: item.code, type: item.type, productName: item.productName, productId: item.productId, category: item.category }); setDialogOpen(true) }
+
+  const handleSave = () => {
+    if (!formData.code || !formData.productName) { toast.error('Popunite sva polja'); return }
+    if (editing) {
+      setItems(prev => prev.map(i => i.id === editing.id ? { ...i, ...formData } : i))
+      toast.success('Barkod ažuriran')
+    } else {
+      setItems(prev => [{ id: `bc-${Date.now()}`, ...formData, createdAt: new Date().toISOString() }, ...prev])
+      toast.success('Barkod kreiran')
     }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
+    setDialogOpen(false)
   }
 
   const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
+    if (!confirm('Obrisati barkod?')) return
+    setItems(prev => prev.filter(i => i.id !== id))
+    toast.success('Barkod obrisan')
   }
 
-  const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
+  const togglePrint = (id: string) => {
+    const next = new Set(selectedForPrint)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    setSelectedForPrint(next)
   }
+
+  const handleGenerate = (type: BarcodeItem['type']) => {
+    let code = ''
+    if (type === 'EAN13') code = '860' + String(Math.floor(Math.random() * 10000000000)).padStart(10, '0')
+    else if (type === 'EAN8') code = '860' + String(Math.floor(Math.random() * 10000)).padStart(4, '0')
+    else if (type === 'QR') code = `QR-${Date.now()}`
+    else code = `CODE128-${Math.floor(Math.random() * 9999)}`
+    setFormData(prev => ({ ...prev, code, type }))
+  }
+
+  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-64" /></div>
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Баркод</h1>
-          <p className="text-sm text-muted-foreground">SUBБаркод</p>
+        <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><ScanBarcode className="h-6 w-6" />Баркод и QR код</h1><p className="text-sm text-muted-foreground">Генерисање, управљање и штампање баркодова</p></div>
+        <div className="flex gap-2">
+          {selectedForPrint.size > 0 && <Button variant="outline" size="sm" className="gap-2" onClick={() => { toast.success(`Štampa ${selectedForPrint.size} barkodova...`); setSelectedForPrint(new Set()) }}><Printer className="h-4 w-4" />Штампај ({selectedForPrint.size})</Button>}
+          <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" />Novi barkod</Button>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" />Додај</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Додај</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Назив</label>
-                <Input
-                  placeholder="Унесите назив..."
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Вредност</label>
-                <Input
-                  placeholder="Унесите вредност..."
-                  value={formData.value}
-                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Откажи</Button>
-              <Button onClick={handleAdd}>Сачувај</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Укупно</CardTitle><ScanBarcode className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{data.length}</div><p className="text-xs text-muted-foreground">укупних ставки</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Активних</CardTitle><ScanBarcode className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{data.filter(d => d.status === 'active').length}</div><p className="text-xs text-muted-foreground">тренутно активних</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">На чекању</CardTitle><ScanBarcode className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{data.filter(d => d.status === 'pending').length}</div><p className="text-xs text-muted-foreground">чека обраду</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Завршено</CardTitle><ScanBarcode className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{data.filter(d => d.status === 'completed').length}</div><p className="text-xs text-muted-foreground">овог месеца</p></CardContent></Card>
+      <Card className="border-dashed">
+        <CardContent className="p-4">
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1"><ScanBarcode className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Skeniraj ili unesi barkod..." className="pl-8 h-10 text-sm font-mono" value={scanInput} onChange={e => setScanInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()} /></div>
+            <Button onClick={handleScan} variant="secondary">Skeniraj</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Barcode className="h-3.5 w-3.5" />Ukupno</div><p className="text-2xl font-bold">{items.length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-blue-600 mb-1"><Barcode className="h-3.5 w-3.5" />EAN-13</div><p className="text-2xl font-bold">{items.filter(i => i.type === 'EAN13').length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-violet-600 mb-1"><QrCode className="h-3.5 w-3.5" />QR kodovi</div><p className="text-2xl font-bold">{items.filter(i => i.type === 'QR').length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Tag className="h-3.5 w-3.5" />Kategorije</div><p className="text-2xl font-bold">{categories.length}</p></Card>
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle>Списак</CardTitle>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Претрага..."
-                className="pl-8"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <CardTitle className="text-base">Lista barkodova</CardTitle>
+            <div className="flex flex-wrap gap-2 items-center">
+              <div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-44 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div>
+              <Select value={typeFilter || 'all'} onValueChange={v => setTypeFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi tipovi</SelectItem><SelectItem value="EAN13">EAN-13</SelectItem><SelectItem value="EAN8">EAN-8</SelectItem><SelectItem value="QR">QR</SelectItem><SelectItem value="CODE128">Code 128</SelectItem></SelectContent></Select>
+              <Select value={catFilter || 'all'} onValueChange={v => setCatFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Sve kategorije</SelectItem>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Назив</TableHead>
-                <TableHead className="hidden sm:table-cell">Статус</TableHead>
-                <TableHead className="hidden md:table-cell">Датум</TableHead>
-                <TableHead className="hidden lg:table-cell">Вредност</TableHead>
-                <TableHead className="text-right">Акције</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Нема података</TableCell></TableRow>
-              ) : (
-                filtered.map((item) => (
+          <div className="max-h-[480px] overflow-y-auto">
+            <Table>
+              <TableHeader><TableRow>
+                <TableHead className="w-8"></TableHead><TableHead className="text-xs">Barkod</TableHead><TableHead className="text-xs">Proizvod</TableHead><TableHead className="text-xs hidden sm:table-cell">Tip</TableHead><TableHead className="text-xs hidden md:table-cell">Kategorija</TableHead><TableHead className="text-xs hidden lg:table-cell">Datum</TableHead><TableHead className="text-xs text-right">Akcije</TableHead>
+              </TableRow></TableHeader>
+              <TableBody>
+                {filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema barkodova</TableCell></TableRow> : filtered.map(item => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{getStatusBadge(item.status)}</TableCell>
-                    <TableCell className="hidden md:table-cell">{item.date}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{item.value}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDelete(item.id)}>Обриши</Button>
-                    </TableCell>
+                    <TableCell><input type="checkbox" checked={selectedForPrint.has(item.id)} onChange={() => togglePrint(item.id)} className="h-4 w-4 rounded" /></TableCell>
+                    <TableCell><span className="text-xs font-mono font-bold">{item.code}</span></TableCell>
+                    <TableCell><div><p className="text-xs font-medium">{item.productName}</p><p className="text-[10px] text-muted-foreground">{item.productId}</p></div></TableCell>
+                    <TableCell className="hidden sm:table-cell">{getTypeBadge(item.type)}</TableCell>
+                    <TableCell className="hidden md:table-cell"><Badge variant="outline" className="text-[10px]"><Package className="h-2.5 w-2.5 mr-1" />{item.category}</Badge></TableCell>
+                    <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{formatDate(item.createdAt)}</TableCell>
+                    <TableCell className="text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast.info('Barkod generisan za stampu...')} title="Stampaj"><Printer className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader><DialogTitle>{editing ? 'Izmeni barkod' : 'Novi barkod'}</DialogTitle></DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2"><Label className="text-xs">Barkod *</Label><div className="flex gap-2"><Input placeholder="8601234567890" className="font-mono" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /><Select value={formData.type} onValueChange={v => { setFormData(p => ({ ...p, type: v as BarcodeItem['type'] })); handleGenerate(v as BarcodeItem['type']) }}><SelectTrigger className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EAN13">EAN-13</SelectItem><SelectItem value="EAN8">EAN-8</SelectItem><SelectItem value="QR">QR</SelectItem><SelectItem value="CODE128">Code 128</SelectItem></SelectContent></Select></div></div>
+            <div className="grid gap-2"><Label className="text-xs">Naziv proizvoda *</Label><Input placeholder="Naziv..." value={formData.productName} onChange={e => setFormData(p => ({ ...p, productName: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2"><Label className="text-xs">Šifra proizvoda</Label><Input placeholder="prod-xxx" value={formData.productId} onChange={e => setFormData(p => ({ ...p, productId: e.target.value }))} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Input placeholder="Kategorija" value={formData.category} onChange={e => setFormData(p => ({ ...p, category: e.target.value }))} /></div>
+            </div>
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button onClick={handleSave}>{editing ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
-
