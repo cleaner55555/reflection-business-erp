@@ -1,4 +1,5 @@
 'use client'
+import { RefreshCw, BarChart3, ListChecks, ClipboardCheck, AlertOctagon, Target, Zap } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -14,9 +15,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import {
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
+
+import { OverviewTab, RequirementsTab, AuditsTab, NcTab, CapaTab, RisksTab, DialogBlock0, CreateTyperequirement } from './components'
 
 import { useCompliance } from './hooks'
 

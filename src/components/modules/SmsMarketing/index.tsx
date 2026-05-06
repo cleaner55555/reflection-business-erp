@@ -1,4 +1,5 @@
 'use client'
+import { Megaphone, Plus, RefreshCw, BarChart3, FileText, Users, MessageSquare, Hash, Settings } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -16,9 +17,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
-import {
 import { formatDate, formatRSD } from '@/lib/helpers'
 import { toast } from 'sonner'
+
+import { OverviewTab, CampaignsTab, TemplatesTab, ContactsTab, LogsTab, KeywordsTab, SettingsTab, NovaSMSkampanja, NoviSMStemplate, Novikontakt, Novakljunare, SelectedCampaignname } from './components'
 
 import { useSmsMarketing } from './hooks'
 

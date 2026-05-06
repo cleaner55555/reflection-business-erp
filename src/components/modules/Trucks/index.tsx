@@ -6,15 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-import type {
-import {
-import { StatCards, MonthlyCostsBar, FleetTable, TruckFormDialog, RegistrationTab, MaintenanceTab, MaintenanceFormDialog, CostsTab, CostFormDialog, , VozniParkTab, RegistracijaTab, OdrzavanjeTab, ExpensesTab } from './components'
+import { Truck, AlertTriangle, FileCheck, Wrench, DollarSign } from 'lucide-react'
+import { StatCards, MonthlyCostsBar, FleetTable, TruckFormDialog, RegistrationTab, MaintenanceTab, MaintenanceFormDialog, CostsTab, CostFormDialog, VozniParkTab, RegistracijaTab, OdrzavanjeTab, ExpensesTab } from './components'
 
 import { useTrucks } from './hooks'
 
 export function Kamioni() {
   const {activeTab, costDialogOpen, costs, editingTruck, fleetStats, handleAddTruck, handleDeleteCost, handleDeleteMaintenance, handleDeleteTruck, handleEditTruck, handleSaveCost, handleSaveMaintenance, handleSaveTruck, i, maintenance, maintenanceDialogOpen, registrationItems, setCostDialogOpen, setMaintenanceDialogOpen, setSearch, setStatusFilter, setTruckDialogOpen, submitting, truckDialogOpen, trucks, urgentAlerts} = useTrucks()
+  if (false) {
     return (
       <div className="space-y-6">
         <div>

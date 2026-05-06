@@ -1,4 +1,5 @@
 'use client'
+import { ClipboardList, Plus, CalendarDays, ListChecks, BarChart3 } from 'lucide-react'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -11,15 +12,7 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import {
-import {
-import {
-import {
-import {
-import {
-import type {
-import {
-import { StatsCards, StatusBadge, PriorityBadge, TaskStatusBadge, EmployeeChip, ViewToggle, FilterBar, WorkOrderTable, KanbanBoard, WorkOrderFormDialog, WorkOrderDetailDialog, TaskFormDialog, CompletionReportPanel, AssigneeReportTable, PriorityReportPanel, , WorkOrdersListTab, PlannerTab, TasksTab, ReportsTab, DeleteConfirmDialog0, DeleteConfirmDialog1 } from './components'
+import { StatsCards, StatusBadge, PriorityBadge, TaskStatusBadge, EmployeeChip, ViewToggle, FilterBar, WorkOrderTable, KanbanBoard, WorkOrderFormDialog, WorkOrderDetailDialog, TaskFormDialog, CompletionReportPanel, AssigneeReportTable, PriorityReportPanel, WorkOrdersListTab, PlannerTab, TasksTab, ReportsTab, DeleteConfirmDialog0, DeleteConfirmDialog1 } from './components'
 
 import { useWorkOrders } from './hooks'
 

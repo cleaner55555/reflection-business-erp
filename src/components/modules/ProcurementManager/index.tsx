@@ -1,4 +1,5 @@
 'use client'
+import { Star, PackageSearch, Plus, RefreshCw, BarChart3, FileText, Building2, TrendingUp } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -14,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
-import {
+import { OverviewTab, RequisitionsTab, SuppliersTab, AnalyticsTab, SelectedPRprNumbersele, SelectedSuppliername, EditingPRIzmenizahtev, Brisanjezahteva } from './components'
+
 import { useProcurementManager } from './hooks'
 
 export function MenadzerNabavke() {

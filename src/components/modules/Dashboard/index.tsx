@@ -6,18 +6,17 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import {
-import {
+import { AlertCircle, BoxIcon, DollarSign, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { motion } from 'framer-motion'
-import {
 import { formatRSD, formatRSDShort, formatDate, formatDateTime, getStatusLabel, getStatusColor, getMonthLabel } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { useAppStore, type ModuleType } from '@/lib/store'
 
 import { useDashboard } from './hooks'
+import { TodaystasksactivityfeedSection, ChartsrowSection, BottomrowSection } from './components'
 
 export function Dashboard() {
-  const {0, 3, 50, 8, 80, container, groupedActivity, i, item, kpiCards, lowStock, monthlyRevenueChart, pieData, quickActions, recentInvoices} = useDashboard()
+  const {container, groupedActivity, i, item, kpiCards, lowStock, monthlyRevenueChart, pieData, quickActions, recentInvoices} = useDashboard()
   return (
     <motion.div
       className="space-y-6"
@@ -103,7 +102,9 @@ export function Dashboard() {
       </motion.div>
 
       {/* Today's Tasks + Activity Feed */}
+      <motion.div variants={item}>
         <TodaystasksactivityfeedSection groupedActivity={groupedActivity} item={item} />
+      </motion.div>
       <motion.div variants={item} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         {kpiCards.map((kpi) => (
           <Card key={kpi.title} className="relative overflow-hidden">
@@ -145,10 +146,10 @@ export function Dashboard() {
       </motion.div>
 
       {/* Charts Row */}
-        <ChartsrowSection 0={0} 3={3} 50={50} 8={8} 80={80} false={false} item={item} monthlyRevenueChart={monthlyRevenueChart} pieData={pieData} />
+      <motion.div variants={item}>
+        <ChartsrowSection monthlyRevenueChart={monthlyRevenueChart} pieData={pieData} />
         <BottomrowSection i={i} item={item} lowStock={lowStock} recentInvoices={recentInvoices} />
-        </Card>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

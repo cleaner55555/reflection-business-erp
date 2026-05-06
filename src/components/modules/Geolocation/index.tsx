@@ -1,4 +1,5 @@
 'use client'
+import { MapPin, Plus, RefreshCw, BarChart3, Users, Target, CalendarDays } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -14,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
-import {
+import { OverviewTab, EmployeesTab, GeofencesTab, ActivitiesTab, SelectedGeofenceIzmenige, SelectedEmployeename, Brisanjegeoogranienja } from './components'
+
 import { useGeolocation } from './hooks'
 
 export function Geolokacija() {

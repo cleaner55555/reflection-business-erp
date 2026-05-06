@@ -7,6 +7,7 @@ import {
   MODULE_GROUPS, SUGGESTIONS, ALL_MODULE_IDS,
   StepIndicator, DescribeStep, AnalyzingStep, ConfirmStep,
 } from './components'
+import type { AIResult } from './types'
 
 // ─── Export ──────────────────────────────────────────────
 let _setOpen: (open: boolean) => void = () => {}
@@ -18,7 +19,7 @@ export function AISetupWizard() {
   const [step, setStep] = useState(1)
   const [description, setDescription] = useState('')
   const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set())
-  const [aiResult, setAiResult] = useState<{ modules: string[]; industry: string; explanation: string } | null>(null)
+  const [aiResult, setAiResult] = useState<AIResult | null>(null)
   const [error, setError] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 

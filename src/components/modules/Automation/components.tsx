@@ -16,33 +16,7 @@ import { Bot, Plus, Search, Pencil, Trash2, Play, Pause, Clock, AlertTriangle, C
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
 
-// ==================== TYPES ====================
-
-interface AutomationRule {
-  id: string
-  name: string
-  description: string
-  trigger: string
-  action: string
-  status: 'active' | 'paused' | 'error' | 'draft'
-  lastRun: string | null
-  nextRun: string | null
-  runCount: number
-  successCount: number
-  errorCount: number
-  createdAt: string
-  updatedAt: string
-}
-
-interface AutomationLog {
-  id: string
-  ruleId: string
-  ruleName: string
-  status: 'success' | 'error' | 'warning'
-  message: string
-  duration: number
-  timestamp: string
-}
+import type { AutomationRule, AutomationLog } from './types'
 
 // ==================== MOCK DATA ====================
 

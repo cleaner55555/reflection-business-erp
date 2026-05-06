@@ -1,4 +1,5 @@
 'use client'
+import { RefreshCw, Plus, BarChart3, Package, Truck, MapPin } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -13,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import {
+import { OverviewTab, OrdersTab, CarriersTab, TrackingTab, Novapoiljka, Novikurir, PraenjepoiljkeselectedOrd } from './components'
+
 import { useShipping } from './hooks'
 
 export function Shipping() {

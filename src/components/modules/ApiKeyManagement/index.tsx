@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import {
+import { Key, Plus, Check, Copy, Trash2 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,12 +12,9 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-import {
-import {
-import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table'
 
 import { useApiKeyManagement } from './hooks'
 import { AlertDialogBlock1, DialogBlock0, ApiInfoCard } from './components'
@@ -51,6 +48,7 @@ export function ApiKeyManagement() {
       {/* ============ INFO CARD ============ */}
       <motion.div {...fadeInUp} transition={{ delay: 0.05 }}>
         <ApiInfoCard  />
+      </motion.div>
 
       {/* ============ KEYS TABLE ============ */}
       <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>

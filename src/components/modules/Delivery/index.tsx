@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, Package } from 'lucide-react'
 import { toast } from 'sonner'
-import type { DeliveryItem } from './components'
+import type { DeliveryItem } from './types'
 import { INITIAL_DELIVERIES, formatCurrency,
   DeliveryListTab, TrackingTab, OverviewTab, DetailDialog, DeliveryFormDialog,
 } from './components'
@@ -51,7 +51,7 @@ export function Dostava() {
   }
 
   const handleStatusChange = (id: string, newStatus: DeliveryItem['status']) => {
-    setData(prev => prev.map(d => d.id === id ? { ...d, status: newStatus, history: [...d.history, { date: new Date().toLocaleString('sr-RS'), status: newStatus, location: d.currentLocation, note: `Status changed to ${{ STATUSES[newStatus]?.label }}` }] } : d))
+    setData(prev => prev.map(d => d.id === id ? { ...d, status: newStatus, history: [...d.history, { date: new Date().toLocaleString('sr-RS'), status: newStatus, location: d.currentLocation, note: `Status changed to ${STATUSES[newStatus]?.label}` }] } : d))
     toast.success(`Status promenjen`)
   }
 

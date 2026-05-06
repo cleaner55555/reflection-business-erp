@@ -129,7 +129,7 @@ export const SUGGESTIONS = [
 
 // ─── Wizard Sub-Components ───────────────────────────────
 
-interface StepIndicatorProps { step: number }
+import type { StepIndicatorProps } from './types'
 
 export function StepIndicator({ step }: StepIndicatorProps) {
   return (
@@ -146,13 +146,7 @@ export function StepIndicator({ step }: StepIndicatorProps) {
   )
 }
 
-interface DescribeStepProps {
-  description: string
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>
-  error: string
-  onDescriptionChange: (v: string) => void
-  onAnalyze: () => void
-}
+import type { DescribeStepProps } from './types'
 
 export function DescribeStep({ description, textareaRef, error, onDescriptionChange, onAnalyze }: DescribeStepProps) {
   return (
@@ -193,15 +187,7 @@ export function AnalyzingStep() {
   )
 }
 
-interface ConfirmStepProps {
-  aiResult: { modules: string[]; industry: string; explanation: string } | null
-  selectedModules: Set<string>
-  onToggleModule: (id: string) => void
-  onToggleGroup: (groupModules: { id: string }[]) => void
-  onSetSelectedModules: (s: Set<string>) => void
-  onBack: () => void
-  onConfirm: () => void
-}
+import type { ConfirmStepProps } from './types'
 
 export function ConfirmStep({ aiResult, selectedModules, onToggleModule, onToggleGroup, onSetSelectedModules, onBack, onConfirm }: ConfirmStepProps) {
   return (

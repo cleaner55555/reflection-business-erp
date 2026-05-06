@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { HeartHandshake, Users, Activity, TrendingUp, Megaphone, Settings2 } from 'lucide-react'
 import type * as Types from './types'
 import * as Data from './data'
-import { scoreColor, daysUntil, initials, avatarColor, parseTags, PipelineTab, DealDetail, ForecastTab, KontaktiTab, AktivnostiTab, IzvoriTab } from './components'
+import { scoreColor, daysUntil, initials, avatarColor, parseTags, PipelineTab, DealDetail, ForecastTab, KontaktiTab, AktivnostiTab, IzvoriTab, AutomacijeTab } from './components'
 
 export function CRM() {
   const { t } = useTranslation()

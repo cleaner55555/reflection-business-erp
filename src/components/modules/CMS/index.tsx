@@ -1,9 +1,5 @@
 'use client'
-
-'use client'
-
-'use client'
-
+import { RefreshCw, BarChart3, FileText, Layout, Image, RotateCcw, Globe } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -19,8 +15,9 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import {
-import { DialogBlock1, DialogBlock0 } from './components'
+import { Calendar } from '@/components/ui/calendar'
+
+import { DialogBlock1, DialogBlock0, PregledTab, ContentTab, TypesTab, MediaTab, RevisionsTab, SchedulerTab, SeoTabExtended } from './components'
 
 export function CMS() {
   const {activeTab, allTags, catFilter, content, dialogOpen, drafts, editing, editorOpen, filtered, folderFilter, folders, handleCreate, handleSave, i, item, k, lang, loadData, media, mockAuthors, mockCategories, mockContentTypes, openCreate, published, recentContent, recentlyPublished, revisions, runSeoAnalysis, sc, scheduled, search, selected, selectedContent, seoPreview, setActiveTab, setCatFilter, setContent, setDialogOpen, setEditorOpen, setFolderFilter, setSelected, setSelectedContent, setStatusFilter, setTypeFilter, setUploadOpen, sitemapItems, statusFilter, tag, toolbarActions, topContent, typeFilter, typePie, types, uploadOpen} = useCMS()
@@ -175,11 +172,7 @@ function generateTypePie(content: ContentItem[]) {
 
 // ============ MAIN COMPONENT ============
 
-import { DialogBlock1, DialogBlock0 } from './components'
-
 import { useCMS } from './hooks'
-import {
-import { DialogBlock1, DialogBlock0 } from './components'
 
 export function CMS() {
   const {activeTab, content, loadData, setActiveTab, setContent} = useCMS()

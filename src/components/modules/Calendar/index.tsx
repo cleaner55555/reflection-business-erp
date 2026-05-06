@@ -1,4 +1,5 @@
 'use client'
+import { CalendarDays, Sun, Plus, RefreshCw, LayoutGrid, Grid3X3, List, BarChart3 } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -15,7 +16,8 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
+import { MonthTab, WeekTab, ListTab, OverviewTabContent, EditingEventIzmenidogaa, DialogBlock1, DialogBlock2, CalendarInfoSection } from './components'
+
 import { useCalendar } from './hooks'
 
 export function Kalendar() {

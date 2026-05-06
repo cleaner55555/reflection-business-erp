@@ -1,3 +1,5 @@
+import type { ModuleType } from '@/lib/store'
+
 export interface SearchResult {
   id: string
   name: string
@@ -10,10 +12,15 @@ export interface SearchResult {
     email?: string
     phone?: string
   }
+}
 
 export interface SearchGroup {
   type: string
   label: string
-  icon: React.ReactNode
   results: SearchResult[]
+}
+
+export interface SearchFilter {
+  key: string
+  label: string
 }

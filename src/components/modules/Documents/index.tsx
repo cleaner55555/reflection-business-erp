@@ -1,4 +1,5 @@
 'use client'
+import { FolderPlus, Plus, RefreshCw, FileText, FolderOpen, BarChart3, CheckCircle2 } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -16,9 +17,10 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
+
+import { AllTab, FoldersTab, OverviewTab, EditingDocIzmenidokument, DialogBlock1, DialogBlock2, DialogBlock3 } from './components'
 
 import { useDocuments } from './hooks'
 

@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Navigation, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import type { RouteItem } from './components'
+import type { RouteItem } from './types'
 import { INITIAL_ROUTES, formatCurrency,
   RouteList, OverviewTab, DetailDialog, RouteFormDialog,
 } from './components'

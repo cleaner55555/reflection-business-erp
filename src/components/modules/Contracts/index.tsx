@@ -1,4 +1,5 @@
 'use client'
+import { RefreshCw, Plus, BarChart3, FileSignature, FolderOpen, Briefcase } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -15,7 +16,8 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import {
+import { OverviewTab, ContractsTab, RenewalsTab, DocumentsTab, TypesTab, Noviugovor, Detaljiugovora, Obnavljanjeugovora } from './components'
+
 import { useContracts } from './hooks'
 
 export function Ugovori() {

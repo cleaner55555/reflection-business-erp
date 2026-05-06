@@ -266,7 +266,7 @@ interface FormProps {
   onOpenChange: (open: boolean) => void; onFieldChange: (f: string, v: unknown) => void; onSave: () => void; onEditItemChange: (item: RouteItem | null) => void
 }
 
-export function RouteFormDialog({ open, editItem, formData, onOpenChange, onFieldChange, onSave, onEditItemChange }: FormProps) {
+export function RouteFormDialog({ open, editItem, formData, onOpenChange, onFieldChange, onSave, onEditItemChange }: RouteFormProps) {
   return (
     <Dialog open={open} onOpenChange={o => { onOpenChange(o); if (!o) onEditItemChange(null) }}>
       <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">

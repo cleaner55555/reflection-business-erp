@@ -13,29 +13,7 @@ import { Progress } from '@/components/ui/progress'
 import { Search, Trash2, Pencil, Eye, Package, Truck, Clock, MapPin, CheckCircle2, AlertTriangle, XCircle, BarChart3, FileText, CalendarDays, User, Phone, Plus } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 
-// ─── Types ───────────────────────────────────────────────
-export interface DeliveryItem {
-  id: string
-  trackingNumber: string
-  senderName: string
-  senderPhone: string
-  senderAddress: string
-  recipientName: string
-  recipientPhone: string
-  recipientAddress: string
-  status: 'pending_pickup' | 'picked_up' | 'in_transit' | 'out_for_delivery' | 'delivered' | 'failed' | 'returned'
-  priority: 'express' | 'standard' | 'economy'
-  weight: number
-  dimensions: string
-  codAmount: number
-  shippingCost: number
-  estimatedDelivery: string
-  actualDelivery: string | null
-  assignedDriver: string
-  currentLocation: string
-  notes: string
-  history: { date: string; status: string; location: string; note: string }[]
-}
+import type { DeliveryItem } from './types'
 
 // ─── Data ────────────────────────────────────────────────
 export const INITIAL_DELIVERIES: DeliveryItem[] = [
@@ -160,18 +138,7 @@ function getStatusIcon(s: string) {
 
 // ─── Sub-Components ──────────────────────────────────────
 
-interface DeliveryListTabProps {
-  filtered: DeliveryItem[]
-  search: string
-  statusFilter: string
-  priorityFilter: string
-  onSearch: (v: string) => void
-  onStatusFilter: (v: string) => void
-  onPriorityFilter: (v: string) => void
-  onView: (id: string) => void
-  onEdit: (item: DeliveryItem) => void
-  onDelete: (id: string) => void
-}
+import type { DeliveryListTabProps } from './types'
 
 export function DeliveryListTab({ filtered, search, statusFilter, priorityFilter, onSearch, onStatusFilter, onPriorityFilter, onView, onEdit, onDelete }: DeliveryListTabProps) {
   return (
@@ -224,11 +191,7 @@ export function DeliveryListTab({ filtered, search, statusFilter, priorityFilter
   )
 }
 
-interface TrackingTabProps {
-  data: DeliveryItem[]
-  onStatusChange: (id: string, status: DeliveryItem['status']) => void
-  onView: (id: string) => void
-}
+import type { TrackingTabProps } from './types'
 
 export function TrackingTab({ data, onStatusChange, onView }: TrackingTabProps) {
   const active = data.filter(d => !['delivered', 'returned'].includes(d.status))
@@ -276,10 +239,7 @@ export function TrackingTab({ data, onStatusChange, onView }: TrackingTabProps) 
   )
 }
 
-interface OverviewTabProps {
-  data: DeliveryItem[]
-  stats: { total: number; pending: number; inTransit: number; delivered: number; failed: number; returned: number; totalRevenue: number; totalCOD: number }
-}
+import type { OverviewTabProps } from './types'
 
 export function OverviewTab({ data, stats }: OverviewTabProps) {
   return (
@@ -349,11 +309,7 @@ export function OverviewTab({ data, stats }: OverviewTabProps) {
   )
 }
 
-interface DetailDialogProps {
-  detailItem: DeliveryItem | null
-  onClose: () => void
-  onStatusChange: (id: string, status: DeliveryItem['status']) => void
-}
+import type { DetailDialogProps } from './types'
 
 export function DetailDialog({ detailItem, onClose, onStatusChange }: DetailDialogProps) {
   if (!detailItem) return null
@@ -421,23 +377,9 @@ export function DetailDialog({ detailItem, onClose, onStatusChange }: DetailDial
   )
 }
 
-interface FormData {
-  senderName: string; senderPhone: string; senderAddress: string
-  recipientName: string; recipientPhone: string; recipientAddress: string
-  priority: DeliveryItem['priority']; weight: number; dimensions: string; codAmount: number; notes: string
-}
+import type { DeliveryFormData, DeliveryFormDialogProps } from './types'
 
-interface FormDialogProps {
-  open: boolean
-  editItem: DeliveryItem | null
-  formData: FormData
-  onOpenChange: (open: boolean) => void
-  onFormFieldChange: (field: keyof FormData, value: string | number) => void
-  onSave: () => void
-  onEditItemChange: (item: DeliveryItem | null) => void
-}
-
-export function DeliveryFormDialog({ open, editItem, formData, onOpenChange, onFormFieldChange, onSave, onEditItemChange }: FormDialogProps) {
+export function DeliveryFormDialog({ open, editItem, formData, onOpenChange, onFormFieldChange, onSave, onEditItemChange }: DeliveryFormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={o => { onOpenChange(o); if (!o) onEditItemChange(null) }}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">

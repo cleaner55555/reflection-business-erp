@@ -1,4 +1,5 @@
 'use client'
+import { MessageCircleReply, Plus, RefreshCw, BarChart3, MessageSquare, FileText, Bot, Send, Settings, PhoneIncoming, Users } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -16,9 +17,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
-import {
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
+
+import { OverviewTab, MessagesTab, TemplatesTab, ChatbotTab, CampaignsTab, SettingsTab, Novaporuka, EditingTemplateIzmenitem, EditingAutoReplyIzmeniau, Novakampanja } from './components'
 
 import { useMessaging } from './hooks'
 

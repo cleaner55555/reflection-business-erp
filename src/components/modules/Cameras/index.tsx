@@ -1,4 +1,5 @@
 'use client'
+import { Camera, Plus, RefreshCw, BarChart3, Video, FileText, Settings } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
@@ -14,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
-import {
+import { OverviewTab, CamerasTab, RecordingsTab, SettingsTab, EditingCameraIzmenikamer, SelectedCameraname, Brisanjekamere } from './components'
+
 import { useCameras } from './hooks'
 
 export function Kamere() {

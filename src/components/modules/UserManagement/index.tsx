@@ -1,10 +1,8 @@
 'use client'
 
-'use client'
-
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import {
+import { Users, Plus } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -15,18 +13,11 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-import {
-import {
-import {
-import {
 import { useUserManagement } from './hooks'
 import { AlertDialogBlock2, DialogBlock1, DialogBlock0, UsersSearchAndTable } from './components'
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table'
 
-import { useUserManagement } from './hooks'
-import { AlertDialogBlock2, DialogBlock1, DialogBlock0 } from './components'
-
-  const {6, addDialogOpen, addSubmitting, deactivatingUser, deleteDialogOpen, deleteSubmitting, deletingUser, editDialogOpen, editRoleId, editSubmitting, editingUser, filteredUsers, handleAddUser, handleEditRole, i, loading, onAdd, roles, rowVariant, searchQuery, setEditRoleId, staggerContainer, users} = useUserManagement()
+function _SkeletonState() {
   return (
     <Card>
       <CardContent className="p-0">

@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Warehouse, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/helpers'
-import type { DockAppointment } from './components'
+import type { DockAppointment } from './types'
 import { INITIAL_DATA, STATUSES, PRIORITIES,
   ScheduleTab, DocksTab, OverviewTab, DetailDialog, FormDialog,
 } from './components'

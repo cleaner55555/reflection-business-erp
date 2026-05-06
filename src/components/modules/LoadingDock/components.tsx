@@ -16,14 +16,7 @@ import { Plus, Search, Trash2, Pencil, Eye, Warehouse, Truck, Clock, Package, Ar
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
-export interface DockAppointment {
-  id: string; dockNumber: string; dockType: 'loading' | 'unloading' | 'both'
-  vehiclePlate: string; driverName: string; companyName: string; appointmentDate: string
-  scheduledTime: string; actualStart: string | null; actualEnd: string | null
-  status: 'scheduled' | 'checked_in' | 'in_progress' | 'completed' | 'no_show' | 'cancelled'
-  cargoType: string; cargoWeight: number; cargoUnit: string; palletCount: number
-  priority: 'urgent' | 'normal' | 'low'; notes: string; doorAssignment: string; handlingInstructions: string
-}
+import type { DockAppointment } from './types'
 
 export const INITIAL_DATA: DockAppointment[] = [
   { id: '1', dockNumber: 'R-01', dockType: 'unloading', vehiclePlate: 'BG-123-AB', driverName: 'Marko Petrović', companyName: 'Distributerija d.o.o.', appointmentDate: '2024-06-15', scheduledTime: '06:00', actualStart: '06:15', actualEnd: '07:45', status: 'completed', cargoType: 'Elektronika', cargoWeight: 5200, cargoUnit: 'kg', palletCount: 24, priority: 'normal', notes: '', doorAssignment: 'Vrata 1', handlingInstructions: 'Pažljivo, lomljivo' },

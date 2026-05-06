@@ -6,19 +6,16 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-import {
 import { Plus, Search, Filter, Download, Clock, List, BarChart3, Settings, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import type {
-import {
-import { ActiveTimer, StatsCards, TimeEntriesTable, EntryFormDialog, ActivityLog, ProjectReportTable, EmployeeReportTable, WeeklySummaryTable, ReportSummaryCards, ReportFilterBar, SettingsPanel, , PracenjeTab, ReportsTab, ActivitiesTab, SettingsTab, DeleteConfirmDialog0 } from './components'
+import { ActiveTimer, StatsCards, TimeEntriesTable, EntryFormDialog, ActivityLog, ProjectReportTable, EmployeeReportTable, WeeklySummaryTable, ReportSummaryCards, ReportFilterBar, SettingsPanel, PracenjeTab, ReportsTab, ActivitiesTab, SettingsTab, DeleteConfirmDialog0 } from './components'
 
 import { useTimeTracking } from './hooks'
 
 export function VremenskiTrag() {
   const {activeTab, activities, confirmDelete, deleteDialogOpen, editingEntry, entries, entryDialogOpen, filteredEntries, handleDeleteEntry, handleEditEntry, handleExportCSV, handleGenerateReports, handleStatusChange, handleTimerPause, handleTimerReset, handleTimerResume, handleTimerStart, handleTimerStop, i, mockEmployees, mockProjects, mockTasks, reportType, setActiveTab, setDeleteDialogOpen, setEntryDialogOpen, setReportDateFrom, setReportDateTo, setReportEmployeeId, setReportProjectId, setSettings, setTrackingEmployeeFilter, setTrackingProjectFilter, setTrackingStatusFilter, trackingDateFrom, trackingDateTo, trackingEmployeeFilter, trackingProjectFilter, trackingSearch, trackingStatusFilter} = useTimeTracking()
+  if (false) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">

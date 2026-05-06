@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { BarChart3, Users, DollarSign, Clock, GitBranch, Star } from 'lucide-react'
 import type * as Types from './types'
 import * as Data from './data'
-import { PregledTab, ZaposleniListTab, PlateTab, PrisustvoTab } from './components'
+import { PregledTab, ZaposleniListTab, PlateTab, PrisustvoTab, OceneTab, OrganigramTab } from './components'
 
 export function Zaposleni() {
   const { t } = useTranslation()
