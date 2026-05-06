@@ -27,7 +27,7 @@ import { Plus, Search, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, BookOpen,
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import { ReportDownloadButton } from './ReportDownloadButton'
+import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton/components'
 
 interface Transaction {
   id: string

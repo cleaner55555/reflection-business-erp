@@ -68,7 +68,7 @@ import {
 } from 'lucide-react'
 import { formatRSD, formatRSDShort, getStatusLabel, getMonthLabel } from '@/lib/helpers'
 import { useTranslation } from '@/lib/i18n'
-import { ReportDownloadButton } from './ReportDownloadButton'
+import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton/components'
 
 // ── Constants ──────────────────────────────────────────────────────
 const COLORS = ['#059669', '#0891b2', '#7c3aed', '#ea580c', '#db2777', '#0284c7', '#ca8a04']
@@ -1754,7 +1754,7 @@ import {
 } from 'lucide-react'
 import { formatRSD, formatRSDShort, getStatusLabel, getMonthLabel } from '@/lib/helpers'
 import { useTranslation } from '@/lib/i18n'
-import { ReportDownloadButton } from './ReportDownloadButton'
+import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton/components'
 
 
 // ── Constants ──────────────────────────────────────────────────────

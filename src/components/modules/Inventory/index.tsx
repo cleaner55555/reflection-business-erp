@@ -38,9 +38,9 @@ import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, Ar
 import { toast } from 'sonner'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import { ReportDownloadButton } from './ReportDownloadButton'
+import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton/components'
 import { LotoviTab, InventuraTab, TransferiTab } from './InventoryEnhanced'
-import { BarkodiTab, ZoneMapTab, PickingTab, PrijemTab } from './WmsEnhanced'
+import { BarkodiTab, ZoneMapTab, PickingTab, PrijemTab } from '@/components/modules/WmsEnhanced/components'
 
 // ==================== INTERFACES ====================
 

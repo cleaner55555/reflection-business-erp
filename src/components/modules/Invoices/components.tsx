@@ -39,7 +39,7 @@ import { RecurringInvoices } from './RecurringInvoices'
 import { RateOtplateTab, FiskalizacijaTab } from './InvoicesEnhanced'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import { ReportDownloadButton } from './ReportDownloadButton'
+import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton/components'
 import { generateInvoicePDF, downloadPDF, type InvoiceData } from '@/lib/reports/pdf-generator'
 
 
