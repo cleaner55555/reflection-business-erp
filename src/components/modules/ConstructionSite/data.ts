@@ -1,43 +1,24 @@
-export const mockData = [
-  { id: '1', name: 'Пројекат А', status: 'active', date: '2024-01-15', value: '65%' },
-  { id: '2', name: 'Пројекат Б', status: 'pending', date: '2024-02-20', value: '42%' },
-  { id: '3', name: 'Пројекат В', status: 'completed', date: '2024-03-10', value: '88%' },
-  { id: '4', name: 'Пројекат Г', status: 'active', date: '2024-04-05', value: '23%' },
-  { id: '5', name: 'Пројекат Д', status: 'pending', date: '2024-05-12', value: '77%' },
+import type { ConstructionSite } from './types'
+
+export const INITIAL_DATA: ConstructionSite[] = [
+  { id: '1', name: 'Naselje Sunčani breg - Blok A', code: 'CS-2024-001', type: 'residential', status: 'structural', address: 'Bulevar Svetog Save 125', city: 'Novi Sad', investor: 'Invest Plus d.o.o.', contractor: 'Graditelj d.o.o.', projectManager: 'Milan Đorđević', workers: 45, budget: 85000000, spent: 38000000, startDate: '2024-03-01', endDate: null, progress: 42, area: 4500, floors: 5, units: 60, notes: 'Završena kotlovnica, u toku armatura sprat 3', tasks: [{ name: 'Armatura sprat 3', status: 'in_progress', deadline: '2024-06-20' }, { name: 'Betoniranje sprat 3', status: 'pending', deadline: '2024-06-25' }, { name: 'Prozor-vestacka stolarija', status: 'pending', deadline: '2024-07-15' }, { name: 'Fasada - sprat 1-2', status: 'completed', deadline: '2024-06-10' }] },
+  { id: '2', name: 'Tržni centar Nova', code: 'CS-2024-002', type: 'commercial', status: 'systems', address: 'Bulevar Mihajla Pupina 88', city: 'Beograd', investor: 'Nova Commerce', contractor: 'MegaGradnja', projectManager: 'Jovan Stanković', workers: 120, budget: 250000000, spent: 180000000, startDate: '2023-06-01', endDate: null, progress: 72, area: 25000, floors: 3, units: 85, notes: 'Instalacije HVAC u toku', tasks: [{ name: 'HVAC instalacija', status: 'in_progress', deadline: '2024-07-01' }, { name: 'Elektro instalacija', status: 'completed', deadline: '2024-05-30' }, { name: 'Podno grijanje', status: 'completed', deadline: '2024-05-15' }] },
+  { id: '3', name: 'Fabrika Betonije - Hala 3', code: 'CS-2024-003', type: 'industrial', status: 'foundation', address: 'Industrijska zona BB', city: 'Niš', investor: 'BetonCo', contractor: 'NišGradnja', projectManager: 'Slobodan Nikolić', workers: 30, budget: 45000000, spent: 8000000, startDate: '2024-05-15', endDate: null, progress: 18, area: 8000, floors: 1, units: 1, notes: 'Izrada temelja', tasks: [{ name: 'Temeji', status: 'in_progress', deadline: '2024-07-01' }, { name: 'Kanalizacija', status: 'completed', deadline: '2024-06-01' }] },
+  { id: '4', name: 'Renovacija stana Marex', code: 'CS-2024-004', type: 'renovation', status: 'finishing', address: 'Knez Mihailova 42, stan 7', city: 'Beograd', investor: 'Privatni', contractor: 'DesignBuild', projectManager: 'Ana Popović', workers: 5, budget: 3500000, spent: 3100000, startDate: '2024-05-01', endDate: '2024-06-20', progress: 88, area: 120, floors: 1, units: 1, notes: 'Preostalo farbanje i montaža kuhinje', tasks: [{ name: 'Farbanje', status: 'in_progress', deadline: '2024-06-18' }, { name: 'Montaža kuhinje', status: 'pending', deadline: '2024-06-20' }] },
+  { id: '5', name: 'Put Niš - Sofia, deonica 2', code: 'CS-2024-005', type: 'infrastructure', status: 'excavation', address: 'Niš - Dimitrovgrad', city: 'Niš', investor: 'Vlada RS', contractor: 'Hidrogradnja', projectManager: 'Dragan Milić', workers: 200, budget: 450000000, spent: 55000000, startDate: '2024-04-01', endDate: null, progress: 12, area: 0, floors: 0, units: 0, notes: 'Izrada trase, rušenje objekata', tasks: [{ name: 'Rušenje objekata', status: 'completed', deadline: '2024-05-30' }, { name: 'Zemljani radovi', status: 'in_progress', deadline: '2024-08-01' }, { name: 'Most preko Nišave', status: 'pending', deadline: '2024-12-01' }] },
+  { id: '6', name: 'Stara škola - adaptacija', code: 'CS-2023-012', type: 'renovation', status: 'completed', address: 'Vojvode Mišića 5', city: 'Subotica', investor: 'Opština Subotica', contractor: 'SuboticaGrad', projectManager: 'Predrag Tomić', workers: 15, budget: 18000000, spent: 17200000, startDate: '2023-09-01', endDate: '2024-05-30', progress: 100, area: 1500, floors: 2, units: 8, notes: 'Projekt završen', tasks: [{ name: 'Završni radovi', status: 'completed', deadline: '2024-05-30' }] },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  planning: { color: 'bg-slate-100 text-slate-800', label: 'Planiranje' }, excavation: { color: 'bg-amber-100 text-amber-800', label: 'Kopanje' },
+  foundation: { color: 'bg-orange-100 text-orange-800', label: 'Temelji' }, structural: { color: 'bg-red-100 text-red-800', label: 'Konstrukcija' },
+  envelope: { color: 'bg-sky-100 text-sky-800', label: 'Obloga' }, systems: { color: 'bg-blue-100 text-blue-800', label: 'Instalacije' },
+  finishing: { color: 'bg-violet-100 text-violet-800', label: 'Završni radovi' }, inspection: { color: 'bg-emerald-100 text-emerald-800', label: 'Inspekcija' },
+  completed: { color: 'bg-emerald-200 text-emerald-900', label: 'Završen' }, on_hold: { color: 'bg-red-100 text-red-800', label: 'Pauziran' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const TYPES: Record<string, { color: string; label: string }> = {
+  residential: { color: 'bg-blue-100 text-blue-700', label: 'Stambeni' }, commercial: { color: 'bg-violet-100 text-violet-700', label: 'Poslovni' },
+  industrial: { color: 'bg-amber-100 text-amber-700', label: 'Industrijski' }, infrastructure: { color: 'bg-emerald-100 text-emerald-700', label: 'Infrastruktura' },
+  renovation: { color: 'bg-pink-100 text-pink-700', label: 'Renoviranje' },
+}

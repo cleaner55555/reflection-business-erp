@@ -1,43 +1,30 @@
-export const mockData = [
-  { id: '1', name: 'LETNA2024', status: 'active', date: '2024-01-15', value: '10%' },
-  { id: '2', name: 'POPUST10', status: 'pending', date: '2024-02-20', value: '15%' },
-  { id: '3', name: 'NOVO15', status: 'completed', date: '2024-03-10', value: '10%' },
-  { id: '4', name: 'VIP20', status: 'active', date: '2024-04-05', value: '20%' },
-  { id: '5', name: 'WELCOME', status: 'pending', date: '2024-05-12', value: '25%' },
+import { Tag } from 'lucide-react'
+import type { Coupon } from './types'
+
+export const INITIAL_DATA: Coupon[] = [
+  { id: '1', code: 'WELCOME10', name: 'Dobrodošlica 10%', description: '10% popust za nove kupce na prvu porudžbinu', type: 'percentage', discountValue: 10, minOrder: 2000, maxDiscount: 5000, usageLimit: 500, usageCount: 342, perUserLimit: 1, status: 'active', startDate: '2024-01-01', endDate: '2024-12-31', applicableCategories: ['Sve'], applicableProducts: [], customerGroups: ['Novi kupci'], createdAt: '2024-01-01' },
+  { id: '2', code: 'SUMMER24', name: 'Letnji popust 20%', description: '20% na sve letnje artikle', type: 'percentage', discountValue: 20, minOrder: 5000, maxDiscount: 10000, usageLimit: 200, usageCount: 187, perUserLimit: 3, status: 'active', startDate: '2024-06-01', endDate: '2024-08-31', applicableCategories: ['Odeća', 'Obuća', 'Sportska oprema'], applicableProducts: [], customerGroups: ['Svi kupci'], createdAt: '2024-05-28' },
+  { id: '3', code: 'FREEDELIVERY', name: 'Besplatna dostava', description: 'Besplatna dostava za porudžbine preko 3000 RSD', type: 'free_shipping', discountValue: 0, minOrder: 3000, maxDiscount: 0, usageLimit: 1000, usageCount: 567, perUserLimit: 0, status: 'active', startDate: '2024-01-01', endDate: '2024-12-31', applicableCategories: ['Sve'], applicableProducts: [], customerGroups: ['Svi kupci'], createdAt: '2024-01-01' },
+  { id: '4', code: 'VIP500', name: 'VIP popust 500 RSD', description: 'Fiksni popust od 500 RSD za VIP kupce', type: 'fixed', discountValue: 500, minOrder: 3000, maxDiscount: 500, usageLimit: 100, usageCount: 45, perUserLimit: 2, status: 'active', startDate: '2024-04-01', endDate: '2024-06-30', applicableCategories: ['Sve'], applicableProducts: [], customerGroups: ['VIP kupci'], createdAt: '2024-03-28' },
+  { id: '5', code: 'BOGO-SHOES', name: 'Kupi 1 dobij 1 - Obuća', description: 'Kupi jedne patike i dobij drugi par besplatno (niža cena)', type: 'bogo', discountValue: 0, minOrder: 0, maxDiscount: 0, usageLimit: 50, usageCount: 38, perUserLimit: 1, status: 'active', startDate: '2024-06-10', endDate: '2024-06-20', applicableCategories: ['Obuća'], applicableProducts: [], customerGroups: ['Svi kupci'], createdAt: '2024-06-08' },
+  { id: '6', code: 'GIFT2000', name: 'Poklon kartica 2000 RSD', description: 'Digitalna poklon kartica u vrednosti od 2000 RSD', type: 'gift_card', discountValue: 2000, minOrder: 0, maxDiscount: 2000, usageLimit: 30, usageCount: 12, perUserLimit: 0, status: 'active', startDate: '2024-06-01', endDate: '2024-07-31', applicableCategories: ['Sve'], applicableProducts: [], customerGroups: [], createdAt: '2024-06-01' },
+  { id: '7', code: 'BLACKFRI', name: 'Black Friday 30%', description: '30% popust za Black Friday', type: 'percentage', discountValue: 30, minOrder: 5000, maxDiscount: 15000, usageLimit: 300, usageCount: 0, perUserLimit: 1, status: 'scheduled', startDate: '2024-11-29', endDate: '2024-11-29', applicableCategories: ['Sve'], applicableProducts: [], customerGroups: ['Svi kupci'], createdAt: '2024-06-01' },
+  { id: '8', code: 'WINTER23', name: 'Zimski popust 15%', description: 'Zimska akcija 2023 - završena', type: 'percentage', discountValue: 15, minOrder: 3000, maxDiscount: 7500, usageLimit: 400, usageCount: 400, perUserLimit: 5, status: 'expired', startDate: '2023-12-01', endDate: '2024-02-28', applicableCategories: ['Zimska oprema', 'Odeća'], applicableProducts: [], customerGroups: ['Svi kupci'], createdAt: '2023-11-25' },
+  { id: '9', code: 'FLASH50', name: 'Flash akcija 50%', description: 'Flash akcija - privremeno pauzirana', type: 'percentage', discountValue: 50, minOrder: 10000, maxDiscount: 25000, usageLimit: 20, usageCount: 5, perUserLimit: 1, status: 'paused', startDate: '2024-06-15', endDate: '2024-06-15', applicableCategories: ['Elektronika'], applicableProducts: [], customerGroups: ['VIP kupci'], createdAt: '2024-06-14' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  active: { color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300', label: 'Aktivan' },
+  scheduled: { color: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300', label: 'Zakazan' },
+  expired: { color: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400', label: 'Istekao' },
+  paused: { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300', label: 'Pauziran' },
+  disabled: { color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', label: 'Onemogućen' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const TYPES: Record<string, { label: string; icon: typeof Tag }> = {
+  percentage: { label: 'Procentualni', icon: Tag },
+  fixed: { label: 'Fiksni iznos', icon: Tag },
+  free_shipping: { label: 'Bespl. dostava', icon: Tag },
+  bogo: { label: 'Kupi 1 Dobij 1', icon: Tag },
+  gift_card: { label: 'Poklon kartica', icon: Tag },
+}

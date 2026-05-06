@@ -1,43 +1,25 @@
-export const mockData = [
-  { id: '1', name: 'Наруџба #101', status: 'active', date: '2024-01-15', value: 'У припреми' },
-  { id: '2', name: 'Наруџба #102', status: 'pending', date: '2024-02-20', value: 'Спремно' },
-  { id: '3', name: 'Наруџба #103', status: 'completed', date: '2024-03-10', value: 'Услуужно' },
-  { id: '4', name: 'Наруџба #104', status: 'active', date: '2024-04-05', value: 'На чекању' },
-  { id: '5', name: 'Наруџба #105', status: 'pending', date: '2024-05-12', value: 'У припреми' },
+import type { KitchenItem } from './types'
+
+export const INITIAL: KitchenItem[] = [
+  { id: '1', name: 'Pšenično brašno tip 500', category: 'grain', unit: 'kg', quantity: 50, minQuantity: 20, maxQuantity: 100, unitPrice: 85, supplier: 'Mlin "Pećarac"', storageArea: 'Skladište S1 — Regal A', expiryDate: '2024-12-15', receivedDate: '2024-06-10', status: 'in_stock', allergens: ['Gluten'], notes: '' },
+  { id: '2', name: 'Svinjsko meso — but', category: 'meat', unit: 'kg', quantity: 15, minQuantity: 10, maxQuantity: 50, unitPrice: 1200, supplier: 'Mesara "Zlatiborsko"', storageArea: 'Hladnjača H1', expiryDate: '2024-06-20', receivedDate: '2024-06-14', status: 'in_stock', allergens: [], notes: 'Kontroliši svakodnevno — lako se kvare' },
+  { id: '3', name: 'Mleko 3.2% (tetrapak)', category: 'dairy', unit: 'l', quantity: 8, minQuantity: 15, maxQuantity: 60, unitPrice: 140, supplier: 'Imlek', storageArea: 'Frižider F2', expiryDate: '2024-06-25', receivedDate: '2024-06-11', status: 'low_stock', allergens: ['Mleko'], notes: 'Hitno naručiti — ispod minimuma' },
+  { id: '4', name: 'Jaja (klase A)', category: 'dairy', unit: 'kom', quantity: 120, minQuantity: 60, maxQuantity: 300, unitPrice: 18, supplier: 'Farm "Dobrinje"', storageArea: 'Frižider F1', expiryDate: '2024-07-08', receivedDate: '2024-06-10', status: 'in_stock', allergens: ['Jaja'], notes: '' },
+  { id: '5', name: 'Ulje za prženje (suncokretovo)', category: 'condiment', unit: 'l', quantity: 20, minQuantity: 10, maxQuantity: 50, unitPrice: 250, supplier: 'Vital', storageArea: 'Skladište S1 — Regal B', expiryDate: '2025-03-15', receivedDate: '2024-06-05', status: 'in_stock', allergens: [], notes: '' },
+  { id: '6', name: 'Krastavci (sveži)', category: 'vegetable', unit: 'kg', quantity: 5, minQuantity: 5, maxQuantity: 30, unitPrice: 150, supplier: 'Zelenara "Grozda"', storageArea: 'Frižider F3', expiryDate: '2024-06-20', receivedDate: '2024-06-13', status: 'low_stock', allergens: [], notes: 'Sezonsko — svakodnevna nabavka' },
+  { id: '7', name: 'Pavlača — listovo testo', category: 'frozen', unit: 'kom', quantity: 30, minQuantity: 15, maxQuantity: 60, unitPrice: 80, supplier: 'Frozen Food DOO', storageArea: 'Zamrzivač Z1', expiryDate: '2025-01-15', receivedDate: '2024-06-01', status: 'in_stock', allergens: ['Gluten'], notes: '' },
+  { id: '8', name: 'Slično mleko 1.5%', category: 'beverage', unit: 'l', quantity: 0, minQuantity: 10, maxQuantity: 40, unitPrice: 180, supplier: 'Imlek', storageArea: 'Frižider F2', expiryDate: '2024-06-10', receivedDate: '2024-05-25', status: 'out_of_stock', allergens: ['Mleko'], notes: 'Isporuka očekivana 17.06.' },
+  { id: '9', name: 'Kajmak (domaći)', category: 'dairy', unit: 'kg', quantity: 3, minQuantity: 5, maxQuantity: 20, unitPrice: 900, supplier: 'Sirana "Sjenica"', storageArea: 'Frižider F1', expiryDate: '2024-06-16', receivedDate: '2024-06-09', status: 'low_stock', allergens: ['Mleko'], notes: '' },
+  { id: '10', name: 'Jogurt prirodni 1kg', category: 'dairy', unit: 'kom', quantity: 0, minQuantity: 10, maxQuantity: 40, unitPrice: 160, supplier: 'Imlek', storageArea: 'Frižider F2', expiryDate: '2024-06-08', receivedDate: '2024-05-28', status: 'expired', allergens: ['Mleko'], notes: 'Istekao — za uklanjanje' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  in_stock: { color: 'bg-emerald-100 text-emerald-800', label: 'Na stanju' },
+  low_stock: { color: 'bg-amber-100 text-amber-800', label: 'Nisko stanje' },
+  out_of_stock: { color: 'bg-red-100 text-red-800', label: 'Nema na stanju' },
+  expired: { color: 'bg-gray-100 text-gray-800', label: 'Istekao' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
+export const CATEGORIES: Record<string, string> = { ingredient: 'Sirovine', spice: 'Začini', dairy: 'Mlečni', meat: 'Meso', vegetable: 'Povrće', fruit: 'Voće', grain: 'Žitarice', beverage: 'Piće', condiment: 'Zacini/Ulje', frozen: 'Smrznuto', packaging: 'Pakovanje' }
 
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }

@@ -1,43 +1,33 @@
-export const mockData = [
-  { id: '1', name: 'NS-001', status: 'active', date: '2024-01-15', value: 'Активан' },
-  { id: '2', name: 'NS-002', status: 'pending', date: '2024-02-20', value: 'Активан' },
-  { id: '3', name: 'NS-003', status: 'completed', date: '2024-03-10', value: 'На ревизији' },
-  { id: '4', name: 'NS-004', status: 'active', date: '2024-04-05', value: 'Активан' },
-  { id: '5', name: 'NS-005', status: 'pending', date: '2024-05-12', value: 'Истекао' },
+import type { Standard } from './types'
+
+export const INITIAL_DATA: Standard[] = [
+  { id: '1', code: 'ISO 9001:2015', name: 'Sistem upravljanja kvalitetom', category: 'iso', status: 'active', version: '2015', issuingBody: 'ISO', scope: 'Svi procesi kompanije', validFrom: '2022-03-01', validUntil: '2025-03-01', auditor: 'Bureau Veritas', lastAudit: '2024-03-15', nextAudit: '2025-03-15', compliance: 92, notes: '3 minor nalaza iz zadnjeg audita', findings: [
+    { id: 'f1', type: 'minor', description: 'Nedostaju zapisnici o obuci za nove radnike', status: 'in_progress', deadline: '2024-07-01' },
+    { id: 'f2', type: 'minor', description: 'Kontrola dokumenata - zastarela verzija SOP-12', status: 'open', deadline: '2024-06-30' },
+    { id: 'f3', type: 'observation', description: 'Predloženo unapređenje softvera za praćenje', status: 'open', deadline: '2024-12-01' },
+  ] },
+  { id: '2', code: 'ISO 14001:2015', name: 'Sistem upravljanja životnom sredinom', category: 'iso', status: 'active', version: '2015', issuingBody: 'ISO', scope: 'Proizvodnja i logistika', validFrom: '2023-01-15', validUntil: '2026-01-15', auditor: 'SGS', lastAudit: '2024-01-20', nextAudit: '2025-01-20', compliance: 88, notes: '', findings: [
+    { id: 'f4', type: 'minor', description: 'Nedostaju dnevne kontrole emisija', status: 'closed', deadline: '2024-04-01' },
+    { id: 'f5', type: 'observation', description: 'Edukacija o reciklaži otpada', status: 'in_progress', deadline: '2024-08-01' },
+  ] },
+  { id: '3', code: 'CE', name: 'CE oznaka - proizvodi', category: 'ce', status: 'active', version: '2024', issuingBody: 'EU', scope: 'Elektronski proizvodi', validFrom: '2024-01-01', validUntil: '2027-01-01', auditor: 'TÜV Rheinland', lastAudit: '2024-02-10', nextAudit: '2025-02-10', compliance: 100, notes: 'Svi proizvodi u skladu', findings: [] },
+  { id: '4', code: 'HACCP', name: 'Analiza hazarda i kritične kontrolne tačke', category: 'haccp', status: 'expiring', version: 'v3.2', issuingBody: 'Ministarstvo poljoprivrede', scope: 'Proizvodnja hrane', validFrom: '2021-06-01', validUntil: '2024-07-01', auditor: 'Državni inspektorat', lastAudit: '2023-06-15', nextAudit: '2024-06-30', compliance: 85, notes: 'Upozorenje - certifikat uskoro ističe! Obavezna recertifikacija.', findings: [
+    { id: 'f6', type: 'major', description: 'Hladnjača broj 3 - temperatura iznad dozvoljene', status: 'in_progress', deadline: '2024-06-20' },
+    { id: 'f7', type: 'minor', description: 'Nedostaju PCR zapisi za maj 2024', status: 'open', deadline: '2024-06-25' },
+  ] },
+  { id: '5', code: 'ISO 45001:2018', name: 'Sistem upravljanja zaštitom na radu', category: 'iso', status: 'in_progress', version: '2018', issuingBody: 'ISO', scope: 'Svi radnici', validFrom: '', validUntil: '', auditor: 'Bureau Veritas', lastAudit: null, nextAudit: '2024-09-01', compliance: 65, notes: 'Priprema za inicijalnu sertifikaciju', findings: [
+    { id: 'f8', type: 'major', description: 'Nedostaje procena rizika za proizvodnu liniju 2', status: 'in_progress', deadline: '2024-07-15' },
+    { id: 'f9', type: 'minor', description: 'Evidencija PPE nije ažurirana', status: 'open', deadline: '2024-07-01' },
+  ] },
+  { id: '6', code: 'ISO 27001:2022', name: 'Informaciona bezbednost', category: 'iso', status: 'draft', version: '2022', issuingBody: 'ISO', scope: 'IT infrastruktura', validFrom: '', validUntil: '', auditor: '', lastAudit: null, nextAudit: null, compliance: 30, notes: 'Ranoj fazi implementacije', findings: [] },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' }, expiring: { color: 'bg-amber-100 text-amber-800', label: 'Ističe' },
+  expired: { color: 'bg-red-100 text-red-800', label: 'Istekao' }, in_progress: { color: 'bg-blue-100 text-blue-800', label: 'U implementaciji' }, draft: { color: 'bg-slate-100 text-slate-800', label: 'Priprema' },
+}
+export const CATEGORIES: Record<string, { color: string; label: string }> = {
+  iso: { color: 'bg-blue-100 text-blue-700', label: 'ISO' }, ce: { color: 'bg-violet-100 text-violet-700', label: 'CE' },
+  haccp: { color: 'bg-orange-100 text-orange-700', label: 'HACCP' }, gmp: { color: 'bg-emerald-100 text-emerald-700', label: 'GMP' },
+  ohsas: { color: 'bg-amber-100 text-amber-700', label: 'OHSAS' }, other: { color: 'bg-slate-100 text-slate-700', label: 'Ostalo' },
+}

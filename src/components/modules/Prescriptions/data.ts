@@ -1,43 +1,28 @@
-export const mockData = [
-  { id: '1', name: 'Амоксицилин', status: 'active', date: '2024-01-15', value: '100mg' },
-  { id: '2', name: 'Ибупрофен', status: 'pending', date: '2024-02-20', value: '400mg' },
-  { id: '3', name: 'Парацетамол', status: 'completed', date: '2024-03-10', value: '500mg' },
-  { id: '4', name: 'Азитромицин', status: 'active', date: '2024-04-05', value: '250mg' },
-  { id: '5', name: 'Омепразол', status: 'pending', date: '2024-05-12', value: '20mg' },
+import type { Prescription } from './types'
+
+export const INITIAL: Prescription[] = [
+  { id: '1', prescriptionNo: 'REC-2024-001', patientName: 'Luka Petrović', doctor: 'Dr. Jelena Marković', date: '2024-06-10', status: 'active', type: 'reimbursable', medications: [{ name: 'Metformin 1000mg', dosage: '1000mg', frequency: '2x dnevno', duration: '90 dana', quantity: '180 tableta' }, { name: 'Vitamin D3 2000IU', dosage: '2000IU', frequency: '1x dnevno', duration: '90 dana', quantity: '90 kapsula' }], diagnosis: 'E11 — Dijabetes tip 2', totalCost: 3200, patientShare: 640, insuranceCoverage: 2560, pharmacy: 'Apoteka "Lek"', validUntil: '2024-07-10', notes: 'Reemburzibilni recept — 80% pokriće' },
+  { id: '2', prescriptionNo: 'REC-2024-002', patientName: 'Ana Stanković', doctor: 'Dr. Dragan Milić', date: '2024-06-14', status: 'active', type: 'reimbursable', medications: [{ name: 'Amoksicilin/Clav 875/125mg', dosage: '875/125mg', frequency: '3x dnevno', duration: '10 dana', quantity: '30 tableta' }, { name: 'Paracetamol 500mg', dosage: '500mg', frequency: '3x dnevno po potrebi', duration: '10 dana', quantity: '30 tableta' }], diagnosis: 'J18.0 — Pneumonija', totalCost: 1850, patientShare: 370, insuranceCoverage: 1480, pharmacy: '', validUntil: '2024-07-14', notes: '' },
+  { id: '3', prescriptionNo: 'REC-2024-003', patientName: 'Nikola Milić', doctor: 'Dr. Snežana Đorđević', date: '2024-06-15', status: 'active', type: 'special', medications: [{ name: 'Nifedipin 10mg', dosage: '10mg sublingvalno', frequency: 'Hitno', duration: 'Jednokratno', quantity: '1 tableta' }, { name: 'Kaptopril 25mg', dosage: '25mg', frequency: '2x dnevno', duration: 'Neprekidno', quantity: '60 tableta' }], diagnosis: 'I10 — Hipertenzivna kriza', totalCost: 950, patientShare: 950, insuranceCoverage: 0, pharmacy: 'Bolnička apoteka', validUntil: '2024-06-22', notes: 'Hitni recept — hospitalizacija' },
+  { id: '4', prescriptionNo: 'REC-2024-004', patientName: 'Gordana Đorđević', doctor: 'Dr. Jelena Marković', date: '2024-06-13', status: 'completed', type: 'reimbursable', medications: [{ name: 'Atorvastatin 20mg', dosage: '20mg', frequency: '1x dnevno (veče)', duration: '90 dana', quantity: '90 tableta' }, { name: 'Omega-3 1000mg', dosage: '1000mg', frequency: '1x dnevno', duration: '90 dana', quantity: '90 kapsula' }], diagnosis: 'E78.5 — Hiperholesterolemija', totalCost: 4100, patientShare: 820, insuranceCoverage: 3280, pharmacy: 'Apoteka "Zdravlje"', validUntil: '2024-07-13', notes: 'Realizovan 13.06.' },
+  { id: '5', prescriptionNo: 'REC-2024-005', patientName: 'Mira Stojanović', doctor: 'Dr. Goran Savić', date: '2024-06-12', status: 'active', type: 'reimbursable', medications: [{ name: 'Metformin 850mg', dosage: '850mg', frequency: '2x dnevno', duration: '90 dana', quantity: '180 tableta' }, { name: 'Insulin Glargin 100IU/mL', dosage: '24U', frequency: '1x dnevno (veče)', duration: '90 dana', quantity: '3 olovke x 3mL' }, { name: 'Ramipril 10mg', dosage: '10mg', frequency: '1x dnevno', duration: '90 dana', quantity: '90 tableta' }, { name: 'Amlodipin 5mg', dosage: '5mg', frequency: '1x dnevno', duration: '90 dana', quantity: '90 tableta' }, { name: 'Atorvastatin 10mg', dosage: '10mg', frequency: '1x dnevno', duration: '90 dana', quantity: '90 tableta' }], diagnosis: 'E11 + I10 — Dijabetes + Hipertenzija', totalCost: 18500, patientShare: 3700, insuranceCoverage: 14800, pharmacy: '', validUntil: '2024-07-12', notes: 'Politerapija — 5 lekova' },
+  { id: '6', prescriptionNo: 'REC-2024-006', patientName: 'Stefan Ilić', doctor: 'Dr. Dragan Milić', date: '2024-06-08', status: 'completed', type: 'private', medications: [{ name: 'Paracetamol 500mg', dosage: '500mg', frequency: 'Po potrebi (max 4x/dan)', duration: '14 dana', quantity: '28 tableta' }, { name: 'Vitamin C 1000mg', dosage: '1000mg', frequency: '1x dnevno', duration: '30 dana', quantity: '30 tableta' }], diagnosis: 'B27.9 — Mononukleoza (otpust)', totalCost: 850, patientShare: 850, insuranceCoverage: 0, pharmacy: 'Apoteka "Lek"', validUntil: '2024-06-22', notes: 'Privatni recept — analgetik + suplement' },
+  { id: '7', prescriptionNo: 'REC-2024-007', patientName: 'Marko Jovanović', doctor: 'Dr. Ana Nikolić', date: '2024-06-05', status: 'expired', type: 'reimbursable', medications: [{ name: 'Salbutamol 100μg/inh', dosage: '200μg', frequency: 'Po potrebi', duration: 'Neprekidno', quantity: '1 inhalator' }, { name: 'Budesonid/Formoterol 160/4.5μg', dosage: '2 udisaja', frequency: '2x dnevno', duration: '90 dana', quantity: '1 inhalator' }], diagnosis: 'J45 — Astma', totalCost: 3200, patientShare: 640, insuranceCoverage: 2560, pharmacy: '', validUntil: '2024-06-20', notes: 'Nije realizovan — istekao rok' },
+  { id: '8', prescriptionNo: 'REC-2024-008', patientName: 'Milan Marković', doctor: 'Dr. Ana Nikolić', date: '2024-06-05', status: 'active', type: 'narcotic', medications: [{ name: 'Morfijum 10mg/ml amp.', dosage: '10mg', frequency: 'Po potrebi (max 4x/dan)', duration: '14 dana', quantity: '10 ampula' }], diagnosis: 'J44.1 — KOPB (simptomatska terapija)', totalCost: 450, patientShare: 90, insuranceCoverage: 360, pharmacy: '', validUntil: '2024-06-19', notes: 'Recept na posebnom obrascu — narkotik' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' },
+  completed: { color: 'bg-blue-100 text-blue-800', label: 'Realizovan' },
+  expired: { color: 'bg-amber-100 text-amber-800', label: 'Istekao' },
+  cancelled: { color: 'bg-red-100 text-red-800', label: 'Otkazan' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
+export const TYPES: Record<string, { color: string; label: string }> = {
+  reimbursable: { color: 'bg-teal-100 text-teal-800', label: 'Reemburzibilni' },
+  private: { color: 'bg-gray-100 text-gray-800', label: 'Privatni' },
+  narcotic: { color: 'bg-red-100 text-red-800', label: 'Narkotik' },
+  special: { color: 'bg-purple-100 text-purple-800', label: 'Specijalni' },
+}
 
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }

@@ -1,43 +1,22 @@
-export const mockData = [
-  { id: '1', name: 'Јован Петровић', status: 'active', date: '2024-01-15', value: 'Кардиологија' },
-  { id: '2', name: 'Марка Марић', status: 'pending', date: '2024-02-20', value: 'Неурологија' },
-  { id: '3', name: 'Ана Стојковић', status: 'completed', date: '2024-03-10', value: 'Ортопедија' },
-  { id: '4', name: 'Никола Јовановић', status: 'active', date: '2024-04-05', value: 'Пулмологија' },
-  { id: '5', name: 'Сара Миловановић', status: 'pending', date: '2024-05-12', value: 'Дерматологија' },
+import type { MedicalRecord } from './types'
+
+export const INITIAL: MedicalRecord[] = [
+  { id: '1', recordNo: 'KAR-2024-0001', patientName: 'Luka Petrović', patientNo: 'PAC-2024-001', doctor: 'Dr. Jelena Marković', date: '2024-06-10', type: 'checkup', diagnosis: 'Dijabetes tip 2 — kontrola', diagnosisCode: 'E11', symptoms: 'Bez simptoma, redovna kontrola', treatment: 'Nastavak terapije Metformin 1000mg x2, dijeta + vežbanje', prescribedMeds: ['Metformin 1000mg', 'Vitamin D3 2000IU'], vitalSigns: 'Pritisak: 130/85, Puls: 72, Težina: 89kg, HbA1c: 7.2%', labResults: 'Šećer natašte: 7.1 mmol/L, HbA1c: 7.2%', nextAction: 'Kontrola za 3 meseca', notes: 'Poboljšanje u odnosu na prethodnu kontrolu (HbA1c bio 7.8)' },
+  { id: '2', recordNo: 'KAR-2024-0002', patientName: 'Ana Stanković', patientNo: 'PAC-2024-002', doctor: 'Dr. Dragan Milić', date: '2024-06-14', type: 'follow_up', diagnosis: 'Pneumonija desne strane', diagnosisCode: 'J18.0', symptoms: 'Kašalj, temperatura 38.5°C, bol u grudima', treatment: 'Antibiotici Amoksicilin + Klavulanska kiselina 10 dana', prescribedMeds: ['Amoksicilin/Clav 875/125mg', 'Paracetamol 500mg', 'Deksametazon sirup'], vitalSigns: 'Temp: 38.5°C, Pritisak: 115/75, SatO2: 94%, Puls: 88', labResults: 'CRP: 45 mg/L, Leukociti: 14.2x10^9', nextAction: 'Kontrola za 7 dana', notes: 'Rtg pluća: infiltrati desni donji režanj' },
+  { id: '3', recordNo: 'KAR-2024-0003', patientName: 'Nikola Milić', patientNo: 'PAC-2024-005', doctor: 'Dr. Snežana Đorđević', date: '2024-06-15', type: 'emergency', diagnosis: 'Hipertenzivna kriza', diagnosisCode: 'I10', symptoms: 'Jaka glavobolja, vrtoglavica, mučnina, pritisak 180/120', treatment: 'Hitno snižavanje pritiska, hospitalizacija', prescribedMeds: ['Nifedipin 10mg sublingvalno', 'Kaptopril 25mg', 'Furosemid 40mg IV'], vitalSigns: 'Pritisak: 180/120→145/95, Puls: 98, SatO2: 97%', labResults: 'Kreatinin: 112 μmol/L, Kalij: 4.1, EKG: sinus ritam, LVH', nextAction: 'Hospitalizacija — kardiologija', notes: 'Kritično stanje, hitno prebačen na odeljenje' },
+  { id: '4', recordNo: 'KAR-2024-0004', patientName: 'Gordana Đorđević', patientNo: 'PAC-2024-008', doctor: 'Dr. Jelena Marković', date: '2024-06-13', type: 'lab_result', diagnosis: 'Hiperholesterolemija — kontrola', diagnosisCode: 'E78.5', symptoms: 'Asimptomatska, profilaksa', treatment: 'Kontinuirana terapija statinima', prescribedMeds: ['Atorvastatin 20mg', 'Omega-3'], vitalSigns: 'Pritisak: 125/80, BMI: 26.4', labResults: 'Total holesterol: 6.8→5.9 mmol/L, LDL: 4.2→3.6, HDL: 1.3, TG: 1.8', nextAction: 'Kontrola lipida za 6 nedelja', notes: 'Poboljšanje LDL za 14% nakon 3 meseca terapije' },
+  { id: '5', recordNo: 'KAR-2024-0005', patientName: 'Sara Pavlović', patientNo: 'PAC-2024-010', doctor: 'Dr. Snežana Đorđević', date: '2024-06-11', type: 'checkup', diagnosis: 'Godišnji zdravstveni pregled', diagnosisCode: 'Z00.0', symptoms: 'Bez tegoba', treatment: 'Preventivni pregled — sve normalno', prescribedMeds: [], vitalSigns: 'Pritisak: 118/72, Puls: 68, Težina: 62kg, Visina: 170cm, BMI: 21.5', labResults: 'KBC: normalno, Šećer: 4.8, Holesterol: 4.2, TSH: 1.8', nextAction: 'Godišnji pregled za 12 meseci', notes: 'Savet: fizička aktivnost 150 min/tjedno' },
+  { id: '6', recordNo: 'KAR-2024-0006', patientName: 'Mira Stojanović', patientNo: 'PAC-2024-006', doctor: 'Dr. Goran Savić', date: '2024-06-12', type: 'follow_up', diagnosis: 'Dijabetes tip 2 + Hipertenzija', diagnosisCode: 'E11, I10', symptoms: 'Umor, otežano disanje pri naporu', treatment: 'Podešavanje doze insulina i antihypertenziva', prescribedMeds: ['Metformin 850mg', 'Insulin Glargin 24U', 'Ramipril 10mg', 'Amlodipin 5mg', 'Atorvastatin 10mg'], vitalSigns: 'Pritisak: 155/95, Puls: 78, Težina: 78kg, HbA1c: 8.1%', labResults: 'Šećer: 9.2, HbA1c: 8.1, Kreatinin: 98', nextAction: 'Kontrola za 4 nedelje', notes: 'Povećan HbA1c — intenziviranje terapije' },
+  { id: '7', recordNo: 'KAR-2024-0007', patientName: 'Stefan Ilić', patientNo: 'PAC-2024-007', doctor: 'Dr. Dragan Milić', date: '2024-06-08', type: 'discharge', diagnosis: 'Infectivna mononukleoza — otpust', diagnosisCode: 'B27.9', symptoms: 'Otpušten bez simptoma', treatment: 'Otpust kući — mirovanje 2 nedelje', prescribedMeds: ['Paracetamol po potrebi', 'Vitamin C 1000mg'], vitalSigns: 'Pritisak: 120/75, Puls: 65, Temp: 36.4°C', labResults: 'Leukociti: normalni, Mononukleoza test: negativan', nextAction: 'Kontrola za 2 nedelje', notes: 'Uspešno lečenje — 10 dana hospitalizacija' },
+  { id: '8', recordNo: 'KAR-2024-0008', patientName: 'Marko Jovanović', patientNo: 'PAC-2024-003', doctor: 'Dr. Ana Nikolić', date: '2024-06-05', type: 'referral', diagnosis: 'Astma — kontrola alergolog', diagnosisCode: 'J45', symptoms: 'Suvi kašalj, otežano disanje noću', treatment: 'Uput za alergološka ispitivanja', prescribedMeds: ['Salbutamol inhaler', 'Budesonid/formoterol'], vitalSigns: 'FEV1: 78% predviđenog, PEF: varijabilnost 18%', labResults: 'Eozinofili: 8%, IgE: 450 IU/mL', nextAction: 'Skinski test alergolog — 25.06.', notes: 'Uput za kožne punkcione testove' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const TYPES: Record<string, { color: string; label: string }> = {
+  checkup: { color: 'bg-emerald-100 text-emerald-800', label: 'Pregled' },
+  follow_up: { color: 'bg-blue-100 text-blue-800', label: 'Kontrola' },
+  emergency: { color: 'bg-red-100 text-red-800', label: 'Hitno' },
+  lab_result: { color: 'bg-purple-100 text-purple-800', label: 'Lab. rezultat' },
+  surgery: { color: 'bg-amber-100 text-amber-800', label: 'Operacija' },
+  referral: { color: 'bg-teal-100 text-teal-800', label: 'Uput' },
+  discharge: { color: 'bg-gray-100 text-gray-800', label: 'Otpust' },
+}

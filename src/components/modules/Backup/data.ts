@@ -1,43 +1,16 @@
-export const mockData = [
-  { id: '1', name: 'Бекап 15.01', status: 'active', date: '2024-01-15', value: '2.4 GB' },
-  { id: '2', name: 'Бекап 14.01', status: 'pending', date: '2024-02-20', value: '2.3 GB' },
-  { id: '3', name: 'Бекап 13.01', status: 'completed', date: '2024-03-10', value: '2.2 GB' },
-  { id: '4', name: 'Бекап 12.01', status: 'active', date: '2024-04-05', value: '2.1 GB' },
-  { id: '5', name: 'Бекап 11.01', status: 'pending', date: '2024-05-12', value: '2.0 GB' },
+import type { BackupRecord, BackupSchedule } from './types'
+
+export const INITIAL_BACKUPS: BackupRecord[] = [
+  { id: '1', name: 'Full Backup — 15 Jun 2024', type: 'full', status: 'completed', size: '245 MB', duration: '4m 32s', location: 'Local + Cloud', createdAt: '2024-06-15T02:00:00', expiresAt: '2024-09-15T02:00:00', autoDelete: true, encrypted: true },
+  { id: '2', name: 'Incremental — 14 Jun 2024', type: 'incremental', status: 'completed', size: '12 MB', duration: '0m 45s', location: 'Local', createdAt: '2024-06-14T02:00:00', expiresAt: '2024-08-14T02:00:00', autoDelete: true, encrypted: true },
+  { id: '3', name: 'Full Backup — 10 Jun 2024', type: 'full', status: 'completed', size: '238 MB', duration: '4m 18s', location: 'Local + Cloud', createdAt: '2024-06-10T02:00:00', expiresAt: '2024-09-10T02:00:00', autoDelete: true, encrypted: true },
+  { id: '4', name: 'Snapshot — Pre-migration', type: 'snapshot', status: 'completed', size: '231 MB', duration: '0m 12s', location: 'Local', createdAt: '2024-06-08T14:30:00', expiresAt: '2024-12-08T14:30:00', autoDelete: false, encrypted: true },
+  { id: '5', name: 'Incremental — 13 Jun 2024', type: 'incremental', status: 'failed', size: '—', duration: '2m 05s', location: 'Cloud', createdAt: '2024-06-13T02:00:00', expiresAt: '2024-08-13T02:00:00', autoDelete: true, encrypted: true },
+  { id: '6', name: 'Full Backup — 01 Jun 2024', type: 'full', status: 'completed', size: '220 MB', duration: '3m 55s', location: 'Local + Cloud', createdAt: '2024-06-01T02:00:00', expiresAt: '2024-09-01T02:00:00', autoDelete: true, encrypted: true },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const INITIAL_SCHEDULES: BackupSchedule[] = [
+  { id: '1', name: 'Dnevni backup', frequency: 'daily', time: '02:00', type: 'incremental', retentionDays: 30, lastRun: '2024-06-15T02:00:00', nextRun: '2024-06-16T02:00:00', active: true },
+  { id: '2', name: 'Nedeljni full backup', frequency: 'weekly', time: '03:00', type: 'full', retentionDays: 90, lastRun: '2024-06-10T02:00:00', nextRun: '2024-06-17T03:00:00', active: true },
+  { id: '3', name: 'Mesečni arhivski backup', frequency: 'monthly', time: '01:00', type: 'full', retentionDays: 365, lastRun: '2024-06-01T01:00:00', nextRun: '2024-07-01T01:00:00', active: true },
+]

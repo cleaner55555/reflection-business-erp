@@ -1,43 +1,12 @@
-export const mockData = [
-  { id: '1', name: 'PROD-001', status: 'active', date: '2024-01-15', value: 'EAN-13' },
-  { id: '2', name: 'PROD-002', status: 'pending', date: '2024-02-20', value: 'EAN-13' },
-  { id: '3', name: 'PROD-003', status: 'completed', date: '2024-03-10', value: 'Code128' },
-  { id: '4', name: 'PROD-004', status: 'active', date: '2024-04-05', value: 'QR' },
-  { id: '5', name: 'PROD-005', status: 'pending', date: '2024-05-12', value: 'EAN-13' },
+import type { BarcodeItem } from './types'
+
+export const INITIAL_ITEMS: BarcodeItem[] = [
+  { id: '1', code: '8601234567890', type: 'EAN13', productName: 'Hleb beli 500g', productId: 'prod-001', category: 'Hrana', createdAt: '2024-06-01T10:00:00' },
+  { id: '2', code: '8609876543210', type: 'EAN13', productName: 'Mleko 1L', productId: 'prod-002', category: 'Piće', createdAt: '2024-06-01T10:05:00' },
+  { id: '3', code: '8601112223334', type: 'EAN13', productName: 'Kafa zrna 250g', productId: 'prod-003', category: 'Hrana', createdAt: '2024-06-02T09:00:00' },
+  { id: '4', code: '8605556667778', type: 'EAN13', productName: 'Šećer 1kg', productId: 'prod-004', category: 'Hrana', createdAt: '2024-06-03T11:00:00' },
+  { id: '5', code: 'QR-INV-001', type: 'QR', productName: 'Faktura F-2024-0234', productId: 'inv-234', category: 'Fakture', createdAt: '2024-06-10T14:00:00' },
+  { id: '6', code: 'CODE128-001', type: 'CODE128', productName: 'Paket — dokumenta', productId: 'pkg-001', category: 'Logistika', createdAt: '2024-06-12T08:00:00' },
+  { id: '7', code: '8607778889990', type: 'EAN8', productName: 'Cokolada 100g', productId: 'prod-015', category: 'Hrana', createdAt: '2024-06-13T16:00:00' },
+  { id: '8', code: '8602223334445', type: 'EAN13', productName: 'Ulje 1L', productId: 'prod-008', category: 'Hrana', createdAt: '2024-06-14T10:30:00' },
 ]
-
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }

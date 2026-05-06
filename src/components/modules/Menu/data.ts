@@ -1,43 +1,22 @@
-export const mockData = [
-  { id: '1', name: 'Плескавица', status: 'active', date: '2024-01-15', value: '450' },
-  { id: '2', name: 'Ћевапи', status: 'pending', date: '2024-02-20', value: '380' },
-  { id: '3', name: 'Салата', status: 'completed', date: '2024-03-10', value: '220' },
-  { id: '4', name: 'Супа', status: 'active', date: '2024-04-05', value: '180' },
-  { id: '5', name: 'Десерт', status: 'pending', date: '2024-05-12', value: '320' },
+import type { MenuItem } from './types'
+
+export const INITIAL: MenuItem[] = [
+  { id: '1', name: 'Ćevapi sa lepinjom', description: '5 ćevapa od mešanog mesa, lepinja, luk, kajmak', category: 'grill', price: 850, preparationTime: 20, calories: 780, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Mleko', 'Jaja'], ingredients: ['Govedina', 'Svinjetina', 'Luk', 'So', 'Biber'], rating: 4.8, orderCount: 342, notes: 'Najprodavaniji artikal' },
+  { id: '2', name: 'Pljeskavica sa kajmakom', description: 'Pljeskavica od goveđeg mesa, domaći kajmak, lepinja', category: 'grill', price: 780, preparationTime: 18, calories: 720, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Mleko'], ingredients: ['Govedina', 'So', 'Biber', 'Luk'], rating: 4.7, orderCount: 285, notes: '' },
+  { id: '3', name: 'Pasulj prebranac', description: 'Tradicionalno srpsko jelo od pasulja sa suvim mesom', category: 'main_course', price: 650, preparationTime: 45, calories: 450, isVegetarian: false, isVegan: false, isGlutenFree: true, isSpicy: true, isAvailable: true, allergens: [], ingredients: ['Pasulj', 'Suvo meso', 'Luk', 'Biber', 'Lovor'], rating: 4.5, orderCount: 198, notes: 'Sezonsko — svaki dan' },
+  { id: '4', name: 'Šopska salata', description: 'Tomat, krastavac, paprika, luk, sirevi, maslinovo ulje', category: 'salad', price: 420, preparationTime: 10, calories: 180, isVegetarian: true, isVegan: false, isGlutenFree: true, isSpicy: false, isAvailable: true, allergens: ['Mleko'], ingredients: ['Tomat', 'Krastavac', 'Paprika', 'Luk', 'Sirevi', 'Maslinovo ulje'], rating: 4.6, orderCount: 267, notes: '' },
+  { id: '5', name: 'Teleća čorba', description: 'Teleća supa sa povrćem i domaćim rezancima', category: 'soup', price: 480, preparationTime: 30, calories: 280, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Jaja'], ingredients: ['Teletina', 'Šargarepa', 'Krompir', 'Peršun', 'Rezanci'], rating: 4.7, orderCount: 156, notes: '' },
+  { id: '6', name: 'Krem čorba od bundeve', description: 'Bundeva, pavlaka, toast', category: 'soup', price: 380, preparationTime: 25, calories: 220, isVegetarian: true, isVegan: false, isGlutenFree: true, isSpicy: false, isAvailable: true, allergens: ['Mleko', 'Gluten'], ingredients: ['Bundeva', 'Pavlaka', 'Luk', 'Začini'], rating: 4.3, orderCount: 89, notes: '' },
+  { id: '7', name: 'Palacinci sa džemom', description: '4 palacinke sa marmeladom od šljiva', category: 'dessert', price: 350, preparationTime: 15, calories: 380, isVegetarian: true, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Jaja', 'Mleko'], ingredients: ['Brašno', 'Jaja', 'Mleko', 'Marmelada'], rating: 4.4, orderCount: 134, notes: '' },
+  { id: '8', name: 'Krofne', description: '4 domaće krofne sa šećerom u prahu', category: 'dessert', price: 320, preparationTime: 12, calories: 420, isVegetarian: true, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: false, allergens: ['Gluten', 'Jaja', 'Mleko'], ingredients: ['Brašno', 'Jaja', 'Mleko', 'Kvasac', 'Ulje'], rating: 4.2, orderCount: 98, notes: 'Privremeno nedostupno — nedostatak kvasca' },
+  { id: '9', name: 'Domaći sok od šljive', description: '0.25L sveži sok od šljiva', category: 'drink', price: 200, preparationTime: 3, calories: 110, isVegetarian: true, isVegan: true, isGlutenFree: true, isSpicy: false, isAvailable: true, allergens: [], ingredients: ['Šljive', 'Šećer', 'Voda'], rating: 4.1, orderCount: 210, notes: '' },
+  { id: '10', name: 'Domaći kajmak sa hlebom', description: '200g domaćeg kajmaka, hleb', category: 'appetizer', price: 380, preparationTime: 5, calories: 350, isVegetarian: true, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Mleko', 'Gluten'], ingredients: ['Kajmak', 'Hleb'], rating: 4.6, orderCount: 178, notes: '' },
+  { id: '11', name: 'Grah sa kobasicom', description: 'Belo graho, kobasice, dimljeni meso', category: 'main_course', price: 620, preparationTime: 50, calories: 520, isVegetarian: false, isVegan: false, isGlutenFree: true, isSpicy: true, isAvailable: true, allergens: [], ingredients: ['Grah', 'Kobasice', 'Dimljeno meso', 'Luk', 'Biber'], rating: 4.5, orderCount: 145, notes: '' },
+  { id: '12', name: 'Srem burger', description: 'Govedinski pljeskavica, slanina, kačkavalj, luk, sos', category: 'grill', price: 920, preparationTime: 22, calories: 890, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: ['Gluten', 'Mleko', 'Jaja', 'Senf'], ingredients: ['Govedina', 'Slanina', 'Kačkavalj', 'Luk', 'Sos'], rating: 4.9, orderCount: 267, notes: 'Novo na meniju — od juna 2024' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const CATEGORIES: Record<string, { label: string }> = {
+  appetizer: { label: 'Predjelo' }, soup: { label: 'Supa' }, salad: { label: 'Salata' }, main_course: { label: 'Glavno jelo' }, dessert: { label: 'Desert' }, drink: { label: 'Piće' }, side_dish: { label: 'Prilog' }, breakfast: { label: 'Doručak' }, grill: { label: 'Roštilj' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
