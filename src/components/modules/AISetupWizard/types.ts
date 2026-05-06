@@ -18,10 +18,4 @@ export interface DescribeStepProps {
 
 export interface ConfirmStepProps {
   aiResult: AIResult | null
-  selectedModules: Set<string>
-  onToggleModule: (id: string) => void
-  onToggleGroup: (groupModules: { id: string }[]) => void
-  onSetSelectedModules: (s: Set<string>) => void
-  onBack: () => void
-  onConfirm: () => void
 }

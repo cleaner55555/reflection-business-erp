@@ -807,3 +807,29 @@ Stage Summary:
 - Functionality unchanged — only code reorganization
 - Dev server compiles successfully
 
+---
+Task ID: 7-A
+Agent: full-stack-developer
+Task: Fix broken data.ts files batch 1 (12 modules)
+
+Work Log:
+- Accounting/data.ts: Was 441 lines with hooks (useTranslation), fetch calls, state setters, handler functions, JSX references. Replaced with 27 lines: ACCOUNT_TYPES, MONTH_KEYS, MONTH_LABELS arrays + getAccountTypeBadge() pure helper.
+- CashRegister/data.ts: Already clean (198 lines) — all pure static data, utility functions, mock products. Skipped.
+- Inventory/data.ts: Was 528 lines with hooks, fetch, state setters, handler functions. Replaced with 21 lines: COMPANY constant + LOC_TYPES array.
+- Expenses/data.ts: Was 460 lines with hooks, fetch, state setters, handler functions, document.createElement. Replaced with 200 lines: STATUS/CATEGORY/PAYMENT config maps, PIE_COLORS, EMPLOYEES, 4 empty form objects, 7 mock generators, 3 pure helpers.
+- Integracije/data.ts: Was 514 lines with hooks, fetch, state setters, handler functions, JSX in statusConfig. Replaced with 20 lines: CONNECTOR_TYPES map + ENTITY_OPTIONS array.
+- Forum/data.ts: Was 424 lines with hooks, state setters, handler functions, JSX in ICON_MAP and renderKpiCard. Replaced with ~300 lines: CHART_COLORS, TAG_COLORS, TOP_CONTRIBUTORS, 7 mock generators (topics, categories, questions, tags, monthly, replies), formatDate helper.
+- Offers/data.ts: Was 800+ lines with hooks, fetch, state setters, handler functions, JSX render functions. Replaced with 24 lines: STATUS_CONFIG, PAYMENT_TERMS_OPTIONS, PRICE_LIST_TYPES, FUNNEL_COLORS, PIE_COLORS, MONTHS.
+- Visitors/data.ts: Was 317 lines with hooks, fetch, state setters, handler functions. Replaced with ~120 lines: STATUS_CONFIG, PURPOSE_LABELS, DEPARTMENT_LABELS, MOCK_HOSTS, HOURLY_FLOW, MONTHLY_TREND + formatDuration(), getNextBadgeNumber() helpers.
+- PermissionsEditor/data.ts: Was 262 lines with hooks, fetch, state setters, handler functions. Replaced with 60 lines: MODULE_LABELS (25 entries), ACTIONS, ACTION_LABELS, MODULE_GROUPS (7 groups), ROLE_COLORS, getRoleColor() helper.
+- ProcurementManager/data.ts: Was 250 lines with hooks, fetch, state setters, handler functions, JSX in getStarDisplay/KpiCard. Replaced with 50 lines: PR_STATUS_CONFIG, PR_PRIORITY_CONFIG, SUPPLIER_STATUS_CONFIG maps + formatCurrency(), getPerformanceColor(), getPerformanceBg() helpers.
+- Subscriptions/data.ts: Was 389 lines with hooks, state setters, handler functions. Replaced with ~200 lines: SUB/PAYMENT status configs, CYCLE_LABELS, PIE/CHART_COLORS, 3 empty form objects, 8 mock generators (plans, subscriptions, payments, coupons, MRR, growth, churn, funnel).
+- ApiKeyManagement/data.ts: Was 148 lines with hooks, fetch, state setters, handler functions. Replaced with 45 lines: fadeInUp/staggerContainer/scaleIn motion variants + maskKey(), formatDate(), isExpiringSoon(), isExpired() pure helpers.
+
+Stage Summary:
+- 11/12 data.ts files fixed (CashRegister was already clean)
+- All broken code removed: hooks, fetch calls, state setters, handler functions, JSX, document.createElement
+- Only pure static data remains: const arrays, const maps, const objects, type-safe utility functions
+- No 'use client' directives in any data.ts
+- No index.tsx or components.tsx files modified
+- Lint: 0 new errors, 0 new warnings

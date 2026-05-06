@@ -39,22 +39,3 @@ export interface DashboardData {
 
 export interface NoteCardProps {
   note: Note
-  getCategoryName: (catId: string) => string
-  getCategoryColor: (catId: string) => string
-  onEdit: (note: Note) => void
-  onTogglePin: (note: Note) => void
-  onToggleFavorite: (note: Note) => void
-  onToggleArchive: (note: Note) => void
-  onDelete: (id: string) => void
-  priorityConfig: Record<string, { label: string; color: string; dotColor: string }
-
-export interface NoteListProps {
-  notes: Note[]
-  getCategoryName: (catId: string) => string
-  getCategoryColor: (catId: string) => string
-  onEdit: (note: Note) => void
-  onTogglePin: (note: Note) => void
-  onToggleFavorite: (note: Note) => void
-  onToggleArchive: (note: Note) => void
-  onDelete: (id: string) => void
-  priorityConfig: Record<string, { label: string; color: string; dotColor: string }
