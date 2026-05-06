@@ -833,3 +833,41 @@ Stage Summary:
 - No 'use client' directives in any data.ts
 - No index.tsx or components.tsx files modified
 - Lint: 0 new errors, 0 new warnings
+
+---
+Task ID: 7-BATCH
+Agent: Main (direct)
+Task: Fix ALL broken data.ts and types.ts files across 148 modules
+
+Work Log:
+- Analyzed all 148 modules: found 97 broken data.ts and 6 seemingly broken types.ts
+- Broken data.ts files contained random code fragments from a previous bad split:
+  - React hooks (useState, useEffect, useCallback)
+  - useTranslation() and useContentTranslation() calls
+  - await fetch() API calls
+  - setState/setLoading handler functions
+  - JSX elements and component definitions
+- Fixed batch 1 (12 modules) with subagent: Accounting, CashRegister, Inventory, Expenses, Integracije, Forum, Offers, Visitors, PermissionsEditor, ProcurementManager, Subscriptions, ApiKeyManagement
+  - Manually rewrote: Marketplace (removed JSX Stars component, fetch handlers, keep static data)
+  - Manually rewrote: CRMEnhanced (removed handlers, kept trigger/action label maps)
+  - Manually rewrote: Invoices (kept company info, calc helpers, numberToSerbian function)
+  - Manually rewrote: Valuation (kept STATUS_CONFIG, mockEmployees, mockCriteria, calcOverall)
+  - Manually rewrote: CMS (kept statusConfig, supportedLocales, utility functions)
+  - Manually rewrote: BankSync, Documents, Dashboard, FieldService, UserManagement (minimal clean data)
+- Fixed remaining 76 modules with automated bash script:
+  - For each broken data.ts, found first broken line (hooks/fetch/state)
+  - Extracted clean static data above that line
+  - Wrote clean portion; wrote minimal comment if no clean portion existed
+- Fixed types.ts: AISetupWizard (was actually clean, verified no hooks)
+- types.ts files with `=>` in interface props were false positives (arrow function types are valid)
+- Removed 19,505 lines of broken code artifacts
+- Added 412 lines of clean static data
+- ESLint: 0 errors, 0 warnings
+- Dev server: 200 OK, compiles successfully
+- Git commit: 3698446, pushed to GitHub
+
+Stage Summary:
+- All 148 modules now have clean data.ts files (no hooks, no fetch, no JSX)
+- All types.ts files are clean (only type/interface definitions)
+- 102 files changed, -19,505 / +412 lines
+- Zero lint errors
