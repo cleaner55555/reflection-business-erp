@@ -1,43 +1,29 @@
-export const mockData = [
-  { id: '1', name: 'Аудиторијум 1', status: 'active', date: '2024-01-15', value: '60' },
-  { id: '2', name: 'Аудиторијум 2', status: 'pending', date: '2024-02-20', value: '40' },
-  { id: '3', name: 'Лабораторија', status: 'completed', date: '2024-03-10', value: '25' },
-  { id: '4', name: 'Рачunarска сала', status: 'active', date: '2024-04-05', value: '30' },
-  { id: '5', name: 'Сала за састанке', status: 'pending', date: '2024-05-12', value: '15' },
+import type { Classroom } from './types'
+
+export const INITIAL: Classroom[] = [
+  { id: '1', name: 'Učionica A-101', building: 'Glavna zgrada', floor: '1', capacity: 40, currentOccupancy: 35, type: 'lecture', status: 'occupied', equipment: ['Projektor', 'Tabla', 'Zvučnici'], responsible: 'Prof. Dragan Milić', area: 65, hasProjector: true, hasAC: true, hasWhiteboard: true, lastInspection: '2024-06-01', notes: 'Renovirana 2023' },
+  { id: '2', name: 'Učionica A-102', building: 'Glavna zgrada', floor: '1', capacity: 30, currentOccupancy: 0, type: 'seminar', status: 'available', equipment: ['Projektor', 'Flip chart'], responsible: 'Prof. Ana Nikolić', area: 45, hasProjector: true, hasAC: true, hasWhiteboard: false, lastInspection: '2024-05-28', notes: '' },
+  { id: '3', name: 'Računarska laboratorija B-201', building: 'Tehnički blok', floor: '2', capacity: 25, currentOccupancy: 20, type: 'computer', status: 'occupied', equipment: ['25 PC računara', 'Projektor', 'UPS'], responsible: 'Nenad Stojanović', area: 55, hasProjector: true, hasAC: true, hasWhiteboard: true, lastInspection: '2024-06-10', notes: 'Novi računari postavljeni januar 2024' },
+  { id: '4', name: 'Fizička laboratorija B-105', building: 'Tehnički blok', floor: '1', capacity: 20, currentOccupancy: 0, type: 'lab', status: 'maintenance', equipment: ['Osciloskop', 'Generators', 'Merni instrumenti'], responsible: 'Prof. Snežana Đorđević', area: 60, hasProjector: false, hasAC: true, hasWhiteboard: true, lastInspection: '2024-06-12', notes: 'Popravka ventilacije u toku' },
+  { id: '5', name: 'Amfiteatar C-001', building: 'Centar za nastavu', floor: '0', capacity: 120, currentOccupancy: 95, type: 'lecture', status: 'occupied', equipment: ['Projektor HD', 'Zvučni sistem', 'Kamere', 'Pametna tabla'], responsible: 'Prof. Dragan Milić', area: 150, hasProjector: true, hasAC: true, hasWhiteboard: true, lastInspection: '2024-06-05', notes: 'Predavanja snimana i streamovana' },
+  { id: '6', name: 'Radionica D-301', building: 'Radionički blok', floor: '3', capacity: 15, currentOccupancy: 12, type: 'workshop', status: 'occupied', equipment: ['Alatne mašine', 'Oprema za zavarivanje', 'Zaštitna oprema'], responsible: 'Miodrag Petrović', area: 80, hasProjector: false, hasAC: false, hasWhiteboard: true, lastInspection: '2024-05-15', notes: 'Obavezna zaštitna oprema pri ulazu' },
+  { id: '7', name: 'Učionica A-203', building: 'Glavna zgrada', floor: '2', capacity: 35, currentOccupancy: 0, type: 'lecture', status: 'available', equipment: ['Projektor', 'Tabla'], responsible: 'Prof. Jelena Marković', area: 55, hasProjector: true, hasAC: false, hasWhiteboard: true, lastInspection: '2024-05-20', notes: '' },
+  { id: '8', name: 'Jezički centar B-302', building: 'Tehnički blok', floor: '3', capacity: 20, currentOccupancy: 0, type: 'seminar', status: 'reserved', equipment: ['Audio sistem', 'Projektor', 'Jezičke kabinete'], responsible: 'Prof. Marija Ilić', area: 40, hasProjector: true, hasAC: true, hasWhiteboard: true, lastInspection: '2024-06-08', notes: 'Rezervisana za KEM kurs 15-19.06.' },
+  { id: '9', name: 'Hemijska laboratorija B-106', building: 'Tehnički blok', floor: '1', capacity: 18, currentOccupancy: 0, type: 'lab', status: 'available', equipment: ['Napa', 'Mernice', 'Mikroskopi', 'Spectrofotometar'], responsible: 'Prof. Goran Savić', area: 55, hasProjector: false, hasAC: true, hasWhiteboard: true, lastInspection: '2024-06-11', notes: 'Kontrola hemikalija prošla' },
+  { id: '10', name: 'Učionica A-301', building: 'Glavna zgrada', floor: '3', capacity: 30, currentOccupancy: 0, type: 'lecture', status: 'maintenance', equipment: ['Projektor', 'Tabla'], responsible: 'Prof. Ana Nikolić', area: 48, hasProjector: true, hasAC: false, hasWhiteboard: true, lastInspection: '2024-04-20', notes: 'Zamena podova — dostupna od 20.06.' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  available: { color: 'bg-emerald-100 text-emerald-800', label: 'Slobodna' },
+  occupied: { color: 'bg-blue-100 text-blue-800', label: 'Zauzeta' },
+  maintenance: { color: 'bg-amber-100 text-amber-800', label: 'Održavanje' },
+  reserved: { color: 'bg-purple-100 text-purple-800', label: 'Rezervisana' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const TYPES: Record<string, { label: string }> = {
+  lecture: { label: 'Predavaonica' },
+  lab: { label: 'Laboratorija' },
+  seminar: { label: 'Seminarska' },
+  computer: { label: 'Računarska' },
+  workshop: { label: 'Radionica' },
+}

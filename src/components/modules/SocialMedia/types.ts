@@ -16,4 +16,13 @@ export interface DashboardData {
   publishedPosts: number
   scheduledPosts: number
   totalEngagement: number
-  platformBreakdown: Array<{ platform: string; count: number }
+  platformBreakdown: Array<{ platform: string; count: number }>
+  recentPosts: SocialPost[]
+}
+
+export interface PostFormData {
+  platform: string
+  content: string
+  scheduledDate: string
+  status: string
+}

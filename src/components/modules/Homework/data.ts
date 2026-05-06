@@ -1,43 +1,31 @@
-export const mockData = [
-  { id: '1', name: 'Математика 1', status: 'active', date: '2024-01-15', value: '85%' },
-  { id: '2', name: 'Српски језик', status: 'pending', date: '2024-02-20', value: '92%' },
-  { id: '3', name: 'Физика', status: 'completed', date: '2024-03-10', value: '78%' },
-  { id: '4', name: 'Историја', status: 'active', date: '2024-04-05', value: '88%' },
-  { id: '5', name: 'Географија', status: 'pending', date: '2024-05-12', value: '91%' },
+import type { Homework } from './types'
+
+export const INITIAL: Homework[] = [
+  { id: '1', title: 'Analiza tržišnih kretanja u Srbiji 2024', subject: 'Ekonomija', classGroup: 'III-2', teacher: 'Prof. Dragan Milić', type: 'essay', status: 'assigned', dueDate: '2024-06-20', assignedDate: '2024-06-10', maxPoints: 30, avgScore: 0, submittedCount: 0, totalStudents: 28, description: 'Napisati analizu od 1500-2000 reči o aktuelnim tržišnim kretanjima', instructions: 'Koristiti zvanične izvore RZS i NBS. Priložiti grafikone.' },
+  { id: '2', title: 'Integralno računanje — zbirka zadataka', subject: 'Matematika', classGroup: 'II-1', teacher: 'Prof. Jelena Marković', type: 'problem_set', status: 'graded', dueDate: '2024-06-12', assignedDate: '2024-06-05', maxPoints: 20, avgScore: 14.5, submittedCount: 30, totalStudents: 32, description: 'Rešiti zadatke 1-25 iz poglavlja 8', instructions: 'Prikazati svaki korak. Korišćenje kalkulatora nije dozvoljeno.' },
+  { id: '3', title: 'Laboratorijski izveštaj: Kinetika reakcija', subject: 'Hemija', classGroup: 'III-1', teacher: 'Prof. Goran Savić', type: 'lab_report', status: 'submitted', dueDate: '2024-06-18', assignedDate: '2024-06-04', maxPoints: 25, avgScore: 0, submittedCount: 22, totalStudents: 25, description: 'Izveštaj o eksperimentu brzine hemijske reakcije', instructions: 'Format: Uvod, Metodologija, Rezultati, Diskusija, Zaključak. Priložiti raw podatke.' },
+  { id: '4', title: 'Grupni projekat: Poslovni plan startup-a', subject: 'Preduzetništvo', classGroup: 'IV-1', teacher: 'Prof. Ana Nikolić', type: 'project', status: 'assigned', dueDate: '2024-06-28', assignedDate: '2024-06-01', maxPoints: 50, avgScore: 0, submittedCount: 0, totalStudents: 26, description: 'Kreirati kompletni poslovni plan za fiktivni startup', instructions: 'Grupe 4-5 studenata. Prezentacija 15 min. Uključiti SWOT analizu, finansijske projekte i marketinški plan.' },
+  { id: '5', title: 'Prezentacija: Obnovljivi izvori energije', subject: 'Fizika', classGroup: 'II-2', teacher: 'Prof. Snežana Đorđević', type: 'presentation', status: 'overdue', dueDate: '2024-06-10', assignedDate: '2024-05-28', maxPoints: 15, avgScore: 0, submittedCount: 18, totalStudents: 30, description: 'Individualna prezentacija 10 min o izabranom obnovljivom izvoru', instructions: 'PowerPoint ili PDF. Najmanje 5 akademskih referenci. Vreme: 8-12 min.' },
+  { id: '6', title: 'Čitanje: Na Drini ćuprija — analiza', subject: 'Književnost', classGroup: 'III-1', teacher: 'Prof. Marija Ilić', type: 'reading', status: 'returned', dueDate: '2024-06-08', assignedDate: '2024-05-25', maxPoints: 20, avgScore: 16.2, submittedCount: 25, totalStudents: 25, description: 'Literarna analiza romana Ive Andrića', instructions: 'Fokus na narativne tehnike, simboliku i istorijski kontekst. 1000-1500 reči.' },
+  { id: '7', title: 'Linearna algebra — matrice i determinante', subject: 'Matematika', classGroup: 'I-1', teacher: 'Prof. Jelena Marković', type: 'problem_set', status: 'graded', dueDate: '2024-06-05', assignedDate: '2024-05-28', maxPoints: 25, avgScore: 18.3, submittedCount: 35, totalStudents: 35, description: 'Zadaci iz matrica, determinanata i sistema jednačina', instructions: 'Poglavlje 5 i 6. Pokazati računske korake.' },
+  { id: '8', title: 'HTML/CSS portfolio sajt', subject: 'Računarstvo', classGroup: 'II-1', teacher: 'Nenad Stojanović', type: 'project', status: 'assigned', dueDate: '2024-06-25', assignedDate: '2024-06-08', maxPoints: 40, avgScore: 0, submittedCount: 0, totalStudents: 32, description: 'Kreirati responsivni portfolio sajt sa HTML i CSS', instructions: 'Najmanje 4 sekcije. Validan HTML5. Responsivan dizajn. Hosting na GitHub Pages.' },
+  { id: '9', title: 'Makroekonomski pokazatelji — istraživanje', subject: 'Ekonomija', classGroup: 'IV-2', teacher: 'Prof. Dragan Milić', type: 'essay', status: 'submitted', dueDate: '2024-06-19', assignedDate: '2024-06-05', maxPoints: 30, avgScore: 0, submittedCount: 15, totalStudents: 27, description: 'Analiza BDP, inflacije i stopa zaposlenosti u Srbiji', instructions: 'Duzina 2000-2500 reči. Minimum 5 akademskih izvora.' },
+  { id: '10', title: 'Programiranje u Python-u: funkcije', subject: 'Računarstvo', classGroup: 'I-2', teacher: 'Nenad Stojanović', type: 'problem_set', status: 'assigned', dueDate: '2024-06-22', assignedDate: '2024-06-12', maxPoints: 20, avgScore: 0, submittedCount: 0, totalStudents: 30, description: 'Rešiti 15 zadataka sa funkcijama, rekurzijom i lambda izrazima', instructions: 'Kod u .py fajlu. Dodati komentare. Testirati svaku funkciju.' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  assigned: { color: 'bg-blue-100 text-blue-800', label: 'Dodeljena' },
+  submitted: { color: 'bg-amber-100 text-amber-800', label: 'Predana' },
+  graded: { color: 'bg-emerald-100 text-emerald-800', label: 'Ocenjena' },
+  overdue: { color: 'bg-red-100 text-red-800', label: 'Kasni' },
+  returned: { color: 'bg-gray-100 text-gray-800', label: 'Vraćena' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const TYPES: Record<string, { label: string }> = {
+  essay: { label: 'Esej' },
+  problem_set: { label: 'Zadaci' },
+  lab_report: { label: 'Lab. izveštaj' },
+  project: { label: 'Projekat' },
+  presentation: { label: 'Prezentacija' },
+  reading: { label: 'Čitanje' },
+}

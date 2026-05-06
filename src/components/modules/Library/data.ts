@@ -1,43 +1,35 @@
-export const mockData = [
-  { id: '1', name: 'Рат и мир', status: 'active', date: '2024-01-15', value: '5' },
-  { id: '2', name: 'На Дрини ћуприја', status: 'pending', date: '2024-02-20', value: '12' },
-  { id: '3', name: 'Грозда', status: 'completed', date: '2024-03-10', value: '3' },
-  { id: '4', name: 'Сеобе', status: 'active', date: '2024-04-05', value: '8' },
-  { id: '5', name: 'Злак', status: 'pending', date: '2024-05-12', value: '2' },
+import type { Book } from './types'
+
+export const INITIAL: Book[] = [
+  { id: '1', isbn: '978-86-10-01234-1', title: 'Na Drini ćuprija', author: 'Ivo Andrić', publisher: 'Prosveta', year: 1945, category: 'fiction', totalCopies: 5, availableCopies: 2, borrowedCount: 48, location: 'A-01 Police 3', status: 'available', language: 'Srpski', pages: 312, addedDate: '2020-09-01', notes: 'Nobelovac za književnost 1961' },
+  { id: '2', isbn: '978-86-10-02345-2', title: 'Mehanika fluida', author: 'Frank M. White', publisher: 'McGraw-Hill', year: 2015, category: 'technical', totalCopies: 3, availableCopies: 1, borrowedCount: 22, location: 'T-12 Police 1', status: 'available', language: 'Engleski', pages: 892, addedDate: '2021-03-15', notes: '8. izdanje' },
+  { id: '3', isbn: '978-86-10-03456-3', title: 'Istorija Srba', author: 'Vladimir Ćorović', publisher: 'BIGZ', year: 1993, category: 'history', totalCopies: 4, availableCopies: 0, borrowedCount: 65, location: 'A-05 Police 2', status: 'limited', language: 'Srpski', pages: 1048, addedDate: '2019-09-01', notes: 'Samo za čitanje u biblioteci' },
+  { id: '4', isbn: '978-86-10-04567-4', title: 'Makroekonomija', author: 'N. Gregory Mankiw', publisher: 'Worth Publishers', year: 2019, category: 'economics', totalCopies: 6, availableCopies: 3, borrowedCount: 35, location: 'E-03 Police 1', status: 'available', language: 'Engleski', pages: 576, addedDate: '2020-01-20', notes: '9. izdanje — udžbenik' },
+  { id: '5', isbn: '978-86-10-05678-5', title: 'Organicka hemija', author: 'Paula Yurkanis Bruice', publisher: 'Pearson', year: 2017, category: 'science', totalCopies: 4, availableCopies: 2, borrowedCount: 18, location: 'N-02 Police 4', status: 'available', language: 'Engleski', pages: 1440, addedDate: '2021-09-10', notes: '8. izdanje' },
+  { id: '6', isbn: '978-86-10-06789-6', title: 'Gorski venac', author: 'Petar II Petrović Njegoš', publisher: 'Čigoja štampa', year: 1847, category: 'fiction', totalCopies: 8, availableCopies: 5, borrowedCount: 82, location: 'A-01 Police 1', status: 'available', language: 'Srpski', pages: 96, addedDate: '2018-09-01', notes: 'Klasično delo srpske književnosti' },
+  { id: '7', isbn: '978-86-10-07890-7', title: 'Građansko pravo Srbije', author: 'Mihajlo Đurić', publisher: 'Nomos', year: 2020, category: 'law', totalCopies: 3, availableCopies: 0, borrowedCount: 40, location: 'P-01 Police 2', status: 'reference_only', language: 'Srpski', pages: 624, addedDate: '2021-02-15', notes: 'Samo za korišćenje u čitaonici' },
+  { id: '8', isbn: '978-86-10-08901-8', title: 'Uvod u algoritme', author: 'Thomas H. Cormen', publisher: 'MIT Press', year: 2009, category: 'technical', totalCopies: 5, availableCopies: 2, borrowedCount: 55, location: 'T-08 Police 3', status: 'available', language: 'Engleski', pages: 1312, addedDate: '2019-03-01', notes: '3. izdanje — CLRS' },
+  { id: '9', isbn: '978-86-10-09012-9', title: 'Harrisonova interna medicina', author: 'Dennis L. Kasper', publisher: 'McGraw-Hill', year: 2022, category: 'medicine', totalCopies: 2, availableCopies: 1, borrowedCount: 12, location: 'M-01 Police 1', status: 'available', language: 'Engleski', pages: 3680, addedDate: '2023-01-15', notes: '21. izdanje — 2 toma' },
+  { id: '10', isbn: '978-86-10-00123-0', title: 'Seobe', author: 'Miloš Crnjanski', publisher: 'Prosveta', year: 1929, category: 'fiction', totalCopies: 0, availableCopies: 0, borrowedCount: 0, location: '—', status: 'lost', language: 'Srpski', pages: 256, addedDate: '2018-09-01', notes: 'Gubitak pri premeštanju — treba nadoknaditi' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  available: { color: 'bg-emerald-100 text-emerald-800', label: 'Dostupna' },
+  limited: { color: 'bg-amber-100 text-amber-800', label: 'Ograničena' },
+  reference_only: { color: 'bg-blue-100 text-blue-800', label: 'Samo čitanje' },
+  lost: { color: 'bg-red-100 text-red-800', label: 'Izgubljena' },
+  damaged: { color: 'bg-red-100 text-red-800', label: 'Oštećena' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const CATEGORIES: Record<string, { label: string }> = {
+  fiction: { label: 'Književnost' },
+  science: { label: 'Nauka' },
+  technical: { label: 'Tehnika' },
+  history: { label: 'Istorija' },
+  philosophy: { label: 'Filozofija' },
+  art: { label: 'Umetnost' },
+  law: { label: 'Pravo' },
+  economics: { label: 'Ekonomija' },
+  medicine: { label: 'Medicina' },
+  education: { label: 'Pedagogija' },
+}

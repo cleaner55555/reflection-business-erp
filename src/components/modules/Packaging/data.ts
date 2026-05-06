@@ -1,43 +1,83 @@
-export const mockData = [
-  { id: '1', name: 'PK-001', status: 'active', date: '2024-01-15', value: '5.2 кг' },
-  { id: '2', name: 'PK-002', status: 'pending', date: '2024-02-20', value: '3.1 кг' },
-  { id: '3', name: 'PK-003', status: 'completed', date: '2024-03-10', value: '8.7 кг' },
-  { id: '4', name: 'PK-004', status: 'active', date: '2024-04-05', value: '2.4 кг' },
-  { id: '5', name: 'PK-005', status: 'pending', date: '2024-05-12', value: '6.3 кг' },
+import type { PackagingOrder } from './types'
+
+export const INITIAL_DATA: PackagingOrder[] = [
+  {
+    id: '1', orderNumber: 'PKG-2024-001', orderId: 'ORD-4521', customerName: 'TehnoShop d.o.o.', status: 'in_progress', priority: 'urgent',
+    packagingType: 'fragile',
+    items: [
+      { id: 'i1', productName: 'Monitor 27"', sku: 'MON-2701', quantity: 10, boxType: 'Karton A', boxDimensions: '70x40x15 cm', weight: 8.5, labelPrinted: true, qcPassed: true, barcode: '8601234567890' },
+      { id: 'i2', productName: 'Laptop 15.6"', sku: 'LAP-1501', quantity: 20, boxType: 'Karton B', boxDimensions: '50x35x10 cm', weight: 3.2, labelPrinted: true, qcPassed: null, barcode: '8601234567891' },
+      { id: 'i3', productName: 'Tablet 10"', sku: 'TAB-1001', quantity: 30, boxType: 'Karton C', boxDimensions: '35x25x8 cm', weight: 1.1, labelPrinted: false, qcPassed: null, barcode: '8601234567892' },
+    ],
+    totalWeight: 185.5, totalVolume: 2.8, boxCount: 60, packagingCost: 4500, assignedTo: 'Sana Marković',
+    startDate: '2024-06-15', completedDate: null, notes: 'Fragilna roba - koristiti penaste zaštitne folije'
+  },
+  {
+    id: '2', orderNumber: 'PKG-2024-002', orderId: 'ORD-4522', customerName: 'BookWorld', status: 'pending', priority: 'normal',
+    packagingType: 'standard',
+    items: [
+      { id: 'i4', productName: 'Knjiga - Roman', sku: 'BKN-R01', quantity: 100, boxType: 'Papirna kesica', boxDimensions: '30x20x5 cm', weight: 0.4, labelPrinted: false, qcPassed: null, barcode: '8609876543210' },
+      { id: 'i5', productName: 'Knjiga - Enciklopedija', sku: 'BKN-E01', quantity: 50, boxType: 'Karton D', boxDimensions: '40x30x10 cm', weight: 2.8, labelPrinted: false, qcPassed: null, barcode: '8609876543211' },
+    ],
+    totalWeight: 180, totalVolume: 1.2, boxCount: 150, packagingCost: 2800, assignedTo: '',
+    startDate: '', completedDate: null, notes: ''
+  },
+  {
+    id: '3', orderNumber: 'PKG-2024-003', orderId: 'ORD-4518', customerName: 'FreshFoods', status: 'quality_check', priority: 'urgent',
+    packagingType: 'temperature',
+    items: [
+      { id: 'i6', productName: 'Mlečni proizvodi paket', sku: 'MLK-P01', quantity: 200, boxType: 'Termo kutija', boxDimensions: '60x40x30 cm', weight: 12, labelPrinted: true, qcPassed: true, barcode: '8605554443332' },
+      { id: 'i7', productName: 'Meso - pileća prsa', sku: 'MES-P01', quantity: 150, boxType: 'Stiropor kutija', boxDimensions: '50x35x25 cm', weight: 8, labelPrinted: true, qcPassed: true, barcode: '8605554443333' },
+    ],
+    totalWeight: 3600, totalVolume: 15.5, boxCount: 350, packagingCost: 18500, assignedTo: 'Mladen Jovanović',
+    startDate: '2024-06-14', completedDate: null, notes: 'Hlađena roba - termometri obavezni. Temperatura: 2-4°C'
+  },
+  {
+    id: '4', orderNumber: 'PKG-2024-004', orderId: 'ORD-4515', customerName: 'BuildMat', status: 'completed', priority: 'low',
+    packagingType: 'bulk',
+    items: [
+      { id: 'i8', productName: 'Cement 25kg', sku: 'CMT-25', quantity: 500, boxType: 'Jumbo vreća', boxDimensions: '60x40x20 cm', weight: 25.5, labelPrinted: true, qcPassed: true, barcode: '8601112223334' },
+      { id: 'i9', productName: 'Gips karton 12.5mm', sku: 'GKP-125', quantity: 200, boxType: 'Folia zavesa', boxDimensions: '120x25x12 cm', weight: 28, labelPrinted: true, qcPassed: true, barcode: '8601112223335' },
+    ],
+    totalWeight: 18650, totalVolume: 38, boxCount: 700, packagingCost: 5200, assignedTo: 'Goran Stanković',
+    startDate: '2024-06-13', completedDate: '2024-06-14', notes: 'Teška roba - paletizacija'
+  },
+  {
+    id: '5', orderNumber: 'PKG-2024-005', orderId: 'ORD-4525', customerName: 'PharmaPlus', status: 'pending', priority: 'urgent',
+    packagingType: 'custom',
+    items: [
+      { id: 'i10', productName: 'Lek - Antibiotik', sku: 'LKM-A01', quantity: 500, boxType: 'Sigurnosna ambalaža', boxDimensions: '40x30x20 cm', weight: 5, labelPrinted: false, qcPassed: null, barcode: '8607778889990' },
+      { id: 'i11', productName: 'Vitamini paket', sku: 'VIT-M01', quantity: 1000, boxType: 'Karton E', boxDimensions: '35x25x15 cm', weight: 2, labelPrinted: false, qcPassed: null, barcode: '8607778889991' },
+    ],
+    totalWeight: 4500, totalVolume: 8.5, boxCount: 1500, packagingCost: 12500, assignedTo: '',
+    startDate: '', completedDate: null, notes: 'Farmaceutska ambalaža - GMP standard obavezan. Tamper evident zaštita.'
+  },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  pending: { color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', label: 'Čeka' },
+  in_progress: { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', label: 'U toku' },
+  quality_check: { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300', label: 'QC' },
+  completed: { color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300', label: 'Završeno' },
+  shipped: { color: 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-300', label: 'Poslato' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
+export const PRIORITIES: Record<string, { color: string; label: string }> = {
+  urgent: { color: 'bg-red-100 text-red-700', label: 'Hitno' },
+  normal: { color: 'bg-blue-100 text-blue-700', label: 'Normalno' },
+  low: { color: 'bg-slate-100 text-slate-600', label: 'Nizak' },
+}
 
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
+export const PACK_TYPES: Record<string, { color: string; label: string }> = {
+  standard: { color: 'bg-slate-100 text-slate-700', label: 'Standardno' },
+  fragile: { color: 'bg-red-100 text-red-700', label: 'Fragilno' },
+  temperature: { color: 'bg-sky-100 text-sky-700', label: 'Termo' },
+  bulk: { color: 'bg-amber-100 text-amber-700', label: 'Bulk' },
+  custom: { color: 'bg-violet-100 text-violet-700', label: 'Posebno' },
+}
 
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const WORKERS = ['Sana Marković', 'Mladen Jovanović', 'Goran Stanković', 'Ivana Petrović', 'Nenad Đorđević']
+
+export function formatCurrency(n: number) {
+  return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 0 }).format(n)
+}

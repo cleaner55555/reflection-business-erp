@@ -1,43 +1,27 @@
-export const mockData = [
-  { id: '1', name: 'Јован Петровић', status: 'active', date: '2024-01-15', value: '1985' },
-  { id: '2', name: 'Марка Марић', status: 'pending', date: '2024-02-20', value: '1990' },
-  { id: '3', name: 'Ана Стојковић', status: 'completed', date: '2024-03-10', value: '1978' },
-  { id: '4', name: 'Никола Јовановић', status: 'active', date: '2024-04-05', value: '1995' },
-  { id: '5', name: 'Сара Миловановић', status: 'pending', date: '2024-05-12', value: '1988' },
+import type { Patient } from './types'
+
+export const INITIAL: Patient[] = [
+  { id: '1', patientNo: 'PAC-2024-001', firstName: 'Luka', lastName: 'Petrović', jmbg: '1505998712345', dateOfBirth: '1987-05-15', age: 37, gender: 'male', phone: '+381 63 123 4567', email: 'luka.p@email.com', address: 'Bulevar Mihajla Pupina 45', city: 'Beograd', bloodType: 'A+', insuranceNo: 'ZS-2024-45678', insuranceStatus: 'active', primaryDoctor: 'Dr. Jelena Marković', status: 'active', allergies: ['Penicilin'], chronicConditions: ['Dijabetes tip 2'], lastVisit: '2024-06-10', nextAppointment: '2024-06-24', totalVisits: 15, notes: 'Kontrola šećera svakih 3 meseca' },
+  { id: '2', patientNo: 'PAC-2024-002', firstName: 'Ana', lastName: 'Stanković', jmbg: '2308996789012', dateOfBirth: '1996-08-23', age: 27, gender: 'female', phone: '+381 64 987 6543', email: 'ana.s@email.com', address: 'Kralja Milana 88/5', city: 'Niš', bloodType: 'O-', insuranceNo: 'ZS-2024-56789', insuranceStatus: 'active', primaryDoctor: 'Dr. Dragan Milić', status: 'in_treatment', allergies: [], chronicConditions: [], lastVisit: '2024-06-14', nextAppointment: '2024-06-18', totalVisits: 3, notes: 'Pneumonija — antibiotici 10 dana' },
+  { id: '3', patientNo: 'PAC-2024-003', firstName: 'Marko', lastName: 'Jovanović', jmbg: '1203995123456', dateOfBirth: '1995-03-12', age: 29, gender: 'male', phone: '+381 65 555 1234', email: 'marko.j@email.com', address: 'Strahinjića Bana 12', city: 'Novi Sad', bloodType: 'B+', insuranceNo: 'ZS-2024-67890', insuranceStatus: 'expired', primaryDoctor: 'Dr. Ana Nikolić', status: 'active', allergies: ['Aspirin', 'Ibuprofen'], chronicConditions: ['Astma'], lastVisit: '2024-05-28', nextAppointment: '2024-06-25', totalVisits: 8, notes: 'Obnova zdravstvenog osiguranja hitna' },
+  { id: '4', patientNo: 'PAC-2024-004', firstName: 'Jelena', lastName: 'Nikolić', jmbg: '0712000890123', dateOfBirth: '2000-12-07', age: 23, gender: 'female', phone: '+381 62 444 8899', email: 'jelena.n@email.com', address: 'Vojvode Stepe 203', city: 'Beograd', bloodType: 'AB+', insuranceNo: 'ZS-2024-78901', insuranceStatus: 'active', primaryDoctor: 'Dr. Jelena Marković', status: 'active', allergies: [], chronicConditions: [], lastVisit: '2024-06-01', nextAppointment: '', totalVisits: 2, notes: '' },
+  { id: '5', patientNo: 'PAC-2024-005', firstName: 'Nikola', lastName: 'Milić', jmbg: '2511998567890', dateOfBirth: '1998-11-25', age: 25, gender: 'male', phone: '+381 61 777 3344', email: 'nikola.m@email.com', address: 'Kneginje Ljubice 9', city: 'Kragujevac', bloodType: 'O+', insuranceNo: 'ZS-2024-89012', insuranceStatus: 'pending', primaryDoctor: 'Dr. Snežana Đorđević', status: 'critical', allergies: [], chronicConditions: ['Hipertenzija'], lastVisit: '2024-06-15', nextAppointment: '2024-06-16', totalVisits: 22, notes: 'Hitno — Pritisak 180/120, hospitalizacija' },
+  { id: '6', patientNo: 'PAC-2024-006', firstName: 'Mira', lastName: 'Stojanović', jmbg: '0311500456789', dateOfBirth: '1950-11-03', age: 73, gender: 'female', phone: '+381 63 111 4455', email: '', address: 'Dimitrija Tucovića 55', city: 'Subotica', bloodType: 'A-', insuranceNo: 'ZS-2024-90123', insuranceStatus: 'active', primaryDoctor: 'Dr. Goran Savić', status: 'active', allergies: ['Sulfonamidi'], chronicConditions: ['Dijabetes tip 2', 'Hipertenzija', 'Artroza'], lastVisit: '2024-06-12', nextAppointment: '2024-06-26', totalVisits: 45, notes: 'Redovna kontrola hroničnih bolesti' },
+  { id: '7', patientNo: 'PAC-2024-007', firstName: 'Stefan', lastName: 'Ilić', jmbg: '1804997456789', dateOfBirth: '1997-04-18', age: 27, gender: 'male', phone: '+381 60 222 7766', email: 'stefan.i@email.com', address: 'Njegoševa 34', city: 'Beograd', bloodType: 'B-', insuranceNo: 'ZS-2024-01234', insuranceStatus: 'active', primaryDoctor: 'Dr. Dragan Milić', status: 'discharged', allergies: [], chronicConditions: [], lastVisit: '2024-06-08', nextAppointment: '', totalVisits: 1, notes: 'Uspiješno lečenje mononukleoze — otpušten' },
+  { id: '8', patientNo: 'PAC-2024-008', firstName: 'Gordana', lastName: 'Đorđević', jmbg: '2108690789012', dateOfBirth: '1969-08-21', age: 54, gender: 'female', phone: '+381 66 888 1122', email: 'gordana.dj@email.com', address: 'Bulevar Despota Stefana 156', city: 'Beograd', bloodType: 'O+', insuranceNo: 'ZS-2024-23456', insuranceStatus: 'active', primaryDoctor: 'Dr. Jelena Marković', status: 'in_treatment', allergies: [], chronicConditions: ['Holesterolemija'], lastVisit: '2024-06-13', nextAppointment: '2024-06-20', totalVisits: 30, notes: 'Statini — kontrola holesterola za 6 nedelja' },
+  { id: '9', patientNo: 'PAC-2024-009', firstName: 'Milan', lastName: 'Marković', jmbg: '0902456901234', dateOfBirth: '1945-02-09', age: 79, gender: 'male', phone: '+381 63 333 6688', email: '', address: 'Ruzveltova 78', city: 'Zrenjanin', bloodType: 'AB-', insuranceNo: 'ZS-2024-34567', insuranceStatus: 'active', primaryDoctor: 'Dr. Ana Nikolić', status: 'active', allergies: ['Latex'], chronicConditions: ['KOPB', 'Hipertenzija', 'Dijabetes tip 2'], lastVisit: '2024-06-05', nextAppointment: '2024-06-19', totalVisits: 62, notes: 'Redovna terapija inhalatorima + insulinska pumpa' },
+  { id: '10', patientNo: 'PAC-2024-010', firstName: 'Sara', lastName: 'Pavlović', jmbg: '1507997123456', dateOfBirth: '1997-07-15', age: 26, gender: 'female', phone: '+381 62 555 7799', email: 'sara.p@email.com', address: 'Takovska 28', city: 'Beograd', bloodType: 'A+', insuranceNo: 'ZS-2024-45670', insuranceStatus: 'active', primaryDoctor: 'Dr. Snežana Đorđević', status: 'active', allergies: [], chronicConditions: [], lastVisit: '2024-06-11', nextAppointment: '2024-08-11', totalVisits: 1, notes: 'Godišnji pregled' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' },
+  discharged: { color: 'bg-gray-100 text-gray-800', label: 'Otpušten' },
+  in_treatment: { color: 'bg-blue-100 text-blue-800', label: 'Na lečenju' },
+  critical: { color: 'bg-red-100 text-red-800', label: 'Kritičan' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const INSURANCE: Record<string, { color: string; label: string }> = {
+  active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivno' },
+  expired: { color: 'bg-red-100 text-red-800', label: 'Isteklo' },
+  pending: { color: 'bg-amber-100 text-amber-800', label: 'Na čekanju' },
+}

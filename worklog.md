@@ -3,6 +3,48 @@
 ---
 Task ID: 3-1
 Agent: Main (direct)
+Task: Split 3 modules into smaller files (types.ts, data.ts, components.tsx, index.tsx)
+
+Work Log:
+- Module 1: SocialMedia (src/components/modules/SocialMedia/)
+  - types.ts: SocialPost, DashboardData, PostFormData interfaces
+  - data.ts: platformConfig, statusConfig maps, emptyForm constant
+  - components.tsx: OverviewTabContent, PostsTabContent, CalendarTabContent, SocialMediaTabs, CreatePostDialog, PostDetailDialog
+  - index.tsx: Slim main component (117 lines) with state, useEffect, fetch handlers, composing imported components
+  - Replaced existing broken data.ts/types.ts that had incorrect content
+
+- Module 2: Packaging (src/components/modules/Packaging/)
+  - types.ts: PackagingOrder, PackagingItem, PackagingFormData, PackagingStats interfaces
+  - data.ts: INITIAL_DATA array, STATUSES/PRIORITIES/PACK_TYPES maps, WORKERS array, formatCurrency utility
+  - components.tsx: getStatusBadge/getPriorityBadge/getPackTypeBadge (JSX helpers), PackagingStatsCards, OrdersTableSection, OrderDetailDialog
+  - index.tsx: Slim main component (85 lines) with state, useMemo, handlers
+  - Replaced existing broken data.ts with incorrect mock data
+
+- Module 3: Lab (src/components/modules/Lab/)
+  - types.ts: LabEquipment type
+  - data.ts: INITIAL array, STATUSES/CATEGORIES/CONDITIONS maps, formatPrice utility
+  - components.tsx: getStatusBadge (JSX helper), LabStatsCards, PregledTab, DodajTab, UrediTab, LabTabs, EquipmentDetailDialog, EditEquipmentDialog
+  - index.tsx: Slim main component (107 lines) with state, handlers, CRUD logic
+  - Replaced existing broken data.ts with incorrect mock data
+
+- Rules followed:
+  - 'use client' only in index.tsx and components.tsx (NOT in types.ts or data.ts)
+  - JSX-returning helper functions in components.tsx, not data.ts
+  - Static data maps and INITIAL arrays in data.ts
+  - types.ts has only type/interface definitions
+  - Export names preserved: DruštveneMreže, Pakovanje, Laboratorija
+  - No functionality changed — only code reorganization
+
+- Lint: 0 new errors (51 pre-existing parsing errors in other modules, unrelated)
+
+Stage Summary:
+- 3 modules split into 12 files (4 per module), all well-organized
+- All exported names preserved, no functionality changed
+- Dev server compiles successfully
+
+---
+Task ID: 3-1
+Agent: Main (direct)
 Task: Phase 3 - CRM Module Improvement
 
 Work Log:
@@ -734,3 +776,34 @@ Stage Summary:
 - Lint: 381 errors + 9 warnings → 0 errors + 0 warnings
 - 4 files changed, committed and pushed to GitHub
 - All modules verified to have real Serbian business content (no remaining placeholders)
+---
+Task ID: 3-2
+Agent: Main (direct)
+Task: Split 3 modules (Classroom, Chat, Patients) into types/data/components/index files
+
+Work Log:
+- Module 1 (Classroom): Split index.tsx (287 lines) into 4 files:
+  - types.ts: Classroom type definition
+  - data.ts: INITIAL array (10 classrooms), STATUSES map, TYPES map
+  - components.tsx: getStatusBadge, ClassroomKpiCards, ClassroomTable, ClassroomCreateTab, ClassroomEditTab, ClassroomDetailDialog, ClassroomEditDialog
+  - index.tsx: Slim Ucionica with state, handlers, and composition (~100 lines)
+- Module 2 (Chat): Split index.tsx (280 lines) into 4 files:
+  - types.ts: Channel and Message interfaces
+  - data.ts: channelTypeConfig, emptyForm
+  - components.tsx: ChatKpiCards, OverviewTab, ChannelList, ChatArea, NoChannelSelected, ChatTabContent, CreateChannelDialog
+  - index.tsx: Slim Čet with state, fetch handlers, and composition (~110 lines)
+- Module 3 (Patients): Split index.tsx (287 lines) into 4 files:
+  - types.ts: Patient type definition
+  - data.ts: INITIAL array (10 patients), STATUSES map, INSURANCE map (overwrote broken placeholder)
+  - components.tsx: getStatusBadge, getInsuranceBadge, PatientKpiCards, PatientTable, PatientCreateTab, PatientEditTab, PatientDetailDialog, PatientEditDialog
+  - index.tsx: Slim Pacijenti with state, handlers, and composition (~100 lines)
+
+Stage Summary:
+- All 3 modules properly split into types/data/components/index pattern
+- No new lint errors introduced (0 errors from our 3 modules)
+- eslint-disable comment preserved in Chat index.tsx
+- Existing broken data.ts files (Classroom, Patients) overwritten with proper static data
+- Existing broken data.ts in Chat (had hooks, duplicate exports) replaced with pure static data
+- Functionality unchanged — only code reorganization
+- Dev server compiles successfully
+
