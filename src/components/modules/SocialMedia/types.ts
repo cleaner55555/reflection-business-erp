@@ -1,28 +1,28 @@
 export interface SocialPost {
-  id: string
-  platform: string
-  content: string
-  status: string
-  scheduledDate?: string
-  publishedDate?: string
-  likes?: number
-  comments?: number
-  shares?: number
-  createdAt: string
+  id: string;
+  platform: string;
+  content: string;
+  status: string;
+  scheduledDate?: string;
+  publishedDate?: string;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  createdAt: string;
 }
 
 export interface DashboardData {
-  totalPosts: number
-  publishedPosts: number
-  scheduledPosts: number
-  totalEngagement: number
-  platformBreakdown: Array<{ platform: string; count: number }>
-  recentPosts: SocialPost[]
+  totalPosts: number;
+  publishedPosts: number;
+  scheduledPosts: number;
+  totalEngagement: number;
+  platformBreakdown: Array<{ platform: string; count: number }>;
+  recentPosts: SocialPost[];
 }
 
 export interface PostFormData {
-  platform: string
-  content: string
-  scheduledDate: string
-  status: string
+  platform: string;
+  content: string;
+  scheduledDate: string;
+  status: string;
 }

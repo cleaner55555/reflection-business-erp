@@ -1,262 +1,361 @@
-'use client'
+"use client";
 
-import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Textarea } from '@/components/ui/textarea'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useEffect, useState, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
-  Plus, Search, Pencil, Trash2, Mail, Inbox, Send, AlertTriangle,
-  FileCheck, Filter, ArrowLeft,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { formatDate } from '@/lib/helpers'
-import { useTranslation, useContentTranslation } from '@/lib/i18n'
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+  Mail,
+  Inbox,
+  Send,
+  AlertTriangle,
+  FileCheck,
+  Filter,
+  ArrowLeft,
+} from "lucide-react";
+import { toast } from "sonner";
+import { formatDate } from "@/lib/helpers";
+import { useTranslation, useContentTranslation } from "@/lib/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface ProtocolEntry {
-  id: string
-  number: string
-  date: string
-  direction: string
-  sender?: string
-  recipient?: string
-  subject: string
-  description?: string
-  documentType?: string
-  dueDate?: string
-  responsible?: string
-  status: string
-  priority: string
-  notes?: string
-  createdAt: string
+  id: string;
+  number: string;
+  date: string;
+  direction: string;
+  sender?: string;
+  recipient?: string;
+  subject: string;
+  description?: string;
+  documentType?: string;
+  dueDate?: string;
+  responsible?: string;
+  status: string;
+  priority: string;
+  notes?: string;
+  createdAt: string;
 }
 
-type FormData = Omit<ProtocolEntry, 'id' | 'number' | 'date' | 'createdAt'>
+type FormData = Omit<ProtocolEntry, "id" | "number" | "date" | "createdAt">;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  primljen: { label: 'Primljen', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  u_radu: { label: 'U radu', className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  završen: { label: 'Završen', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  proslijeđen: { label: 'Proslijeđen', className: 'bg-purple-50 text-purple-700 border-purple-200' },
-  odgovoren: { label: 'Odgovoren', className: 'bg-green-50 text-green-700 border-green-200' },
-}
+  primljen: {
+    label: "Primljen",
+    className: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  u_radu: {
+    label: "U radu",
+    className: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  završen: {
+    label: "Završen",
+    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  proslijeđen: {
+    label: "Proslijeđen",
+    className: "bg-purple-50 text-purple-700 border-purple-200",
+  },
+  odgovoren: {
+    label: "Odgovoren",
+    className: "bg-green-50 text-green-700 border-green-200",
+  },
+};
 
 const PRIORITY_CONFIG: Record<string, { label: string; className: string }> = {
-  nizak: { label: 'Nizak', className: 'bg-muted text-muted-foreground' },
-  srednji: { label: 'Srednji', className: 'bg-slate-100 text-slate-700 border-slate-200' },
-  visok: { label: 'Visok', className: 'bg-orange-50 text-orange-600 border-orange-200' },
-  hitan: { label: 'Hitan', className: 'bg-red-50 text-red-600 border-red-200' },
-}
+  nizak: { label: "Nizak", className: "bg-muted text-muted-foreground" },
+  srednji: {
+    label: "Srednji",
+    className: "bg-slate-100 text-slate-700 border-slate-200",
+  },
+  visok: {
+    label: "Visok",
+    className: "bg-orange-50 text-orange-600 border-orange-200",
+  },
+  hitan: { label: "Hitan", className: "bg-red-50 text-red-600 border-red-200" },
+};
 
 const DOC_TYPES: Record<string, string> = {
-  pismo: 'Pismo',
-  ugovor: 'Ugovor',
-  ponuda: 'Ponuda',
-  račun: 'Račun',
-  rešenje: 'Rešenje',
-  ostalo: 'Ostalo',
-}
+  pismo: "Pismo",
+  ugovor: "Ugovor",
+  ponuda: "Ponuda",
+  račun: "Račun",
+  rešenje: "Rešenje",
+  ostalo: "Ostalo",
+};
 
 const EMPTY_FORM: FormData = {
-  direction: 'ulaz',
-  sender: '',
-  recipient: '',
-  subject: '',
-  description: '',
-  documentType: '',
-  dueDate: '',
-  responsible: '',
-  status: 'primljen',
-  priority: 'srednji',
-  notes: '',
-}
+  direction: "ulaz",
+  sender: "",
+  recipient: "",
+  subject: "",
+  description: "",
+  documentType: "",
+  dueDate: "",
+  responsible: "",
+  status: "primljen",
+  priority: "srednji",
+  notes: "",
+};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Protokol() {
-  const { t } = useTranslation()
-  const { tc, translateTexts } = useContentTranslation()
+  const { t } = useTranslation();
+  const { tc, translateTexts } = useContentTranslation();
   // Data state
-  const [entries, setEntries] = useState<ProtocolEntry[]>([])
+  const [entries, setEntries] = useState<ProtocolEntry[]>([]);
 
   // Tab & filter state
-  const [activeTab, setActiveTab] = useState<string>('ulaz')
+  const [activeTab, setActiveTab] = useState<string>("ulaz");
 
   // View mode state
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [viewMode, setViewMode] = useState<"list" | "form">("list");
 
   // Delete confirmation
-  const [deleteTarget, setDeleteTarget] = useState<ProtocolEntry | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<ProtocolEntry | null>(null);
 
   // ─── Fetch ────────────────────────────────────────────────────────────────
 
   const fetchEntries = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const params = new URLSearchParams()
-      if (activeTab !== 'sve') params.set('direction', activeTab)
-      const res = await fetch(`/api/protocol?${params.toString()}`)
-      if (!res.ok) throw new Error()
-      const data = await res.json()
-      setEntries(Array.isArray(data) ? data : [])
+      const params = new URLSearchParams();
+      if (activeTab !== "sve") params.set("direction", activeTab);
+      const res = await fetch(`/api/protocol?${params.toString()}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setEntries(Array.isArray(data) ? data : []);
     } catch {
-      toast.error('Greška pri učitavanju protokola')
-      setEntries([])
+      toast.error("Greška pri učitavanju protokola");
+      setEntries([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [activeTab])
+  }, [activeTab]);
 
-  useEffect(() => { fetchEntries() }, [fetchEntries])
+  useEffect(() => {
+    fetchEntries();
+  }, [fetchEntries]);
 
   useEffect(() => {
     if (entries.length > 0) {
-      translateTexts(entries.flatMap(e => [e.sender, e.recipient, e.subject, e.responsible, e.notes].filter(Boolean)))
+      translateTexts(
+        entries.flatMap((e) =>
+          [e.sender, e.recipient, e.subject, e.responsible, e.notes].filter(
+            Boolean,
+          ),
+        ),
+      );
     }
-  }, [entries])
+  }, [entries]);
 
   // ─── Computed ─────────────────────────────────────────────────────────────
 
-  const totalCount = entries.length
-  const ulazniCount = entries.filter(e => e.direction === 'ulaz').length
-  const izlazniCount = entries.filter(e => e.direction === 'izlaz').length
-  const hitniCount = entries.filter(e => e.priority === 'hitan').length
+  const totalCount = entries.length;
+  const ulazniCount = entries.filter((e) => e.direction === "ulaz").length;
+  const izlazniCount = entries.filter((e) => e.direction === "izlaz").length;
+  const hitniCount = entries.filter((e) => e.priority === "hitan").length;
 
-  const filtered = entries.filter(e => {
-    if (filterStatus !== 'all' && e.status !== filterStatus) return false
-    if (filterPriority !== 'all' && e.priority !== filterPriority) return false
+  const filtered = entries.filter((e) => {
+    if (filterStatus !== "all" && e.status !== filterStatus) return false;
+    if (filterPriority !== "all" && e.priority !== filterPriority) return false;
     if (searchQuery) {
-      const q = searchQuery.toLowerCase()
+      const q = searchQuery.toLowerCase();
       return (
         e.subject.toLowerCase().includes(q) ||
-        (e.sender || '').toLowerCase().includes(q) ||
-        (e.recipient || '').toLowerCase().includes(q) ||
+        (e.sender || "").toLowerCase().includes(q) ||
+        (e.recipient || "").toLowerCase().includes(q) ||
         e.number.toLowerCase().includes(q) ||
-        (e.responsible || '').toLowerCase().includes(q)
-      )
+        (e.responsible || "").toLowerCase().includes(q)
+      );
     }
-    return true
-  })
+    return true;
+  });
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
 
   const openCreate = () => {
-    setEditing(null)
-    setForm({ ...EMPTY_FORM, direction: activeTab === 'izlaz' ? 'izlaz' : 'ulaz' })
-    setViewMode('form')
-  }
+    setEditing(null);
+    setForm({
+      ...EMPTY_FORM,
+      direction: activeTab === "izlaz" ? "izlaz" : "ulaz",
+    });
+    setViewMode("form");
+  };
 
   const openEdit = (entry: ProtocolEntry) => {
-    setEditing(entry)
+    setEditing(entry);
     setForm({
       direction: entry.direction,
-      sender: entry.sender || '',
-      recipient: entry.recipient || '',
+      sender: entry.sender || "",
+      recipient: entry.recipient || "",
       subject: entry.subject,
-      description: entry.description || '',
-      documentType: entry.documentType || '',
-      dueDate: entry.dueDate ? entry.dueDate.split('T')[0] : '',
-      responsible: entry.responsible || '',
+      description: entry.description || "",
+      documentType: entry.documentType || "",
+      dueDate: entry.dueDate ? entry.dueDate.split("T")[0] : "",
+      responsible: entry.responsible || "",
       status: entry.status,
       priority: entry.priority,
-      notes: entry.notes || '',
-    })
-    setViewMode('form')
-  }
+      notes: entry.notes || "",
+    });
+    setViewMode("form");
+  };
 
   const handleCancel = () => {
-    setViewMode('list')
-    setEditing(null)
-    setForm({ ...EMPTY_FORM })
-  }
+    setViewMode("list");
+    setEditing(null);
+    setForm({ ...EMPTY_FORM });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!form.subject.trim()) {
-      toast.error('Predmet je obavezan')
-      return
+      toast.error("Predmet je obavezan");
+      return;
     }
-    setSubmitting(true)
+    setSubmitting(true);
     try {
       const body = {
         ...form,
         dueDate: form.dueDate || null,
-      }
-      const url = editing ? `/api/protocol/${editing.id}` : '/api/protocol'
+      };
+      const url = editing ? `/api/protocol/${editing.id}` : "/api/protocol";
       const res = await fetch(url, {
-        method: editing ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: editing ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error()
-      toast.success(editing ? 'Dopis ažuriran' : 'Dopis kreiran')
-      handleCancel()
-      fetchEntries()
+      });
+      if (!res.ok) throw new Error();
+      toast.success(editing ? "Dopis ažuriran" : "Dopis kreiran");
+      handleCancel();
+      fetchEntries();
     } catch {
-      toast.error('Greška pri čuvanju')
+      toast.error("Greška pri čuvanju");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!deleteTarget) return
-    setDeleting(true)
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      const res = await fetch(`/api/protocol/${deleteTarget.id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error()
-      toast.success('Dopis obrisan')
-      setDeleteTarget(null)
-      fetchEntries()
+      const res = await fetch(`/api/protocol/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Dopis obrisan");
+      setDeleteTarget(null);
+      fetchEntries();
     } catch {
-      toast.error('Greška pri brisanju')
+      toast.error("Greška pri brisanju");
     } finally {
-      setDeleting(false)
+      setDeleting(false);
     }
-  }
+  };
 
-  const updateField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
-    setForm(prev => ({ ...prev, [key]: value }))
-  }
+  const updateField = <K extends keyof FormData>(
+    key: K,
+    value: FormData[K],
+  ) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
   // ─── Render helpers ───────────────────────────────────────────────────────
 
   const statusBadge = (status: string) => {
-    const cfg = STATUS_CONFIG[status]
-    if (!cfg) return <Badge variant="outline" className="text-[10px]">{status}</Badge>
-    return <Badge variant="outline" className={`text-[10px] ${cfg.className}`}>{cfg.label}</Badge>
-  }
+    const cfg = STATUS_CONFIG[status];
+    if (!cfg)
+      return (
+        <Badge variant="outline" className="text-[10px]">
+          {status}
+        </Badge>
+      );
+    return (
+      <Badge variant="outline" className={`text-[10px] ${cfg.className}`}>
+        {cfg.label}
+      </Badge>
+    );
+  };
 
   const priorityBadge = (priority: string) => {
-    const cfg = PRIORITY_CONFIG[priority]
-    if (!cfg) return <Badge variant="secondary" className="text-[10px]">{priority}</Badge>
-    return <Badge variant="secondary" className={`text-[10px] ${cfg.className}`}>{cfg.label}</Badge>
-  }
+    const cfg = PRIORITY_CONFIG[priority];
+    if (!cfg)
+      return (
+        <Badge variant="secondary" className="text-[10px]">
+          {priority}
+        </Badge>
+      );
+    return (
+      <Badge variant="secondary" className={`text-[10px] ${cfg.className}`}>
+        {cfg.label}
+      </Badge>
+    );
+  };
 
   const statsCards = [
-    { label: t('common.total'), value: totalCount, icon: FileCheck, color: 'text-slate-600 bg-slate-50' },
-    { label: t('protocol.incoming'), value: ulazniCount, icon: Inbox, color: 'text-blue-600 bg-blue-50' },
-    { label: t('protocol.outgoing'), value: izlazniCount, icon: Send, color: 'text-emerald-600 bg-emerald-50' },
-    { label: t('protocol.urgent'), value: hitniCount, icon: AlertTriangle, color: 'text-red-600 bg-red-50' },
-  ]
+    {
+      label: t("common.total"),
+      value: totalCount,
+      icon: FileCheck,
+      color: "text-slate-600 bg-slate-50",
+    },
+    {
+      label: t("protocol.incoming"),
+      value: ulazniCount,
+      icon: Inbox,
+      color: "text-blue-600 bg-blue-50",
+    },
+    {
+      label: t("protocol.outgoing"),
+      value: izlazniCount,
+      icon: Send,
+      color: "text-emerald-600 bg-emerald-50",
+    },
+    {
+      label: t("protocol.urgent"),
+      value: hitniCount,
+      icon: AlertTriangle,
+      color: "text-red-600 bg-red-50",
+    },
+  ];
 
   // ─── JSX ──────────────────────────────────────────────────────────────────
 
@@ -272,16 +371,22 @@ export function Protokol() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {statsCards.map(s => (
+        {statsCards.map((s) => (
           <Card key={s.label} className="gap-0">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${s.color}`}>
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${s.color}`}
+                >
                   <s.icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-2xl font-bold leading-none">{loading ? <Skeleton className="h-7 w-10" /> : s.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
+                  <p className="text-2xl font-bold leading-none">
+                    {loading ? <Skeleton className="h-7 w-10" /> : s.value}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {s.label}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -292,12 +397,14 @@ export function Protokol() {
       {/* Main Card */}
       <Card>
         <CardHeader className="pb-3">
-          {viewMode === 'form' ? (
+          {viewMode === "form" ? (
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={handleCancel}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
               <div>
                 <CardTitle className="text-base font-semibold">
-                  {editing ? 'Izmeni dopis' : 'Novi dopis'}
+                  {editing ? "Izmeni dopis" : "Novi dopis"}
                 </CardTitle>
               </div>
             </div>
@@ -320,23 +427,32 @@ export function Protokol() {
           )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {viewMode === 'form' ? (
+          {viewMode === "form" ? (
             /* ─── Inline Create / Edit Form ───────────────────────────────── */
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Direction */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs">Smer *</Label>
-                  <Select value={form.direction} onValueChange={v => updateField('direction', v)}>
+                  <Select
+                    value={form.direction}
+                    onValueChange={(v) => updateField("direction", v)}
+                  >
                     <SelectTrigger className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ulaz">
-                        <span className="flex items-center gap-1.5"><Inbox className="h-3.5 w-3.5" /> {t('protocol.incoming')}</span>
+                        <span className="flex items-center gap-1.5">
+                          <Inbox className="h-3.5 w-3.5" />{" "}
+                          {t("protocol.incoming")}
+                        </span>
                       </SelectItem>
                       <SelectItem value="izlaz">
-                        <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> {t('protocol.outgoing')}</span>
+                        <span className="flex items-center gap-1.5">
+                          <Send className="h-3.5 w-3.5" />{" "}
+                          {t("protocol.outgoing")}
+                        </span>
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -345,13 +461,18 @@ export function Protokol() {
                 {/* Document type */}
                 <div className="space-y-2">
                   <Label className="text-xs">Tip dokumenta</Label>
-                  <Select value={form.documentType} onValueChange={v => updateField('documentType', v)}>
+                  <Select
+                    value={form.documentType}
+                    onValueChange={(v) => updateField("documentType", v)}
+                  >
                     <SelectTrigger className="h-9 text-sm">
                       <SelectValue placeholder="Izaberite" />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(DOC_TYPES).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v}</SelectItem>
+                        <SelectItem key={k} value={k}>
+                          {v}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -359,14 +480,14 @@ export function Protokol() {
               </div>
 
               {/* Sender / Recipient — conditional on direction */}
-              {form.direction === 'ulaz' ? (
+              {form.direction === "ulaz" ? (
                 <div className="space-y-2">
                   <Label className="text-xs">Pošiljalac</Label>
                   <Input
                     className="h-9 text-sm"
                     placeholder="Ko šalje dopis..."
                     value={form.sender}
-                    onChange={e => updateField('sender', e.target.value)}
+                    onChange={(e) => updateField("sender", e.target.value)}
                   />
                 </div>
               ) : (
@@ -376,7 +497,7 @@ export function Protokol() {
                     className="h-9 text-sm"
                     placeholder="Kom se šalje dopis..."
                     value={form.recipient}
-                    onChange={e => updateField('recipient', e.target.value)}
+                    onChange={(e) => updateField("recipient", e.target.value)}
                   />
                 </div>
               )}
@@ -388,7 +509,7 @@ export function Protokol() {
                   className="h-9 text-sm"
                   placeholder="Predmet dopisa..."
                   value={form.subject}
-                  onChange={e => updateField('subject', e.target.value)}
+                  onChange={(e) => updateField("subject", e.target.value)}
                   required
                 />
               </div>
@@ -400,7 +521,7 @@ export function Protokol() {
                   className="text-sm min-h-[70px] resize-none"
                   placeholder="Detaljan opis..."
                   value={form.description}
-                  onChange={e => updateField('description', e.target.value)}
+                  onChange={(e) => updateField("description", e.target.value)}
                 />
               </div>
 
@@ -408,26 +529,36 @@ export function Protokol() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs">Status</Label>
-                  <Select value={form.status} onValueChange={v => updateField('status', v)}>
+                  <Select
+                    value={form.status}
+                    onValueChange={(v) => updateField("status", v)}
+                  >
                     <SelectTrigger className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                        <SelectItem key={k} value={k}>
+                          {v.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Prioritet</Label>
-                  <Select value={form.priority} onValueChange={v => updateField('priority', v)}>
+                  <Select
+                    value={form.priority}
+                    onValueChange={(v) => updateField("priority", v)}
+                  >
                     <SelectTrigger className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                        <SelectItem key={k} value={k}>
+                          {v.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -442,7 +573,7 @@ export function Protokol() {
                     type="date"
                     className="h-9 text-sm"
                     value={form.dueDate}
-                    onChange={e => updateField('dueDate', e.target.value)}
+                    onChange={(e) => updateField("dueDate", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -451,7 +582,7 @@ export function Protokol() {
                     className="h-9 text-sm"
                     placeholder="Ime zaposlenog..."
                     value={form.responsible}
-                    onChange={e => updateField('responsible', e.target.value)}
+                    onChange={(e) => updateField("responsible", e.target.value)}
                   />
                 </div>
               </div>
@@ -463,17 +594,26 @@ export function Protokol() {
                   className="h-9 text-sm"
                   placeholder="Dodatne napomene..."
                   value={form.notes}
-                  onChange={e => updateField('notes', e.target.value)}
+                  onChange={(e) => updateField("notes", e.target.value)}
                 />
               </div>
 
               {/* Actions */}
               <div className="flex gap-2 pt-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleCancel}
+                >
                   Otkaži
                 </Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? t('common.saving') : editing ? t('common.update') : t('common.create')}
+                  {submitting
+                    ? t("common.saving")
+                    : editing
+                      ? t("common.update")
+                      : t("common.create")}
                 </Button>
               </div>
             </form>
@@ -502,31 +642,45 @@ export function Protokol() {
                       placeholder="Pretraži dopise..."
                       className="pl-9 h-9 text-sm"
                       value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <Select
+                      value={filterStatus}
+                      onValueChange={setFilterStatus}
+                    >
                       <SelectTrigger className="h-9 w-[140px] text-xs">
                         <Filter className="mr-1.5 h-3 w-3 text-muted-foreground" />
-                        <SelectValue placeholder={t('common.status')} />
+                        <SelectValue placeholder={t("common.status")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">{t('common.allStatuses')}</SelectItem>
+                        <SelectItem value="all">
+                          {t("common.allStatuses")}
+                        </SelectItem>
                         {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                          <SelectItem key={k} value={k}>
+                            {v.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <Select value={filterPriority} onValueChange={setFilterPriority}>
+                    <Select
+                      value={filterPriority}
+                      onValueChange={setFilterPriority}
+                    >
                       <SelectTrigger className="h-9 w-[140px] text-xs">
                         <Filter className="mr-1.5 h-3 w-3 text-muted-foreground" />
-                        <SelectValue placeholder={t('protocol.priority')} />
+                        <SelectValue placeholder={t("protocol.priority")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">{t('protocol.allPriorities')}</SelectItem>
+                        <SelectItem value="all">
+                          {t("protocol.allPriorities")}
+                        </SelectItem>
                         {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
-                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                          <SelectItem key={k} value={k}>
+                            {v.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -546,28 +700,49 @@ export function Protokol() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-xs w-[110px]">Broj</TableHead>
-                            <TableHead className="text-xs w-[100px]">Datum</TableHead>
+                            <TableHead className="text-xs w-[110px]">
+                              Broj
+                            </TableHead>
+                            <TableHead className="text-xs w-[100px]">
+                              Datum
+                            </TableHead>
                             <TableHead className="text-xs">Od / Za</TableHead>
-                            <TableHead className="text-xs min-w-[180px]">Predmet</TableHead>
-                            <TableHead className="text-xs w-[100px]">Tip dok.</TableHead>
-                            <TableHead className="text-xs w-[120px]">Odgov. lice</TableHead>
-                            <TableHead className="text-xs w-[90px]">Rok</TableHead>
-                            <TableHead className="text-xs w-[100px]">Status</TableHead>
-                            <TableHead className="text-xs w-[80px]">Prioritet</TableHead>
-                            <TableHead className="text-xs w-[80px] text-right">Akcije</TableHead>
+                            <TableHead className="text-xs min-w-[180px]">
+                              Predmet
+                            </TableHead>
+                            <TableHead className="text-xs w-[100px]">
+                              Tip dok.
+                            </TableHead>
+                            <TableHead className="text-xs w-[120px]">
+                              Odgov. lice
+                            </TableHead>
+                            <TableHead className="text-xs w-[90px]">
+                              Rok
+                            </TableHead>
+                            <TableHead className="text-xs w-[100px]">
+                              Status
+                            </TableHead>
+                            <TableHead className="text-xs w-[80px]">
+                              Prioritet
+                            </TableHead>
+                            <TableHead className="text-xs w-[80px] text-right">
+                              Akcije
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {filtered.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={10} className="text-center py-12 text-muted-foreground text-sm">
+                              <TableCell
+                                colSpan={10}
+                                className="text-center py-12 text-muted-foreground text-sm"
+                              >
                                 <Mail className="h-8 w-8 mx-auto mb-2 opacity-30" />
                                 Nema dopisa za prikaz
                               </TableCell>
                             </TableRow>
                           ) : (
-                            filtered.map(entry => (
+                            filtered.map((entry) => (
                               <TableRow key={entry.id} className="group">
                                 <TableCell className="text-xs font-mono font-medium">
                                   {entry.number}
@@ -576,29 +751,44 @@ export function Protokol() {
                                   {formatDate(entry.date)}
                                 </TableCell>
                                 <TableCell className="text-xs max-w-[160px] truncate">
-                                  {entry.direction === 'ulaz'
-                                    ? (tc(entry.sender) || '-')
-                                    : (tc(entry.recipient) || '-')}
+                                  {entry.direction === "ulaz"
+                                    ? tc(entry.sender) || "-"
+                                    : tc(entry.recipient) || "-"}
                                 </TableCell>
                                 <TableCell className="text-xs font-medium">
-                                  <span className="line-clamp-1">{tc(entry.subject)}</span>
+                                  <span className="line-clamp-1">
+                                    {tc(entry.subject)}
+                                  </span>
                                 </TableCell>
                                 <TableCell className="text-xs">
-                                  {entry.documentType
-                                    ? <Badge variant="secondary" className="text-[10px] font-normal">
-                                        {DOC_TYPES[entry.documentType] || entry.documentType}
-                                      </Badge>
-                                    : <span className="text-muted-foreground">-</span>
-                                  }
+                                  {entry.documentType ? (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-[10px] font-normal"
+                                    >
+                                      {DOC_TYPES[entry.documentType] ||
+                                        entry.documentType}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-muted-foreground">
+                                      -
+                                    </span>
+                                  )}
                                 </TableCell>
                                 <TableCell className="text-xs max-w-[110px] truncate">
-                                  {tc(entry.responsible) || '-'}
+                                  {tc(entry.responsible) || "-"}
                                 </TableCell>
                                 <TableCell className="text-xs whitespace-nowrap">
-                                  {entry.dueDate ? formatDate(entry.dueDate) : '-'}
+                                  {entry.dueDate
+                                    ? formatDate(entry.dueDate)
+                                    : "-"}
                                 </TableCell>
-                                <TableCell>{statusBadge(entry.status)}</TableCell>
-                                <TableCell>{priorityBadge(entry.priority)}</TableCell>
+                                <TableCell>
+                                  {statusBadge(entry.status)}
+                                </TableCell>
+                                <TableCell>
+                                  {priorityBadge(entry.priority)}
+                                </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                                     <Button
@@ -636,14 +826,19 @@ export function Protokol() {
       </Card>
 
       {/* ─── Delete Confirmation (AlertDialog) ────────────────────────────── */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null) }}>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Potvrda brisanja</AlertDialogTitle>
             <AlertDialogDescription>
-              Da li ste sigurni da želite da obrišete dopis{' '}
-              <span className="font-semibold">{deleteTarget?.number}</span>
-              {' '}— <span className="italic">{tc(deleteTarget?.subject)}</span>?
+              Da li ste sigurni da želite da obrišete dopis{" "}
+              <span className="font-semibold">{deleteTarget?.number}</span> —{" "}
+              <span className="italic">{tc(deleteTarget?.subject)}</span>?
               <br />
               Ova akcija se ne može poništiti.
             </AlertDialogDescription>
@@ -655,11 +850,11 @@ export function Protokol() {
               disabled={deleting}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
-              {deleting ? t('common.deleting') : t('common.delete')}
+              {deleting ? t("common.deleting") : t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

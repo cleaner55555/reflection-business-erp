@@ -218,7 +218,7 @@ export const moduleComponents: Record<string, React.ComponentType> = {
   jelovnik: Jelovnik,
   kuhinja: Kuhinja,
   narudzbe: Narudzbe,
-  dostava: DostavaModul,
+  dostava: Dostava,
   gradiliste: Gradiliste,
   projektovanje: Projektovanje,
   subodradaci: Subodradaci,

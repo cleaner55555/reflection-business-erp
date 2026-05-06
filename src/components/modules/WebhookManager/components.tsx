@@ -1,13 +1,19 @@
-'use client'
+"use client";
 
-import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Switch } from '@/components/ui/switch'
+import { useEffect, useState, useCallback } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +21,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +31,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog";
 import {
   Plus,
   Pencil,
@@ -38,161 +44,167 @@ import {
   AlertCircle,
   Copy,
   ExternalLink,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { useAppStore } from '@/lib/store'
-import { formatDate } from '@/lib/helpers'
+} from "lucide-react";
+import { toast } from "sonner";
+import { useAppStore } from "@/lib/store";
+import { formatDate } from "@/lib/helpers";
 
 // ============ TYPES ============
 
 interface Webhook {
-  id: string
-  companyId: string
-  name: string
-  url: string
-  events: string
-  secret?: string | null
-  headers?: string | null
-  isActive: boolean
-  lastTriggeredAt?: string | null
-  successCount: number
-  failureCount: number
-  createdAt: string
-  updatedAt: string
+  id: string;
+  companyId: string;
+  name: string;
+  url: string;
+  events: string;
+  secret?: string | null;
+  headers?: string | null;
+  isActive: boolean;
+  lastTriggeredAt?: string | null;
+  successCount: number;
+  failureCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const WEBHOOK_EVENTS = [
-  { value: 'invoice.created', label: 'Faktura kreirana', icon: '📄' },
-  { value: 'invoice.paid', label: 'Faktura plaćena', icon: '✅' },
-  { value: 'invoice.sent', label: 'Faktura poslata', icon: '📤' },
-  { value: 'partner.created', label: 'Partner kreiran', icon: '🤝' },
-  { value: 'partner.updated', label: 'Partner ažuriran', icon: '✏️' },
-  { value: 'stock.low', label: 'Niska zaliha', icon: '⚠️' },
-  { value: 'stock.movement', label: 'Kretanje zaliha', icon: '📦' },
-  { value: 'payment.received', label: 'Plaćanje primljeno', icon: '💰' },
-  { value: 'journal.entry', label: 'Knjiženje', icon: '📒' },
-  { value: 'deal.won', label: 'Poslovna prilika - uspeh', icon: '🎉' },
-  { value: 'deal.lost', label: 'Poslovna prilika - gubitak', icon: '😔' },
-  { value: 'employee.created', label: 'Zaposleni kreiran', icon: '👤' },
-  { value: 'payroll.created', label: 'Plata kreirana', icon: '💵' },
-  { value: 'project.completed', label: 'Projekat završen', icon: '📁' },
-  { value: 'user.login', label: 'Prijava korisnika', icon: '🔐' },
-  { value: 'audit.critical', label: 'Kritičan audit događaj', icon: '🚨' },
-]
+  { value: "invoice.created", label: "Faktura kreirana", icon: "📄" },
+  { value: "invoice.paid", label: "Faktura plaćena", icon: "✅" },
+  { value: "invoice.sent", label: "Faktura poslata", icon: "📤" },
+  { value: "partner.created", label: "Partner kreiran", icon: "🤝" },
+  { value: "partner.updated", label: "Partner ažuriran", icon: "✏️" },
+  { value: "stock.low", label: "Niska zaliha", icon: "⚠️" },
+  { value: "stock.movement", label: "Kretanje zaliha", icon: "📦" },
+  { value: "payment.received", label: "Plaćanje primljeno", icon: "💰" },
+  { value: "journal.entry", label: "Knjiženje", icon: "📒" },
+  { value: "deal.won", label: "Poslovna prilika - uspeh", icon: "🎉" },
+  { value: "deal.lost", label: "Poslovna prilika - gubitak", icon: "😔" },
+  { value: "employee.created", label: "Zaposleni kreiran", icon: "👤" },
+  { value: "payroll.created", label: "Plata kreirana", icon: "💵" },
+  { value: "project.completed", label: "Projekat završen", icon: "📁" },
+  { value: "user.login", label: "Prijava korisnika", icon: "🔐" },
+  { value: "audit.critical", label: "Kritičan audit događaj", icon: "🚨" },
+];
 
 const EVENT_GROUPS = [
-  { label: 'Fakture', events: ['invoice.created', 'invoice.paid', 'invoice.sent'] },
-  { label: 'Partneri', events: ['partner.created', 'partner.updated'] },
-  { label: 'Magacin', events: ['stock.low', 'stock.movement'] },
-  { label: 'Finansije', events: ['payment.received', 'journal.entry'] },
-  { label: 'CRM', events: ['deal.won', 'deal.lost'] },
-  { label: 'Zaposleni', events: ['employee.created', 'payroll.created'] },
-  { label: 'Projekti', events: ['project.completed'] },
-  { label: 'Sistem', events: ['user.login', 'audit.critical'] },
-]
+  {
+    label: "Fakture",
+    events: ["invoice.created", "invoice.paid", "invoice.sent"],
+  },
+  { label: "Partneri", events: ["partner.created", "partner.updated"] },
+  { label: "Magacin", events: ["stock.low", "stock.movement"] },
+  { label: "Finansije", events: ["payment.received", "journal.entry"] },
+  { label: "CRM", events: ["deal.won", "deal.lost"] },
+  { label: "Zaposleni", events: ["employee.created", "payroll.created"] },
+  { label: "Projekti", events: ["project.completed"] },
+  { label: "Sistem", events: ["user.login", "audit.critical"] },
+];
 
 // ============ MAIN COMPONENT ============
 
 export function WebhookManager() {
-  const activeCompanyId = useAppStore((s) => s.activeCompanyId)
+  const activeCompanyId = useAppStore((s) => s.activeCompanyId);
 
-  const [webhooks, setWebhooks] = useState<Webhook[]>([])
+  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
 
   // Dialog state
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Form state
-  const [formName, setFormName] = useState('')
+  const [formName, setFormName] = useState("");
 
   // Delete state
-  const [deleteTarget, setDeleteTarget] = useState<Webhook | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Webhook | null>(null);
 
   // Test state
-  const [testingId, setTestingId] = useState<string | null>(null)
+  const [testingId, setTestingId] = useState<string | null>(null);
 
   // Fetch webhooks
   const fetchWebhooks = useCallback(async () => {
-    if (!activeCompanyId) return
-    setLoading(true)
+    if (!activeCompanyId) return;
+    setLoading(true);
     try {
-      const res = await fetch(`/api/webhooks?companyId=${activeCompanyId}`)
-      const data = await res.json()
-      setWebhooks(Array.isArray(data) ? data : [])
+      const res = await fetch(`/api/webhooks?companyId=${activeCompanyId}`);
+      const data = await res.json();
+      setWebhooks(Array.isArray(data) ? data : []);
     } catch {
-      toast.error('Greška pri učitavanju webhukova')
+      toast.error("Greška pri učitavanju webhukova");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [activeCompanyId])
+  }, [activeCompanyId]);
 
-  useEffect(() => { fetchWebhooks() }, [fetchWebhooks])
+  useEffect(() => {
+    fetchWebhooks();
+  }, [fetchWebhooks]);
 
   // Open create
   const openCreate = () => {
-    setEditingWebhook(null)
-    setFormName('')
-    setFormUrl('')
-    setFormSecret('')
-    setFormEvents([])
-    setFormActive(true)
-    setDialogOpen(true)
-  }
+    setEditingWebhook(null);
+    setFormName("");
+    setFormUrl("");
+    setFormSecret("");
+    setFormEvents([]);
+    setFormActive(true);
+    setDialogOpen(true);
+  };
 
   // Open edit
   const openEdit = (webhook: Webhook) => {
-    setEditingWebhook(webhook)
-    setFormName(webhook.name)
-    setFormUrl(webhook.url)
-    setFormSecret(webhook.secret || '')
+    setEditingWebhook(webhook);
+    setFormName(webhook.name);
+    setFormUrl(webhook.url);
+    setFormSecret(webhook.secret || "");
     try {
-      setFormEvents(JSON.parse(webhook.events))
+      setFormEvents(JSON.parse(webhook.events));
     } catch {
-      setFormEvents([])
+      setFormEvents([]);
     }
-    setFormActive(webhook.isActive)
-    setDialogOpen(true)
-  }
+    setFormActive(webhook.isActive);
+    setDialogOpen(true);
+  };
 
   // Toggle event
   const toggleEvent = (event: string) => {
     setFormEvents((prev) =>
-      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event]
-    )
-  }
+      prev.includes(event) ? prev.filter((e) => e !== event) : [...prev, event],
+    );
+  };
 
   // Toggle group
   const toggleGroup = (events: string[]) => {
-    const allSelected = events.every((e) => formEvents.includes(e))
+    const allSelected = events.every((e) => formEvents.includes(e));
     if (allSelected) {
-      setFormEvents((prev) => prev.filter((e) => !events.includes(e)))
+      setFormEvents((prev) => prev.filter((e) => !events.includes(e)));
     } else {
-      const newEvents = new Set([...formEvents, ...events])
-      setFormEvents([...newEvents])
+      const newEvents = new Set([...formEvents, ...events]);
+      setFormEvents([...newEvents]);
     }
-  }
+  };
 
   // Generate secret
   const generateSecret = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
-    let secret = ''
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let secret = "";
     for (let i = 0; i < 32; i++) {
-      secret += chars.charAt(Math.floor(Math.random() * chars.length))
+      secret += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    setFormSecret(secret)
-  }
+    setFormSecret(secret);
+  };
 
   // Save
   const handleSave = async () => {
     if (!formName || !formUrl) {
-      toast.error('Naziv i URL su obavezni')
-      return
+      toast.error("Naziv i URL su obavezni");
+      return;
     }
     if (formEvents.length === 0) {
-      toast.error('Izaberite bar jedan događaj')
-      return
+      toast.error("Izaberite bar jedan događaj");
+      return;
     }
 
-    setSaving(true)
+    setSaving(true);
     try {
       const body = {
         companyId: activeCompanyId,
@@ -201,92 +213,96 @@ export function WebhookManager() {
         secret: formSecret || null,
         events: formEvents,
         headers: null,
-      }
+      };
 
       if (editingWebhook) {
         const res = await fetch(`/api/webhooks/${editingWebhook.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
-        })
+        });
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(err.error || 'Greška')
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Greška");
         }
-        toast.success(`Webhook "${formName}" ažuriran`)
+        toast.success(`Webhook "${formName}" ažuriran`);
       } else {
-        const res = await fetch('/api/webhooks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/webhooks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
-        })
+        });
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(err.error || 'Greška')
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Greška");
         }
-        toast.success(`Webhook "${formName}" kreiran`)
+        toast.success(`Webhook "${formName}" kreiran`);
       }
 
-      setDialogOpen(false)
-      fetchWebhooks()
+      setDialogOpen(false);
+      fetchWebhooks();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Greška pri čuvanju')
+      toast.error(err instanceof Error ? err.message : "Greška pri čuvanju");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   // Delete
   const handleDelete = async () => {
-    if (!deleteTarget) return
-    setDeleteSaving(true)
+    if (!deleteTarget) return;
+    setDeleteSaving(true);
     try {
-      const res = await fetch(`/api/webhooks/${deleteTarget.id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/webhooks/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Greška')
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Greška");
       }
-      toast.success(`Webhook "${deleteTarget.name}" obrisan`)
-      setDeleteTarget(null)
-      fetchWebhooks()
+      toast.success(`Webhook "${deleteTarget.name}" obrisan`);
+      setDeleteTarget(null);
+      fetchWebhooks();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Greška pri brisanju')
+      toast.error(err instanceof Error ? err.message : "Greška pri brisanju");
     } finally {
-      setDeleteSaving(false)
+      setDeleteSaving(false);
     }
-  }
+  };
 
   // Test webhook
   const handleTest = async (webhook: Webhook) => {
-    setTestingId(webhook.id)
+    setTestingId(webhook.id);
     try {
       const res = await fetch(`/api/webhooks/${webhook.id}/test`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ companyId: activeCompanyId }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (data.success) {
-        toast.success(`Test uspešan (${data.statusCode || 200})`)
+        toast.success(`Test uspešan (${data.statusCode || 200})`);
       } else {
-        toast.error(`Test neuspešan: ${data.error || 'Nema odgovora'}`)
+        toast.error(`Test neuspešan: ${data.error || "Nema odgovora"}`);
       }
     } catch {
-      toast.error('Test neuspešan - server nije dostupan')
+      toast.error("Test neuspešan - server nije dostupan");
     } finally {
-      setTestingId(null)
+      setTestingId(null);
     }
-  }
+  };
 
   // Copy URL
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    toast.success('Kopirano')
-  }
+    navigator.clipboard.writeText(text);
+    toast.success("Kopirano");
+  };
 
   const getEventLabel = (eventValue: string) => {
-    return WEBHOOK_EVENTS.find((e) => e.value === eventValue)?.label || eventValue
-  }
+    return (
+      WEBHOOK_EVENTS.find((e) => e.value === eventValue)?.label || eventValue
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -320,9 +336,23 @@ export function WebhookManager() {
               <AlertCircle className="h-4 w-4 text-amber-600" />
             </div>
             <div className="flex-1 text-xs text-muted-foreground space-y-1">
-              <p className="font-medium text-foreground">Kako funkcionišu webhook-ovi?</p>
-              <p>Kada se odabran događaj desi u sistemu, poslaćemo HTTP POST zahtev na navedeni URL sa JSON payload-om. Možete koristiti webhook za integraciju sa spoljnim servisima (Slack, Zapier, n8n, itd.).</p>
-              <p>Svaki webhook ima tajni ključ (secret) za verifikaciju potpisa u zaglavlju <code className="px-1 py-0.5 bg-muted rounded text-[10px] font-mono">X-Webhook-Signature</code>.</p>
+              <p className="font-medium text-foreground">
+                Kako funkcionišu webhook-ovi?
+              </p>
+              <p>
+                Kada se odabran događaj desi u sistemu, poslaćemo HTTP POST
+                zahtev na navedeni URL sa JSON payload-om. Možete koristiti
+                webhook za integraciju sa spoljnim servisima (Slack, Zapier,
+                n8n, itd.).
+              </p>
+              <p>
+                Svaki webhook ima tajni ključ (secret) za verifikaciju potpisa u
+                zaglavlju{" "}
+                <code className="px-1 py-0.5 bg-muted rounded text-[10px] font-mono">
+                  X-Webhook-Signature
+                </code>
+                .
+              </p>
             </div>
           </div>
         </CardContent>
@@ -339,8 +369,12 @@ export function WebhookManager() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Webhook className="h-12 w-12 text-muted-foreground/30 mb-4" />
-            <h3 className="text-sm font-medium text-muted-foreground">Nema webhook-ova</h3>
-            <p className="text-xs text-muted-foreground mt-1">Kreirajte prvi webhook za automatska obaveštenja</p>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Nema webhook-ova
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Kreirajte prvi webhook za automatska obaveštenja
+            </p>
             <Button size="sm" className="mt-4 gap-2" onClick={openCreate}>
               <Plus className="h-4 w-4" />
               Kreiraj webhook
@@ -350,8 +384,12 @@ export function WebhookManager() {
       ) : (
         <div className="grid gap-4">
           {webhooks.map((webhook) => {
-            let eventCount = 0
-            try { eventCount = JSON.parse(webhook.events).length } catch { /* empty */ }
+            let eventCount = 0;
+            try {
+              eventCount = JSON.parse(webhook.events).length;
+            } catch {
+              /* empty */
+            }
 
             return (
               <Card key={webhook.id} className="relative overflow-hidden">
@@ -359,12 +397,14 @@ export function WebhookManager() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-sm text-foreground">{webhook.name}</h3>
+                        <h3 className="font-semibold text-sm text-foreground">
+                          {webhook.name}
+                        </h3>
                         <Badge
-                          variant={webhook.isActive ? 'default' : 'outline'}
-                          className={`text-[10px] ${webhook.isActive ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : ''}`}
+                          variant={webhook.isActive ? "default" : "outline"}
+                          className={`text-[10px] ${webhook.isActive ? "bg-emerald-100 text-emerald-700 border-emerald-200" : ""}`}
                         >
-                          {webhook.isActive ? 'Aktivan' : 'Neaktivan'}
+                          {webhook.isActive ? "Aktivan" : "Neaktivan"}
                         </Badge>
                       </div>
 
@@ -385,7 +425,7 @@ export function WebhookManager() {
                           variant="ghost"
                           size="sm"
                           className="h-6 w-6 p-0 shrink-0"
-                          onClick={() => window.open(webhook.url, '_blank')}
+                          onClick={() => window.open(webhook.url, "_blank")}
                         >
                           <ExternalLink className="h-3 w-3" />
                         </Button>
@@ -394,25 +434,41 @@ export function WebhookManager() {
                       {/* Events */}
                       <div className="flex flex-wrap gap-1 mb-2">
                         {(() => {
-                          let events: string[] = []
-                          try { events = JSON.parse(webhook.events) } catch { /* empty */ }
+                          let events: string[] = [];
+                          try {
+                            events = JSON.parse(webhook.events);
+                          } catch {
+                            /* empty */
+                          }
                           return events.slice(0, 5).map((e: string) => {
-                            const evt = WEBHOOK_EVENTS.find((ev) => ev.value === e)
+                            const evt = WEBHOOK_EVENTS.find(
+                              (ev) => ev.value === e,
+                            );
                             return (
-                              <Badge key={e} variant="secondary" className="text-[10px]">
+                              <Badge
+                                key={e}
+                                variant="secondary"
+                                className="text-[10px]"
+                              >
                                 {evt?.icon} {evt?.label || e}
                               </Badge>
-                            )
-                          })
+                            );
+                          });
                         })()}
                         {(() => {
-                          let events: string[] = []
-                          try { events = JSON.parse(webhook.events) } catch { /* empty */ }
-                          return events.length > 5 && (
-                            <Badge variant="outline" className="text-[10px]">
-                              +{events.length - 5} više
-                            </Badge>
-                          )
+                          let events: string[] = [];
+                          try {
+                            events = JSON.parse(webhook.events);
+                          } catch {
+                            /* empty */
+                          }
+                          return (
+                            events.length > 5 && (
+                              <Badge variant="outline" className="text-[10px]">
+                                +{events.length - 5} više
+                              </Badge>
+                            )
+                          );
                         })()}
                       </div>
 
@@ -425,7 +481,9 @@ export function WebhookManager() {
                           </span>
                         )}
                         {webhook.lastTriggeredAt && (
-                          <span>Poslednji: {formatDate(webhook.lastTriggeredAt)}</span>
+                          <span>
+                            Poslednji: {formatDate(webhook.lastTriggeredAt)}
+                          </span>
                         )}
                         <span>Kreiran: {formatDate(webhook.createdAt)}</span>
                       </div>
@@ -469,7 +527,7 @@ export function WebhookManager() {
                   </div>
                 </CardContent>
               </Card>
-            )
+            );
           })}
         </div>
       )}
@@ -481,12 +539,12 @@ export function WebhookManager() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Webhook className="h-5 w-5 text-primary" />
-              {editingWebhook ? 'Izmeni webhook' : 'Novi webhook'}
+              {editingWebhook ? "Izmeni webhook" : "Novi webhook"}
             </DialogTitle>
             <DialogDescription>
               {editingWebhook
-                ? 'Podesite webhook za automatska obaveštenja'
-                : 'Definišite URL i događaje za automatska obaveštenja'}
+                ? "Podesite webhook za automatska obaveštenja"
+                : "Definišite URL i događaje za automatska obaveštenja"}
             </DialogDescription>
           </DialogHeader>
 
@@ -510,14 +568,21 @@ export function WebhookManager() {
                 placeholder="https://hooks.slack.com/services/..."
                 className="font-mono text-xs"
               />
-              <p className="text-[10px] text-muted-foreground">HTTP POST zahtev će biti poslat na ovaj URL</p>
+              <p className="text-[10px] text-muted-foreground">
+                HTTP POST zahtev će biti poslat na ovaj URL
+              </p>
             </div>
 
             {/* Secret */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-xs">Tajni ključ (Secret)</Label>
-                <Button variant="ghost" size="sm" className="h-6 text-[10px] gap-1" onClick={generateSecret}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-[10px] gap-1"
+                  onClick={generateSecret}
+                >
                   Generiši
                 </Button>
               </div>
@@ -549,11 +614,18 @@ export function WebhookManager() {
               </div>
               <div className="space-y-3">
                 {EVENT_GROUPS.map((group) => {
-                  const allSelected = group.events.every((e) => formEvents.includes(e))
-                  const someSelected = group.events.some((e) => formEvents.includes(e))
+                  const allSelected = group.events.every((e) =>
+                    formEvents.includes(e),
+                  );
+                  const someSelected = group.events.some((e) =>
+                    formEvents.includes(e),
+                  );
 
                   return (
-                    <div key={group.label} className="border rounded-lg overflow-hidden">
+                    <div
+                      key={group.label}
+                      className="border rounded-lg overflow-hidden"
+                    >
                       {/* Group header */}
                       <button
                         type="button"
@@ -563,23 +635,29 @@ export function WebhookManager() {
                         <div
                           className={`flex h-5 w-5 items-center justify-center rounded border text-xs transition-colors ${
                             allSelected
-                              ? 'bg-primary border-primary text-primary-foreground'
+                              ? "bg-primary border-primary text-primary-foreground"
                               : someSelected
-                                ? 'border-primary bg-primary/20'
-                                : 'border-muted-foreground/30'
+                                ? "border-primary bg-primary/20"
+                                : "border-muted-foreground/30"
                           }`}
                         >
                           {allSelected && <Check className="h-3 w-3" />}
-                          {someSelected && !allSelected && <span className="text-[8px]">–</span>}
+                          {someSelected && !allSelected && (
+                            <span className="text-[8px]">–</span>
+                          )}
                         </div>
-                        <span className="text-xs font-semibold">{group.label}</span>
+                        <span className="text-xs font-semibold">
+                          {group.label}
+                        </span>
                       </button>
 
                       {/* Events in group */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 divide-y">
                         {group.events.map((eventValue) => {
-                          const evt = WEBHOOK_EVENTS.find((e) => e.value === eventValue)
-                          const isSelected = formEvents.includes(eventValue)
+                          const evt = WEBHOOK_EVENTS.find(
+                            (e) => e.value === eventValue,
+                          );
+                          const isSelected = formEvents.includes(eventValue);
 
                           return (
                             <button
@@ -587,25 +665,29 @@ export function WebhookManager() {
                               type="button"
                               onClick={() => toggleEvent(eventValue)}
                               className={`flex items-center gap-2 px-3 py-2 text-left hover:bg-muted/20 transition-colors ${
-                                isSelected ? 'bg-primary/[0.03]' : ''
+                                isSelected ? "bg-primary/[0.03]" : ""
                               }`}
                             >
                               <div
                                 className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] transition-colors shrink-0 ${
                                   isSelected
-                                    ? 'bg-primary border-primary text-primary-foreground'
-                                    : 'border-muted-foreground/30'
+                                    ? "bg-primary border-primary text-primary-foreground"
+                                    : "border-muted-foreground/30"
                                 }`}
                               >
-                                {isSelected && <Check className="h-2.5 w-2.5" />}
+                                {isSelected && (
+                                  <Check className="h-2.5 w-2.5" />
+                                )}
                               </div>
-                              <span className="text-xs">{evt?.icon} {evt?.label || eventValue}</span>
+                              <span className="text-xs">
+                                {evt?.icon} {evt?.label || eventValue}
+                              </span>
                             </button>
-                          )
+                          );
                         })}
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -616,8 +698,12 @@ export function WebhookManager() {
               Otkaži
             </Button>
             <Button onClick={handleSave} disabled={saving} className="gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              {editingWebhook ? 'Sačuvaj' : 'Kreiraj'}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
+              {editingWebhook ? "Sačuvaj" : "Kreiraj"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -625,9 +711,12 @@ export function WebhookManager() {
 
       {/* ============ DELETE CONFIRMATION ============ */}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => {
-        if (!open) setDeleteTarget(null)
-      }}>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -635,27 +724,35 @@ export function WebhookManager() {
               Obriši webhook
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Da li ste sigurni da želite da obrišete webhook{' '}
-              <span className="font-semibold text-foreground">{deleteTarget?.name}</span>?
-              Sve automatske notifikacije će prestati.
+              Da li ste sigurni da želite da obrišete webhook{" "}
+              <span className="font-semibold text-foreground">
+                {deleteTarget?.name}
+              </span>
+              ? Sve automatske notifikacije će prestati.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteSaving}>Otkaži</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteSaving}>
+              Otkaži
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
-                e.preventDefault()
-                handleDelete()
+                e.preventDefault();
+                handleDelete();
               }}
               disabled={deleteSaving}
               className="bg-destructive text-white hover:bg-destructive/90 gap-2"
             >
-              {deleteSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              {deleteSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
               Obriši
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

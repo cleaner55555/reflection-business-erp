@@ -1,4 +1,382 @@
-import type {  TimeEntry,  ProjectInfo,  TaskInfo,  EmployeeInfo,  ActivityLogEntry,  DashboardStats,  TimeTrackingSettings,  ProjectReportRow,  EmployeeReportRow,  WeeklySummaryRow,  ReportSummary,  CreateTimeEntryInput,  UpdateTimeEntryInput,  ActivityAction,} from './types'// ============ MOCK EMPLOYEES ============export const mockEmployees: EmployeeInfo[] = [  { id: 'emp-1', name: 'Марко Петровић', position: 'Разработчик', department: 'ИТ' },  { id: 'emp-2', name: 'Јелена Николић', position: 'Дизајнер', department: 'ИТ' },  { id: 'emp-3', name: 'Ненад Јовановић', position: 'Пројект менаџер', department: 'Менаџмент' },  { id: 'emp-4', name: 'Ана Станковић', position: 'QA инжењер', department: 'Квалитет' },  { id: 'emp-5', name: 'Срђан Тадић', position: 'Разработчик', department: 'ИТ' },  { id: 'emp-6', name: 'Ивана Милошевић', position: 'Аналитичар', department: 'Бизнис' },]// ============ MOCK PROJECTS ============export const mockProjects: ProjectInfo[] = [  { id: 'proj-1', name: 'ERP Систем - Фаза 2', color: '#10b981', status: 'aktivan' },  { id: 'proj-2', name: 'Мобилна апликација', color: '#f59e0b', status: 'aktivan' },  { id: 'proj-3', name: 'Веб портал клијенти', color: '#8b5cf6', status: 'aktivan' },  { id: 'proj-4', name: 'Миграција базе', color: '#ef4444', status: 'pauziran' },  { id: 'proj-5', name: 'CRM интеграција', color: '#06b6d4', status: 'zavrsen' },  { id: 'proj-6', name: 'API платформа', color: '#ec4899', status: 'aktivan' },]// ============ MOCK TASKS ============export const mockTasks: TaskInfo[] = [  { id: 'task-1', projectId: 'proj-1', title: 'Модул фактуре', status: 'u_toku', estimatedHours: 40, loggedHours: 28 },  { id: 'task-2', projectId: 'proj-1', title: 'Модул магацин', status: 'todo', estimatedHours: 60, loggedHours: 0 },  { id: 'task-3', projectId: 'proj-1', title: 'PDF генерација', status: 'zavrseno', estimatedHours: 16, loggedHours: 14 },  { id: 'task-4', projectId: 'proj-2', title: 'UI дизајн', status: 'zavrseno', estimatedHours: 32, loggedHours: 30 },  { id: 'task-5', projectId: 'proj-2', title: 'Push нотификације', status: 'u_toku', estimatedHours: 20, loggedHours: 12 },  { id: 'task-6', projectId: 'proj-2', title: 'Офлајн мод', status: 'todo', estimatedHours: 24, loggedHours: 0 },  { id: 'task-7', projectId: 'proj-3', title: 'Кориснички панел', status: 'u_toku', estimatedHours: 48, loggedHours: 20 },  { id: 'task-8', projectId: 'proj-3', title: 'Плаћање интеграција', status: 'todo', estimatedHours: 32, loggedHours: 0 },  { id: 'task-9', projectId: 'proj-4', title: 'Шема миграције', status: 'blokirano', estimatedHours: 24, loggedHours: 18 },  { id: 'task-10', projectId: 'proj-5', title: 'API конектори', status: 'zavrseno', estimatedHours: 40, loggedHours: 38 },  { id: 'task-11', projectId: 'proj-6', title: 'GraphQL ендпоинти', status: 'u_toku', estimatedHours: 36, loggedHours: 22 },  { id: 'task-12', projectId: 'proj-6', title: 'Rate лимитирање', status: 'todo', estimatedHours: 12, loggedHours: 0 },]// ============ MOCK TIME ENTRIES ============function generateDate(daysAgo: number): string {  const d = new Date()  d.setDate(d.getDate() - daysAgo)  return d.toISOString().split('T')[0]}export const mockTimeEntries: TimeEntry[] = [  {    id: 'te-1', employeeId: 'emp-1', employeeName: 'Марко Петровић',    projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре',    description: 'Рад на шаблонима фактура и PDV рачуна', date: generateDate(0),    startTime: '08:00', endTime: '12:30', duration: 270, status: 'draft', createdAt: generateDate(0),  },  {    id: 'te-2', employeeId: 'emp-1', employeeName: 'Марко Петровић',    projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре',    description: 'Фикс багова у извозу PDF', date: generateDate(0),    startTime: '13:00', endTime: '15:30', duration: 150, status: 'draft', createdAt: generateDate(0),  },  {    id: 'te-3', employeeId: 'emp-2', employeeName: 'Јелена Николић',    projectId: 'proj-2', projectName: 'Мобилна апликација', taskTitle: 'UI дизајн',    description: 'Дизајн нових екрана за наручивање', date: generateDate(0),    startTime: '09:00', endTime: '11:00', duration: 120, status: 'submitted', createdAt: generateDate(0),  },  {    id: 'te-4', employeeId: 'emp-2', employeeName: 'Јелена Николић',    projectId: 'proj-3', projectName: 'Веб портал клијенти', taskTitle: 'Кориснички панел',    description: 'Редизајн контролне табле', date: generateDate(0),    startTime: '11:30', endTime: '13:00', duration: 90, status: 'approved', createdAt: generateDate(0),  },  {    id: 'te-5', employeeId: 'emp-3', employeeName: 'Ненад Јовановић',    projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул магацин',    description: 'Састанак са тимом о захтевима', date: generateDate(0),    startTime: '10:00', endTime: '11:30', duration: 90, status: 'approved', createdAt: generateDate(0),  },  {    id: 'te-6', employeeId: 'emp-4', employeeName: 'Ана Станковић',    projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'PDF генерација',    description: 'Тестирање генерације фактура', date: generateDate(1),    startTime: '08:30', endTime: '11:00', duration: 150, status: 'approved', createdAt: generateDate(1),  },  {    id: 'te-7', employeeId: 'emp-5', employeeName: 'Срђан Тадић',    projectId: 'proj-6', projectName: 'API платформа', taskTitle: 'GraphQL ендпоинти',    description: 'Имплементација query resolvedа', date: generateDate(1),    startTime: '09:00', endTime: '14:00', duration: 300, status: 'submitted', createdAt: generateDate(1),  },  {    id: 'te-8', employeeId: 'emp-1', employeeName: 'Марко Петровић',    projectId: 'proj-6', projectName: 'API платформа', taskTitle: 'GraphQL ендпоинти',    description: 'Код ревју и оптимизација', date: generateDate(1),    startTime: '08:00', endTime: '10:00', duration: 120, status: 'approved', createdAt: generateDate(1),  },  {    id: 'te-9', employeeId: 'emp-6', employeeName: 'Ивана Милошевић',    projectId: 'proj-5', projectName: 'CRM интеграција', taskTitle: 'API конектори',    description: 'Анализа захтева за CRM интеграцију', date: generateDate(1),    startTime: '10:00', endTime: '12:00', duration: 120, status: 'approved', createdAt: generateDate(1),  },  {    id: 'te-10', employeeId: 'emp-2', employeeName: 'Јелена Николић',    projectId: 'proj-2', projectName: 'Мобилна апликација', taskTitle: 'Push нотификације',    description: 'Дизајн нотификација', date: generateDate(2),    startTime: '09:00', endTime: '12:00', duration: 180, status: 'approved', createdAt: generateDate(2),  },  {    id: 'te-11', employeeId: 'emp-1', employeeName: 'Марко Петровић',    projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре',    description: 'Код за рестрикције плаћања', date: generateDate(2),    startTime: '08:00', endTime: '16:00', duration: 480, status: 'approved', createdAt: generateDate(2),  },  {    id: 'te-12', employeeId: 'emp-4', employeeName: 'Ана Станковић',    projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'PDF генерација',    description: 'Регресија тестови', date: generateDate(2),    startTime: '08:00', endTime: '10:00', duration: 120, status: 'approved', createdAt: generateDate(2),  },  {    id: 'te-13', employeeId: 'emp-5', employeeName: 'Срђан Тадић',    projectId: 'proj-6', projectName: 'API платформа', taskTitle: 'GraphQL ендпоинти',    description: 'Мутације за products', date: generateDate(2),    startTime: '09:00', endTime: '13:00', duration: 240, status: 'approved', createdAt: generateDate(2),  },  {    id: 'te-14', employeeId: 'emp-3', employeeName: 'Ненад Јовановић',    projectId: 'proj-3', projectName: 'Веб портал клијенти', taskTitle: 'Плаћање интеграција',    description: 'Координација са банком', date: generateDate(3),    startTime: '10:00', endTime: '12:30', duration: 150, status: 'approved', createdAt: generateDate(3),  },  {    id: 'te-15', employeeId: 'emp-1', employeeName: 'Марко Петровић',    projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре',    description: 'Рефакторинг сервисног слоја', date: generateDate(3),    startTime: '08:00', endTime: '15:00', duration: 420, status: 'approved', createdAt: generateDate(3),  },  {    id: 'te-16', employeeId: 'emp-6', employeeName: 'Ивана Милошевић',    projectId: 'proj-4', projectName: 'Миграција базе', taskTitle: 'Шема миграције',    description: 'Документација миграционих скрипти', date: generateDate(3),    startTime: '08:00', endTime: '11:00', duration: 180, status: 'submitted', createdAt: generateDate(3),  },  {    id: 'te-17', employeeId: 'emp-2', employeeName: 'Јелена Николић',    projectId: 'proj-2', projectName: 'Мобилна апликација', taskTitle: 'UI дизајн',    description: 'Финализација дизајна', date: generateDate(4),    startTime: '09:00', endTime: '16:00', duration: 420, status: 'approved', createdAt: generateDate(4),  },  {    id: 'te-18', employeeId: 'emp-1', employeeName: 'Марко Петровић',    projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре',    description: 'Функционалност авансних фактура', date: generateDate(4),    startTime: '08:00', endTime: '12:00', duration: 240, status: 'approved', createdAt: generateDate(4),  },  {    id: 'te-19', employeeId: 'emp-5', employeeName: 'Срђан Тадић',    projectId: 'proj-6', projectName: 'API платформа', taskTitle: 'GraphQL ендпоинти',    description: 'Аутентификација middleware', date: generateDate(5),    startTime: '08:00', endTime: '14:00', duration: 360, status: 'approved', createdAt: generateDate(5),  },  {    id: 'te-20', employeeId: 'emp-4', employeeName: 'Ана Станковић',    projectId: 'proj-2', projectName: 'Мобилна апликација', taskTitle: 'Push нотификације',    description: 'Тест нотификација на Android', date: generateDate(5),    startTime: '10:00', endTime: '13:00', duration: 180, status: 'approved', createdAt: generateDate(5),  },]// ============ MOCK ACTIVITY LOG ============export const mockActivityLog: ActivityLogEntry[] = [  {    id: 'al-1', action: 'timer_started', description: 'Започео рад на "Модул фактуре"',    timestamp: new Date(Date.now() - 3600000 * 4).toISOString(), employeeName: 'Марко Петровић',  },  {    id: 'al-2', action: 'timer_stopped', description: 'Зауставио тајмер након 4ч 30м',    timestamp: new Date(Date.now() - 3600000 * 3.5).toISOString(), employeeName: 'Марко Петровић',  },  {    id: 'al-3', action: 'entry_created', description: 'Креирао унос за "Push нотификације"',    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(), employeeName: 'Јелена Николић',  },  {    id: 'al-4', action: 'entry_submitted', description: 'Предао унос за рецензију',    timestamp: new Date(Date.now() - 3600000 * 2.5).toISOString(), employeeName: 'Срђан Тадић',  },  {    id: 'al-5', action: 'entry_approved', description: 'Одобрио унос за "PDF генерација"',    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), employeeName: 'Ненад Јовановић',  },  {    id: 'al-6', action: 'timer_started', description: 'Започео рад на "GraphQL ендпоинти"',    timestamp: new Date(Date.now() - 3600000 * 1.5).toISOString(), employeeName: 'Срђан Тадић',  },  {    id: 'al-7', action: 'entry_updated', description: 'Ажурирао опис за "UI дизајн"',    timestamp: new Date(Date.now() - 3600000).toISOString(), employeeName: 'Јелена Николић',  },  {    id: 'al-8', action: 'timer_paused', description: 'Паузирао тајмер - пауза за ручак',    timestamp: new Date(Date.now() - 1800000).toISOString(), employeeName: 'Марко Петровић',  },  {    id: 'al-9', action: 'timer_resumed', description: 'Наставио рад након паузе',    timestamp: new Date(Date.now() - 900000).toISOString(), employeeName: 'Марко Петровић',  },  {    id: 'al-10', action: 'entry_created', description: 'Креирао унос за "Састанак са тимом"',    timestamp: new Date(Date.now() - 600000).toISOString(), employeeName: 'Ненад Јовановић',  },]// ============ DEFAULT SETTINGS ============export const defaultSettings: TimeTrackingSettings = {  defaultProjectId: '',  roundToMinutes: 15,  allowOvertime: true,  maxHoursPerDay: 10,  requireDescription: false,  autoStopTimer: true,  weeklyTargetHours: 40,  notifyBeforeEnd: true,  notifyMinutesBefore: 30,  enableApproval: true,}// ============ HELPER: Get tasks for project ============export function getTasksForProject(projectId: string): TaskInfo[] {  return mockTasks.filter((t) => t.projectId === projectId)}// ============ HELPER: Format duration ============export function formatDuration(minutes: number): string {  const h = Math.floor(minutes / 60)  const m = Math.round(minutes % 60)  if (h === 0) return `${m}м`  if (m === 0) return `${h}ч`  return `${h}ч ${m}м`}// ============ HELPER: Format elapsed seconds ============export function formatElapsed(totalSeconds: number): string {  const h = Math.floor(totalSeconds / 3600)  const m = Math.floor((totalSeconds % 3600) / 60)  const s = totalSeconds % 60  const pad = (n: number) => n.toString().padStart(2, '0')  return `${pad(h)}:${pad(m)}:${pad(s)}`}// ============ HELPER: Calculate duration from time strings ============export function calculateDuration(startTime: string, endTime: string): number {  const [sh, sm] = startTime.split(':').map(Number)  const [eh, em] = endTime.split(':').map(Number)  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm))}// ============ HELPER: Get today's day of week in Serbian ============export function getDayOfWeek(dateStr: string): string {  const days = ['Недеља', 'Понедељак', 'Уторак', 'Среда', 'Четвртак', 'Петак', 'Субота']  return days[new Date(dateStr).getDay()]}export function getShortDayOfWeek(dateStr: string): string {  const days = ['Нед', 'Пон', 'Уто', 'Сре', 'Чет', 'Пет', 'Суб']  return days[new Date(dateStr).getDay()]}// ============ MOCK API: Fetch entries ============  dateFrom?: string  dateTo?: string  projectId?: string  employeeId?: string}): Promise<TimeEntry[]> {  await simulateDelay()  let entries = [...mockTimeEntries]  if (filters?.dateFrom) entries = entries.filter((e) => e.date >= filters.dateFrom!)  if (filters?.dateTo) entries = entries.filter((e) => e.date <= filters.dateTo!)  if (filters?.projectId) entries = entries.filter((e) => e.projectId === filters.projectId)  if (filters?.employeeId) entries = entries.filter((e) => e.employeeId === filters.employeeId)  return entries}// ============ MOCK API: Create entry ============  await simulateDelay()  const project = mockProjects.find((p) => p.id === input.projectId)  const task = mockTasks.find((t) => t.id === input.taskId)  const employee = mockEmployees.find((e) => e.id === input.employeeId)  const duration = calculateDuration(input.startTime, input.endTime)  return {    id: `te-${Date.now()}`,    employeeId: input.employeeId,    employeeName: employee?.name || '',    projectId: input.projectId,    projectName: project?.name || '',    taskTitle: task?.title || '',    description: input.description,    date: input.date,    startTime: input.startTime,    endTime: input.endTime,    duration,    status: 'draft',    createdAt: new Date().toISOString().split('T')[0],  }}// ============ MOCK API: Update entry ============  await simulateDelay()  const entry = mockTimeEntries.find((e) => e.id === input.id)  if (!entry) return null  const updated = { ...entry, ...input }  if (input.startTime && input.endTime) {    updated.duration = calculateDuration(input.startTime, input.endTime)  }  if (input.projectId) {    const project = mockProjects.find((p) => p.id === input.projectId)    if (project) updated.projectName = project.name  }  if (input.taskId) {    const task = mockTasks.find((t) => t.id === input.taskId)    if (task) updated.taskTitle = task.title  }  return updated}// ============ MOCK API: Delete entry ============  await simulateDelay()  return mockTimeEntries.some((e) => e.id === id)}// ============ MOCK API: Generate project report ============  entries: TimeEntry[]): Promise<ProjectReportRow[]> {  await simulateDelay()  const grouped = new Map<string, { totalHours: number; count: number }>()  for (const entry of entries) {    const existing = grouped.get(entry.projectId) || { totalHours: 0, count: 0 }    existing.totalHours += entry.duration / 60    existing.count += 1    grouped.set(entry.projectId, existing)  }  return Array.from(grouped.entries()).map(([pid, data]) => {    const project = mockProjects.find((p) => p.id === pid)    return {      projectId: pid,      projectName: project?.name || pid,      projectColor: project?.color || '#666',      totalHours: Math.round(data.totalHours * 100) / 100,      totalEntries: data.count,      avgHoursPerEntry: data.count > 0 ? Math.round((data.totalHours / data.count) * 100) / 100 : 0,    }  }).sort((a, b) => b.totalHours - a.totalHours)}// ============ MOCK API: Generate employee report ============  entries: TimeEntry[]): Promise<EmployeeReportRow[]> {  await simulateDelay()  const grouped = new Map<string, { totalHours: number; count: number; days: Set<string> }>()  for (const entry of entries) {    const existing = grouped.get(entry.employeeId) || { totalHours: 0, count: 0, days: new Set<string>() }    existing.totalHours += entry.duration / 60    existing.count += 1    existing.days.add(entry.date)    grouped.set(entry.employeeId, existing)  }  return Array.from(grouped.entries()).map(([eid, data]) => {    const employee = mockEmployees.find((e) => e.id === eid)    const activeDays = data.days.size    return {      employeeId: eid,      employeeName: employee?.name || eid,      totalHours: Math.round(data.totalHours * 100) / 100,      totalEntries: data.count,      avgDailyHours: activeDays > 0 ? Math.round((data.totalHours / activeDays) * 100) / 100 : 0,      activeDays,    }  }).sort((a, b) => b.totalHours - a.totalHours)}// ============ MOCK API: Generate weekly summary ============  entries: TimeEntry[]): Promise<WeeklySummaryRow[]> {  await simulateDelay()  const today = new Date()  const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1  const monday = new Date(today)  monday.setDate(today.getDate() - dayOfWeek)  const days: WeeklySummaryRow[] = []  for (let i = 0; i < 7; i++) {    const d = new Date(monday)    d.setDate(monday.getDate() + i)    const dateStr = d.toISOString().split('T')[0]    const dayEntries = entries.filter((e) => e.date === dateStr)    const projectBreakdown = new Map<string, number>()    for (const entry of dayEntries) {      projectBreakdown.set(        entry.projectName,        (projectBreakdown.get(entry.projectName) || 0) + entry.duration / 60      )    }    days.push({      day: dateStr,      dayLabel: getShortDayOfWeek(dateStr),      totalHours: Math.round(dayEntries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100,      totalEntries: dayEntries.length,      projectBreakdown: Array.from(projectBreakdown.entries()).map(([name, hours]) => ({        projectName: name,        hours: Math.round(hours * 100) / 100,      })),    })  }  return days}// ============ MOCK API: Generate report summary ============export function calculateReportSummary(entries: TimeEntry[]): ReportSummary {  const totalHours = Math.round(entries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100  const totalEntries = entries.length  const uniqueDays = new Set(entries.map((e) => e.date))  const avgHoursPerDay = uniqueDays.size > 0    ? Math.round((totalHours / uniqueDays.size) * 100) / 100    : 0  const projectHours = new Map<string, number>()  const employeeHours = new Map<string, number>()  let overtime = 0  for (const entry of entries) {    projectHours.set(entry.projectName, (projectHours.get(entry.projectName) || 0) + entry.duration / 60)    employeeHours.set(entry.employeeName, (employeeHours.get(entry.employeeName) || 0) + entry.duration / 60)    if (entry.duration / 60 > 8) overtime += entry.duration / 60 - 8  }  const mostActiveProject = Array.from(projectHours.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || '-'  const mostActiveEmployee = Array.from(employeeHours.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || '-'  return {    totalHours,    totalEntries,    avgHoursPerDay,    mostActiveProject,    mostActiveEmployee,    overtimeHours: Math.round(overtime * 100) / 100,  }}// ============ MOCK API: Get dashboard stats ============export function calculateDashboardStats(  entries: TimeEntry[],  isTimerRunning: boolean): DashboardStats {  const today = new Date().toISOString().split('T')[0]  const weekStart = getWeekStartDate()  const todayEntries = entries.filter((e) => e.date === today)  const weekEntries = entries.filter((e) => e.date >= weekStart)  const monthStart = today.substring(0, 7) + '-01'  const monthEntries = entries.filter((e) => e.date >= monthStart)  const todayHours = Math.round(todayEntries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100  const weekHours = Math.round(weekEntries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100  const monthHours = Math.round(monthEntries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100  const weekTarget = 40  const weekProgress = Math.min(100, Math.round((weekHours / weekTarget) * 100))  const activeProjects = new Set(entries.map((e) => e.projectId)).size  return {    todayHours,    todayEntries: todayEntries.length,    weekHours,    weekTarget,    weekProgress,    monthHours,    activeProjects,    runningTimer: isTimerRunning,  }}// ============ HELPERS ============function getWeekStartDate(): string {  const today = new Date()  const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1  const monday = new Date(today)  monday.setDate(today.getDate() - dayOfWeek)  return monday.toISOString().split('T')[0]}function simulateDelay(): Promise<void> {  return new Promise((resolve) => setTimeout(resolve, 200 + Math.random() * 300))}// ============ MOCK API: Add activity ============export function createActivityEntry(  action: ActivityAction,  description: string,  employeeName: string): ActivityLogEntry {  return {    id: `al-${Date.now()}`,    action,    description,    timestamp: new Date().toISOString(),    employeeName,  }}
+import type {
+  TimeEntry,
+  ProjectInfo,
+  TaskInfo,
+  EmployeeInfo,
+  ActivityLogEntry,
+  DashboardStats,
+  TimeTrackingSettings,
+  ProjectReportRow,
+  EmployeeReportRow,
+  WeeklySummaryRow,
+  ReportSummary,
+  CreateTimeEntryInput,
+  UpdateTimeEntryInput,
+  ActivityAction,
+} from './types'
+
+// ============ MOCK EMPLOYEES ============
+
+export const mockEmployees: EmployeeInfo[] = [
+  { id: 'emp-1', name: 'Марко Петровић', position: 'Разработчик', department: 'ИТ' },
+  { id: 'emp-2', name: 'Јелена Николић', position: 'Дизајнер', department: 'ИТ' },
+  { id: 'emp-3', name: 'Ненад Јовановић', position: 'Пројект менаџер', department: 'Менаџмент' },
+  { id: 'emp-4', name: 'Ана Станковић', position: 'QA инжењер', department: 'Квалитет' },
+  { id: 'emp-5', name: 'Срђан Тадић', position: 'Разработчик', department: 'ИТ' },
+  { id: 'emp-6', name: 'Ивана Милошевић', position: 'Аналитичар', department: 'Бизнис' },
+]
+
+// ============ MOCK PROJECTS ============
+
+export const mockProjects: ProjectInfo[] = [
+  { id: 'proj-1', name: 'ERP Систем - Фаза 2', color: '#10b981', status: 'aktivan' },
+  { id: 'proj-2', name: 'Мобилна апликација', color: '#f59e0b', status: 'aktivan' },
+  { id: 'proj-3', name: 'Веб портал клијенти', color: '#8b5cf6', status: 'aktivan' },
+  { id: 'proj-4', name: 'Миграција базе', color: '#ef4444', status: 'pauziran' },
+  { id: 'proj-5', name: 'CRM интеграција', color: '#06b6d4', status: 'zavrsen' },
+  { id: 'proj-6', name: 'API платформа', color: '#ec4899', status: 'aktivan' },
+]
+
+// ============ MOCK TASKS ============
+
+export const mockTasks: TaskInfo[] = [
+  { id: 'task-1', projectId: 'proj-1', title: 'Модул фактуре', status: 'u_toku', estimatedHours: 40, loggedHours: 28 },
+  { id: 'task-2', projectId: 'proj-1', title: 'Модул магацин', status: 'todo', estimatedHours: 60, loggedHours: 0 },
+  { id: 'task-3', projectId: 'proj-1', title: 'PDF генерација', status: 'zavrseno', estimatedHours: 16, loggedHours: 14 },
+  { id: 'task-4', projectId: 'proj-2', title: 'UI дизајн', status: 'zavrseno', estimatedHours: 32, loggedHours: 30 },
+  { id: 'task-5', projectId: 'proj-2', title: 'Push нотификације', status: 'u_toku', estimatedHours: 20, loggedHours: 12 },
+  { id: 'task-6', projectId: 'proj-2', title: 'Офлајн мод', status: 'todo', estimatedHours: 24, loggedHours: 0 },
+  { id: 'task-7', projectId: 'proj-3', title: 'Кориснички панел', status: 'u_toku', estimatedHours: 48, loggedHours: 20 },
+  { id: 'task-8', projectId: 'proj-3', title: 'Плаћање интеграција', status: 'todo', estimatedHours: 32, loggedHours: 0 },
+  { id: 'task-9', projectId: 'proj-4', title: 'Шема миграције', status: 'blokirano', estimatedHours: 24, loggedHours: 18 },
+  { id: 'task-10', projectId: 'proj-5', title: 'API конектори', status: 'zavrseno', estimatedHours: 40, loggedHours: 38 },
+  { id: 'task-11', projectId: 'proj-6', title: 'GraphQL ендпоинти', status: 'u_toku', estimatedHours: 36, loggedHours: 22 },
+  { id: 'task-12', projectId: 'proj-6', title: 'Rate лимитирање', status: 'todo', estimatedHours: 12, loggedHours: 0 },
+]
+
+// ============ MOCK TIME ENTRIES ============
+
+function generateDate(daysAgo: number): string {
+  const d = new Date()
+  d.setDate(d.getDate() - daysAgo)
+  return d.toISOString().split('T')[0]
+}
+
+export const mockTimeEntries: TimeEntry[] = [
+  { id: 'te-1', employeeId: 'emp-1', employeeName: 'Марко Петровић', projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре', description: 'Рад на шаблонима фактура и PDV рачуна', date: generateDate(0), startTime: '08:00', endTime: '12:30', duration: 270, status: 'draft', createdAt: generateDate(0) },
+  { id: 'te-2', employeeId: 'emp-1', employeeName: 'Марко Петровић', projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре', description: 'Фикс багова у извозу PDF', date: generateDate(0), startTime: '13:00', endTime: '15:30', duration: 150, status: 'draft', createdAt: generateDate(0) },
+  { id: 'te-3', employeeId: 'emp-2', employeeName: 'Јелена Николић', projectId: 'proj-2', projectName: 'Мобилна апликација', taskTitle: 'UI дизајн', description: 'Дизајн нових екрана за наручивање', date: generateDate(0), startTime: '09:00', endTime: '11:00', duration: 120, status: 'submitted', createdAt: generateDate(0) },
+  { id: 'te-4', employeeId: 'emp-2', employeeName: 'Јелена Николић', projectId: 'proj-3', projectName: 'Веб портал клијенти', taskTitle: 'Кориснички панел', description: 'Редизајн контролне табле', date: generateDate(0), startTime: '11:30', endTime: '13:00', duration: 90, status: 'approved', createdAt: generateDate(0) },
+  { id: 'te-5', employeeId: 'emp-3', employeeName: 'Ненад Јовановић', projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул магацин', description: 'Састанак са тимом о захтевима', date: generateDate(0), startTime: '10:00', endTime: '11:30', duration: 90, status: 'approved', createdAt: generateDate(0) },
+  { id: 'te-6', employeeId: 'emp-4', employeeName: 'Ана Станковић', projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'PDF генерација', description: 'Тестирање генерације фактура', date: generateDate(1), startTime: '08:30', endTime: '11:00', duration: 150, status: 'approved', createdAt: generateDate(1) },
+  { id: 'te-7', employeeId: 'emp-5', employeeName: 'Срђан Тадић', projectId: 'proj-6', projectName: 'API платформа', taskTitle: 'GraphQL ендпоинти', description: 'Имплементација query resolvedа', date: generateDate(1), startTime: '09:00', endTime: '14:00', duration: 300, status: 'submitted', createdAt: generateDate(1) },
+  { id: 'te-8', employeeId: 'emp-1', employeeName: 'Марко Петровић', projectId: 'proj-6', projectName: 'API платформа', taskTitle: 'GraphQL ендпоинти', description: 'Код ревју и оптимизација', date: generateDate(1), startTime: '08:00', endTime: '10:00', duration: 120, status: 'approved', createdAt: generateDate(1) },
+  { id: 'te-9', employeeId: 'emp-6', employeeName: 'Ивана Милошевић', projectId: 'proj-5', projectName: 'CRM интеграција', taskTitle: 'API конектори', description: 'Анализа захтева за CRM интеграцију', date: generateDate(1), startTime: '10:00', endTime: '12:00', duration: 120, status: 'approved', createdAt: generateDate(1) },
+  { id: 'te-10', employeeId: 'emp-2', employeeName: 'Јелена Николић', projectId: 'proj-2', projectName: 'Мобилна апликација', taskTitle: 'Push нотификације', description: 'Дизајн нотификација', date: generateDate(2), startTime: '09:00', endTime: '12:00', duration: 180, status: 'approved', createdAt: generateDate(2) },
+  { id: 'te-11', employeeId: 'emp-1', employeeName: 'Марко Петровић', projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре', description: 'Код за рестрикције плаћања', date: generateDate(2), startTime: '08:00', endTime: '16:00', duration: 480, status: 'approved', createdAt: generateDate(2) },
+  { id: 'te-12', employeeId: 'emp-4', employeeName: 'Ана Станковић', projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'PDF генерација', description: 'Регресија тестови', date: generateDate(2), startTime: '08:00', endTime: '10:00', duration: 120, status: 'approved', createdAt: generateDate(2) },
+  { id: 'te-13', employeeId: 'emp-5', employeeName: 'Срђан Тадић', projectId: 'proj-6', projectName: 'API платформа', taskTitle: 'GraphQL ендпоинти', description: 'Мутације за products', date: generateDate(2), startTime: '09:00', endTime: '13:00', duration: 240, status: 'approved', createdAt: generateDate(2) },
+  { id: 'te-14', employeeId: 'emp-3', employeeName: 'Ненад Јовановић', projectId: 'proj-3', projectName: 'Веб портал клијенти', taskTitle: 'Плаћање интеграција', description: 'Координација са банком', date: generateDate(3), startTime: '10:00', endTime: '12:30', duration: 150, status: 'approved', createdAt: generateDate(3) },
+  { id: 'te-15', employeeId: 'emp-1', employeeName: 'Марко Петровић', projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре', description: 'Рефакторинг сервисног слоја', date: generateDate(3), startTime: '08:00', endTime: '15:00', duration: 420, status: 'approved', createdAt: generateDate(3) },
+  { id: 'te-16', employeeId: 'emp-6', employeeName: 'Ивана Милошевић', projectId: 'proj-4', projectName: 'Миграција базе', taskTitle: 'Шема миграције', description: 'Документација миграционих скрипти', date: generateDate(3), startTime: '08:00', endTime: '11:00', duration: 180, status: 'submitted', createdAt: generateDate(3) },
+  { id: 'te-17', employeeId: 'emp-2', employeeName: 'Јелена Николић', projectId: 'proj-2', projectName: 'Мобилна апликација', taskTitle: 'UI дизајн', description: 'Финализација дизајна', date: generateDate(4), startTime: '09:00', endTime: '16:00', duration: 420, status: 'approved', createdAt: generateDate(4) },
+  { id: 'te-18', employeeId: 'emp-1', employeeName: 'Марко Петровић', projectId: 'proj-1', projectName: 'ERP Систем - Фаза 2', taskTitle: 'Модул фактуре', description: 'Функционалност авансних фактура', date: generateDate(4), startTime: '08:00', endTime: '12:00', duration: 240, status: 'approved', createdAt: generateDate(4) },
+  { id: 'te-19', employeeId: 'emp-5', employeeName: 'Срђан Тадић', projectId: 'proj-6', projectName: 'API платформа', taskTitle: 'GraphQL ендпоинти', description: 'Аутентификација middleware', date: generateDate(5), startTime: '08:00', endTime: '14:00', duration: 360, status: 'approved', createdAt: generateDate(5) },
+  { id: 'te-20', employeeId: 'emp-4', employeeName: 'Ана Станковић', projectId: 'proj-2', projectName: 'Мобилна апликација', taskTitle: 'Push нотификације', description: 'Тест нотификација на Android', date: generateDate(5), startTime: '10:00', endTime: '13:00', duration: 180, status: 'approved', createdAt: generateDate(5) },
+]
+
+// ============ MOCK ACTIVITY LOG ============
+
+export const mockActivityLog: ActivityLogEntry[] = [
+  { id: 'al-1', action: 'timer_started', description: 'Започео рад на "Модул фактуре"', timestamp: new Date(Date.now() - 3600000 * 4).toISOString(), employeeName: 'Марко Петровић' },
+  { id: 'al-2', action: 'timer_stopped', description: 'Зауставио тајмер након 4ч 30м', timestamp: new Date(Date.now() - 3600000 * 3.5).toISOString(), employeeName: 'Марко Петровић' },
+  { id: 'al-3', action: 'entry_created', description: 'Креирао унос за "Push нотификације"', timestamp: new Date(Date.now() - 3600000 * 3).toISOString(), employeeName: 'Јелена Николић' },
+  { id: 'al-4', action: 'entry_submitted', description: 'Предао унос за рецензију', timestamp: new Date(Date.now() - 3600000 * 2.5).toISOString(), employeeName: 'Срђан Тадић' },
+  { id: 'al-5', action: 'entry_approved', description: 'Одобрио унос за "PDF генерација"', timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), employeeName: 'Ненад Јовановић' },
+  { id: 'al-6', action: 'timer_started', description: 'Започео рад на "GraphQL ендпоинти"', timestamp: new Date(Date.now() - 3600000 * 1.5).toISOString(), employeeName: 'Срђан Тадић' },
+  { id: 'al-7', action: 'entry_updated', description: 'Ажурирао опис за "UI дизајн"', timestamp: new Date(Date.now() - 3600000).toISOString(), employeeName: 'Јелена Николић' },
+  { id: 'al-8', action: 'timer_paused', description: 'Паузирао тајмер - пауза за ручак', timestamp: new Date(Date.now() - 1800000).toISOString(), employeeName: 'Марко Петровић' },
+  { id: 'al-9', action: 'timer_resumed', description: 'Наставио рад након паузе', timestamp: new Date(Date.now() - 900000).toISOString(), employeeName: 'Марко Петровић' },
+  { id: 'al-10', action: 'entry_created', description: 'Креирао унос за "Састанак са тимом"', timestamp: new Date(Date.now() - 600000).toISOString(), employeeName: 'Ненад Јовановић' },
+]
+
+// ============ DEFAULT SETTINGS ============
+
+export const defaultSettings: TimeTrackingSettings = {
+  defaultProjectId: '',
+  roundToMinutes: 15,
+  allowOvertime: true,
+  maxHoursPerDay: 10,
+  requireDescription: false,
+  autoStopTimer: true,
+  weeklyTargetHours: 40,
+  notifyBeforeEnd: true,
+  notifyMinutesBefore: 30,
+  enableApproval: true,
+}
+
+// ============ HELPERS ============
+
+function simulateDelay(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 200 + Math.random() * 300))
+}
+
+function getWeekStartDate(): string {
+  const today = new Date()
+  const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - dayOfWeek)
+  return monday.toISOString().split('T')[0]
+}
+
+export function getTasksForProject(projectId: string): TaskInfo[] {
+  return mockTasks.filter((t) => t.projectId === projectId)
+}
+
+export function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = Math.round(minutes % 60)
+  if (h === 0) return `${m}м`
+  if (m === 0) return `${h}ч`
+  return `${h}ч ${m}м`
+}
+
+export function formatElapsed(totalSeconds: number): string {
+  const h = Math.floor(totalSeconds / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  const s = totalSeconds % 60
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${pad(h)}:${pad(m)}:${pad(s)}`
+}
+
+export function calculateDuration(startTime: string, endTime: string): number {
+  const [sh, sm] = startTime.split(':').map(Number)
+  const [eh, em] = endTime.split(':').map(Number)
+  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm))
+}
+
+export function getDayOfWeek(dateStr: string): string {
+  const days = ['Недеља', 'Понедељак', 'Уторак', 'Среда', 'Четвртак', 'Петак', 'Субота']
+  return days[new Date(dateStr).getDay()]
+}
+
+export function getShortDayOfWeek(dateStr: string): string {
+  const days = ['Нед', 'Пон', 'Уто', 'Сре', 'Чет', 'Пет', 'Суб']
+  return days[new Date(dateStr).getDay()]
+}
+
+// ============ MOCK API ============
+
+export async function fetchTimeEntries(filters?: {
+  dateFrom?: string
+  dateTo?: string
+  projectId?: string
+  employeeId?: string
+}): Promise<TimeEntry[]> {
+  await simulateDelay()
+  let entries = [...mockTimeEntries]
+  if (filters?.dateFrom) entries = entries.filter((e) => e.date >= filters.dateFrom!)
+  if (filters?.dateTo) entries = entries.filter((e) => e.date <= filters.dateTo!)
+  if (filters?.projectId) entries = entries.filter((e) => e.projectId === filters.projectId)
+  if (filters?.employeeId) entries = entries.filter((e) => e.employeeId === filters.employeeId)
+  return entries
+}
+
+export async function createTimeEntry(input: CreateTimeEntryInput): Promise<TimeEntry> {
+  await simulateDelay()
+  const project = mockProjects.find((p) => p.id === input.projectId)
+  const task = mockTasks.find((t) => t.id === input.taskId)
+  const employee = mockEmployees.find((e) => e.id === input.employeeId)
+  const duration = calculateDuration(input.startTime, input.endTime)
+  return {
+    id: `te-${Date.now()}`,
+    employeeId: input.employeeId,
+    employeeName: employee?.name || '',
+    projectId: input.projectId,
+    projectName: project?.name || '',
+    taskTitle: task?.title || '',
+    description: input.description,
+    date: input.date,
+    startTime: input.startTime,
+    endTime: input.endTime,
+    duration,
+    status: 'draft',
+    createdAt: new Date().toISOString().split('T')[0],
+  }
+}
+
+export async function updateTimeEntry(input: UpdateTimeEntryInput): Promise<TimeEntry | null> {
+  await simulateDelay()
+  const entry = mockTimeEntries.find((e) => e.id === input.id)
+  if (!entry) return null
+  const updated = { ...entry, ...input }
+  if (input.startTime && input.endTime) {
+    updated.duration = calculateDuration(input.startTime, input.endTime)
+  }
+  if (input.projectId) {
+    const project = mockProjects.find((p) => p.id === input.projectId)
+    if (project) updated.projectName = project.name
+  }
+  if (input.taskId) {
+    const task = mockTasks.find((t) => t.id === input.taskId)
+    if (task) updated.taskTitle = task.title
+  }
+  return updated
+}
+
+export async function deleteTimeEntry(id: string): Promise<boolean> {
+  await simulateDelay()
+  return mockTimeEntries.some((e) => e.id === id)
+}
+
+export async function generateProjectReport(entries: TimeEntry[]): Promise<ProjectReportRow[]> {
+  await simulateDelay()
+  const grouped = new Map<string, { totalHours: number; count: number }>()
+  for (const entry of entries) {
+    const existing = grouped.get(entry.projectId) || { totalHours: 0, count: 0 }
+    existing.totalHours += entry.duration / 60
+    existing.count += 1
+    grouped.set(entry.projectId, existing)
+  }
+  return Array.from(grouped.entries()).map(([pid, data]) => {
+    const project = mockProjects.find((p) => p.id === pid)
+    return {
+      projectId: pid,
+      projectName: project?.name || pid,
+      projectColor: project?.color || '#666',
+      totalHours: Math.round(data.totalHours * 100) / 100,
+      totalEntries: data.count,
+      avgHoursPerEntry: data.count > 0 ? Math.round((data.totalHours / data.count) * 100) / 100 : 0,
+    }
+  }).sort((a, b) => b.totalHours - a.totalHours)
+}
+
+export async function generateEmployeeReport(entries: TimeEntry[]): Promise<EmployeeReportRow[]> {
+  await simulateDelay()
+  const grouped = new Map<string, { totalHours: number; count: number; days: Set<string> }>()
+  for (const entry of entries) {
+    const existing = grouped.get(entry.employeeId) || { totalHours: 0, count: 0, days: new Set<string>() }
+    existing.totalHours += entry.duration / 60
+    existing.count += 1
+    existing.days.add(entry.date)
+    grouped.set(entry.employeeId, existing)
+  }
+  return Array.from(grouped.entries()).map(([eid, data]) => {
+    const employee = mockEmployees.find((e) => e.id === eid)
+    const activeDays = data.days.size
+    return {
+      employeeId: eid,
+      employeeName: employee?.name || eid,
+      totalHours: Math.round(data.totalHours * 100) / 100,
+      totalEntries: data.count,
+      avgDailyHours: activeDays > 0 ? Math.round((data.totalHours / activeDays) * 100) / 100 : 0,
+      activeDays,
+    }
+  }).sort((a, b) => b.totalHours - a.totalHours)
+}
+
+export async function generateWeeklySummary(entries: TimeEntry[]): Promise<WeeklySummaryRow[]> {
+  await simulateDelay()
+  const today = new Date()
+  const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - dayOfWeek)
+  const days: WeeklySummaryRow[] = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    const dateStr = d.toISOString().split('T')[0]
+    const dayEntries = entries.filter((e) => e.date === dateStr)
+    const projectBreakdown = new Map<string, number>()
+    for (const entry of dayEntries) {
+      projectBreakdown.set(
+        entry.projectName,
+        (projectBreakdown.get(entry.projectName) || 0) + entry.duration / 60
+      )
+    }
+    days.push({
+      day: dateStr,
+      dayLabel: getShortDayOfWeek(dateStr),
+      totalHours: Math.round(dayEntries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100,
+      totalEntries: dayEntries.length,
+      projectBreakdown: Array.from(projectBreakdown.entries()).map(([name, hours]) => ({
+        projectName: name,
+        hours: Math.round(hours * 100) / 100,
+      })),
+    })
+  }
+  return days
+}
+
+export function calculateReportSummary(entries: TimeEntry[]): ReportSummary {
+  const totalHours = Math.round(entries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100
+  const totalEntries = entries.length
+  const uniqueDays = new Set(entries.map((e) => e.date))
+  const avgHoursPerDay = uniqueDays.size > 0
+    ? Math.round((totalHours / uniqueDays.size) * 100) / 100
+    : 0
+  const projectHours = new Map<string, number>()
+  const employeeHours = new Map<string, number>()
+  let overtime = 0
+  for (const entry of entries) {
+    projectHours.set(entry.projectName, (projectHours.get(entry.projectName) || 0) + entry.duration / 60)
+    employeeHours.set(entry.employeeName, (employeeHours.get(entry.employeeName) || 0) + entry.duration / 60)
+    if (entry.duration / 60 > 8) overtime += entry.duration / 60 - 8
+  }
+  const mostActiveProject = Array.from(projectHours.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || '-'
+  const mostActiveEmployee = Array.from(employeeHours.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || '-'
+  return {
+    totalHours,
+    totalEntries,
+    avgHoursPerDay,
+    mostActiveProject,
+    mostActiveEmployee,
+    overtimeHours: Math.round(overtime * 100) / 100,
+  }
+}
+
+export function calculateDashboardStats(
+  entries: TimeEntry[],
+  isTimerRunning: boolean
+): DashboardStats {
+  const today = new Date().toISOString().split('T')[0]
+  const weekStart = getWeekStartDate()
+  const todayEntries = entries.filter((e) => e.date === today)
+  const weekEntries = entries.filter((e) => e.date >= weekStart)
+  const monthStart = today.substring(0, 7) + '-01'
+  const monthEntries = entries.filter((e) => e.date >= monthStart)
+  const todayHours = Math.round(todayEntries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100
+  const weekHours = Math.round(weekEntries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100
+  const monthHours = Math.round(monthEntries.reduce((s, e) => s + e.duration / 60, 0) * 100) / 100
+  const weekTarget = 40
+  const weekProgress = Math.min(100, Math.round((weekHours / weekTarget) * 100))
+  const activeProjects = new Set(entries.map((e) => e.projectId)).size
+  return {
+    todayHours,
+    todayEntries: todayEntries.length,
+    weekHours,
+    weekTarget,
+    weekProgress,
+    monthHours,
+    activeProjects,
+    runningTimer: isTimerRunning,
+  }
+}
+
+export function createActivityEntry(
+  action: ActivityAction,
+  description: string,
+  employeeName: string
+): ActivityLogEntry {
+  return {
+    id: `al-${Date.now()}`,
+    action,
+    description,
+    timestamp: new Date().toISOString(),
+    employeeName,
+  }
+}
+
 export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   timer_started: 'Тајмер покренут',
   timer_stopped: 'Тајмер заустављен',
@@ -11,3 +389,4 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   entry_approved: 'Унос одобрен',
   entry_rejected: 'Унос одбачен',
 }
+export { STATUS_COLORS } from "./types"

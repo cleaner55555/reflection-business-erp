@@ -40,7 +40,8 @@ export const DEMO_CONVERSATIONS: Conversation[] = [
     unreadCount: 0, status: 'open', assignedTo: 'Marko', tags: ['lead', 'katalog'], isStarred: true,
     messages: [
       { id: 'm1', conversationId: 'c1', contactName: 'Jovan Petrović', contactPhone: '+381631234567', contactAvatar: null, direction: 'inbound', type: 'text', content: 'Poštovani, interesujem se za vaš proizvod. Mogu li dobiti ponudu?', status: 'read', timestamp: new Date(Date.now() - 3600000).toISOString(), assignedTo: null, tags: [], starred: false },
-      { id: 'm2', conversationId: 'c1', contactName: 'Jovan Petrović', contactPhone: '+381631234567', contactAvatar: null, direction: 'outbound', type: 'text', content: 'Zdravo Jovane! Zahvaljujemo na interesovanju. Evo linka do našeg kataloga: https://shop.example.com/katalog. Javite ako imate pitanja!', status: 'delivered', timestamp: new Date(Date.now() - 3500000).toISOString(), assignedTo: 'Marko', tags: [], starred: false },
+      { id: 'm2', conversationId: 'c1', contactName: 'Jovan Petrović', contactPhone: '+381631234567', contactAvatar: null, direction: 'outbound', type: 'text', content: 'Zdravo Jovane! Zahvaljujemo na interesovanju. Evo linka do našeg kataloga: https://shop.example.com/katalog. Javite ako imate pitanja!', status: 'delivered', timestamp: new Date(Date.now() - 3500000).toISOString(), assignedTo: 'Marko', tags: 
+[], starred: false },
       { id: 'm3', conversationId: 'c1', contactName: 'Jovan Petrović', contactPhone: '+381631234567', contactAvatar: null, direction: 'outbound', type: 'document', content: 'Katalog_2025.pdf (2.4 MB)', status: 'delivered', timestamp: new Date(Date.now() - 3400000).toISOString(), assignedTo: 'Marko', tags: [], starred: false },
     ]
   },
@@ -50,7 +51,8 @@ export const DEMO_CONVERSATIONS: Conversation[] = [
     unreadCount: 0, status: 'open', assignedTo: 'Jelena', tags: ['narudžba', 'isporuka'], isStarred: false,
     messages: [
       { id: 'm4', conversationId: 'c2', contactName: 'Ana Stanković', contactPhone: '+381647890123', contactAvatar: null, direction: 'inbound', type: 'text', content: 'Kada stiže moja narudžba #ORD-2025-123?', status: 'read', timestamp: new Date(Date.now() - 7200000).toISOString(), assignedTo: null, tags: [], starred: false },
-      { id: 'm5', conversationId: 'c2', contactName: 'Ana Stanković', contactPhone: '+381647890123', contactAvatar: null, direction: 'outbound', type: 'text', content: 'Vaša narudžba je poslata danas. Broj pošiljke: SHP-2025-001. Možete je pratiti na https://track.example.com/SHP-2025-001. Predviđena dostava: 2-3 radna dana.', status: 'read', timestamp: new Date(Date.now() - 7100000).toISOString(), assignedTo: 'Jelena', tags: [], starred: false },
+      { id: 'm5', conversationId: 'c2', contactName: 'Ana Stanković', contactPhone: '+381647890123', contactAvatar: null, direction: 'outbound', type: 'text', content: 'Vaša narudžba je poslata danas. Broj pošiljke: SHP-2025-001. Možete je pratiti na https://track.example.com/SHP-2025-001. Predviđena dostava: 2-3 radna dana.', status: 'read', timestamp: new Date(Date.now() - 7100000).toISOString(), assignedTo: 'Jelena', tags: 
+[], starred: false },
     ]
   },
   {
@@ -103,7 +105,8 @@ export const DEMO_TEMPLATES: MessagingTemplate[] = [
 export const DEMO_AUTO_REPLIES: AutoReply[] = [
   { id: 'a1', name: 'Pozdravna poruka', description: 'Automatski pozdrav novim kontaktima', trigger: 'greeting', keyword: null, response: 'Dobar dan! 🌟 Dobrodošli u Reflection Business. Javite nam kako vam možemo pomoći. Radno vreme: Pon-Pet 9-17h.', delaySeconds: 0, enabled: true, matchCount: 234, createdAt: '2024-01-15' },
   { id: 'a2', name: 'Odsustvo', description: 'Poruka van radnog vremena', trigger: 'away', keyword: null, response: 'Trenutno smo van radnog vremena. Radno vreme je Pon-Pet 9-17h. Vaša poruka će biti obrađena u najkraćem roku. Hvala na razumevanju! 🙏', delaySeconds: 1, enabled: true, matchCount: 89, createdAt: '2024-01-15' },
-  { id: 'a3', name: 'Cena', description: 'Odgovor na upit o ceni', trigger: 'keyword', keyword: 'cena,cenovnik,koliko košta', response: 'Naše cene su dostupne na https://shop.example.com/cenovnik. Za specifične ponude, javite nam detalje narudžbe.', delaySeconds: 0, enabled: true, matchCount: 156, createdAt: '2024-02-20' },
+  { id: 'a3', name: 'Cena', description: 'Odgovor na upit o ceni', trigger: 'keyword', keyword: 'cena,cenovnik,koliko košta', response: 'Naše cene su dostupne na https://shop.example.com/cenovnik. Za specifične ponude, javite nam detalje narudžbe.', delaySeconds: 0, enabled: true, matchCount: 156, createdAt: '2024-02-20' 
+},
   { id: 'a4', name: 'Dostava', description: 'Info o isporuci', trigger: 'keyword', keyword: 'dostava,pošiljka,kada stiže', response: 'Dostava je za 2-3 radna dana za Srbiju, 5-7 za region. Besplatna dostava za narudžbe pre 5000 RSD! 📦', delaySeconds: 0, enabled: true, matchCount: 112, createdAt: '2024-03-10' },
   { id: 'a5', name: 'Kontakt info', description: 'Osnovni kontakt podaci', trigger: 'keyword', keyword: 'adresa,telefon,kontakt,lokacija', response: '📍 Adresa: Beograd, Bulevar Kralja Aleksandra 123\n📞 Telefon: +381 11 123 4567\n📧 Email: info@reflection.rs\n🕐 Radno vreme: Pon-Pet 9-17h', delaySeconds: 0, enabled: false, matchCount: 45, createdAt: '2024-04-05' },
 ]

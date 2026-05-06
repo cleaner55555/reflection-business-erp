@@ -1,64 +1,64 @@
-'use client'
+"use client";
 
-import React from 'react'
+import React from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   TrendingUp,
   Receipt,
   BarChart3,
   RotateCcw,
   CircleDollarSign,
-} from 'lucide-react'
-import type { DailyStats, Receipt as ReceiptType } from './types'
-import { formatRsd, formatDateTimeSr, COMPANY_INFO } from './data'
+} from "lucide-react";
+import type { DailyStats, Receipt as ReceiptType } from "./types";
+import { formatRsd, formatDateTimeSr, COMPANY_INFO } from "./data";
 
 // ================================================================
 // STATS CARDS ROW
 // ================================================================
 
 interface StatsCardsProps {
-  stats: DailyStats
+  stats: DailyStats;
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
     {
-      title: 'Дневни приhod',
+      title: "Дневни приhod",
       value: formatRsd(stats.dnevniPrihod),
-      description: 'укупна продаја данас',
+      description: "укупна продаја данас",
       icon: TrendingUp,
-      color: 'text-emerald-600',
+      color: "text-emerald-600",
     },
     {
-      title: 'Број рачуна',
+      title: "Број рачуна",
       value: String(stats.brojRacuna),
-      description: 'издато данас',
+      description: "издато данас",
       icon: Receipt,
-      color: 'text-blue-600',
+      color: "text-blue-600",
     },
     {
-      title: 'Просек по рачуну',
+      title: "Просек по рачуну",
       value: formatRsd(stats.prosek),
-      description: 'просечна вредност',
+      description: "просечна вредност",
       icon: BarChart3,
-      color: 'text-amber-600',
+      color: "text-amber-600",
     },
     {
-      title: 'Поврат / Сторно',
+      title: "Поврат / Сторно",
       value: formatRsd(stats.povrat),
-      description: 'укупно поврата',
+      description: "укупно поврата",
       icon: RotateCcw,
-      color: 'text-red-600',
+      color: "text-red-600",
     },
-  ]
+  ];
 
   return (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -69,13 +69,17 @@ export function StatsCards({ stats }: StatsCardsProps) {
             <card.icon className={`h-4 w-4 ${card.color}`} />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold tracking-tight">{card.value}</div>
-            <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
+            <div className="text-xl sm:text-2xl font-bold tracking-tight">
+              {card.value}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {card.description}
+            </p>
           </CardContent>
         </Card>
       ))}
     </div>
-  )
+  );
 }
 
 // ================================================================
@@ -83,23 +87,26 @@ export function StatsCards({ stats }: StatsCardsProps) {
 // ================================================================
 
 interface ReceiptPreviewProps {
-  receipt: ReceiptType | null
-  open: boolean
-  onClose: () => void
+  receipt: ReceiptType | null;
+  open: boolean;
+  onClose: () => void;
 }
 
-export function ReceiptPreview({ receipt, open, onClose }: ReceiptPreviewProps) {
-  if (!receipt || !open) return null
+export function ReceiptPreview({
+  receipt,
+  open,
+  onClose,
+}: ReceiptPreviewProps) {
+  if (!receipt || !open) return null;
 
-  const pdvLines = receipt.lines.reduce<Record<number, { base: number; tax: number }>>(
-    (acc, line) => {
-      if (!acc[line.pdvRate]) acc[line.pdvRate] = { base: 0, tax: 0 }
-      acc[line.pdvRate].base += line.baseAmount
-      acc[line.pdvRate].tax += line.pdvAmount
-      return acc
-    },
-    {}
-  )
+  const pdvLines = receipt.lines.reduce<
+    Record<number, { base: number; tax: number }>
+  >((acc, line) => {
+    if (!acc[line.pdvRate]) acc[line.pdvRate] = { base: 0, tax: 0 };
+    acc[line.pdvRate].base += line.baseAmount;
+    acc[line.pdvRate].tax += line.pdvAmount;
+    return acc;
+  }, {});
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -111,7 +118,9 @@ export function ReceiptPreview({ receipt, open, onClose }: ReceiptPreviewProps) 
         <div className="text-center pt-6 pb-2 px-4">
           <p className="font-bold text-sm">{COMPANY_INFO.name}</p>
           <p>{COMPANY_INFO.address}</p>
-          <p>ПИБ: {COMPANY_INFO.pib} | МБ: {COMPANY_INFO.maticniBr}</p>
+          <p>
+            ПИБ: {COMPANY_INFO.pib} | МБ: {COMPANY_INFO.maticniBr}
+          </p>
           <p>ЖР: {COMPANY_INFO.account}</p>
           <p className="text-[10px] text-gray-500">{COMPANY_INFO.bank}</p>
         </div>
@@ -149,13 +158,20 @@ export function ReceiptPreview({ receipt, open, onClose }: ReceiptPreviewProps) 
             <span className="col-span-2 text-right">Износ</span>
           </div>
           {receipt.lines.map((line, i) => (
-            <div key={i} className="grid grid-cols-12 gap-1 py-0.5 border-b border-dotted border-gray-200">
+            <div
+              key={i}
+              className="grid grid-cols-12 gap-1 py-0.5 border-b border-dotted border-gray-200"
+            >
               <span className="col-span-6 truncate" title={line.productName}>
                 {line.productName}
               </span>
               <span className="col-span-2 text-right">{line.quantity}</span>
-              <span className="col-span-2 text-right">{line.unitPrice.toFixed(2)}</span>
-              <span className="col-span-2 text-right">{line.totalAmount.toFixed(2)}</span>
+              <span className="col-span-2 text-right">
+                {line.unitPrice.toFixed(2)}
+              </span>
+              <span className="col-span-2 text-right">
+                {line.totalAmount.toFixed(2)}
+              </span>
             </div>
           ))}
         </div>
@@ -169,7 +185,7 @@ export function ReceiptPreview({ receipt, open, onClose }: ReceiptPreviewProps) 
             <div key={rate} className="flex justify-between text-[10px]">
               <span>ПДВ {rate}%</span>
               <span>
-                {vals.base.toFixed(2)} + {vals.tax.toFixed(2)} ={' '}
+                {vals.base.toFixed(2)} + {vals.tax.toFixed(2)} ={" "}
                 {(vals.base + vals.tax).toFixed(2)}
               </span>
             </div>
@@ -201,9 +217,7 @@ export function ReceiptPreview({ receipt, open, onClose }: ReceiptPreviewProps) 
           <p className="text-[10px] text-gray-500">
             Фискални рачун је издат електронски
           </p>
-          <p className="text-[10px] text-gray-500">
-            Хвала на куповини!
-          </p>
+          <p className="text-[10px] text-gray-500">Хвала на куповини!</p>
           <p className="text-[9px] text-gray-400 mt-2">
             =================================
           </p>
@@ -219,7 +233,7 @@ export function ReceiptPreview({ receipt, open, onClose }: ReceiptPreviewProps) 
           </button>
           <button
             onClick={() => {
-              window.print()
+              window.print();
             }}
             className="flex-1 py-2 rounded bg-black text-white text-xs font-medium hover:bg-gray-800 transition-colors cursor-pointer"
           >
@@ -228,7 +242,7 @@ export function ReceiptPreview({ receipt, open, onClose }: ReceiptPreviewProps) 
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ================================================================
@@ -236,21 +250,28 @@ export function ReceiptPreview({ receipt, open, onClose }: ReceiptPreviewProps) 
 // ================================================================
 
 interface EmptyStateProps {
-  icon?: React.ReactNode
-  title: string
-  description: string
-  action?: React.ReactNode
+  icon?: React.ReactNode;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+}: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
       {icon && <div className="text-muted-foreground mb-4">{icon}</div>}
       <h3 className="text-lg font-semibold mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-md mb-4">{description}</p>
+      <p className="text-sm text-muted-foreground max-w-md mb-4">
+        {description}
+      </p>
       {action}
     </div>
-  )
+  );
 }
 
 // ================================================================
@@ -258,17 +279,17 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
 // ================================================================
 
 interface ShiftSummaryCardProps {
-  isOpen: boolean
-  cashier: string
-  openedAt: string
-  totalSales: number
-  transactionCount: number
+  isOpen: boolean;
+  cashier: string;
+  openedAt: string;
+  totalSales: number;
+  transactionCount: number;
   payments: {
-    gotovina: number
-    kartica: number
-    tanjava: number
-    virman: number
-  }
+    gotovina: number;
+    kartica: number;
+    tanjava: number;
+    virman: number;
+  };
 }
 
 export function ShiftSummaryCard({
@@ -287,11 +308,11 @@ export function ShiftSummaryCard({
           <Badge
             className={
               isOpen
-                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300'
-                : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300"
+                : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
             }
           >
-            {isOpen ? '● Отворена' : '● Затворена'}
+            {isOpen ? "● Отворена" : "● Затворена"}
           </Badge>
         </div>
         <CardDescription>
@@ -345,5 +366,5 @@ export function ShiftSummaryCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

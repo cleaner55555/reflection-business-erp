@@ -21,17 +21,17 @@ export const scaleIn = {
 // ---- Pure helpers ----
 
 export function maskKey(key: string): string {
-  if (!key) return '';
-  if (key.includes('...')) return key; // already masked
+  if (!key) return "";
+  if (key.includes("...")) return key; // already masked
   return `${key.substring(0, 8)}...${key.substring(key.length - 4)}`;
 }
 
 export function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('sr-Latn-RS', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("sr-Latn-RS", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
 }
 
@@ -39,7 +39,9 @@ export function isExpiringSoon(dateStr: string | null): boolean {
   if (!dateStr) return false;
   const now = new Date();
   const expires = new Date(dateStr);
-  const diffDays = Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.ceil(
+    (expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+  );
   return diffDays > 0 && diffDays <= 7;
 }
 

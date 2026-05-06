@@ -65,7 +65,6 @@ interface VisitorKPI {
   weekTotal: number
   monthTotal: number
 }
-
 // ============ STATUS CONFIG ============
 
 const statusConfig: Record<VisitorStatus, { label: string;
