@@ -246,29 +246,14 @@ export function ProgramLojalnosti() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
-  const [stats, setStats] = useState<LoyaltyStats | null>(null)
-  const [members, setMembers] = useState<LoyaltyMember[]>([])
-  const [tiers, setTiers] = useState<LoyaltyTier[]>([])
-  const [rewards, setRewards] = useState<RewardItem[]>([])
-  const [transactions, setTransactions] = useState<PointsTransaction[]>([])
-  const [campaigns, setCampaigns] = useState<PromoCampaign[]>([])
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
-  const [tierFilter, setTierFilter] = useState('all')
-  const [txTypeFilter, setTxTypeFilter] = useState('all')
 
   const [detailOpen, setDetailOpen] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [createType, setCreateType] = useState<'member' | 'reward' | 'campaign'>('member')
-  const [selectedItem, setSelectedItem] = useState<LoyaltyMember | RewardItem | PromoCampaign | null>(null)
 
   const emptyMemberForm = { partnerName: '', email: '', phone: '', tier: 'bronze', initialPoints: '' }
   const emptyRewardForm = { name: '', description: '', category: 'Popusti', pointsCost: '', pointsValue: '', stock: '999', maxPerMember: '5', tierRequired: 'bronze' }
   const emptyCampaignForm = { name: '', description: '', type: 'multiplier', startDate: '', endDate: '', pointsMultiplier: '2', bonusPoints: '0', minPurchase: '0', maxBonus: '0', budget: '50000' }
 
   const [memberForm, setMemberForm] = useState(emptyMemberForm)
-  const [rewardForm, setRewardForm] = useState(emptyRewardForm)
-  const [campaignForm, setCampaignForm] = useState(emptyCampaignForm)
 
   const loadData = useCallback(async () => {
     if (!activeCompanyId) return

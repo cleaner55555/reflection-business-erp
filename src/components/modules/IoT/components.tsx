@@ -167,8 +167,6 @@ const SEVERITY_CONFIG: Record<string, { label: string; color: string }> = {
 }
 
 const PROTOCOLS = ['MQTT', 'HTTP', 'CoAP', 'LoRaWAN', 'Zigbee', 'BLE', 'WiFi', 'Modbus', 'OPC-UA', 'BACnet']
-const LOCATIONS = ['Magacin 1', 'Magacin 2', 'Kancelarija', 'Proizvodnja', 'Glavni ulaz', 'Otprema', 'Prijem', 'Parking', 'Server soba', 'Dostavno vozilo 1', 'Dostavno vozilo 2', 'Hala A', 'Hala B']
-const SAMPLE_RATES = [
   { value: 10, label: 'Svako 10s' },
   { value: 30, label: 'Svako 30s' },
   { value: 60, label: 'Svaki minut' },
@@ -181,7 +179,6 @@ const SAMPLE_RATES = [
 // ============ DEMO DATA ============
 
 const generateReadings = (sensorId: string, baseValue: number, variance: number, count: number): SensorReading[] => {
-  const readings: SensorReading[] = []
   const now = Date.now()
   for (let i = count - 1; i >= 0; i--) {
     const value = baseValue + (Math.random() - 0.5) * variance * 2
@@ -292,31 +289,12 @@ export function IoTContent() {
 
   // Data state
   const [sensors, setSensors] = useState<IoTSensor[]>([])
-  const [groups, setGroups] = useState<DeviceGroup[]>([])
-  const [alertRules, setAlertRules] = useState<AlertRule[]>([])
-  const [automationRules, setAutomationRules] = useState<AutomationRule[]>([])
-  const [alerts, setAlerts] = useState<IoTAlert[]>([])
-  const [loading, setLoading] = useState(true)
 
   // View state
   const [activeTab, setActiveTab] = useState('overview')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterType, setFilterType] = useState('all')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [filterGroup, setFilterGroup] = useState('all')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Dialogs
   const [sensorDialogOpen, setSensorDialogOpen] = useState(false)
-  const [sensorDetailOpen, setSensorDetailOpen] = useState(false)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [ruleDialogOpen, setRuleDialogOpen] = useState(false)
-  const [automationDialogOpen, setAutomationDialogOpen] = useState(false)
-  const [groupDialogOpen, setGroupDialogOpen] = useState(false)
-  const [editingSensor, setEditingSensor] = useState<IoTSensor | null>(null)
-  const [selectedSensor, setSelectedSensor] = useState<IoTSensor | null>(null)
-  const [editingRule, setEditingRule] = useState<AlertRule | null>(null)
-  const [editingAutomation, setEditingAutomation] = useState<AutomationRule | null>(null)
 
   // Forms
   const [sensorForm, setSensorForm] = useState({
@@ -334,7 +312,6 @@ export function IoTContent() {
     triggerCondition: 'above', triggerValue: '', actionType: 'notify', actionConfig: '', enabled: true,
   })
   const [groupForm, setGroupForm] = useState({ name: '', description: '', location: '', color: '#10b981' })
-  const [submitting, setSubmitting] = useState(false)
 
   // Toast
   const [toastMsg, setToastMsg] = useState('')
@@ -795,7 +772,6 @@ export function IoTContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredSensors.map(sensor => {
                 const typeCfg = SENSOR_TYPE_CONFIG[sensor.type]
-                const statCfg = STATUS_CONFIG[sensor.status]
                 return (
                   <Card key={sensor.id} className="cursor-pointer hover:shadow-md transition-shadow group" onClick={() => { setSelectedSensor(sensor); setSensorDetailOpen(true) }}>
                     <CardHeader className="pb-2">
@@ -880,7 +856,6 @@ export function IoTContent() {
                   <tbody>
                     {filteredSensors.map(sensor => {
                       const typeCfg = SENSOR_TYPE_CONFIG[sensor.type]
-                      const statCfg = STATUS_CONFIG[sensor.status]
                       return (
                         <tr key={sensor.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedSensor(sensor); setSensorDetailOpen(true) }}>
                           <td className="p-3">
@@ -919,7 +894,6 @@ export function IoTContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sensors.filter(s => s.readings && s.readings.length > 0).map(sensor => {
               const typeCfg = SENSOR_TYPE_CONFIG[sensor.type]
-              const readings = sensor.readings || []
               const minVal = Math.min(...readings.map(r => r.value))
               const maxVal = Math.max(...readings.map(r => r.value))
               const avgVal = readings.reduce((s, r) => s + r.value, 0) / readings.length
@@ -988,7 +962,6 @@ export function IoTContent() {
                 <div className="space-y-2">
                   {alerts.filter(a => !a.acknowledged).map(alert => {
                     const sevCfg = SEVERITY_CONFIG[alert.severity]
-                    const typeCfg = SENSOR_TYPE_CONFIG[alert.sensorType]
                     return (
                       <div key={alert.id} className={`flex items-start gap-3 p-3 rounded-lg border ${alert.severity === 'critical' ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/10' : 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/10'}`}>
                         <span className="text-lg mt-0.5">{typeCfg?.icon || '🔔'}</span>

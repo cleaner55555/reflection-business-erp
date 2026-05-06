@@ -98,11 +98,6 @@ const SHIFT_TYPES: Record<string, { label: string; color: string }> = {
 }
 
 const DAYS = ['Ponedeljak', 'Utorak', 'Sreda', 'Četvrtak', 'Petak', 'Subota', 'Nedelja']
-const DAYS_SHORT = ['Pon', 'Uto', 'Sre', 'Čet', 'Pet', 'Sub', 'Ned']
-const DEPARTMENTS = ['Proizvodnja', 'Magacin', 'Prodaja', 'IT', 'Marketing', 'HR', 'Bezbednost']
-const LOCATIONS = ['Fabrika A', 'Fabrika B', 'Magacin Centralni', 'Retail BG', 'Retail NS', 'Kancelarija']
-const POSITIONS = ['Operater', 'Tehničar', 'Supervizor', 'Koordinator', 'Menadžer', 'Inženjer', 'Administrator']
-const SKILLS = ['CNC operacija', 'Zavarivanje', 'Elektronika', 'Vozač B kategorije', 'Forklift', 'QA Kontrola', 'Programiranje', 'Dizajn', 'Prodaja', 'Markteting']
 
 const formatCurrency = (val: number) => `${val.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD`
 
@@ -170,20 +165,10 @@ export function PlanerRadneSile() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
-  const [stats, setStats] = useState<WorkforceStats | null>(null)
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [shifts, setShifts] = useState<Shift[]>([])
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
-  const [deptFilter, setDeptFilter] = useState('Svi')
-  const [weekOffset, setWeekOffset] = useState(0)
 
   const [detailOpen, setDetailOpen] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
 
   const emptyShiftForm = { employeeId: '', date: '', startTime: '08:00', endTime: '16:00', type: 'morning', location: LOCATIONS[0], department: DEPARTMENTS[0], notes: '', breakMinutes: '30' }
-  const [shiftForm, setShiftForm] = useState(emptyShiftForm)
 
   const loadData = useCallback(async () => {
     if (!activeCompanyId) return

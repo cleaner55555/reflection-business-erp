@@ -24,7 +24,7 @@ import {
   Filter,
   BellRing,
 } from 'lucide-react'
-import type { Notification } from './NotificationBell'
+import type { Notification } from '@/components/modules/NotificationBell'
 
 function getNotificationIcon(type: string) {
   switch (type) {

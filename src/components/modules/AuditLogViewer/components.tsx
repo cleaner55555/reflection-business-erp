@@ -130,16 +130,9 @@ export function AuditLogViewer() {
   const activeCompanyId = useAppStore((s) => s.activeCompanyId)
 
   const [logs, setLogs] = useState<AuditLog[]>([])
-  const [stats, setStats] = useState<AuditStats | null>(null)
-  const [loading, setLoading] = useState(true)
 
   // Filters
   const [search, setSearch] = useState('')
-  const [entityFilter, setEntityFilter] = useState('')
-  const [actionFilter, setActionFilter] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const [clearing, setClearing] = useState(false)
 
   // Pagination
   const [page, setPage] = useState(0)
@@ -215,7 +208,6 @@ export function AuditLogViewer() {
   // Export CSV
   const handleExport = () => {
     const headers = ['Datum', 'Korisnik', 'Entitet', 'Akcija', 'Detalji', 'IP adresa']
-    const rows = filteredLogs.map((log) => [
       new Date(log.createdAt).toLocaleString('sr-Latn'),
       log.userName,
       ENTITY_LABELS[log.entity] || log.entity,
@@ -224,7 +216,6 @@ export function AuditLogViewer() {
       log.ipAddress || '',
     ])
     const csv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${c}"`).join(','))].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -236,7 +227,6 @@ export function AuditLogViewer() {
 
   // Get unique entities and actions from stats
   const entities = stats?.byEntity?.map((e) => e.entity) || []
-  const actions = stats?.byAction?.map((a) => a.action) || []
 
   const getActionIcon = (action: string) => {
     const Icon = ACTION_ICONS[action] || FileEdit

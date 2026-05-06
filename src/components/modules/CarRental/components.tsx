@@ -149,11 +149,6 @@ export function RentACarContent() {
 const { t } = useTranslation()
 const { tc, translateTexts } = useContentTranslation()
 const [vehicles, setVehicles] = useState<RentalVehicle[]>([])
-const [rentals, setRentals] = useState<Rental[]>([])
-const [loading, setLoading] = useState(true)
-const [rentalsLoading, setRentalsLoading] = useState(true)
-const [submitting, setSubmitting] = useState(false)
-const [activeTab, setActiveTab] = useState('vozila')
 
 // View mode state (replaces Dialog state)
 const [viewMode, setViewMode] = useState<'list' | 'vehicle-form' | 'rental-form'>('list')
@@ -166,10 +161,6 @@ const [vehicleStatusFilter, setVehicleStatusFilter] = useState('all')
 
 // Rental editing state
 const [editingRental, setEditingRental] = useState<Rental | null>(null)
-const [rentalFormVehicle, setRentalFormVehicle] = useState('')
-const [rentalFormDailyRate, setRentalFormDailyRate] = useState(0)
-const [rentalFormStartDate, setRentalFormStartDate] = useState('')
-const [rentalFormEndDate, setRentalFormEndDate] = useState('')
 
 // Rental filter state
 const [rentalStatusFilter, setRentalStatusFilter] = useState('all')

@@ -71,22 +71,11 @@ export function Sredstva() {
   const { t } = useTranslation()
 
   const [assets, setAssets] = useState<Asset[]>([])
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('overview')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterCategory, setFilterCategory] = useState('all')
-  const [filterStatus, setFilterStatus] = useState('all')
 
   const [assetDialogOpen, setAssetDialogOpen] = useState(false)
-  const [assetDetailOpen, setAssetDetailOpen] = useState(false)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
-  const [submitting, setSubmitting] = useState(false)
 
   const emptyForm = { name: '', category: 'IT oprema', serialNumber: '', purchaseDate: '', purchasePrice: 0, currentValue: 0, usefulLife: 60, location: '', status: 'aktivno', notes: '', responsible: '', insurance: '', maintenanceDate: '', warrantyExpiry: '' }
   const [assetForm, setAssetForm] = useState(emptyForm)
-  const [toastMsg, setToastMsg] = useState('')
   const showToast = (msg: string) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 3000) }
 
   // ============ DATA LOADING ============

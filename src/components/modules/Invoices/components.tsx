@@ -1,75 +1,18 @@
 'use client'
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-import { Label } from '@/components/ui/label'
-import {
-import {
-  Plus,
-  Search,
-  Trash2,
-  Pencil,
-  ArrowLeft,
-  Printer,
-  FileText,
-  Download,
-  Send,
-  CheckCircle2,
-  XCircle,
-  Eye,
-  Loader2,
-  BarChart3,
-  AlertTriangle,
-  Clock,
-  ArrowRightLeft,
-  BookOpen,
-  TrendingUp,
-  DollarSign,
-  FilePlus,
-  CalendarClock,
-  Receipt,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { RecurringInvoices } from './RecurringInvoices'
-import { RateOtplateTab, FiskalizacijaTab } from './InvoicesEnhanced'
-import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
-import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton/components'
-import { generateInvoicePDF, downloadPDF, type InvoiceData } from '@/lib/reports/pdf-generator'
 
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-interface Partner {
-interface InvoiceItem {
-interface Invoice {
-interface Product {
-interface LineItem {
-interface FullInvoice {
-const COMPANY = {
-
-function getSefStatusLabel(status: string | null): string {
-  const labels: Record<string, string> = {
-    not_sent: 'Nije poslata',
-    sent: 'Poslata',
-    accepted: 'Prihvaćena',
-    rejected: 'Odbijena',
-  }
-  return labels[status || 'not_sent'] || status || 'Nije poslata'
-}
-
-function getSefStatusColor(status: string | null): string {
-  const colors: Record<string, string> = {
-    not_sent: 'bg-slate-100 text-slate-600 border-slate-200',
-    sent: 'bg-amber-50 text-amber-700 border-amber-200',
-    accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    rejected: 'bg-red-50 text-red-700 border-red-200',
-  }
-  return colors[status || 'not_sent'] || 'bg-slate-100 text-slate-600 border-slate-200'
-}
+from '@/components/ui/badge'
+from '@/components/ui/button'
+from '@/components/ui/card'
+from '@/components/ui/input'
+from '@/components/ui/label'
+from '@/components/ui/select'
+from '@/components/ui/skeleton'
+from '@/components/ui/table'
+from '@/components/ui/tabs'
+import { , AlertTriangle, ArrowLeft, ArrowRightLeft, BarChart3, BookOpen, CheckCircle2, DollarSign, Download, Eye, FileText, Loader2, Pencil, Plus, Printer, Search, Send, Trash2, TrendingUp, XCircle } from 'lucide-react'
+import type { Partner, InvoiceItem, Invoice, Product, LineItem, FullInvoice } from './types'
 
 function InvoiceDashboard() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -1315,107 +1258,3 @@ function EFaktureTab() {
     </div>
   )
 }
-
-function numberToSerbian(amount: number): string {
-  if (amount === 0) return 'nula dinara'
-
-  const units = ['', 'jedan', 'dva', 'tri', 'četiri', 'pet', 'šest', 'sedam', 'osam', 'devet']
-  const teens = ['deset', 'jedanaest', 'dvanaest', 'trinaest', 'četrnaest', 'petnaest', 'šesnaest', 'sedamnaest', 'osamnaest', 'devetnaest']
-  const tens = ['', '', 'dvadeset', 'trideset', 'četrdeset', 'pedeset', 'šezdeset', 'sedamdeset', 'osamdeset', 'devedeset']
-  const hundreds = ['', 'sto', 'dvesto', 'tristo', 'četristo', 'petsto', 'šestosto', 'sedamsto', 'osamsto', 'devetsto']
-
-  function convertChunk(n: number): string {
-    if (n === 0) return ''
-    let result = ''
-    const h = Math.floor(n / 100)
-    const remainder = n % 100
-    const t = Math.floor(remainder / 10)
-    const u = remainder % 10
-
-    if (h > 0) result += hundreds[h]
-    if (remainder === 0) return result
-
-    if (remainder < 10) {
-      result += (result ? ' ' : '') + units[u]
-    } else if (remainder < 20) {
-      result += (result ? ' ' : '') + teens[remainder - 10]
-    } else {
-      result += (result ? ' ' : '') + tens[t]
-      if (u > 0) result += (result ? ' ' : '') + units[u]
-    }
-    return result
-  }
-
-  const intPart = Math.floor(Math.abs(amount))
-  const decPart = Math.round((Math.abs(amount) - intPart) * 100)
-
-  if (intPart === 0 && decPart > 0) {
-    return `${decPart} ${getParaWord(decPart)}`
-  }
-
-  let result = ''
-  // Handle millions
-  const millions = Math.floor(intPart / 1000000)
-  if (millions > 0) {
-    if (millions === 1) result += 'jedan milion'
-    else {
-      result += convertChunk(millions) + ' ' + getMillionWord(millions)
-    }
-  }
-
-  // Handle thousands
-  const thousands = Math.floor((intPart % 1000000) / 1000)
-  if (thousands > 0) {
-    if (result) result += ' '
-    if (thousands === 1) result += 'jedna hiljada'
-    else if (thousands < 5) result += convertChunk(thousands) + ' hiljade'
-    else result += convertChunk(thousands) + ' hiljada'
-  }
-
-  // Handle remaining
-  const remaining = intPart % 1000
-  if (remaining > 0) {
-    if (result) result += ' '
-    result += convertChunk(remaining) + ' ' + getDinarWord(remaining)
-  } else if (intPart > 0 && millions > 0 && thousands === 0) {
-    // millions only, already handled
-  }
-
-  if (intPart === 0 && decPart > 0) {
-    result = ''
-  }
-
-  if (decPart > 0) {
-    if (result) result += ' i '
-    result += `${decPart} ${getParaWord(decPart)}`
-  }
-
-  return result
-}
-
-function getDinarWord(n: number): string {
-  const lastTwo = n % 100
-  const lastOne = n % 10
-  if (lastTwo >= 11 && lastTwo <= 19) return 'dinara'
-  if (lastOne >= 2 && lastOne <= 4) return 'dinara'
-  if (lastOne === 1) return 'dinar'
-  return 'dinara'
-}
-
-function getMillionWord(n: number): string {
-  const lastTwo = n % 100
-  const lastOne = n % 10
-  if (lastTwo >= 11 && lastTwo <= 19) return 'miliona'
-  if (lastOne >= 2 && lastOne <= 4) return 'miliona'
-  return 'miliona'
-}
-
-function getParaWord(n: number): string {
-  const lastTwo = n % 100
-  const lastOne = n % 10
-  if (lastTwo >= 11 && lastTwo <= 19) return 'para'
-  if (lastOne >= 2 && lastOne <= 4) return 'pare'
-  if (lastOne === 1) return 'para'
-  return 'para'
-}
-

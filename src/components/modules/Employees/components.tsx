@@ -1,46 +1,23 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Textarea } from '@/components/ui/textarea'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import type {  } from './types'
+import { useCallback, useEffect, useState } from 'react'
 
-// ============ CONFIG / DATA / HELPERS ==========
-  Plus, Search, Pencil, Trash2, UserCog, Users, ArrowLeft, Printer,
-  BarChart3, Building2, DollarSign, Calendar, Clock, TrendingUp, Award,
-  AlertTriangle, Eye, FileText, Star, GitBranch,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import { formatRSD, formatDate } from '@/lib/helpers'
-import { OceneTab, OrganigramTab } from './EmployeesEnhanced'
+from '@/components/ui/badge'
+from '@/components/ui/button'
+from '@/components/ui/card'
+from '@/components/ui/dialog'
+from '@/components/ui/input'
+from '@/components/ui/label'
+from '@/components/ui/select'
+from '@/components/ui/separator'
+from '@/components/ui/skeleton'
+from '@/components/ui/table'
+from '@/components/ui/tabs'
+from '@/components/ui/textarea'
+import { , ArrowLeft, Award, Building2, Clock, DollarSign, Eye, FileText, Pencil, Plus, Printer, Search, Trash2, UserCog, Users } from 'lucide-react'
+import type { Employee, Payroll, Attendance, EmployeeOption, EmployeeStats } from './types'
 
-// ─── Interfaces ───────────────────────────────────────────────────────────────
-
-const MONTHS = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Jun', 'Jul', 'Avgust', 'Septembar', 'Oktobar', 'Novembar', 'Decembar']
-const DEPARTMENTS = ['IT', 'Prodaja', 'Magacin', 'Finansije', 'Menadžment', 'Administracija', 'Marketing', 'Proizvodnja', 'Logistika']
-const ATTENDANCE_TYPES = [
-  { value: 'rad', label: 'Rad', color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
-  { value: 'bolovanje', label: 'Bolovanje', color: 'text-red-600 bg-red-50 border-red-200' },
-  { value: 'godisnji', label: 'Godišnji', color: 'text-blue-600 bg-blue-50 border-blue-200' },
-  { value: 'sluzbeni_put', label: 'Službeni put', color: 'text-purple-600 bg-purple-50 border-purple-200' },
-  { value: 'odsustvo', label: 'Odsustvo', color: 'text-amber-600 bg-amber-50 border-amber-200' },
-]
-
-// ─── Main Component ───────────────────────────────────────────────────────────
-
-// ============ SUB-COMPONENTS ==========
-export function PregledTab() {
+function PregledTab() {
   const { t } = useTranslation()
   const [stats, setStats] = useState<EmployeeStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -208,7 +185,7 @@ export function PregledTab() {
   )
 }
 
-export function ZaposleniListTab() {
+function ZaposleniListTab() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -554,7 +531,7 @@ export function ZaposleniListTab() {
   )
 }
 
-export function PlateTab() {
+function PlateTab() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [payrolls, setPayrolls] = useState<Payroll[]>([])
@@ -807,7 +784,7 @@ export function PlateTab() {
   )
 }
 
-export function PrisustvoTab() {
+function PrisustvoTab() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [attendances, setAttendances] = useState<Attendance[]>([])

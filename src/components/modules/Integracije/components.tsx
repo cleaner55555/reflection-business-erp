@@ -1,68 +1,18 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  Upload,
-  Download,
-  History,
-  FileSpreadsheet,
-  ArrowLeft,
-  ArrowRight,
-  Loader2,
-  Sparkles,
-  Trash2,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  UploadCloud,
-  X,
-  Plug,
-  RefreshCw,
-  Play,
-  Square,
-  Zap,
-  Plus,
-  Edit2,
-  Globe,
-  Eye,
-  Wifi,
-  WifiOff,
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useTranslation } from '@/lib/i18n'
-import { MigrationWizard } from './MigrationWizard'
 
-interface EntityField {
-interface ParsedFile {
-interface ImportError {
-interface ImportResult {
-interface IntegrationJob {
-interface SyncConnector {
-const CONNECTOR_TYPES: Record<string, string> = {
-const ENTITY_OPTIONS = [
-const ENTITY_FIELDS: Record<EntityType, EntityField[]> = {
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+from '@/components/ui/badge'
+from '@/components/ui/button'
+from '@/components/ui/card'
+from '@/components/ui/checkbox'
+from '@/components/ui/label'
+from '@/components/ui/select'
+from '@/components/ui/skeleton'
+from '@/components/ui/table'
+from '@/components/ui/tabs'
+import { , AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Clock, Download, Edit2, FileSpreadsheet, Globe, History, Loader2, Play, Plug, Plus, RefreshCw, Sparkles, Square, Trash2, Upload, UploadCloud, Wifi, WifiOff, X, Zap } from 'lucide-react'
+import type { EntityField, ParsedFile, ImportError, ImportResult, IntegrationJob, SyncConnector, EntityField, ParsedFile, ImportError, ImportResult, IntegrationJob, SyncConnector } from './types'
 
 function ConnectionsTab() {
   const { t } = useTranslation()
@@ -1415,4 +1365,3 @@ function HistoryTab() {
     </Card>
   )
 }
-

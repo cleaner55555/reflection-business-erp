@@ -108,7 +108,6 @@ export function OverviewTab({ sCfg, tCfg }: { sCfg: any, tCfg: any }) {
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {dashboard.recentContracts.map((c) => {
                   const sCfg = statusConfig[c.status]
-                  const tCfg = typeConfig[c.type]
                   return (
                     <div key={c.id} className="flex items-center justify-between py-2 border-b last:border-0">
                       <div className="flex items-center gap-3">
@@ -192,7 +191,6 @@ export function ContractsTab({ filteredContracts, k, loading, sCfg, search, setS
               <tbody>
                 {filteredContracts.map((c) => {
                   const sCfg = statusConfig[c.status]
-                  const tCfg = typeConfig[c.type]
                   return (
                     <tr key={c.id} className="border-t hover:bg-muted/30">
                       <td className="p-3">

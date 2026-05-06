@@ -16,7 +16,6 @@ import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { formatRSD, formatRSDShort } from '@/lib/helpers'
 import {
-import {
 import { generateMockPriceLists, generateMockTemplates, generateMockAuditLog, calcLineTotal, generateId, getMonthLabel, getStatusLabelKey, getStatusColor, generateMonthlyTrend, generateTopPartners } from './components'
 import { updateLineItem, openCreateDialog, handleCreate, handleUpdateStatus, handleDelete, handleSavePriceList, openEditPriceList, handleSaveTemplate, updateTemplateLineItem, renderOverview, renderAnalytics } from './components'
 
@@ -944,7 +943,6 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
-import {
   FileText, Plus, Search, Eye, Trash2, Edit3, RefreshCw, CheckCircle2,
   Clock, ArrowRight, BarChart3, DollarSign, TrendingUp, AlertCircle, Send,
   X, Copy, Printer, FileBarChart, BookTemplate, History, Percent,
@@ -952,18 +950,8 @@ import {
 } from 'lucide-react'
 
 interface SalesOrder {
-interface LineItem {
-interface DashboardData {
-interface PriceList {
-interface OfferTemplate {
-interface AuditEntry {
-interface Product {
-interface Partner {
 const STATUS_CONFIG: Record<string, { labelKey: string; color: string; icon: typeof Clock }> = {
 const PAYMENT_TERMS_OPTIONS: Array<{ value: PaymentTerms; label: string }> = [
-const PRICE_LIST_TYPES = [
-const FUNNEL_COLORS = ['#94a3b8', '#f59e0b', '#10b981', '#ef4444']
-const PIE_COLORS = ['#94a3b8', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6']
 
 function generateMockPriceLists(): PriceList[] {
   return [
@@ -1022,7 +1010,6 @@ function generateId(): string {
 
 function getMonthLabel(month: string): string {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Avg', 'Sep', 'Okt', 'Nov', 'Dec']
-  const [year, m] = month.split('-')
   return `${months[parseInt(m) - 1]} ${year}`
 }
 
@@ -1065,7 +1052,6 @@ function generateTopPartners(recentOrders: SalesOrder[]): Array<{ partnerName: s
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
     setForm(prev => {
       const items = [...prev.lineItems]
-      const item = { ...items[index], [field]: value }
       if (field === 'productId') {
         const prod = products.find(p => p.id === value)
         if (prod) { item.productName = prod.name; item.unitPrice = prod.price }
@@ -1170,7 +1156,6 @@ function generateTopPartners(recentOrders: SalesOrder[]): Array<{ partnerName: s
   const updateTemplateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
     setTplForm(prev => {
       const items = [...prev.lineItems]
-      const item = { ...items[index], [field]: value }
       if (['quantity', 'unitPrice', 'discount', 'tax'].includes(field)) {
         item.lineTotal = calcLineTotal(item.quantity, item.unitPrice, item.discount, item.tax)
       }

@@ -24,7 +24,6 @@ export const statusConfig: Record<string, { label: string; color: string }> = {
   converted: { label: 'Konvertovan', color: 'bg-green-100 text-green-700' }, expired: { label: 'Istekao', color: 'bg-gray-100 text-gray-700' },
 }
 export const sourceLabels: Record<string, string> = { email: 'Email', phone: 'Telefon', social: 'Društvene mreže', direct: 'Lično', website: 'Veb sajt' }
-export const formatCurrency = (val: number) => `${val.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD`
 
 export function OverviewTab({ dashboard }: { dashboard: DashboardData | null }) {
   if (!dashboard) return <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>

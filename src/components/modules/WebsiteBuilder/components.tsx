@@ -230,34 +230,18 @@ export function WebsiteBuilderContent() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
 
   // Pages state
   const [pages, setPages] = useState<Page[]>([])
-  const [pageDialogOpen, setPageDialogOpen] = useState(false)
-  const [editingPage, setEditingPage] = useState<Page | null>(null)
-  const [pageFilter, setPageFilter] = useState('all')
-  const [sectionDialogOpen, setSectionDialogOpen] = useState(false)
 
   // Media state
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
-  const [mediaFilter, setMediaFilter] = useState('all')
-  const [mediaSearch, setMediaSearch] = useState('')
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
-  const [mediaDetailOpen, setMediaDetailOpen] = useState(false)
-  const [selectedMedia, setSelectedMedia] = useState<MediaFile | null>(null)
 
   // Navigation state
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-  const [menuDialogOpen, setMenuDialogOpen] = useState(false)
-  const [editingMenu, setEditingMenu] = useState<MenuItem | null>(null)
-  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set())
 
   // SEO state
   const [seoDialogOpen, setSeoDialogOpen] = useState(false)
-  const [selectedPageSeo, setSelectedPageSeo] = useState<Page | null>(null)
-  const [seoForm, setSeoForm] = useState<SeoSettings>({
     metaTitle: '', metaDescription: '', ogTitle: '', ogDescription: '',
     ogImage: '', canonicalUrl: '', robotsIndex: true, robotsFollow: true, structuredData: '',
   })
@@ -336,14 +320,12 @@ export function WebsiteBuilderContent() {
   })
 
   const recentPages = [...pages].sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()).slice(0, 5)
-  const popularPages = [...pages].sort((a, b) => (b.traffic || 0) - (a.traffic || 0)).slice(0, 5)
 
   const componentCategories = [...new Set(componentLibrary.map((c) => c.category))]
 
   // ─── Page Form ────────────────────────────────────────────────────────────
 
   const emptyPageForm = { title: '', slug: '', type: 'custom', status: 'draft', template: 'blank', metaDescription: '', sections: [] as PageSection[] }
-  const [pageForm, setPageForm] = useState(emptyPageForm)
 
   const openPageDialog = (page?: Page) => {
     if (page) {
@@ -508,7 +490,6 @@ export function WebsiteBuilderContent() {
   // ─── Robots / Sitemap ─────────────────────────────────────────────────────
 
   const [robotsTxt, setRobotsTxt] = useState('User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml')
-  const [sitemapUrl, setSitemapUrl] = useState('https://example.com/sitemap.xml')
 
   // ─── Theme Functions ──────────────────────────────────────────────────────
 

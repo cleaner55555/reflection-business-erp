@@ -159,20 +159,12 @@ const LOCATION_LABELS: Record<string, string> = {
 export function KafeRestoranContent() {
 // Data states
 const [categories, setCategories] = useState<RestoCategory[]>([])
-const [menuItems, setMenuItems] = useState<RestoMenuItem[]>([])
-const [tables, setTables] = useState<RestoTable[]>([])
-const [orders, setOrders] = useState<RestoOrder[]>([])
-const [loading, setLoading] = useState(true)
-const [submitting, setSubmitting] = useState(false)
 
 // UI states
 const [activeTab, setActiveTab] = useState('stolovi')
-const [orderFilter, setOrderFilter] = useState('all')
 
 // View modes
 const [stoloviViewMode, setStoloviViewMode] = useState<'list' | 'form'>('list')
-const [narudzbineViewMode, setNarudzbineViewMode] = useState<'list' | 'form'>('list')
-const [meniViewMode, setMeniViewMode] = useState<'list' | 'category-form' | 'menu-item-form'>('list')
 
 // Editing states - Tables
 const [editingTable, setEditingTable] = useState<RestoTable | null>(null)
@@ -182,11 +174,9 @@ const [editingCategory, setEditingCategory] = useState<RestoCategory | null>(nul
 
 // Editing states - Menu items
 const [editingMenuItem, setEditingMenuItem] = useState<RestoMenuItem | null>(null)
-const [menuItemCategoryId, setMenuItemCategoryId] = useState<string>('')
 
 // Editing states - Orders
 const [orderItems, setOrderItems] = useState<{ menuItemId: string; menuItemName: string; quantity: number; unitPrice: number }[]>([])
-const [menuSearch, setMenuSearch] = useState('')
 
 // Menu category expand state
 const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())

@@ -241,21 +241,6 @@ export function VeštineContent() {
 const { activeCompanyId } = useAppStore()
 const { t } = useTranslation()
 const [activeTab, setActiveTab] = useState('overview')
-const [skills, setSkills] = useState<Skill[]>([])
-const [employeeSkills, setEmployeeSkills] = useState<EmployeeSkill[]>([])
-const [certifications, setCertifications] = useState<Certification[]>([])
-const [assessments, setAssessments] = useState<SkillAssessment[]>([])
-const [dashboard, setDashboard] = useState<SkillsDashboard | null>(null)
-const [search, setSearch] = useState('')
-const [categoryFilter, setCategoryFilter] = useState('all')
-const [loading, setLoading] = useState(false)
-const [dialogOpen, setDialogOpen] = useState(false)
-const [empSkillDialogOpen, setEmpSkillDialogOpen] = useState(false)
-const [certDialogOpen, setCertDialogOpen] = useState(false)
-const [assessDialogOpen, setAssessDialogOpen] = useState(false)
-const [detailOpen, setDetailOpen] = useState(false)
-const [selected, setSelected] = useState<Skill | null>(null)
-const [matrixEmployee, setMatrixEmployee] = useState<string>('all')
 
 // Forms
 const emptySkillForm = { name: '', category: 'programming', description: '' }

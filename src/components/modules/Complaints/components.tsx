@@ -362,21 +362,9 @@ export function ReklamacijeContent() {
 const { activeCompanyId } = useAppStore()
 const { t } = useTranslation()
 const [activeTab, setActiveTab] = useState('overview')
-const [complaints, setComplaints] = useState<Complaint[]>([])
-const [stats, setStats] = useState<ComplaintStats | null>(null)
-const [loading, setLoading] = useState(false)
-const [search, setSearch] = useState('')
-const [statusFilter, setStatusFilter] = useState('all')
-const [categoryFilter, setCategoryFilter] = useState('all')
-const [priorityFilter, setPriorityFilter] = useState('all')
 
 // Dialogs
 const [detailOpen, setDetailOpen] = useState(false)
-const [createOpen, setCreateOpen] = useState(false)
-const [resolveOpen, setResolveOpen] = useState(false)
-const [selected, setSelected] = useState<Complaint | null>(null)
-const [noteInput, setNoteInput] = useState('')
-const [customerReplyInput, setCustomerReplyInput] = useState('')
 
 // Create form
 const emptyForm = {
@@ -828,8 +816,6 @@ return (
             <div className="space-y-3">
               {filtered.map((c) => {
                 const sCfg = STATUS_CONFIG[c.status]
-                const cCfg = CATEGORY_CONFIG[c.category]
-                const pCfg = PRIORITY_CONFIG[c.priority]
                 const overdue = isOverdue(c.deadline, c.status)
                 const nextSt = c.status !== 'resolved' && c.status !== 'rejected' && c.status !== 'cancelled' ? getNextStatus(c.status) : null
 

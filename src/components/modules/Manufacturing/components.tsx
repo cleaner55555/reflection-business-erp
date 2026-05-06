@@ -300,27 +300,15 @@ export function ProizvodnjaContent() {
 const { activeCompanyId } = useAppStore()
 const { t } = useTranslation()
 const [activeTab, setActiveTab] = useState('overview')
-const [orders] = useState<ProductionOrder[]>(MOCK_ORDERS)
-const [boms] = useState<Bom[]>(MOCK_BOMS)
-const [machines, setMachines] = useState<Machine[]>(MOCK_MACHINES)
-const [schedule] = useState<ScheduleItem[]>(MOCK_SCHEDULE)
 
 // Order tab state
 const [orderSearch, setOrderSearch] = useState('')
-const [orderStatusFilter, setOrderStatusFilter] = useState('all')
-const [orderProductFilter, setOrderProductFilter] = useState('all')
-const [orderDialogOpen, setOrderDialogOpen] = useState(false)
-const [orderDetailOpen, setOrderDetailOpen] = useState(false)
-const [selectedOrder, setSelectedOrder] = useState<ProductionOrder | null>(null)
 
 // BOM tab state
 const [bomDialogOpen, setBomDialogOpen] = useState(false)
-const [bomDetailOpen, setBomDetailOpen] = useState(false)
-const [selectedBom, setSelectedBom] = useState<Bom | null>(null)
 
 // Machine tab state
 const [machineDialogOpen, setMachineDialogOpen] = useState(false)
-const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null)
 
 // Schedule tab state
 const [scheduleView, setScheduleView] = useState<'weekly' | 'monthly'>('weekly')
@@ -354,7 +342,6 @@ const filteredOrders = useMemo(() => {
 // Derived: KPI values
 const kpi = useMemo(() => {
   const activeOrders = orders.filter(o => ['in_progress', 'quality_check'].includes(o.status)).length
-  const inQueue = orders.filter(o => ['draft', 'planned'].includes(o.status)).length
   const completedToday = orders.filter(o => o.status === 'completed').length
   const totalOutput = orders.reduce((sum, o) => sum + o.quantityProduced, 0)
   const totalOrdered = orders.reduce((sum, o) => sum + o.quantityOrdered, 0)

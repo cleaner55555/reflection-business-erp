@@ -263,17 +263,8 @@ export function Servis() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
-  const [orders, setOrders] = useState<ServiceOrder[]>([])
-  const [stats, setStats] = useState<ServiceStats | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [techFilter, setTechFilter] = useState('all')
 
   const [detailOpen, setDetailOpen] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [selected, setSelected] = useState<ServiceOrder | null>(null)
 
   const emptyForm = {
     clientName: '', clientPhone: '', clientEmail: '', clientAddress: '',

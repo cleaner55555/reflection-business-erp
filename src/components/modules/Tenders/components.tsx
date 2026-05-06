@@ -323,18 +323,8 @@ export function Natečaji() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
-  const [tenders, setTenders] = useState<Tender[]>([])
-  const [stats, setStats] = useState<TenderStats | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [sectorFilter, setSectorFilter] = useState('all')
 
   const [detailOpen, setDetailOpen] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [bidderOpen, setBidderOpen] = useState(false)
-  const [selected, setSelected] = useState<Tender | null>(null)
 
   const emptyForm = {
     title: '', description: '', type: 'goods', procedureType: 'open', sector: 'it',

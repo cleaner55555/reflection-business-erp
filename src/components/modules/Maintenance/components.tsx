@@ -151,7 +151,6 @@ const equipmentStatusConfig: Record<string, { labelKey: string; color: string }>
 }
 
 const PIE_COLORS = ['#22c55e', '#f59e0b', '#ef4444', '#6b7280']
-const COST_COLORS = ['#6366f1', '#22c55e', '#f59e0b']
 
 // ==================== MOCK DATA ====================
 
@@ -245,46 +244,26 @@ export function OdržavanjeContent() {
 
   // --- Common State ---
   const [activeTab, setActiveTab] = useState('overview')
-  const [dashboard, setDashboard] = useState<DashboardData | null>(null)
-  const [items, setItems] = useState<MaintenanceOrder[]>([])
-  const [loading, setLoading] = useState(false)
 
   // --- Orders Tab State ---
   const [search, setSearch] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [filterPriority, setFilterPriority] = useState('all')
-  const [filterType, setFilterType] = useState('all')
-  const [filterDateFrom, setFilterDateFrom] = useState('')
-  const [filterDateTo, setFilterDateTo] = useState('')
 
   // --- Dialog State ---
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [selected, setSelected] = useState<MaintenanceOrder | null>(null)
 
   // --- Equipment Tab State ---
   const [equipment] = useState<EquipmentItem[]>(mockEquipment)
-  const [equipFilterCat, setEquipFilterCat] = useState('all')
-  const [equipFilterStatus, setEquipFilterStatus] = useState('all')
-  const [equipDialogOpen, setEquipDialogOpen] = useState(false)
-  const [equipDetailOpen, setEquipDetailOpen] = useState(false)
-  const [selectedEquip, setSelectedEquip] = useState<EquipmentItem | null>(null)
-  const [equipForm, setEquipForm] = useState({
     name: '', serialNumber: '', category: 'production', location: '', status: 'active',
     lastMaintenance: '', nextMaintenance: '', healthScore: 100,
   })
 
   // --- Plans Tab State ---
   const [plans, setPlans] = useState<MaintenancePlan[]>(mockPlans)
-  const [planDialogOpen, setPlanDialogOpen] = useState(false)
-  const [planForm, setPlanForm] = useState({
     equipmentName: '', planName: '', frequency: 'monthly', nextDue: '', autoCreate: true,
   })
 
   // --- Parts Tab State ---
   const [parts] = useState<SparePart[]>(mockSpareParts)
-  const [partDialogOpen, setPartDialogOpen] = useState(false)
-  const [partForm, setPartForm] = useState({
     name: '', partNumber: '', category: 'production', qtyInStock: 0, minStock: 1, location: '', unitCost: 0,
   })
 

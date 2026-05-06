@@ -1,110 +1,25 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import type {  } from './types'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-// ============ CONFIG / DATA / HELPERS ==========
-  Plus, Search, Pencil, Trash2, HeartHandshake, Phone, Mail, Building2, CheckCircle2, Clock, XCircle,
-  ArrowLeft, TrendingUp, BarChart3, Target, AlertTriangle, RefreshCw, X, Activity, Calendar,
-  ChevronRight, MessageSquare, User, Users, Filter, Tag, Globe, Megaphone, Handshake, Briefcase,
-  CircleDot, CircleCheck, CircleX, Settings2
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import { formatRSD, formatDate } from '@/lib/helpers'
-import { AutomacijeTab } from './CRMEnhanced'
+from '@/components/ui/badge'
+from '@/components/ui/button'
+from '@/components/ui/card'
+from '@/components/ui/checkbox'
+from '@/components/ui/dialog'
+from '@/components/ui/input'
+from '@/components/ui/label'
+from '@/components/ui/scroll-area'
+from '@/components/ui/select'
+from '@/components/ui/separator'
+from '@/components/ui/skeleton'
+from '@/components/ui/table'
+from '@/components/ui/tabs'
+from '@/components/ui/textarea'
+import { Activity, ArrowLeft, BarChart3, Briefcase, Building2, CheckCircle2, ChevronRight, CircleCheck, CircleDot, Filter, Globe, Mail, Pencil, Phone, Plus, RefreshCw, Search, Tag, Target, Trash2, TrendingUp, User, Users, X, XCircle } from 'lucide-react'
+import type { Contact, Partner, Deal, CrmActivity } from './types'
 
-// ============ INTERFACES ============
-
-// ============ CONSTANTS ============
-
-const STAGES = ['lead', 'kvalifikacija', 'predlog', 'pregovaranje', 'won', 'lost'] as const
-const STAGE_LABELS: Record<string, string> = {
-  lead: 'Lead', kvalifikacija: 'Kvalifikacija', predlog: 'Predlog',
-  pregovaranje: 'Pregovaranje', won: 'Dobijeno', lost: 'Izgubljeno'
-}
-const STAGE_COLORS: Record<string, string> = {
-  lead: 'bg-slate-100 border-slate-300', kvalifikacija: 'bg-blue-50 border-blue-300',
-  predlog: 'bg-amber-50 border-amber-300', pregovaranje: 'bg-orange-50 border-orange-300',
-  won: 'bg-emerald-50 border-emerald-300', lost: 'bg-red-50 border-red-300'
-}
-const STAGE_DOT: Record<string, string> = {
-  lead: 'bg-slate-400', kvalifikacija: 'bg-blue-400', predlog: 'bg-amber-400',
-  pregovaranje: 'bg-orange-400', won: 'bg-emerald-500', lost: 'bg-red-400'
-}
-const STAGE_BADGE: Record<string, string> = {
-  lead: 'bg-slate-100 text-slate-700', kvalifikacija: 'bg-blue-100 text-blue-700',
-  predlog: 'bg-amber-100 text-amber-700', pregovaranje: 'bg-orange-100 text-orange-700',
-  won: 'bg-emerald-100 text-emerald-700', lost: 'bg-red-100 text-red-700'
-}
-
-const SOURCE_LABELS: Record<string, string> = {
-  manual: 'Manuelno', web: 'Web sajt', referral: 'Preporuka', cold_call: 'Hladni poziv',
-  email: 'Email kampanja', social: 'Društvene mreže', trade_show: 'Sajam', advertising: 'Reklama', other: 'Ostalo'
-}
-const SOURCE_ICONS: Record<string, string> = {
-  manual: '✍️', web: '🌐', referral: '🤝', cold_call: '📞',
-  email: '✉️', social: '📱', trade_show: '🎪', advertising: '📢', other: '❓'
-}
-
-const ACTIVITY_TYPES: Record<string, { icon: string; label: string }> = {
-  poziv: { icon: '📞', label: 'Poziv' },
-  sastanak: { icon: '🤝', label: 'Sastanak' },
-  email: { icon: '✉️', label: 'Email' },
-  task: { icon: '✅', label: 'Zadatak' },
-  napomena: { icon: '📝', label: 'Napomena' },
-  demo: { icon: '🖥️', label: 'Demo' },
-  predlog: { icon: '📋', label: 'Predlog' },
-  follow_up: { icon: '🔄', label: 'Follow-up' },
-}
-
-// ============ HELPERS ============
-
-// ============ SUB-COMPONENTS ==========
-export function scoreColor(score: number): string {
-  if (score >= 67) return 'bg-emerald-100 text-emerald-700 border-emerald-200'
-  if (score >= 34) return 'bg-amber-100 text-amber-700 border-amber-200'
-  return 'bg-red-100 text-red-700 border-red-200'
-}
-
-export function daysUntil(date: string | null): number | null {
-  if (!date) return null
-  const now = new Date(); now.setHours(0, 0, 0, 0)
-  const target = new Date(date); target.setHours(0, 0, 0, 0)
-  return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-}
-
-export function initials(firstName?: string | null, lastName?: string | null): string {
-  return `${(firstName || '')[0] || ''}${(lastName || '')[0] || ''}`.toUpperCase()
-}
-
-export function avatarColor(name: string): string {
-  const colors = ['bg-primary/10 text-primary', 'bg-emerald-500/10 text-emerald-600', 'bg-amber-500/10 text-amber-600', 'bg-rose-500/10 text-rose-600', 'bg-sky-500/10 text-sky-600', 'bg-violet-500/10 text-violet-600']
-  let hash = 0
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  return colors[Math.abs(hash) % colors.length]
-}
-
-export function parseTags(tags: string | null): string[] {
-  if (!tags) return []
-  try { return JSON.parse(tags) } catch { return [] }
-}
-
-export function PipelineTab() {
+function PipelineTab() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [deals, setDeals] = useState<Deal[]>([])
@@ -503,7 +418,7 @@ export function PipelineTab() {
   )
 }
 
-export function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMove, onRefresh }: {
+function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMove, onRefresh }: {
   deal: Deal; contacts: Contact[]; partners: Partner[]; onClose: () => void; onEdit: () => void; onDelete: () => void; onMove: (stage: string) => void; onRefresh: () => void
 }) {
   const { t } = useTranslation()
@@ -737,7 +652,7 @@ export function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete
   )
 }
 
-export function ForecastTab() {
+function ForecastTab() {
   const { t } = useTranslation()
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
@@ -854,7 +769,7 @@ export function ForecastTab() {
   )
 }
 
-export function KontaktiTab() {
+function KontaktiTab() {
   const { t } = useTranslation()
   const { tc } = useContentTranslation()
   const [contacts, setContacts] = useState<Contact[]>([])
@@ -1071,7 +986,7 @@ export function KontaktiTab() {
   )
 }
 
-export function AktivnostiTab() {
+function AktivnostiTab() {
   const { t } = useTranslation()
   const { tc } = useContentTranslation()
   const [activities, setActivities] = useState<CrmActivity[]>([])
@@ -1227,7 +1142,7 @@ export function AktivnostiTab() {
   )
 }
 
-export function IzvoriTab() {
+function IzvoriTab() {
   const { t } = useTranslation()
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)

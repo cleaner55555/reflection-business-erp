@@ -96,23 +96,15 @@ export function Protokol() {
   const { tc, translateTexts } = useContentTranslation()
   // Data state
   const [entries, setEntries] = useState<ProtocolEntry[]>([])
-  const [loading, setLoading] = useState(true)
 
   // Tab & filter state
   const [activeTab, setActiveTab] = useState<string>('ulaz')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [filterPriority, setFilterPriority] = useState<string>('all')
 
   // View mode state
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
-  const [submitting, setSubmitting] = useState(false)
-  const [editing, setEditing] = useState<ProtocolEntry | null>(null)
-  const [form, setForm] = useState<FormData>({ ...EMPTY_FORM })
 
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<ProtocolEntry | null>(null)
-  const [deleting, setDeleting] = useState(false)
 
   // ─── Fetch ────────────────────────────────────────────────────────────────
 

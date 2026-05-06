@@ -87,7 +87,6 @@ export function OverviewTab({ dashboard }: { dashboard: DashboardData | null }) 
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {dashboard.recentTickets.map((tk) => {
                 const cfg = statusConfig[tk.status]
-                const pCfg = priorityConfig[tk.priority]
                 return (
                   <div key={tk.id} className="flex items-center justify-between py-2 border-b last:border-0">
                     <div><div className="text-sm font-medium">{tk.subject}</div><div className="text-xs text-muted-foreground">{tk.customerName} · {categoryLabels[tk.category] || tk.category}</div></div>

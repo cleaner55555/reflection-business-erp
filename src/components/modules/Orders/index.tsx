@@ -5,10 +5,24 @@ import { Button } from '@/components/ui/button'; import { Input } from '@/compon
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, ShoppingCart, Clock } from 'lucide-react'; import { toast } from 'sonner'; import { formatDate } from '@/lib/helpers'
-import type { Order } from './types'
-import { INITIAL } from './data'
-import { getStatusBadge, getPriorityBadge, formatRSD } from './components'
+import { Plus, Search, Trash2, Pencil, Eye, ShoppingCart, Truck, Clock, AlertTriangle } from 'lucide-react'; import { toast } from 'sonner'; import { formatDate } from '@/lib/helpers'
+
+type Order = { id: string; orderNo: string; client: string; date: string; deliveryDate: string; type: 'purchase' | 'sale' | 'internal'; status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'; items: number; totalAmount: number; warehouse: string; supplier: string; priority: 'low' | 'medium' | 'high' | 'urgent'; notes: string }
+const INITIAL: Order[] = [
+  { id: '1', orderNo: 'NAR-2024-001', client: 'Fabrika "Zvezda"', date: '2024-06-14', deliveryDate: '2024-06-20', type: 'sale', status: 'shipped', items: 12, totalAmount: 185000, warehouse: 'Magacin Beograd', supplier: '', priority: 'high', notes: '12 paleta čeličnih cevi — poslato 18.06.' },
+  { id: '2', orderNo: 'NAR-2024-002', client: 'SBB DOO', date: '2024-06-15', deliveryDate: '2024-06-25', type: 'purchase', status: 'processing', items: 8, totalAmount: 45000, warehouse: '', supplier: 'Papirnica "Matroz"', priority: 'medium', notes: 'A4 papir 80g — 5000 komada' },
+  { id: '3', orderNo: 'NAR-2024-003', client: 'Poslovnica Niš', date: '2024-06-10', deliveryDate: '2024-06-13', type: 'internal', status: 'delivered', items: 25, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'high', notes: 'Restock robe i nameštaja — dostavljeno na vreme' },
+  { id: '4', orderNo: 'NAR-2024-004', client: 'Restoran "Kafana"', date: '2024-06-15', deliveryDate: '2024-06-18', type: 'purchase', status: 'confirmed', items: 6, totalAmount: 32000, warehouse: '', supplier: 'Mlekara "Zlatiborac"', priority: 'medium', notes: 'Mlečni proizvodi — nedeljna isporuka' },
+  { id: '5', orderNo: 'NAR-2024-005', client: 'Poslovnica Kragujevac', date: '2024-06-12', deliveryDate: '2024-06-20', type: 'internal', status: 'pending', items: 15, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'low', notes: 'Restock za ponovno otvaranje' },
+  { id: '6', orderNo: 'NAR-2024-006', client: 'IT Solutions DOO', date: '2024-06-16', deliveryDate: '2024-06-22', type: 'sale', status: 'confirmed', items: 3, totalAmount: 285000, warehouse: 'Magacin Beograd', supplier: '', priority: 'urgent', notes: 'Server oprema — HP ProLiant serveri' },
+  { id: '7', orderNo: 'NAR-2024-007', client: 'Grad Beograd — Čistoća', date: '2024-06-08', deliveryDate: '2024-06-09', type: 'purchase', status: 'cancelled', items: 2, totalAmount: 15000, warehouse: '', supplier: 'Čistoća Plus', priority: 'low', notes: 'Otkazano — našli jeftinijeg dobavljača' },
+  { id: '8', orderNo: 'NAR-2024-008', client: 'Poslovnice Novi Sad', date: '2024-06-16', deliveryDate: '2024-06-19', type: 'internal', status: 'confirmed', items: 30, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'medium', notes: 'Kancelarijski materijal + obnova asortimana' },
+]
+const STATUSES: Record<string, { color: string; label: string }> = { pending: { color: 'bg-gray-100 text-gray-800', label: 'Na čekanju' }, confirmed: { color: 'bg-blue-100 text-blue-800', label: 'Potvrđen' }, processing: { color: 'bg-amber-100 text-amber-800', label: 'U obradi' }, shipped: { color: 'bg-purple-100 text-purple-800', label: 'Poslat' }, delivered: { color: 'bg-emerald-100 text-emerald-800', label: 'Isporučen' }, cancelled: { color: 'bg-red-100 text-red-800', label: 'Otkazan' } }
+const PRIORITIES: Record<string, { color: string; label: string }> = { low: { color: 'bg-gray-100 text-gray-800', label: 'Nizak' }, medium: { color: 'bg-blue-100 text-blue-800', label: 'Srednji' }, high: { color: 'bg-amber-100 text-amber-800', label: 'Visok' }, urgent: { color: 'bg-red-100 text-red-800', label: 'Hitno' } }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function getPriorityBadge(s: string) { const r = PRIORITIES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
 export function Narudzbe() {
   const [data, setData] = useState<Order[]>(INITIAL); const [loading, setLoading] = useState(true)

@@ -78,15 +78,6 @@ export function Edukacija() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [courses, setCourses] = useState<Course[]>([])
-  const [loading, setLoading] = useState(true)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [courseViewMode, setCourseViewMode] = useState<'list' | 'form'>('list')
-  const [lessonViewMode, setLessonViewMode] = useState<'list' | 'form'>('list')
-  const [submitting, setSubmitting] = useState(false)
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null)
-  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
-  const [targetCourseId, setTargetCourseId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('all')
 
   const fetchCourses = useCallback(async () => {
     setLoading(true)

@@ -355,7 +355,6 @@ export function SettingsTab({ cameras }: { cameras: any }) {
             <div className="space-y-2">
               {alerts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(alert => {
                 const typeCfg = ALERT_TYPE_CONFIG[alert.type] || ALERT_TYPE_CONFIG.motion_detected
-                const sevCfg = SEVERITY_CONFIG[alert.severity]
                 return (
                   <div key={alert.id} className={`flex items-start justify-between p-3 rounded-lg border ${!alert.acknowledged ? 'border-l-4 bg-muted/30' : 'opacity-50'}`} style={{ borderLeftColor: alert.severity === 'critical' ? '#ef4444' : alert.severity === 'warning' ? '#f59e0b' : '#3b82f6' }}>
                     <div className="flex items-start gap-3">

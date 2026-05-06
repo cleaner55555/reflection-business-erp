@@ -252,19 +252,6 @@ export function Odobrenja() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
-  const [requests, setRequests] = useState<ApprovalRequest[]>([])
-  const [templates, setTemplates] = useState<ApprovalTemplate[]>([])
-  const [dashboard, setDashboard] = useState<ApprovalDashboard | null>(null)
-  const [search, setSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [priorityFilter, setPriorityFilter] = useState('all')
-  const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [commentInput, setCommentInput] = useState('')
-  const [rejectNote, setRejectNote] = useState('')
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
-  const [selected, setSelected] = useState<ApprovalRequest | null>(null)
 
   // Forms
   const emptyForm = {
@@ -637,7 +624,6 @@ export function Odobrenja() {
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {dashboard.recentRequests.map((r) => {
                       const sCfg = statusConfig[r.status]
-                      const tCfg = typeConfig[r.type]
                       return (
                         <div key={r.id} className="flex items-center justify-between py-2 border-b last:border-0">
                           <div className="flex items-center gap-3">
@@ -702,8 +688,6 @@ export function Odobrenja() {
               <div className="space-y-3">
                 {filteredRequests.map((r) => {
                   const sCfg = statusConfig[r.status]
-                  const tCfg = typeConfig[r.type]
-                  const pCfg = priorityConfig[r.priority]
                   return (
                     <Card key={r.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => { setSelected(r); setDetailOpen(true); }}>
                       <CardContent className="p-4">

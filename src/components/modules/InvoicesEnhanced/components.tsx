@@ -1,30 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
-import { CheckCircle2, XCircle, AlertTriangle, DollarSign, Receipt, CalendarDays } from 'lucide-react'
-import { toast } from 'sonner'
-import { formatRSD, formatDate, formatDateTime } from '@/lib/helpers'
+
+from '@/components/ui/badge'
+from '@/components/ui/button'
+from '@/components/ui/card'
+from '@/components/ui/input'
+from '@/components/ui/label'
+from '@/components/ui/select'
+from '@/components/ui/separator'
+from '@/components/ui/skeleton'
+from '@/components/ui/table'
+import { AlertTriangle, CalendarDays, CheckCircle2, DollarSign, Receipt } from 'lucide-react'
 import type { InstallmentPlan, FiscalInvoice } from './types'
 
-// ==================== RATE OTPLATE TAB ====================
-
-export function RateOtplateTab() {
+function RateOtplateTab() {
   const [invoices, setInvoices] = useState<InstallmentPlan[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState('all') // all, pending, active, completed
 
   useEffect(() => {
     let cancelled = false
@@ -32,6 +25,7 @@ export function RateOtplateTab() {
       const res = await fetch('/api/invoices')
       if (cancelled) return
       const data = await res.json()
+      // Filter invoices that have installment info
       const installmentInvoices = (data || []).filter((inv: InstallmentPlan) => inv.totalInstallments && inv.totalInstallments > 1)
       setInvoices(installmentInvoices)
       setLoading(false)
@@ -130,6 +124,7 @@ export function RateOtplateTab() {
                     </div>
                   </div>
 
+                  {/* Progress bar */}
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span>Rata {inv.paidInstallments || 0} od {inv.totalInstallments}</span>
@@ -140,6 +135,7 @@ export function RateOtplateTab() {
                     </div>
                   </div>
 
+                  {/* Installment schedule */}
                   <div className="border rounded-lg overflow-hidden">
                     <Table>
                       <TableHeader>
@@ -190,9 +186,7 @@ export function RateOtplateTab() {
   )
 }
 
-// ==================== FISKALIZACIJA TAB ====================
-
-export function FiskalizacijaTab() {
+function FiskalizacijaTab() {
   const [invoices, setInvoices] = useState<FiscalInvoice[]>([])
   const [loading, setLoading] = useState(true)
   const [incoterms] = ['DAP', 'FOB', 'CIF', 'EXW', 'DDP', 'FCA', 'CPT', 'DPU']
@@ -251,6 +245,7 @@ export function FiskalizacijaTab() {
 
   return (
     <div className="space-y-4">
+      {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-3">
@@ -278,6 +273,7 @@ export function FiskalizacijaTab() {
         </Card>
       </div>
 
+      {/* Incoterms info */}
       <Card className="p-4">
         <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Incoterms - Dostavni uslovi</CardTitle></CardHeader>
         <CardContent>
@@ -290,6 +286,7 @@ export function FiskalizacijaTab() {
         </CardContent>
       </Card>
 
+      {/* Invoices list */}
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base font-semibold flex items-center gap-2"><Receipt className="h-4 w-4" /> Fiskalizacija faktura</CardTitle></CardHeader>
         <CardContent>
@@ -350,6 +347,7 @@ export function FiskalizacijaTab() {
         </CardContent>
       </Card>
 
+      {/* EPC QR Info */}
       <Card className="p-4">
         <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">EPC QR kod</CardTitle></CardHeader>
         <CardContent className="space-y-2">

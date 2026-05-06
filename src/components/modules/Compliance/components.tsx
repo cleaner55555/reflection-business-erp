@@ -240,7 +240,6 @@ export function NcTab({ isOverdue, ncList, search, sev, st }: { isOverdue: any, 
           return true
         }).map((n) => {
           const sev = NC_SEVERITY[n.severity]
-          const st = NC_STATUS[n.status]
           const isOverdue = new Date(n.dueDate) < new Date() && (n.status === 'open' || n.status === 'in_progress')
           return (
             <Card key={n.id} className={`hover:shadow-md transition-shadow cursor-pointer ${isOverdue ? 'border-red-200' : ''}`} onClick={() => openDetail(n)}>
@@ -337,7 +336,6 @@ export function RisksTab({ lv, risks, rlv }: { lv: any, risks: any, rlv: any }) 
       <div className="space-y-3">
         {risks.map((r) => {
           const lv = RISK_LEVELS[r.riskLevel]
-          const rlv = RISK_LEVELS[r.residualLevel]
           return (
             <Card key={r.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => openDetail(r)}>
               <CardContent className="p-4">

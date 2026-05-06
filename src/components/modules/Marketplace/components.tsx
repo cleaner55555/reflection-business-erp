@@ -335,7 +335,6 @@ const Kpi = ({ label, value, icon: Icon, sub, color }: { label: string; value: s
 // ============ RATING DISTRIBUTION ============
 
 const RatingDistribution = ({ reviews }: { reviews: any[] }) => {
-  const dist = [0, 0, 0, 0, 0]
   reviews.forEach((r: any) => { if (r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++ })
   const max = Math.max(...dist, 1)
   return (

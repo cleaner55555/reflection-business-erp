@@ -294,8 +294,6 @@ export function AnalyticsTab({ approvalMetrics, monthlySpending, spendingByCateg
             <div className="space-y-3">
               {monthlySpending.map(([month, amount]) => {
                 const maxAmount = Math.max(...monthlySpending.map(([, a]) => a), 1)
-                const prevMonth = monthlySpending[monthlySpending.findIndex(([m]) => m === month) - 1]
-                const prevAmount = prevMonth ? prevMonth[1] : amount
                 const change = prevAmount > 0 ? ((amount - prevAmount) / prevAmount) * 100 : 0
                 return (
                   <div key={month} className="flex items-center gap-3">

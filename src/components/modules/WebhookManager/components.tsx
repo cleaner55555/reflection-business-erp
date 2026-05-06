@@ -97,23 +97,15 @@ export function WebhookManager() {
   const activeCompanyId = useAppStore((s) => s.activeCompanyId)
 
   const [webhooks, setWebhooks] = useState<Webhook[]>([])
-  const [loading, setLoading] = useState(true)
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingWebhook, setEditingWebhook] = useState<Webhook | null>(null)
-  const [saving, setSaving] = useState(false)
 
   // Form state
   const [formName, setFormName] = useState('')
-  const [formUrl, setFormUrl] = useState('')
-  const [formSecret, setFormSecret] = useState('')
-  const [formEvents, setFormEvents] = useState<string[]>([])
-  const [formActive, setFormActive] = useState(true)
 
   // Delete state
   const [deleteTarget, setDeleteTarget] = useState<Webhook | null>(null)
-  const [deleteSaving, setDeleteSaving] = useState(false)
 
   // Test state
   const [testingId, setTestingId] = useState<string | null>(null)

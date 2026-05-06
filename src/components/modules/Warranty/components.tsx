@@ -257,17 +257,8 @@ export function Garancije() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
-  const [warranties, setWarranties] = useState<Warranty[]>([])
-  const [stats, setStats] = useState<WarrantyStats | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
 
   const [detailOpen, setDetailOpen] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [selected, setSelected] = useState<Warranty | null>(null)
 
   const emptyForm = {
     productName: '', productCode: '', serialNumber: '', batchNumber: '',
@@ -422,7 +413,6 @@ export function Garancije() {
               <div className="space-y-3">
                 {filtered.map((w) => {
                   const sCfg = STATUS_CONFIG[w.status]
-                  const cCfg = CATEGORY_CONFIG[w.category]
                   const daysLeft = getDaysLeft(w.endDate)
                   const progress = getWarrantyProgress(w)
                   return (

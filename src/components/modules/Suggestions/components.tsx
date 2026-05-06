@@ -230,20 +230,12 @@ export function PredloziContent() {
 const { activeCompanyId, currentUser } = useAppStore()
 const { t } = useTranslation()
 const [activeTab, setActiveTab] = useState('overview')
-const [suggestions, setSuggestions] = useState<Suggestion[]>([])
-const [stats, setStats] = useState<SuggestionStats | null>(null)
-const [loading, setLoading] = useState(false)
 
 // Filters
 const [search, setSearch] = useState('')
-const [statusFilter, setStatusFilter] = useState('all')
-const [categoryFilter, setCategoryFilter] = useState('all')
-const [priorityFilter, setPriorityFilter] = useState('all')
 
 // Dialogs
 const [createOpen, setCreateOpen] = useState(false)
-const [detailOpen, setDetailOpen] = useState(false)
-const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null)
 
 // Create form
 const emptyForm = { title: '', description: '', category: 'kvalitet', priority: 'medium', estimatedSaving: '' }
@@ -251,8 +243,6 @@ const [form, setForm] = useState(emptyForm)
 
 // Comment dialog
 const [commentOpen, setCommentOpen] = useState(false)
-const [commentText, setCommentText] = useState('')
-const [commentingSuggestion, setCommentingSuggestion] = useState<Suggestion | null>(null)
 
 // Load data
 const loadData = useCallback(async () => {
@@ -616,8 +606,6 @@ return (
         <div className="space-y-3">
           {filteredSuggestions.map((s) => {
             const sc = STATUS_CONFIG[s.status]
-            const cc = CATEGORY_CONFIG[s.category]
-            const pc = PRIORITY_CONFIG[s.priority]
             return (
               <Card key={s.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
@@ -696,7 +684,6 @@ return (
           <div className="space-y-3">
             {mySuggestions.map((s) => {
               const sc = STATUS_CONFIG[s.status]
-              const cc = CATEGORY_CONFIG[s.category]
               const totalVotes = s.votesFor + s.votesAgainst
               const approvalPct = totalVotes > 0 ? Math.round((s.votesFor / totalVotes) * 100) : 0
               return (
@@ -1001,8 +988,6 @@ return (
         {selectedSuggestion && (() => {
           const s = selectedSuggestion
           const sc = STATUS_CONFIG[s.status]
-          const cc = CATEGORY_CONFIG[s.category]
-          const pc = PRIORITY_CONFIG[s.priority]
           const totalVotes = s.votesFor + s.votesAgainst
           const approvalPct = totalVotes > 0 ? Math.round((s.votesFor / totalVotes) * 100) : 0
           return (

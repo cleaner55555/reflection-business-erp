@@ -106,13 +106,6 @@ export function VozniPark() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
-  const [loading, setLoading] = useState(true)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'list' | 'vehicle-form' | 'service-form' | 'expense-form'>('list')
-  const [submitting, setSubmitting] = useState(false)
-  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null)
-  const [targetVehicleId, setTargetVehicleId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('all')
 
   const fetchVehicles = useCallback(async () => {
     setLoading(true)

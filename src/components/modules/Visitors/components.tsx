@@ -1181,14 +1181,10 @@ import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
 
 interface Visitor {
-interface VisitorKPI {
 const statusConfig: Record<VisitorStatus, { label: string; color: string; icon: React.ElementType }> = {
 const purposeLabels: Record<string, string> = {
 const departmentLabels: Record<string, string> = {
 const mockVisitors: Visitor[] = [
-const mockHosts = [
-const hourlyFlow = [
-const monthlyTrend = [
 
 function formatDuration(minutes: number): string {
   if (!minutes) return '0 min'

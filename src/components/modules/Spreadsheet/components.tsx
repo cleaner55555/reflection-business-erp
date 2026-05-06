@@ -143,7 +143,6 @@ const parseCellRef = (ref: string): { row: number; col: number } | null => {
   const match = ref.match(/^([A-Z]+)(\d+)$/)
   if (!match) return null
   const col = match[1].split('').reduce((acc, ch) => acc * 26 + (ch.charCodeAt(0) - 64), 0) - 1
-  const row = parseInt(match[2]) - 1
   return { row, col }
 }
 
@@ -179,7 +178,6 @@ class FormulaEngine {
     const rangeMatch = rangeStr.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/)
     if (!rangeMatch) return []
     const start = parseCellRef(`${rangeMatch[1]}${rangeMatch[2]}`)
-    const end = parseCellRef(`${rangeMatch[3]}${rangeMatch[4]}`)
     if (!start || !end) return []
     const values: (number | string)[] = []
     for (let r = Math.min(start.row, end.row); r <= Math.max(start.row, end.row); r++) {
@@ -261,8 +259,6 @@ class FormulaEngine {
         const parts = this.splitFormulaArgs(fullExpr, 3)
         if (parts.length >= 2) {
           const range = this.getRangeValues(parts[0])
-          const condition = parts[1].trim().replace(/^["']|["']$/g, '')
-          const sumRange = parts[2] ? this.getRangeValues(parts[2]) : range
           let sum = 0
           range.forEach((v, i) => {
             if (String(v) === condition || (typeof v === 'number' && this.evaluateCondition(`${v}${condition}`))) {
@@ -280,7 +276,6 @@ class FormulaEngine {
         const parts = this.splitFormulaArgs(fullExpr, 2)
         if (parts.length >= 2) {
           const range = this.getRangeValues(parts[0])
-          const condition = parts[1].trim().replace(/^["']|["']$/g, '')
           const filtered = range.filter(v => String(v) === condition || (typeof v === 'number' && this.evaluateCondition(`${v}${condition}`)))
           const nums = filtered.filter((v): v is number => typeof v === 'number')
           return nums.length ? (nums.reduce((a, b) => a + b, 0) / nums.length).toString() : '0'
@@ -294,8 +289,6 @@ class FormulaEngine {
         const parts = this.splitFormulaArgs(fullExpr, 3)
         if (parts.length >= 2) {
           const condition = parts[0].trim()
-          const trueVal = parts[1].trim().replace(/^["']|["']$/g, '')
-          const falseVal = parts[2]?.trim().replace(/^["']|["']$/g, '') || ''
           const result = this.evaluateCondition(condition) ? trueVal : falseVal
           return result
         }
@@ -337,7 +330,6 @@ class FormulaEngine {
       if (match) {
         const parts = this.splitFormulaArgs(expr.slice(5, -1))
         const text = String(this.getCellValue(parts[0].trim()))
-        const n = parseInt(parts[1] || '1')
         return text.slice(0, n)
       }
 
@@ -346,7 +338,6 @@ class FormulaEngine {
       if (match) {
         const parts = this.splitFormulaArgs(expr.slice(6, -1))
         const text = String(this.getCellValue(parts[0].trim()))
-        const n = parseInt(parts[1] || '1')
         return text.slice(-n)
       }
 
@@ -355,8 +346,6 @@ class FormulaEngine {
       if (match) {
         const parts = this.splitFormulaArgs(expr.slice(4, -1))
         const text = String(this.getCellValue(parts[0].trim()))
-        const start = parseInt(parts[1] || '1') - 1
-        const len = parseInt(parts[2] || '1')
         return text.slice(start, start + len)
       }
 
@@ -381,7 +370,6 @@ class FormulaEngine {
       if (match) {
         const parts = this.splitFormulaArgs(expr.slice(6, -1))
         const num = parseFloat(String(this.getCellValue(parts[0].trim())))
-        const decimals = parseInt(parts[1] || '0')
         return isNaN(num) ? '0' : num.toFixed(decimals)
       }
 
@@ -394,7 +382,6 @@ class FormulaEngine {
       if (match) {
         const parts = this.splitFormulaArgs(expr.slice(6, -1))
         const base = parseFloat(String(this.getCellValue(parts[0].trim())))
-        const exp = parseFloat(String(this.getCellValue(parts[1].trim())))
         return isNaN(base) || isNaN(exp) ? '0' : Math.pow(base, exp).toString()
       }
 
@@ -407,7 +394,6 @@ class FormulaEngine {
       if (match) {
         const parts = this.splitFormulaArgs(expr.slice(4, -1))
         const a = parseFloat(String(this.getCellValue(parts[0].trim())))
-        const b = parseFloat(String(this.getCellValue(parts[1].trim())))
         return isNaN(a) || isNaN(b) || b === 0 ? '0' : (a % b).toString()
       }
 
@@ -426,13 +412,8 @@ class FormulaEngine {
         const parts = this.splitFormulaArgs(fullExpr, 3)
         if (parts.length >= 3) {
           const searchVal = parts[0].trim().replace(/^["']|["']$/g, '') || String(this.getCellValue(parts[0].trim()))
-          const range = this.getRangeValues(parts[1].trim())
-          const colIdx = parseInt(parts[2]) - 1
-          const rangeStr = parts[1].trim()
-          const rangeMatch = rangeStr.match(/^([A-Z]+\d+):([A-Z]+\d+)$/i)
           if (rangeMatch) {
             const startParsed = parseCellRef(rangeMatch[1])
-            const endParsed = parseCellRef(rangeMatch[2])
             if (startParsed && endParsed) {
               const totalCols = Math.abs(endParsed.col - startParsed.col) + 1
               const startRow = Math.min(startParsed.row, endParsed.row)
@@ -525,37 +506,21 @@ export function SpreadsheetContent() {
     return s
   })
   const [activeSheetIdx, setActiveSheetIdx] = useState(0)
-  const activeSheet = sheets[activeSheetIdx]
 
   // UI State
   const [selectedCell, setSelectedCell] = useState<string>('A1')
-  const [editingCell, setEditingCell] = useState<string | null>(null)
-  const [editValue, setEditValue] = useState('')
-  const [formulaBar, setFormulaBar] = useState('')
-  const [activeTab, setActiveTab] = useState('editor')
 
   // History (undo/redo)
   const [history, setHistory] = useState<HistoryEntry[]>([])
-  const [historyIdx, setHistoryIdx] = useState(-1)
 
   // Clipboard
   const [clipboard, setClipboard] = useState<{ value: string; format?: CellFormat } | null>(null)
 
   // Dialogs
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
-  const [formulaHelpOpen, setFormulaHelpOpen] = useState(false)
-  const [findReplaceOpen, setFindReplaceOpen] = useState(false)
-  const [sheetNameDialogOpen, setSheetNameDialogOpen] = useState(false)
-  const [newSheetName, setNewSheetName] = useState('')
-  const [renameSheetId, setRenameSheetId] = useState<string | null>(null)
-  const [renameSheetName, setRenameSheetName] = useState('')
-  const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
   // Find/Replace
   const [findText, setFindText] = useState('')
-  const [replaceText, setReplaceText] = useState('')
-  const [findResults, setFindResults] = useState<string[]>([])
-  const [findIdx, setFindIdx] = useState(0)
 
   // Selection range
   const [selectionRange, setSelectionRange] = useState<{ start: string; end: string } | null>(null)
@@ -565,9 +530,6 @@ export function SpreadsheetContent() {
 
   // Loading saved spreadsheets
   const [savedList, setSavedList] = useState<any[]>([])
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false)
-  const [saveName, setSaveName] = useState('')
-  const [loadDialogOpen, setLoadDialogOpen] = useState(false)
 
   // Fullscreen mode
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -1220,19 +1182,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 
 interface CellFormat {
-interface Sheet {
-interface SpreadsheetTemplate {
-interface HistoryEntry {
 const DEFAULT_COLS = 26
 const DEFAULT_ROWS = 100
 const COL_LETTERS = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))
 const FORMULA_LIST = [
-const TEMPLATES: SpreadsheetTemplate[] = [
 const getColLetter = (col: number): string => {
 const parseCellRef = (ref: string): { row: number; col: number } | null => {
   const match = ref.match(/^([A-Z]+)(\d+)$/)
-  const col = match[1].split('').reduce((acc, ch) => acc * 26 + (ch.charCodeAt(0) - 64), 0) - 1
-  const row = parseInt(match[2]) - 1
 const getCellRef = (row: number, col: number): string => `${getColLetter(col)}${row + 1}`
 const formatCurrency = (val: number) => new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 2 }).format(val)
 const formatPercent = (val: number) => `${(val * 100).toFixed(1)}%`
@@ -1243,10 +1199,6 @@ const formatDate = (val: string) => {
     const raw = this.sheet.data[cellKey]?.value || ''
     const num = parseFloat(raw)
     const rangeMatch = rangeStr.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/)
-    const start = parseCellRef(`${rangeMatch[1]}${rangeMatch[2]}`)
-    const end = parseCellRef(`${rangeMatch[3]}${rangeMatch[4]}`)
-    const values: (number | string)[] = []
-    const ops = ['>=', '<=', '!=', '>', '<', '=']
       const idx = condition.indexOf(op)
         const left = parseFloat(condition.slice(0, idx))
         const right = parseFloat(condition.slice(idx + op.length))
@@ -1256,19 +1208,14 @@ const formatDate = (val: string) => {
         const fullExpr = expr.slice(6, -1)
         const parts = this.splitFormulaArgs(fullExpr, 3)
           const range = this.getRangeValues(parts[0])
-          const condition = parts[1].trim().replace(/^["']|["']$/g, '')
-          const sumRange = parts[2] ? this.getRangeValues(parts[2]) : range
         const fullExpr = expr.slice(10, -1)
         const parts = this.splitFormulaArgs(fullExpr, 2)
           const range = this.getRangeValues(parts[0])
-          const condition = parts[1].trim().replace(/^["']|["']$/g, '')
           const filtered = range.filter(v => String(v) === condition || (typeof v === 'number' && this.evaluateCondition(`${v}${condition}`)))
           const nums = filtered.filter((v): v is number => typeof v === 'number')
         const fullExpr = expr.slice(3, -1)
         const parts = this.splitFormulaArgs(fullExpr, 3)
           const condition = parts[0].trim()
-          const trueVal = parts[1].trim().replace(/^["']|["']$/g, '')
-          const falseVal = parts[2]?.trim().replace(/^["']|["']$/g, '') || ''
           const result = this.evaluateCondition(condition) ? trueVal : falseVal
         const args = this.splitFormulaArgs(expr.slice(4, -1))
         const args = this.splitFormulaArgs(expr.slice(3, -1))
@@ -1277,32 +1224,19 @@ const formatDate = (val: string) => {
           const cellVal = this.getCellValue(trimmed)
         const parts = this.splitFormulaArgs(expr.slice(5, -1))
         const text = String(this.getCellValue(parts[0].trim()))
-        const n = parseInt(parts[1] || '1')
         const parts = this.splitFormulaArgs(expr.slice(6, -1))
         const text = String(this.getCellValue(parts[0].trim()))
-        const n = parseInt(parts[1] || '1')
         const parts = this.splitFormulaArgs(expr.slice(4, -1))
         const text = String(this.getCellValue(parts[0].trim()))
-        const start = parseInt(parts[1] || '1') - 1
-        const len = parseInt(parts[2] || '1')
         const parts = this.splitFormulaArgs(expr.slice(6, -1))
         const num = parseFloat(String(this.getCellValue(parts[0].trim())))
-        const decimals = parseInt(parts[1] || '0')
         const parts = this.splitFormulaArgs(expr.slice(6, -1))
         const base = parseFloat(String(this.getCellValue(parts[0].trim())))
-        const exp = parseFloat(String(this.getCellValue(parts[1].trim())))
         const parts = this.splitFormulaArgs(expr.slice(4, -1))
         const a = parseFloat(String(this.getCellValue(parts[0].trim())))
-        const b = parseFloat(String(this.getCellValue(parts[1].trim())))
         const fullExpr = expr.slice(8, -1)
         const parts = this.splitFormulaArgs(fullExpr, 3)
           const searchVal = parts[0].trim().replace(/^["']|["']$/g, '') || String(this.getCellValue(parts[0].trim()))
-          const range = this.getRangeValues(parts[1].trim())
-          const colIdx = parseInt(parts[2]) - 1
-          const rangeStr = parts[1].trim()
-          const rangeMatch = rangeStr.match(/^([A-Z]+\d+):([A-Z]+\d+)$/i)
-            const startParsed = parseCellRef(rangeMatch[1])
-            const endParsed = parseCellRef(rangeMatch[2])
               const totalCols = Math.abs(endParsed.col - startParsed.col) + 1
               const startRow = Math.min(startParsed.row, endParsed.row)
               const endRow = Math.max(startParsed.row, endParsed.row)
@@ -1311,7 +1245,6 @@ const formatDate = (val: string) => {
         const val = this.getCellValue(ref)
         const result = new Function(`return ${mathExpr}`)() as number
     const args: string[] = []
-      const ch = expr[i]
 
 function createTemplateData(templateId: string): Sheet[] {
   const makeSheet = (name: string, data: Record<string, string>): Sheet => ({

@@ -113,16 +113,6 @@ export function Nabavka() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [orders, setOrders] = useState<PurchaseOrder[]>([])
-  const [partners, setPartners] = useState<Partner[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null)
-  const [viewMode, setViewMode] = useState<'list' | 'form' | 'print'>('list')
-  const [submitting, setSubmitting] = useState(false)
-  const [printOrder, setPrintOrder] = useState<FullPurchaseOrder | null>(null)
-  const [printLoading, setPrintLoading] = useState(false)
   const printRef = useRef<HTMLDivElement>(null)
 
   const [lineItems, setLineItems] = useState<OrderLineItem[]>([
@@ -667,9 +657,6 @@ function numberToSerbian(amount: number): string {
   if (amount === 0) return 'nula dinara'
 
   const units = ['', 'jedan', 'dva', 'tri', 'četiri', 'pet', 'šest', 'sedam', 'osam', 'devet']
-  const teens = ['deset', 'jedanaest', 'dvanaest', 'trinaest', 'četrnaest', 'petnaest', 'šesnaest', 'sedamnaest', 'osamnaest', 'devetnaest']
-  const tens = ['', '', 'dvadeset', 'trideset', 'četrdeset', 'pedeset', 'šezdeset', 'sedamdeset', 'osamdeset', 'devedeset']
-  const hundreds = ['', 'sto', 'dvesto', 'tristo', 'četristo', 'petsto', 'šestosto', 'sedamsto', 'osamsto', 'devetsto']
 
   function convertChunk(n: number): string {
     if (n === 0) return ''

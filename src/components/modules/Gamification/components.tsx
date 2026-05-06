@@ -199,7 +199,6 @@ export function GoalsTab({ catCfg, categoryFilter, filteredGoals, k, loading, sC
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredGoals.map((goal) => {
             const sCfg = goalStatusConfig[goal.status]
-            const catCfg = goalCategoryConfig[goal.category]
             return (
               <Card key={goal.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
@@ -265,8 +264,6 @@ export function ChallengesTab({ chSCfg, chTCfg, challenges, dCfg }: { chSCfg: an
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {challenges.map((ch) => {
           const chSCfg = challengeStatusConfig[ch.status]
-          const chTCfg = challengeTypeConfig[ch.type]
-          const dCfg = difficultyConfig[ch.difficulty]
           const daysLeft = Math.ceil((new Date(ch.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
           return (
             <Card key={ch.id} className="hover:shadow-md transition-shadow">
@@ -409,7 +406,6 @@ export function TemplatesTab({ catCfg, dCfg, mockTemplates }: { catCfg: any, dCf
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {mockTemplates.map((tpl) => {
           const catCfg = goalCategoryConfig[tpl.category]
-          const dCfg = difficultyConfig[tpl.difficulty]
           return (
             <Card key={tpl.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">

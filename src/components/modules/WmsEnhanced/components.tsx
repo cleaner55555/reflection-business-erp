@@ -1,31 +1,17 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from '@/components/ui/dialog'
-import {
-  ScanBarcode, QrCode, Package, Plus, Trash2, Pencil, Play, Lock,
-  CheckCircle2, AlertTriangle, Clock, ArrowDownToLine, MapPin,
-  Warehouse, Printer, Download, BarChart3, TrendingUp, TrendingDown,
-  ArrowRightLeft, Search, Eye, ChevronRight, Layers
-} from 'lucide-react'
-import { toast } from 'sonner'
-import { formatRSD, formatDate, formatDateTime } from '@/lib/helpers'
+import { useCallback, useEffect, useState } from 'react'
 
-// ==================== BARKODOVI TAB ====================
+from '@/components/ui/badge'
+from '@/components/ui/button'
+from '@/components/ui/card'
+from '@/components/ui/dialog'
+from '@/components/ui/input'
+from '@/components/ui/label'
+from '@/components/ui/select'
+from '@/components/ui/skeleton'
+from '@/components/ui/table'
+import { AlertTriangle, ArrowDownToLine, BarChart3, CheckCircle2, ChevronRight, Clock, Layers, MapPin, Play, Plus, Printer, ScanBarcode, Search, Trash2, Warehouse } from 'lucide-react'
 
 function BarkodiTab() {
   const [products, setProducts] = useState<Array<{ id: string; name: string; sku: string; barcode: string | null; currentStock: number }>>([])
@@ -173,18 +159,6 @@ function BarkodiTab() {
   )
 }
 
-// ==================== ZONE MAP TAB ====================
-
-const ZONE_CONFIG = [
-  { value: 'prijem', label: 'Prijem', color: 'bg-blue-500', light: 'bg-blue-100 text-blue-700 border-blue-300' },
-  { value: 'skladistenje', label: 'Skladištenje', color: 'bg-emerald-500', light: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
-  { value: 'otprema', label: 'Otprema', color: 'bg-amber-500', light: 'bg-amber-100 text-amber-700 border-amber-300' },
-  { value: 'kontrola', label: 'Kontrola', color: 'bg-purple-500', light: 'bg-purple-100 text-purple-700 border-purple-300' },
-  { value: 'hladjenje', label: 'Hlađenje', color: 'bg-cyan-500', light: 'bg-cyan-100 text-cyan-700 border-cyan-300' },
-  { value: 'return', label: 'Return', color: 'bg-rose-500', light: 'bg-rose-100 text-rose-700 border-rose-300' },
-  { value: 'karantin', label: 'Karantin', color: 'bg-red-500', light: 'bg-red-100 text-red-700 border-red-300' },
-]
-
 function ZoneMapTab() {
   const [locations, setLocations] = useState<Array<{
     id: string; name: string; code: string; type: string; zone: string;
@@ -310,8 +284,6 @@ function ZoneMapTab() {
     </div>
   )
 }
-
-// ==================== PICKING TAB ====================
 
 function PickingTab() {
   const [waves, setWaves] = useState<any[]>([])
@@ -517,8 +489,6 @@ function PickingTab() {
     </div>
   )
 }
-
-// ==================== PRIJEM TAB ====================
 
 function PrijemTab() {
   const [orders, setOrders] = useState<any[]>([])
@@ -745,5 +715,3 @@ function PrijemTab() {
     </div>
   )
 }
-
-export { BarkodiTab, ZoneMapTab, PickingTab, PrijemTab }

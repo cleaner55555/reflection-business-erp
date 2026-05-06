@@ -19,7 +19,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import {
-import {
 import { generateMockTopics, generateMockCategories, generateMockQuestions, generateMockTags, generateMonthlyData, generateMockReplies } from './components'
 import { handleCreateTopic, handleDeleteTopic, handleOpenTopicDetail, handleSubmitReply, handleCreateCategory, handleEditCategory, handleOpenQuestion, handleSubmitAnswer, handleAcceptAnswer, handleCreateTag, handleEditTag, formatDate } from './components'
 
@@ -1318,15 +1317,8 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface ForumTopic {
-interface ForumReply {
-interface ForumCategory {
-interface ForumQuestion {
-interface ForumAnswer {
-interface ForumTag {
-interface ForumSettings {
 // ─── Constants & Colors ─────────────────────────────────────────────────────
 const CHART_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899']
-const TAG_COLORS = [
 const ICON_MAP: Record<string, React.ReactNode> = {
 // ─── Mock Data Generators ───────────────────────────────────────────────────
 

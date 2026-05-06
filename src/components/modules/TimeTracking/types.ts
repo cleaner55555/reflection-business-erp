@@ -189,18 +189,6 @@ export interface ApiResponse<T> {
 
 // ============ UTILITY ============
 
-export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
-  timer_started: 'Тајмер покренут',
-  timer_stopped: 'Тајмер заустављен',
-  timer_paused: 'Тајмер паузиран',
-  timer_resumed: 'Тајмер настављен',
-  entry_created: 'Унос креиран',
-  entry_updated: 'Унос ажуриран',
-  entry_deleted: 'Унос обрисан',
-  entry_submitted: 'Унос предат',
-  entry_approved: 'Унос одобрен',
-  entry_rejected: 'Унос одбачен',
-}
 
 export const STATUS_LABELS: Record<EntryStatus, string> = {
   draft: 'Нацрт',

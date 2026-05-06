@@ -1,12 +1,52 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { ScanBarcode, Plus, Search, Trash2, Pencil, Printer, Download, QrCode, Barcode, Tag, Package, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
-import type { BarcodeItem } from './types'
-import { INITIAL_ITEMS } from './data'
-import { BarcodeHeader, BarcodeScanCard, BarcodeKpiCards, BarcodeTableSection, BarcodeFormDialog } from './components'
+import { formatDate } from '@/lib/helpers'
+
+interface BarcodeItem {
+  id: string
+  code: string
+  type: 'EAN13' | 'EAN8' | 'QR' | 'CODE128' | 'UPC'
+  productName: string
+  productId: string
+  category: string
+  createdAt: string
+}
+
+const INITIAL_ITEMS: BarcodeItem[] = [
+  { id: '1', code: '8601234567890', type: 'EAN13', productName: 'Hleb beli 500g', productId: 'prod-001', category: 'Hrana', createdAt: '2024-06-01T10:00:00' },
+  { id: '2', code: '8609876543210', type: 'EAN13', productName: 'Mleko 1L', productId: 'prod-002', category: 'Piće', createdAt: '2024-06-01T10:05:00' },
+  { id: '3', code: '8601112223334', type: 'EAN13', productName: 'Kafa zrna 250g', productId: 'prod-003', category: 'Hrana', createdAt: '2024-06-02T09:00:00' },
+  { id: '4', code: '8605556667778', type: 'EAN13', productName: 'Šećer 1kg', productId: 'prod-004', category: 'Hrana', createdAt: '2024-06-03T11:00:00' },
+  { id: '5', code: 'QR-INV-001', type: 'QR', productName: 'Faktura F-2024-0234', productId: 'inv-234', category: 'Fakture', createdAt: '2024-06-10T14:00:00' },
+  { id: '6', code: 'CODE128-001', type: 'CODE128', productName: 'Paket — dokumenta', productId: 'pkg-001', category: 'Logistika', createdAt: '2024-06-12T08:00:00' },
+  { id: '7', code: '8607778889990', type: 'EAN8', productName: 'Cokolada 100g', productId: 'prod-015', category: 'Hrana', createdAt: '2024-06-13T16:00:00' },
+  { id: '8', code: '8602223334445', type: 'EAN13', productName: 'Ulje 1L', productId: 'prod-008', category: 'Hrana', createdAt: '2024-06-14T10:30:00' },
+]
+
+function getTypeBadge(type: string) {
+  const map: Record<string, { color: string; label: string }> = {
+    EAN13: { color: 'bg-blue-100 text-blue-800', label: 'EAN-13' },
+    EAN8: { color: 'bg-emerald-100 text-emerald-800', label: 'EAN-8' },
+    QR: { color: 'bg-violet-100 text-violet-800', label: 'QR Code' },
+    CODE128: { color: 'bg-amber-100 text-amber-800', label: 'Code 128' },
+    UPC: { color: 'bg-rose-100 text-rose-800', label: 'UPC-A' },
+  }
+  const s = map[type] || map.EAN13
+  return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
+}
 
 export function Barkod() {
   const [items, setItems] = useState<BarcodeItem[]>([])
@@ -80,42 +120,79 @@ export function Barkod() {
 
   return (
     <div className="space-y-6">
-      <BarcodeHeader
-        selectedForPrint={selectedForPrint}
-        onNew={handleNew}
-        onPrint={() => { toast.success(`Štampa ${selectedForPrint.size} barkodova...`); setSelectedForPrint(new Set()) }}
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><ScanBarcode className="h-6 w-6" />Баркод и QR код</h1><p className="text-sm text-muted-foreground">Генерисање, управљање и штампање баркодова</p></div>
+        <div className="flex gap-2">
+          {selectedForPrint.size > 0 && <Button variant="outline" size="sm" className="gap-2" onClick={() => { toast.success(`Štampa ${selectedForPrint.size} barkodova...`); setSelectedForPrint(new Set()) }}><Printer className="h-4 w-4" />Штампај ({selectedForPrint.size})</Button>}
+          <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" />Novi barkod</Button>
+        </div>
+      </div>
 
-      <BarcodeScanCard scanInput={scanInput} setScanInput={setScanInput} onScan={handleScan} />
+      <Card className="border-dashed">
+        <CardContent className="p-4">
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1"><ScanBarcode className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Skeniraj ili unesi barkod..." className="pl-8 h-10 text-sm font-mono" value={scanInput} onChange={e => setScanInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()} /></div>
+            <Button onClick={handleScan} variant="secondary">Skeniraj</Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      <BarcodeKpiCards items={items} categories={categories} />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Barcode className="h-3.5 w-3.5" />Ukupno</div><p className="text-2xl font-bold">{items.length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-blue-600 mb-1"><Barcode className="h-3.5 w-3.5" />EAN-13</div><p className="text-2xl font-bold">{items.filter(i => i.type === 'EAN13').length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-violet-600 mb-1"><QrCode className="h-3.5 w-3.5" />QR kodovi</div><p className="text-2xl font-bold">{items.filter(i => i.type === 'QR').length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Tag className="h-3.5 w-3.5" />Kategorije</div><p className="text-2xl font-bold">{categories.length}</p></Card>
+      </div>
 
-      <BarcodeTableSection
-        filtered={filtered}
-        categories={categories}
-        search={search}
-        typeFilter={typeFilter}
-        catFilter={catFilter}
-        setSearch={setSearch}
-        setTypeFilter={setTypeFilter}
-        setCatFilter={setCatFilter}
-        selectedForPrint={selectedForPrint}
-        onTogglePrint={togglePrint}
-        onPrint={() => {}}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onPrintItem={() => toast.info('Barkod generisan za stampu...')}
-      />
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <CardTitle className="text-base">Lista barkodova</CardTitle>
+            <div className="flex flex-wrap gap-2 items-center">
+              <div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-44 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div>
+              <Select value={typeFilter || 'all'} onValueChange={v => setTypeFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi tipovi</SelectItem><SelectItem value="EAN13">EAN-13</SelectItem><SelectItem value="EAN8">EAN-8</SelectItem><SelectItem value="QR">QR</SelectItem><SelectItem value="CODE128">Code 128</SelectItem></SelectContent></Select>
+              <Select value={catFilter || 'all'} onValueChange={v => setCatFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Sve kategorije</SelectItem>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="max-h-[480px] overflow-y-auto">
+            <Table>
+              <TableHeader><TableRow>
+                <TableHead className="w-8"></TableHead><TableHead className="text-xs">Barkod</TableHead><TableHead className="text-xs">Proizvod</TableHead><TableHead className="text-xs hidden sm:table-cell">Tip</TableHead><TableHead className="text-xs hidden md:table-cell">Kategorija</TableHead><TableHead className="text-xs hidden lg:table-cell">Datum</TableHead><TableHead className="text-xs text-right">Akcije</TableHead>
+              </TableRow></TableHeader>
+              <TableBody>
+                {filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema barkodova</TableCell></TableRow> : filtered.map(item => (
+                  <TableRow key={item.id}>
+                    <TableCell><input type="checkbox" checked={selectedForPrint.has(item.id)} onChange={() => togglePrint(item.id)} className="h-4 w-4 rounded" /></TableCell>
+                    <TableCell><span className="text-xs font-mono font-bold">{item.code}</span></TableCell>
+                    <TableCell><div><p className="text-xs font-medium">{item.productName}</p><p className="text-[10px] text-muted-foreground">{item.productId}</p></div></TableCell>
+                    <TableCell className="hidden sm:table-cell">{getTypeBadge(item.type)}</TableCell>
+                    <TableCell className="hidden md:table-cell"><Badge variant="outline" className="text-[10px]"><Package className="h-2.5 w-2.5 mr-1" />{item.category}</Badge></TableCell>
+                    <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{formatDate(item.createdAt)}</TableCell>
+                    <TableCell className="text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast.info('Barkod generisan za stampu...')} title="Stampaj"><Printer className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
-      <BarcodeFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        editing={editing}
-        formData={formData}
-        setFormData={setFormData}
-        onSave={handleSave}
-        onGenerate={handleGenerate}
-      />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader><DialogTitle>{editing ? 'Izmeni barkod' : 'Novi barkod'}</DialogTitle></DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2"><Label className="text-xs">Barkod *</Label><div className="flex gap-2"><Input placeholder="8601234567890" className="font-mono" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /><Select value={formData.type} onValueChange={v => { setFormData(p => ({ ...p, type: v as BarcodeItem['type'] })); handleGenerate(v as BarcodeItem['type']) }}><SelectTrigger className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EAN13">EAN-13</SelectItem><SelectItem value="EAN8">EAN-8</SelectItem><SelectItem value="QR">QR</SelectItem><SelectItem value="CODE128">Code 128</SelectItem></SelectContent></Select></div></div>
+            <div className="grid gap-2"><Label className="text-xs">Naziv proizvoda *</Label><Input placeholder="Naziv..." value={formData.productName} onChange={e => setFormData(p => ({ ...p, productName: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2"><Label className="text-xs">Šifra proizvoda</Label><Input placeholder="prod-xxx" value={formData.productId} onChange={e => setFormData(p => ({ ...p, productId: e.target.value }))} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Input placeholder="Kategorija" value={formData.category} onChange={e => setFormData(p => ({ ...p, category: e.target.value }))} /></div>
+            </div>
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button onClick={handleSave}>{editing ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -300,34 +300,15 @@ export function PLMContent() {
 
   // Products state
   const [products, setProducts] = useState<PLMProduct[]>(MOCK_PRODUCTS)
-  const [productSearch, setProductSearch] = useState('')
-  const [productCategoryFilter, setProductCategoryFilter] = useState('all')
-  const [productStageFilter, setProductStageFilter] = useState('all')
-  const [productStatusFilter, setProductStatusFilter] = useState('all')
-  const [productDialogOpen, setProductDialogOpen] = useState(false)
-  const [productDetailOpen, setProductDetailOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<PLMProduct | null>(null)
 
   // Revisions state
   const [revisions, setRevisions] = useState<PLMRevision[]>(MOCK_REVISIONS)
-  const [revisionDialogOpen, setRevisionDialogOpen] = useState(false)
-  const [revisionSearch, setRevisionSearch] = useState('')
-  const [revisionStatusFilter, setRevisionStatusFilter] = useState('all')
 
   // Documents state
   const [documents, setDocuments] = useState<PLMDocument[]>(MOCK_DOCUMENTS)
-  const [docDialogOpen, setDocDialogOpen] = useState(false)
-  const [docSearch, setDocSearch] = useState('')
-  const [docTypeFilter, setDocTypeFilter] = useState('all')
-  const [docStatusFilter, setDocStatusFilter] = useState('all')
 
   // ECR/ECO state
   const [ecrs, setEcrs] = useState<PLM_ECR[]>(MOCK_ECRS)
-  const [ecos, setEcos] = useState<PLM_ECO[]>(MOCK_ECOS)
-  const [ecrDialogOpen, setEcrDialogOpen] = useState(false)
-  const [ecoDialogOpen, setEcoDialogOpen] = useState(false)
-  const [selectedEco, setSelectedEco] = useState<PLM_ECO | null>(null)
-  const [ecrStatusFilter, setEcrStatusFilter] = useState('all')
 
   // Forms
   const emptyProductForm = { name: '', sku: '', category: 'Elektronika', lifecycleStage: 'concept', status: 'development', version: '0.1.0', owner: '', description: '' }
