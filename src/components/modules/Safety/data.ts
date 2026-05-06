@@ -1,43 +1,26 @@
-export const mockData = [
-  { id: '1', name: 'Преглед #1', status: 'active', date: '2024-01-15', value: 'У реду' },
-  { id: '2', name: 'Инцидент #2', status: 'pending', date: '2024-02-20', value: 'Критично' },
-  { id: '3', name: 'Преглед #3', status: 'completed', date: '2024-03-10', value: 'У реду' },
-  { id: '4', name: 'Обука #4', status: 'active', date: '2024-04-05', value: 'Заказано' },
-  { id: '5', name: 'Преглед #5', status: 'pending', date: '2024-05-12', value: 'У реду' },
+import type { Incident } from './types'
+
+export const INITIAL_DATA: Incident[] = [
+  { id: '1', number: 'SFT-2024-001', type: 'injury', severity: 'moderate', status: 'investigating', location: 'Montažna hala 3', department: 'Proizvodnja', reporterName: 'Nenad Popović', reporterRole: 'Operater', description: 'Radnik pao sa lestve visine 2.5m prilikom montaže rasvete. Povreda leve ruke - sumnja na lom', date: '2024-06-14', time: '10:30', injuredWorkers: 1, lostDays: 5, rootCause: 'Lestva nije bila osigurana', correctiveAction: 'Obavezna inspekcija opreme pre svake upotrebe', responsible: 'Milan Đorđević', deadline: '2024-06-20' },
+  { id: '2', number: 'SFT-2024-002', type: 'near_miss', severity: 'serious', status: 'resolved', location: 'Skladište B', department: 'Logistika', reporterName: 'Jelena Marković', reporterRole: 'Viljuškarista', description: 'Regal sa teškom robom skoro pao - zakačio ga viljuškar. Regal je podrhtavao.', date: '2024-06-13', time: '14:15', injuredWorkers: 0, lostDays: 0, rootCause: 'Regal preopterećen - limit 500kg, bilo 800kg', correctiveAction: 'Ograničenje kapaciteta regala, oznake sa max. težinom', responsible: 'Goran Stanković', deadline: '2024-06-18' },
+  { id: '3', number: 'SFT-2024-003', type: 'chemical', severity: 'minor', status: 'closed', location: 'Laboratorija QC', department: 'Kvalitet', reporterName: 'Ivana Petrović', reporterRole: 'Laborant', description: 'Manje prosipanje hemikalije (acetona) - nema povreda ali je neophodna ventilacija', date: '2024-06-12', time: '09:45', injuredWorkers: 0, lostDays: 0, rootCause: 'Nepravilno rukovanje hemikalijom - nedostajale rukavice', correctiveAction: 'Dodatna obuka za rukovanje hemikalijama', responsible: 'Sana Marković', deadline: '2024-06-15' },
+  { id: '4', number: 'SFT-2024-004', type: 'property_damage', severity: 'minor', status: 'closed', location: 'Parking zaposlenih', department: 'Administracija', reporterName: 'Predrag Tomić', reporterRole: 'Vozač', description: 'Oštećenje vozila firme - ogrebotina na desnom braniku', date: '2024-06-10', time: '16:00', injuredWorkers: 0, lostDays: 0, rootCause: 'Usko parking mesto', correctiveAction: 'Oznake i ograničenja brzine na parkingu', responsible: 'Dragan Milić', deadline: '2024-06-20' },
+  { id: '5', number: 'SFT-2024-005', type: 'injury', severity: 'serious', status: 'reported', location: 'Proizvodna linija 2', department: 'Proizvodnja', reporterName: 'Slobodan Nikolić', reporterRole: 'Majstor', description: 'Radnik uklještio prste u presi - amputacija vrha kažiprsta desne ruke', date: '2024-06-15', time: '08:20', injuredWorkers: 1, lostDays: 15, rootCause: '', correctiveAction: '', responsible: '', deadline: '' },
+  { id: '6', number: 'SFT-2024-006', type: 'fire', severity: 'critical', status: 'investigating', location: 'Kuhinja', department: 'Ugostiteljstvo', reporterName: 'Mladen Jovanović', reporterRole: 'Kuvar', description: 'Požar na štednjaku - brzo ugašen ali oštećena oprema za 150.000 RSD', date: '2024-06-14', time: '12:30', injuredWorkers: 0, lostDays: 0, rootCause: 'Masnoća na štednjaku - zapalila se', correctiveAction: 'Redovno čišćenje štednjaka, protivpožarna obuka', responsible: 'Mladen Jovanović', deadline: '2024-06-21' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  reported: { color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', label: 'Prijavljen' },
+  investigating: { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300', label: 'Ispitivanje' },
+  resolved: { color: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300', label: 'Rešeno' },
+  closed: { color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300', label: 'Zatvoreno' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
+export const SEVERITIES: Record<string, { color: string; label: string }> = {
+  minor: { color: 'bg-green-100 text-green-700', label: 'Lako' },
+  moderate: { color: 'bg-amber-100 text-amber-700', label: 'Umjereno' },
+  serious: { color: 'bg-red-100 text-red-700', label: 'Ozbiljno' },
+  critical: { color: 'bg-red-200 text-red-800', label: 'Kritično' },
+}
 
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const TYPES: Record<string, { label: string }> = { injury: { label: 'Povreda' }, near_miss: { label: 'Incident' }, property_damage: { label: 'Šteta' }, fire: { label: 'Požar' }, chemical: { label: 'Hemikalija' }, environmental: { label: 'Ekološki' } }

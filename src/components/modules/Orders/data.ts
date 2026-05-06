@@ -1,43 +1,28 @@
-export const mockData = [
-  { id: '1', name: 'Наруџба #201', status: 'active', date: '2024-01-15', value: 'За седење' },
-  { id: '2', name: 'Наруџба #202', status: 'pending', date: '2024-02-20', value: 'Понети' },
-  { id: '3', name: 'Наруџба #203', status: 'completed', date: '2024-03-10', value: 'Достава' },
-  { id: '4', name: 'Наруђба #204', status: 'active', date: '2024-04-05', value: 'За седење' },
-  { id: '5', name: 'Наруђба #205', status: 'pending', date: '2024-05-12', value: 'Понети' },
+import type { Order } from './types'
+
+export const INITIAL: Order[] = [
+  { id: '1', orderNo: 'NAR-2024-001', client: 'Fabrika "Zvezda"', date: '2024-06-14', deliveryDate: '2024-06-20', type: 'sale', status: 'shipped', items: 12, totalAmount: 185000, warehouse: 'Magacin Beograd', supplier: '', priority: 'high', notes: '12 paleta čeličnih cevi — poslato 18.06.' },
+  { id: '2', orderNo: 'NAR-2024-002', client: 'SBB DOO', date: '2024-06-15', deliveryDate: '2024-06-25', type: 'purchase', status: 'processing', items: 8, totalAmount: 45000, warehouse: '', supplier: 'Papirnica "Matroz"', priority: 'medium', notes: 'A4 papir 80g — 5000 komada' },
+  { id: '3', orderNo: 'NAR-2024-003', client: 'Poslovnica Niš', date: '2024-06-10', deliveryDate: '2024-06-13', type: 'internal', status: 'delivered', items: 25, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'high', notes: 'Restock robe i nameštaja — dostavljeno na vreme' },
+  { id: '4', orderNo: 'NAR-2024-004', client: 'Restoran "Kafana"', date: '2024-06-15', deliveryDate: '2024-06-18', type: 'purchase', status: 'confirmed', items: 6, totalAmount: 32000, warehouse: '', supplier: 'Mlekara "Zlatiborac"', priority: 'medium', notes: 'Mlečni proizvodi — nedeljna isporuka' },
+  { id: '5', orderNo: 'NAR-2024-005', client: 'Poslovnica Kragujevac', date: '2024-06-12', deliveryDate: '2024-06-20', type: 'internal', status: 'pending', items: 15, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'low', notes: 'Restock za ponovno otvaranje' },
+  { id: '6', orderNo: 'NAR-2024-006', client: 'IT Solutions DOO', date: '2024-06-16', deliveryDate: '2024-06-22', type: 'sale', status: 'confirmed', items: 3, totalAmount: 285000, warehouse: 'Magacin Beograd', supplier: '', priority: 'urgent', notes: 'Server oprema — HP ProLiant serveri' },
+  { id: '7', orderNo: 'NAR-2024-007', client: 'Grad Beograd — Čistoća', date: '2024-06-08', deliveryDate: '2024-06-09', type: 'purchase', status: 'cancelled', items: 2, totalAmount: 15000, warehouse: '', supplier: 'Čistoća Plus', priority: 'low', notes: 'Otkazano — našli jeftinijeg dobavljača' },
+  { id: '8', orderNo: 'NAR-2024-008', client: 'Poslovnice Novi Sad', date: '2024-06-16', deliveryDate: '2024-06-19', type: 'internal', status: 'confirmed', items: 30, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'medium', notes: 'Kancelarijski materijal + obnova asortimana' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  pending: { color: 'bg-gray-100 text-gray-800', label: 'Na čekanju' },
+  confirmed: { color: 'bg-blue-100 text-blue-800', label: 'Potvrđen' },
+  processing: { color: 'bg-amber-100 text-amber-800', label: 'U obradi' },
+  shipped: { color: 'bg-purple-100 text-purple-800', label: 'Poslat' },
+  delivered: { color: 'bg-emerald-100 text-emerald-800', label: 'Isporučen' },
+  cancelled: { color: 'bg-red-100 text-red-800', label: 'Otkazan' },
+}
 
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const PRIORITIES: Record<string, { color: string; label: string }> = {
+  low: { color: 'bg-gray-100 text-gray-800', label: 'Nizak' },
+  medium: { color: 'bg-blue-100 text-blue-800', label: 'Srednji' },
+  high: { color: 'bg-amber-100 text-amber-800', label: 'Visok' },
+  urgent: { color: 'bg-red-100 text-red-800', label: 'Hitno' },
+}

@@ -1,43 +1,12 @@
-export const mockData = [
-  { id: '1', name: 'Стан Кнез Михаилова 5', status: 'active', date: '2024-01-15', value: '450€/мес' },
-  { id: '2', name: 'Локал Теразије 3', status: 'pending', date: '2024-02-20', value: '800€/мес' },
-  { id: '3', name: 'Стан Нови Београд', status: 'completed', date: '2024-03-10', value: '380€/мес' },
-  { id: '4', name: 'Гаража Врачар', status: 'active', date: '2024-04-05', value: '120€/мес' },
-  { id: '5', name: 'Офис Славија', status: 'pending', date: '2024-05-12', value: '550€/мес' },
+import type { Rental } from './types'
+
+export const INITIAL: Rental[] = [
+  { id: '1', contractNo: 'IZN-2024-001', tenantName: 'Ana Stanković', phone: '+381 64 987 6543', email: 'ana.s@email.com', propertyTitle: 'Dvosoban stan — Novi Beograd', propertyAddress: 'Bulevar Mihajla Pupina 165/12', monthlyRent: 550, deposit: 550, startDate: '2024-03-15', endDate: '2025-03-15', paymentDay: 15, status: 'active', lastPayment: '2024-06-01', nextPayment: '2024-07-01', paymentMethod: 'standing_order', securityDeposit: 550, notes: 'Zakup na godinu dana' },
+  { id: '2', contractNo: 'IZN-2024-002', tenantName: 'Marko Tomić', phone: '+381 65 555 6666', email: 'marko.t@email.com', propertyTitle: 'Dvosoban stan — Novi Beograd', propertyAddress: 'Bulevar Mihajla Pupina 165/12', monthlyRent: 550, deposit: 550, startDate: '2024-06-01', endDate: '2025-06-01', paymentDay: 1, status: 'active', lastPayment: '2024-06-01', nextPayment: '2024-07-01', paymentMethod: 'bank_transfer', securityDeposit: 550, notes: 'Zamena zakupca — Ana odlazi u inostranstvo' },
+  { id: '3', contractNo: 'IZN-2024-003', tenantName: 'Dragan Milić', phone: '+381 63 222 3333', email: '', propertyTitle: 'Kancelarija — Niš', propertyAddress: 'Vojvode Mišića 14', monthlyRent: 800, deposit: 800, startDate: '2024-01-01', endDate: '2024-12-31', paymentDay: 1, status: 'active', lastPayment: '2024-06-01', nextPayment: '2024-07-01', paymentMethod: 'bank_transfer', securityDeposit: 800, notes: 'IT kompanija — redovne uplate' },
+  { id: '4', contractNo: 'IZN-2023-015', tenantName: 'Ivan Savić', phone: '+381 62 444 5555', email: 'ivan.s@email.com', propertyTitle: 'Lokal — Čubura', propertyAddress: 'Maksima Gorkog 42', monthlyRent: 650, deposit: 650, startDate: '2023-07-01', endDate: '2024-06-30', paymentDay: 5, status: 'expiring', lastPayment: '2024-06-05', nextPayment: '', paymentMethod: 'cash', securityDeposit: 650, notes: 'Ugovor ističe za 15 dana — ponuda za obnovu' },
+  { id: '5', contractNo: 'IZN-2023-010', tenantName: 'Gordana Petrović', phone: '+381 63 111 2222', email: 'gordana.p@email.com', propertyTitle: 'Garsonjera — Dorćol', propertyAddress: 'Cara Dušana 88/3', monthlyRent: 350, deposit: 350, startDate: '2023-06-01', endDate: '2024-05-31', paymentDay: 1, status: 'expired', lastPayment: '2024-05-01', nextPayment: '', paymentMethod: 'cash', securityDeposit: 350, notes: 'Ugovor završen — depozit vraćen 10.06.' },
+  { id: '6', contractNo: 'IZN-2024-004', tenantName: 'Sara Đorđević', phone: '+381 60 999 8888', email: 'sara.dj@email.com', propertyTitle: 'Trosoban stan — Voždovac', propertyAddress: 'Jove Ilića 154', monthlyRent: 700, deposit: 700, startDate: '2024-07-01', endDate: '2025-07-01', paymentDay: 1, status: 'pending', lastPayment: '', nextPayment: '2024-07-01', paymentMethod: 'standing_order', securityDeposit: 700, notes: 'Čeka se potpis — ključevi predati 30.06.' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const STATUSES: Record<string, { color: string; label: string }> = { active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' }, expiring: { color: 'bg-amber-100 text-amber-800', label: 'Ističe' }, expired: { color: 'bg-gray-100 text-gray-800', label: 'Istekao' }, terminated: { color: 'bg-red-100 text-red-800', label: 'Prekinut' }, pending: { color: 'bg-blue-100 text-blue-800', label: 'Na čekanju' } }

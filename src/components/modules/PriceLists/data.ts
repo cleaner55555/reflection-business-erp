@@ -1,43 +1,16 @@
-export const mockData = [
-  { id: '1', name: 'Велепродајни 2024', status: 'active', date: '2024-01-15', value: '150' },
-  { id: '2', name: 'Малопродајни 2024', status: 'pending', date: '2024-02-20', value: '280' },
-  { id: '3', name: 'Посебна понуда', status: 'completed', date: '2024-03-10', value: '45' },
-  { id: '4', name: 'Летња акција', status: 'active', date: '2024-04-05', value: '120' },
-  { id: '5', name: 'Зимска акција', status: 'pending', date: '2024-05-12', value: '95' },
+import type { PriceListItem } from './types'
+
+export const INITIAL: PriceListItem[] = [
+  { id: '1', name: 'Cenovnik veleprodaje — Jun 2024', category: 'Opšti', type: 'wholesale', validFrom: '2024-06-01', validUntil: '2024-06-30', items: 245, status: 'active', createdBy: 'Dragan Milić', notes: 'Ažurirano 01.06. — nove cene za transportne troškove' },
+  { id: '2', name: 'Cenovnik maloprodaje — Jun 2024', category: 'Opšti', type: 'retail', validFrom: '2024-06-01', validUntil: '2024-06-30', items: 380, status: 'active', createdBy: 'Dragan Milić', notes: '' },
+  { id: '3', name: 'Letnji cenovnik — Promo', category: 'Promocije', type: 'special', validFrom: '2024-06-15', validUntil: '2024-08-31', items: 85, status: 'active', createdBy: 'Ana Nikolić', notes: 'Sezonski popusti do 30%' },
+  { id: '4', name: 'Cenovnik B2B — Klijenti', category: 'B2B', type: 'wholesale', validFrom: '2024-05-01', validUntil: '2024-12-31', items: 120, status: 'active', createdBy: 'Milan Ristić', notes: 'Individualni za velike kupce' },
+  { id: '5', name: 'Cenovnik veleprodaje — Maj 2024', category: 'Opšti', type: 'wholesale', validFrom: '2024-05-01', validUntil: '2024-05-31', items: 240, status: 'archived', createdBy: 'Dragan Milić', notes: 'Zamijenjen junijskim' },
+  { id: '6', name: 'Cenovnik — Novo u asortimanu', category: 'Novi proizvodi', type: 'retail', validFrom: '2024-06-10', validUntil: '2024-07-31', items: 32, status: 'draft', createdBy: 'Jelena Kovačević', notes: 'Čeka odobrenje direktora' },
 ]
 
-export const filtered = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-export const handleAdd = () => {
-    if (!formData.name) return
-    const newItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      status: 'active',
-      date: new Date().toISOString().split('T')[0],
-      value: formData.value || '0',
-    }
-    setData([newItem, ...data])
-    setFormData({ name: '', value: '' })
-    setOpen(false)
-  }
-
-export const handleDelete = (id: string) => {
-    setData(data.filter((item) => item.id !== id))
-  }
-
-export const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    }
-    const labels: Record<string, string> = {
-      active: 'Активно',
-      pending: 'На чекању',
-      completed: 'Завршено',
-    }
-    return <Badge className={colors[status] || ''}>{labels[status] || status}</Badge>
-  }
+export const STATUSES: Record<string, { color: string; label: string }> = {
+  active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' },
+  draft: { color: 'bg-amber-100 text-amber-800', label: 'Nacrt' },
+  archived: { color: 'bg-gray-100 text-gray-800', label: 'Arhiviran' },
+}
