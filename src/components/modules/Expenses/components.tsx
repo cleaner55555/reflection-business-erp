@@ -1,25 +1,158 @@
 'use client'
-
-import { useCallback, useEffect, useMemo, useState } from 'react'
-
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/checkbox'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/progress'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/switch'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { , AlertTriangle, ArrowRight, BarChart3, Building2, Calendar, CheckCircle2, Clock, CreditCard, Download, Edit3, Eye, FileText, Filter, PiggyBank, Plus, Printer, Receipt, RefreshCw, Search, Settings, Shield, Trash2, TrendingDown, TrendingUp, Users, Wallet, X } from 'lucide-react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { formatRSD, formatRSDShort } from '@/lib/helpers'
-import type { Expense, ExpenseReport, Budget, Policy } from './types'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Separator } from '@/components/ui/separator'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
+import { Progress } from '@/components/ui/progress'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+import {
+  Receipt, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
+  CheckCircle2, Clock, BarChart3, DollarSign,
+  TrendingUp, TrendingDown, AlertTriangle, FileText,
+  Calendar, CreditCard, Building2, Users, Filter,
+  Download, Printer, ArrowRight, X, Wallet, PiggyBank,
+  Shield, Settings,
+} from 'lucide-react'
+import {
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
+} from 'recharts'
+
+interface Expense {
+interface ExpenseReport {
+interface Budget {
+interface Policy {
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+const CATEGORY_LABELS: Record<string, string> = {
+const PAYMENT_METHODS: Record<string, string> = {
+const PIE_COLORS = ['#f59e0b', '#10b981', '#6366f1', '#ef4444', '#8b5cf6', '#06b6d4', '#64748b']
+const EMPLOYEES = [
+const EMPTY_EXPENSE_FORM = {
+const EMPTY_REPORT_FORM = {
+const EMPTY_BUDGET_FORM = {
+const EMPTY_POLICY_FORM = {
+
+function generateMockExpenses(): Expense[] {
+  return [
+    { id: 'exp-1', description: 'Kancelarijski materijal - papir, toneri', category: 'office', amount: 18500, date: '2025-01-15', employee: 'Marko Petrovic', employeeId: 'emp-1', paymentMethod: 'card', status: 'approved', hasReceipt: true, notes: 'Mesečna nabavka', createdAt: '2025-01-15T08:00:00Z' },
+    { id: 'exp-2', description: 'Putovanje Novi Sad - sastanak klijent', category: 'travel', amount: 12400, date: '2025-01-18', employee: 'Jelena Nikolic', employeeId: 'emp-2', paymentMethod: 'company_account', status: 'submitted', hasReceipt: true, notes: 'Voz karta + taksii', createdAt: '2025-01-18T09:30:00Z' },
+    { id: 'exp-3', description: 'Marketing kampanja - Google Ads', category: 'marketing', amount: 85000, date: '2025-01-10', employee: 'Ana Popovic', employeeId: 'emp-4', paymentMethod: 'bank_transfer', status: 'approved', hasReceipt: true, createdAt: '2025-01-10T10:00:00Z' },
+    { id: 'exp-4', description: 'Laptop za novog zaposlenog', category: 'equipment', amount: 125000, date: '2025-01-20', employee: 'Stefan Jovanovic', employeeId: 'emp-3', paymentMethod: 'bank_transfer', status: 'paid', hasReceipt: true, notes: 'Dell Latitude 5540', createdAt: '2025-01-20T11:00:00Z' },
+    { id: 'exp-5', description: 'Struja za januar', category: 'utilities', amount: 28700, date: '2025-01-25', employee: 'Marko Petrovic', employeeId: 'emp-1', paymentMethod: 'bank_transfer', status: 'paid', hasReceipt: true, createdAt: '2025-01-25T08:00:00Z' },
+    { id: 'exp-6', description: 'Timski ručak - projekat Alpha', category: 'other', amount: 15600, date: '2025-01-22', employee: 'Jelena Nikolic', employeeId: 'emp-2', paymentMethod: 'cash', status: 'draft', hasReceipt: false, createdAt: '2025-01-22T12:00:00Z' },
+    { id: 'exp-7', description: 'Printanje flajera 5000 kom', category: 'marketing', amount: 42000, date: '2025-01-12', employee: 'Ana Popovic', employeeId: 'emp-4', paymentMethod: 'bank_transfer', status: 'approved', hasReceipt: true, createdAt: '2025-01-12T14:00:00Z' },
+    { id: 'exp-8', description: 'Pretplate softver - Adobe, Slack', category: 'software', amount: 35600, date: '2025-01-05', employee: 'Stefan Jovanovic', employeeId: 'emp-3', paymentMethod: 'card', status: 'paid', hasReceipt: true, createdAt: '2025-01-05T09:00:00Z' },
+    { id: 'exp-9', description: 'Kancelarijski sto za recepciju', category: 'equipment', amount: 67800, date: '2025-01-28', employee: 'Marko Petrovic', employeeId: 'emp-1', paymentMethod: 'bank_transfer', status: 'submitted', hasReceipt: true, createdAt: '2025-01-28T10:00:00Z' },
+    { id: 'exp-10', description: 'Internet provajder - januar', category: 'utilities', amount: 9500, date: '2025-01-03', employee: 'Nikola Milovanovic', employeeId: 'emp-5', paymentMethod: 'bank_transfer', status: 'paid', hasReceipt: true, createdAt: '2025-01-03T08:00:00Z' },
+    { id: 'exp-11', description: 'Putovanje Beograd-Nis - sajam', category: 'travel', amount: 28900, date: '2025-01-14', employee: 'Nikola Milovanovic', employeeId: 'emp-5', paymentMethod: 'company_account', status: 'rejected', hasReceipt: true, notes: 'Nije prethodno odobreno', createdAt: '2025-01-14T07:00:00Z' },
+    { id: 'exp-12', description: 'Stolice za konferencijsku salu x8', category: 'office', amount: 48000, date: '2025-01-08', employee: 'Ana Popovic', employeeId: 'emp-4', paymentMethod: 'bank_transfer', status: 'paid', hasReceipt: true, createdAt: '2025-01-08T11:00:00Z' },
+  ]
+}
+
+function generateMockReports(): ExpenseReport[] {
+  return [
+    { id: 'rep-1', title: 'Putni troškovi - januar', employee: 'Jelena Nikolic', employeeId: 'emp-2', dateFrom: '2025-01-01', dateTo: '2025-01-31', status: 'submitted', totalAmount: 41300, expenseCount: 3, notes: 'Sastanci sa klijentima', createdAt: '2025-01-25T10:00:00Z' },
+    { id: 'rep-2', title: 'Marketing - Q1 2025', employee: 'Ana Popovic', employeeId: 'emp-4', dateFrom: '2025-01-01', dateTo: '2025-03-31', status: 'approved', totalAmount: 127000, expenseCount: 2, notes: 'Online i print kampanje', createdAt: '2025-01-20T09:00:00Z' },
+    { id: 'rep-3', title: 'IT oprema - januar', employee: 'Stefan Jovanovic', employeeId: 'emp-3', dateFrom: '2025-01-01', dateTo: '2025-01-31', status: 'paid', totalAmount: 160600, expenseCount: 2, notes: 'Nabavka za nove zaposlene', createdAt: '2025-01-28T14:00:00Z' },
+  ]
+}
+
+function generateMockBudgets(): Budget[] {
+  return [
+    { id: 'bud-1', name: 'Kancelarija', category: 'office', allocatedAmount: 150000, spentAmount: 66500, period: 'monthly', startDate: '2025-01-01', endDate: '2025-01-31' },
+    { id: 'bud-2', name: 'Putovanja', category: 'travel', allocatedAmount: 100000, spentAmount: 41300, period: 'monthly', startDate: '2025-01-01', endDate: '2025-01-31' },
+    { id: 'bud-3', name: 'Oprema', category: 'equipment', allocatedAmount: 200000, spentAmount: 192800, period: 'quarterly', startDate: '2025-01-01', endDate: '2025-03-31' },
+    { id: 'bud-4', name: 'Marketing', category: 'marketing', allocatedAmount: 180000, spentAmount: 127000, period: 'monthly', startDate: '2025-01-01', endDate: '2025-01-31' },
+    { id: 'bud-5', name: 'Komunalije', category: 'utilities', allocatedAmount: 80000, spentAmount: 38200, period: 'monthly', startDate: '2025-01-01', endDate: '2025-01-31' },
+  ]
+}
+
+function generateMockPolicies(): Policy[] {
+  return [
+    { id: 'pol-1', name: 'Kancelarijski limit', category: 'office', maxAmount: 50000, frequency: 'monthly', approvalThreshold: 20000, isActive: true },
+    { id: 'pol-2', name: 'Putni limit', category: 'travel', maxAmount: 80000, frequency: 'monthly', approvalThreshold: 30000, isActive: true },
+    { id: 'pol-3', name: 'Oprema - odobrenje menadzera', category: 'equipment', maxAmount: 500000, frequency: 'quarterly', approvalThreshold: 0, isActive: true },
+    { id: 'pol-4', name: 'Marketing budzet', category: 'marketing', maxAmount: 200000, frequency: 'monthly', approvalThreshold: 50000, isActive: true },
+    { id: 'pol-5', name: 'Komunalije auto', category: 'utilities', maxAmount: 100000, frequency: 'monthly', approvalThreshold: 100000, isActive: false },
+  ]
+}
+
+function generateMonthlyTrend() {
+  return [
+    { month: 'Avg', amount: 380000 },
+    { month: 'Sep', amount: 420000 },
+    { month: 'Okt', amount: 395000 },
+    { month: 'Nov', amount: 450000 },
+    { month: 'Dec', amount: 510000 },
+    { month: 'Jan', amount: 517100 },
+  ]
+}
+
+function generateCategoryDistribution(expenses: Expense[]) {
+  const map: Record<string, number> = {}
+  expenses.forEach(e => { map[e.category] = (map[e.category] || 0) + e.amount })
+  return Object.entries(map).map(([key, value]) => ({
+    name: CATEGORY_LABELS[key] || key,
+    value: Math.round(value),
+  }))
+}
+
+function generateBudgetVsActual(budgets: Budget[]) {
+  return budgets.map(b => ({
+    name: b.name,
+    budget: b.allocatedAmount,
+    actual: b.spentAmount,
+  }))
+}
+
+function generateDayOfWeekData() {
+  return [
+    { day: 'Pon', amount: 85000 },
+    { day: 'Uto', amount: 62000 },
+    { day: 'Sre', amount: 95000 },
+    { day: 'Cet', amount: 78000 },
+    { day: 'Pet', amount: 110000 },
+    { day: 'Sub', amount: 15000 },
+    { day: 'Ned', amount: 5000 },
+  ]
+}
+
+function generateDeptComparison() {
+  return [
+    { dept: 'IT', amount: 160600 },
+    { dept: 'Marketing', amount: 127000 },
+    { dept: 'HR', amount: 48000 },
+    { dept: 'Prodaja', amount: 41300 },
+    { dept: 'Admin', amount: 38200 },
+  ]
+}
+
+function getEmployeeName(id: string): string {
+  return EMPLOYEES.find(e => e.id === id)?.name || id
+}
+
+function getPercentUsed(spent: number, allocated: number): number {
+  if (allocated <= 0) return 0
+  return Math.min(Math.round((spent / allocated) * 100), 100)
+}
+
+function getBudgetAlertClass(pct: number): string {
+  if (pct >= 100) return 'text-red-600'
+  if (pct >= 80) return 'text-amber-600'
+  return 'text-emerald-600'
+}
 
 function OverviewDashboard() {
   const { t } = useTranslation()
@@ -1607,3 +1740,4 @@ function AnalyticsTab() {
     </div>
   )
 }
+

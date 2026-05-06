@@ -1,24 +1,235 @@
 'use client'
 
-import { useState } from 'react'
-
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/progress'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { ArrowLeft, Clock, Copy, Eye, FileText, Mail, MousePointer, Pencil, Plus, Send, Trash2, Upload, Users } from 'lucide-react'
+import { useState, useCallback, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Progress } from '@/components/ui/progress'
+import { Mail, Plus, Pencil, Trash2, Users, Send, Clock, Eye, MousePointer, FileText, Copy, Upload, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import type { EmailList, EmailSubscriber, EmailCampaign, EmailTemplate } from './types'
 
+// ==================== TYPES ====================
+interface EmailList {
+  id: string
+  name: string
+  description: string | null
+  createdAt: string
+  updatedAt: string
+  _count?: { subscribers: number; campaigns: number }
+}
+
+interface EmailSubscriber {
+  id: string
+  listId: string | null
+  email: string
+  firstName: string | null
+  lastName: string | null
+  status: string
+  source: string | null
+  createdAt: string
+  updatedAt: string
+  list?: { id: string; name: string } | null
+}
+
+interface EmailCampaign {
+  id: string
+  name: string
+  subject: string
+  preheader: string | null
+  content: string
+  status: string
+  listId: string | null
+  sentCount: number
+  openRate: number
+  clickRate: number
+  bounceRate: number
+  scheduledAt: string | null
+  sentAt: string | null
+  createdAt: string
+  updatedAt: string
+  list?: { id: string; name: string } | null
+}
+
+interface EmailTemplate {
+  id: string
+  name: string
+  subject: string
+  content: string
+  category: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// ==================== CONSTANTS ====================
+const getCampaignStatuses = (t: (key: string) => string): Record<string, { label: string; color: string }> => ({
+  nacrt: { label: t('common.nacrt'), color: 'bg-slate-100 text-slate-700 border-slate-200' },
+  poslata: { label: t('common.poslata'), color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  zakazana: { label: t('common.zakazana'), color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  u_toku: { label: t('emailMarketing.inProgress'), color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  zavrsena: { label: t('common.zavrsena_mail'), color: 'bg-slate-100 text-slate-600 border-slate-300' },
+})
+
+const getSubscriberStatuses = (t: (key: string) => string): Record<string, { label: string; color: string }> => ({
+  aktivan: { label: t('common.aktivan_sub'), color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  neaktivan: { label: t('common.neaktivan'), color: 'bg-slate-100 text-slate-600 border-slate-200' },
+  otkazan: { label: t('common.otkazan'), color: 'bg-red-50 text-red-700 border-red-200' },
+})
+
+const getTemplateCategories = (t: (key: string) => string): Record<string, string> => ({
+  promotivno: t('emailMarketing.promotional'),
+  transakciono: t('emailMarketing.transactional'),
+  obavestenje: t('emailMarketing.notification'),
+})
+
+// ==================== MAIN COMPONENT ====================
+export function MailerLite() {
+  const [lists, setLists] = useState<EmailList[]>([])
+  const [subscribers, setSubscribers] = useState<EmailSubscriber[]>([])
+  const [campaigns, setCampaigns] = useState<EmailCampaign[]>([])
+  const [templates, setTemplates] = useState<EmailTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
+  const { tc, translateTexts } = useContentTranslation()
+
+  const CAMPAIGN_STATUS = getCampaignStatuses(t)
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [listsRes, subsRes, campsRes, tempsRes] = await Promise.all([
+        fetch('/api/email-lists'),
+        fetch('/api/email-subscribers'),
+        fetch('/api/email-campaigns'),
+        fetch('/api/email-templates'),
+      ])
+      setLists(await listsRes.json())
+      setSubscribers(await subsRes.json())
+      setCampaigns(await campsRes.json())
+      setTemplates(await tempsRes.json())
+    } catch {
+      toast.error(t('emailMarketing.loadError'))
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useState(() => { fetchAll() })
+
+  // Batch-translate content when data loads
+  useEffect(() => {
+    if (campaigns.length > 0 || lists.length > 0 || templates.length > 0) {
+      const texts: string[] = []
+      campaigns.forEach(c => { if (c.name) texts.push(c.name); if (c.subject) texts.push(c.subject) })
+      lists.forEach(l => { if (l.name) texts.push(l.name); if (l.description) texts.push(l.description) })
+      templates.forEach(tp => { if (tp.name) texts.push(tp.name); if (tp.subject) texts.push(tp.subject) })
+      if (texts.length > 0) translateTexts(texts)
+    }
+  }, [campaigns, lists, templates, translateTexts])
+
+  const totalCampaigns = campaigns.length
+  const totalSubscribers = subscribers.filter(s => s.status === 'aktivan').length
+  const avgOpenRate = campaigns.length > 0
+    ? campaigns.reduce((sum, c) => sum + (c.openRate || 0), 0) / campaigns.length
+    : 0
+  const activeLists = lists.filter(l => l._count && l._count.subscribers > 0).length
+
+  const stats = [
+    { label: t('emailMarketing.totalCampaigns'), value: totalCampaigns, icon: Mail, color: 'text-emerald-600 bg-emerald-50' },
+    { label: t('emailMarketing.totalSubscribers'), value: totalSubscribers, icon: Users, color: 'text-blue-600 bg-blue-50' },
+    { label: t('emailMarketing.avgOpenRate'), value: `${avgOpenRate.toFixed(1)}%`, icon: Eye, color: 'text-amber-600 bg-amber-50' },
+    { label: t('emailMarketing.activeLists'), value: activeLists, icon: FileText, color: 'text-violet-600 bg-violet-50' },
+  ]
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
+            <Mail className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{t('emailMarketing.title')}</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">{t('emailMarketing.subtitle')}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      {loading ? (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {stats.map((stat) => (
+            <Card key={stat.label} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.color}`}>
+                    <stat.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Tabs */}
+      <Tabs defaultValue="kampanje" className="space-y-4">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="kampanje" className="gap-1.5">
+            <Mail className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t('emailMarketing.campaigns')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="pretplatnici" className="gap-1.5">
+            <Users className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t('emailMarketing.subscribers')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="liste" className="gap-1.5">
+            <FileText className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t('emailMarketing.lists')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="sabloni" className="gap-1.5">
+            <Copy className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{t('emailMarketing.templates')}</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="kampanje">
+          <KampanjeTab campaigns={campaigns} lists={lists} loading={loading} onRefresh={fetchAll} />
+        </TabsContent>
+        <TabsContent value="pretplatnici">
+          <PretplatniciTab subscribers={subscribers} lists={lists} loading={loading} onRefresh={fetchAll} />
+        </TabsContent>
+        <TabsContent value="liste">
+          <ListeTab lists={lists} loading={loading} onRefresh={fetchAll} />
+        </TabsContent>
+        <TabsContent value="sabloni">
+          <SabloniTab templates={templates} loading={loading} onRefresh={fetchAll} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
+// ==================== KAMPANJE TAB ====================
 function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
   campaigns: EmailCampaign[]
   lists: EmailList[]
@@ -255,6 +466,7 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
   )
 }
 
+// ==================== PRETPLATNICI TAB ====================
 function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
   subscribers: EmailSubscriber[]
   lists: EmailList[]
@@ -462,6 +674,7 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
   )
 }
 
+// ==================== LISTE TAB ====================
 function ListeTab({ lists, loading, onRefresh }: {
   lists: EmailList[]
   loading: boolean
@@ -605,6 +818,7 @@ function ListeTab({ lists, loading, onRefresh }: {
   )
 }
 
+// ==================== ŠABLONE TAB ====================
 function SabloniTab({ templates, loading, onRefresh }: {
   templates: EmailTemplate[]
   loading: boolean

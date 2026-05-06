@@ -1,23 +1,39 @@
-'use client'
+import { useState, useEffect, useCallback } from 'react'
+import { useAppStore } from '@/lib/store'
+import { useTranslation } from '@/lib/i18n'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Progress } from '@/components/ui/progress'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
 
-import { useState } from 'react'
-
-from '@/components/ui/alert'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/progress'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/switch'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { AlertCircle, ArrowRight, ArrowUpRight, BarChart3, Bell, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, DollarSign, Edit, Filter, Gift, Globe, LayoutGrid, List, Mail, MousePointerClick, Package, Plus, Search, Settings, ShoppingBag, ShoppingCart, Star, Tag, Trash2, TrendingUp, Truck, Users, Zap } from 'lucide-react'
-import type { StoreProduct, OrderItem, StoreOrder, Category, Coupon, StoreSettings } from './types'
+interface StoreProduct {
+interface OrderItem {
+interface StoreOrder {
+interface Category {
+interface Coupon {
+interface StoreSettings {
+const productStatusConfig: Record<string, { label: string; color: string }> = {
+const orderStatusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+const paymentStatusConfig: Record<string, { label: string; color: string }> = {
+const paymentMethodLabels: Record<string, string> = {
+const formatCurrency = (val: number) => `${val.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD`
+const orderStatusFlow = ['nacrt', 'potvrđena', 'u_pripremi', 'poslata', 'u_isporuci', 'isporučena', 'završena'] as const
+const mockProducts: StoreProduct[] = [
+const mockOrders: StoreOrder[] = [
+const mockCategories: Category[] = [
+const mockCoupons: Coupon[] = [
+const defaultSettings: StoreSettings = {
 
 function RevenueChart({ data }: { data: { label: string; value: number }[] }) {
   const maxValue = Math.max(...data.map((d) => d.value), 1)
@@ -1611,3 +1627,4 @@ function SettingsTab({ settings, setSettings }: { settings: StoreSettings; setSe
     </div>
   )
 }
+

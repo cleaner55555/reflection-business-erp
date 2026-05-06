@@ -1,25 +1,64 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { AlertTriangle, ArrowLeft, CalendarDays, CheckCircle2, Circle, Clock, DollarSign, Eye, FolderKanban, ListTodo, Pencil, Play, Plus, Search, Target, Timer, Trash2, TrendingUp, Users, X } from 'lucide-react'
-import { toast } from 'sonner'
-import { formatRSD, formatDate } from '@/lib/helpers'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { AlertTriangle, BarChart3, CheckCircle2, Circle, Clock, FolderKanban, Pencil, Plus, Search, Trash2, ArrowLeft, X, ListTodo, CalendarDays, DollarSign, Users, Target, TrendingUp, Timer, GanttChart, Eye, Play, Pause, Bug, Square } from 'lucide-react'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import type { Project, ProjectTask, TimesheetEntry, Partner } from './types'
+import type {  } from './types'
 
-function ProjectDashboard() {
+// ============ CONFIG / DATA / HELPERS ==========
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+
+// ─── Interfaces ──────────────────────────────────────────────────────────
+
+// ─── Constants ──────────────────────────────────────────────────────────
+
+const STATUS_OPTIONS = [
+  { value: 'aktivan', label: 'Aktivan', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  { value: 'zavrsen', label: 'Završen', color: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500' },
+  { value: 'pauziran', label: 'Pauziran', color: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+  { value: 'otkazan', label: 'Otkazan', color: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500' },
+] as const
+
+const PRIORITY_OPTIONS = [
+  { value: 'nizak', label: 'Nizak', color: 'text-slate-500', dot: 'bg-slate-400' },
+  { value: 'srednji', label: 'Srednji', color: 'text-amber-600', dot: 'bg-amber-500' },
+  { value: 'visok', label: 'Visok', color: 'text-orange-600', dot: 'bg-orange-500' },
+  { value: 'hitan', label: 'Hitan', color: 'text-red-600', dot: 'bg-red-500' },
+] as const
+
+const TASK_STATUS_OPTIONS = [
+  { value: 'todo', label: 'Za uraditi', color: 'bg-slate-100 text-slate-700 border-slate-200', icon: Square, colBg: 'bg-slate-50' },
+  { value: 'u_toku', label: 'U toku', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: Play, colBg: 'bg-blue-50/50' },
+  { value: 'zavrseno', label: 'Završeno', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle2, colBg: 'bg-emerald-50/50' },
+  { value: 'blokirano', label: 'Blokirano', color: 'bg-red-50 text-red-700 border-red-200', icon: Pause, colBg: 'bg-red-50/50' },
+] as const
+
+const PROJECT_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#06b6d4', '#6366f1', '#a855f7']
+
+// ============ SUB-COMPONENTS ==========
+export function getStatusInfo(s: string) { return STATUS_OPTIONS.find(o => o.value === s) || STATUS_OPTIONS[0] }
+
+export function getPriorityInfo(p: string) { return PRIORITY_OPTIONS.find(o => o.value === p) || PRIORITY_OPTIONS[1] }
+
+export function getTaskStatusInfo(s: string) { return TASK_STATUS_OPTIONS.find(o => o.value === s) || TASK_STATUS_OPTIONS[0] }
+
+export function parseTags(tags: string | null): string[] { if (!tags) return []; try { return JSON.parse(tags) } catch { return [] } }
+
+export function ProjectDashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -165,7 +204,7 @@ function ProjectDashboard() {
   )
 }
 
-function KpiCard({ icon: Icon, label, value, color }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | number; color: string }) {
+export function KpiCard({ icon: Icon, label, value, color }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | number; color: string }) {
   return (
     <Card className="p-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Icon className="h-3.5 w-3.5" />{label}</div>
@@ -174,7 +213,7 @@ function KpiCard({ icon: Icon, label, value, color }: { icon: React.ComponentTyp
   )
 }
 
-function ProjectsList() {
+export function ProjectsList() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [projects, setProjects] = useState<Project[]>([])
@@ -624,7 +663,7 @@ function ProjectsList() {
   )
 }
 
-function ProjectDetailView({ project, onClose, onEdit }: { project: Project; onClose: () => void; onEdit: () => void }) {
+export function ProjectDetailView({ project, onClose, onEdit }: { project: Project; onClose: () => void; onEdit: () => void }) {
   const { tc } = useContentTranslation()
   const tasks = project.tasks || []
   const doneTasks = tasks.filter(t => t.status === 'zavrseno').length
@@ -687,11 +726,11 @@ function ProjectDetailView({ project, onClose, onEdit }: { project: Project; onC
   )
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
+export function MiniStat({ label, value }: { label: string; value: string }) {
   return <div className="text-center p-2 rounded bg-muted/50"><p className="text-[10px] text-muted-foreground">{label}</p><p className="text-sm font-bold">{value}</p></div>
 }
 
-function TaskKanban() {
+export function TaskKanban() {
   const { tc } = useContentTranslation()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -816,7 +855,7 @@ function TaskKanban() {
   )
 }
 
-function TimesheetView() {
+export function TimesheetView() {
   const [projects, setProjects] = useState<Project[]>([])
   const [tsData, setTsData] = useState<{ entries: TimesheetEntry[]; totalHours: number; byProject: Record<string, { name: string; hours: number; entries: number }> } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -956,7 +995,7 @@ function TimesheetView() {
   )
 }
 
-function TimelineView() {
+export function TimelineView() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [filterProject, setFilterProject] = useState('')

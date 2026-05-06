@@ -1,20 +1,54 @@
 'use client'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Label } from '@/components/ui/label'
+import {
+import { Plus, Search, AlertTriangle, Pencil, Trash2, Package, FileText, Tag, ArrowLeft, Printer, BarChart3, MapPin, Warehouse as WarehouseIcon, TrendingDown, TrendingUp, ArrowRightLeft, Hash, ClipboardCheck, ArrowLeftRight, ScanBarcode, Layers, ArrowDownToLine } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { ReportDownloadButton } from './ReportDownloadButton'
+import { LotoviTab, InventuraTab, TransferiTab } from './InventoryEnhanced'
+import { BarkodiTab, ZoneMapTab, PickingTab, PrijemTab } from './WmsEnhanced'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
 
-from '@/components/ui/alert-dialog'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { AlertTriangle, ArrowLeft, ArrowRightLeft, MapPin, Package, Pencil, Plus, Printer, Search, Tag, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
-import type { Product, StockMovement, Partner, DeliveryNoteItem, DeliveryNote, PriceListItem, PriceList, LineItem, PriceLineItem, WarehouseLocation } from './types'
+interface Product {
+interface StockMovement {
+interface Partner {
+interface DeliveryNoteItem {
+interface DeliveryNote {
+interface PriceListItem {
+interface PriceList {
+interface LineItem {
+interface PriceLineItem {
+
+function nextTempId() {
+  return `temp_${++tempIdCounter}_${Date.now()}`
+}
 
 function StockOverview() {
   const [products, setProducts] = useState<Product[]>([])
@@ -1739,3 +1773,4 @@ function CenovniciTab() {
     </Card>
   )
 }
+

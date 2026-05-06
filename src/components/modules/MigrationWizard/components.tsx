@@ -1,20 +1,91 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Progress } from '@/components/ui/progress'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import type {  } from './types'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/checkbox'
-from '@/components/ui/label'
-from '@/components/ui/progress'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/table'
-import { , AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, ChevronRight, Contact, Database, Eye, FileSpreadsheet, Info, Loader2, MousePointerClick, Rocket, Sparkles, Undo2, Upload, UploadCloud, X } from 'lucide-react'
-import type { ScannedFile, ImportProgress, MigrationResult, ScannedFile, ImportProgress } from './types'
+// ============ CONFIG / DATA / HELPERS ==========
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Upload,
+  FileSpreadsheet,
+  ArrowLeft,
+  ArrowRight,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  Database,
+  ChevronRight,
+  Undo2,
+  Sparkles,
+  UploadCloud,
+  MousePointerClick,
+  Eye,
+  Rocket,
+  Users,
+  Package,
+  FileText,
+  Contact,
+  FolderTree,
+  Info,
+  Trash2,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from '@/lib/i18n'
 
-function MigrationFlow() {
+// ==================== TYPES ====================
+
+const ENTITY_ICONS: Record<string, any> = {
+  partners: Users,
+  products: Package,
+  invoices: FileText,
+  contacts: Contact,
+  categories: FolderTree,
+  invoice_items: FileText,
+}
+
+const ENTITY_COLORS: Record<string, string> = {
+  partners: 'bg-amber-50 text-amber-700 border-amber-200',
+  products: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  invoices: 'bg-blue-50 text-blue-700 border-blue-200',
+  contacts: 'bg-purple-50 text-purple-700 border-purple-200',
+  categories: 'bg-rose-50 text-rose-700 border-rose-200',
+  invoice_items: 'bg-sky-50 text-sky-700 border-sky-200',
+}
+
+const ENTITY_OPTIONS = [
+  { value: 'partners', label: 'Partners' },
+  { value: 'products', label: 'Products' },
+  { value: 'invoices', label: 'Invoices' },
+  { value: 'contacts', label: 'Contacts' },
+  { value: 'categories', label: 'Categories' },
+]
+
+// ==================== MAIN COMPONENT ====================
+
+// ============ SUB-COMPONENTS ==========
+export function MigrationFlow() {
   const { t } = useTranslation()
   const [step, setStep] = useState<MigrationStep>(1)
   const [source, setSource] = useState<MigrationSource | null>(null)
@@ -930,7 +1001,7 @@ function MigrationFlow() {
   )
 }
 
-function MigrationGuide() {
+export function MigrationGuide() {
   const { t } = useTranslation()
 
   const guideSteps = [

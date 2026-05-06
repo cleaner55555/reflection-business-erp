@@ -1,21 +1,62 @@
 'use client'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+import { Label } from '@/components/ui/label'
+import {
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Switch } from '@/components/ui/switch'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Landmark,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Link2,
+  Upload,
+  RefreshCw,
+  CheckCircle,
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  FileText,
+  AlertTriangle,
+  XCircle,
+  Clock,
+  CircleDot,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { formatRSD, formatDate, formatDateTime } from '@/lib/helpers'
+import { useTranslation } from '@/lib/i18n'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
 
-from '@/components/ui/alert-dialog'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/switch'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-import { , AlertTriangle, ArrowDownLeft, ArrowUpRight, CheckCircle, CircleDot, Clock, FileText, Landmark, Link2, Pencil, Plus, RefreshCw, Search, Trash2, Upload, XCircle } from 'lucide-react'
-import type { BankAccount, BankTransaction, SuggestedMatch, ReconcileResult, Invoice } from './types'
+interface BankAccount {
+interface BankTransaction {
+interface SuggestedMatch {
+interface ReconcileResult {
+interface Invoice {
 
 function AccountsTab() {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
@@ -1335,3 +1376,4 @@ function ReconciliationTab() {
     </div>
   )
 }
+

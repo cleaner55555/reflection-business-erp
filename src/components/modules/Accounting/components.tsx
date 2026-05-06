@@ -1,19 +1,78 @@
 'use client'
+import { useEffect, useState, useCallback } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Label } from '@/components/ui/label'
+import {
+import {
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+  BookOpen,
+  Landmark,
+  FilePenLine,
+  AlertCircle,
+  CheckCircle2,
+  X,
+  ArrowLeft,
+  PiggyBank,
+  Scale,
+  Download,
+  TrendingUp,
+  TrendingDown,
+  RefreshCw,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownRight,
+  Receipt,
+  BarChart3,
+  Eye,
+  Calculator,
+  PieChart,
+  Lock,
+  Unlock,
+  Users,
+  Filter,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { formatRSD, formatDate } from '@/lib/helpers'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
 
-import { useCallback, useEffect, useState } from 'react'
 
-from '@/components/ui/alert-dialog'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-import { , AlertCircle, ArrowDownRight, ArrowLeft, BarChart3, BookOpen, Calculator, CheckCircle2, Download, Eye, FilePenLine, Filter, Landmark, Lock, Pencil, PiggyBank, Plus, Receipt, RefreshCw, Scale, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X } from 'lucide-react'
-import type { Account, JournalEntry, JournalRow, BudgetItem, DashboardData, AccountStatement } from './types'
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+interface Account {
+interface JournalEntry {
+interface JournalRow {
+interface BudgetItem {
+interface DashboardData {
+interface AccountStatement {
+const ACCOUNT_TYPES = [
+const MONTH_KEYS = ['january','february','march','april','may','june','july','august','september','october','november','december'] as const
+const MONTH_LABELS = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Avg','Sep','Okt','Nov','Dec'] as const
+
+function getAccountTypeBadge(type: string) {
+  const found = ACCOUNT_TYPES.find((t) => t.value === type)
+  return found || { label: type, color: 'bg-slate-100 text-slate-700 border-slate-200' }
+}
+
+
+// ─── Dashboard Tab ─────────────────────────────────────────────────────────────
 
 function DashboardTab({ fiscalYear }: { fiscalYear: number }) {
   const { t } = useTranslation()
@@ -131,6 +190,9 @@ function DashboardTab({ fiscalYear }: { fiscalYear: number }) {
     </div>
   )
 }
+
+
+// ─── Tab: Glavna Knjiga (General Ledger) ──────────────────────────────────────
 
 function GlavnaKnjigaTab({ fiscalYear }: { fiscalYear: number }) {
   const { t } = useTranslation()
@@ -469,6 +531,9 @@ function GlavnaKnjigaTab({ fiscalYear }: { fiscalYear: number }) {
   )
 }
 
+
+// ─── Tab: Kontni Plan ──────────────────────────────────────────────────────────
+
 function KontniPlanTab() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
@@ -782,6 +847,9 @@ function KontniPlanTab() {
   )
 }
 
+
+// ─── Tab: Nalog za Knjiženje ───────────────────────────────────────────────────
+
 function NalogTab() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
@@ -1049,6 +1117,9 @@ function NalogTab() {
   )
 }
 
+
+// ─── Tab: Budžeti ──────────────────────────────────────────────────────────────
+
 function BudzetiTab({ fiscalYear }: { fiscalYear: number }) {
   const { t } = useTranslation()
   const [budgets, setBudgets] = useState<BudgetItem[]>([])
@@ -1250,6 +1321,9 @@ function BudzetiTab({ fiscalYear }: { fiscalYear: number }) {
   )
 }
 
+
+// ─── Tab: Bruto Bilans (Trial Balance) ────────────────────────────────────────
+
 function BrutoBilansTab({ fiscalYear }: { fiscalYear: number }) {
   const { t } = useTranslation()
   const [data, setData] = useState<{ accounts: Array<{ code: string; name: string; type: string; entryCount: number; totalDebit: number; totalCredit: number; saldo: number }>; summary: { totalDebit: number; totalCredit: number; difference: number; isBalanced: boolean; accountCount: number } } | null>(null)
@@ -1359,6 +1433,9 @@ function BrutoBilansTab({ fiscalYear }: { fiscalYear: number }) {
     </Card>
   )
 }
+
+
+// ─── Tab: PDV Prijava ──────────────────────────────────────────────────────────
 
 function PdvTab({ fiscalYear }: { fiscalYear: number }) {
   const [data, setData] = useState<Record<string, unknown> | null>(null)
@@ -1599,6 +1676,9 @@ function PdvTab({ fiscalYear }: { fiscalYear: number }) {
   )
 }
 
+
+// ─── Tab: Analitika ────────────────────────────────────────────────────────────
+
 function AnalitikaTab({ fiscalYear }: { fiscalYear: number }) {
   const [data, setData] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -1746,6 +1826,9 @@ function AnalitikaTab({ fiscalYear }: { fiscalYear: number }) {
     </div>
   )
 }
+
+
+// ─── Tab: Godišnje Zatvaranje ────────────────────────────────────────────────
 
 function GodZatvaranjeTab({ fiscalYear }: { fiscalYear: number }) {
   const [data, setData] = useState<Record<string, unknown> | null>(null)
@@ -1944,3 +2027,4 @@ function GodZatvaranjeTab({ fiscalYear }: { fiscalYear: number }) {
     </div>
   )
 }
+

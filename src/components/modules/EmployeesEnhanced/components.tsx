@@ -1,18 +1,31 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
+import { Star, Plus, Pencil, Trash2, Award, AlertTriangle, GitBranch, ChevronDown, ChevronRight, User, Briefcase, Users } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatDate } from '@/lib/helpers'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/textarea'
-import { Award, ChevronDown, ChevronRight, GitBranch, Pencil, Plus, Star, Trash2, User, Users } from 'lucide-react'
-import type { EmployeeEval, OrgEmployee } from './types'
+// ==================== OCENE RADNOG UČINKA TAB ====================
+
+interface EmployeeEval {
+  id: string; period: string; year: number; rating: number; strengths: string | null
+  weaknesses: string | null; goals: string | null; reviewNotes: string | null
+  status: string; reviewDate: string | null; createdAt: string
+  employee: { firstName: string; lastName: string; position: string | null; department: string | null }
+}
 
 function StarRating({ rating, onChange, readOnly = false }: { rating: number; onChange?: (r: number) => void; readOnly?: boolean }) {
   return (
@@ -272,6 +285,15 @@ function OceneTab() {
       )}
     </div>
   )
+}
+
+// ==================== ORGANIGRAM TAB ====================
+
+interface OrgEmployee {
+  id: string; firstName: string; lastName: string; position: string | null; department: string | null
+  isActive: boolean; managerId: string | null; baseSalary: number; contractType: string | null
+  manager?: { id: string; firstName: string; lastName: string; position: string | null } | null
+  subordinates?: { id: string }[]
 }
 
 function OrganigramTab() {
@@ -557,3 +579,5 @@ function OrganigramTab() {
     </div>
   )
 }
+
+export { OceneTab, OrganigramTab }

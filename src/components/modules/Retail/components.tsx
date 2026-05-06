@@ -1,18 +1,49 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useAppStore } from '@/lib/store'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import type {  } from './types'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/separator'
-from '@/components/ui/tabs'
-import { , AlertCircle, Banknote, BarChart3, CheckCircle2, ChevronLeft, Clock, CreditCard, LogIn, LogOut, Minus, Package, Plus, Printer, Receipt, Search, ShoppingCart, Trash2, TrendingUp, X } from 'lucide-react'
-import type { POSProduct, CartItem, POSShift, POSOrder, SyncProduct, SyncCategory } from './types'
+// ============ CONFIG / DATA / HELPERS ==========
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  Search,
+  Plus,
+  Minus,
+  Trash2,
+  ShoppingCart,
+  CreditCard,
+  Banknote,
+  Receipt,
+  Printer,
+  ChevronLeft,
+  Clock,
+  Package,
+  TrendingUp,
+  BarChart3,
+  X,
+  LogIn,
+  LogOut,
+  AlertCircle,
+  CheckCircle2,
+  Calculator,
+} from 'lucide-react'
 
-function POSTerminal({ companyId }: { companyId: string | null }) {
+// ============ MAIN COMPONENT ============
+
+// ============ SUB-COMPONENTS ==========
+export function POSTerminal({ companyId }: { companyId: string | null }) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [products, setProducts] = useState<POSProduct[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -501,7 +532,7 @@ function POSTerminal({ companyId }: { companyId: string | null }) {
   )
 }
 
-function ShiftManager({ companyId }: { companyId: string | null }) {
+export function ShiftManager({ companyId }: { companyId: string | null }) {
   const [shifts, setShifts] = useState<POSShift[]>([])
   const [showOpen, setShowOpen] = useState(false)
   const [showClose, setShowClose] = useState(false)
@@ -716,7 +747,7 @@ function ShiftManager({ companyId }: { companyId: string | null }) {
   )
 }
 
-function POSReports({ companyId }: { companyId: string | null }) {
+export function POSReports({ companyId }: { companyId: string | null }) {
   const [dashboard, setDashboard] = useState<{
     activeShift: POSShift | null
     today: { total: number; count: number; avgTicket: number; byPayment: Record<string, number> }
@@ -870,7 +901,7 @@ function POSReports({ companyId }: { companyId: string | null }) {
   )
 }
 
-function RetailSync({ companyId }: { companyId: string | null }) {
+export function RetailSync({ companyId }: { companyId: string | null }) {
   const [data, setData] = useState<{
     products: SyncProduct[]
     categories: SyncCategory[]

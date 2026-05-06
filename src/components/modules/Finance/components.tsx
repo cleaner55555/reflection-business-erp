@@ -1,18 +1,110 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Plus, Search, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, BookOpen, ArrowLeft } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { ReportDownloadButton } from './ReportDownloadButton'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-import { ArrowDownCircle, ArrowLeft, ArrowUpCircle, BookOpen, Pencil, Plus, Search, Trash2 } from 'lucide-react'
-import type { Transaction, CashEntry, JournalEntry } from './types'
+interface Transaction {
+  id: string
+  date: string
+  type: string
+  category: string
+  amount: number
+  description: string
+  documentRef: string | null
+  partnerId: string | null
+  createdAt: string
+}
+
+interface CashEntry {
+  id: string
+  date: string
+  type: string
+  amount: number
+  description: string
+  partnerName: string | null
+  paymentMethod: string
+  createdAt: string
+}
+
+interface JournalEntry {
+  id: string
+  date: string
+  type: string
+  description: string
+  documentNumber: string | null
+  partnerName: string | null
+  debit: number
+  credit: number
+}
+
+const JOURNAL_TYPE_OPTIONS = [
+  { value: 'all', label: 'common.all' },
+  { value: 'faktura_izlazna', label: 'invoices.outgoing' },
+  { value: 'faktura_ulazna', label: 'invoices.incoming' },
+  { value: 'predracun', label: 'invoices.preinvoice' },
+  { value: 'transakcija', label: 'finance.transaction' },
+  { value: 'kasa', label: 'finance.cashRegister' },
+  { value: 'nabavka', label: 'finance.purchase' },
+  { value: 'otpremnica', label: 'finance.deliveryNote' },
+] as const
+
+export function Finansije() {
+  const { t } = useTranslation()
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">{t('finance.title')}</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          {t('finance.subtitle')}
+        </p>
+      </div>
+
+      <Tabs defaultValue="transakcije" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="transakcije">{t('finance.transactions')}</TabsTrigger>
+          <TabsTrigger value="kasa">{t('finance.cashRegister')}</TabsTrigger>
+          <TabsTrigger value="dnevnik">{t('finance.journal')}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="transakcije">
+          <TransakcijeTab />
+        </TabsContent>
+        <TabsContent value="kasa">
+          <KasaTab />
+        </TabsContent>
+        <TabsContent value="dnevnik">
+          <DnevnikTab />
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
 
 function TransakcijeTab() {
   const [transactions, setTransactions] = useState<Transaction[]>([])

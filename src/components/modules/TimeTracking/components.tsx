@@ -1,4 +1,6 @@
-'use client'
+'use client'import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle} from '@/components/ui/alert-dialog'
+import { TabsContent} from '@/components/ui/tabs'
+
 
 import { useState } from 'react'
 import { format } from 'date-fns'
@@ -8,7 +10,7 @@ import {
   Clock, Calendar, FolderOpen, CheckCircle2,
   XCircle, AlertTriangle, User, Briefcase,
   FileText, TrendingUp, Timer,
-} from 'lucide-react'
+} from 'lucide-react', Filter, List, Search, Settings } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -1096,4 +1098,359 @@ export function ReportFilterBar({
   )
 }
 
+// ========== PracenjeTab ==========
+
+export function PracenjeTab({ entries, filteredEntries, handleDeleteEntry, handleEditEntry, handleStatusChange, handleTimerPause, handleTimerReset, handleTimerResume, handleTimerStart, handleTimerStop, setTrackingEmployeeFilter, setTrackingProjectFilter, setTrackingStatusFilter, trackingDateFrom, trackingDateTo, trackingEmployeeFilter, trackingProjectFilter, trackingSearch, trackingStatusFilter }: { entries: any, filteredEntries: any, handleDeleteEntry: any, handleEditEntry: any, handleStatusChange: any, handleTimerPause: any, handleTimerReset: any, handleTimerResume: any, handleTimerStart: any, handleTimerStop: any, setTrackingEmployeeFilter: any, setTrackingProjectFilter: any, setTrackingStatusFilter: any, trackingDateFrom: any, trackingDateTo: any, trackingEmployeeFilter: any, trackingProjectFilter: any, trackingSearch: any, trackingStatusFilter: any }) {
+  return (
+    <TabsContent value="pracenje" className="space-y-6 mt-6">
+      {/* Active Timer */}
+      <ActiveTimer
+        timer={timer}
+        projects={mockProjects}
+        tasks={mockTasks}
+        employees={mockEmployees}
+        onProjectChange={(v) => setTimer((t) => ({ ...t, projectId: v, taskId: '' }))}
+        onTaskChange={(v) => setTimer((t) => ({ ...t, taskId: v }))}
+        onDescriptionChange={(v) => setTimer((t) => ({ ...t, description: v }))}
+        onEmployeeChange={(v) => setTimer((t) => ({ ...t, entryId: v }))}
+        onStart={handleTimerStart}
+        onPause={handleTimerPause}
+        onResume={handleTimerResume}
+        onStop={handleTimerStop}
+        onReset={handleTimerReset}
+      />
+    
+      {/* Stats */}
+      <StatsCards stats={dashboardStats} />
+    
+      {/* Filter bar */}
+      <Card>
+        <CardContent className="py-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Претрага уноса..."
+                className="pl-8"
+                value={trackingSearch}
+                onChange={(e) => setTrackingSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={trackingProjectFilter} onValueChange={setTrackingProjectFilter}>
+                <SelectTrigger className="w-[160px] h-9 text-xs">
+                  <SelectValue placeholder="Пројекат" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Сви пројекти</SelectItem>
+                  {mockProjects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={trackingEmployeeFilter} onValueChange={setTrackingEmployeeFilter}>
+                <SelectTrigger className="w-[160px] h-9 text-xs">
+                  <SelectValue placeholder="Запослени" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Сви запослени</SelectItem>
+                  {mockEmployees.map((e) => (
+                    <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={trackingStatusFilter} onValueChange={setTrackingStatusFilter}>
+                <SelectTrigger className="w-[120px] h-9 text-xs">
+                  <SelectValue placeholder="Статус" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Сви</SelectItem>
+                  <SelectItem value="draft">Нацрт</SelectItem>
+                  <SelectItem value="submitted">Предат</SelectItem>
+                  <SelectItem value="approved">Одобрен</SelectItem>
+                  <SelectItem value="rejected">Одбијен</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="date"
+                  className="h-9 w-[140px] text-xs"
+                  value={trackingDateFrom}
+                  onChange={(e) => setTrackingDateFrom(e.target.value)}
+                />
+                <span className="text-xs text-muted-foreground">—</span>
+                <Input
+                  type="date"
+                  className="h-9 w-[140px] text-xs"
+                  value={trackingDateTo}
+                  onChange={(e) => setTrackingDateTo(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    
+      {/* Entries count */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Приказано <span className="font-medium text-foreground">{filteredEntries.length}</span> уноса
+          (укупно {entries.length})
+        </p>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs">
+            <Clock className="h-3 w-3 mr-1" />
+            Укупно: {formatDuration(filteredEntries.reduce((s, e) => s + e.duration, 0))}
+          </Badge>
+        </div>
+      </div>
+    
+      {/* Time entries table */}
+      <TimeEntriesTable
+        entries={filteredEntries}
+        projects={mockProjects}
+        onEdit={handleEditEntry}
+        onDelete={handleDeleteEntry}
+        onStatusChange={handleStatusChange}
+      />
+    </TabsContent>
+  )
+}
+
+// ========== ReportsTab ==========
+
+export function ReportsTab({ handleGenerateReports, reportType, setReportDateFrom, setReportDateTo, setReportEmployeeId, setReportProjectId }: { handleGenerateReports: any, reportType: any, setReportDateFrom: any, setReportDateTo: any, setReportEmployeeId: any, setReportProjectId: any }) {
+  return (
+    <TabsContent value="izvestaji" className="space-y-6 mt-6">
+      {/* Report type selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold">Извештаји</h2>
+          <Select value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="project">По пројектима</SelectItem>
+              <SelectItem value="employee">По запосленима</SelectItem>
+              <SelectItem value="weekly">Недељни преглед</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button variant="outline" className="gap-1.5" onClick={handleGenerateReports}>
+          <Loader2 className="h-3.5 w-3.5" />
+          Генериши извештај
+        </Button>
+      </div>
+    
+      {/* Report summary */}
+      <ReportSummaryCards summary={reportSummary} />
+    
+      {/* Filter bar */}
+      <ReportFilterBar
+        dateFrom={reportDateFrom}
+        dateTo={reportDateTo}
+        projectId={reportProjectId}
+        employeeId={reportEmployeeId}
+        projects={mockProjects}
+        employees={mockEmployees}
+        onDateFromChange={setReportDateFrom}
+        onDateToChange={setReportDateTo}
+        onProjectChange={setReportProjectId}
+        onEmployeeChange={setReportEmployeeId}
+      />
+    
+      {/* Report tables */}
+      {reportType === 'project' && <ProjectReportTable data={projectReportData} />}
+      {reportType === 'employee' && <EmployeeReportTable data={employeeReportData} />}
+      {reportType === 'weekly' && <WeeklySummaryTable data={weeklyReportData} />}
+    </TabsContent>
+  )
+}
+
+// ========== ActivitiesTab ==========
+
+export function ActivitiesTab({ activities }: { activities: any }) {
+  return (
+    <TabsContent value="aktivnosti" className="space-y-6 mt-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Дневник активности</h2>
+        <Badge variant="outline">{activities.length} догађаја</Badge>
+      </div>
+    
+      {/* Activity summary cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950">
+                <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Тајмер догађаји</p>
+                <p className="text-lg font-bold">
+                  {activities.filter((a) => a.action.startsWith('timer_')).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                <List className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Креирани уноси</p>
+                <p className="text-lg font-bold">
+                  {activities.filter((a) => a.action === 'entry_created').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950">
+                <Filter className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Ажурирани уноси</p>
+                <p className="text-lg font-bold">
+                  {activities.filter((a) => a.action === 'entry_updated' || a.action === 'entry_submitted').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-950">
+                <Settings className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Обрисано</p>
+                <p className="text-lg font-bold">
+                  {activities.filter((a) => a.action === 'entry_deleted').length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    
+      {/* Activity list */}
+      <ActivityLog activities={activities} />
+    </TabsContent>
+  )
+}
+
+// ========== SettingsTab ==========
+
+export function SettingsTab({ entries, setSettings }: { entries: any, setSettings: any }) {
+  return (
+    <TabsContent value="podesavanja" className="space-y-6 mt-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Подешавања праћења времена</h2>
+      </div>
+      <SettingsPanel
+        settings={settings}
+        projects={mockProjects}
+        onSettingsChange={setSettings}
+      />
+    
+      {/* Info card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Информације о модулу</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <div className="flex justify-between py-2 border-b">
+            <span>Укупно уноса</span>
+            <span className="font-medium text-foreground">{entries.length}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b">
+            <span>Пројеката</span>
+            <span className="font-medium text-foreground">{mockProjects.length}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b">
+            <span>Задатака</span>
+            <span className="font-medium text-foreground">{mockTasks.length}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b">
+            <span>Запослених</span>
+            <span className="font-medium text-foreground">{mockEmployees.length}</span>
+          </div>
+          <div className="flex justify-between py-2">
+            <span>Укупно сати (сви уноси)</span>
+            <span className="font-medium text-foreground">
+              {formatDuration(entries.reduce((s, e) => s + e.duration, 0))}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    
+      {/* Danger zone */}
+      <Card className="border-red-200 dark:border-red-900">
+        <CardHeader>
+          <CardTitle className="text-base text-red-600 dark:text-red-400">Опасна зона</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Ове акције су неповратне. Будите опрезни.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950"
+              onClick={() => {
+                setEntries([])
+                setActivities([])
+                toast.info('Сви уноси су обрисани')
+              }}
+            >
+              Обриши све уносе
+            </Button>
+            <Button
+              variant="outline"
+              className="text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950"
+              onClick={() => {
+                setSettings(defaultSettings)
+                toast.info('Подешавања су враћена на подразумевана')
+              }}
+            >
+              Врати подразумевана подешавања
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </TabsContent>
+  )
+}
+
+// ========== DeleteConfirmDialog0 ==========
+
+export function DeleteConfirmDialog0({ confirmDelete, deleteDialogOpen, setDeleteDialogOpen }: { confirmDelete: any, deleteDialogOpen: any, setDeleteDialogOpen: any }) {
+  return (
+    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Потврда брисања</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Да ли сте сигурни да желите да обришете овај унос? Ова акција је неповратна.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Откажи</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+                  Обриши
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+  )
+}
 

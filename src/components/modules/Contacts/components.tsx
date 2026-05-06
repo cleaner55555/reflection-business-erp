@@ -1,23 +1,57 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import type {  } from './types'
 
-from '@/components/ui/alert-dialog'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { , AlertTriangle, ArrowLeft, BarChart3, Briefcase, Building2, CreditCard, FileText, Globe, Landmark, Mail, MapPin, Pencil, Phone, Plus, Search, Tag, Trash2, TrendingUp, UserCheck, UserX, Users, X } from 'lucide-react'
-import type { Partner, ContactInfo, PartnerStats, AnalyticsSummary, PartnerAnalytics } from './types'
+// ============ CONFIG / DATA / HELPERS ==========
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
+import { Label } from '@/components/ui/label'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  Plus, Search, Pencil, Trash2, Eye, Building2, Phone, Mail, MapPin,
+  Landmark, CreditCard, ArrowLeft, Users, UserCheck, UserX, TrendingUp,
+  Tag, X, BarChart3, Globe, AlertTriangle, FileText, Briefcase,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
+import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { ReportDownloadButton } from './ReportDownloadButton'
 
-function PregledTab() {
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// ============ SUB-COMPONENTS ==========
+export function parseTags(tags: string | null): string[] {
+  if (!tags) return []
+  try { return JSON.parse(tags) } catch { return [] }
+}
+
+export function formatTagsInput(tags: string | null): string {
+  const arr = parseTags(tags)
+  return arr.join(', ')
+}
+
+export function getTagColor(index: number) {
+  return TAG_COLORS[index % TAG_COLORS.length]
+}
+
+export function PregledTab() {
   const { t } = useTranslation()
   const { tc } = useContentTranslation()
   const [stats, setStats] = useState<PartnerStats | null>(null)
@@ -232,7 +266,7 @@ function PregledTab() {
   )
 }
 
-function PartneriListTab() {
+export function PartneriListTab() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [partners, setPartners] = useState<Partner[]>([])
@@ -712,7 +746,7 @@ function PartneriListTab() {
   )
 }
 
-function AnalitikaTab() {
+export function AnalitikaTab() {
   const { t } = useTranslation()
   const { tc } = useContentTranslation()
   const [partners, setPartners] = useState<Partner[]>([])

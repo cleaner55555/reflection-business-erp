@@ -1,17 +1,50 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Label } from '@/components/ui/label'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
+import { Plus, Pencil, Trash2, Package, Hash, ClipboardCheck, ArrowLeftRight } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatRSD, formatDate, formatDateTime } from '@/lib/helpers'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-import { ArrowLeftRight, ClipboardCheck, Hash, Package, Pencil, Plus, Trash2 } from 'lucide-react'
-import type { Product, WarehouseLocation, StockMovement, LotData, InventoryCountData } from './types'
+interface Product {
+  id: string; name: string; sku: string; currentStock: number; isActive: boolean;
+  purchasePrice: number; sellingPrice: number; minStock: number; category: string | null;
+}
+
+interface WarehouseLocation {
+  id: string; name: string; code: string; type: string; parentId: string | null; isActive: boolean;
+}
+
+interface StockMovement {
+  id: string; productId: string; type: string; quantity: number; date: string; notes: string | null;
+}
+
+interface LotData {
+  id: string; lotNumber: string; quantity: number; expiryDate: string | null
+  locationId: string | null; purchaseDate: string; purchasePrice: number
+  supplier: string | null; notes: string | null
+  product: { name: string; sku: string } | null
+  location: { name: string; code: string } | null
+}
+
+interface InventoryCountData {
+  id: string; name: string; status: string; startDate: string | null; endDate: string | null
+  countedBy: string | null; notes: string | null; createdAt: string
+  location: { name: string; code: string } | null
+  items: Array<{ id: string; productId: string; productName: string; systemQty: number; countedQty: number; difference: number }>
+  _count: { items: number }
+}
 
 function LotoviTab() {
   const [lots, setLots] = useState<LotData[]>([])
@@ -441,3 +474,5 @@ function TransferiTab() {
     </div>
   )
 }
+
+export { LotoviTab, InventuraTab, TransferiTab }
