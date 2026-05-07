@@ -18,12 +18,14 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -31,6 +33,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog'
+import {
   Table,
   TableBody,
   TableCell,
@@ -38,12 +41,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -53,6 +58,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
   ClipboardList,
   Plus,
   CalendarDays,
@@ -95,6 +101,7 @@ import type {
 } from './types'
 
 // ---- Data / helpers ----
+import {
   MOCK_WORK_ORDERS,
   EMPLOYEES,
   STATUS_CONFIG,
@@ -118,6 +125,7 @@ import type {
 } from './data'
 
 // ---- Sub-components ----
+import {
   StatsCards,
   StatusBadge,
   PriorityBadge,

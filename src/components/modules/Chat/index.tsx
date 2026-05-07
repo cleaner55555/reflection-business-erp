@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
   MessageCircle, Plus, Search, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users, Hash,
   Send, Smile, Paperclip, AtSign, Bell, Pin

@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
+import {
   Camera, Plus, Search, Eye, Trash2, RefreshCw, CheckCircle2, Clock,
   AlertTriangle, BarChart3, CalendarDays, Users, Star, TrendingUp,
   FileText, Download, Filter, Video, VideoOff, HardDrive,

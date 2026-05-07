@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useWindowManager, type WindowState, type SnapZone, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
 import { moduleComponents } from '@/lib/moduleMap'
 import { menuGroups } from '@/components/modules/AppSidebar'
+import {
   Minus,
   Square,
   X,

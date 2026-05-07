@@ -9,8 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { AlertTriangle, Settings2, Zap, Play, Pause, Trash2, ArrowRight, Plus } from 'lucide-react'
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'

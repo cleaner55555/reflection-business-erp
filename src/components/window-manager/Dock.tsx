@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useWindowManager, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
 import { menuGroups } from '@/components/modules/AppSidebar'
 import { useTranslation } from '@/lib/i18n'
+import {
   Grid3X3,
   Layers,
   Columns2,

@@ -15,9 +15,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
+import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts'
+import {
   CalendarRange, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users, AlertCircle, X,
   ChevronLeft, ChevronRight, Copy, Download, AlertTriangle,

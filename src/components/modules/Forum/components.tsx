@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
+import {
 import { generateMockTopics, generateMockCategories, generateMockQuestions, generateMockTags, generateMonthlyData, generateMockReplies } from './components'
 import { handleCreateTopic, handleDeleteTopic, handleOpenTopicDetail, handleSubmitReply, handleCreateCategory, handleEditCategory, handleOpenQuestion, handleSubmitAnswer, handleAcceptAnswer, handleCreateTag, handleEditTag, formatDate } from './components'
 
@@ -1300,6 +1301,7 @@ import { Slider } from '@/components/ui/slider'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
   UsersRound, Plus, Search, Eye, Trash2, RefreshCw,
   CheckCircle2, Clock, BarChart3, MessageSquare, Tag,
   TrendingUp, ThumbsUp, Star, FileText, Pin, Lock,
@@ -1308,6 +1310,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
   AlertTriangle, Edit3, X, Filter, Sparkles, Hash,
   FolderOpen, Zap, Activity, Trophy, Target, Heart
 } from 'lucide-react'
+import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'

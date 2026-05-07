@@ -12,7 +12,7 @@ export const SERVICE_TYPES = [
   'Hirurgija', 'Mentalno zdravlje'
 ]
 
-export const formatCurrency = (x) => null
+export const formatCurrency = (val: number) =>;
 
 export const formatShort = (val: number) => {
   if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M RSD`

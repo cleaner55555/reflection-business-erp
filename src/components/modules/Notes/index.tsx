@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
   StickyNote, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users, Pin, PinOff,
   Tag, FolderOpen, Star, MoreHorizontal, FileText,

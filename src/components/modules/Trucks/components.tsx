@@ -12,18 +12,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -33,6 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import {
   Truck,
   Plus,
   Search,
@@ -70,6 +74,7 @@ import type {
   MaintenanceType,
   CostType,
 } from "./types";
+import {
   FUEL_TYPE_OPTIONS,
   STATUS_OPTIONS,
   MAKE_OPTIONS,

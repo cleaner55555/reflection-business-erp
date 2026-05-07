@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
   Building2, FileText, Truck, Wallet, BarChart3,
   RefreshCw, Download, TrendingUp, AlertTriangle,
 } from 'lucide-react'
@@ -17,9 +18,11 @@ import type {
   Delivery, DeliveryFormData,
   Payment, PaymentFormData,
 } from './types'
+import {
   initialSubcontractors, initialContracts, initialDeliveries, initialPayments,
   formatRSD, todayISO, generateId,
 } from './data'
+import {
   SubcontractorsTab,
   ContractsTab,
   DeliveriesTab,

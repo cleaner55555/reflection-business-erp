@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import {
   FileText, Plus, Search, Eye, Trash2, Edit3, RefreshCw, CheckCircle2, Clock,
   BarChart3, TrendingUp, Users, Calendar, Tag, MessageSquare, Globe,
   Star, ArrowRight, Filter, Share2, AlertCircle, Image, FolderOpen,

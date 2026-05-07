@@ -18,6 +18,7 @@ import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { NotificationBell } from '@/components/modules/NotificationBell'
 import { MonitorOff, Trash2, Monitor, LayoutGrid, Grid3X3, Maximize2, ImageIcon, Eye, RefreshCw, Info } from 'lucide-react'
 import { ALL_LANGUAGES } from '@/lib/i18n'
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import type { ModuleType } from '@/lib/store'

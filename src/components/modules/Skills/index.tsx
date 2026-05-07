@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
   Award, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users, GraduationCap,
   TrendingUp, AlertCircle, Target, BookOpen, Star,

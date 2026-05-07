@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import {
   Table,
   TableBody,
   TableCell,
@@ -14,6 +15,7 @@ import { Separator } from '@/components/ui/separator'
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
   TrendingUp,
   TrendingDown,
   DollarSign,
@@ -36,6 +38,7 @@ import { Separator } from '@/components/ui/separator'
   Banknote,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import {
   AreaChart,
   Area,
   XAxis,
