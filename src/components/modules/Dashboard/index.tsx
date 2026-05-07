@@ -121,6 +121,11 @@ export function Dashboard() {
     return data.monthlyChart.map(m => m.expenses).slice(-6)
   }, [data])
 
+  const cashFlowSparkline = useMemo(() => {
+    if (!data) return []
+    return data.monthlyChart.map(m => m.revenue - m.expenses).slice(-6)
+  }, [data])
+
   // Activity feed
   const activityFeed = useMemo<ActivityItem[]>(() => {
     if (!data) return []
