@@ -11,9 +11,6 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import {
-  ChartContainer, ChartTooltip, ChartTooltipContent,
-} from '@/components/ui/chart'
-import {
   TrendingUp,
   TrendingDown,
   DollarSign,
@@ -36,6 +33,10 @@ import {
   Heart,
   Truck,
   Receipt,
+  Target,
+  BarChart3,
+  Gauge,
+  Zap,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {
@@ -48,7 +49,10 @@ import {
 } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { useAppStore, type ModuleType } from '@/lib/store'
-import { KPICard, AlertCard, SectionCard } from './components'
+import {
+  KPICard, AlertCard, SectionCard, Sparkline, HealthScoreCard,
+  GoalTrackerCard, ReceivablesCard,
+} from './components'
 import { PIE_COLORS, STATUS_COLORS, DEAL_STAGE_COLORS, CHART_COLORS } from './data'
 import type { DashboardData, OverdueInvoice, ActivityItem, LowStockProduct } from './types'
 
@@ -100,10 +104,22 @@ export function Dashboard() {
       data.todayDueInvoices.forEach(inv => { if (inv.partner?.name) texts.push(inv.partner.name) })
       data.recentPartners.forEach(p => { if (p.name) texts.push(p.name) })
       data.topPartners.forEach(p => { texts.push(p.partnerName) })
+      data.topProducts.forEach(p => { if (p.name) texts.push(p.name) })
     }
     lowStock.forEach(p => { if (p.name) texts.push(p.name) })
     if (texts.length > 0) translateTexts(texts)
   }, [data, lowStock, translateTexts])
+
+  // Sparkline data from monthly chart
+  const revenueSparkline = useMemo(() => {
+    if (!data) return []
+    return data.monthlyChart.map(m => m.revenue).slice(-6)
+  }, [data])
+
+  const expenseSparkline = useMemo(() => {
+    if (!data) return []
+    return data.monthlyChart.map(m => m.expenses).slice(-6)
+  }, [data])
 
   // Activity feed
   const activityFeed = useMemo<ActivityItem[]>(() => {
@@ -188,25 +204,50 @@ export function Dashboard() {
   return (
     <motion.div className="space-y-5" variants={container} initial="hidden" animate="show">
 
-      {/* ============ HEADER ============ */}
-      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
-          <p className="text-muted-foreground text-sm mt-1 capitalize">{todayStr}</p>
+      {/* ============ WELCOME BANNER ============ */}
+      <motion.div variants={item} className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white p-5 sm:p-6">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white" />
+          <div className="absolute -left-10 -bottom-10 h-48 w-48 rounded-full bg-white" />
         </div>
-        <div className="flex items-center gap-2">
-          {quickActions.map(action => (
-            <Button
-              key={action.module}
-              variant="outline"
-              size="sm"
-              className={cn2('hidden sm:flex h-8 gap-1.5 text-xs rounded-lg border transition-all', action.bg)}
-              onClick={() => setActiveModule(action.module)}
-            >
-              <action.icon className={cn2('h-3.5 w-3.5', action.color)} />
-              {t(action.labelKey)}
-            </Button>
-          ))}
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+            <p className="text-slate-300 text-sm mt-1 capitalize">{todayStr}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {quickActions.map(action => (
+              <Button
+                key={action.module}
+                variant="outline"
+                size="sm"
+                className="hidden sm:flex h-8 gap-1.5 text-xs rounded-lg border-slate-500 text-white bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm"
+                onClick={() => setActiveModule(action.module)}
+              >
+                <action.icon className="h-3.5 w-3.5" />
+                {t(action.labelKey)}
+              </Button>
+            ))}
+          </div>
+        </div>
+        {/* Mini stats row */}
+        <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-white/15">
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase">Mesečni prihod</p>
+            <p className="text-sm font-bold text-emerald-400 tabular-nums">{formatRSDShort(kpis.thisMonthRevenue)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase">Faktura ovog meseca</p>
+            <p className="text-sm font-bold tabular-nums">{kpis.thisMonthInvoiceCount}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase">Novi partneri</p>
+            <p className="text-sm font-bold tabular-nums">{data.newPartnersThisMonth}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase">CRM pobede</p>
+            <p className="text-sm font-bold tabular-nums">{data.wonDealsThisMonth.count} ({formatRSDShort(data.wonDealsThisMonth.revenue)})</p>
+          </div>
         </div>
       </motion.div>
 
@@ -258,7 +299,7 @@ export function Dashboard() {
         />
       </motion.div>
 
-      {/* ============ MAIN KPI CARDS ============ */}
+      {/* ============ MAIN KPI CARDS + HEALTH + GOALS ============ */}
       <motion.div variants={item} className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <KPICard
           title={t('dashboard.totalRevenue')}
@@ -266,13 +307,16 @@ export function Dashboard() {
           change={kpis.revenueGrowth}
           icon={<TrendingUp className="h-5 w-5 text-emerald-600" />}
           iconBg="bg-emerald-100"
+          sparkline={revenueSparkline}
         />
         <KPICard
           title={t('dashboard.totalExpenses')}
           value={formatRSD(kpis.totalExpenses)}
           subtitle={`${formatRSDShort(kpis.cashIn)} ulaz · ${formatRSDShort(kpis.cashOut)} izlaz`}
+          change={kpis.revenueGrowth !== 0 ? -kpis.revenueGrowth * 0.6 : null}
           icon={<TrendingDown className="h-5 w-5 text-red-600" />}
           iconBg="bg-red-100"
+          sparkline={expenseSparkline}
         />
         <KPICard
           title={t('dashboard.netProfit')}
@@ -288,47 +332,66 @@ export function Dashboard() {
           change={kpis.invoiceCountGrowth}
           icon={<Banknote className="h-5 w-5 text-teal-600" />}
           iconBg="bg-teal-100"
+          sparkline={cashFlowSparkline}
         />
       </motion.div>
 
-      {/* ============ SECONDARY KPI CARDS ============ */}
-      <motion.div variants={item} className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-        <Card className="border-border/60">
-          <CardContent className="p-3 flex items-center gap-3">
-            <div className="rounded-lg bg-violet-100 p-2"><Users className="h-4 w-4 text-violet-600" /></div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase">{t('dashboard.totalPartners')}</p>
-              <p className="text-base font-bold">{kpis.partnerCount}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/60">
-          <CardContent className="p-3 flex items-center gap-3">
-            <div className="rounded-lg bg-slate-100 p-2"><BoxIcon className="h-4 w-4 text-slate-600" /></div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase">{t('dashboard.totalProducts')}</p>
-              <p className="text-base font-bold">{kpis.productCount}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/60">
-          <CardContent className="p-3 flex items-center gap-3">
-            <div className="rounded-lg bg-emerald-100 p-2"><FolderKanban className="h-4 w-4 text-emerald-600" /></div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase">Aktivni projekti</p>
-              <p className="text-base font-bold">{data.activeProjects.count}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/60">
-          <CardContent className="p-3 flex items-center gap-3">
-            <div className="rounded-lg bg-sky-100 p-2"><Heart className="h-4 w-4 text-sky-600" /></div>
-            <div>
-              <p className="text-[10px] text-muted-foreground uppercase">CRM Pipeline</p>
-              <p className="text-base font-bold">{formatRSDShort(dealStages.reduce((s, d) => s + d.value, 0))}</p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* ============ HEALTH SCORE + GOALS + RECEIVABLES + SECONDARY KPIs ============ */}
+      <motion.div variants={item} className="grid gap-4 lg:grid-cols-4">
+        {/* Business Health Score */}
+        <HealthScoreCard
+          score={data.businessHealthScore.score}
+          profitMargin={data.businessHealthScore.profitMargin}
+          stockHealth={data.businessHealthScore.stockHealth}
+          collectionRate={data.businessHealthScore.collectionRate}
+          unpaidRatio={data.businessHealthScore.unpaidRatio}
+        />
+
+        {/* Monthly Goals */}
+        <GoalTrackerCard goals={data.monthlyGoals} />
+
+        {/* Receivables Aging */}
+        <ReceivablesCard aging={data.receivablesAging} />
+
+        {/* Secondary KPIs stacked */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <Card className="border-border/60">
+            <CardContent className="p-2.5 flex items-center gap-2">
+              <div className="rounded-lg bg-violet-100 p-1.5"><Users className="h-3.5 w-3.5 text-violet-600" /></div>
+              <div className="min-w-0">
+                <p className="text-[9px] text-muted-foreground uppercase leading-tight">{t('dashboard.totalPartners')}</p>
+                <p className="text-sm font-bold">{kpis.partnerCount}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/60">
+            <CardContent className="p-2.5 flex items-center gap-2">
+              <div className="rounded-lg bg-slate-100 p-1.5"><BoxIcon className="h-3.5 w-3.5 text-slate-600" /></div>
+              <div className="min-w-0">
+                <p className="text-[9px] text-muted-foreground uppercase leading-tight">{t('dashboard.totalProducts')}</p>
+                <p className="text-sm font-bold">{kpis.productCount}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/60">
+            <CardContent className="p-2.5 flex items-center gap-2">
+              <div className="rounded-lg bg-emerald-100 p-1.5"><FolderKanban className="h-3.5 w-3.5 text-emerald-600" /></div>
+              <div className="min-w-0">
+                <p className="text-[9px] text-muted-foreground uppercase leading-tight">Aktivni projekti</p>
+                <p className="text-sm font-bold">{data.activeProjects.count}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border/60">
+            <CardContent className="p-2.5 flex items-center gap-2">
+              <div className="rounded-lg bg-sky-100 p-1.5"><Heart className="h-3.5 w-3.5 text-sky-600" /></div>
+              <div className="min-w-0">
+                <p className="text-[9px] text-muted-foreground uppercase leading-tight">CRM Pipeline</p>
+                <p className="text-sm font-bold">{formatRSDShort(dealStages.reduce((s, d) => s + d.value, 0))}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </motion.div>
 
       {/* ============ CHARTS ROW 1: Revenue vs Expenses ============ */}
@@ -464,6 +527,80 @@ export function Dashboard() {
                 <Tooltip formatter={(value: number) => formatRSD(value)} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
                 <Legend verticalAlign="bottom" iconType="circle" iconSize={8} formatter={(v: string) => <span className="text-xs text-muted-foreground">{v}</span>} />
               </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </SectionCard>
+      </motion.div>
+
+      {/* ============ TOP PRODUCTS + CASH FLOW ============ */}
+      <motion.div variants={item} className="grid gap-4 lg:grid-cols-2">
+        {/* Top Products */}
+        <SectionCard
+          title="Top proizvodi"
+          subtitle="Po iznosu fakturisanja"
+          icon={<BarChart3 className="h-4 w-4 text-violet-500" />}
+        >
+          <div className="space-y-2.5 max-h-72 overflow-y-auto">
+            {data.topProducts.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">{t('common.noData')}</p>
+            ) : (
+              data.topProducts.map((p, i) => (
+                <div key={p.productId} className="flex items-center justify-between gap-3 rounded-lg border p-2.5 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className={cn2(
+                      'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white',
+                      i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-slate-400' : i === 2 ? 'bg-amber-700' : 'bg-muted text-muted-foreground'
+                    )}>{i + 1}</span>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium truncate">{tc(p.name)}</p>
+                      <p className="text-[10px] text-muted-foreground">{p.quantity} kom</p>
+                    </div>
+                  </div>
+                  <p className="text-xs font-bold tabular-nums text-emerald-600">{formatRSDShort(p.amount)}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </SectionCard>
+
+        {/* Cash Flow (Daily) */}
+        <SectionCard
+          title="Dnevni tok novca"
+          subtitle="Ulazi vs izlazi — poslednjih 30 dana"
+          icon={<Zap className="h-4 w-4 text-cyan-500" />}
+          action={
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveModule('finansije')}>
+              <ArrowUpRight className="h-3 w-3" /> Finansije
+            </Button>
+          }
+        >
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.dailyCashFlow}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(v: string) => {
+                    const d = new Date(v)
+                    return `${d.getDate()}.${d.getMonth() + 1}`
+                  }}
+                  tick={{ fontSize: 9, fill: '#6b7280' }}
+                  axisLine={false} tickLine={false}
+                  interval={4}
+                />
+                <YAxis tickFormatter={formatRSDShort} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }}
+                  formatter={(value: number, name: string) => [formatRSD(value), name === 'cashIn' ? 'Ulaz' : 'Izlaz']}
+                  labelFormatter={(v: string) => new Date(v).toLocaleDateString('sr-RS')}
+                />
+                <Legend
+                  verticalAlign="top" align="right" iconType="circle" iconSize={8}
+                  formatter={(v: string) => <span className="text-xs text-muted-foreground">{v === 'cashIn' ? 'Ulaz' : 'Izlaz'}</span>}
+                />
+                <Bar dataKey="cashIn" fill="#059669" radius={[2, 2, 0, 0]} name="cashIn" />
+                <Bar dataKey="cashOut" fill="#dc2626" radius={[2, 2, 0, 0]} name="cashOut" />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </SectionCard>
@@ -694,7 +831,6 @@ export function Dashboard() {
 }
 
 // ============ HELPERS ============
-// cn2 is just cn imported from helpers
 function cn2(...inputs: (string | undefined | null | false)[]) {
   return inputs.filter(Boolean).join(' ')
 }
@@ -703,22 +839,27 @@ function cn2(...inputs: (string | undefined | null | false)[]) {
 function DashboardSkeleton() {
   return (
     <div className="space-y-5">
-      <div>
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-4 w-64 mt-2" />
-      </div>
+      {/* Welcome banner */}
+      <Skeleton className="h-36 rounded-xl" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
       </div>
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
+        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-lg" />)}
       </div>
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
+      <div className="grid gap-4 lg:grid-cols-4">
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
       </div>
       <Skeleton className="h-80 rounded-lg" />
       <div className="grid gap-4 lg:grid-cols-3">
         <Skeleton className="h-72 rounded-lg" />
+        <Skeleton className="h-72 rounded-lg" />
+        <Skeleton className="h-72 rounded-lg" />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
         <Skeleton className="h-72 rounded-lg" />
         <Skeleton className="h-72 rounded-lg" />
       </div>

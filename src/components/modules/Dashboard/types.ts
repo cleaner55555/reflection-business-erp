@@ -67,6 +67,47 @@ export interface DashboardKPIs {
   lastMonthRevenue: number
 }
 
+export interface BusinessHealthScore {
+  score: number
+  profitMargin: number
+  stockHealth: number
+  collectionRate: number
+  unpaidRatio: number
+}
+
+export interface MonthlyGoal {
+  current: number
+  goal: number
+  progress: number
+}
+
+export interface MonthlyGoals {
+  revenue: MonthlyGoal
+  invoices: MonthlyGoal
+  deals: MonthlyGoal
+  partners: MonthlyGoal
+}
+
+export interface DailyCashFlow {
+  date: string
+  cashIn: number
+  cashOut: number
+}
+
+export interface TopProduct {
+  productId: string
+  name: string
+  quantity: number
+  amount: number
+}
+
+export interface ReceivablesAging {
+  over30: { amount: number; count: number }
+  sevenTo30: { amount: number; count: number }
+  oneTo7: { amount: number; count: number }
+  current: { amount: number; count: number }
+}
+
 export interface DashboardData {
   kpis: DashboardKPIs
   recentInvoices: Array<{
@@ -90,4 +131,11 @@ export interface DashboardData {
   activeProjects: {
     count: number; totalBudget: number; totalSpent: number; strugglingCount: number
   }
+  // NEW
+  businessHealthScore: BusinessHealthScore
+  monthlyGoals: MonthlyGoals
+  dailyCashFlow: DailyCashFlow[]
+  topProducts: TopProduct[]
+  receivablesAging: ReceivablesAging
+  wonDealsThisMonth: { count: number; revenue: number }
 }

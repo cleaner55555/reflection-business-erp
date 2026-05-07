@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
 
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
     const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
 
     // Run all queries in parallel for performance
     const [
@@ -33,22 +34,22 @@ export async function GET(request: NextRequest) {
       recentTransactions,
       newPartnersThisMonth,
       unpaidInvoiceCount,
-      // NEW: Invoices by status
       invoicesByStatus,
-      // NEW: Top partners by revenue
       topPartners,
-      // NEW: CRM deals by stage
       dealsByStage,
-      // NEW: Active projects
       activeProjectStats,
-      // NEW: Monthly expenses (same 12 months)
       monthlyExpenses,
-      // NEW: Employee count
       employeeCount,
-      // NEW: This month invoice count
       thisMonthInvoiceCount,
-      // NEW: Last month invoice count
       lastMonthInvoiceCount,
+      // NEW: Daily cash flow (last 30 days)
+      dailyCashFlow,
+      // NEW: Top products by invoice amount
+      topProducts,
+      // NEW: Won deals this month
+      wonDealsThisMonth,
+      // NEW: Total receivables aging
+      receivablesAging,
     ] = await Promise.all([
       db.transaction.aggregate({
         where: { type: 'prihod' },
@@ -137,13 +138,11 @@ export async function GET(request: NextRequest) {
       db.invoice.count({
         where: { status: { in: ['nacrt', 'poslata'] } },
       }),
-      // NEW: Invoices grouped by status
       db.invoice.groupBy({
         by: ['status'],
         _count: { id: true },
         _sum: { totalAmount: true },
       }),
-      // NEW: Top 5 partners by total invoiced amount
       db.invoice.groupBy({
         by: ['partnerId'],
         where: { status: { not: 'otkazana' } },
@@ -152,13 +151,11 @@ export async function GET(request: NextRequest) {
         orderBy: { _sum: { totalAmount: 'desc' } },
         take: 5,
       }),
-      // NEW: Deals grouped by stage (CRM pipeline)
       db.deal.groupBy({
         by: ['stage'],
         _count: { id: true },
         _sum: { expectedRevenue: true },
       }),
-      // NEW: Active project stats
       Promise.all([
         db.project.count({ where: { status: 'aktivan' } }),
         db.project.aggregate({
@@ -167,7 +164,6 @@ export async function GET(request: NextRequest) {
         }),
         db.project.count({ where: { status: 'aktivan', progress: { lt: 50 } } }),
       ]),
-      // NEW: Monthly expenses (same 12 months)
       db.$queryRaw<Array<{ month: string; expenses: number }>>`
         WITH RECURSIVE months(month_date) AS (
           SELECT date('now', '-11 months', 'start of month')
@@ -185,22 +181,81 @@ export async function GET(request: NextRequest) {
         GROUP BY m.month_date
         ORDER BY m.month_date ASC
       `,
-      // NEW: Employee count
       db.employee.count({ where: { isActive: true } }),
-      // NEW: This month invoice count
       db.invoice.count({
         where: {
           date: { gte: firstDayOfMonth },
           status: { not: 'otkazana' },
         },
       }),
-      // NEW: Last month invoice count
       db.invoice.count({
         where: {
           date: { gte: firstDayOfLastMonth, lte: lastDayOfLastMonth },
           status: { not: 'otkazana' },
         },
       }),
+      // NEW: Daily cash flow (last 30 days)
+      db.$queryRaw<Array<{ date: string; cash_in: number; cash_out: number }>>`
+        WITH RECURSIVE days(d) AS (
+          SELECT date('now', '-29 days')
+          UNION ALL
+          SELECT date(d, '+1 day')
+          FROM days
+          WHERE d < date('now')
+        )
+        SELECT
+          strftime('%Y-%m-%d', days.d) as date,
+          COALESCE(SUM(CASE WHEN cr.type = 'ulaz' THEN cr.amount ELSE 0 END), 0) as cash_in,
+          COALESCE(SUM(CASE WHEN cr.type = 'izlaz' THEN cr.amount ELSE 0 END), 0) as cash_out
+        FROM days
+        LEFT JOIN "CashRegister" cr ON strftime('%Y-%m-%d', cr.date / 1000, 'unixepoch') = strftime('%Y-%m-%d', days.d)
+        GROUP BY days.d
+        ORDER BY days.d ASC
+      `,
+      // NEW: Top products by invoiced amount
+      db.$queryRaw<Array<{ productId: string; productName: string; totalQuantity: number; totalAmount: number }>>`
+        SELECT 
+          ii."productId",
+          p."name" as "productName",
+          SUM(ii."quantity") as "totalQuantity",
+          SUM(ii."total") as "totalAmount"
+        FROM "InvoiceItem" ii
+        JOIN "Invoice" inv ON ii."invoiceId" = inv."id"
+        JOIN "Product" p ON ii."productId" = p."id"
+        WHERE inv."status" NOT IN ('otkazana')
+        GROUP BY ii."productId", p."name"
+        ORDER BY "totalAmount" DESC
+        LIMIT 8
+      `,
+      // NEW: Won deals this month (revenue)
+      db.deal.aggregate({
+        where: { stage: 'won', updatedAt: { gte: firstDayOfMonth } },
+        _sum: { expectedRevenue: true },
+        _count: true,
+      }),
+      // NEW: Receivables aging buckets
+      Promise.all([
+        db.invoice.aggregate({
+          where: { status: 'poslata', dueDate: { lt: new Date(now.getTime() - 30 * 86400000) } },
+          _sum: { totalAmount: true },
+          _count: true,
+        }),
+        db.invoice.aggregate({
+          where: { status: 'poslata', dueDate: { gte: new Date(now.getTime() - 30 * 86400000), lt: new Date(now.getTime() - 7 * 86400000) } },
+          _sum: { totalAmount: true },
+          _count: true,
+        }),
+        db.invoice.aggregate({
+          where: { status: 'poslata', dueDate: { gte: new Date(now.getTime() - 7 * 86400000), lt: startOfToday } },
+          _sum: { totalAmount: true },
+          _count: true,
+        }),
+        db.invoice.aggregate({
+          where: { status: 'poslata', dueDate: { gte: startOfToday } },
+          _sum: { totalAmount: true },
+          _count: true,
+        }),
+      ]),
     ]);
 
     // Cash in/out separate
@@ -244,6 +299,14 @@ export async function GET(request: NextRequest) {
       number, { _sum: { budget: number; spent: number } }, number
     ];
 
+    // Receivables aging
+    const [agingOver30, aging7to30, aging1to7, agingCurrent] = receivablesAging as [
+      { _sum: { totalAmount: number }; _count: number },
+      { _sum: { totalAmount: number }; _count: number },
+      { _sum: { totalAmount: number }; _count: number },
+      { _sum: { totalAmount: number }; _count: number },
+    ];
+
     // Merge revenue + expenses into single monthly chart
     const monthlyChart = monthlyRevenue.map(r => {
       const expRow = monthlyExpenses.find(e => e.month === r.month)
@@ -253,6 +316,38 @@ export async function GET(request: NextRequest) {
         expenses: Number(expRow?.expenses || 0),
       }
     })
+
+    // ========== BUSINESS HEALTH SCORE ==========
+    const totalRev = totalRevenue._sum.amount || 0;
+    const totalExp = totalExpenses._sum.amount || 0;
+    const profitMargin = totalRev > 0 ? ((totalRev - totalExp) / totalRev) * 100 : 0;
+    const unpaidRatio = totalRev > 0 ? ((unpaidInvoices._sum.totalAmount || 0) / totalRev) * 100 : 0;
+    const stockHealth = productCount > 0 ? ((productCount - lowStockProducts) / productCount) * 100 : 100;
+    const collectionRate = unpaidInvoiceCount > 0
+      ? ((unpaidInvoiceCount - overdueCount) / unpaidInvoiceCount) * 100 : 100;
+
+    // Weighted health score (0-100)
+    const healthScore = Math.round(
+      Math.min(100, Math.max(0,
+        (Math.min(profitMargin / 20, 1) * 30) +      // profit margin (30%)
+        (Math.max(0, 1 - unpaidRatio / 50) * 25) +     // unpaid ratio (25%)
+        (stockHealth / 100 * 20) +                       // stock health (20%)
+        (collectionRate / 100 * 15) +                    // collection rate (15%)
+        (dealsByStage.filter(d => d.stage === 'won').length > 0 ? 10 : 3) // CRM activity (10%)
+      ))
+    );
+
+    // ========== MONTHLY GOALS ==========
+    // Estimate goals based on last month performance + 10% growth target
+    const revenueGoal = Math.round((lastMonthTotal || 0) * 1.1) || 100000;
+    const revenueProgress = revenueGoal > 0 ? Math.min(100, (thisMonthTotal / revenueGoal) * 100) : 0;
+    const invoiceGoal = Math.round((lastMonthInvoiceCount || 0) * 1.15) || 10;
+    const invoiceProgress = invoiceGoal > 0 ? Math.min(100, (thisMonthInvoiceCount / invoiceGoal) * 100) : 0;
+    const dealGoal = 5;
+    const dealsClosed = wonDealsThisMonth._count;
+    const dealProgress = dealGoal > 0 ? Math.min(100, (dealsClosed / dealGoal) * 100) : 0;
+    const partnerGoal = Math.max(5, Math.round((newPartnersThisMonth || 0) * 1.2)) || 5;
+    const partnerProgress = partnerGoal > 0 ? Math.min(100, (newPartnersThisMonth / partnerGoal) * 100) : 0;
 
     return NextResponse.json({
       kpis: {
@@ -289,7 +384,6 @@ export async function GET(request: NextRequest) {
       recentPartners,
       recentTransactions,
       newPartnersThisMonth,
-      // NEW fields
       invoicesByStatus: invoicesByStatus.map(s => ({
         status: s.status,
         count: s._count.id,
@@ -312,9 +406,44 @@ export async function GET(request: NextRequest) {
         totalSpent: projectBudgets._sum.spent || 0,
         strugglingCount: strugglingProjects,
       },
+      // NEW fields
+      businessHealthScore: {
+        score: healthScore,
+        profitMargin: Math.round(profitMargin * 10) / 10,
+        stockHealth: Math.round(stockHealth * 10) / 10,
+        collectionRate: Math.round(collectionRate * 10) / 10,
+        unpaidRatio: Math.round(unpaidRatio * 10) / 10,
+      },
+      monthlyGoals: {
+        revenue: { current: thisMonthTotal, goal: revenueGoal, progress: Math.round(revenueProgress) },
+        invoices: { current: thisMonthInvoiceCount, goal: invoiceGoal, progress: Math.round(invoiceProgress) },
+        deals: { current: dealsClosed, goal: dealGoal, progress: Math.round(dealProgress) },
+        partners: { current: newPartnersThisMonth, goal: partnerGoal, progress: Math.round(partnerProgress) },
+      },
+      dailyCashFlow: dailyCashFlow.map(d => ({
+        date: d.date,
+        cashIn: Number(d.cash_in),
+        cashOut: Number(d.cash_out),
+      })),
+      topProducts: topProducts.map(p => ({
+        productId: p.productId,
+        name: p.productName,
+        quantity: Number(p.totalQuantity),
+        amount: Number(p.totalAmount),
+      })),
+      receivablesAging: {
+        over30: { amount: agingOver30._sum.totalAmount || 0, count: agingOver30._count },
+        sevenTo30: { amount: aging7to30._sum.totalAmount || 0, count: aging7to30._count },
+        oneTo7: { amount: aging1to7._sum.totalAmount || 0, count: aging1to7._count },
+        current: { amount: agingCurrent._sum.totalAmount || 0, count: agingCurrent._count },
+      },
+      wonDealsThisMonth: {
+        count: wonDealsThisMonth._count,
+        revenue: wonDealsThisMonth._sum.expectedRevenue || 0,
+      },
     });
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
+    console.error('Dashboard API error:', error);
     return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 });
   }
 }
