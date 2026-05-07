@@ -15,6 +15,7 @@ import { AuthPage } from '@/components/modules/AuthPage'
 import { LandingPage } from '@/components/landing/LandingPage'
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 import { OfflineIndicator } from '@/components/OfflineIndicator'
+import { KeyboardShortcutsProvider } from '@/components/KeyboardShortcuts'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
 import { useAppStore } from '@/lib/store'
@@ -405,7 +406,9 @@ export default function Home() {
   return (
     <I18nProvider>
       <OfflineIndicator />
-      <AppWithContentTranslation />
+      <KeyboardShortcutsProvider>
+        <AppWithContentTranslation />
+      </KeyboardShortcutsProvider>
     </I18nProvider>
   )
 }
