@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -16,7 +15,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -26,7 +24,6 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
-import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -34,7 +31,6 @@ import {
   ChartLegendContent,
   type ChartConfig,
 } from '@/components/ui/chart'
-import {
   LineChart,
   Line,
   PieChart,
@@ -43,7 +39,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import {
   BookMarked,
   Plus,
   Search,

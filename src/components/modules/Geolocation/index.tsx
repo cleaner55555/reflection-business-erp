@@ -15,7 +15,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
-import {
   MapPin, Plus, Search, Eye, Trash2, RefreshCw, CheckCircle2, Clock,
   AlertTriangle, BarChart3, CalendarDays, Users, Filter, Globe,
   Battery, BatteryWarning, BatteryFull, Navigation, Shield, Bell,

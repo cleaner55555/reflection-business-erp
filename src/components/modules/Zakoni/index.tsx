@@ -2,16 +2,13 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import {
   Table, TableHeader, TableRow, TableHead, TableBody, TableCell,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -19,12 +16,10 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { useTranslation } from '@/lib/i18n'
-import {
   COUNTRY_TAX_LAWS, getTaxLaw, calculateVAT, calculateIncomeTax, calculateEmployerCost,
   getInvoiceMandatoryFields, getTaxForms, getCountriesByRegion, searchCountries,
   getCurrencySymbol, type TaxLaw as CountryTaxLaw,
 } from '@/lib/tax-laws/index'
-import {
   Globe2, Calculator, FileText, Receipt, Building2, Scale, Search,
   ChevronRight, CheckCircle2, AlertCircle, Info, TrendingUp, TrendingDown,
   DollarSign, Users, Briefcase, Landmark, FileCheck, Clock,

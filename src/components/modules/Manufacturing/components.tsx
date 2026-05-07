@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -19,7 +18,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -27,7 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
   Table,
   TableBody,
   TableCell,
@@ -35,7 +32,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
   BarChart,
   Bar,
   LineChart,
@@ -50,7 +46,6 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import {
   Factory,
   Plus,
   Search,

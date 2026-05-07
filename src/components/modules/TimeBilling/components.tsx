@@ -4,7 +4,6 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
-import {
   Card,
   CardContent,
   CardHeader,
@@ -17,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -26,7 +24,6 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
   Table,
   TableBody,
   TableCell,
@@ -34,7 +31,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -45,19 +41,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
   Clock,
   FileText,
   Send,
@@ -109,14 +102,12 @@ import type {
   RevenueByEmployee,
   MonthlySummary,
 } from "./types";
-import {
   BILLING_STATUS_LABELS,
   BILLING_STATUS_COLORS,
   INVOICE_STATUS_LABELS,
   INVOICE_STATUS_COLORS,
   PAYMENT_TERMS_LABELS,
 } from "./types";
-import {
   formatRSD,
   formatHours,
   formatDate,

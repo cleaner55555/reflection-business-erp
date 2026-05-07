@@ -3,7 +3,6 @@
 import { useAppStore, type ModuleType } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { useTranslation } from '@/lib/i18n'
-import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
@@ -16,7 +15,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { openAppLauncher } from '@/components/modules/AppLauncher'
-import {
   LayoutDashboard, Wallet, FileText, Warehouse, ShoppingCart, Users, BarChart3,
   HeartHandshake, CalendarDays, UserCog, FolderKanban, Building2, Files,
   BookOpen, Mail, GraduationCap, Car, CarFront, UtensilsCrossed, Settings,

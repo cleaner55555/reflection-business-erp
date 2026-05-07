@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { sr } from "date-fns/locale";
-import {
   Play,
   Pause,
   Square,
@@ -27,14 +26,12 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -42,13 +39,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -66,7 +61,6 @@ import type {
   EntryStatus,
   ActivityAction,
 } from "./types";
-import {
   formatDuration,
   formatElapsed,
   STATUS_LABELS,

@@ -14,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
   Truck, FileCheck, Wrench, DollarSign,
   AlertTriangle, Fuel, MapPin, Clock, TrendingUp,
   ShieldCheck, CarFront, Zap, BarChart3, Activity,
@@ -31,7 +30,6 @@ import type {
   TruckStatus,
   TruckTab,
 } from './types'
-import {
   MOCK_TRUCKS,
   MOCK_MAINTENANCE,
   MOCK_COSTS,
@@ -46,7 +44,6 @@ import {
   getStatusLabel,
   getFuelLabel,
 } from './data'
-import {
   StatCards,
   MonthlyCostsBar,
   FleetTable,

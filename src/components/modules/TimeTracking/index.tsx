@@ -7,10 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
@@ -23,7 +21,6 @@ import type {
   ReportSummary, TimeTrackingSettings, ReportType,
 } from './types'
 
-import {
   mockEmployees, mockProjects, mockTasks,
   mockTimeEntries, mockActivityLog, defaultSettings,
   fetchTimeEntries, createTimeEntry, updateTimeEntry, deleteTimeEntry,
@@ -32,7 +29,6 @@ import {
   createActivityEntry, formatDuration,
 } from './data'
 
-import {
   ActiveTimer, StatsCards, TimeEntriesTable, EntryFormDialog,
   ActivityLog, ProjectReportTable, EmployeeReportTable,
   WeeklySummaryTable, ReportSummaryCards, ReportFilterBar, SettingsPanel,

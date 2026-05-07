@@ -17,7 +17,6 @@ import { Progress } from '@/components/ui/progress'
 import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
-import {
 
 interface MarketplaceContentProps {
   activeTab: any

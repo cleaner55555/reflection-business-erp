@@ -17,7 +17,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
-import {
   Wifi, RefreshCw, BarChart3, Thermometer, Droplets, Zap,
   CheckCircle2, AlertCircle, AlertTriangle, Clock, Activity, MapPin,
   Settings, Plus, Search, Eye, Trash2, Edit3, X, Filter,

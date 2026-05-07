@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
   Clock, FileText, BarChart3, Settings2, Timer, AlertTriangle,
   RefreshCw, TrendingUp,
 } from 'lucide-react'
@@ -21,7 +20,6 @@ import type {
   InvoiceStatus, PaymentTerms,
 } from './types'
 import { DEFAULT_SETTINGS, mockClients, mockProjects, mockEmployees } from './data'
-import {
   StatsCards, SatniceTab, FakturisanjeTab, IzvestajiTab, PodesavanjaTab,
 } from './components'
 

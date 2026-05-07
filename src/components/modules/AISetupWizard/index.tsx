@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import {
   Sparkles, ArrowRight, Check, Loader2, X, Building2,
   LayoutDashboard, Wallet, Package, Users, Settings, BarChart3,
   ChevronRight,

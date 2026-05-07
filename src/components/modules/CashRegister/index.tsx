@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -18,7 +17,6 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog'
-import {
   Table,
   TableBody,
   TableCell,
@@ -26,14 +24,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
   Store as CashIcon,
   ShoppingCart,
   Package,
@@ -75,7 +71,6 @@ import type {
   ShiftPaymentBreakdown,
 } from './types'
 
-import {
   INITIAL_PRODUCTS,
   PDV_RATES,
   PAYMENT_METHODS,

@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore, type ModuleType } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { formatRSD } from '@/lib/helpers'
-import {
   Search,
   Building2,
   Package,
