@@ -210,8 +210,8 @@ export function Dock() {
         {/* Left — App Drawer trigger */}
         <button
           onClick={toggleDrawer}
-          className={`relative flex items-center justify-center rounded-xl transition-all duration-150 ${
-            isCompact ? 'w-10 h-10' : 'w-12 h-12'
+          className={`relative flex items-center justify-center rounded-xl transition-all duration-150 min-h-[44px] min-w-[44px] ${
+            isCompact ? 'w-10 h-10 sm:w-10 sm:h-10' : 'w-12 h-12'
           } ${drawerOpen ? 'bg-primary/10' : 'hover:bg-accent/60'}`}
           title={t('dock.allModules')}
         >
@@ -249,8 +249,8 @@ export function Dock() {
                 <button
                   onClick={() => handleWindowClick(win.id)}
                   onAuxClick={(e) => handleMiddleClick(e, win.id)}
-                  className={`relative flex flex-col items-center justify-center rounded-xl transition-all duration-100 ${
-                    isCompact ? 'w-10 h-10' : 'w-12 h-12'
+                  className={`relative flex flex-col items-center justify-center rounded-xl transition-all duration-100 min-h-[44px] min-w-[44px] ${
+                    isCompact ? 'w-10 h-10 sm:w-10 sm:h-10' : 'w-12 h-12'
                   } ${
                     isActive
                       ? 'bg-primary/10 ring-1 ring-primary/30'
@@ -305,8 +305,8 @@ export function Dock() {
             </div>
             <button
               onClick={handleShowDesktop}
-              className={`flex items-center justify-center rounded-lg transition-all duration-150 ${
-                isCompact ? 'w-7 h-7' : 'w-9 h-9'
+              className={`flex items-center justify-center rounded-lg transition-all duration-150 min-h-[44px] min-w-[44px] ${
+                isCompact ? 'w-7 h-7 sm:w-7 sm:h-7' : 'w-9 h-9'
               } ${isAllMin ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500' : 'hover:bg-accent/50 text-muted-foreground'}`}
               title={isAllMin ? t('dock.restoreWindows') : t('dock.showDesktop')}
             >
@@ -324,7 +324,7 @@ export function Dock() {
         <div className="flex items-center gap-0.5">
           <button
             onClick={cascadeWindows}
-            className={`flex items-center justify-center rounded-lg hover:bg-accent/50 transition-colors ${isCompact ? 'w-8 h-8' : 'w-10 h-10'}`}
+            className={`flex items-center justify-center rounded-lg hover:bg-accent/50 transition-colors min-h-[44px] min-w-[44px] ${isCompact ? 'w-8 h-8 sm:w-8 sm:h-8' : 'w-10 h-10'}`}
             title={t('dock.cascade')}
           >
             <Layers className={`text-muted-foreground ${isCompact ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
@@ -332,7 +332,7 @@ export function Dock() {
 
           <button
             onClick={tileWindows}
-            className={`flex items-center justify-center rounded-lg hover:bg-accent/50 transition-colors ${isCompact ? 'w-8 h-8' : 'w-10 h-10'}`}
+            className={`flex items-center justify-center rounded-lg hover:bg-accent/50 transition-colors min-h-[44px] min-w-[44px] ${isCompact ? 'w-8 h-8 sm:w-8 sm:h-8' : 'w-10 h-10'}`}
             title={t('dock.tile')}
           >
             <Columns2 className={`text-muted-foreground ${isCompact ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
@@ -340,7 +340,7 @@ export function Dock() {
 
           <button
             onClick={toggleSettings}
-            className={`flex items-center justify-center rounded-lg hover:bg-accent/50 transition-colors ${isCompact ? 'w-8 h-8' : 'w-10 h-10'}`}
+            className={`flex items-center justify-center rounded-lg hover:bg-accent/50 transition-colors min-h-[44px] min-w-[44px] ${isCompact ? 'w-8 h-8 sm:w-8 sm:h-8' : 'w-10 h-10'}`}
             title={t('sidebar.settings')}
           >
             <Settings className={`text-muted-foreground ${isCompact ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />

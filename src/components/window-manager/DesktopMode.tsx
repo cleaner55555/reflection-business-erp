@@ -131,11 +131,11 @@ export function DesktopMode() {
 
       {/* ===== STATUS BAR — Samsung-style, very thin ===== */}
       <header
-        className="flex shrink-0 items-center justify-between px-3 z-[100010] border-b border-border/20 bg-background/50 backdrop-blur-md"
+        className="flex shrink-0 items-center justify-between px-1 sm:px-3 z-[100010] border-b border-border/20 bg-background/50 backdrop-blur-md overflow-hidden"
         style={{ height: STATUS_BAR_HEIGHT }}
       >
         {/* Left — Logo + name */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           {logo ? (
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded overflow-hidden">
               <img src={logo} alt="" className="h-4 w-4 object-contain" />
@@ -151,13 +151,15 @@ export function DesktopMode() {
         </div>
 
         {/* Right — Controls (minimal) */}
-        <div className="flex items-center gap-1.5">
-          <CompanySwitcher />
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <div className="hidden sm:block">
+            <CompanySwitcher />
+          </div>
           <GlobalSearch />
           <NotificationBell />
           {headerLanguages.length > 1 ? (
             <Select value={locale} onValueChange={setLocale}>
-              <SelectTrigger className="h-6 w-auto min-w-[90px] text-[10px] border-0 bg-transparent">
+              <SelectTrigger className="h-6 w-auto min-w-[28px] sm:min-w-[90px] text-[10px] border-0 bg-transparent">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -176,7 +178,7 @@ export function DesktopMode() {
           <ThemeToggle />
           <button
             onClick={toggleDesktopMode}
-            className="flex items-center justify-center h-6 w-6 rounded hover:bg-accent/50 transition-colors"
+            className="hidden sm:flex items-center justify-center h-6 w-6 rounded hover:bg-accent/50 transition-colors"
             title="Normalan režim"
           >
             <MonitorOff className="h-3 w-3 text-muted-foreground" />

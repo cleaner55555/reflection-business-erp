@@ -300,6 +300,7 @@ export function AppSidebar() {
                       isActive={activeModule === item.module}
                       onClick={() => handleModuleClick(item.module)}
                       tooltip={t(item.labelKey)}
+                      className="min-h-[44px] sm:min-h-0"
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{t(item.labelKey)}</span>

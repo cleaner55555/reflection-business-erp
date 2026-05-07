@@ -272,17 +272,19 @@ function AppContent() {
     <SidebarProvider className="h-svh overflow-hidden">
       <AppSidebar />
       <SidebarInset className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background px-4">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <h2 className="text-sm font-medium text-foreground">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-1 sm:gap-2 border-b bg-background overflow-hidden px-2 sm:px-4">
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+            <SidebarTrigger className="-ml-1 shrink-0" />
+            <Separator orientation="vertical" className="mr-1 sm:mr-2 h-4 shrink-0" />
+            <h2 className="text-sm font-medium text-foreground truncate">
               {t(moduleLabelKeys[activeModule] || activeModule)}
             </h2>
           </div>
-            <div className="flex items-center gap-2">
-              {/* Company Switcher */}
-              <CompanySwitcher />
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              {/* Company Switcher - hidden on small mobile */}
+              <div className="hidden sm:block">
+                <CompanySwitcher />
+              </div>
 
               {/* AI Translation loading indicator */}
               {isTranslating && (
@@ -294,7 +296,7 @@ function AppContent() {
               {/* Language Switcher - dropdown with active languages only */}
               {headerLanguages.length > 1 ? (
                 <Select value={locale} onValueChange={(val) => setLocale(val)}>
-                  <SelectTrigger className="h-8 w-auto min-w-[130px] text-xs">
+                  <SelectTrigger className="h-8 w-auto min-w-[36px] sm:min-w-[130px] text-xs">
                     <Languages className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                     <SelectValue />
                   </SelectTrigger>
@@ -309,19 +311,19 @@ function AppContent() {
               ) : (
                 <button
                   onClick={() => setLocale(headerLanguages[0]?.code || 'sr')}
-                  className="flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-xs"
+                  className="flex h-8 min-h-[44px] sm:min-h-0 items-center justify-center gap-1 rounded-md border border-input bg-background px-2 sm:px-2.5 text-xs"
                 >
                   <span>{headerLanguages[0]?.flag || '🌐'}</span>
-                  <span>{headerLanguages[0]?.nativeName || 'SR'}</span>
+                  <span className="hidden sm:inline">{headerLanguages[0]?.nativeName || 'SR'}</span>
                 </button>
               )}
               <GlobalSearch />
               <NotificationBell />
               <ThemeToggle />
-              {/* Desktop Mode Toggle */}
+              {/* Desktop Mode Toggle - hidden on mobile (not useful on small screens) */}
               <button
                 onClick={toggleDesktopMode}
-                className={`flex items-center justify-center h-8 w-8 rounded-md border transition-colors ${
+                className={`hidden md:flex items-center justify-center h-8 w-8 rounded-md border transition-colors ${
                   isDesktopMode
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'border-input bg-background hover:bg-accent'
@@ -346,7 +348,7 @@ function AppContent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}
-                className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8"
+                className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8"
               >
                 {(() => {
                   const Module = moduleComponents[activeModule]
