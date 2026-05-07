@@ -12,7 +12,9 @@ export const SERVICE_TYPES = [
   'Hirurgija', 'Mentalno zdravlje'
 ]
 
-export const formatCurrency = (val: number) =>;
+export const formatCurrency = (val: number) => {
+  return `${val.toLocaleString('sr-RS')} RSD`
+}
 
 export const formatShort = (val: number) => {
   if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M RSD`

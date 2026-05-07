@@ -111,19 +111,4 @@ export const SUGGESTIONS = [
   { label: 'Knjigovodstvena agencija', desc: 'Knjigovodstvo - fakture, partneri, izveštaji, dokumenta' },
 ]
 
-export const { setEnabledModules, setSetupComplete } = useAppStore();
-
-export const setupDone = localStorage.getItem('setupComplete');
-
-export const timer = setTimeout(() => setOpen(true), 1500);
-
-export const handleAnalyze = async () => {
-    if (!description.trim()) return
-    setStep(2)
-    setError('')
-    setAiResult(null)
-
-    try {
-
-}
-}
+export const setupDone = typeof window !== 'undefined' ? localStorage.getItem('setupComplete') : null;
