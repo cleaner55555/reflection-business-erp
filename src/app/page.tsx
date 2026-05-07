@@ -12,6 +12,7 @@ import { NotificationCenter } from '@/components/modules/NotificationCenter'
 import { AppLauncher, openAppLauncher } from '@/components/modules/AppLauncher'
 import { AISetupWizard, openAISetupWizard } from '@/components/modules/AISetupWizard'
 import { AuthPage } from '@/components/modules/AuthPage'
+import { LandingPage } from '@/components/landing/LandingPage'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
 import { useAppStore } from '@/lib/store'
@@ -177,7 +178,7 @@ function AppContent() {
   const ensureLoaded = useThemeStore((s) => s.ensureLoaded)
   const { isDesktopMode, toggleDesktopMode } = useWindowManager()
 
-  // Show auth page if not logged in
+  // Show landing page if not logged in (LandingPage contains AuthPage link)
   const showAuth = !currentUser
 
   // Seed database on first load
@@ -245,9 +246,9 @@ function AppContent() {
   // Filter languages to show in header
   const headerLanguages = ALL_LANGUAGES.filter((l) => activeLangs.includes(l.code))
 
-  // Show auth page
+  // Show landing page when not logged in
   if (showAuth || !currentUser) {
-    return <AuthPage />
+    return <LandingPage />
   }
 
   // Desktop mode — show OS-style layout
