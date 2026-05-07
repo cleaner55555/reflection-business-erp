@@ -94,7 +94,7 @@ export interface TaxLaw {
   code: string
   name: string
   flag: string
-  region: 'europe' | 'americas' | 'asia'
+  region: 'europe' | 'americas' | 'asia' | 'africa' | 'oceania'
   currency: string
   currencySymbol: string
   language: string
@@ -4971,7 +4971,7 @@ export const COUNTRY_TAX_LAWS: TaxLaw[] = [
 
   // ===== NEW ZEALAND =====
   {
-    code: 'NZ', name: 'New Zealand', flag: '🇳🇿', region: 'americas', currency: 'NZD', currencySymbol: 'NZ$', language: 'English/Māori',
+    code: 'NZ', name: 'New Zealand', flag: '🇳🇿', region: 'oceania', currency: 'NZD', currencySymbol: 'NZ$', language: 'English/Māori',
     vat: { standardRate: 15, reducedRates: [], registrationThreshold: 60000, exemptions: ['Financial services', 'Residential rent', 'Healthcare'], isReverseChargeApplicable: true },
     corporateTax: { rate: 28, reducedRates: null, specialRegimes: [], taxLossCarryForward: null },
     incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 14000, rate: 10.5 }, { from: 14001, to: 48000, rate: 17.5 }, { from: 48001, to: 70000, rate: 30 }, { from: 70001, to: 180000, rate: 33 }, { from: 180001, to: null, rate: 39 }], taxFreeAllowance: 0 },
@@ -4984,7 +4984,7 @@ export const COUNTRY_TAX_LAWS: TaxLaw[] = [
 
   // ===== NIGERIA =====
   {
-    code: 'NG', name: 'Nigeria', flag: '🇳🇬', region: 'americas', currency: 'NGN', currencySymbol: '₦', language: 'English',
+    code: 'NG', name: 'Nigeria', flag: '🇳🇬', region: 'africa', currency: 'NGN', currencySymbol: '₦', language: 'English',
     vat: { standardRate: 7.5, reducedRates: [], registrationThreshold: 25000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
     corporateTax: { rate: 30, reducedRates: null, specialRegimes: ['Reduced for small companies (20-25%)', 'Pioneer status 0-5%'], taxLossCarryForward: 4 },
     incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 300000, rate: 7 }, { from: 300001, to: 600000, rate: 11 }, { from: 600001, to: 1600000, rate: 15 }, { from: 1600001, to: 3200000, rate: 19 }, { from: 3200001, to: null, rate: 24 }], taxFreeAllowance: 0 },
@@ -4997,7 +4997,7 @@ export const COUNTRY_TAX_LAWS: TaxLaw[] = [
 
   // ===== KENYA =====
   {
-    code: 'KE', name: 'Kenya', flag: '🇰🇪', region: 'americas', currency: 'KES', currencySymbol: 'KSh', language: 'English/Swahili',
+    code: 'KE', name: 'Kenya', flag: '🇰🇪', region: 'africa', currency: 'KES', currencySymbol: 'KSh', language: 'English/Swahili',
     vat: { standardRate: 16, reducedRates: [], registrationThreshold: 5000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: true },
     corporateTax: { rate: 30, reducedRates: null, specialRegimes: ['Reduced 15% for companies listed on NSE', 'SEZ incentives'], taxLossCarryForward: null },
     incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 24000, rate: 10 }, { from: 24001, to: 32333, rate: 15 }, { from: 32334, to: 500000, rate: 20 }, { from: 500001, to: 800000, rate: 25 }, { from: 800001, to: null, rate: 30 }], taxFreeAllowance: 24000 },
@@ -5010,7 +5010,7 @@ export const COUNTRY_TAX_LAWS: TaxLaw[] = [
 
   // ===== SOUTH AFRICA =====
   {
-    code: 'ZA', name: 'South Africa', flag: '🇿🇦', region: 'americas', currency: 'ZAR', currencySymbol: 'R', language: 'English/Zulu/Xhosa/Afrikaans',
+    code: 'ZA', name: 'South Africa', flag: '🇿🇦', region: 'africa', currency: 'ZAR', currencySymbol: 'R', language: 'English/Zulu/Xhosa/Afrikaans',
     vat: { standardRate: 15, reducedRates: [], registrationThreshold: 1000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: true },
     corporateTax: { rate: 27, reducedRates: null, specialRegimes: ['Sect 12I tax incentive', 'Headquarters company regime'], taxLossCarryForward: null },
     incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 95750, rate: 18 }, { from: 95751, to: 237100, rate: 26 }, { from: 237101, to: 370500, rate: 31 }, { from: 370501, to: 512800, rate: 36 }, { from: 512801, to: 673000, rate: 39 }, { from: 673001, to: 852000, rate: 41 }, { from: 852001, to: 1817000, rate: 45 }, { from: 1817001, to: null, rate: 48 }], taxFreeAllowance: 95750 },
@@ -5023,7 +5023,7 @@ export const COUNTRY_TAX_LAWS: TaxLaw[] = [
 
   // ===== EGYPT =====
   {
-    code: 'EG', name: 'Egypt', flag: '🇪🇬', region: 'americas', currency: 'EGP', currencySymbol: 'E£', language: 'Arabic',
+    code: 'EG', name: 'Egypt', flag: '🇪🇬', region: 'africa', currency: 'EGP', currencySymbol: 'E£', language: 'Arabic',
     vat: { standardRate: 14, reducedRates: [], registrationThreshold: 500000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
     corporateTax: { rate: 22.5, reducedRates: null, specialRegimes: ['Free zone incentives 10%', 'Investment law incentives'], taxLossCarryForward: null },
     incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 65000, rate: 0 }, { from: 65001, to: 300000, rate: 10 }, { from: 300001, to: 600000, rate: 15 }, { from: 600001, to: 1000000, rate: 20 }, { from: 1000001, to: null, rate: 22.5 }], taxFreeAllowance: 65000 },
@@ -5036,7 +5036,7 @@ export const COUNTRY_TAX_LAWS: TaxLaw[] = [
 
   // ===== MOROCCO =====
   {
-    code: 'MA', name: 'Morocco', flag: '🇲🇦', region: 'americas', currency: 'MAD', currencySymbol: 'DH', language: 'Arabic/French',
+    code: 'MA', name: 'Morocco', flag: '🇲🇦', region: 'africa', currency: 'MAD', currencySymbol: 'DH', language: 'Arabic/French',
     vat: { standardRate: 20, reducedRates: [{ rate: 14, description: 'Some food, transport, hospitality' }, { rate: 10, description: 'Basic food, medicine' }, { rate: 7, description: 'Essential goods' }], registrationThreshold: 5000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: true },
     corporateTax: { rate: 30, reducedRates: null, specialRegimes: ['Reduced 15% for exporters', 'Reduced 10% for Casablanca SE listed'], taxLossCarryForward: 4 },
     incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 40000, rate: 0 }, { from: 40001, to: 50000, rate: 10 }, { from: 50001, to: 60000, rate: 20 }, { from: 60001, to: 80000, rate: 30 }, { from: 80001, to: 180000, rate: 34 }, { from: 180001, to: null, rate: 38 }], taxFreeAllowance: 40000 },
@@ -5049,7 +5049,7 @@ export const COUNTRY_TAX_LAWS: TaxLaw[] = [
 
   // ===== ETHIOPIA =====
   {
-    code: 'ET', name: 'Ethiopia', flag: '🇪🇹', region: 'americas', currency: 'ETB', currencySymbol: 'Br', language: 'Amharic',
+    code: 'ET', name: 'Ethiopia', flag: '🇪🇹', region: 'africa', currency: 'ETB', currencySymbol: 'Br', language: 'Amharic',
     vat: { standardRate: 15, reducedRates: [], registrationThreshold: 1000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
     corporateTax: { rate: 30, reducedRates: null, specialRegimes: ['Reduced for priority sectors (10-20%)', 'Industrial park incentives'], taxLossCarryForward: null },
     incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 600, rate: 0 }, { from: 601, to: 1650, rate: 10 }, { from: 1651, to: 3200, rate: 15 }, { from: 3201, to: 5250, rate: 20 }, { from: 5251, to: 7770, rate: 25 }, { from: 7771, to: 10950, rate: 30 }, { from: 10951, to: null, rate: 35 }], taxFreeAllowance: 600 },
@@ -5111,6 +5111,136 @@ export const COUNTRY_TAX_LAWS: TaxLaw[] = [
     taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'VAT return', authority: 'STC' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'STC' }],
     payroll: { minimumWage: 85000, minimumWageCurrency: 'KZT', payPeriod: 'Monthly', overtimeMultiplier: 1.5, standardWorkHours: 40, annualLeaveDays: 24, sickLeaveDays: 365, sickLeavePayPercent: 80, maternityLeaveWeeks: 20, maternityPayPercent: 100, pensionAge: { male: 63, female: 58 }, noticePeriodDays: 30, probationPeriodDays: 90 },
   },
+
+  // ===== TAIWAN =====
+  {
+    code: 'TW', name: 'Taiwan', flag: '🇹🇼', region: 'asia', currency: 'TWD', currencySymbol: 'NT$', language: 'Mandarin Chinese',
+    vat: { standardRate: 5, reducedRates: [], registrationThreshold: 4800000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 20, reducedRates: null, specialRegimes: ['Reduced for industries with high R&D spending'], taxLossCarryForward: 10 },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 560000, rate: 5 }, { from: 560001, to: 1260000, rate: 12 }, { from: 1260001, to: 2520000, rate: 20 }, { from: 2520001, to: 4720000, rate: 30 }, { from: 4720001, to: null, rate: 40 }], taxFreeAllowance: 0 },
+    socialContributions: [{ name: 'Labor Insurance', employeeRate: 7, employerRate: 7, cap: null }, { name: 'NHI', employeeRate: 1.91, employerRate: 2.55, cap: null }, { name: 'Pension', employeeRate: 6, employerRate: 6, cap: null }],
+    withholdingTax: { dividends: 20, interest: 15, royalties: 20, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerTaxID', label: 'Seller Tax ID', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'e-Invoice Platform', description: 'Government e-invoice platform mandatory for B2B', mandatory: true, startDate: '2017', url: 'https://www.einvoice.nat.gov.tw' }, fiscalization: 'Not applicable', retentionPeriod: '10 years', format: 'XML / PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT401', name: 'VAT Return', frequency: 'Monthly/Bimonthly', description: 'Business Tax Return', authority: 'National Tax Administration' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'National Tax Administration' }],
+    payroll: { minimumWage: null, minimumWageCurrency: 'TWD', payPeriod: 'Monthly', overtimeMultiplier: 1.33, standardWorkHours: 40, annualLeaveDays: 7, sickLeaveDays: 30, sickLeavePayPercent: 50, maternityLeaveWeeks: 8, maternityPayPercent: 100, pensionAge: { male: 65, female: 65 }, noticePeriodDays: 30, probationPeriodDays: 90 },
+  },
+
+  // ===== CAMBODIA =====
+  {
+    code: 'KH', name: 'Cambodia', flag: '🇰🇭', region: 'asia', currency: 'KHR', currencySymbol: '៛', language: 'Khmer',
+    vat: { standardRate: 10, reducedRates: [], registrationThreshold: 60000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 20, reducedRates: null, specialRegimes: ['Simplified regime for small taxpayers (1% turnover)', 'Qualified Investment Project incentives'], taxLossCarryForward: 5 },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 1200000, rate: 0 }, { from: 1200001, to: 8200000, rate: 5 }, { from: 8200001, to: 10000000, rate: 10 }, { from: 10000001, to: 12500000, rate: 15 }, { from: 12500001, to: null, rate: 20 }], taxFreeAllowance: 1200000 },
+    socialContributions: [{ name: 'NSSF', employeeRate: 1.5, employerRate: 3.8, cap: null }, { name: 'Health Insurance', employeeRate: 1, employerRate: 2, cap: null }],
+    withholdingTax: { dividends: 14, interest: 15, royalties: 15, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerTIN', label: 'Seller TIN', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'None', description: 'Not yet implemented', mandatory: false, url: '' }, fiscalization: 'Not applicable', retentionPeriod: '10 years', format: 'PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'Monthly VAT return', authority: 'GDT' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Annual corporate income tax', authority: 'GDT' }],
+    payroll: { minimumWage: 208000, minimumWageCurrency: 'KHR', payPeriod: 'Monthly', overtimeMultiplier: 1.5, standardWorkHours: 48, annualLeaveDays: 18, sickLeaveDays: 30, sickLeavePayPercent: 50, maternityLeaveWeeks: 13, maternityPayPercent: 100, pensionAge: { male: 60, female: 55 }, noticePeriodDays: 30, probationPeriodDays: 90 },
+  },
+
+  // ===== LAOS =====
+  {
+    code: 'LA', name: 'Laos', flag: '🇱🇦', region: 'asia', currency: 'LAK', currencySymbol: '₭', language: 'Lao',
+    vat: { standardRate: 10, reducedRates: [], registrationThreshold: 600000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 20, reducedRates: null, specialRegimes: ['Reduced 10% for agriculture, forestry, industry', 'SEZ incentives'], taxLossCarryForward: 3 },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 5000000, rate: 0 }, { from: 5000001, to: 10000000, rate: 5 }, { from: 10000001, to: 30000000, rate: 10 }, { from: 30000001, to: 50000000, rate: 15 }, { from: 50000001, to: null, rate: 25 }], taxFreeAllowance: 5000000 },
+    socialContributions: [{ name: 'Social Security', employeeRate: 5.5, employerRate: 6, cap: null }],
+    withholdingTax: { dividends: 10, interest: 10, royalties: 5, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerTIN', label: 'Seller TIN', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'None', description: 'Not yet implemented', mandatory: false, url: '' }, fiscalization: 'Not applicable', retentionPeriod: '10 years', format: 'PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'Monthly VAT return', authority: 'Tax Department' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'Tax Department' }],
+    payroll: { minimumWage: 1600000, minimumWageCurrency: 'LAK', payPeriod: 'Monthly', overtimeMultiplier: 1.5, standardWorkHours: 48, annualLeaveDays: 15, sickLeaveDays: 30, sickLeavePayPercent: 60, maternityLeaveWeeks: 14, maternityPayPercent: 100, pensionAge: { male: 60, female: 55 }, noticePeriodDays: 30, probationPeriodDays: 90 },
+  },
+
+  // ===== MYANMAR =====
+  {
+    code: 'MM', name: 'Myanmar', flag: '🇲🇲', region: 'asia', currency: 'MMK', currencySymbol: 'K', language: 'Burmese',
+    vat: { standardRate: 5, reducedRates: [], registrationThreshold: null, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 25, reducedRates: null, specialRegimes: ['Reduced 10% for export-oriented businesses', 'SEZ incentives'], taxLossCarryForward: 3 },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 2000000, rate: 0 }, { from: 2000001, to: 5000000, rate: 5 }, { from: 5000001, to: 10000000, rate: 10 }, { from: 10000001, to: 20000000, rate: 15 }, { from: 20000001, to: 30000000, rate: 20 }, { from: 30000001, to: null, rate: 25 }], taxFreeAllowance: 2000000 },
+    socialContributions: [{ name: 'Social Security', employeeRate: 2, employerRate: 3, cap: null }],
+    withholdingTax: { dividends: 15, interest: 15, royalties: 15, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerTIN', label: 'Seller TIN', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'None', description: 'Not yet implemented', mandatory: false, url: '' }, fiscalization: 'Not applicable', retentionPeriod: '5 years', format: 'PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'Commercial Tax return', authority: 'IRD' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'IRD' }],
+    payroll: { minimumWage: 6800, minimumWageCurrency: 'MMK', payPeriod: 'Daily', overtimeMultiplier: 1.5, standardWorkHours: 48, annualLeaveDays: 10, sickLeaveDays: 30, sickLeavePayPercent: 67, maternityLeaveWeeks: 14, maternityPayPercent: 100, pensionAge: { male: 60, female: 55 }, noticePeriodDays: 30, probationPeriodDays: 90 },
+  },
+
+  // ===== UZBEKISTAN =====
+  {
+    code: 'UZ', name: 'Uzbekistan', flag: '🇺🇿', region: 'asia', currency: 'UZS', currencySymbol: 'сўм', language: 'Uzbek',
+    vat: { standardRate: 12, reducedRates: [], registrationThreshold: 100000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 15, reducedRates: null, specialRegimes: ['Reduced 7.5% for small businesses', 'Free economic zone incentives'], taxLossCarryForward: 5 },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 2860000, rate: 0 }, { from: 2860001, to: 5160000, rate: 7.5 }, { from: 5160001, to: 8200000, rate: 15 }, { from: 8200001, to: null, rate: 22 }], taxFreeAllowance: 2860000 },
+    socialContributions: [{ name: 'Pension Fund', employeeRate: 8, employerRate: 19, cap: null }, { name: 'Social Insurance', employeeRate: 1.5, employerRate: 2, cap: null }],
+    withholdingTax: { dividends: 10, interest: 10, royalties: 20, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerTIN', label: 'Seller TIN', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'E-invoice', description: 'Mandatory electronic invoicing being phased in', mandatory: true, startDate: '2024', url: '' }, fiscalization: 'Not applicable', retentionPeriod: '5 years', format: 'XML / PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'Monthly VAT return', authority: 'STC' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'STC' }],
+    payroll: { minimumWage: 1000000, minimumWageCurrency: 'UZS', payPeriod: 'Monthly', overtimeMultiplier: 2, standardWorkHours: 40, annualLeaveDays: 15, sickLeaveDays: 365, sickLeavePayPercent: 80, maternityLeaveWeeks: 16, maternityPayPercent: 100, pensionAge: { male: 60, female: 55 }, noticePeriodDays: 30, probationPeriodDays: 90 },
+  },
+
+  // ===== RWANDA =====
+  {
+    code: 'RW', name: 'Rwanda', flag: '🇷🇼', region: 'africa', currency: 'RWF', currencySymbol: 'FRw', language: 'Kinyarwanda',
+    vat: { standardRate: 18, reducedRates: [], registrationThreshold: 20000000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 30, reducedRates: null, specialRegimes: ['Reduced 0% for exports and strategic sectors', 'SEZ incentives'], taxLossCarryForward: 5 },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 36000, rate: 0 }, { from: 36001, to: 120000, rate: 20 }, { from: 120001, to: null, rate: 30 }], taxFreeAllowance: 36000 },
+    socialContributions: [{ name: 'Pension', employeeRate: 3, employerRate: 5, cap: null }, { name: 'Health Insurance', employeeRate: 2, employerRate: 3, cap: null }, { name: 'Maternity', employeeRate: 0.3, employerRate: 0.3, cap: null }],
+    withholdingTax: { dividends: 15, interest: 15, royalties: 15, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerTIN', label: 'Seller TIN', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'e-Billing', description: 'Mandatory electronic invoicing', mandatory: true, startDate: '2023', url: '' }, fiscalization: 'Not applicable', retentionPeriod: '10 years', format: 'XML / PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'Monthly VAT return', authority: 'RRA' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'RRA' }],
+    payroll: { minimumWage: null, minimumWageCurrency: 'RWF', payPeriod: 'Monthly', overtimeMultiplier: 1.5, standardWorkHours: 45, annualLeaveDays: 18, sickLeaveDays: 26, sickLeavePayPercent: 100, maternityLeaveWeeks: 12, maternityPayPercent: 100, pensionAge: { male: 60, female: 55 }, noticePeriodDays: 15, probationPeriodDays: 90 },
+  },
+
+  // ===== HAITI =====
+  {
+    code: 'HT', name: 'Haiti', flag: '🇭🇹', region: 'americas', currency: 'HTG', currencySymbol: 'G', language: 'Haitian Creole/French',
+    vat: { standardRate: 10, reducedRates: [], registrationThreshold: 1500000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 30, reducedRates: null, specialRegimes: ['Reduced for tourism sector', 'Free zone incentives'], taxLossCarryForward: 3 },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 240000, rate: 0 }, { from: 240001, to: 960000, rate: 10 }, { from: 960001, to: 2400000, rate: 15 }, { from: 2400001, to: null, rate: 30 }], taxFreeAllowance: 240000 },
+    socialContributions: [{ name: 'Social Security (ONA)', employeeRate: 3, employerRate: 6, cap: null }],
+    withholdingTax: { dividends: 15, interest: 15, royalties: 15, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerNIF', label: 'Seller NIF', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'None', description: 'Not yet implemented', mandatory: false, url: '' }, fiscalization: 'Not applicable', retentionPeriod: '10 years', format: 'PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'Monthly VAT return', authority: 'DGI' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'DGI' }],
+    payroll: { minimumWage: 500, minimumWageCurrency: 'HTG', payPeriod: 'Daily', overtimeMultiplier: 1.5, standardWorkHours: 48, annualLeaveDays: 15, sickLeaveDays: 14, sickLeavePayPercent: 67, maternityLeaveWeeks: 12, maternityPayPercent: 100, pensionAge: { male: 60, female: 60 }, noticePeriodDays: 15, probationPeriodDays: 90 },
+  },
+
+  // ===== PARAGUAY =====
+  {
+    code: 'PY', name: 'Paraguay', flag: '🇵🇾', region: 'americas', currency: 'PYG', currencySymbol: '₲', language: 'Spanish/Guarani',
+    vat: { standardRate: 10, reducedRates: [{ rate: 5, description: 'Basic food basket, medicines' }], registrationThreshold: null, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: true },
+    corporateTax: { rate: 10, reducedRates: null, specialRegimes: ['Unified agricultural income tax 10%', 'MAquiladora incentives'], taxLossCarryForward: 3 },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 12000000, rate: 0 }, { from: 12000001, to: 36000000, rate: 8 }, { from: 36000001, to: 72000000, rate: 10 }, { from: 72000001, to: null, rate: 10 }], taxFreeAllowance: 12000000 },
+    socialContributions: [{ name: 'IPS (Pension)', employeeRate: 9, employerRate: 16.5, cap: null }, { name: 'Health', employeeRate: 1.5, employerRate: 5.5, cap: null }],
+    withholdingTax: { dividends: 15, interest: 15, royalties: 15, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerRUC', label: 'Seller RUC', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'Marangatu', description: 'Electronic invoicing being phased in by SET', mandatory: false, startDate: '2025 (planned)', url: '' }, fiscalization: 'Not applicable', retentionPeriod: '10 years', format: 'PDF / XML', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'IVA', name: 'VAT Return', frequency: 'Monthly', description: 'Monthly VAT return', authority: 'SET' }, { code: 'IRE', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'SET' }],
+    payroll: { minimumWage: 2787575, minimumWageCurrency: 'PYG', payPeriod: 'Monthly', overtimeMultiplier: 1.5, standardWorkHours: 48, annualLeaveDays: 12, sickLeaveDays: 365, sickLeavePayPercent: 67, maternityLeaveWeeks: 18, maternityPayPercent: 100, pensionAge: { male: 60, female: 55 }, noticePeriodDays: 30, probationPeriodDays: 90 },
+  },
+
+  // ===== SAMOA =====
+  {
+    code: 'WS', name: 'Samoa', flag: '🇼🇸', region: 'oceania', currency: 'WST', currencySymbol: 'WS$', language: 'Samoan/English',
+    vat: { standardRate: 15, reducedRates: [], registrationThreshold: 100000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 27, reducedRates: null, specialRegimes: ['Reduced for manufacturing and tourism', 'Development incentive areas'], taxLossCarryForward: null },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 20000, rate: 0 }, { from: 20001, to: 30000, rate: 15 }, { from: 30001, to: 60000, rate: 20 }, { from: 60001, to: 100000, rate: 27 }, { from: 100001, to: null, rate: 27 }], taxFreeAllowance: 20000 },
+    socialContributions: [{ name: 'NPF', employeeRate: 5, employerRate: 5, cap: null }],
+    withholdingTax: { dividends: 15, interest: 15, royalties: 15, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerTIN', label: 'Seller TIN', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'None', description: 'Not yet implemented', mandatory: false, url: '' }, fiscalization: 'Not applicable', retentionPeriod: '7 years', format: 'PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'VAT/GST return', authority: 'MNR' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'MNR' }],
+    payroll: { minimumWage: null, minimumWageCurrency: 'WST', payPeriod: 'Monthly', overtimeMultiplier: 1.5, standardWorkHours: 40, annualLeaveDays: 10, sickLeaveDays: 30, sickLeavePayPercent: 80, maternityLeaveWeeks: 13, maternityPayPercent: 100, pensionAge: { male: 55, female: 55 }, noticePeriodDays: 14, probationPeriodDays: 90 },
+  },
+
+  // ===== TONGA =====
+  {
+    code: 'TO', name: 'Tonga', flag: '🇹🇴', region: 'oceania', currency: 'TOP', currencySymbol: 'T$', language: 'Tongan/English',
+    vat: { standardRate: 15, reducedRates: [], registrationThreshold: 100000, exemptions: ['Exports', 'Healthcare', 'Education', 'Financial services'], isReverseChargeApplicable: false },
+    corporateTax: { rate: 25, reducedRates: null, specialRegimes: ['Reduced for approved industries', 'Tax holidays for new investments'], taxLossCarryForward: null },
+    incomeTax: { type: 'progressive', flatRate: null, brackets: [{ from: 0, to: 7500, rate: 0 }, { from: 7501, to: 30000, rate: 10 }, { from: 30001, to: 60000, rate: 20 }, { from: 60001, to: 100000, rate: 25 }, { from: 100001, to: null, rate: 30 }], taxFreeAllowance: 7500 },
+    socialContributions: [{ name: 'Superannuation', employeeRate: 5, employerRate: 5, cap: null }],
+    withholdingTax: { dividends: 15, interest: 10, royalties: 15, notes: ['Reduced under tax treaties'] },
+    invoice: { mandatoryFields: [{ field: 'invoiceNumber', label: 'Invoice Number', required: true }, { field: 'invoiceDate', label: 'Invoice Date', required: true }, { field: 'sellerName', label: 'Seller Details', required: true }, { field: 'sellerTIN', label: 'Seller TIN', required: true }, { field: 'buyerName', label: 'Buyer Details', required: true }, { field: 'items', label: 'Line Items', required: true }, { field: 'totalAmount', label: 'Total Amount', required: true }], eInvoicing: { system: 'None', description: 'Not yet implemented', mandatory: false, url: '' }, fiscalization: 'Not applicable', retentionPeriod: '7 years', format: 'PDF', seriesPrefix: 'INV' },
+    taxForms: [{ code: 'VAT Return', name: 'VAT Return', frequency: 'Monthly', description: 'Consumption tax return', authority: 'TRD' }, { code: 'Corporate Tax Return', name: 'Corporate Tax Return', frequency: 'Annually', description: 'Corporate income tax', authority: 'TRD' }],
+    payroll: { minimumWage: null, minimumWageCurrency: 'TOP', payPeriod: 'Monthly', overtimeMultiplier: 1.5, standardWorkHours: 40, annualLeaveDays: 10, sickLeaveDays: 30, sickLeavePayPercent: 80, maternityLeaveWeeks: 13, maternityPayPercent: 100, pensionAge: { male: 60, female: 55 }, noticePeriodDays: 14, probationPeriodDays: 90 },
+  },
 ]
 
 // ============ UTILITY FUNCTIONS ============
@@ -5119,7 +5249,7 @@ export function getTaxLaw(countryCode: string): TaxLaw | undefined {
   return COUNTRY_TAX_LAWS.find(c => c.code === countryCode)
 }
 
-export function getCountriesByRegion(region: 'europe' | 'americas' | 'asia' | 'all'): TaxLaw[] {
+export function getCountriesByRegion(region: 'europe' | 'americas' | 'asia' | 'africa' | 'oceania' | 'all'): TaxLaw[] {
   if (region === 'all') return COUNTRY_TAX_LAWS
   return COUNTRY_TAX_LAWS.filter(c => c.region === region)
 }
