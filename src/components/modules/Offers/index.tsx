@@ -303,7 +303,22 @@ export function Ponude() {
       if (statusFilter !== 'all') params.set('status', statusFilter)
       if (search) params.set('search', search)
       const res = await fetch(`/api/sales-orders?${params}`)
-      if (res.ok) setOrders(await res.json())
+      if (res.ok) {
+        const data = await res.json()
+        const orders = Array.isArray(data) ? data : (data.items || [])
+        setOrders(orders.map((o: Record<string, unknown>) => ({
+          id: o.id as string,
+          number: o.number as string,
+          partnerId: (o.partnerId as string) || '',
+          partnerName: (o.partnerName as string) || '',
+          status: (o.status as string) || 'nacrt',
+          totalAmount: Number(o.totalAmount) || 0,
+          dateOrder: o.date ? new Date(o.date as string).toISOString().split('T')[0] : (o.createdAt as string || '').split('T')[0],
+          validUntil: (o.validUntil as string) || null,
+          notes: (o.notes as string) || '',
+          createdAt: o.createdAt as string,
+        })))
+      }
     } catch { /* silent */ }
     setLoading(false)
   }, [activeCompanyId, statusFilter, search])
