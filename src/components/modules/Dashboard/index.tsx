@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -34,6 +35,7 @@ import {
   FolderKanban,
   Heart,
   Truck,
+  Receipt,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {

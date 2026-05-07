@@ -420,7 +420,7 @@ export async function POST(request: NextRequest) {
     // Execute action if present in parsed reply
     let actionData = parsed.data
     let actionType = parsed.actionType
-    let module = parsed.module
+    let targetModule = parsed.module
 
     // Try to extract action from JSON if available in the raw content
     try {
@@ -446,13 +446,13 @@ export async function POST(request: NextRequest) {
             const result = await executeCreate(a.entity, a.data || {})
             actionData = { ...actionData, actionLabel: result.message, actionType: 'created' as const, module: result.module }
             actionType = 'created'
-            module = result.module
+            targetModule = result.module
           } else if (a.type === 'update' && a.entity) {
             const result = await executeUpdate(a.entity, a.filters || {}, a.data || {})
             actionData = { ...actionData, actionLabel: result.message, actionType: 'updated' as const }
             actionType = 'updated'
           } else if (a.type === 'navigate' && a.module) {
-            module = a.module
+            targetModule = a.module
             actionType = 'navigate'
           }
         }
@@ -464,7 +464,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       reply: parsed.reply,
       actionType,
-      module,
+      module: targetModule,
       data: actionData,
       agentId,
       agentName: agent?.name,
