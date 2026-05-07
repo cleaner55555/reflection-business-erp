@@ -2,19 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-from '@/components/ui/alert-dialog'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/switch'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-import { , AlertTriangle, ArrowDownLeft, ArrowUpRight, CheckCircle, CircleDot, Clock, FileText, Landmark, Link2, Pencil, Plus, RefreshCw, Search, Trash2, Upload, XCircle } from 'lucide-react'
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { AlertTriangle, ArrowDownLeft, ArrowUpRight, CheckCircle, CircleDot, Clock, FileText, Landmark, Link2, Pencil, Plus, RefreshCw, Search, Trash2, Upload, XCircle } from 'lucide-react'
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import type { BankAccount, BankTransaction, SuggestedMatch, ReconcileResult, Invoice } from './types'
 
 function AccountsTab() {

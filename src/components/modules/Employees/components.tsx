@@ -2,19 +2,21 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { , ArrowLeft, Award, Building2, Clock, DollarSign, Eye, FileText, Pencil, Plus, Printer, Search, Trash2, UserCog, Users } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { ArrowLeft, Award, Building2, Clock, DollarSign, Eye, FileText, Pencil, Plus, Printer, Search, Trash2, UserCog, Users } from 'lucide-react'
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+
 import type { Employee, Payroll, Attendance, EmployeeOption, EmployeeStats } from './types'
 
 function PregledTab() {

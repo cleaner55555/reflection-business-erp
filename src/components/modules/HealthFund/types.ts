@@ -12,8 +12,8 @@ export interface Contribution {
   paymentDate: string | null
   dueDate: string
   createdAt: string
-}
 
+}
 export interface HealthClaim {
   id: string
   employeeId: string
@@ -30,8 +30,8 @@ export interface HealthClaim {
   submittedDate: string
   processedDate: string | null
   notes: string
-}
 
+}
 export interface FundStats {
   totalContributions: number
   monthlyTotal: number
@@ -44,4 +44,6 @@ export interface FundStats {
   rejectedClaims: number
   utilizationRate: number
   avgClaimAmount: number
-  monthlyTrend: Array<{ month: string; contributions: number; claims: number }
+  monthlyTrend: Array<{ month: string; contributions: number; claims: number }>
+
+}

@@ -2,16 +2,19 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/checkbox'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-import { , AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Clock, Download, Edit2, FileSpreadsheet, Globe, History, Loader2, Play, Plug, Plus, RefreshCw, Sparkles, Square, Trash2, Upload, UploadCloud, Wifi, WifiOff, X, Zap } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Clock, Download, Edit2, FileSpreadsheet, Globe, History, Loader2, Play, Plug, Plus, RefreshCw, Sparkles, Square, Trash2, Upload, UploadCloud, Wifi, WifiOff, X, Zap } from 'lucide-react'
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import type { EntityField, ParsedFile, ImportError, ImportResult, IntegrationJob, SyncConnector, EntityField, ParsedFile, ImportError, ImportResult, IntegrationJob, SyncConnector } from './types'
 
 function ConnectionsTab() {

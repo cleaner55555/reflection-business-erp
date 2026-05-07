@@ -1,15 +1,5 @@
 'use client'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/progress'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/switch'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
 import {  } from 'lucide-react'
 
 function VatColor(rate: number) {

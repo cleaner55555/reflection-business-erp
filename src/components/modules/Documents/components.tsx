@@ -1,4 +1,6 @@
-'use client'import { AlertTriangle, ChevronRight, Clock, Edit3, File, FileText, Folder, List, Plus, RefreshCw, Search, Trash2, TrendingUp, X , CheckCircle2} from 'lucide-react'
+'use client'
+
+import { AlertTriangle, ChevronRight, Clock, Edit3, File, FileText, Folder, List, Plus, RefreshCw, Search, Trash2, TrendingUp, X, CheckCircle2, Tag } from 'lucide-react'
 
 
 
@@ -351,6 +353,10 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TabsContent } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Textarea } from '@/components/ui/textarea'
 
 // ========== EditingDocIzmenidokument ==========
 

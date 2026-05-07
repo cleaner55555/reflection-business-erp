@@ -1,18 +1,8 @@
 'use client'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/chart'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/switch'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { , Star } from 'lucide-react'
+import { Star } from 'lucide-react'
+'use client'
+
 import type { Article, Category, Review, SearchQuery, KbSettings, ArticleForm, CategoryForm } from './types'
 
 function StarRating({ rating, max = 5, size = 'sm' }: { rating: number; max?: number; size?: 'sm' | 'md' }) {

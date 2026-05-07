@@ -11,6 +11,7 @@ export interface BankAccount {
   updatedAt: string
   _count?: { transactions: number }
 
+}
 export interface BankTransaction {
   id: string
   bankAccountId: string
@@ -25,6 +26,7 @@ export interface BankTransaction {
   createdAt: string
   bankAccount: { id: string; name: string; account: string }
 
+}
 export interface SuggestedMatch {
   transactionId: string
   invoiceId: string
@@ -33,8 +35,8 @@ export interface SuggestedMatch {
   amount: number
   invoiceNumber: string
   partnerName: string
-}
 
+}
 export interface ReconcileResult {
   autoApplied: SuggestedMatch[]
   suggestedMatches: SuggestedMatch[]
@@ -42,11 +44,13 @@ export interface ReconcileResult {
   total: number
   autoMatched: number
   manualNeeded: number
-}
 
+}
 export interface Invoice {
   id: string
   number: string
   totalAmount: number
   status: string
   partner: { name: string }
+
+}

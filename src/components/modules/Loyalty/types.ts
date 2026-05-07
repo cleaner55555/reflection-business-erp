@@ -16,8 +16,8 @@ export interface LoyaltyMember {
   referralCount: number
   purchaseCount: number
   avgPurchase: number
-}
 
+}
 export interface LoyaltyTier {
   id: string
   name: string
@@ -30,8 +30,8 @@ export interface LoyaltyTier {
   color: string
   icon: string
   memberCount: number
-}
 
+}
 export interface RewardItem {
   id: string
   name: string
@@ -47,8 +47,8 @@ export interface RewardItem {
   availableTo: string
   maxPerMember: number
   tierRequired: string
-}
 
+}
 export interface PointsTransaction {
   id: string
   memberName: string
@@ -61,8 +61,8 @@ export interface PointsTransaction {
   date: string
   expiryDate: string | null
   status: string
-}
 
+}
 export interface PromoCampaign {
   id: string
   name: string
@@ -80,8 +80,8 @@ export interface PromoCampaign {
   totalAwarded: number
   budget: number
   budgetUsed: number
-}
 
+}
 export interface LoyaltyStats {
   totalMembers: number
   activeMembers: number
@@ -92,4 +92,6 @@ export interface LoyaltyStats {
   avgOrderValue: number
   retentionRate: number
   topTierMembers: number
-  tierDistribution: Array<{ tier: string; count: number; color: string }
+  tierDistribution: Array<{ tier: string; count: number; color: string }>
+
+}

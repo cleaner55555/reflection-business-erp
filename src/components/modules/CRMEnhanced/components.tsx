@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/switch'
-from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
+'use client'
+
+import { useEffect, useState } from 'react'
+
 import { ArrowRight, Pause, Play, Plus, Settings2, Trash2, Zap } from 'lucide-react'
 import type { AutomationRule } from './types'
 

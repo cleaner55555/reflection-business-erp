@@ -19,8 +19,8 @@ export interface Contract {
   documents: ContractDocument[]
   createdAt: string
   updatedAt: string
-}
 
+}
 export interface ContractDocument {
   id: string
   name: string
@@ -28,8 +28,8 @@ export interface ContractDocument {
   size: string
   uploadedAt: string
   uploadedBy: string
-}
 
+}
 export interface ContractType {
   id: string
   name: string
@@ -37,8 +37,8 @@ export interface ContractType {
   defaultDuration: string
   color: string
   contractCount: number
-}
 
+}
 export interface ContractRenewal {
   id: string
   contractId: string
@@ -49,8 +49,8 @@ export interface ContractRenewal {
   status: string
   requestedDate: string
   notes: string
-}
 
+}
 export interface ContractDashboard {
   activeContracts: number
   expiringSoon: number
@@ -59,4 +59,6 @@ export interface ContractDashboard {
   totalEmployees: number
   avgSalary: number
   totalPayroll: number
-  byType: Array<{ type: string; count: number; color: string }
+  byType: Array<{ type: string; count: number; color: string }>
+
+}

@@ -67,3 +67,5 @@ export const loc = grid.find(l => l.row === r && l.col === c);
 
 export const handleCreateWave = async () => {
     if (newLines.length === 0) { toast.error('Dodaj bar jednu stavku'); return }
+
+}

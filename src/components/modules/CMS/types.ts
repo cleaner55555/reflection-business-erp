@@ -22,8 +22,8 @@ export interface ContentItem {
   updatedAt: string
   revisionCount: number
   locale: string
-}
 
+}
 export interface ContentType {
   id: string
   name: string
@@ -33,16 +33,16 @@ export interface ContentType {
   fields: ContentField[]
   itemCount: number
   template: string
-}
 
+}
 export interface ContentField {
   id: string
   name: string
   type: 'text' | 'richtext' | 'image' | 'select' | 'number' | 'date' | 'boolean' | 'tags'
   required: boolean
   options?: string[]
-}
 
+}
 export interface MediaItem {
   id: string
   name: string
@@ -56,15 +56,15 @@ export interface MediaItem {
   height: number
   uploadedAt: string
   usageCount: number
-}
 
+}
 export interface MediaFolder {
   id: string
   name: string
   parentId: string | null
   itemCount: number
-}
 
+}
 export interface Revision {
   id: string
   contentId: string
@@ -75,8 +75,8 @@ export interface Revision {
   wordCount: number
   createdAt: string
   restoredFrom: string | null
-}
 
+}
 export interface ContentCategory {
   id: string
   name: string
@@ -85,8 +85,8 @@ export interface ContentCategory {
   parentId: string | null
   color: string
   itemCount: number
-}
 
+}
 export interface ContentForm {
   title: string
   slug: string
@@ -103,8 +103,8 @@ export interface ContentForm {
   ogImage: string
   scheduledAt: string
   locale: string
-}
 
+}
 export interface SeoAnalysis {
   score: number
   titleLength: number
@@ -117,6 +117,7 @@ export interface SeoAnalysis {
   links: number
   issues: { type: 'error' | 'warning' | 'info'; message: string }
 
+}
 export interface ContentRelation {
   id: string
   sourceId: string

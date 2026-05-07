@@ -18,8 +18,8 @@ export interface Suggestion {
   estimatedSaving: number | null
   implementerName: string | null
   rejectionReason: string | null
-}
 
+}
 export interface SuggestionStats {
   total: number
   pending: number
@@ -28,4 +28,6 @@ export interface SuggestionStats {
   rejected: number
   totalVotes: number
   avgResolutionDays: number
-  categoryBreakdown: Array<{ category: string; count: number; color: string }
+  categoryBreakdown: Array<{ category: string; count: number; color: string }>
+
+}

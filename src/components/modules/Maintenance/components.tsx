@@ -25,8 +25,12 @@ import {
   TrendingUp, AlertCircle, Settings, AlertTriangle, Calendar,
   Cpu, Package, Users, Filter, Copy, Hammer, Gauge, Timer,
   ShieldCheck, Archive,
-} from 'lucide-react'
+import { AlertCircle, AlertTriangle, BarChart3, Calendar, CheckCircle2, Clock, Copy, Eye, Filter, Package, Plus, RefreshCw, Search, Server, Trash2, TrendingUp, Wrench, Gauge } from 'lucide-react'
 import {
+import { Calendar } from '@/components/ui/calendar'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { Tooltip } from '@/components/ui/tooltip'
+import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts'

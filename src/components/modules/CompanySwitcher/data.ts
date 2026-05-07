@@ -2,3 +2,6 @@ export const { activeCompanyId, activeCompanyName, setActiveCompany } = useAppSt
 
 export const loadCompanies = async () => {
     try {
+
+}
+}

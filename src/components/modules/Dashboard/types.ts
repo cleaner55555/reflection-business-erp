@@ -7,6 +7,7 @@ export interface OverdueInvoice {
   totalAmount: number
   partner: { id: string; name: string }
 
+}
 export interface RecentPartner {
   id: string
   name: string
@@ -14,8 +15,8 @@ export interface RecentPartner {
   type: string
   city: string | null
   createdAt: string
-}
 
+}
 export interface RecentTransaction {
   id: string
   date: string
@@ -23,8 +24,8 @@ export interface RecentTransaction {
   category: string
   amount: number
   description: string
-}
 
+}
 export interface ActivityItem {
   id: string
   type: 'invoice' | 'partner' | 'transaction'
@@ -33,8 +34,8 @@ export interface ActivityItem {
   timestamp: Date
   amount?: number
   icon: 'invoice' | 'partner' | 'transaction'
-}
 
+}
 export interface DashboardData {
   kpis: {
     totalRevenue: number
@@ -52,6 +53,7 @@ export interface DashboardData {
     cashOut: number
   }
 
+}
 export interface LowStockProduct {
   id: string
   name: string

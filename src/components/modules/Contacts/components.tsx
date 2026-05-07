@@ -2,19 +2,22 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-from '@/components/ui/alert-dialog'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { , AlertTriangle, ArrowLeft, BarChart3, Briefcase, Building2, CreditCard, FileText, Globe, Landmark, Mail, MapPin, Pencil, Phone, Plus, Search, Tag, Trash2, TrendingUp, UserCheck, UserX, Users, X } from 'lucide-react'
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { Textarea } from '@/components/ui/textarea'
+import { AlertTriangle, ArrowLeft, BarChart3, Briefcase, Building2, CreditCard, FileText, Globe, Landmark, Mail, MapPin, Pencil, Phone, Plus, Search, Tag, Trash2, TrendingUp, UserCheck, UserX, Users, X } from 'lucide-react'
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+
 import type { Partner, ContactInfo, PartnerStats, AnalyticsSummary, PartnerAnalytics } from './types'
 
 function PregledTab() {

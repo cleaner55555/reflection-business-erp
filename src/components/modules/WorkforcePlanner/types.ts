@@ -11,8 +11,8 @@ export interface Employee {
   currentHours: number
   hourlyRate: number
   status: string
-}
 
+}
 export interface Shift {
   id: string
   employeeId: string
@@ -27,8 +27,8 @@ export interface Shift {
   notes: string
   breakMinutes: number
   overtimeMinutes: number
-}
 
+}
 export interface ScheduleTemplate {
   id: string
   name: string
@@ -36,16 +36,18 @@ export interface ScheduleTemplate {
   department: string
   shifts: TemplateShift[]
   isDefault: boolean
-}
 
+}
 export interface TemplateShift {
   day: string
   startTime: string
   endTime: string
   breakMinutes: number
-}
 
+}
 export interface WorkforceStats {
   totalEmployees: number
   activeEmployees: number
-  departments: Array<{ name: string; count: number; avgHours: number }
+  departments: Array<{ name: string; count: number; avgHours: number }>
+
+}

@@ -2,16 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-import { , AlertTriangle, ArrowLeft, ArrowRightLeft, BarChart3, BookOpen, CheckCircle2, DollarSign, Download, Eye, FileText, Loader2, Pencil, Plus, Printer, Search, Send, Trash2, TrendingUp, XCircle } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { AlertTriangle, ArrowLeft, ArrowRightLeft, BarChart3, BookOpen, CheckCircle2, DollarSign, Download, Eye, FileText, Loader2, Pencil, Plus, Printer, Search, Send, Trash2, TrendingUp, XCircle } from 'lucide-react'
+'use client'
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import type { Partner, InvoiceItem, Invoice, Product, LineItem, FullInvoice } from './types'
 
 function InvoiceDashboard() {

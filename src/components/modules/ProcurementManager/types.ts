@@ -11,6 +11,7 @@ export interface PurchaseRequisition {
   supplierName: string | null
   items: { name: string; quantity: number; unitPrice: number; unit: string }
 
+}
 export interface Supplier {
   id: string
   name: string
@@ -34,15 +35,15 @@ export interface Supplier {
   notes: string | null
   performanceScore: number
   createdAt: string
-}
 
+}
 export interface SpendingRecord {
   month: string
   category: string
   amount: number
   count: number
-}
 
+}
 export interface ApprovalMetric {
   id: string
   step: string

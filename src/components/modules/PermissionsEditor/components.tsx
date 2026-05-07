@@ -1,17 +1,9 @@
 'use client'
 
-from '@/components/ui/alert-dialog'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/switch'
-from '@/components/ui/table'
-import { , Check } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Check } from 'lucide-react'
+'use client'
+
 import type { Role, Permissions, ModuleGroup } from './types'
 
 function PermCheckbox({

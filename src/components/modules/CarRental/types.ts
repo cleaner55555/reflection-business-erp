@@ -19,6 +19,7 @@ export interface RentalVehicle {
   createdAt: string
   _count?: { rentals: number }
 
+}
 export interface RentalVehicleFull {
   id: string
   name: string
@@ -40,6 +41,7 @@ export interface RentalVehicleFull {
   createdAt: string
   _count?: { rentals: number }
 
+}
 export interface Rental {
   id: string
   number: string
@@ -60,3 +62,5 @@ export interface Rental {
   notes?: string
   createdAt: string
   vehicle?: { id: string; name: string; make: string; model: string; registration: string }
+
+}

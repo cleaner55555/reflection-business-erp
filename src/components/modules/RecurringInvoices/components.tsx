@@ -2,16 +2,20 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/switch'
-import { , AlertTriangle, Calendar, CheckCircle2, Clock, FileText, Pencil, Play, Plus, Repeat, Trash2, Zap } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
+import { AlertTriangle, Calendar, CheckCircle2, Clock, FileText, Pencil, Play, Plus, Repeat, Trash2, Zap } from 'lucide-react'
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+
 import type { Partner, Product, RecurringInvoice, LineItem } from './types'
 
 function RecurringInvoicesContent() {

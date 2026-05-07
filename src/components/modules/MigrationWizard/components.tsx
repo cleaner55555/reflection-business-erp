@@ -2,16 +2,19 @@
 
 import { useRef, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/checkbox'
-from '@/components/ui/label'
-from '@/components/ui/progress'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/table'
-import { , AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, ChevronRight, Contact, Database, Eye, FileSpreadsheet, Info, Loader2, MousePointerClick, Rocket, Sparkles, Undo2, Upload, UploadCloud, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Progress } from '@/components/ui/progress'
+import { Separator } from '@/components/ui/separator'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, ChevronRight, Contact, Database, Eye, FileSpreadsheet, Info, Loader2, MousePointerClick, Rocket, Sparkles, Undo2, Upload, UploadCloud, X } from 'lucide-react'
+'use client'
+
+import { useRef, useState } from 'react'
+
 import type { ScannedFile, ImportProgress, MigrationResult, ScannedFile, ImportProgress } from './types'
 
 function MigrationFlow() {

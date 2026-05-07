@@ -1309,8 +1309,10 @@ import {
   Shield, Flame, Crown, ChevronDown, ChevronUp,
   AlertTriangle, Edit3, X, Filter, Sparkles, Hash,
   FolderOpen, Zap, Activity, Trophy, Target, Heart
-} from 'lucide-react'
+import { Calendar, Video, Bug } from 'lucide-react'
 import {
+import { Calendar } from '@/components/ui/calendar'
+import { ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'

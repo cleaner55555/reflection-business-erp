@@ -10,3 +10,5 @@ export interface Company {
     invoices: number
     products: number
   }
+
+}

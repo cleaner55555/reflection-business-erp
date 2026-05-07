@@ -6,8 +6,8 @@ export interface Lesson {
   orderNum: number
   type: string
   createdAt: string
-}
 
+}
 export interface Course {
   id: string
   title: string
@@ -18,3 +18,5 @@ export interface Course {
   status: string
   createdAt: string
   _count?: { lessons: number }
+
+}

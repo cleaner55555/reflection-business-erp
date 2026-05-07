@@ -10,11 +10,13 @@ export interface Referral {
   notes?: string
   createdAt: string
   completedAt?: string
-}
 
+}
 export interface DashboardData {
   totalReferrals: number
   pendingReferrals: number
   completedReferrals: number
   totalRewards: number
-  topReferrers: Array<{ name: string; count: number }
+  topReferrers: Array<{ name: string; count: number }>
+
+}

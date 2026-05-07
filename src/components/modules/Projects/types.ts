@@ -12,6 +12,7 @@ export interface Project {
   partnerId: string | null
   partner?: { id: string; name: string }
 
+}
 export interface ProjectTask {
   id: string
   projectId: string
@@ -28,8 +29,8 @@ export interface ProjectTask {
   createdAt: string
   updatedAt: string
   projectName?: string
-}
 
+}
 export interface TimesheetEntry {
   id: string
   projectId: string
@@ -40,6 +41,7 @@ export interface TimesheetEntry {
   description: string | null
   project?: { id: string; name: string }
 
+}
 export interface Partner {
   id: string
   name: string

@@ -14,6 +14,7 @@ export interface ShippingCarrier {
   notes?: string
   _count?: { orders: number }
 
+}
 export interface ShippingOrder {
   id: string
   number: string
@@ -46,6 +47,7 @@ export interface ShippingOrder {
   deliveredAt?: string
   carrier?: { id: string; name: string; code: string }
 
+}
 export interface DashboardData {
   totalOrders: number
   draftOrders: number
@@ -57,8 +59,9 @@ export interface DashboardData {
   totalCodAmount: number
   activeCarriers: number
   recentOrders: ShippingOrder[]
-  carrierStats: Array<{ carrierId: string; carrierName: string; carrierCode: string; count: number; totalCost: number }
+  carrierStats: Array<{ carrierId: string; carrierName: string; carrierCode: string; count: number; totalCost: number }>
 
+}
 export interface ShippingEvent {
   id: string
   status: string

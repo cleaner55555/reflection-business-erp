@@ -1,14 +1,14 @@
 'use client'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/chart'
-from '@/components/ui/input'
-from '@/components/ui/scroll-area'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-import { , ArrowUpRight, BarChart3, CheckCircle2, ExternalLink, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { ArrowUpRight, BarChart3, CheckCircle2, ExternalLink, X } from 'lucide-react'
+'use client'
+
 import type { ChatMessage, MessageData, APIResponse } from './types'
 
 function InlineChart({

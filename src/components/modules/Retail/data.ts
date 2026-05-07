@@ -62,3 +62,6 @@ export const processPayment = async () => {
     const paid = parseFloat(paidAmount) || 0
 
     try {
+
+}
+}

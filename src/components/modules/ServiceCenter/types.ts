@@ -31,16 +31,16 @@ export interface ServiceOrder {
   rating: number
   timeline: ServiceEvent[]
   parts: ServicePart[]
-}
 
+}
 export interface ServiceEvent {
   id: string
   action: string
   description: string
   performedBy: string
   timestamp: string
-}
 
+}
 export interface ServicePart {
   id: string
   name: string
@@ -48,8 +48,8 @@ export interface ServicePart {
   quantity: number
   unitPrice: number
   total: number
-}
 
+}
 export interface ServiceStats {
   total: number
   open: number
@@ -59,4 +59,6 @@ export interface ServiceStats {
   avgRepairDays: number
   avgCost: number
   totalRevenue: number
-  byCategory: Array<{ category: string; count: number; label: string }
+  byCategory: Array<{ category: string; count: number; label: string }>
+
+}

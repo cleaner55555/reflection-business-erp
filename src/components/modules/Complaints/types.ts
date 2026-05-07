@@ -28,24 +28,24 @@ export interface Complaint {
   timeline: ComplaintEvent[]
   attachments: ComplaintAttachment[]
   qualityScore: number
-}
 
+}
 export interface ComplaintEvent {
   id: string
   type: string
   description: string
   performedBy: string
   timestamp: string
-}
 
+}
 export interface ComplaintAttachment {
   id: string
   fileName: string
   fileType: string
   fileSize: number
   uploadedAt: string
-}
 
+}
 export interface ComplaintStats {
   total: number
   new: number
@@ -57,4 +57,6 @@ export interface ComplaintStats {
   avgSatisfaction: number
   totalAmountRequested: number
   totalAmountApproved: number
-  byCategory: Array<{ category: string; count: number; label: string; amountRequested: number; amountApproved: number }
+  byCategory: Array<{ category: string; count: number; label: string; amountRequested: number; amountApproved: number }>
+
+}

@@ -7,16 +7,16 @@ export interface Skill {
   isActive: boolean
   employeeCount: number
   createdAt: string
-}
 
+}
 export interface SkillLevel {
   id: string
   name: string
   value: number
   color: string
   description: string
-}
 
+}
 export interface EmployeeSkill {
   id: string
   employeeId: string
@@ -28,8 +28,8 @@ export interface EmployeeSkill {
   yearsExperience: number
   lastAssessed: string
   certification?: string
-}
 
+}
 export interface Certification {
   id: string
   name: string
@@ -42,8 +42,8 @@ export interface Certification {
   expiryDate?: string
   status: string
   certificateNumber?: string
-}
 
+}
 export interface SkillAssessment {
   id: string
   employeeId: string
@@ -55,8 +55,8 @@ export interface SkillAssessment {
   assessedBy: string
   assessmentDate: string
   notes: string
-}
 
+}
 export interface SkillGap {
   skillName: string
   requiredLevel: number
@@ -64,8 +64,8 @@ export interface SkillGap {
   gap: number
   employeeCount: number
   priority: string
-}
 
+}
 export interface SkillsDashboard {
   totalSkills: number
   totalCategories: number
@@ -74,4 +74,6 @@ export interface SkillsDashboard {
   skillCoverage: number
   totalCertifications: number
   expiringCertifications: number
-  topSkills: Array<{ name: string; employeeCount: number; avgLevel: number }
+  topSkills: Array<{ name: string; employeeCount: number; avgLevel: number }>
+
+}

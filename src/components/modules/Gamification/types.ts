@@ -14,8 +14,8 @@ export interface Goal {
   points: number
   progress: number
   createdAt: string
-}
 
+}
 export interface Challenge {
   id: string
   title: string
@@ -32,8 +32,8 @@ export interface Challenge {
   completedCount: number
   criteria: string
   createdAt: string
-}
 
+}
 export interface BadgeItem {
   id: string
   name: string
@@ -46,8 +46,8 @@ export interface BadgeItem {
   points: number
   isRare: boolean
   isSecret: boolean
-}
 
+}
 export interface LeaderboardEntry {
   id: string
   employeeId: string
@@ -61,8 +61,8 @@ export interface LeaderboardEntry {
   badges: number
   completedGoals: number
   streak: number
-}
 
+}
 export interface GoalTemplate {
   id: string
   title: string
@@ -73,8 +73,8 @@ export interface GoalTemplate {
   unit: string
   points: number
   difficulty: string
-}
 
+}
 export interface GamificationDashboard {
   activeGoals: number
   completedGoals: number
@@ -85,4 +85,6 @@ export interface GamificationDashboard {
   totalParticipants: number
   topScorer: string
   avgPoints: number
-  recentAchievements: Array<{ employee: string; action: string; points: number; time: string }
+  recentAchievements: Array<{ employee: string; action: string; points: number; time: string }>
+
+}

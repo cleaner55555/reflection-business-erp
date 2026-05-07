@@ -1,4 +1,6 @@
-'use client'import { AlertTriangle, Calendar, CalendarDays, ChevronLeft, ChevronRight, Circle, Clock, Edit3, MapPin, Plus, Search, Timer, Trash2 , Bell} from 'lucide-react'
+'use client'
+
+import { AlertTriangle, Calendar, CalendarDays, ChevronLeft, ChevronRight, Circle, Clock, Edit3, MapPin, Plus, Search, Timer, Trash2, Bell, CheckCircle2, Info, Users, List } from 'lucide-react'
 
 
 
@@ -218,6 +220,11 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TabsContent } from '@/components/ui/tabs'
+import { CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Textarea } from '@/components/ui/textarea'
 
 // ========== EditingEventIzmenidogaa ==========
 

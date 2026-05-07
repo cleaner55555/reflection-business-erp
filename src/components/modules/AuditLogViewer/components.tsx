@@ -34,10 +34,12 @@ import {
   Trash,
   Download,
   Loader2,
-} from 'lucide-react'
+import { AlertTriangle, Download, Filter, History, Loader2, PlusCircle, Search, Trash, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
 import { formatDate } from '@/lib/helpers'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
 
 // ============ TYPES ============
 

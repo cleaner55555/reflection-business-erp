@@ -1,4 +1,6 @@
-'use client'import { AlertCircle, CheckCircle2, DollarSign, Download, Eye, FileSignature, FileText, Plus, RefreshCw, Search, Trash2, XCircle } from 'lucide-react'
+'use client'
+
+import { AlertCircle, CheckCircle2, DollarSign, Download, Eye, FileSignature, FileText, Plus, RefreshCw, Search, Trash2, XCircle, FolderOpen } from 'lucide-react'
 
 
 
@@ -415,6 +417,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { TabsContent } from '@/components/ui/tabs'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Textarea } from '@/components/ui/textarea'
 
 // ========== Noviugovor ==========
 

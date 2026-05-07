@@ -20,8 +20,8 @@ export interface Visitor {
   totalDuration?: number
   idDocument?: string
   vehiclePlate?: string
-}
 
+}
 export interface VisitorKPI {
   todayTotal: number
   checkedIn: number
@@ -29,8 +29,8 @@ export interface VisitorKPI {
   avgDuration: number
   weekTotal: number
   monthTotal: number
-}
 
+}
 export type VisitorStatus = 'expected' | 'checked_in' | 'checked_out' | 'cancelled'
 
 interface Visitor {
@@ -68,3 +68,4 @@ interface VisitorKPI {
 // ============ STATUS CONFIG ============
 
 const statusConfig: Record<VisitorStatus, { label: string;
+}>

@@ -7,8 +7,8 @@ export interface POSProduct {
   currentStock: number
   category?: string
   unit: string
-}
 
+}
 export interface CartItem {
   productId: string
   productName: string
@@ -18,8 +18,8 @@ export interface CartItem {
   discountPct: number
   taxRate: number
   maxStock: number
-}
 
+}
 export interface POSShift {
   id: string
   number: number
@@ -33,6 +33,7 @@ export interface POSShift {
   closedAt?: string
   orders?: { totalAmount: number; paymentMethod: string; status: string }
 
+}
 export interface POSOrder {
   id: string
   orderNumber: string
@@ -43,6 +44,7 @@ export interface POSOrder {
   createdAt: string
   shift?: { number: number; cashierName: string }
 
+}
 export interface SyncProduct {
   id: string
   name: string
@@ -54,8 +56,8 @@ export interface SyncProduct {
   unit: string
   marginPct: number
   markupPct: number
-}
 
+}
 export interface SyncCategory {
   name: string
   count: number

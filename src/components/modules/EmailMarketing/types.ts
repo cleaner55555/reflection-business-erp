@@ -6,6 +6,7 @@ export interface EmailList {
   updatedAt: string
   _count?: { subscribers: number; campaigns: number }
 
+}
 export interface EmailSubscriber {
   id: string
   listId: string | null
@@ -18,6 +19,7 @@ export interface EmailSubscriber {
   updatedAt: string
   list?: { id: string; name: string }
 
+}
 export interface EmailCampaign {
   id: string
   name: string
@@ -36,6 +38,7 @@ export interface EmailCampaign {
   updatedAt: string
   list?: { id: string; name: string }
 
+}
 export interface EmailTemplate {
   id: string
   name: string

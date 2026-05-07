@@ -1,13 +1,10 @@
 'use client'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/scroll-area'
-from '@/components/ui/separator'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-import { , Activity } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Activity } from 'lucide-react'
+'use client'
+
 import type { OverdueInvoice, RecentPartner, RecentTransaction, ActivityItem, DashboardData, LowStockProduct } from './types'
 
 function DashboardSkeleton() {

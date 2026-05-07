@@ -12,8 +12,8 @@ export interface FieldOrder {
   completedDate?: string
   notes?: string
   createdAt: string
-}
 
+}
 export interface DashboardData {
   totalOrders: number
   openOrders: number
@@ -21,4 +21,6 @@ export interface DashboardData {
   completedToday: number
   overdueOrders: number
   recentOrders: FieldOrder[]
-  typeBreakdown: Array<{ type: string; count: number }
+  typeBreakdown: Array<{ type: string; count: number }>
+
+}

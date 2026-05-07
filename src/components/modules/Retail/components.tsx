@@ -2,14 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/separator'
-from '@/components/ui/tabs'
-import { , AlertCircle, Banknote, BarChart3, CheckCircle2, ChevronLeft, Clock, CreditCard, LogIn, LogOut, Minus, Package, Plus, Printer, Receipt, Search, ShoppingCart, Trash2, TrendingUp, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
+import { AlertCircle, Banknote, BarChart3, CheckCircle2, ChevronLeft, Clock, CreditCard, LogIn, LogOut, Minus, Package, Plus, Printer, Receipt, Search, ShoppingCart, Trash2, TrendingUp, X } from 'lucide-react'
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import type { POSProduct, CartItem, POSShift, POSOrder, SyncProduct, SyncCategory } from './types'
 
 function POSTerminal({ companyId }: { companyId: string | null }) {

@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+
 import { ArrowDownCircle, ArrowLeft, ArrowUpCircle, BookOpen, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import type { Transaction, CashEntry, JournalEntry } from './types'
 

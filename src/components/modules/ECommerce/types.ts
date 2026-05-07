@@ -18,8 +18,8 @@ export interface StoreProduct {
   status: 'active' | 'draft' | 'out_of_stock' | 'archived'
   featured?: boolean
   createdAt: string
-}
 
+}
 export interface OrderItem {
   id: string
   productId: string
@@ -28,8 +28,8 @@ export interface OrderItem {
   quantity: number
   unitPrice: number
   totalPrice: number
-}
 
+}
 export interface StoreOrder {
   id: string
   orderNumber: string
@@ -52,6 +52,7 @@ export interface StoreOrder {
   notes?: string
   timeline: { status: string; date: string; note?: string }
 
+}
 export interface Category {
   id: string
   name: string
@@ -63,8 +64,8 @@ export interface Category {
   sortOrder: number
   isActive: boolean
   children?: Category[]
-}
 
+}
 export interface Coupon {
   id: string
   code: string
@@ -79,8 +80,8 @@ export interface Coupon {
   isActive: boolean
   appliesTo?: string
   createdAt: string
-}
 
+}
 export interface StoreSettings {
   storeName: string
   storeUrl: string
@@ -98,3 +99,5 @@ export interface StoreSettings {
   lowStockAlert: number
   outOfStockBehavior: string
   paymentMethods: { id: string; name: string; enabled: boolean; icon: string }
+
+}

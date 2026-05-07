@@ -6,11 +6,12 @@ export interface ChatMessage {
   data?: MessageData
   actionType?: string
   module?: string
+
 }
-
 export interface MessageData {
-  columns?: Array<{ key: string; label: string }
+  columns?: Array<{ key: string; label: string }>
 
+}
 export interface APIResponse {
   reply?: string
   actionType?: string

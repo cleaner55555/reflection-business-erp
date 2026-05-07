@@ -7,13 +7,14 @@ export interface CellFormat {
   bgColor?: string
   fontSize?: number
   numberFormat?: 'text' | 'number' | 'currency' | 'percent' | 'date'
-}
 
+}
 export interface Sheet {
   id: string
   name: string
-  data: Record<string, { value: string; format?: CellFormat }
+  data: Record<string, { value: string; format?: CellFormat }>
 
+}
 export interface SpreadsheetTemplate {
   id: string
   name: string
@@ -21,8 +22,8 @@ export interface SpreadsheetTemplate {
   icon: string
   category: string
   sheetCount: number
-}
 
+}
 export interface HistoryEntry {
   sheetId: string
   cellRef: string

@@ -2,19 +2,17 @@
 
 import { useMemo } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/checkbox'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/progress'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { , AlertTriangle } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { AlertTriangle } from 'lucide-react'
+'use client'
+
+import { useMemo } from 'react'
+
 import type { PlanningSlot, Employee, Project, GanttItem, AvailabilityDay } from './types'
 
 function KpiCard({ label, value, icon: Icon, valueColor = 'text-foreground', subtitle }: {

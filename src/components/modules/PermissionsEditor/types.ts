@@ -7,10 +7,11 @@ export interface Role {
   isDefault: boolean
   _count?: { userCompanies: number }
 
+}
 export interface Permissions {
   [module: string]: string[]
-}
 
+}
 export interface ModuleGroup {
   label: string
   icon: string

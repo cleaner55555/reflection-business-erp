@@ -9,8 +9,8 @@ export interface LeaveRequest {
   reason?: string
   approvedBy?: string
   createdAt: string
-}
 
+}
 export interface DashboardData {
   totalRequests: number
   pendingRequests: number
@@ -18,4 +18,6 @@ export interface DashboardData {
   rejectedRequests: number
   currentMonthAbsences: number
   recentRequests: LeaveRequest[]
-  typeBreakdown: Array<{ type: string; count: number }
+  typeBreakdown: Array<{ type: string; count: number }>
+
+}

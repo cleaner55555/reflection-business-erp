@@ -25,14 +25,15 @@ export interface IoTSensor {
   readings?: SensorReading[]
   group?: { id: string; name: string }
 
+}
 export interface SensorReading {
   id: string
   sensorId: string
   value: number
   timestamp: string
   status: string
-}
 
+}
 export interface AlertRule {
   id: string
   name: string
@@ -52,8 +53,8 @@ export interface AlertRule {
   lastTriggeredAt: string | null
   triggerCount: number
   createdAt: string
-}
 
+}
 export interface AutomationRule {
   id: string
   name: string
@@ -68,8 +69,8 @@ export interface AutomationRule {
   lastExecutedAt: string | null
   executionCount: number
   createdAt: string
-}
 
+}
 export interface DeviceGroup {
   id: string
   name: string
@@ -79,8 +80,8 @@ export interface DeviceGroup {
   color: string
   sensorCount: number
   createdAt: string
-}
 
+}
 export interface IoTAlert {
   id: string
   sensorId: string

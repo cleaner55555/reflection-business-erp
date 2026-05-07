@@ -7,12 +7,14 @@ export interface DashboardData {
     lastMonthRevenue: number
   }
 
+}
 export interface Partner {
   id: string
   name: string
   type: string
   _count: { invoices: number; purchaseOrders: number }
 
+}
 export interface Product {
   id: string
   name: string
@@ -20,8 +22,8 @@ export interface Product {
   sellingPrice: number
   currentStock: number
   minStock?: number
-}
 
+}
 export interface SavedReport {
   id: string
   name: string

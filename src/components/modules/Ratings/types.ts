@@ -12,8 +12,8 @@ export interface Rating {
   comment?: string
   ratedBy: string
   ratedAt: string
-}
 
+}
 export interface Survey {
   id: string
   name: string
@@ -23,8 +23,8 @@ export interface Survey {
   responseCount: number
   avgRating: number
   createdAt: string
-}
 
+}
 export interface RatingCriteria {
   id: string
   name: string
@@ -32,8 +32,8 @@ export interface RatingCriteria {
   weight: number
   scaleMax: number
   category: string
-}
 
+}
 export interface RatingReport {
   id: string
   period: string
@@ -44,12 +44,15 @@ export interface RatingReport {
   avgPrice: number
   avgTime: number
   trend: 'up' | 'down' | 'stable'
-  topRated: Array<{ name: string; rating: number; count: number }
+  topRated: Array<{ name: string; rating: number; count: number }>
 
+}
 export interface RatingDashboard {
   totalRatings: number
   avgRating: number
   responseRate: number
   trendDirection: 'up' | 'down' | 'stable'
   trendValue: number
-  distribution: Array<{ rating: number; count: number; percentage: number }
+  distribution: Array<{ rating: number; count: number; percentage: number }>
+
+}

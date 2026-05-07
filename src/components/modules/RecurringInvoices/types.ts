@@ -1,14 +1,14 @@
 export interface Partner {
   id: string
   name: string
-}
 
+}
 export interface Product {
   id: string
   name: string
   sellingPrice: number
-}
 
+}
 export interface RecurringInvoice {
   id: string
   name: string
@@ -25,6 +25,7 @@ export interface RecurringInvoice {
   updatedAt: string
   partner: { id: string; name: string }
 
+}
 export interface LineItem {
   productId: string
   productName: string

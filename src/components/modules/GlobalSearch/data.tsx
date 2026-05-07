@@ -19,3 +19,5 @@ export async function fetchSearchResults(
   searchQuery: string,
   activeFilter: string,
 ): Promise<SearchGroup[]> {
+
+}

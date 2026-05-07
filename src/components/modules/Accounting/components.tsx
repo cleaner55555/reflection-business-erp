@@ -2,17 +2,20 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-from '@/components/ui/alert-dialog'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-import { , AlertCircle, ArrowDownRight, ArrowLeft, BarChart3, BookOpen, Calculator, CheckCircle2, Download, Eye, FilePenLine, Filter, Landmark, Lock, Pencil, PiggyBank, Plus, Receipt, RefreshCw, Scale, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X } from 'lucide-react'
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { AlertCircle, ArrowDownRight, ArrowLeft, BarChart3, BookOpen, Calculator, CheckCircle2, Download, Eye, FilePenLine, Filter, Landmark, Lock, Pencil, PiggyBank, Plus, Receipt, RefreshCw, Scale, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X } from 'lucide-react'
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+
 import type { Account, JournalEntry, JournalRow, BudgetItem, DashboardData, AccountStatement } from './types'
 
 function DashboardTab({ fiscalYear }: { fiscalYear: number }) {

@@ -9,8 +9,8 @@ export interface Subscription {
   status: 'active' | 'trial' | 'paused' | 'cancelled' | 'expired'
   billingCycle: 'monthly' | 'quarterly' | 'annually'
   trialDays: number
-}
 
+}
 export interface Plan {
   id: string
   name: string
@@ -22,8 +22,8 @@ export interface Plan {
   isActive: boolean
   trialPeriod: number
   setupFee: number
-}
 
+}
 export interface Payment {
   id: string
   date: string
@@ -33,8 +33,8 @@ export interface Payment {
   amount: number
   method: 'card' | 'bank' | 'stripe' | 'paypal'
   status: 'paid' | 'pending' | 'failed' | 'refunded'
-}
 
+}
 export interface Coupon {
   id: string
   code: string
@@ -45,4 +45,6 @@ export interface Coupon {
   validFrom: string
   validTo: string
   status: 'active' | 'inactive' | 'expired'
-  usageLog: Array<{ date: string; customer: string; subscription: string }
+  usageLog: Array<{ date: string; customer: string; subscription: string }>
+
+}

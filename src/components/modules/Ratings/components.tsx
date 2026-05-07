@@ -2,19 +2,6 @@
 
 import { useState } from 'react'
 
-from '@/components/ui/alert'
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/progress'
-from '@/components/ui/scroll-area'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
 import { Star } from 'lucide-react'
 import type { Rating, Survey, RatingCriteria, RatingReport, RatingDashboard } from './types'
 

@@ -4,8 +4,8 @@ export interface RestoCategory {
   sortOrder: number
   isActive: boolean
   items?: RestoMenuItem[]
-}
 
+}
 export interface RestoMenuItem {
   id: string
   categoryId: string
@@ -18,6 +18,7 @@ export interface RestoMenuItem {
   sortOrder: number
   category?: { id: string; name: string }
 
+}
 export interface RestoTable {
   id: string
   number: number
@@ -26,8 +27,8 @@ export interface RestoTable {
   status: string
   location?: string
   activeOrderCount?: number
-}
 
+}
 export interface RestoOrderItem {
   id: string
   orderId: string
@@ -38,8 +39,8 @@ export interface RestoOrderItem {
   total: number
   notes?: string
   status: string
-}
 
+}
 export interface RestoOrder {
   id: string
   orderNumber: number
@@ -53,3 +54,5 @@ export interface RestoOrder {
   createdAt: string
   updatedAt: string
   table?: { id: string; number: number; name?: string; location?: string }
+
+}

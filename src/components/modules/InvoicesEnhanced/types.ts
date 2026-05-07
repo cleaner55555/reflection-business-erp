@@ -4,6 +4,7 @@ export interface InstallmentPlan {
   paidInstallments: number; status: string; currency: string
   partner: { name: string }
 
+}
 export interface FiscalInvoice {
   id: string; number: string; date: string; type: string; status: string
   totalAmount: number; taxAmount: number; baseAmount: number
@@ -11,3 +12,5 @@ export interface FiscalInvoice {
   sefStatus: string; sefSentAt: string | null
   currency: string; incoterms: string | null
   partner: { name: string; pib: string | null }
+
+}

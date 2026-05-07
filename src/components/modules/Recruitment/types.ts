@@ -12,8 +12,8 @@ export interface JobPosting {
   requirements?: string
   publishedAt?: string
   createdAt: string
-}
 
+}
 export interface DashboardData {
   totalJobs: number
   openJobs: number
@@ -21,4 +21,6 @@ export interface DashboardData {
   totalApplicants: number
   avgApplicantsPerJob: number
   recentJobs: JobPosting[]
-  departmentBreakdown: Array<{ department: string; count: number }
+  departmentBreakdown: Array<{ department: string; count: number }>
+
+}

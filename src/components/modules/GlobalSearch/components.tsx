@@ -1,6 +1,8 @@
 'use client'
 
-import { , Building2, FileText, Package, Search, User, Users } from 'lucide-react'
+import { Building2, FileText, Package, Search, User, Users } from 'lucide-react'
+'use client'
+
 import type { SearchResult, SearchGroup } from './types'
 
 function ResultIcon({

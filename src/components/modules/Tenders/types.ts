@@ -28,15 +28,15 @@ export interface Tender {
   createdAt: string
   updatedAt: string
   timeline: TenderEvent[]
-}
 
+}
 export interface TenderCriterion {
   id: string
   name: string
   weight: number
   type: string
-}
 
+}
 export interface TenderBidder {
   id: string
   name: string
@@ -47,16 +47,16 @@ export interface TenderBidder {
   submittedAt: string | null
   disqualified: boolean
   disqualificationReason: string
-}
 
+}
 export interface TenderEvent {
   id: string
   action: string
   description: string
   performedBy: string
   timestamp: string
-}
 
+}
 export interface TenderStats {
   total: number
   open: number
@@ -65,4 +65,6 @@ export interface TenderStats {
   cancelled: number
   totalValue: number
   avgBidders: number
-  byType: Array<{ type: string; count: number; label: string }
+  byType: Array<{ type: string; count: number; label: string }>
+
+}

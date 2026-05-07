@@ -2,15 +2,6 @@
 
 import { useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/slider'
-from '@/components/ui/switch'
-from '@/components/ui/tabs'
 import { Check, Search } from 'lucide-react'
 import { cn } from '@/lib/helpers'
 import { useTranslation, ALL_LANGUAGES } from '@/lib/i18n'

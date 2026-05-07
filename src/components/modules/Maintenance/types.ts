@@ -15,8 +15,9 @@ export interface MaintenanceOrder {
   category?: string
   partsNeeded?: string[]
   safetyNotes?: string
-  workLog?: Array<{ date: string; note: string }
+  workLog?: Array<{ date: string; note: string }>
 
+}
 export interface DashboardData {
   totalOrders: number
   openOrders: number
@@ -26,8 +27,9 @@ export interface DashboardData {
   totalCost: number
   mtbf: number
   recentOrders: MaintenanceOrder[]
-  typeBreakdown: Array<{ type: string; count: number }
+  typeBreakdown: Array<{ type: string; count: number }>
 
+}
 export interface EquipmentItem {
   id: string
   name: string
@@ -39,8 +41,8 @@ export interface EquipmentItem {
   nextMaintenance: string
   healthScore: number
   breakdowns90d: number
-}
 
+}
 export interface MaintenancePlan {
   id: string
   equipmentId: string
@@ -50,8 +52,8 @@ export interface MaintenancePlan {
   nextDue: string
   autoCreate: boolean
   completedDates: string[]
-}
 
+}
 export interface SparePart {
   id: string
   name: string
@@ -61,4 +63,6 @@ export interface SparePart {
   minStock: number
   location: string
   unitCost: number
-  usageLog: Array<{ date: string; orderNumber: string; qty: number }
+  usageLog: Array<{ date: string; orderNumber: string; qty: number }>
+
+}

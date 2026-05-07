@@ -1,18 +1,11 @@
 'use client'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/checkbox'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/switch'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { , Bell, Plus } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Bell, Plus } from 'lucide-react'
+'use client'
+
 import type { Appointment, DashboardData, Client, Service, StaffMember, AppSettings } from './types'
 
 function KpiCard({ label, value, icon, colorClass }: {

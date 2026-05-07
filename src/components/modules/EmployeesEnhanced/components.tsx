@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from 'react'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
+import { Textarea } from '@/components/ui/textarea'
+'use client'
+
+import { useEffect, useState } from 'react'
+
 import { Award, ChevronDown, ChevronRight, GitBranch, Pencil, Plus, Star, Trash2, User, Users } from 'lucide-react'
 import type { EmployeeEval, OrgEmployee } from './types'
 

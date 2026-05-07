@@ -18,6 +18,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import {
+import { AlertTriangle, BarChart3, Check, CheckCircle2, ChevronRight, Info, Package, Plus, RefreshCw, Search, ShoppingCart, Star, Trash2, TrendingUp, Truck, X, Zap } from 'lucide-react'
+import { PieChart } from 'recharts'
 
 interface MarketplaceContentProps {
   activeTab: any

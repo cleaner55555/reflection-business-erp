@@ -19,22 +19,22 @@ export interface ApprovalRequest {
   updatedAt: string
   approvedAt?: string
   rejectedAt?: string
-}
 
+}
 export interface ApprovalComment {
   id: string
   author: string
   content: string
   createdAt: string
-}
 
+}
 export interface ApprovalHistoryEntry {
   action: string
   performedBy: string
   timestamp: string
   note?: string
-}
 
+}
 export interface ApprovalTemplate {
   id: string
   name: string
@@ -44,8 +44,8 @@ export interface ApprovalTemplate {
   approverRole: string
   isActive: boolean
   usageCount: number
-}
 
+}
 export interface ApprovalDashboard {
   totalRequests: number
   pendingRequests: number
@@ -54,4 +54,6 @@ export interface ApprovalDashboard {
   avgResponseHours: number
   myPendingCount: number
   urgentPendingCount: number
-  requestsByType: Array<{ type: string; count: number; label: string }
+  requestsByType: Array<{ type: string; count: number; label: string }>
+
+}

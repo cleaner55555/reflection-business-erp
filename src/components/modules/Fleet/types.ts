@@ -7,8 +7,8 @@ export interface VehicleService {
   cost: number
   mileage: number
   nextDue?: string
-}
 
+}
 export interface VehicleExpense {
   id: string
   vehicleId: string
@@ -17,8 +17,8 @@ export interface VehicleExpense {
   amount: number
   description: string
   mileage: number
-}
 
+}
 export interface Vehicle {
   id: string
   registration: string
@@ -31,3 +31,5 @@ export interface Vehicle {
   assignedTo?: string
   notes?: string
   _count?: { services: number; expenses: number }
+
+}

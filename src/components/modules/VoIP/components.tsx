@@ -1,18 +1,8 @@
 'use client'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/progress'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/switch'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
+import { Card } from '@/components/ui/card'
+'use client'
+
 import {  } from 'lucide-react'
 import type { VoipCall, Extension, IvrMenu, IvrEntry, Recording, SipTrunk, CallQueue, ForwardingRule, DialPlan } from './types'
 

@@ -14,8 +14,8 @@ export interface Appointment {
   price?: number
   reminderStatus?: 'sent' | 'pending' | 'not_sent'
   createdAt: string
-}
 
+}
 export interface DashboardData {
   totalAppointments: number
   todayAppointments: number
@@ -25,8 +25,9 @@ export interface DashboardData {
   noShowRate: number
   avgDuration: number
   totalRevenue: number
-  weeklyTrend: Array<{ day: string; count: number }
+  weeklyTrend: Array<{ day: string; count: number }>
 
+}
 export interface Client {
   id: string
   name: string
@@ -38,8 +39,8 @@ export interface Client {
   isVip: boolean
   notes: string
   preferences: string
-}
 
+}
 export interface Service {
   id: string
   name: string
@@ -48,8 +49,8 @@ export interface Service {
   price: number
   category: string
   bookingCount: number
-}
 
+}
 export interface StaffMember {
   id: string
   name: string
@@ -57,8 +58,8 @@ export interface StaffMember {
   workingDays: string[]
   maxPerDay: number
   isActive: boolean
-}
 
+}
 export interface AppSettings {
   workStart: string
   workEnd: string

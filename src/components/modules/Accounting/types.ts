@@ -8,6 +8,7 @@ export interface Account {
   isActive: boolean
   _count?: { entries: number }
 
+}
 export interface JournalEntry {
   id: string
   date: string
@@ -21,13 +22,14 @@ export interface JournalEntry {
   reconciled?: boolean
   partner?: { id: string; name: string }
 
+}
 export interface JournalRow {
   tempId: string
   accountCode: string
   debit: number
   credit: number
-}
 
+}
 export interface BudgetItem {
   id: string
   accountCode: string
@@ -39,8 +41,8 @@ export interface BudgetItem {
   totalAnnual: number
   notes?: string | null
   isActive: boolean
-}
 
+}
 export interface DashboardData {
   fiscalYear: number
   totalAssets: number
@@ -54,7 +56,9 @@ export interface DashboardData {
   totalBudget: number
   budgetCount: number
   recentEntries: JournalEntry[]
-}
 
+}
 export interface AccountStatement {
   account: { code: string; name: string; type: string }
+
+}

@@ -943,11 +943,14 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
+import { Table } from '@/components/ui/table'
+import { Tooltip } from '@/components/ui/tooltip'
+import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
   FileText, Plus, Search, Eye, Trash2, Edit3, RefreshCw, CheckCircle2,
   Clock, ArrowRight, BarChart3, DollarSign, TrendingUp, AlertCircle, Send,
   X, Copy, Printer, FileBarChart, BookTemplate, History, Percent,
   Calculator, Users, Package,
-} from 'lucide-react'
+import { AlertCircle, ArrowRight, BarChart3, Calculator, CheckCircle2, Clock, Copy, Eye, FileText, History, Package, Plus, Printer, RefreshCw, Search, Send, Server, Trash2, TrendingUp, Users, X } from 'lucide-react'
 
 interface SalesOrder {
 const STATUS_CONFIG: Record<string, { labelKey: string; color: string; icon: typeof Clock }> = {

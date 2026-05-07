@@ -1,8 +1,8 @@
 export interface Partner {
   id: string
   name: string
-}
 
+}
 export interface InvoiceItem {
   id: string
   productId: string
@@ -12,8 +12,8 @@ export interface InvoiceItem {
   discountPct: number
   taxRate: number
   total: number
-}
 
+}
 export interface Invoice {
   id: string
   number: string
@@ -32,12 +32,13 @@ export interface Invoice {
   sefUuid: string | null
   partner: { id: string; name: string }
 
+}
 export interface Product {
   id: string
   name: string
   sellingPrice: number
-}
 
+}
 export interface LineItem {
   productId: string
   productName: string
@@ -45,8 +46,8 @@ export interface LineItem {
   unitPrice: number
   discountPct: number
   taxRate: number
-}
 
+}
 export interface FullInvoice {
   id: string
   number: string
@@ -73,3 +74,5 @@ export interface FullInvoice {
     account: string | null
     bank: string | null
   }
+
+}

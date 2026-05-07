@@ -5,6 +5,7 @@ export interface Doc {
   version?: number; tags?: string; folder?: string | null
   partner?: { id: string; name: string }
 
+}
 export interface Folder {
   id: string; name: string; parentId: string | null; color: string
   docCount: number; createdAt: string

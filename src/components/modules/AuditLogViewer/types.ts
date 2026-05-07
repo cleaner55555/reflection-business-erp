@@ -9,10 +9,12 @@ export interface AuditLog {
   details?: string | null
   ipAddress?: string | null
   createdAt: string
-}
 
+}
 export interface AuditStats {
   total: number
   recentHour: number
   today: number
-  byAction: Array<{ action: string; _count: number }
+  byAction: Array<{ action: string; _count: number }>
+
+}

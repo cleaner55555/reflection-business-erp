@@ -9,8 +9,8 @@ export interface SalesOrder {
   validUntil?: string
   notes?: string
   createdAt: string
-}
 
+}
 export interface LineItem {
   id: string
   productId: string
@@ -20,8 +20,8 @@ export interface LineItem {
   discount: number
   tax: number
   lineTotal: number
-}
 
+}
 export interface DashboardData {
   totalOrders: number
   draftOrders: number
@@ -30,8 +30,9 @@ export interface DashboardData {
   totalAmount: number
   avgAmount: number
   recentOrders: SalesOrder[]
-  statusBreakdown: Array<{ status: string; count: number }
+  statusBreakdown: Array<{ status: string; count: number }>
 
+}
 export interface PriceList {
   id: string
   name: string
@@ -41,8 +42,8 @@ export interface PriceList {
   rounding: number
   isActive: boolean
   createdAt: string
-}
 
+}
 export interface OfferTemplate {
   id: string
   name: string
@@ -53,8 +54,8 @@ export interface OfferTemplate {
   defaultDiscount: number
   useCount: number
   createdAt: string
-}
 
+}
 export interface AuditEntry {
   id: string
   orderId: string
@@ -64,22 +65,23 @@ export interface AuditEntry {
   oldStatus: string
   newStatus: string
   description: string
-}
 
+}
 export interface Product {
   id: string
   name: string
   price: number
   category?: string
-}
 
+}
 export interface Partner {
   id: string
   name: string
-}
 
+}
 export type PaymentTerms = 'cod' | '15days' | '30days' | '60days' | 'advance'
 
 // ==================== CONSTANTS ====================
 
 const STATUS_CONFIG: Record<string, { labelKey: string;
+}>

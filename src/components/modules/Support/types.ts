@@ -10,8 +10,8 @@ export interface Ticket {
   assignedTo?: string
   resolvedAt?: string
   createdAt: string
-}
 
+}
 export interface DashboardData {
   totalTickets: number
   openTickets: number
@@ -19,4 +19,6 @@ export interface DashboardData {
   resolvedTickets: number
   avgResolutionHours: number
   recentTickets: Ticket[]
-  categoryBreakdown: Array<{ category: string; count: number }
+  categoryBreakdown: Array<{ category: string; count: number }>
+
+}

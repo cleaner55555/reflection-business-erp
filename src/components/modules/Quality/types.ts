@@ -11,8 +11,8 @@ export interface Inspection {
   notes?: string
   inspectedAt?: string
   createdAt: string
-}
 
+}
 export interface DashboardData {
   totalInspections: number
   passedInspections: number
@@ -21,4 +21,6 @@ export interface DashboardData {
   passRate: number
   totalDefects: number
   recentInspections: Inspection[]
-  typeBreakdown: Array<{ type: string; count: number }
+  typeBreakdown: Array<{ type: string; count: number }>
+
+}

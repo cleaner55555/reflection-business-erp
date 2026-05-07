@@ -29,8 +29,8 @@ export interface Warranty {
   claims: WarrantyClaim[]
   createdAt: string
   updatedAt: string
-}
 
+}
 export interface WarrantyClaim {
   id: string
   date: string
@@ -38,8 +38,8 @@ export interface WarrantyClaim {
   status: string
   cost: number
   resolvedDate: string | null
-}
 
+}
 export interface WarrantyStats {
   total: number
   active: number
@@ -47,4 +47,6 @@ export interface WarrantyStats {
   expired: number
   totalValue: number
   avgDuration: number
-  byCategory: Array<{ category: string; count: number; label: string }
+  byCategory: Array<{ category: string; count: number; label: string }>
+
+}

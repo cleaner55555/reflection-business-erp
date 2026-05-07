@@ -1,17 +1,11 @@
 'use client'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/switch'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-from '@/components/ui/textarea'
-import { , Search } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Search } from 'lucide-react'
+'use client'
+
 import type { EventItem, RegistrationItem, VenueItem, TicketItem } from './types'
 
 function KPICard({ icon: Icon, label, value, subtext, color }: {

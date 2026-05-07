@@ -15,8 +15,8 @@ export interface Requirement {
   notes: string
   createdAt: string
   updatedAt: string
-}
 
+}
 export interface Audit {
   id: string
   number: string
@@ -34,8 +34,8 @@ export interface Audit {
   description: string
   scope: string
   checklist: AuditCheckItem[]
-}
 
+}
 export interface AuditCheckItem {
   id: string
   clause: string
@@ -43,8 +43,8 @@ export interface AuditCheckItem {
   status: 'pass' | 'fail' | 'na' | 'partial'
   notes: string
   evidence: string
-}
 
+}
 export interface NonConformance {
   id: string
   number: string
@@ -65,8 +65,8 @@ export interface NonConformance {
   verification: string
   linkedAudit: string
   costImpact: number
-}
 
+}
 export interface CAPA {
   id: string
   number: string
@@ -86,8 +86,8 @@ export interface CAPA {
   effectiveness: string
   dueDate: string
   completedDate: string | null
-}
 
+}
 export interface RiskAssessment {
   id: string
   number: string
@@ -108,8 +108,8 @@ export interface RiskAssessment {
   status: string
   reviewDate: string
   createdAt: string
-}
 
+}
 export interface ComplianceStats {
   totalRequirements: number
   compliantRequirements: number
@@ -132,4 +132,6 @@ export interface ComplianceStats {
   mediumRisks: number
   lowRisks: number
   overdueRequirements: number
-  byCategory: Array<{ category: string; total: number; compliant: number; rate: number }
+  byCategory: Array<{ category: string; total: number; compliant: number; rate: number }>
+
+}

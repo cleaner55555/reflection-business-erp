@@ -1,17 +1,9 @@
 'use client'
 
-from '@/components/ui/badge'
-from '@/components/ui/button'
-from '@/components/ui/card'
-from '@/components/ui/dialog'
-from '@/components/ui/input'
-from '@/components/ui/label'
-from '@/components/ui/select'
-from '@/components/ui/separator'
-from '@/components/ui/skeleton'
-from '@/components/ui/table'
-from '@/components/ui/tabs'
-import { , BarChart3, TrendingDown, TrendingUp } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { BarChart3, TrendingDown, TrendingUp } from 'lucide-react'
+'use client'
+
 import type { DashboardData, Partner, Product, SavedReport } from './types'
 
 function KPICard({

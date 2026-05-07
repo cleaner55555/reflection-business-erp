@@ -31,7 +31,7 @@ import {
   MousePointerClick, Link2, X, MoveUp, MoveDown, Circle,
   Square, RectangleHorizontal, Megaphone, Target, BookOpen,
   Paintbrush, Heading1, Heading2, AlignLeft, Frame,
-} from 'lucide-react'
+import { AlertTriangle, ArrowUpRight, BarChart3, CheckCircle2, ChevronDown, ChevronRight, Clock, Copy, Edit, ExternalLink, Filter, GripVertical, Home, Image, Info, Layers, Monitor, Plus, RefreshCw, Search, Shield, Sparkles, Trash2, TrendingUp, Upload, User, Video, X, Globe2, List, Menu, FolderOpen } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -222,6 +222,8 @@ const formatDate = (d: string) => {
 
 // Mail icon alias
 import { Mail } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Bar } from 'recharts'
 
 // ─── Component ───────────────────────────────────────────────────────────────
 

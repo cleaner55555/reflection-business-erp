@@ -14,10 +14,11 @@ export interface ProtocolEntry {
   priority: string
   notes?: string
   createdAt: string
-}
 
+}
 export type FormData = Omit<ProtocolEntry, 'id' | 'number' | 'date' | 'createdAt'>
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<string, { label: string;
+}>

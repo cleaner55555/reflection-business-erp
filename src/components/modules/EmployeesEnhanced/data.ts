@@ -3,3 +3,5 @@ export const load = async () => {
       if (cancelled) return
       setEvaluations(await eRes.json())
       setEmployees(await empRes.json())
+
+}

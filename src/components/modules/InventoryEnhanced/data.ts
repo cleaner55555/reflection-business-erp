@@ -4,3 +4,5 @@ export const load = async () => {
       setLots(await lRes.json())
       setProducts(await pRes.json())
       setLocations(await locRes.json())
+
+}

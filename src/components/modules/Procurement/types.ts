@@ -1,8 +1,8 @@
 export interface Partner {
   id: string
   name: string
-}
 
+}
 export interface POItem {
   id: string
   productId: string
@@ -10,8 +10,8 @@ export interface POItem {
   quantity: number
   unitPrice: number
   total: number
-}
 
+}
 export interface PurchaseOrder {
   id: string
   number: string
@@ -22,6 +22,7 @@ export interface PurchaseOrder {
   notes: string | null
   partner: { id: string; name: string }
 
+}
 export interface FullPurchaseOrder {
   id: string
   number: string
@@ -44,12 +45,13 @@ export interface FullPurchaseOrder {
     bank: string | null
   }
 
+}
 export interface Product {
   id: string
   name: string
   purchasePrice: number
-}
 
+}
 export interface OrderLineItem {
   productId: string
   productName: string

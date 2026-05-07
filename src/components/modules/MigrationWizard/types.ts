@@ -7,8 +7,8 @@ export interface ScannedFile {
   autoMapping: Record<string, string>
   previewRows: Record<string, string>[]
   selectedTarget: string
-}
 
+}
 export interface ImportProgress {
   currentEntity: string
   currentRow: number
@@ -16,6 +16,7 @@ export interface ImportProgress {
   percent: number
   logs: { time: string; entity: string; message: string; status: 'success' | 'error' | 'info' }
 
+}
 export interface MigrationResult {
   partners: number
   products: number
@@ -23,8 +24,8 @@ export interface MigrationResult {
   contacts: number
   total: number
   success: boolean
-}
 
+}
 export type MigrationStep = 1 | 2 | 3 | 4
 type MigrationSource = 'external_accounting' | 'custom'
 
@@ -45,3 +46,7 @@ interface ImportProgress {
   totalRows: number
   percent: number
   logs: { time: string;
+
+}
+
+}
