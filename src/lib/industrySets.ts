@@ -40,14 +40,14 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'For any business — invoicing, inventory, HR, projects',
     descriptionSr: 'Za svako preduzeće — fakture, magacin, ljudski resursi, projekti',
     modules: [
-      'dashboard', 'partneri', 'fakture', 'magacin', 'projekti', 'kalendar',
-      'zaposleni', 'troskovi', 'finansije', 'knjigovodstvo', 'dokumenta',
-      'izvestaji', 'podesavanja', 'beleske', 'zakazivanja',
+      'dashboard', 'contacts', 'invoices', 'inventory', 'projects', 'calendar',
+      'employees', 'expenses', 'finance', 'accounting', 'documents',
+      'reports', 'settings', 'notes', 'appointments',
     ],
     optionalModules: [
-      'crm', 'nabavka', 'sredstva', 'odrzavanje', 'regrutacija', 'odsustva',
-      'potpisi', 'ugovori', 'ecommerce', 'website', 'blog', 'email-marketing',
-      'planer', 'vozni-park', 'pos', 'shipping',
+      'crm', 'procurement', 'assets', 'maintenance', 'recruitment', 'leave',
+      'signatures', 'contracts', 'ecommerce', 'website', 'blog', 'email-marketing',
+      'scheduler', 'fleet', 'pos', 'shipping',
     ],
   },
   {
@@ -59,15 +59,15 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Schools, universities, training centers',
     descriptionSr: 'Škole, univerziteti, edukativni centri',
     modules: [
-      'dashboard', 'zaposleni', 'regrutacija', 'edukacija', 'kalendar',
-      'odsustva', 'planer', 'forum', 'ankete', 'baza-znanja', 'chet',
-      'podrska', 'ocene', 'fond-zdravlja', 'predlozi', 'izvestaji',
+      'dashboard', 'employees', 'recruitment', 'education', 'calendar',
+      'leave', 'scheduler', 'forum', 'surveys', 'knowledge-base', 'chat',
+      'support', 'ratings', 'health-fund', 'suggestions', 'reports',
       'spreadsheet',
     ],
     optionalModules: [
-      'obaveze', 'prijave', 'raspored', 'biblioteka', 'ucionica', 'skolarina',
-      'laboratorija', 'finansije', 'knjigovodstvo', 'fakture', 'beleske',
-      'zakazivanja', 'vestine', 'gamifikacija',
+      'homework', 'enrollment', 'timetable', 'library', 'classroom', 'tuition',
+      'lab', 'finance', 'accounting', 'invoices', 'notes',
+      'appointments', 'skills', 'gamification',
     ],
   },
   {
@@ -79,12 +79,12 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Restaurants, cafes, bars, catering',
     descriptionSr: 'Restorani, kafane, barovi, catering',
     modules: [
-      'dashboard', 'kafe-restoran', 'pos', 'partneri', 'magacin', 'fakture',
-      'troskovi', 'zaposleni', 'planer-radne-sile', 'odsustva', 'izvestaji',
+      'dashboard', 'restaurant', 'pos', 'contacts', 'inventory', 'invoices',
+      'expenses', 'employees', 'workforce-planner', 'leave', 'reports',
     ],
     optionalModules: [
-      'rezervacije', 'jelovnik', 'kuhinja', 'narudzbe', 'dostava',
-      'finansije', 'knjigovodstvo', 'reklamacije', 'recenzije', 'podesavanja',
+      'reservations', 'menu', 'kitchen', 'orders', 'delivery',
+      'finance', 'accounting', 'complaints', 'reviews', 'settings',
     ],
   },
   {
@@ -96,14 +96,14 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Factories, workshops, production lines',
     descriptionSr: 'Fabrike, radionice, proizvodne linije',
     modules: [
-      'dashboard', 'proizvodnja', 'magacin', 'nabavka', 'kvalitet',
-      'odrzavanje', 'sredstva', 'zaposleni', 'planer-radne-sile',
-      'finansije', 'izvestaji',
+      'dashboard', 'manufacturing', 'inventory', 'procurement', 'quality',
+      'maintenance', 'assets', 'employees', 'workforce-planner',
+      'finance', 'reports',
     ],
     optionalModules: [
-      'terenski-servis', 'servis', 'radni-nalozi', 'normativ', 'etikete',
-      'barkod', 'merenja', 'bezbednost', 'vozni-park', 'menadzer-nabavke',
-      'plm', 'knjigovodstvo',
+      'field-service', 'service-center', 'work-orders', 'standards', 'labels',
+      'barcode', 'measurements', 'safety', 'fleet', 'procurement-manager',
+      'plm', 'accounting',
     ],
   },
   {
@@ -115,12 +115,12 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Clinics, hospitals, pharmacies, labs',
     descriptionSr: 'Ambulante, bolnice, apoteke, laboratorije',
     modules: [
-      'dashboard', 'partneri', 'zakazivanja', 'fakture', 'fond-zdravlja',
-      'zaposleni', 'kalendar', 'dokumenta', 'izvestaji',
+      'dashboard', 'contacts', 'appointments', 'invoices', 'health-fund',
+      'employees', 'calendar', 'documents', 'reports',
     ],
     optionalModules: [
-      'potpisi', 'pacijenti', 'kartoni', 'recepti', 'laboratorija',
-      'knjigovodstvo', 'finansije', 'beleske', 'ankete',
+      'signatures', 'patients', 'medical-records', 'prescriptions', 'lab',
+      'accounting', 'finance', 'notes', 'surveys',
     ],
   },
   {
@@ -132,12 +132,12 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Construction companies, engineering firms',
     descriptionSr: 'Građevinska preduzeća, inženjerske firme',
     modules: [
-      'dashboard', 'projekti', 'zaposleni', 'magacin', 'nabavka', 'fakture',
-      'sredstva', 'odrzavanje', 'terenski-servis', 'geolokacija', 'izvestaji',
+      'dashboard', 'projects', 'employees', 'inventory', 'procurement', 'invoices',
+      'assets', 'maintenance', 'field-service', 'geolocation', 'reports',
     ],
     optionalModules: [
-      'gradiliste', 'projektovanje', 'subodradaci', 'merenja', 'bezbednost',
-      'vozni-park', 'finansije', 'knjigovodstvo', 'planer-radne-sile',
+      'construction-site', 'blueprints', 'subcontractors', 'measurements', 'safety',
+      'fleet', 'finance', 'accounting', 'workforce-planner',
     ],
   },
   {
@@ -149,13 +149,13 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Online stores, marketplaces, digital products',
     descriptionSr: 'Online prodavnice, marketplace, digitalni proizvodi',
     modules: [
-      'dashboard', 'ecommerce', 'marketplace', 'partneri', 'magacin',
-      'fakture', 'shipping', 'finansije',
+      'dashboard', 'ecommerce', 'marketplace', 'contacts', 'inventory',
+      'invoices', 'shipping', 'finance',
     ],
     optionalModules: [
-      'drustvene-mreze', 'mkt-automatizacija', 'sms-marketing', 'email-marketing',
-      'izvestaji', 'povrat', 'kuponi', 'recenzije', 'seo', 'naplate',
-      'narudzbe', 'cenovnici', 'barkod', 'poslovnice', 'website', 'blog',
+      'social-media', 'marketing-automation', 'sms-marketing', 'email-marketing',
+      'reports', 'returns', 'coupons', 'reviews', 'seo', 'payments',
+      'orders', 'price-lists', 'barcode', 'stores', 'website', 'blog',
     ],
   },
   {
@@ -167,13 +167,13 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Consulting, IT, legal, accounting firms',
     descriptionSr: 'Savetovanje, IT, pravne i računovodstvene firme',
     modules: [
-      'dashboard', 'crm', 'projekti', 'fakture', 'zaposleni', 'zakazivanja',
-      'kalendar', 'beleske', 'chet', 'dokumenta', 'ugovori', 'izvestaji',
+      'dashboard', 'crm', 'projects', 'invoices', 'employees', 'appointments',
+      'calendar', 'notes', 'chat', 'documents', 'contracts', 'reports',
     ],
     optionalModules: [
-      'vremenski-trag', 'fakturisanje-vremena', 'klijentski-portal',
-      'knjigovodstvo', 'finansije', 'email-marketing', 'website', 'blog',
-      'potpisi',
+      'time-tracking', 'time-billing', 'client-portal',
+      'accounting', 'finance', 'email-marketing', 'website', 'blog',
+      'signatures',
     ],
   },
   {
@@ -185,13 +185,13 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Transport, delivery, warehousing companies',
     descriptionSr: 'Transport, dostava, skladištenje',
     modules: [
-      'dashboard', 'vozni-park', 'shipping', 'magacin', 'geolokacija',
-      'terenski-servis', 'partneri', 'fakture', 'zaposleni', 'izvestaji',
+      'dashboard', 'fleet', 'shipping', 'inventory', 'geolocation',
+      'field-service', 'contacts', 'invoices', 'employees', 'reports',
     ],
     optionalModules: [
-      'rute', 'utovar-istovar', 'carinski-dokument', 'kamioni', 'pakovanje',
-      'dostava', 'odrzavanje', 'sredstva', 'knjigovodstvo', 'finansije',
-      'menadzer-nabavke',
+      'routes', 'loading-dock', 'customs-docs', 'trucks', 'packaging',
+      'delivery', 'maintenance', 'assets', 'accounting', 'finance',
+      'procurement-manager',
     ],
   },
   {
@@ -203,12 +203,12 @@ export const INDUSTRY_SETS: IndustrySet[] = [
     description: 'Real estate agencies, property management',
     descriptionSr: 'Agencije za nekretnine, upravljanje nekretninama',
     modules: [
-      'dashboard', 'partneri', 'projekti', 'ugovori', 'fakture', 'kalendar',
-      'zakazivanja', 'dokumenta', 'potpisi', 'izvestaji',
+      'dashboard', 'contacts', 'projects', 'contracts', 'invoices', 'calendar',
+      'appointments', 'documents', 'signatures', 'reports',
     ],
     optionalModules: [
-      'nekretnine', 'iznajmljivanje', 'pregledi-nekretnine', 'komunalije',
-      'finansije', 'knjigovodstvo', 'beleske', 'email-marketing', 'recenzije',
+      'property', 'rentals', 'property-viewings', 'utilities',
+      'finance', 'accounting', 'notes', 'email-marketing', 'reviews',
     ],
   },
 ]
@@ -216,7 +216,7 @@ export const INDUSTRY_SETS: IndustrySet[] = [
 /** Always-visible modules regardless of industry set */
 export const ALWAYS_VISIBLE_MODULES = [
   'dashboard',
-  'podesavanja',
+  'settings',
   'notifications',
   'ai-assistant',
 ]

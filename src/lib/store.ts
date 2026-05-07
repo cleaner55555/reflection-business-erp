@@ -2,138 +2,138 @@ import { create } from 'zustand'
 
 export type ModuleType =
   | 'dashboard'
-  | 'finansije'
-  | 'fakture'
-  | 'magacin'
-  | 'partneri'
-  | 'nabavka'
+  | 'finance'
+  | 'invoices'
+  | 'inventory'
+  | 'contacts'
+  | 'procurement'
   | 'crm'
-  | 'kalendar'
-  | 'zaposleni'
-  | 'projekti'
-  | 'sredstva'
-  | 'dokumenta'
-  | 'izvestaji'
-  | 'knjigovodstvo'
-  | 'protokol'
-  | 'edukacija'
-  | 'vozni-park'
-  | 'kafe-restoran'
-  | 'podesavanja'
+  | 'calendar'
+  | 'employees'
+  | 'projects'
+  | 'assets'
+  | 'documents'
+  | 'reports'
+  | 'accounting'
+  | 'protocol'
+  | 'education'
+  | 'fleet'
+  | 'restaurant'
+  | 'settings'
   | 'email-marketing'
   | 'rent-a-car'
-  | 'integracije'
+  | 'integrations'
   | 'bank-sync'
   | 'notifications'
-  | 'zakoni'
+  | 'laws'
   | 'pos'
   | 'shipping'
   | 'marketplace'
-  | 'ponude'
-  | 'pretplate'
-  | 'troskovi'
-  | 'potpisi'
-  | 'proizvodnja'
-  | 'kvalitet'
-  | 'odrzavanje'
-  | 'regrutacija'
-  | 'odsustva'
-  | 'preporuke'
-  | 'podrska'
-  | 'terenski-servis'
-  | 'zakazivanja'
-  | 'planer'
-  | 'drustvene-mreze'
+  | 'offers'
+  | 'subscriptions'
+  | 'expenses'
+  | 'signatures'
+  | 'manufacturing'
+  | 'quality'
+  | 'maintenance'
+  | 'recruitment'
+  | 'leave'
+  | 'referrals'
+  | 'support'
+  | 'field-service'
+  | 'appointments'
+  | 'scheduler'
+  | 'social-media'
   | 'sms-marketing'
-  | 'dogadjaji'
-  | 'mkt-automatizacija'
-  | 'ankete'
-  | 'chet'
-  | 'baza-znanja'
+  | 'events'
+  | 'marketing-automation'
+  | 'surveys'
+  | 'chat'
+  | 'knowledge-base'
   | 'website'
   | 'blog'
   | 'voip'
   | 'iot'
-  | 'whatsapp'
+  | 'messaging'
   | 'forum'
   | 'plm'
   | 'ecommerce'
   | 'spreadsheet'
-  | 'beleske'
-  | 'odobrenja'
-  | 'vestine'
-  | 'ugovori'
-  | 'ocene'
-  | 'gamifikacija'
-  | 'reklamacije'
-  | 'natečaji'
-  | 'garancije'
-  | 'servis'
-  | 'uskladenost'
-  | 'program-lojalnosti'
-  | 'planer-radne-sile'
-  | 'posetioci'
-  | 'predlozi'
-  | 'taksacija'
-  | 'fond-zdravlja'
-  | 'geolokacija'
-  | 'kamere'
-  | 'menadzer-nabavke'
+  | 'notes'
+  | 'approvals'
+  | 'skills'
+  | 'contracts'
+  | 'ratings'
+  | 'gamification'
+  | 'complaints'
+  | 'tenders'
+  | 'warranty'
+  | 'service-center'
+  | 'compliance'
+  | 'loyalty'
+  | 'workforce-planner'
+  | 'visitors'
+  | 'suggestions'
+  | 'valuation'
+  | 'health-fund'
+  | 'geolocation'
+  | 'cameras'
+  | 'procurement-manager'
   | 'cms'
   // --- Education (6) ---
-  | 'obaveze'
-  | 'prijave'
-  | 'raspored'
-  | 'biblioteka'
-  | 'ucionica'
-  | 'skolarina'
+  | 'homework'
+  | 'enrollment'
+  | 'timetable'
+  | 'library'
+  | 'classroom'
+  | 'tuition'
   // --- Healthcare (4) ---
-  | 'pacijenti'
-  | 'kartoni'
-  | 'recepti'
-  | 'laboratorija'
+  | 'patients'
+  | 'medical-records'
+  | 'prescriptions'
+  | 'lab'
   // --- Hospitality (5) ---
-  | 'rezervacije'
-  | 'jelovnik'
-  | 'kuhinja'
-  | 'narudzbe'
-  | 'dostava'
+  | 'reservations'
+  | 'menu'
+  | 'kitchen'
+  | 'orders'
+  | 'delivery'
   // --- Construction (5) ---
-  | 'gradiliste'
-  | 'projektovanje'
-  | 'subodradaci'
-  | 'merenja'
-  | 'bezbednost'
+  | 'construction-site'
+  | 'blueprints'
+  | 'subcontractors'
+  | 'measurements'
+  | 'safety'
   // --- Logistics (5) ---
-  | 'rute'
-  | 'utovar-istovar'
-  | 'carinski-dokument'
-  | 'kamioni'
-  | 'pakovanje'
+  | 'routes'
+  | 'loading-dock'
+  | 'customs-docs'
+  | 'trucks'
+  | 'packaging'
   // --- Real Estate (4) ---
-  | 'nekretnine'
-  | 'iznajmljivanje'
-  | 'pregledi-nekretnine'
-  | 'komunalije'
+  | 'property'
+  | 'rentals'
+  | 'property-viewings'
+  | 'utilities'
   // --- Production+ (3) ---
-  | 'radni-nalozi'
-  | 'normativ'
-  | 'etikete'
+  | 'work-orders'
+  | 'standards'
+  | 'labels'
   // --- Retail (8) ---
-  | 'barkod'
-  | 'cenovnici'
-  | 'kuponi'
-  | 'recenzije'
+  | 'barcode'
+  | 'price-lists'
+  | 'coupons'
+  | 'reviews'
   | 'seo'
-  | 'naplate'
-  | 'povrat'
-  | 'blagajna'
+  | 'payments'
+  | 'returns'
+  | 'cash-register'
   // --- Services (6) ---
-  | 'vremenski-trag'
-  | 'fakturisanje-vremena'
-  | 'klijentski-portal'
-  | 'automatizacija'
-  | 'poslovnice'
+  | 'time-tracking'
+  | 'time-billing'
+  | 'client-portal'
+  | 'automation'
+  | 'stores'
   | 'backup'
 
 import { type IndustryId } from './industrySets'
@@ -297,27 +297,27 @@ export const useAppStore = create<AppState>((set, get) => ({
     const permissions: Record<string, string[]> = {}
     if (user.isSuperAdmin) {
       const modules = [
-        'dashboard', 'finansije', 'fakture', 'magacin', 'partneri', 'nabavka',
-        'crm', 'kalendar', 'zaposleni', 'projekti', 'sredstva', 'dokumenta',
-        'knjigovodstvo', 'protokol', 'edukacija', 'vozni-park', 'kafe-restoran',
-        'email-marketing', 'rent-a-car', 'izvestaji', 'integracije', 'bank-sync',
-        'podesavanja', 'notifications', 'zakoni', 'pos', 'shipping',
-        'marketplace', 'ponude', 'pretplate', 'troskovi', 'potpisi',
-        'proizvodnja', 'kvalitet', 'odrzavanje', 'regrutacija', 'odsustva',
-        'preporuke', 'podrska', 'terenski-servis', 'zakazivanja', 'planer',
-        'drustvene-mreze', 'sms-marketing', 'dogadjaji', 'mkt-automatizacija',
-        'ankete', 'chet', 'baza-znanja', 'website', 'blog', 'voip',
-        'iot', 'whatsapp', 'forum', 'plm', 'ecommerce', 'spreadsheet',
-        'beleske', 'odobrenja', 'vestine', 'ugovori', 'ocene', 'gamifikacija', 'reklamacije', 'natečaji', 'garancije', 'servis', 'uskladenost', 'program-lojalnosti', 'planer-radne-sile', 'posetioci', 'predlozi', 'taksacija', 'fond-zdravlja', 'geolokacija', 'kamere', 'menadzer-nabavke', 'cms',
-        'obaveze', 'prijave', 'raspored', 'biblioteka', 'ucionica', 'skolarina',
-        'pacijenti', 'kartoni', 'recepti', 'laboratorija',
-        'rezervacije', 'jelovnik', 'kuhinja', 'narudzbe', 'dostava',
-        'gradiliste', 'projektovanje', 'subodradaci', 'merenja', 'bezbednost',
-        'rute', 'utovar-istovar', 'carinski-dokument', 'kamioni', 'pakovanje',
-        'nekretnine', 'iznajmljivanje', 'pregledi-nekretnine', 'komunalije',
-        'radni-nalozi', 'normativ', 'etikete',
-        'barkod', 'cenovnici', 'kuponi', 'recenzije', 'seo', 'naplate', 'povrat', 'blagajna',
-        'vremenski-trag', 'fakturisanje-vremena', 'klijentski-portal', 'automatizacija', 'poslovnice', 'backup'
+        'dashboard', 'finance', 'invoices', 'inventory', 'contacts', 'procurement',
+        'crm', 'calendar', 'employees', 'projects', 'assets', 'documents',
+        'accounting', 'protocol', 'education', 'fleet', 'restaurant',
+        'email-marketing', 'rent-a-car', 'reports', 'integrations', 'bank-sync',
+        'settings', 'notifications', 'laws', 'pos', 'shipping',
+        'marketplace', 'offers', 'subscriptions', 'expenses', 'signatures',
+        'manufacturing', 'quality', 'maintenance', 'recruitment', 'leave',
+        'referrals', 'support', 'field-service', 'appointments', 'scheduler',
+        'social-media', 'sms-marketing', 'events', 'marketing-automation',
+        'surveys', 'chat', 'knowledge-base', 'website', 'blog', 'voip',
+        'iot', 'messaging', 'forum', 'plm', 'ecommerce', 'spreadsheet',
+        'notes', 'approvals', 'skills', 'contracts', 'ratings', 'gamification', 'complaints', 'tenders', 'warranty', 'service-center', 'compliance', 'loyalty', 'workforce-planner', 'visitors', 'suggestions', 'valuation', 'health-fund', 'geolocation', 'cameras', 'procurement-manager', 'cms',
+        'homework', 'enrollment', 'timetable', 'library', 'classroom', 'tuition',
+        'patients', 'medical-records', 'prescriptions', 'lab',
+        'reservations', 'menu', 'kitchen', 'orders', 'delivery',
+        'construction-site', 'blueprints', 'subcontractors', 'measurements', 'safety',
+        'routes', 'loading-dock', 'customs-docs', 'trucks', 'packaging',
+        'property', 'rentals', 'property-viewings', 'utilities',
+        'work-orders', 'standards', 'labels',
+        'barcode', 'price-lists', 'coupons', 'reviews', 'seo', 'payments', 'returns', 'cash-register',
+        'time-tracking', 'time-billing', 'client-portal', 'automation', 'stores', 'backup'
       ]
       modules.forEach(m => { permissions[m] = ['read', 'write', 'delete', 'admin'] })
     }
