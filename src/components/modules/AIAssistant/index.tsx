@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -22,7 +22,6 @@ import {
   Send,
   Sparkles,
   ArrowUpRight,
-  TableIcon,
   BarChart3,
   AlertCircle,
   Loader2,
@@ -30,6 +29,15 @@ import {
   ExternalLink,
   Lightbulb,
   Trash2,
+  Mic,
+  MicOff,
+  LayoutDashboard,
+  ChevronRight,
+  DollarSign,
+  Users,
+  Package,
+  TrendingUp,
+  ShoppingCart,
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, ResponsiveContainer } from 'recharts'
 import { cn } from '@/lib/helpers'
@@ -56,70 +64,177 @@ interface MessageData {
   chartConfig?: Record<string, { label: string; color: string }>
   summaryValue?: string | number
   summaryLabel?: string
+  kpis?: Array<{ label: string; value: string; trend?: string }>
   module?: string
   actionLabel?: string
   actionType?: 'navigate' | 'created' | 'updated'
 }
 
-interface APIResponse {
-  reply?: string
-  actionType?: string
-  module?: string
-  data?: MessageData
-  error?: string
-}
-
 // ============ MODULE CONFIG ============
 
 const MODULE_CONTEXT: Record<string, string> = {
-  dashboard: 'pregledne instrument table',
-  finance: 'modul finansije',
-  invoices: 'modul fakture',
-  inventory: 'modul magacin',
-  contacts: 'modul partneri',
-  procurement: 'modul nabavka',
+  dashboard: 'pregled dashboard',
+  finansije: 'modul finansije',
+  fakture: 'modul fakture',
+  magacin: 'modul magacin',
+  partneri: 'modul partneri',
+  nabavka: 'modul nabavka',
   crm: 'modul CRM',
-  calendar: 'modul kalendar',
-  employees: 'modul zaposleni',
-  projects: 'modul projekti',
-  assets: 'modul osnovna sredstva',
-  documents: 'modul dokumenta',
-  accounting: 'modul knjigovodstvo',
-  protocol: 'modul protokol',
-  education: 'modul edukacija',
-  'fleet': 'modul vozni park',
-  reports: 'modul izveštaji',
-  settings: 'podešavanja sistema',
+  kalendar: 'modul kalendar',
+  zaposleni: 'modul zaposleni',
+  projekti: 'modul projekti',
+  sredstva: 'modul osnovna sredstva',
+  dokumenta: 'modul dokumenta',
+  knjigovodstvo: 'modul knjigovodstvo',
+  protokol: 'modul protokol',
+  edukacija: 'modul edukacija',
+  'vozni-park': 'modul vozni park',
+  'kafe-restoran': 'modul kafe restoran',
+  'email-marketing': 'modul email marketing',
+  'rent-a-car': 'modul rent a car',
+  izvestaji: 'modul izveštaji',
+  integracije: 'modul integracije',
+  'bank-sync': 'modul banka',
+  pos: 'modul POS maloprodaja',
+  shipping: 'modul shipping',
+  marketplace: 'modul marketplace',
+  ponude: 'modul ponude',
+  pretplate: 'modul pretplate',
+  troskovi: 'modul troškovi',
+  potpisi: 'modul potpisi',
+  proizvodnja: 'modul proizvodnja',
+  kvalitet: 'modul kvalitet',
+  odrzavanje: 'modul održavanje',
+  regrutacija: 'modul regrutacija',
+  odsustva: 'modul odsustva',
+  preporuke: 'modul preporuke',
+  podrska: 'modul podrška',
+  'terenski-servis': 'modul terenski servis',
+  zakazivanja: 'modul zakazivanja',
+  planer: 'modul planer',
+  'drustvene-mreze': 'modul društvene mreže',
+  'sms-marketing': 'modul SMS marketing',
+  dogadjaji: 'modul događaji',
+  'mkt-automatizacija': 'modul MKT automatizacija',
+  ankete: 'modul ankete',
+  chet: 'modul čet',
+  'baza-znanja': 'modul baza znanja',
+  website: 'modul website',
+  blog: 'modul blog',
+  voip: 'modul VoIP',
+  iot: 'modul IoT',
+  forum: 'modul forum',
+  plm: 'modul PLM',
+  ecommerce: 'modul e-commerce',
+  spreadsheet: 'modul spreadsheet',
+  beleske: 'modul beleške',
+  odobrenja: 'modul odobrenja',
+  vestine: 'modul veštine',
+  ugovori: 'modul ugovori',
+  gamifikacija: 'modul gamifikacija',
+  reklamacije: 'modul reklamacije',
+  servis: 'modul servis centar',
+  uskladenost: 'modul usklađenost',
+  'program-lojalnosti': 'modul lojalnost',
+  podesavanja: 'modul podešavanja',
+  zakoni: 'modul zakoni',
+  blagajna: 'modul blagajna',
+  cenovnici: 'modul cenovnici',
+  vozila: 'modul vozila',
+  kamioni: 'modul kamioni',
+  posetioci: 'modul posetioci',
+  backup: 'modul backup',
+  automatizacija: 'modul automatizacija',
 }
 
 const MODULE_LABELS: Record<string, string> = {
-  invoices: 'Fakture',
-  contacts: 'Partneri',
-  inventory: 'Magacin',
-  finance: 'Finansije',
-  crm: 'CRM',
-  calendar: 'Kalendar',
-  employees: 'Zaposleni',
-  projects: 'Projekti',
-  assets: 'Sredstva',
-  documents: 'Dokumenta',
-  accounting: 'Knjigovodstvo',
-  protocol: 'Protokol',
-  education: 'Edukacija',
-  'fleet': 'Vozni park',
-  reports: 'Izveštaji',
-  procurement: 'Nabavka',
+  invoices: 'Fakture', fakture: 'Fakture', partners: 'Partneri', partneri: 'Partneri',
+  products: 'Magacin', magacin: 'Magacin', transactions: 'Finansije', finansije: 'Finansije',
+  cashregister: 'Blagajna', blagajna: 'Blagajna', contacts: 'CRM', crm: 'CRM',
+  deals: 'CRM', calendar: 'Kalendar', kalendar: 'Kalendar',
+  employees: 'Zaposleni', zaposleni: 'Zaposleni', projects: 'Projekti', projekti: 'Projekti',
+  assets: 'Sredstva', sredstva: 'Sredstva', documents: 'Dokumenta', dokumenta: 'Dokumenta',
+  accounting: 'Knjigovodstvo', knjigovodstvo: 'Knjigovodstvo',
+  protocol: 'Protokol', protokol: 'Protokol', education: 'Edukacija', edukacija: 'Edukacija',
+  'vozni-park': 'Vozni park', vehicles: 'Vozni park',
+  reports: 'Izveštaji', izvestaji: 'Izveštaji', procurement: 'Nabavka', nabavka: 'Nabavka',
+  settings: 'Podešavanja', podesavanja: 'Podešavanja',
+  dashboard: 'Dashboard',
+  'email-marketing': 'Email marketing', 'rent-a-car': 'Rent-a-car',
+  shipping: 'Shipping', marketplace: 'Marketplace', pos: 'POS',
+  manufacturing: 'Proizvodnja', proizvodnja: 'Proizvodnja',
+  quality: 'Kvalitet', kvalitet: 'Kvalitet', maintenance: 'Održavanje', odrzavanje: 'Održavanje',
+  recruitment: 'Regrutacija', regrutacija: 'Regrutacija',
+  support: 'Podrška', podrska: 'Podrška',
+  helpdesktickets: 'Podrška',
+  vehicleservices: 'Vozni park', 'bank-sync': 'Banka',
+  pretplate: 'Pretplate', subscriptions: 'Pretplate',
 }
 
-// ============ SUGGESTION CHIPS ============
+// ============ CONTEXT-AWARE SUGGESTIONS ============
 
-const SUGGESTION_CHIPS = [
-  { label: 'Prikaži neplaćene fakture', icon: AlertCircle },
-  { label: 'Koje robe fale?', icon: BarChart3 },
-  { label: 'Top partneri', icon: TableIcon },
-  { label: 'Kreiraj fakturu', icon: Send },
-  { label: 'Stanje blagajne', icon: BarChart3 },
-]
+function getSuggestions(activeModule: string): Array<{ label: string; icon: typeof BarChart3 }> {
+  const general = [
+    { label: 'Kako stojimo?', icon: LayoutDashboard },
+    { label: 'Neplaćene fakture', icon: AlertCircle },
+    { label: 'Top partneri', icon: Users },
+    { label: 'Koje robe fale?', icon: Package },
+  ]
+
+  const moduleMap: Record<string, Array<{ label: string; icon: typeof BarChart3 }>> = {
+    dashboard: [
+      { label: 'Pregled poslovanja', icon: LayoutDashboard },
+      { label: 'Prihodi vs rashodi', icon: TrendingUp },
+      { label: 'Neplaćene fakture', icon: AlertCircle },
+      { label: 'Stanje blagajne', icon: DollarSign },
+      { label: 'Top partneri', icon: Users },
+      { label: 'Koje robe fale?', icon: Package },
+    ],
+    fakture: [
+      { label: 'Neplaćene fakture', icon: AlertCircle },
+      { label: 'Fakture ovog meseca', icon: TrendingUp },
+      { label: 'Kreiraj fakturu', icon: ShoppingCart },
+      { label: 'Raspodela po statusu', icon: BarChart3 },
+    ],
+    partneri: [
+      { label: 'Svi partneri', icon: Users },
+      { label: 'Top partneri', icon: BarChart3 },
+      { label: 'Kreiraj partnera', icon: Sparkles },
+    ],
+    magacin: [
+      { label: 'Koje robe fale?', icon: AlertCircle },
+      { label: 'Svi proizvodi', icon: Package },
+      { label: 'Niska zaliha', icon: BarChart3 },
+    ],
+    crm: [
+      { label: 'Pipeline pregled', icon: BarChart3 },
+      { label: 'Aktivne prilike', icon: TrendingUp },
+      { label: 'Kreiraj kontakt', icon: Sparkles },
+      { label: 'Gubitajemo prilike?', icon: AlertCircle },
+    ],
+    finansije: [
+      { label: 'Stanje blagajne', icon: DollarSign },
+      { label: 'Prihodi ovog meseca', icon: TrendingUp },
+      { label: 'Prihodi vs rashodi', icon: BarChart3 },
+    ],
+    zaposleni: [
+      { label: 'Svi zaposleni', icon: Users },
+      { label: 'Plate ovog meseca', icon: DollarSign },
+    ],
+    projekti: [
+      { label: 'Aktivni projekti', icon: LayoutDashboard },
+      { label: 'Projekti u problemu', icon: AlertCircle },
+      { label: 'Kreiraj projekat', icon: Sparkles },
+    ],
+    'vozni-park': [
+      { label: 'Aktivna vozila', icon: Users },
+      { label: 'Servisi vozila', icon: AlertCircle },
+      { label: 'Troškovi goriva', icon: DollarSign },
+    ],
+  }
+
+  return moduleMap[activeModule] || general
+}
 
 // ============ INLINE CHART COMPONENT ============
 
@@ -133,7 +248,6 @@ function InlineChart({
   chartConfig: Record<string, { label: string; color: string }>
 }) {
   if (!chartData || chartData.length === 0) return null
-
   const dataKeys = Object.keys(chartConfig)
   const COLORS = ['#22c55e', '#ef4444', '#eab308', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#6366f1']
 
@@ -143,24 +257,12 @@ function InlineChart({
       value: d[Object.keys(d)[1]] as number,
       color: chartConfig[Object.keys(d)[1] as string]?.color || COLORS[i % COLORS.length],
     }))
-
     return (
       <ResponsiveContainer width="100%" height={180}>
         <PieChart>
           <ChartTooltip content={<ChartTooltipContent />} />
-          <Pie
-            data={pieData}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={70}
-            innerRadius={35}
-            paddingAngle={2}
-          >
-            {pieData.map((entry, i) => (
-              <Cell key={i} fill={entry.color} />
-            ))}
+          <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={35} paddingAngle={2}>
+            {pieData.map((entry, i) => (<Cell key={i} fill={entry.color} />))}
           </Pie>
         </PieChart>
       </ResponsiveContainer>
@@ -171,20 +273,10 @@ function InlineChart({
     <ResponsiveContainer width="100%" height={180}>
       <BarChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
         <ChartTooltip content={<ChartTooltipContent />} />
-        <XAxis
-          dataKey={Object.keys(chartData[0])[0]}
-          tick={{ fontSize: 10 }}
-          axisLine={false}
-          tickLine={false}
-        />
+        <XAxis dataKey={Object.keys(chartData[0])[0]} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         {dataKeys.map((key, i) => (
-          <Bar
-            key={key}
-            dataKey={key}
-            fill={chartConfig[key]?.color || COLORS[i % COLORS.length]}
-            radius={[3, 3, 0, 0]}
-          />
+          <Bar key={key} dataKey={key} fill={chartConfig[key]?.color || COLORS[i % COLORS.length]} radius={[3, 3, 0, 0]} />
         ))}
       </BarChart>
     </ResponsiveContainer>
@@ -194,22 +286,10 @@ function InlineChart({
     <ResponsiveContainer width="100%" height={180}>
       <LineChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
         <ChartTooltip content={<ChartTooltipContent />} />
-        <XAxis
-          dataKey={Object.keys(chartData[0])[0]}
-          tick={{ fontSize: 10 }}
-          axisLine={false}
-          tickLine={false}
-        />
+        <XAxis dataKey={Object.keys(chartData[0])[0]} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         {dataKeys.map((key, i) => (
-          <Line
-            key={key}
-            type="monotone"
-            dataKey={key}
-            stroke={chartConfig[key]?.color || COLORS[i % COLORS.length]}
-            strokeWidth={2}
-            dot={{ r: 3 }}
-          />
+          <Line key={key} type="monotone" dataKey={key} stroke={chartConfig[key]?.color || COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
         ))}
       </LineChart>
     </ResponsiveContainer>
@@ -219,23 +299,10 @@ function InlineChart({
     <ResponsiveContainer width="100%" height={180}>
       <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
         <ChartTooltip content={<ChartTooltipContent />} />
-        <XAxis
-          dataKey={Object.keys(chartData[0])[0]}
-          tick={{ fontSize: 10 }}
-          axisLine={false}
-          tickLine={false}
-        />
+        <XAxis dataKey={Object.keys(chartData[0])[0]} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
         {dataKeys.map((key, i) => (
-          <Area
-            key={key}
-            type="monotone"
-            dataKey={key}
-            stroke={chartConfig[key]?.color || COLORS[i % COLORS.length]}
-            fill={chartConfig[key]?.color || COLORS[i % COLORS.length]}
-            fillOpacity={0.15}
-            strokeWidth={2}
-          />
+          <Area key={key} type="monotone" dataKey={key} stroke={chartConfig[key]?.color || COLORS[i % COLORS.length]} fill={chartConfig[key]?.color || COLORS[i % COLORS.length]} fillOpacity={0.15} strokeWidth={2} />
         ))}
       </AreaChart>
     </ResponsiveContainer>
@@ -244,14 +311,10 @@ function InlineChart({
   return (
     <div className="mt-2 rounded-lg border bg-background/50 p-3">
       {chartType === 'pie' ? renderPieChart() : chartType === 'line' ? renderLineChart() : chartType === 'area' ? renderAreaChart() : renderBarChart()}
-      {/* Legend */}
       <div className="mt-2 flex flex-wrap justify-center gap-3">
         {Object.entries(chartConfig).map(([key, config]) => (
           <div key={key} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <div
-              className="h-2.5 w-2.5 rounded-sm"
-              style={{ backgroundColor: config.color }}
-            />
+            <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: config.color }} />
             {config.label}
           </div>
         ))}
@@ -260,17 +323,29 @@ function InlineChart({
   )
 }
 
-// ============ RESULTS TABLE COMPONENT ============
+// ============ KPI CARDS COMPONENT ============
 
-function ResultsTable({
-  columns,
-  rows,
-}: {
-  columns: Array<{ key: string; label: string }>
-  rows: Array<Record<string, unknown>>
-}) {
+function KPICards({ kpis }: { kpis: Array<{ label: string; value: string; trend?: string }> }) {
+  if (!kpis || kpis.length === 0) return null
+  return (
+    <div className="mt-2 grid grid-cols-2 gap-2">
+      {kpis.map((kpi, i) => (
+        <div key={i} className={cn(
+          'rounded-lg border p-2.5',
+          kpi.trend === 'warning' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-gradient-to-r from-primary/5 to-transparent'
+        )}>
+          <p className="text-[10px] text-muted-foreground truncate">{kpi.label}</p>
+          <p className="text-sm font-bold text-foreground tabular-nums truncate">{kpi.value}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ============ RESULTS TABLE ============
+
+function ResultsTable({ columns, rows }: { columns: Array<{ key: string; label: string }>; rows: Array<Record<string, unknown>> }) {
   if (!columns || columns.length === 0 || !rows || rows.length === 0) return null
-
   return (
     <div className="mt-2 rounded-lg border overflow-hidden">
       <ScrollArea className="max-h-[220px]">
@@ -278,9 +353,7 @@ function ResultsTable({
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30">
               {columns.map((col) => (
-                <TableHead key={col.key} className="text-[11px] font-semibold h-8 px-2.5">
-                  {col.label}
-                </TableHead>
+                <TableHead key={col.key} className="text-[11px] font-semibold h-8 px-2.5">{col.label}</TableHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -288,9 +361,7 @@ function ResultsTable({
             {rows.slice(0, 10).map((row, i) => (
               <TableRow key={i} className="hover:bg-muted/20">
                 {columns.map((col) => (
-                  <TableCell key={col.key} className="text-xs py-1.5 px-2.5 max-w-[140px] truncate">
-                    {String(row[col.key] ?? '')}
-                  </TableCell>
+                  <TableCell key={col.key} className="text-xs py-1.5 px-2.5 max-w-[140px] truncate">{String(row[col.key] ?? '')}</TableCell>
                 ))}
               </TableRow>
             ))}
@@ -306,20 +377,10 @@ function ResultsTable({
   )
 }
 
-// ============ ACTION CARD COMPONENT ============
+// ============ ACTION CARD ============
 
-function ActionCard({
-  message,
-  actionLabel,
-  actionType,
-  module,
-  onNavigate,
-}: {
-  message: string
-  actionLabel?: string
-  actionType?: 'navigate' | 'created' | 'updated'
-  module?: string
-  onNavigate?: (module: string) => void
+function ActionCard({ actionLabel, actionType, module, onNavigate }: {
+  actionLabel?: string; actionType?: 'navigate' | 'created' | 'updated'; module?: string; onNavigate?: (module: string) => void
 }) {
   return (
     <div className="mt-2 rounded-lg border bg-gradient-to-r from-primary/5 to-transparent p-3 space-y-2">
@@ -328,8 +389,7 @@ function ActionCard({
           {actionType === 'created' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
           {actionType === 'updated' && <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />}
           {actionType === 'navigate' && <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />}
-          <span className={cn(
-            'font-medium',
+          <span className={cn('font-medium',
             actionType === 'created' && 'text-emerald-600 dark:text-emerald-400',
             actionType === 'updated' && 'text-blue-600 dark:text-blue-400',
           )}>
@@ -339,12 +399,7 @@ function ActionCard({
       )}
       {actionLabel && <p className="text-xs text-foreground">{actionLabel}</p>}
       {module && onNavigate && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs gap-1.5 mt-1"
-          onClick={() => onNavigate(module)}
-        >
+        <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 mt-1" onClick={() => onNavigate(module)}>
           <ArrowUpRight className="h-3 w-3" />
           Otvori {MODULE_LABELS[module] || module}
         </Button>
@@ -353,15 +408,9 @@ function ActionCard({
   )
 }
 
-// ============ SUMMARY CARD COMPONENT ============
+// ============ SUMMARY CARD ============
 
-function SummaryCard({
-  value,
-  label,
-}: {
-  value: string | number
-  label: string
-}) {
+function SummaryCard({ value, label }: { value: string | number; label: string }) {
   return (
     <div className="mt-2 flex items-center gap-3 rounded-lg border bg-gradient-to-r from-emerald-500/5 to-emerald-500/0 p-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
@@ -375,29 +424,7 @@ function SummaryCard({
   )
 }
 
-// ============ MODULE LINK COMPONENT ============
-
-function ModuleLink({
-  module,
-  onNavigate,
-}: {
-  module: string
-  onNavigate: (module: string) => void
-}) {
-  const label = MODULE_LABELS[module] || module
-  return (
-    <Badge
-      variant="outline"
-      className="cursor-pointer gap-1 mt-1 text-xs hover:bg-primary/5 hover:border-primary/30 transition-colors"
-      onClick={() => onNavigate(module)}
-    >
-      <ArrowUpRight className="h-3 w-3" />
-      {label}
-    </Badge>
-  )
-}
-
-// ============ LOADING SKELETON COMPONENT ============
+// ============ LOADING ============
 
 function LoadingSkeleton() {
   return (
@@ -417,15 +444,12 @@ export function AIAssistant() {
 
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    // Load persisted messages from localStorage
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('reflection_ai_chat_history')
         if (saved) {
-          const parsed = JSON.parse(saved)
-          return parsed.map((m: ChatMessage & { timestamp: string }) => ({
-            ...m,
-            timestamp: new Date(m.timestamp),
+          return JSON.parse(saved).map((m: ChatMessage & { timestamp: string }) => ({
+            ...m, timestamp: new Date(m.timestamp),
           }))
         }
       } catch { /* ignore */ }
@@ -435,43 +459,34 @@ export function AIAssistant() {
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [hasNewMessage, setHasNewMessage] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 
-  // ============ PERSIST MESSAGES ============
-
+  // Persist messages
   useEffect(() => {
     if (messages.length > 0) {
-      try {
-        localStorage.setItem('reflection_ai_chat_history', JSON.stringify(messages))
-      } catch { /* ignore */ }
+      try { localStorage.setItem('reflection_ai_chat_history', JSON.stringify(messages)) } catch { /* ignore */ }
     }
   }, [messages])
 
-  // ============ SCROLL TO BOTTOM ============
-
+  // Scroll to bottom
   const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, isLoading, scrollToBottom])
+  useEffect(() => { scrollToBottom() }, [messages, isLoading, scrollToBottom])
 
   // Focus input when panel opens
   useEffect(() => {
     if (isOpen) {
       setHasNewMessage(false)
-      setTimeout(() => {
-        inputRef.current?.focus()
-      }, 300)
+      setTimeout(() => { inputRef.current?.focus() }, 300)
     }
   }, [isOpen])
 
-  // Keyboard shortcut Ctrl+J to toggle
+  // Keyboard shortcut Ctrl+J
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
@@ -483,25 +498,102 @@ export function AIAssistant() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // ============ CLEAR CHAT ============
+  // Clean up media recorder on unmount
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop()
+      }
+    }
+  }, [])
 
   const clearChat = () => {
     setMessages([])
     localStorage.removeItem('reflection_ai_chat_history')
   }
 
-  // ============ NAVIGATE TO MODULE ============
+  const navigateToModule = useCallback((module: string) => {
+    setActiveModule(module as Parameters<typeof setActiveModule>[0])
+    setIsOpen(false)
+  }, [setActiveModule])
 
-  const navigateToModule = useCallback(
-    (module: string) => {
-      const validModule = module as keyof typeof MODULE_LABELS
-      if (MODULE_LABELS[validModule]) {
-        setActiveModule(validModule)
-        setIsOpen(false)
+  // ============ VOICE INPUT ============
+
+  const toggleVoiceInput = async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop()
+      setIsRecording(false)
+      return
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+      const audioChunks: Blob[] = []
+
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data) }
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
+
+        try {
+          // Use ASR to transcribe
+          const formData = new FormData()
+          formData.append('audio', audioBlob, 'recording.webm')
+
+          const res = await fetch('/api/asr/transcribe', {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (res.ok) {
+            const data = await res.json()
+            const text = data.text || data.transcription || ''
+            if (text) {
+              setInputValue(text)
+              // Auto-send after transcription
+              setTimeout(() => sendMessage(text), 300)
+            }
+          } else {
+            // Fallback: use Web Speech API
+            setInputValue('[Glasovni unos nije dostupan]')
+          }
+        } catch {
+          setInputValue('[Greška pri prepoznavanju glasa]')
+        }
       }
-    },
-    [setActiveModule]
-  )
+
+      mediaRecorderRef.current = mediaRecorder
+      mediaRecorder.start()
+      setIsRecording(true)
+    } catch {
+      // Fallback to Web Speech API
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = (window as unknown as { SpeechRecognition: typeof window.SpeechRecognition }).SpeechRecognition
+        const recognition = new SpeechRecognition()
+        recognition.lang = 'sr-RS'
+        recognition.continuous = false
+        recognition.interimResults = false
+
+        recognition.onresult = (event: { results: { transcript: string }[][] }) => {
+          const text = event.results[0][0].transcript
+          setInputValue(text)
+          setTimeout(() => sendMessage(text), 300)
+        }
+        recognition.onerror = () => { setIsRecording(false) }
+        recognition.onend = () => { setIsRecording(false) }
+
+        recognition.start()
+        setIsRecording(true)
+
+        // Store for cleanup
+        mediaRecorderRef.current = null
+      } else {
+        // No speech recognition available
+        setInputValue('[Glasovni unos nije podržan u ovom pregledaču]')
+      }
+    }
+  }
 
   // ============ SEND MESSAGE ============
 
@@ -523,23 +615,27 @@ export function AIAssistant() {
     try {
       const context = MODULE_CONTEXT[activeModule] || 'sistem'
 
+      // Build conversation history for context
+      const history = messages.slice(-8).map(m => ({ role: m.role, content: m.content }))
+
       const res = await fetch('/api/ai-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: trimmed,
           context: `Korisnik se trenutno nalazi u ${context} modulu.`,
+          history,
         }),
       })
 
       if (!res.ok) throw new Error('Greška pri slanju poruke')
 
-      const data: APIResponse = await res.json()
+      const data = await res.json()
 
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: data.reply || data.error || 'Izvinjavam se, nisam uspeo da generišem odgovor.',
+        content: data.reply || 'Nisam uspeo da generišem odgovor.',
         timestamp: new Date(),
         data: data.data,
         actionType: data.actionType,
@@ -548,15 +644,12 @@ export function AIAssistant() {
 
       setMessages((prev) => [...prev, assistantMessage])
 
-      // Show unread indicator if chat is closed
-      if (!isOpen) {
-        setHasNewMessage(true)
-      }
+      if (!isOpen) setHasNewMessage(true)
     } catch {
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Izvinjavam se, došlo je do greške. Molimo pokušajte ponovo.',
+        content: 'Izvinjavam se, došlo je do greške. Pokušajte ponovo.',
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])
@@ -572,83 +665,64 @@ export function AIAssistant() {
     }
   }
 
-  const handleSuggestionClick = (label: string) => {
-    sendMessage(label)
-  }
+  const suggestions = getSuggestions(activeModule)
 
   // ============ RENDER ============
 
   return (
     <div className="fixed bottom-20 right-6 z-40 flex flex-col items-end gap-3">
       {/* Chat Panel */}
-      <div
-        className={cn(
-          'w-[calc(100vw-3rem)] sm:w-[420px] transition-all duration-300 ease-in-out',
-          isOpen
-            ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 scale-95 translate-y-4 pointer-events-none'
-        )}
-      >
-        <Card className="shadow-2xl border-border/50 overflow-hidden flex flex-col max-h-[580px]">
+      <div className={cn(
+        'w-[calc(100vw-3rem)] sm:w-[440px] transition-all duration-300 ease-in-out',
+        isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'
+      )}>
+        <Card className="shadow-2xl border-border/50 overflow-hidden flex flex-col max-h-[600px]">
           {/* Header */}
-          <CardHeader className="p-4 pb-3 shrink-0 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+          <div className="p-4 pb-3 shrink-0 border-b bg-gradient-to-r from-primary/5 to-primary/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
-                  <CardTitle className="text-sm font-semibold">Reflection AI Asistent</CardTitle>
+                  <h3 className="text-sm font-semibold">Reflection AI</h3>
                   <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                     {MODULE_CONTEXT[activeModule] || 'Sistem'}
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                onClick={() => setIsOpen(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {messages.length > 0 && (
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={clearChat} title="Obriši istoriju">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setIsOpen(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            {messages.length > 0 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 absolute top-3 right-12 text-muted-foreground hover:text-destructive"
-                onClick={clearChat}
-                title="Obriši istoriju četa"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            )}
-          </CardHeader>
+          </div>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
-            {/* Welcome message */}
             {messages.length === 0 && !isLoading && (
               <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-6">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <Bot className="h-7 w-7" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">
-                    Zdravo! Ja sam Reflection AI asistent.
-                  </p>
+                  <p className="text-sm font-medium text-foreground">Zdravo! Ja sam Reflection AI</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Mogu da vam pomognem sa fakturama, partnerima, magacinom, finansijama i još mnogo toga.
+                    Kontrolišem celu aplikaciju — fakture, magacin, CRM, finansije, projekte i još mnogo toga. Pitajte me bilo šta!
                   </p>
                 </div>
-                {/* Welcome suggestions */}
                 <div className="flex flex-wrap gap-2 mt-3 justify-center px-2">
-                  {SUGGESTION_CHIPS.map((suggestion) => (
+                  {suggestions.map((suggestion) => (
                     <button
                       key={suggestion.label}
-                      onClick={() => handleSuggestionClick(suggestion.label)}
+                      onClick={() => sendMessage(suggestion.label)}
                       className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-full border border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors"
                     >
                       <suggestion.icon className="h-3 w-3" />
@@ -659,93 +733,59 @@ export function AIAssistant() {
               </div>
             )}
 
-            {/* Chat messages */}
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={cn(
-                  'flex gap-2.5',
-                  msg.role === 'user' ? 'justify-end' : 'justify-start'
-                )}
-              >
+              <div key={msg.id} className={cn('flex gap-2.5', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
                 {msg.role === 'assistant' && (
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary mt-1">
                     <Bot className="h-4 w-4" />
                   </div>
                 )}
-                <div
-                  className={cn(
-                    'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed',
-                    msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-br-md'
-                      : 'bg-muted text-foreground rounded-bl-md'
-                  )}
-                >
-                  {/* Text content */}
+                <div className={cn(
+                  'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed',
+                  msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted text-foreground rounded-bl-md'
+                )}>
                   <p className="whitespace-pre-wrap">{msg.content}</p>
 
-                  {/* Summary card */}
-                  {msg.data?.summaryValue && msg.data?.summaryLabel && (
-                    <SummaryCard
-                      value={msg.data.summaryValue}
-                      label={msg.data.summaryLabel}
-                    />
+                  {/* KPI Cards */}
+                  {msg.data?.kpis && msg.data.kpis.length > 0 && (
+                    <KPICards kpis={msg.data.kpis} />
                   )}
 
-                  {/* Inline chart */}
+                  {/* Summary card */}
+                  {msg.data?.summaryValue && msg.data?.summaryLabel && !msg.data?.kpis && (
+                    <SummaryCard value={msg.data.summaryValue} label={msg.data.summaryLabel} />
+                  )}
+
+                  {/* Chart */}
                   {msg.data?.chartData && msg.data?.chartData.length > 0 && msg.data?.chartConfig && (
-                    <InlineChart
-                      chartData={msg.data.chartData}
-                      chartType={msg.data.chartType || 'bar'}
-                      chartConfig={msg.data.chartConfig}
-                    />
+                    <InlineChart chartData={msg.data.chartData} chartType={msg.data.chartType || 'bar'} chartConfig={msg.data.chartConfig} />
                   )}
 
                   {/* Results table */}
                   {msg.data?.columns && msg.data?.rows && msg.data.rows.length > 0 && (
-                    <ResultsTable
-                      columns={msg.data.columns}
-                      rows={msg.data.rows}
-                    />
+                    <ResultsTable columns={msg.data.columns} rows={msg.data.rows} />
                   )}
 
-                  {/* Action card (create/update/navigate) */}
+                  {/* Action card */}
                   {msg.data?.actionLabel && (
-                    <ActionCard
-                      message={msg.content}
-                      actionLabel={msg.data.actionLabel}
-                      actionType={msg.data.actionType}
-                      module={msg.data.module}
-                      onNavigate={navigateToModule}
-                    />
+                    <ActionCard actionLabel={msg.data.actionLabel} actionType={msg.data.actionType} module={msg.data.module} onNavigate={navigateToModule} />
                   )}
 
-                  {/* Module link (for navigate-only actions) */}
+                  {/* Module link */}
                   {msg.module && !msg.data?.actionLabel && msg.actionType === 'navigate' && (
-                    <div className="mt-2">
-                      <ModuleLink module={msg.module} onNavigate={navigateToModule} />
-                    </div>
+                    <Badge variant="outline" className="cursor-pointer gap-1 mt-1 text-xs hover:bg-primary/5 hover:border-primary/30 transition-colors" onClick={() => navigateToModule(msg.module!)}>
+                      <ChevronRight className="h-3 w-3" />
+                      {MODULE_LABELS[msg.module] || msg.module}
+                    </Badge>
                   )}
 
-                  {/* Timestamp */}
-                  <p
-                    className={cn(
-                      'text-[10px] mt-1.5',
-                      msg.role === 'user'
-                        ? 'text-primary-foreground/60'
-                        : 'text-muted-foreground'
-                    )}
-                  >
-                    {msg.timestamp.toLocaleTimeString('sr-RS', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                  <p className={cn('text-[10px] mt-1.5', msg.role === 'user' ? 'text-primary-foreground/60' : 'text-muted-foreground')}>
+                    {msg.timestamp.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
               </div>
             ))}
 
-            {/* Loading state */}
             {isLoading && (
               <div className="flex gap-2.5 justify-start">
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary mt-1">
@@ -760,15 +800,15 @@ export function AIAssistant() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Suggestions (when messages exist) */}
+          {/* Quick Suggestions */}
           {messages.length > 0 && !isLoading && (
             <div className="px-3 pt-2 shrink-0">
               <ScrollArea className="w-full" type="scroll">
                 <div className="flex gap-1.5 pb-1">
-                  {SUGGESTION_CHIPS.map((suggestion) => (
+                  {suggestions.map((suggestion) => (
                     <button
                       key={suggestion.label}
-                      onClick={() => handleSuggestionClick(suggestion.label)}
+                      onClick={() => sendMessage(suggestion.label)}
                       className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors whitespace-nowrap shrink-0"
                     >
                       <Lightbulb className="h-2.5 w-2.5" />
@@ -797,17 +837,24 @@ export function AIAssistant() {
                   Ctrl+J
                 </kbd>
               </div>
+              {/* Voice input button */}
+              <Button
+                variant={isRecording ? 'destructive' : 'ghost'}
+                size="icon"
+                className={cn('h-9 w-9 rounded-full shrink-0', isRecording && 'animate-pulse')}
+                onClick={toggleVoiceInput}
+                disabled={isLoading}
+                title={isRecording ? 'Zaustavi snimanje' : 'Glasovni unos'}
+              >
+                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
               <Button
                 size="icon"
                 className="h-9 w-9 rounded-full shrink-0"
                 onClick={() => sendMessage()}
                 disabled={isLoading || !inputValue.trim()}
               >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 <span className="sr-only">Pošalji</span>
               </Button>
             </div>
@@ -825,9 +872,7 @@ export function AIAssistant() {
           isOpen && 'rotate-0'
         )}
       >
-        <span className="sr-only">
-          {isOpen ? 'Zatvori AI asistent' : 'Otvori AI asistent'}
-        </span>
+        <span className="sr-only">{isOpen ? 'Zatvori AI' : 'Otvori AI'}</span>
         {isOpen ? (
           <X className="h-6 w-6" />
         ) : (
