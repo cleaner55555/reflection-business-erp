@@ -15,14 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Reflection Business — ERP + CRM System",
-  description: "Comprehensive ERP + CRM system for business management. Finance, inventory, invoices, procurement, CRM, HR, projects, documents and reporting.",
-  keywords: ["ERP", "CRM", "Reflection Business", "business", "finance", "inventory", "invoices"],
+  title: "Reflection Business — ERP + CRM Sistem",
+  description: "Kompletni ERP + CRM sistem za upravljanje poslovanjem. Finansije, magacin, fakture, nabavka, CRM, HR, projekti, dokumenta i izveštaji. 148 modula, 82 zemlje, 82 jezika.",
+  keywords: ["ERP", "CRM", "Reflection Business", "poslovanje", "finansije", "magacin", "fakture", "Srbija", "148 modula"],
   authors: [{ name: "Reflection Business Team" }],
   openGraph: {
-    title: "Reflection Business",
-    description: "Modular ERP + CRM system for efficient business management",
+    title: "Reflection Business — ERP + CRM Sistem",
+    description: "Modularni ERP + CRM sistem za efikasno upravljanje poslovanjem. 148 modula, 82 zemlje, 82 jezika.",
     type: "website",
+    locale: "sr_RS",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
   },
 };
 
