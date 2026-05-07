@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/lib/i18n'
-import { useAppStore } from '@/lib/store'
+import { useAppStore, type ModuleType } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -173,7 +173,7 @@ export function NotificationBell() {
       await markAsRead(notif.id)
     }
     if (notif.actionUrl) {
-      setActiveModule(notif.actionUrl as 'fakture' | 'magacin' | 'partneri' | 'dashboard' | 'crm')
+      setActiveModule(notif.actionUrl as ModuleType)
     }
     setIsOpen(false)
   }

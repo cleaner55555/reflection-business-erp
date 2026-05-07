@@ -34,7 +34,7 @@ export async function POST() {
             entityType: 'invoice',
             entityId: inv.id,
             priority: inv.dueDate < new Date(now.getTime() - 30 * 86400000) ? 'urgent' : 'high',
-            actionUrl: 'fakture',
+            actionUrl: 'invoices',
           },
         })
         created.push(notif)
@@ -67,7 +67,7 @@ export async function POST() {
             entityType: 'product',
             entityId: prod.id,
             priority: 'medium',
-            actionUrl: 'magacin',
+            actionUrl: 'inventory',
           },
         })
         created.push(notif)
@@ -101,7 +101,7 @@ export async function POST() {
             entityType: 'invoice',
             entityId: inv.id,
             priority: 'high',
-            actionUrl: 'fakture',
+            actionUrl: 'invoices',
           },
         })
         created.push(notif)

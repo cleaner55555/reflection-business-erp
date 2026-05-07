@@ -54,11 +54,11 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => setActiveModule('podesavanja')} className="cursor-pointer">
+        <DropdownMenuItem onClick={() => setActiveModule('settings')} className="cursor-pointer">
           <User className="h-4 w-4 mr-2" />
           Profil
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setActiveModule('podesavanja')} className="cursor-pointer">
+        <DropdownMenuItem onClick={() => setActiveModule('settings')} className="cursor-pointer">
           <Users className="h-4 w-4 mr-2" />
           Korisnici
         </DropdownMenuItem>

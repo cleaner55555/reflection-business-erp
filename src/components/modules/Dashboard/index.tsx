@@ -574,7 +574,7 @@ export function Dashboard() {
           subtitle="Ulazi vs izlazi — poslednjih 30 dana"
           icon={<Zap className="h-4 w-4 text-cyan-500" />}
           action={
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveModule('finansije')}>
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveModule('finance')}>
               <ArrowUpRight className="h-3 w-3" /> Finansije
             </Button>
           }
@@ -621,7 +621,7 @@ export function Dashboard() {
             subtitle={t('dashboard.recentInvoicesSubtitle')}
             icon={<FileText className="h-4 w-4 text-emerald-500" />}
             action={
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveModule('fakture')}>
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveModule('invoices')}>
                 <ArrowUpRight className="h-3 w-3" /> Fakture
               </Button>
             }
@@ -639,7 +639,7 @@ export function Dashboard() {
                 </TableHeader>
                 <TableBody>
                   {recentInvoices.slice(0, 8).map(inv => (
-                    <TableRow key={inv.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setActiveModule('fakture')}>
+                    <TableRow key={inv.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setActiveModule('invoices')}>
                       <TableCell className="text-xs font-medium">{inv.number}</TableCell>
                       <TableCell className="text-xs hidden sm:table-cell">{tc(inv.partner?.name || '-')}</TableCell>
                       <TableCell className="text-xs hidden md:table-cell">{formatDate(inv.date)}</TableCell>
