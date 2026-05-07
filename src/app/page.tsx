@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/modules/AppSidebar'
 import { Footer } from '@/components/modules/Footer'
-import { AIAssistant } from '@/components/modules/AIAssistant'
+import { AITeam } from '@/components/modules/AITeam'
 import { GlobalSearch } from '@/components/modules/GlobalSearch'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { NotificationBell } from '@/components/modules/NotificationBell'
@@ -269,8 +269,8 @@ function AppContent() {
     return (
       <>
         <DesktopMode />
-        {/* AI Assistant - outside everything */}
-        <AIAssistant />
+        {/* AI Business Team - outside everything */}
+        <AITeam />
         {/* App Launcher - fullscreen module grid */}
         <AppLauncher />
         {/* AI Setup Wizard - first login module selection */}
@@ -376,8 +376,8 @@ function AppContent() {
         </SidebarInset>
       </SidebarProvider>
 
-      {/* AI Assistant - outside SidebarProvider to prevent dialog conflicts */}
-      <AIAssistant />
+      {/* AI Business Team - outside SidebarProvider */}
+      <AITeam />
       {/* App Launcher - fullscreen module grid */}
       <AppLauncher />
       {/* AI Setup Wizard - first login module selection */}
