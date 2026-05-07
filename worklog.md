@@ -937,3 +937,46 @@ Stage Summary:
 - 0 lint errors throughout
 - Dev server running without issues
 - All improvements backward compatible
+
+---
+Task ID: IMPROVE-1
+Agent: Main (direct)
+Task: Round 2 Improvements - PWA, Keyboard Shortcuts
+
+Work Log:
+- Verified all 6 previously planned improvements (AI ChatBot, Dashboard, Landing Page, Mobile, Themes, Bug fixes) were already completed in prior sessions
+- Implemented PWA (Progressive Web App) support:
+  - Created manifest.json with app metadata, shortcuts, icons, display standalone
+  - Created service worker (sw.js) with network-first caching, API skip, WebSocket skip
+  - Generated PWA icons (192x192 and 512x512 PNG) with emerald green R logo
+  - Created PWAInstallPrompt component with auto-show, dismiss (7-day cooldown), install button
+  - Created OfflineIndicator component with online/offline status banner
+  - Fixed viewport metadata warning (moved to separate Viewport export per Next.js 16)
+  - Registered service worker on app mount
+- Implemented Keyboard Shortcuts system:
+  - Created KeyboardShortcutsProvider wrapping the app
+  - ? key opens keyboard shortcuts help dialog
+  - Alt+1-9 for quick module navigation
+  - Ctrl+/ for theme toggle
+  - Escape to close dialogs
+  - Skip shortcuts when typing in inputs/textareas
+  - Organized by categories: General, Navigation
+  - ShortcutHint component for inline shortcut display
+- Verified Data Export (PDF/Excel) was already built:
+  - pdf-generator.ts: Full PDF for invoices, partners, products, transactions, financial reports
+  - excel-generator.ts: Full Excel with formatting, borders, alternating rows
+  - ReportDownloadButton: Dropdown with PDF/Excel download options
+- Verified Global Search was already built:
+  - Cross-module search across partners, products, invoices, contacts, employees
+  - Filter by entity type
+  - Ctrl+K shortcut
+  - Command palette UI style
+- Verified User Preferences were already built:
+  - Theme store with 15 presets
+  - AppSetting model in Prisma
+  - Theme color picker in settings
+
+Stage Summary:
+- 3 new features: PWA Support, Keyboard Shortcuts, viewport fix
+- 3 features verified as already complete: Data Export, Global Search, User Preferences
+- All changes pushed to GitHub
