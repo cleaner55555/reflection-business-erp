@@ -29,6 +29,7 @@ import {
   CheckCircle2,
   ExternalLink,
   Lightbulb,
+  Trash2,
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, ResponsiveContainer } from 'recharts'
 import { cn } from '@/lib/helpers'
@@ -415,12 +416,38 @@ export function AIAssistant() {
   const { t } = useTranslation()
 
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    // Load persisted messages from localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('reflection_ai_chat_history')
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          return parsed.map((m: ChatMessage & { timestamp: string }) => ({
+            ...m,
+            timestamp: new Date(m.timestamp),
+          }))
+        }
+      } catch { /* ignore */ }
+    }
+    return []
+  })
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [hasNewMessage, setHasNewMessage] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // ============ PERSIST MESSAGES ============
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      try {
+        localStorage.setItem('reflection_ai_chat_history', JSON.stringify(messages))
+      } catch { /* ignore */ }
+    }
+  }, [messages])
 
   // ============ SCROLL TO BOTTOM ============
 
@@ -437,11 +464,31 @@ export function AIAssistant() {
   // Focus input when panel opens
   useEffect(() => {
     if (isOpen) {
+      setHasNewMessage(false)
       setTimeout(() => {
         inputRef.current?.focus()
       }, 300)
     }
   }, [isOpen])
+
+  // Keyboard shortcut Ctrl+J to toggle
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
+        e.preventDefault()
+        setIsOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // ============ CLEAR CHAT ============
+
+  const clearChat = () => {
+    setMessages([])
+    localStorage.removeItem('reflection_ai_chat_history')
+  }
 
   // ============ NAVIGATE TO MODULE ============
 
@@ -500,6 +547,11 @@ export function AIAssistant() {
       }
 
       setMessages((prev) => [...prev, assistantMessage])
+
+      // Show unread indicator if chat is closed
+      if (!isOpen) {
+        setHasNewMessage(true)
+      }
     } catch {
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -562,6 +614,17 @@ export function AIAssistant() {
                 <X className="h-4 w-4" />
               </Button>
             </div>
+            {messages.length > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 absolute top-3 right-12 text-muted-foreground hover:text-destructive"
+                onClick={clearChat}
+                title="Obriši istoriju četa"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </CardHeader>
 
           {/* Messages */}
@@ -720,15 +783,20 @@ export function AIAssistant() {
           {/* Input */}
           <div className="p-3 border-t shrink-0 bg-background">
             <div className="flex items-center gap-2">
-              <Input
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Pitajte nešto o vašem poslovanju..."
-                disabled={isLoading}
-                className="flex-1 text-sm h-9 rounded-full border-border/60 pl-4 pr-2"
-              />
+              <div className="relative flex-1">
+                <Input
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Pitajte nešto o vašem poslovanju..."
+                  disabled={isLoading}
+                  className="flex-1 text-sm h-9 rounded-full border-border/60 pl-4 pr-16"
+                />
+                <kbd className="pointer-events-none absolute right-14 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                  Ctrl+J
+                </kbd>
+              </div>
               <Button
                 size="icon"
                 className="h-9 w-9 rounded-full shrink-0"
@@ -765,10 +833,17 @@ export function AIAssistant() {
         ) : (
           <div className="relative">
             <Bot className="h-6 w-6" />
-            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-foreground opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary-foreground" />
-            </span>
+            {!hasNewMessage && (
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-foreground opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary-foreground" />
+              </span>
+            )}
+            {hasNewMessage && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold ring-2 ring-background">
+                !
+              </span>
+            )}
           </div>
         )}
       </Button>
