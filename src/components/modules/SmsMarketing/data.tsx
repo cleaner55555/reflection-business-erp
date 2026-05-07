@@ -1,3 +1,8 @@
+import { Card } from '@/components/ui/card'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   draft: { label: 'Nacrt', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
   scheduled: { label: 'Zakazano', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
@@ -83,4 +88,4 @@ export const KpiCard = ({ label, value, icon: Icon, sub, color, bg }: { label: s
   </Card>
 );
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file

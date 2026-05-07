@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui/badge'
+
 export const mockData = [
   { id: '1', name: ' Firma A', status: 'active', date: '2024-01-15', value: '15 док.' },
   { id: '2', name: 'Firma B', status: 'pending', date: '2024-02-20', value: '23 док.' },

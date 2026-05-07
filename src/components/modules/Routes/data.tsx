@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui/badge'
+
 export const mockData = [
   { id: '1', name: 'Рута Београд-Нови Сад', status: 'active', date: '2024-01-15', value: '95 km' },
   { id: '2', name: 'Рута Београд-Ниш', status: 'pending', date: '2024-02-20', value: '230 km' },

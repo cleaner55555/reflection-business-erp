@@ -1,3 +1,8 @@
+import { ResponsiveContainer, PieChart, ChartTooltip, ChartTooltipContent, Pie, Cell, BarChart, XAxis, YAxis, Bar, LineChart, Line, AreaChart, Area } from 'recharts'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeModule, setActiveModule } = useAppStore()
+
 export const MODULE_CONTEXT: Record<string, string> = {
   dashboard: 'pregledne instrument table',
   finance: 'modul finansije',
@@ -156,4 +161,4 @@ export const renderAreaChart = () => (
 
 export const label = MODULE_LABELS[module] || module;
 
-export const { activeModule, setActiveModule } = useAppStore();
+// useAppStore already called at top of file

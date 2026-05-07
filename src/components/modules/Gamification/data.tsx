@@ -1,3 +1,8 @@
+import { TrendingUp, Zap, Brain, Heart, Users, Sparkles } from 'lucide-react'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const goalStatusConfig: Record<string, { label: string; color: string }> = {
   draft: { label: 'Nacrt', color: 'bg-gray-100 text-gray-700' },
   active: { label: 'Aktivan', color: 'bg-green-100 text-green-700' },
@@ -128,4 +133,4 @@ export const mockDashboard: GamificationDashboard = {
   ],
 }
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file

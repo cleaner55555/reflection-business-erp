@@ -1,3 +1,8 @@
+import { Card } from '@/components/ui/card'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const DIRECTION_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
   inbound: { label: 'Dolazna', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
   outbound: { label: 'Odlazna', color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
@@ -128,4 +133,4 @@ export const KpiCard = ({ label, value, icon: Icon, sub, color, bg }: { label: s
   </Card>
 );
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file

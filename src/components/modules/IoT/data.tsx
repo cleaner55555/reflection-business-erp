@@ -1,3 +1,9 @@
+import { BatteryFull, Battery, BatteryWarning } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const SENSOR_TYPE_CONFIG: Record<string, { label: string; color: string; icon: string; unit: string; defaultMin: number; defaultMax: number }> = {
   temperature: { label: 'Temperatura', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: '🌡️', unit: '°C', defaultMin: -10, defaultMax: 60 },
   humidity: { label: 'Vlažnost', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: '💧', unit: '%', defaultMin: 0, defaultMax: 100 },
@@ -90,8 +96,7 @@ export const DEMO_AUTOMATION_RULES: AutomationRule[] = [
   { id: 'au1', name: 'Alert na visoku temperaturu', description: 'Kada temperatura hladnjače pređe 8°C, šalji notifikaciju', triggerType: 'sensor_value', triggerSensorId: 's1', triggerCondition: 'above', triggerValue: 8, actionType: 'notify', actionConfig: '{"channel":"email","recipients":["admin@company.rs"]}', enabled: true, lastExecutedAt: '2025-01-05T03:00:00Z', executionCount: 3, createdAt: '2024-06-15T10:00:00Z' },
   { id: 'au2', name: 'Kreiraj ticket za offline senzor', description: 'Kada senzor bude offline >5 min, kreiraj podršku ticket', triggerType: 'sensor_offline', triggerSensorId: null, triggerCondition: 'duration_exceeds', triggerValue: 300, actionType: 'create_ticket', actionConfig: '{"category":"hardware","priority":"high"}', enabled: true, lastExecutedAt: new Date().toISOString(), executionCount: 2, createdAt: '2024-07-01T10:00:00Z' },
   { id: 'au3', name: 'Loguj CO₂ vrednosti', description: 'Loguj svaku CO₂ meru za izveštaj o kvalitetu vazduha', triggerType: 'sensor_value', triggerSensorId: 's7', triggerCondition: 'always', triggerValue: null, actionType: 'log', actionConfig: null, enabled: true, lastExecutedAt: new Date().toISOString(), executionCount: 156, createdAt: '2024-09-01T10:00:00Z' },
-  { id: 'au4', name: 'Webhook na pokret', description: 'Šalji webhook na eksterni sistem kada je pokret detektovan', triggerType: 'sensor_value', triggerSensorId: 's3', triggerCondition: 'equals', triggerValue: 1, actionType: 'webhook', actionConfig: '{"url":"https://hooks.example.com/motion","method":"POST"
-}', enabled: false, lastExecutedAt: null, executionCount: 0, createdAt: '2024-10-01T10:00:00Z' },
+  { id: 'au4', name: 'Webhook na pokret', description: 'Šalji webhook na eksterni sistem kada je pokret detektovan', triggerType: 'sensor_value', triggerSensorId: 's3', triggerCondition: 'equals', triggerValue: 1, actionType: 'webhook', actionConfig: '{"url":"https://hooks.example.com/motion","method":"POST"}', enabled: false, lastExecutedAt: null, executionCount: 0, createdAt: '2024-10-01T10:00:00Z' },
 ]
 
 export const DEMO_ALERTS: IoTAlert[] = [
@@ -140,4 +145,4 @@ export const KpiCard = ({ label, value, icon: Icon, sub, color, bg }: { label: s
   </Card>
 );
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file

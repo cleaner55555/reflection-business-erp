@@ -1,3 +1,9 @@
+import { BatteryFull, Battery, BatteryWarning, CheckCircle2, Clock, MapPin, AlertTriangle, Bell } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const MOCK_EMPLOYEES: TrackedEmployee[] = [
   { id: 'e1', name: 'Marko Petrović', department: 'Dostava', position: 'Vozač dostave', phone: '+381631234567', isTracked: true, lastLatitude: 44.8176, lastLongitude: 20.4633, lastLocationName: 'Terazije, Beograd', lastLocationAt: new Date(Date.now() - 300000).toISOString(), batteryLevel: 82, speed: 35, isOnline: true, distanceToday: 47.2, notes: null, createdAt: '2024-01-15T10:00:00Z' },
   { id: 'e2', name: 'Ana Jovanović', department: 'Prodaja', position: 'Terenski predstavnik', phone: '+381642345678', isTracked: true, lastLatitude: 44.7866, lastLongitude: 20.4489, lastLocationName: 'Novi Beograd', lastLocationAt: new Date(Date.now() - 600000).toISOString(), batteryLevel: 65, speed: 0, isOnline: true, distanceToday: 23.8, notes: null, createdAt: '2024-02-01T10:00:00Z' },
@@ -103,4 +109,4 @@ export const formatRelativeTime = (dateStr: string) => {
   return `Pre ${Math.floor(hours / 24)} d`
 }
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file

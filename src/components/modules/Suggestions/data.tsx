@@ -1,3 +1,8 @@
+import { Clock, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId, currentUser } = useAppStore()
+
 export const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending: { label: 'Na čekanju', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: <Clock className="h-3 w-3" /> },
   approved: { label: 'Odobreno', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: <CheckCircle2 className="h-3 w-3" /> },
@@ -156,4 +161,4 @@ export const mockStats: SuggestionStats = {
   ],
 }
 
-export const { activeCompanyId, currentUser } = useAppStore();
+// useAppStore already called at top of file

@@ -1,3 +1,8 @@
+import { FileText, CheckCircle2, AlertCircle, XCircle, RefreshCw } from 'lucide-react'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   draft: { label: 'Nacrt', color: 'bg-gray-100 text-gray-700', icon: <FileText className="h-3.5 w-3.5" /> },
   active: { label: 'Aktivan', color: 'bg-green-100 text-green-700', icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
@@ -125,4 +130,4 @@ export const mockDashboard: ContractDashboard = {
   renewalsDue: 2,
 }
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file

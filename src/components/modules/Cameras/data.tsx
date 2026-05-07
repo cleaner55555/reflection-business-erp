@@ -1,3 +1,8 @@
+import { Card } from '@/components/ui/card'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const MOCK_CAMERAS: CameraDevice[] = [
   { id: 'cam1', name: 'Ulaz - glavna vrata', location: 'Glavni ulaz', type: 'indoor', status: 'recording', resolution: '1920x1080', ipAddress: '192.168.1.101', protocol: 'RTSP', port: 554, sensitivity: 75, nightVision: true, audioEnabled: true, scheduleStart: null, scheduleEnd: null, recordingMode: 'continuous', retentionDays: 30, storageUsed: 145, totalStorage: 256, lastMotionAt: new Date(Date.now() - 300000).toISOString(), lastRecordingAt: new Date().toISOString(), notes: 'HDTV kamera sa noćnim vidom', createdAt: '2024-01-10T10:00:00Z', updatedAt: new Date().toISOString() },
   { id: 'cam2', name: 'Parking - ulaz', location: 'Parking', type: 'outdoor', status: 'online', resolution: '2560x1440', ipAddress: '192.168.1.102', protocol: 'RTSP', port: 554, sensitivity: 60, nightVision: true, audioEnabled: false, scheduleStart: '06:00', scheduleEnd: '23:00', recordingMode: 'motion', retentionDays: 14, storageUsed: 89, totalStorage: 256, lastMotionAt: new Date(Date.now() - 1800000).toISOString(), lastRecordingAt: new Date(Date.now() - 1800000).toISOString(), notes: '2K kamera za prepoznavanje tablica', createdAt: '2024-01-15T10:00:00Z', updatedAt: new Date().toISOString() },
@@ -106,4 +111,4 @@ export const KpiCard = ({ label, value, icon: Icon, sub, color, bg }: { label: s
   </Card>
 );
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file

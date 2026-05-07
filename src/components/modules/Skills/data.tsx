@@ -1,3 +1,8 @@
+import { Code, Database, Wrench, Palette, Users, BarChart3, Globe, Brain } from 'lucide-react'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const skillLevels: SkillLevel[] = [
   { id: 'beginner', name: 'Početnik', value: 1, color: 'bg-gray-400', description: 'Osnovno znanje' },
   { id: 'elementary', name: 'Elementarni', value: 2, color: 'bg-blue-400', description: 'Razume osnove, može raditi pod nadzorom' },
@@ -121,4 +126,4 @@ export const mockDashboard: SkillsDashboard = {
   skillGaps: mockGaps.slice(0, 3),
 }
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file

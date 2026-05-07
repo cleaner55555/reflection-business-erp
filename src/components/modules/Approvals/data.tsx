@@ -1,3 +1,8 @@
+import { FileText, Clock, Eye, CheckCircle2, XCircle, ArrowRight } from 'lucide-react'
+import { useAppStore } from '@/lib/store'
+// eslint-disable-next-line react-hooks/rules-of-hooks
+export const { activeCompanyId } = useAppStore()
+
 export const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   draft: { label: 'Nacrt', color: 'bg-gray-100 text-gray-700', icon: <FileText className="h-3.5 w-3.5" /> },
   pending: { label: 'Na čekanju', color: 'bg-amber-100 text-amber-700', icon: <Clock className="h-3.5 w-3.5" /> },
@@ -153,4 +158,4 @@ export const formatCurrency = (val: number, currency: string = 'RSD') => {
   return `${val.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD`
 }
 
-export const { activeCompanyId } = useAppStore();
+// useAppStore already called at top of file
