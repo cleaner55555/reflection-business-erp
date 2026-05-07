@@ -13,6 +13,8 @@ import { AppLauncher, openAppLauncher } from '@/components/modules/AppLauncher'
 import { AISetupWizard, openAISetupWizard } from '@/components/modules/AISetupWizard'
 import { AuthPage } from '@/components/modules/AuthPage'
 import { LandingPage } from '@/components/landing/LandingPage'
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
+import { OfflineIndicator } from '@/components/OfflineIndicator'
 import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
 import { UserMenu } from '@/components/modules/UserMenu'
 import { useAppStore } from '@/lib/store'
@@ -174,6 +176,16 @@ const moduleLabelKeys: Record<string, string> = {
 
 function AppContent() {
   const { activeModule, currentUser, activeCompanyId } = useAppStore()
+
+  // Register service worker for PWA
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {
+        // Service worker registration failed - not critical
+      })
+    }
+  }, [])
+
   const { t, locale, setLocale, isTranslating } = useTranslation()
   const ensureLoaded = useThemeStore((s) => s.ensureLoaded)
   const { isDesktopMode, toggleDesktopMode } = useWindowManager()
@@ -369,6 +381,8 @@ function AppContent() {
       <AppLauncher />
       {/* AI Setup Wizard - first login module selection */}
       <AISetupWizard />
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
     </>
   )
 }
@@ -390,6 +404,7 @@ function AppWithContentTranslation() {
 export default function Home() {
   return (
     <I18nProvider>
+      <OfflineIndicator />
       <AppWithContentTranslation />
     </I18nProvider>
   )

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <!-- R letter stylized -->
+  <text x="256" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="320" font-weight="800" fill="white" text-anchor="middle" letter-spacing="-20">R</text>
+  <!-- Reflection accent line -->
+  <rect x="140" y="380" width="232" height="8" rx="4" fill="rgba(255,255,255,0.4)"/>
+  <!-- Small diamond -->
+  <polygon points="256,60 274,78 256,96 238,78" fill="rgba(255,255,255,0.3)"/>
+</svg>
