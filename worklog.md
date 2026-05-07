@@ -897,3 +897,24 @@ Stage Summary:
 - 0 errors, 0 warnings
 - Dev server running at 200 OK
 - Commercial-grade code quality restored
+---
+Task ID: 1
+Agent: Main Agent
+Task: Expand tax-laws.ts to cover all 87 i18n languages (was 80 countries, needed 87+)
+
+Work Log:
+- Read current tax-laws.ts (80 countries) and i18n/languages.ts (87 languages)
+- Identified 10 missing countries needed: TW, KH, LA, MM, UZ, RW, HT, PY, WS, TO
+- Fixed TaxLaw interface to add 'africa' | 'oceania' region types
+- Fixed wrong region values for NZ (was americas→oceania), NG/KE/ZA/EG/MA/ET (were americas→africa)
+- Updated getCountriesByRegion function signature to include new regions
+- Added 10 new countries with full tax law data
+- Final count: 91 unique countries covering all 87 i18n languages
+- TypeScript type check passed with no errors
+- Git committed: feat: expand tax laws from 80 to 91 countries
+
+Stage Summary:
+- 91 countries in COUNTRY_TAX_LAWS (up from 80)
+- All 87 i18n languages now have corresponding country tax laws
+- Region type supports: europe, americas, asia, africa, oceania
+- Fixed 7 wrong region assignments
