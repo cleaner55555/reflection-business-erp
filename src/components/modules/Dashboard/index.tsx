@@ -210,48 +210,64 @@ export function Dashboard() {
     <motion.div className="space-y-5" variants={container} initial="hidden" animate="show">
 
       {/* ============ WELCOME BANNER ============ */}
-      <motion.div variants={item} className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white p-5 sm:p-6">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white" />
-          <div className="absolute -left-10 -bottom-10 h-48 w-48 rounded-full bg-white" />
+      <motion.div
+        variants={item}
+        className="relative overflow-hidden rounded-xl text-white"
+        style={{
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f766e 100%)',
+        }}
+      >
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -right-16 -top-16 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="absolute right-1/4 bottom-0 h-48 w-48 rounded-full bg-sky-500/10 blur-3xl" />
+          <div className="absolute left-1/3 top-0 h-32 w-32 rounded-full bg-white/5 blur-2xl" />
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }} />
         </div>
-        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
-            <p className="text-slate-300 text-sm mt-1 capitalize">{todayStr}</p>
+
+        <div className="relative p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{t('dashboard.title')}</h1>
+              <p className="text-slate-400 text-sm mt-1 capitalize">{todayStr}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {quickActions.map(action => (
+                <Button
+                  key={action.module}
+                  variant="outline"
+                  size="sm"
+                  className="hidden sm:flex h-9 gap-2 text-xs rounded-lg border-white/20 text-white bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm font-medium"
+                  onClick={() => setActiveModule(action.module)}
+                >
+                  <action.icon className="h-4 w-4" />
+                  {t(action.labelKey)}
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {quickActions.map(action => (
-              <Button
-                key={action.module}
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex h-8 gap-1.5 text-xs rounded-lg border-slate-500 text-white bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm"
-                onClick={() => setActiveModule(action.module)}
-              >
-                <action.icon className="h-3.5 w-3.5" />
-                {t(action.labelKey)}
-              </Button>
-            ))}
-          </div>
-        </div>
-        {/* Mini stats row */}
-        <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 pt-4 border-t border-white/15">
-          <div className="min-w-0 overflow-hidden">
-            <p className="text-[10px] text-slate-400 uppercase truncate">Mesečni prihod</p>
-            <p className="text-sm font-bold text-emerald-400 tabular-nums truncate">{formatRSDShort(kpis.thisMonthRevenue)}</p>
-          </div>
-          <div className="min-w-0 overflow-hidden">
-            <p className="text-[10px] text-slate-400 uppercase truncate">Faktura ovog meseca</p>
-            <p className="text-sm font-bold tabular-nums truncate">{kpis.thisMonthInvoiceCount}</p>
-          </div>
-          <div className="min-w-0 overflow-hidden">
-            <p className="text-[10px] text-slate-400 uppercase truncate">Novi partneri</p>
-            <p className="text-sm font-bold tabular-nums truncate">{data.newPartnersThisMonth}</p>
-          </div>
-          <div className="min-w-0 overflow-hidden">
-            <p className="text-[10px] text-slate-400 uppercase truncate">CRM pobede</p>
-            <p className="text-sm font-bold tabular-nums truncate">{data.wonDealsThisMonth.count} ({formatRSDShort(data.wonDealsThisMonth.revenue)})</p>
+          {/* Mini stats row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mt-5 pt-5 border-t border-white/10">
+            <div>
+              <p className="text-xs text-slate-400 font-medium">Mesečni prihod</p>
+              <p className="text-lg font-bold text-emerald-400 tabular-nums mt-0.5">{formatRSDShort(kpis.thisMonthRevenue)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 font-medium">Faktura ovog meseca</p>
+              <p className="text-lg font-bold tabular-nums mt-0.5">{kpis.thisMonthInvoiceCount}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 font-medium">Novi partneri</p>
+              <p className="text-lg font-bold tabular-nums mt-0.5">{data.newPartnersThisMonth}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 font-medium">CRM pobede</p>
+              <p className="text-lg font-bold tabular-nums mt-0.5">{data.wonDealsThisMonth.count} <span className="text-sm text-slate-400 font-normal">({formatRSDShort(data.wonDealsThisMonth.revenue)})</span></p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -310,33 +326,26 @@ export function Dashboard() {
           title={t('dashboard.totalRevenue')}
           value={formatRSD(kpis.totalRevenue)}
           change={kpis.revenueGrowth}
-          icon={<TrendingUp className="h-5 w-5 text-emerald-600" />}
-          iconBg="bg-emerald-100"
+          icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
           sparkline={revenueSparkline}
         />
         <KPICard
           title={t('dashboard.totalExpenses')}
           value={formatRSD(kpis.totalExpenses)}
-          subtitle={`${formatRSDShort(kpis.cashIn)} ulaz · ${formatRSDShort(kpis.cashOut)} izlaz`}
           change={kpis.revenueGrowth !== 0 ? -kpis.revenueGrowth * 0.6 : null}
-          icon={<TrendingDown className="h-5 w-5 text-red-600" />}
-          iconBg="bg-red-100"
+          icon={<TrendingDown className="h-4 w-4 text-muted-foreground" />}
           sparkline={expenseSparkline}
         />
         <KPICard
           title={t('dashboard.netProfit')}
           value={formatRSD(kpis.netProfit)}
-          subtitle={kpis.netProfit >= 0 ? 'Pozitivno' : 'Negativno'}
-          icon={<DollarSign className={cn2('h-5 w-5', kpis.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600')} />}
-          iconBg={kpis.netProfit >= 0 ? 'bg-emerald-100' : 'bg-red-100'}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
         />
         <KPICard
           title={t('dashboard.cashBalance')}
           value={formatRSD(kpis.cashBalance)}
-          subtitle={`${kpis.invoiceCount} faktura`}
           change={kpis.invoiceCountGrowth}
-          icon={<Banknote className="h-5 w-5 text-teal-600" />}
-          iconBg="bg-teal-100"
+          icon={<Banknote className="h-4 w-4 text-muted-foreground" />}
           sparkline={cashFlowSparkline}
         />
       </motion.div>
