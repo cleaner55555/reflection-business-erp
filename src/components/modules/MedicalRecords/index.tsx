@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, FileText, ClipboardList } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, FileText, ClipboardList, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -33,17 +33,6 @@ type MedicalRecord = {
   notes: string
 }
 
-const INITIAL: MedicalRecord[] = [
-  { id: '1', recordNo: 'KAR-2024-0001', patientName: 'Luka Petrović', patientNo: 'PAC-2024-001', doctor: 'Dr. Jelena Marković', date: '2024-06-10', type: 'checkup', diagnosis: 'Dijabetes tip 2 — kontrola', diagnosisCode: 'E11', symptoms: 'Bez simptoma, redovna kontrola', treatment: 'Nastavak terapije Metformin 1000mg x2, dijeta + vežbanje', prescribedMeds: ['Metformin 1000mg', 'Vitamin D3 2000IU'], vitalSigns: 'Pritisak: 130/85, Puls: 72, Težina: 89kg, HbA1c: 7.2%', labResults: 'Šećer natašte: 7.1 mmol/L, HbA1c: 7.2%', nextAction: 'Kontrola za 3 meseca', notes: 'Poboljšanje u odnosu na prethodnu kontrolu (HbA1c bio 7.8)' },
-  { id: '2', recordNo: 'KAR-2024-0002', patientName: 'Ana Stanković', patientNo: 'PAC-2024-002', doctor: 'Dr. Dragan Milić', date: '2024-06-14', type: 'follow_up', diagnosis: 'Pneumonija desne strane', diagnosisCode: 'J18.0', symptoms: 'Kašalj, temperatura 38.5°C, bol u grudima', treatment: 'Antibiotici Amoksicilin + Klavulanska kiselina 10 dana', prescribedMeds: ['Amoksicilin/Clav 875/125mg', 'Paracetamol 500mg', 'Deksametazon sirup'], vitalSigns: 'Temp: 38.5°C, Pritisak: 115/75, SatO2: 94%, Puls: 88', labResults: 'CRP: 45 mg/L, Leukociti: 14.2x10^9', nextAction: 'Kontrola za 7 dana', notes: 'Rtg pluća: infiltrati desni donji režanj' },
-  { id: '3', recordNo: 'KAR-2024-0003', patientName: 'Nikola Milić', patientNo: 'PAC-2024-005', doctor: 'Dr. Snežana Đorđević', date: '2024-06-15', type: 'emergency', diagnosis: 'Hipertenzivna kriza', diagnosisCode: 'I10', symptoms: 'Jaka glavobolja, vrtoglavica, mučnina, pritisak 180/120', treatment: 'Hitno snižavanje pritiska, hospitalizacija', prescribedMeds: ['Nifedipin 10mg sublingvalno', 'Kaptopril 25mg', 'Furosemid 40mg IV'], vitalSigns: 'Pritisak: 180/120→145/95, Puls: 98, SatO2: 97%', labResults: 'Kreatinin: 112 μmol/L, Kalij: 4.1, EKG: sinus ritam, LVH', nextAction: 'Hospitalizacija — kardiologija', notes: 'Kritično stanje, hitno prebačen na odeljenje' },
-  { id: '4', recordNo: 'KAR-2024-0004', patientName: 'Gordana Đorđević', patientNo: 'PAC-2024-008', doctor: 'Dr. Jelena Marković', date: '2024-06-13', type: 'lab_result', diagnosis: 'Hiperholesterolemija — kontrola', diagnosisCode: 'E78.5', symptoms: 'Asimptomatska, profilaksa', treatment: 'Kontinuirana terapija statinima', prescribedMeds: ['Atorvastatin 20mg', 'Omega-3'], vitalSigns: 'Pritisak: 125/80, BMI: 26.4', labResults: 'Total holesterol: 6.8→5.9 mmol/L, LDL: 4.2→3.6, HDL: 1.3, TG: 1.8', nextAction: 'Kontrola lipida za 6 nedelja', notes: 'Poboljšanje LDL za 14% nakon 3 meseca terapije' },
-  { id: '5', recordNo: 'KAR-2024-0005', patientName: 'Sara Pavlović', patientNo: 'PAC-2024-010', doctor: 'Dr. Snežana Đorđević', date: '2024-06-11', type: 'checkup', diagnosis: 'Godišnji zdravstveni pregled', diagnosisCode: 'Z00.0', symptoms: 'Bez tegoba', treatment: 'Preventivni pregled — sve normalno', prescribedMeds: [], vitalSigns: 'Pritisak: 118/72, Puls: 68, Težina: 62kg, Visina: 170cm, BMI: 21.5', labResults: 'KBC: normalno, Šećer: 4.8, Holesterol: 4.2, TSH: 1.8', nextAction: 'Godišnji pregled za 12 meseci', notes: 'Savet: fizička aktivnost 150 min/tjedno' },
-  { id: '6', recordNo: 'KAR-2024-0006', patientName: 'Mira Stojanović', patientNo: 'PAC-2024-006', doctor: 'Dr. Goran Savić', date: '2024-06-12', type: 'follow_up', diagnosis: 'Dijabetes tip 2 + Hipertenzija', diagnosisCode: 'E11, I10', symptoms: 'Umor, otežano disanje pri naporu', treatment: 'Podešavanje doze insulina i antihypertenziva', prescribedMeds: ['Metformin 850mg', 'Insulin Glargin 24U', 'Ramipril 10mg', 'Amlodipin 5mg', 'Atorvastatin 10mg'], vitalSigns: 'Pritisak: 155/95, Puls: 78, Težina: 78kg, HbA1c: 8.1%', labResults: 'Šećer: 9.2, HbA1c: 8.1, Kreatinin: 98', nextAction: 'Kontrola za 4 nedelje', notes: 'Povećan HbA1c — intenziviranje terapije' },
-  { id: '7', recordNo: 'KAR-2024-0007', patientName: 'Stefan Ilić', patientNo: 'PAC-2024-007', doctor: 'Dr. Dragan Milić', date: '2024-06-08', type: 'discharge', diagnosis: 'Infectivna mononukleoza — otpust', diagnosisCode: 'B27.9', symptoms: 'Otpušten bez simptoma', treatment: 'Otpust kući — mirovanje 2 nedelje', prescribedMeds: ['Paracetamol po potrebi', 'Vitamin C 1000mg'], vitalSigns: 'Pritisak: 120/75, Puls: 65, Temp: 36.4°C', labResults: 'Leukociti: normalni, Mononukleoza test: negativan', nextAction: 'Kontrola za 2 nedelje', notes: 'Uspešno lečenje — 10 dana hospitalizacija' },
-  { id: '8', recordNo: 'KAR-2024-0008', patientName: 'Marko Jovanović', patientNo: 'PAC-2024-003', doctor: 'Dr. Ana Nikolić', date: '2024-06-05', type: 'referral', diagnosis: 'Astma — kontrola alergolog', diagnosisCode: 'J45', symptoms: 'Suvi kašalj, otežano disanje noću', treatment: 'Uput za alergološka ispitivanja', prescribedMeds: ['Salbutamol inhaler', 'Budesonid/formoterol'], vitalSigns: 'FEV1: 78% predviđenog, PEF: varijabilnost 18%', labResults: 'Eozinofili: 8%, IgE: 450 IU/mL', nextAction: 'Skinski test alergolog — 25.06.', notes: 'Uput za kožne punkcione testove' },
-]
-
 const TYPES: Record<string, { color: string; label: string }> = {
   checkup: { color: 'bg-emerald-100 text-emerald-800', label: 'Pregled' },
   follow_up: { color: 'bg-blue-100 text-blue-800', label: 'Kontrola' },
@@ -57,8 +46,9 @@ const TYPES: Record<string, { color: string; label: string }> = {
 function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 export function MedicalRecords() {
-  const [data, setData] = useState<MedicalRecord[]>(INITIAL)
+  const [data, setData] = useState<MedicalRecord[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -67,7 +57,26 @@ export function MedicalRecords() {
   const [form, setForm] = useState<Partial<MedicalRecord>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (search) params.set('search', search)
+      if (typeFilter) params.set('department', typeFilter)
+      const query = params.toString()
+      const res = await fetch(`/api/medical-records${query ? `?${query}` : ''}`)
+      if (!res.ok) throw new Error('Greška pri učitavanju')
+      const json = await res.json()
+      setData(json)
+    } catch (err) {
+      console.error(err)
+      toast.error('Greška pri učitavanju zapisa')
+    } finally {
+      setLoading(false)
+    }
+  }, [search, typeFilter])
+
+  useEffect(() => { fetchData() }, [fetchData])
 
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.recordNo, item.patientName, item.doctor, item.diagnosis, item.diagnosisCode].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -75,21 +84,54 @@ export function MedicalRecords() {
     return matchSearch && matchType
   })
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati zapis?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Zapis obrisan') }
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati zapis?')) return
+    try {
+      setSaving(true)
+      const res = await fetch(`/api/medical-records/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Greška pri brisanju')
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Zapis obrisan')
+    } catch (err) {
+      console.error(err)
+      toast.error('Greška pri brisanju zapisa')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const openCreate = () => {
     setEditItem(null)
-    setForm({ recordNo: `KAR-2024-${String(data.length + 1).padStart(4, '0')}`, patientName: '', patientNo: '', doctor: '', date: new Date().toISOString().split('T')[0], type: 'checkup', diagnosis: '', diagnosisCode: '', symptoms: '', treatment: '', prescribedMeds: [], vitalSigns: '', labResults: '', nextAction: '', notes: '' })
+    const nextNum = data.length + 1
+    setForm({ recordNo: `KAR-2024-${String(nextNum).padStart(4, '0')}`, patientName: '', patientNo: '', doctor: '', date: new Date().toISOString().split('T')[0], type: 'checkup', diagnosis: '', diagnosisCode: '', symptoms: '', treatment: '', prescribedMeds: [], vitalSigns: '', labResults: '', nextAction: '', notes: '' })
     setDialogOpen(true)
   }
 
   const openEdit = (item: MedicalRecord) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.patientName || !form.diagnosis) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as MedicalRecord : i)); toast.success('Zapis ažuriran') }
-    else { setData(prev => [{ id: Date.now().toString(), ...form } as MedicalRecord, ...prev]); toast.success('Zapis kreiran') }
-    setDialogOpen(false)
+    try {
+      setSaving(true)
+      if (editItem) {
+        const res = await fetch(`/api/medical-records/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        if (!res.ok) throw new Error('Greška pri ažuriranju')
+        setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as MedicalRecord : i))
+        toast.success('Zapis ažuriran')
+      } else {
+        const res = await fetch('/api/medical-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        if (!res.ok) throw new Error('Greška pri kreiranju')
+        const created = await res.json()
+        setData(prev => [created, ...prev])
+        toast.success('Zapis kreiran')
+      }
+      setDialogOpen(false)
+    } catch (err) {
+      console.error(err)
+      toast.error(editItem ? 'Greška pri ažuriranju zapisa' : 'Greška pri kreiranju zapisa')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
@@ -99,7 +141,7 @@ export function MedicalRecords() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div><h1 className="text-2xl font-bold tracking-tight">Medicinski kartoni</h1><p className="text-sm text-muted-foreground">Evidencija pregleda, dijagnoza i tretmana</p></div>
-        <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novi zapis</Button>
+        <Button size="sm" className="gap-2" onClick={openCreate} disabled={saving}><Plus className="h-4 w-4" />Novi zapis</Button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -139,7 +181,7 @@ export function MedicalRecords() {
                         <TableCell className="text-right"><div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)} disabled={saving}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div></TableCell>
                       </TableRow>
                     ))}
@@ -169,7 +211,7 @@ export function MedicalRecords() {
                 <div className="grid gap-2"><Label className="text-xs">Vitalni znaci</Label><Input className="text-xs" value={form.vitalSigns || ''} onChange={e => setForm({ ...form, vitalSigns: e.target.value })} /></div>
                 <div className="grid gap-2"><Label className="text-xs">Lab. rezultati</Label><Input className="text-xs" value={form.labResults || ''} onChange={e => setForm({ ...form, labResults: e.target.value })} /></div>
                 <div className="grid gap-2"><Label className="text-xs">Sledeći korak</Label><Input className="text-xs" value={form.nextAction || ''} onChange={e => setForm({ ...form, nextAction: e.target.value })} /></div>
-                <Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Kreiraj zapis</Button>
+                <Button size="sm" className="w-fit gap-2" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin" />}<Plus className="h-4 w-4" />Kreiraj zapis</Button>
               </div>
             </CardContent>
           </Card>
@@ -187,7 +229,7 @@ export function MedicalRecords() {
                       <p className="text-xs text-muted-foreground truncate">{item.diagnosis} — {item.doctor}</p>
                     </div>
                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)} disabled={saving}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>
                 ))}
               </div>
@@ -236,7 +278,7 @@ export function MedicalRecords() {
             </div>
             <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

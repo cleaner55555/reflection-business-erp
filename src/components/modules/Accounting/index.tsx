@@ -1694,7 +1694,7 @@ function PdvTab({ fiscalYear }: { fiscalYear: number }) {
         </Card>
         <Card className={saldoPositive ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}>
           <CardContent className="p-3">
-            <p className={`text-[10px ${saldoPositive ? 'text-amber-600' : 'text-red-600'} uppercase font-medium`}>
+            <p className={`text-xs ${saldoPositive ? 'text-amber-600' : 'text-red-600'} uppercase font-medium`}>
               {saldoPositive ? 'PDV za uplatu' : 'PDV na povrat'}
             </p>
             <p className={`text-lg font-bold ${saldoPositive ? 'text-amber-700' : 'text-red-600'}`}>
@@ -2099,7 +2099,7 @@ function GodZatvaranjeTab({ fiscalYear }: { fiscalYear: number }) {
         </Card>
         <Card className={profit >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}>
           <CardContent className="p-3">
-            <p className={`text-[10px uppercase font-medium ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <p className={`text-xs uppercase font-medium ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               {profit >= 0 ? 'Dobit' : 'Gubitak'}
             </p>
             <p className={`text-2xl font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>

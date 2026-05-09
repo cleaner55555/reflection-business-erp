@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,76 +11,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Search, Trash2, Pencil, Eye, RotateCcw, Package, AlertTriangle, CheckCircle2, Clock, XCircle, DollarSign, TrendingUp, BarChart3, FileText, User, CalendarDays, ShoppingCart } from 'lucide-react'
+import { Plus, Search, Trash2, Eye, RotateCcw, TrendingUp, BarChart3 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
 interface ReturnItem {
+  productName: string
+  sku: string
+  quantity: number
+  unitPrice: number
+  condition: string
+}
+
+interface ReturnOrder {
   id: string
   returnNumber: string
   orderNumber: string
   customerName: string
   customerEmail: string
   customerPhone: string
-  status: 'requested' | 'approved' | 'rejected' | 'received' | 'inspecting' | 'refunded' | 'exchanged' | 'completed'
-  returnReason: 'defective' | 'wrong_item' | 'damaged' | 'not_as_described' | 'change_of_mind' | 'warranty' | 'other'
-  items: { productName: string; sku: string; quantity: number; unitPrice: number; condition: 'new' | 'used' | 'damaged' | 'missing' }[]
+  status: string
+  returnReason: string
+  items: string
   refundAmount: number
-  refundMethod: 'original' | 'store_credit' | 'bank_transfer' | 'replacement'
+  refundMethod: string
   shippingCost: number
   restockingFee: number
   netRefund: number
   requestedDate: string
   receivedDate: string | null
   processedDate: string | null
-  notes: string
-  internalNotes: string
+  notes: string | null
+  internalNotes: string | null
+  createdAt: string
 }
-
-const INITIAL_DATA: ReturnItem[] = [
-  {
-    id: '1', returnNumber: 'RET-2024-001', orderNumber: 'ORD-4521', customerName: 'Jelena Marković', customerEmail: 'jelena@email.com', customerPhone: '+381 63 111 2222',
-    status: 'received', returnReason: 'defective',
-    items: [{ productName: 'Bluetooth zvučnik', sku: 'BTS-001', quantity: 1, unitPrice: 8990, condition: 'used' }],
-    refundAmount: 8990, refundMethod: 'original', shippingCost: 450, restockingFee: 0, netRefund: 8990,
-    requestedDate: '2024-06-12', receivedDate: '2024-06-14', processedDate: null, notes: 'Zvučnik ne radi - distorzija zvuka', internalNotes: 'Poslato za inspekciju kvaliteta'
-  },
-  {
-    id: '2', returnNumber: 'RET-2024-002', orderNumber: 'ORD-4518', customerName: 'Stefan Ilić', customerEmail: 'stefan@email.com', customerPhone: '+381 64 333 4444',
-    status: 'refunded', returnReason: 'wrong_item',
-    items: [{ productName: 'Tenisice vel. 43', sku: 'SHO-043', quantity: 1, unitPrice: 12500, condition: 'new' }, { productName: 'Tenisice vel. 44', sku: 'SHO-044', quantity: 1, unitPrice: 12500, condition: 'new' }],
-    refundAmount: 25000, refundMethod: 'original', shippingCost: 0, restockingFee: 0, netRefund: 25000,
-    requestedDate: '2024-06-10', receivedDate: '2024-06-12', processedDate: '2024-06-13', notes: 'Stigla pogrešna veličina (42 umesto 43 i 44)', internalNotes: 'Greška magacionera - kompenzacija za transport'
-  },
-  {
-    id: '3', returnNumber: 'RET-2024-003', orderNumber: 'ORD-4525', customerName: 'Ana Đorđević', customerEmail: 'ana@email.com', customerPhone: '+381 65 555 6666',
-    status: 'requested', returnReason: 'change_of_mind',
-    items: [{ productName: 'Majica - crna', sku: 'TSH-BLK', quantity: 2, unitPrice: 2490, condition: 'new' }],
-    refundAmount: 4980, refundMethod: 'store_credit', shippingCost: 450, restockingFee: 250, netRefund: 4280,
-    requestedDate: '2024-06-15', receivedDate: null, processedDate: null, notes: 'Nije odgovara veličina', internalNotes: ''
-  },
-  {
-    id: '4', returnNumber: 'RET-2024-004', orderNumber: 'ORD-4510', customerName: 'Petar Stanković', customerEmail: 'petar@email.com', customerPhone: '+381 66 777 8888',
-    status: 'rejected', returnReason: 'not_as_described',
-    items: [{ productName: 'Drvena stolica', sku: 'CHR-W01', quantity: 2, unitPrice: 18500, condition: 'damaged' }],
-    refundAmount: 0, refundMethod: 'original', shippingCost: 0, restockingFee: 0, netRefund: 0,
-    requestedDate: '2024-06-08', receivedDate: '2024-06-10', processedDate: '2024-06-11', notes: 'Stolica je oštećena pri transportu', internalNotes: 'Oštećenje nije naša greška - kupac je odbio da plati transport povratka'
-  },
-  {
-    id: '5', returnNumber: 'RET-2024-005', orderNumber: 'ORD-4505', customerName: 'Miroslav Jovanović', customerEmail: 'miroslav@email.com', customerPhone: '+381 62 999 0000',
-    status: 'inspecting', returnReason: 'warranty',
-    items: [{ productName: 'Bosch bušilica', sku: 'DRL-BOS01', quantity: 1, unitPrice: 35900, condition: 'used' }],
-    refundAmount: 35900, refundMethod: 'replacement', shippingCost: 0, restockingFee: 0, netRefund: 0,
-    requestedDate: '2024-06-13', receivedDate: '2024-06-14', processedDate: null, notes: 'Garancija 2 godine - motor ne radi', internalNotes: 'Poslato servisu Bosch za dijagnostiku'
-  },
-  {
-    id: '6', returnNumber: 'RET-2024-006', orderNumber: 'ORD-4530', customerName: 'Ljubica Perić', customerEmail: 'ljubica@email.com', customerPhone: '+381 61 123 4567',
-    status: 'exchanged', returnReason: 'damaged',
-    items: [{ productName: 'Keramičke šolje set (6 kom)', sku: 'CUP-SET6', quantity: 1, unitPrice: 4200, condition: 'damaged' }],
-    refundAmount: 0, refundMethod: 'replacement', shippingCost: 0, restockingFee: 0, netRefund: 4200,
-    requestedDate: '2024-06-11', receivedDate: '2024-06-13', processedDate: '2024-06-14', notes: '2 šolje nastradale u transportu', internalNotes: 'Zamena poslata - nove šolje pakovane bolje'
-  },
-]
 
 const STATUSES: Record<string, { color: string; label: string }> = {
   requested: { color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', label: 'Zahtev' },
@@ -110,43 +74,174 @@ const REFUND_METHODS: Record<string, { label: string }> = {
   replacement: { label: 'Zamena' },
 }
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
+function getStatusBadge(s: string) {
+  const r = STATUSES[s]
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
+}
 
-function formatCurrency(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 0 }).format(n) }
+function formatCurrency(n: number) {
+  return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 0 }).format(n)
+}
+
+function parseItems(itemsStr: string): ReturnItem[] {
+  try {
+    const parsed = JSON.parse(itemsStr)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
 
 export function Returns() {
-  const [data, setData] = useState<ReturnItem[]>(INITIAL_DATA)
+  const [data, setData] = useState<ReturnOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [reasonFilter, setReasonFilter] = useState('')
   const [detailId, setDetailId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('list')
+  const [showCreate, setShowCreate] = useState(false)
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  // Create form state
+  const [formOrderNumber, setFormOrderNumber] = useState('')
+  const [formCustomerName, setFormCustomerName] = useState('')
+  const [formCustomerEmail, setFormCustomerEmail] = useState('')
+  const [formCustomerPhone, setFormCustomerPhone] = useState('')
+  const [formReason, setFormReason] = useState('other')
+  const [formRefundMethod, setFormRefundMethod] = useState('original')
+  const [formRefundAmount, setFormRefundAmount] = useState('')
+  const [formShippingCost, setFormShippingCost] = useState('')
+  const [formRestockingFee, setFormRestockingFee] = useState('')
+  const [formNotes, setFormNotes] = useState('')
+  const [formProductName, setFormProductName] = useState('')
+  const [formSku, setFormSku] = useState('')
+  const [formQty, setFormQty] = useState('1')
+  const [formUnitPrice, setFormUnitPrice] = useState('')
+  const [formCondition, setFormCondition] = useState('new')
+  const [creating, setCreating] = useState(false)
 
-  const filtered = useMemo(() => data.filter(item => {
-    const matchSearch = !search || item.returnNumber.toLowerCase().includes(search.toLowerCase()) || item.orderNumber.toLowerCase().includes(search.toLowerCase()) || item.customerName.toLowerCase().includes(search.toLowerCase())
-    const matchStatus = !statusFilter || item.status === statusFilter
-    const matchReason = !reasonFilter || item.returnReason === reasonFilter
-    return matchSearch && matchStatus && matchReason
-  }), [data, search, statusFilter, reasonFilter])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (search) params.set('search', search)
+      if (statusFilter) params.set('status', statusFilter)
+      if (reasonFilter) params.set('reason', reasonFilter)
+      const res = await fetch(`/api/returns?${params}`)
+      if (res.ok) {
+        const json = await res.json()
+        setData(json)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }, [search, statusFilter, reasonFilter])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const filtered = useMemo(() => {
+    // Server-side filtering is done, but we can also filter client-side for analytics
+    return data
+  }, [data])
 
   const stats = useMemo(() => ({
-    total: data.length, requested: data.filter(d => d.status === 'requested').length, inProcess: data.filter(d => ['approved', 'received', 'inspecting'].includes(d.status)).length,
-    refunded: data.filter(d => d.status === 'refunded').length, rejected: data.filter(d => d.status === 'rejected').length, exchanged: data.filter(d => d.status === 'exchanged').length,
+    total: data.length,
+    requested: data.filter(d => d.status === 'requested').length,
+    inProcess: data.filter(d => ['approved', 'received', 'inspecting'].includes(d.status)).length,
+    refunded: data.filter(d => d.status === 'refunded').length,
+    rejected: data.filter(d => d.status === 'rejected').length,
+    exchanged: data.filter(d => d.status === 'exchanged').length,
     totalRefunds: data.filter(d => ['refunded', 'completed'].includes(d.status)).reduce((s, d) => s + d.netRefund, 0),
-    avgDays: (() => { const completed = data.filter(d => d.receivedDate && d.processedDate); if (!completed.length) return 0; return (completed.reduce((s, d) => s + (new Date(d.processedDate!).getTime() - new Date(d.receivedDate!).getTime()) / 86400000, 0) / completed.length).toFixed(1) })(),
+    avgDays: (() => {
+      const completed = data.filter(d => d.receivedDate && d.processedDate)
+      if (!completed.length) return 0
+      return (completed.reduce((s, d) => s + (new Date(d.processedDate!).getTime() - new Date(d.receivedDate!).getTime()) / 86400000, 0) / completed.length).toFixed(1)
+    })(),
   }), [data])
 
-  const handleStatusChange = (id: string, newStatus: ReturnItem['status']) => {
-    setData(prev => prev.map(d => d.id === id ? { ...d, status: newStatus, processedDate: ['refunded', 'exchanged', 'completed', 'rejected'].includes(newStatus) ? new Date().toISOString().split('T')[0] : d.processedDate } : d))
-    toast.success(`Status: ${STATUSES[newStatus]?.label}`)
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/returns/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (res.ok) {
+        toast.success(`Status: ${STATUSES[newStatus]?.label}`)
+        fetchData()
+      }
+    } catch {
+      toast.error('Greška pri promeni statusa')
+    }
   }
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati povrat?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Povrat obrisan') }
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati povrat?')) return
+    try {
+      const res = await fetch(`/api/returns/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        toast.success('Povrat obrisan')
+        if (detailId === id) setDetailId(null)
+        fetchData()
+      }
+    } catch {
+      toast.error('Greška pri brisanju')
+    }
+  }
 
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
+  const handleCreate = async () => {
+    if (!formCustomerName.trim()) { toast.error('Unesite ime kupca'); return }
+    setCreating(true)
+    try {
+      const items: ReturnItem[] = formProductName.trim() ? [{
+        productName: formProductName, sku: formSku, quantity: parseInt(formQty) || 1,
+        unitPrice: parseFloat(formUnitPrice) || 0, condition: formCondition,
+      }] : []
+
+      const refundAmount = parseFloat(formRefundAmount) || 0
+      const shippingCost = parseFloat(formShippingCost) || 0
+      const restockingFee = parseFloat(formRestockingFee) || 0
+      const netRefund = Math.max(0, refundAmount - shippingCost - restockingFee)
+
+      const res = await fetch('/api/returns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderNumber: formOrderNumber, customerName: formCustomerName,
+          customerEmail: formCustomerEmail, customerPhone: formCustomerPhone,
+          returnReason: formReason, refundMethod: formRefundMethod,
+          refundAmount, shippingCost, restockingFee, netRefund,
+          items: JSON.stringify(items), notes: formNotes,
+        }),
+      })
+      if (res.ok) {
+        toast.success('Povrat kreiran')
+        setShowCreate(false)
+        resetForm()
+        fetchData()
+      } else {
+        toast.error('Greška pri kreiranju')
+      }
+    } catch {
+      toast.error('Greška pri kreiranju')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const resetForm = () => {
+    setFormOrderNumber(''); setFormCustomerName(''); setFormCustomerEmail('')
+    setFormCustomerPhone(''); setFormReason('other'); setFormRefundMethod('original')
+    setFormRefundAmount(''); setFormShippingCost(''); setFormRestockingFee('')
+    setFormNotes(''); setFormProductName(''); setFormSku(''); setFormQty('1')
+    setFormUnitPrice(''); setFormCondition('new')
+  }
+
+  if (loading && data.length === 0) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
 
   const detailItem = detailId ? data.find(i => i.id === detailId) : null
 
@@ -157,7 +252,7 @@ export function Returns() {
           <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30"><RotateCcw className="h-5 w-5 text-red-700 dark:text-red-400" /></div>
           <div><h1 className="text-2xl font-bold tracking-tight">Povrat robe</h1><p className="text-sm text-muted-foreground">Upravljanje povratom i zamjenama</p></div>
         </div>
-        <Button size="sm" className="gap-2"><Plus className="h-4 w-4" />Novi povrat</Button>
+        <Button size="sm" className="gap-2" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4" />Novi povrat</Button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
@@ -252,37 +347,86 @@ export function Returns() {
       <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
         <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Detalji povrata</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.returnNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderNumber}</p></div><div>{getStatusBadge(detailItem.status)}</div></div>
+          {detailItem && (() => {
+            const items = parseItems(detailItem.items)
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.returnNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderNumber}</p></div><div>{getStatusBadge(detailItem.status)}</div></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Kupac</div><p className="text-xs font-medium">{detailItem.customerName}</p><p className="text-xs text-muted-foreground">{detailItem.customerEmail}</p><p className="text-xs text-muted-foreground">{detailItem.customerPhone}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Razlog</div><p className="text-xs font-medium">{REASONS[detailItem.returnReason]?.label}</p><p className="text-xs text-muted-foreground">Način: {REFUND_METHODS[detailItem.refundMethod]?.label}</p><p className="text-xs text-muted-foreground">{detailItem.requestedDate && `Datum: ${formatDate(detailItem.requestedDate)}`}</p></div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Refund</div><p className="text-xs font-bold">{formatCurrency(detailItem.refundAmount)}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Transport</div><p className="text-xs font-bold">{formatCurrency(detailItem.shippingCost)}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Restocking</div><p className="text-xs font-bold">{formatCurrency(detailItem.restockingFee)}</p></div>
+                  <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Neto refund</div><p className="text-xs font-bold text-emerald-700">{formatCurrency(detailItem.netRefund)}</p></div>
+                </div>
+
+                {items.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium">Stavke:</p>
+                    <Table><TableHeader><TableRow><TableHead className="text-xs">Proizvod</TableHead><TableHead className="text-xs">SKU</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Cena</TableHead><TableHead className="text-xs">Stanje</TableHead></TableRow></TableHeader>
+                    <TableBody>{items.map((item, idx) => (
+                      <TableRow key={idx}><TableCell className="text-xs">{item.productName}</TableCell><TableCell className="text-xs font-mono">{item.sku}</TableCell><TableCell className="text-xs">{item.quantity}</TableCell><TableCell className="text-xs">{formatCurrency(item.unitPrice)}</TableCell><TableCell className="text-xs"><Badge variant="outline" className="text-xs">{item.condition}</Badge></TableCell></TableRow>
+                    ))}</TableBody></Table>
+                  </div>
+                )}
+
+                {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Napomena kupca</p><p className="text-xs">{detailItem.notes}</p></div>}
+                {detailItem.internalNotes && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-600 mb-1">Interna beleška</p><p className="text-xs">{detailItem.internalNotes}</p></div>}
+
+                <div className="flex items-center gap-3">
+                  <Label className="text-xs">Promeni status:</Label>
+                  <Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v)}><SelectTrigger className="h-8 text-xs w-40"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+                </div>
+              </div>
+            )
+          })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Novi povrat robe</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs">Broj narudžbe</Label><Input className="h-8 text-xs mt-1" value={formOrderNumber} onChange={e => setFormOrderNumber(e.target.value)} placeholder="ORD-..." /></div>
+              <div><Label className="text-xs">Razlog povrata</Label><Select value={formReason} onValueChange={setFormReason}><SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(REASONS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs">Ime kupca *</Label><Input className="h-8 text-xs mt-1" value={formCustomerName} onChange={e => setFormCustomerName(e.target.value)} /></div>
+              <div><Label className="text-xs">Telefon</Label><Input className="h-8 text-xs mt-1" value={formCustomerPhone} onChange={e => setFormCustomerPhone(e.target.value)} /></div>
+            </div>
+            <div><Label className="text-xs">Email</Label><Input className="h-8 text-xs mt-1" value={formCustomerEmail} onChange={e => setFormCustomerEmail(e.target.value)} /></div>
+
+            <div className="border-t pt-3"><p className="text-xs font-medium mb-2">Artikal</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Kupac</div><p className="text-xs font-medium">{detailItem.customerName}</p><p className="text-xs text-muted-foreground">{detailItem.customerEmail}</p><p className="text-xs text-muted-foreground">{detailItem.customerPhone}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Razlog</div><p className="text-xs font-medium">{REASONS[detailItem.returnReason]?.label}</p><p className="text-xs text-muted-foreground">Nacin: {REFUND_METHODS[detailItem.refundMethod]?.label}</p><p className="text-xs text-muted-foreground">{detailItem.requestedDate && `Datum: ${formatDate(detailItem.requestedDate)}`}</p></div>
+                <div><Label className="text-xs">Naziv proizvoda</Label><Input className="h-8 text-xs mt-1" value={formProductName} onChange={e => setFormProductName(e.target.value)} /></div>
+                <div><Label className="text-xs">SKU</Label><Input className="h-8 text-xs mt-1" value={formSku} onChange={e => setFormSku(e.target.value)} /></div>
+                <div><Label className="text-xs">Količina</Label><Input type="number" className="h-8 text-xs mt-1" value={formQty} onChange={e => setFormQty(e.target.value)} /></div>
+                <div><Label className="text-xs">Cena (RSD)</Label><Input type="number" className="h-8 text-xs mt-1" value={formUnitPrice} onChange={e => setFormUnitPrice(e.target.value)} /></div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Refund</div><p className="text-xs font-bold">{formatCurrency(detailItem.refundAmount)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Transport</div><p className="text-xs font-bold">{formatCurrency(detailItem.shippingCost)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Restocking</div><p className="text-xs font-bold">{formatCurrency(detailItem.restockingFee)}</p></div>
-                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Neto refund</div><p className="text-xs font-bold text-emerald-700">{formatCurrency(detailItem.netRefund)}</p></div>
-              </div>
+              <div className="mt-2"><Label className="text-xs">Stanje artikla</Label><Select value={formCondition} onValueChange={setFormCondition}><SelectTrigger className="h-8 text-xs mt-1 w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="new">Nov</SelectItem><SelectItem value="used">Korišćen</SelectItem><SelectItem value="damaged">Oštećen</SelectItem><SelectItem value="missing">Nedostaje</SelectItem></SelectContent></Select></div>
+            </div>
 
-              <div className="space-y-2">
-                <p className="text-xs font-medium">Stavke:</p>
-                <Table><TableHeader><TableRow><TableHead className="text-xs">Proizvod</TableHead><TableHead className="text-xs">SKU</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Cena</TableHead><TableHead className="text-xs">Stanje</TableHead></TableRow></TableHeader>
-                <TableBody>{detailItem.items.map((item, idx) => (
-                  <TableRow key={idx}><TableCell className="text-xs">{item.productName}</TableCell><TableCell className="text-xs font-mono">{item.sku}</TableCell><TableCell className="text-xs">{item.quantity}</TableCell><TableCell className="text-xs">{formatCurrency(item.unitPrice)}</TableCell><TableCell className="text-xs"><Badge variant="outline" className="text-xs">{item.condition}</Badge></TableCell></TableRow>
-                ))}</TableBody></Table>
-              </div>
-
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Napomena kupca</p><p className="text-xs">{detailItem.notes}</p></div>}
-              {detailItem.internalNotes && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-600 mb-1">Interna beleška</p><p className="text-xs">{detailItem.internalNotes}</p></div>}
-
-              <div className="flex items-center gap-3">
-                <Label className="text-xs">Promeni status:</Label>
-                <Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v as ReturnItem['status'])}><SelectTrigger className="h-8 text-xs w-40"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+            <div className="border-t pt-3"><p className="text-xs font-medium mb-2">Refundacija</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs">Iznos refundacije</Label><Input type="number" className="h-8 text-xs mt-1" value={formRefundAmount} onChange={e => setFormRefundAmount(e.target.value)} /></div>
+                <div><Label className="text-xs">Način</Label><Select value={formRefundMethod} onValueChange={setFormRefundMethod}><SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(REFUND_METHODS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs">Trošak transporta</Label><Input type="number" className="h-8 text-xs mt-1" value={formShippingCost} onChange={e => setFormShippingCost(e.target.value)} /></div>
+                <div><Label className="text-xs">Restocking fee</Label><Input type="number" className="h-8 text-xs mt-1" value={formRestockingFee} onChange={e => setFormRestockingFee(e.target.value)} /></div>
               </div>
             </div>
-          )}
+
+            <div><Label className="text-xs">Napomena</Label><Textarea className="text-xs mt-1" value={formNotes} onChange={e => setFormNotes(e.target.value)} rows={2} /></div>
+
+            <DialogFooter>
+              <Button variant="outline" size="sm" onClick={() => setShowCreate(false)}>Otkaži</Button>
+              <Button size="sm" onClick={handleCreate} disabled={creating}>{creating ? 'Čuvanje...' : 'Kreiraj povrat'}</Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -342,16 +342,48 @@ export function Forum() {
   const loadData = useCallback(async () => {
     if (!activeCompanyId) return
     setLoading(true)
-    const mockTopics = generateMockTopics()
-    const mockCats = generateMockCategories()
-    const catsWithCount = mockCats.map(cat => ({
-      ...cat,
-      topicCount: mockTopics.filter(tp => tp.category === cat.key).length,
-    }))
-    setTopics(mockTopics)
-    setCategories(catsWithCount)
-    setQuestions(generateMockQuestions())
-    setTags(generateMockTags())
+    try {
+      const [topicsRes, catsRes, tagsRes] = await Promise.all([
+        fetch(`/api/forum-topics?companyId=${activeCompanyId}`),
+        fetch(`/api/forum-categories?companyId=${activeCompanyId}`),
+        fetch(`/api/forum-tags?companyId=${activeCompanyId}`),
+      ])
+
+      const topicsData = topicsRes.ok ? await topicsRes.json() : []
+      const catsData = catsRes.ok ? await catsRes.json() : []
+      const tagsData = tagsRes.ok ? await tagsRes.json() : []
+
+      // If DB is empty, use mock data as fallback
+      if (topicsData.length === 0) {
+        const mockTopics = generateMockTopics()
+        const mockCats = generateMockCategories()
+        const catsWithCount = mockCats.map(cat => ({
+          ...cat,
+          topicCount: mockTopics.filter(tp => tp.category === cat.key).length,
+        }))
+        setTopics(mockTopics)
+        setCategories(catsWithCount)
+        setQuestions(generateMockQuestions())
+        setTags(generateMockTags())
+      } else {
+        setTopics(topicsData)
+        setCategories(catsData)
+        setQuestions(generateMockQuestions())
+        setTags(tagsData)
+      }
+    } catch {
+      // Fallback to mock data on error
+      const mockTopics = generateMockTopics()
+      const mockCats = generateMockCategories()
+      const catsWithCount = mockCats.map(cat => ({
+        ...cat,
+        topicCount: mockTopics.filter(tp => tp.category === cat.key).length,
+      }))
+      setTopics(mockTopics)
+      setCategories(catsWithCount)
+      setQuestions(generateMockQuestions())
+      setTags(generateMockTags())
+    }
     setLoading(false)
   }, [activeCompanyId])
 
@@ -414,77 +446,131 @@ export function Forum() {
   // ─── Handlers ──────────────────────────────────────────────────────────
 
   const handleCreateTopic = async () => {
-    if (!topicForm.title.trim()) return
-    const newTopic: ForumTopic = {
-      id: `t-${Date.now()}`,
-      title: topicForm.title,
-      content: topicForm.content,
-      category: topicForm.category,
-      tags: topicForm.tags ? topicForm.tags.split(',').map(s => s.trim()).filter(Boolean) : [],
-      authorName: 'Vi',
-      authorAvatar: 'VI',
-      views: 0,
-      replyCount: 0,
-      likes: 0,
-      createdAt: new Date().toISOString(),
-    }
-    setTopics(prev => [newTopic, ...prev])
+    if (!topicForm.title.trim() || !activeCompanyId) return
+    try {
+      const res = await fetch('/api/forum-topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId: activeCompanyId,
+          title: topicForm.title,
+          content: topicForm.content,
+          category: topicForm.category,
+          tags: JSON.stringify(topicForm.tags ? topicForm.tags.split(',').map(s => s.trim()).filter(Boolean) : []),
+          authorName: 'Vi',
+          authorAvatar: 'VI',
+        }),
+      })
+      if (res.ok) {
+        const newTopic = await res.json()
+        setTopics(prev => [newTopic, ...prev])
+      }
+    } catch { /* ignore */ }
     setTopicDialogOpen(false)
     setTopicForm(emptyTopicForm)
   }
 
   const handleDeleteTopic = (id: string) => {
-    setTopics(prev => prev.filter(tp => tp.id !== id))
+    fetch(`/api/forum-topics?id=${id}`, { method: 'DELETE' }).then(() => {
+      setTopics(prev => prev.filter(tp => tp.id !== id))
+    })
     setDetailOpen(false)
     setSelectedTopic(null)
   }
 
   const handleTogglePin = (id: string) => {
-    setTopics(prev => prev.map(tp => tp.id === id ? { ...tp, isPinned: !tp.isPinned } : tp))
+    const topic = topics.find(tp => tp.id === id)
+    if (topic) {
+      fetch(`/api/forum-topics?id=${id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isPinned: !topic.isPinned })
+      }).then(() => {
+        setTopics(prev => prev.map(tp => tp.id === id ? { ...tp, isPinned: !tp.isPinned } : tp))
+      })
+    }
   }
 
   const handleToggleLock = (id: string) => {
-    setTopics(prev => prev.map(tp => tp.id === id ? { ...tp, isLocked: !tp.isLocked } : tp))
+    const topic = topics.find(tp => tp.id === id)
+    if (topic) {
+      fetch(`/api/forum-topics?id=${id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLocked: !topic.isLocked })
+      }).then(() => {
+        setTopics(prev => prev.map(tp => tp.id === id ? { ...tp, isLocked: !tp.isLocked } : tp))
+      })
+    }
   }
 
   const handleToggleSolve = (id: string) => {
-    setTopics(prev => prev.map(tp => tp.id === id ? { ...tp, isSolved: !tp.isSolved } : tp))
+    const topic = topics.find(tp => tp.id === id)
+    if (topic) {
+      fetch(`/api/forum-topics?id=${id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isSolved: !topic.isSolved })
+      }).then(() => {
+        setTopics(prev => prev.map(tp => tp.id === id ? { ...tp, isSolved: !tp.isSolved } : tp))
+      })
+    }
   }
 
-  const handleOpenTopicDetail = (topic: ForumTopic) => {
+  const handleOpenTopicDetail = async (topic: ForumTopic) => {
     setSelectedTopic(topic)
-    setTopicReplies(generateMockReplies(topic.id))
     setDetailOpen(true)
+    try {
+      const res = await fetch(`/api/forum-replies?topicId=${topic.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setTopicReplies(data.length > 0 ? data : generateMockReplies(topic.id))
+      } else {
+        setTopicReplies(generateMockReplies(topic.id))
+      }
+    } catch {
+      setTopicReplies(generateMockReplies(topic.id))
+    }
   }
 
   const handleSubmitReply = () => {
     if (!replyText.trim() || !selectedTopic) return
-    const newReply: ForumReply = {
-      id: `r-${Date.now()}`,
-      topicId: selectedTopic.id,
-      authorName: 'Vi',
-      content: replyText,
-      likes: 0,
-      createdAt: new Date().toISOString(),
-    }
-    setTopicReplies(prev => [...prev, newReply])
-    setReplyText('')
-    setTopics(prev => prev.map(tp => tp.id === selectedTopic.id ? { ...tp, replyCount: (tp.replyCount || 0) + 1 } : tp))
+    fetch('/api/forum-replies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topicId: selectedTopic.id,
+        authorName: 'Vi',
+        content: replyText,
+      }),
+    }).then(() => {
+      const newReply: ForumReply = {
+        id: `r-${Date.now()}`,
+        topicId: selectedTopic.id,
+        authorName: 'Vi',
+        content: replyText,
+        likes: 0,
+        createdAt: new Date().toISOString(),
+      }
+      setTopicReplies(prev => [...prev, newReply])
+      setReplyText('')
+      setTopics(prev => prev.map(tp => tp.id === selectedTopic.id ? { ...tp, replyCount: (tp.replyCount || 0) + 1 } : tp))
+    })
   }
 
   const handleCreateCategory = () => {
-    if (!catForm.label.trim()) return
-    const newCat: ForumCategory = {
-      id: `c-${Date.now()}`,
-      key: catForm.label.toLowerCase().replace(/\s+/g, '_'),
-      label: catForm.label,
-      description: catForm.description,
-      color: catForm.color,
-      icon: catForm.icon,
-      topicCount: 0,
-      sortOrder: categories.length + 1,
-    }
-    setCategories(prev => [...prev, newCat])
+    if (!catForm.label.trim() || !activeCompanyId) return
+    fetch('/api/forum-categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companyId: activeCompanyId,
+        key: catForm.label.toLowerCase().replace(/\s+/g, '_'),
+        label: catForm.label,
+        description: catForm.description,
+        color: catForm.color,
+        icon: catForm.icon,
+        sortOrder: categories.length + 1,
+      }),
+    }).then((res) => {
+      if (res.ok) return res.json()
+    }).then((newCat) => {
+      if (newCat) setCategories(prev => [...prev, newCat])
+    })
     setCatDialogOpen(false)
     setCatForm(emptyCatForm)
     setEditingCategory(null)
@@ -497,7 +583,9 @@ export function Forum() {
   }
 
   const handleDeleteCategory = (id: string) => {
-    setCategories(prev => prev.filter(c => c.id !== id))
+    fetch(`/api/forum-categories?id=${id}`, { method: 'DELETE' }).then(() => {
+      setCategories(prev => prev.filter(c => c.id !== id))
+    })
   }
 
   const handleVoteQuestion = (qId: string, delta: number) => {

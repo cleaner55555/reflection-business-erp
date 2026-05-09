@@ -71,6 +71,10 @@ model Company {
   projects            Project[]
   projectTasks        ProjectTask[]
   timesheetEntries    TimesheetEntry[]
+  gamificationGoals             GamificationGoal[]
+  gamificationChallenges       GamificationChallenge[]
+  gamificationBadges            GamificationBadge[]
+  gamificationLeaderboardEntries GamificationLeaderboardEntry[]
   documents           Document[]
   rentalVehicles      RentalVehicle[]
   rentals             Rental[]
@@ -145,8 +149,44 @@ model Company {
   reservations        Reservation[]
   reviews             Review[]
   coupons             Coupon[]
+  returnOrders        ReturnOrder[]
+  deliveryOrders      DeliveryOrder[]
+  payments            Payment[]
+  enrollments         Enrollment[]
+  tuitions            Tuition[]
+  medicalRecords     MedicalRecord[]
+  prescriptions      Prescription[]
   kitchenItems        KitchenItem[]
   seoPages            SeoPage[]
+  properties          Property[]
+  constructionSites   ConstructionSite[]
+  loadingDocks        LoadingDock[]
+  eventVenues         EventVenue[]
+  forumTopics         ForumTopic[]
+  forumCategories     ForumCategory[]
+  forumTags           ForumTag[]
+  transportRoutes     TransportRoute[]
+  labEquipments       LabEquipment[]
+  packagingOrders     PackagingOrder[]
+  propertyViewings    PropertyViewing[]
+  stores              Store[]
+  labels              Label[]
+  priceListsV2        PriceListV2[]
+  customsDocs         CustomsDoc[]
+  timetableEntries    TimetableEntry[]
+  blueprints          Blueprint[]
+  barcodeItems        BarcodeItem[]
+  backupRecords       BackupRecord[]
+  backupSchedules     BackupSchedule[]
+  portalInvoices      PortalInvoice[]
+  portalOrders        PortalOrder[]
+  portalTickets       PortalTicket[]
+  portalDocs          PortalDoc[]
+  mfgProductionOrders  MfgProductionOrder[]
+  mfgMachines         MfgMachine[]
+  voipCallLogs        VoipCallLog[]
+  voipExtensions      VoipExtension[]
+  plmProducts          PlmProduct[]
 }
 
 // ============ NARUDŽBE (GENERALNE) ============
@@ -474,6 +514,110 @@ model SeoPage {
   company Company @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, url])
+}
+
+// ============ NEKRETNINE ============
+
+model Property {
+  id              String   @id @default(cuid())
+  companyId       String
+  propertyNo      String
+  title           String
+  type            String   @default("apartment")     // apartment, house, commercial, land, garage, office
+  transactionType String   @default("sale")          // sale, rent, both
+  status          String   @default("available")     // available, reserved, sold, rented, off_market
+  address         String   @default("")
+  city            String   @default("")
+  neighborhood    String   @default("")
+  area            Float    @default(0)
+  landArea        Float    @default(0)
+  price           Float    @default(0)
+  pricePerSqm     Float    @default(0)
+  bedrooms        Int      @default(0)
+  bathrooms       Int      @default(0)
+  floor           String   @default("")
+  yearBuilt       Int      @default(0)
+  heating         String   @default("gas")           // central, gas, electric, wood, ac, none
+  furnishing      String   @default("unfurnished")   // furnished, semi_furnished, unfurnished
+  parking         Boolean  @default(false)
+  elevator        Boolean  @default(false)
+  terrace         Boolean  @default(false)
+  registered      Boolean  @default(true)
+  agent           String   @default("")
+  listedDate      String   @default("")
+  views           Int      @default(0)
+  inquiries       Int      @default(0)
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, propertyNo])
+}
+
+// ============ GRADILIŠTE ============
+
+model ConstructionSite {
+  id              String   @id @default(cuid())
+  companyId       String
+  name            String
+  code            String
+  type            String   @default("residential")   // residential, commercial, industrial, infrastructure, renovation
+  status          String   @default("planning")      // planning, excavation, foundation, structural, envelope, systems, finishing, inspection, completed, on_hold
+  address         String   @default("")
+  city            String   @default("")
+  investor        String   @default("")
+  contractor      String   @default("")
+  projectManager  String   @default("")
+  workers         Int      @default(0)
+  budget          Float    @default(0)
+  spent           Float    @default(0)
+  startDate       String   @default("")
+  endDate         String?  
+  progress        Int      @default(0)
+  area            Float    @default(0)
+  floors          Int      @default(0)
+  units           Int      @default(0)
+  notes           String   @default("")
+  tasks           String   @default("[]")          // JSON array of tasks
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
+}
+
+// ============ RAMPA ZA UTOVAR ============
+
+model LoadingDock {
+  id                    String   @id @default(cuid())
+  companyId             String
+  dockNumber            String
+  dockType              String   @default("unloading")   // loading, unloading, both
+  vehiclePlate          String   @default("")
+  driverName            String   @default("")
+  companyName           String   @default("")
+  appointmentDate       String   @default("")
+  scheduledTime         String   @default("")
+  actualStart           String?  
+  actualEnd             String?  
+  status                String   @default("scheduled")   // scheduled, checked_in, in_progress, completed, no_show, cancelled
+  cargoType             String   @default("")
+  cargoWeight           Float    @default(0)
+  cargoUnit             String   @default("kg")
+  palletCount           Int      @default(0)
+  priority              String   @default("normal")      // urgent, normal, low
+  notes                 String   @default("")
+  doorAssignment        String   @default("")
+  handlingInstructions  String   @default("")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, dockNumber, appointmentDate, scheduledTime])
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -1460,7 +1604,11 @@ model TimesheetEntry {
   taskId      String
   employeeId  String?  // Ime zaposlenog (tekstualno za sada)
   date        DateTime @default(now())
-  hours       Float
+  startTime   String   @default("")
+  endTime     String   @default("")
+  duration    Int      @default(0)   // minutes
+  hours       Float    @default(0)
+  status      String   @default("draft") // draft, submitted, approved, rejected
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -2557,33 +2705,127 @@ model SmsCampaign {
 // ============ EVENTS / DOGAĐAJI ============
 
 model Event {
+  id               String   @id @default(cuid())
+  companyId        String
+  title            String
+  type             String   @default("conference") // conference, webinar, workshop, meeting, social
+  description      String   @default("")
+  startDate        String   @default("")
+  endDate          String   @default("")
+  startTime        String   @default("09:00")
+  endTime          String   @default("17:00")
+  venue            String   @default("")
+  capacity         Int      @default(100)
+  registered       Int      @default(0)
+  price            Float    @default(0)
+  maxAttendees     Int      @default(100)
+  organizer        String   @default("")
+  notes            String   @default("")
+  status           String   @default("draft") // draft, published, cancelled, completed
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company          Company              @relation(fields: [companyId], references: [id])
+  registrations    EventRegistration[]
+  tickets          EventTicket[]
+}
+
+model EventTicket {
   id            String   @id @default(cuid())
-  companyId     String
-  title         String
-  description   String?
-  startDate     DateTime
-  endDate       DateTime?
-  location      String?
-  capacity      Int      @default(0)
-  registeredCount Int    @default(0)
-  status        String   @default("planiran") // planiran, aktivan, završen, otkazan
+  eventId       String
+  eventTitle    String   @default("")
+  name          String   @default("")
+  tier          String   @default("general") // general, vip, early_bird, student
+  price         Float    @default(0)
+  available     Int      @default(50)
+  sold          Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  company       Company              @relation(fields: [companyId], references: [id])
-  registrations EventRegistration[]
+  event         Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 model EventRegistration {
-  id            String   @id @default(cuid())
-  eventId       String
-  name          String
-  email         String
-  phone         String?
-  status        String   @default("prijavljeno") // prijavljeno, potvrđeno, otkazano
-  registeredAt  DateTime @default(now())
+  id              String   @id @default(cuid())
+  eventId         String
+  attendee        String   @default("")
+  eventTitle      String   @default("")
+  date            String   @default("")
+  status          String   @default("registered") // registered, checked_in, cancelled, no_show
+  ticketType      String   @default("General")
+  paymentStatus   String   @default("pending") // paid, pending, failed
+  emailSent       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  event         Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event           Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+// ============ FORUM ============
+
+model ForumTopic {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  content       String   @default("")
+  category      String   @default("general")
+  tags          String   @default("[]") // JSON array
+  authorName    String   @default("")
+  authorAvatar  String   @default("")
+  views         Int      @default(0)
+  replyCount    Int      @default(0)
+  likes         Int      @default(0)
+  isPinned      Boolean  @default(false)
+  isLocked      Boolean  @default(false)
+  isSolved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company      @relation(fields: [companyId], references: [id])
+  replies       ForumReply[]
+}
+
+model ForumReply {
+  id            String   @id @default(cuid())
+  topicId       String
+  authorName    String   @default("")
+  content       String   @default("")
+  likes         Int      @default(0)
+  isBest        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  topic         ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+}
+
+model ForumCategory {
+  id            String   @id @default(cuid())
+  companyId     String
+  key           String   @unique
+  label         String
+  description   String   @default("")
+  color         String   @default("")
+  icon          String   @default("message")
+  topicCount    Int      @default(0)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company @relation(fields: [companyId], references: [id])
+}
+
+model ForumTag {
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  slug          String   @default("")
+  description   String   @default("")
+  color         String   @default("")
+  usageCount    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       Company @relation(fields: [companyId], references: [id])
 }
 
 // ============ MARKETING AUTOMATION ============
@@ -2987,4 +3229,805 @@ model SafetyIncident {
   company Company @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, number])
+}
+
+
+// ============ POV RAT ROBE ============
+
+model ReturnOrder {
+  id            String   @id @default(cuid())
+  companyId     String
+  returnNumber  String
+  orderNumber   String
+  customerName  String
+  customerEmail String
+  customerPhone String
+  status        String   @default("requested") // requested, approved, rejected, received, inspecting, refunded, exchanged, completed
+  returnReason  String   // defective, wrong_item, damaged, not_as_described, change_of_mind, warranty, other
+  items         String   // JSON: [{productName,sku,quantity,unitPrice,condition}]
+  refundAmount  Float    @default(0)
+  refundMethod  String   @default("original") // original, store_credit, bank_transfer, replacement
+  shippingCost  Float    @default(0)
+  restockingFee Float    @default(0)
+  netRefund     Float    @default(0)
+  requestedDate DateTime @default(now())
+  receivedDate  DateTime?
+  processedDate DateTime?
+  notes         String?
+  internalNotes String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, returnNumber])
+}
+
+
+// ============ DELIVERY (DOSTAVA) ============
+
+model DeliveryOrder {
+  id              String   @id @default(cuid())
+  companyId       String
+  trackingNumber  String
+  senderName      String
+  senderPhone     String   @default("")
+  senderAddress   String   @default("")
+  recipientName   String
+  recipientPhone  String   @default("")
+  recipientAddress String
+  status          String   @default("pending_pickup")
+  priority        String   @default("standard")
+  weight          Float    @default(0)
+  dimensions      String   @default("")
+  codAmount       Float    @default(0)
+  shippingCost    Float    @default(0)
+  estimatedDelivery DateTime
+  actualDelivery  DateTime?
+  assignedDriver  String   @default("")
+  currentLocation String   @default("")
+  notes           String?
+  history         String   @default("[]") // JSON
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, trackingNumber])
+}
+
+
+// ============ PAYMENTS (PLAĆANJA) ============
+
+model Payment {
+  id            String   @id @default(cuid())
+  companyId     String
+  invoiceNo     String
+  client        String
+  amount        Float
+  currency      String   @default("RSD")
+  date          String
+  dueDate       String
+  paidDate      String   @default("")
+  method        String   @default("bank_transfer")
+  status        String   @default("pending")
+  reference     String   @default("")
+  category      String   @default("invoice")
+  notes         String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ ENROLLMENT (UPIS) ============
+
+model Enrollment {
+  id              String   @id @default(cuid())
+  companyId       String
+  applicantName   String
+  jmbg            String   @default("")
+  email           String   @default("")
+  phone           String   @default("")
+  program         String
+  studyLevel      String   @default("bachelor")
+  status          String   @default("pending")
+  applicationDate String
+  entranceExamScore Float  @default(0)
+  highSchoolGPA   Float    @default(0)
+  previousSchool  String   @default("")
+  city            String   @default("")
+  documentsComplete Boolean @default(false)
+  interviewDate   String   @default("")
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ TUITION (ŠKOLARINA) ============
+
+model Tuition {
+  id            String   @id @default(cuid())
+  companyId     String
+  studentName   String
+  program       String
+  studyLevel    String   @default("bachelor")
+  academicYear  String
+  semester      String   @default("zimski")
+  amount        Float
+  paid          Float    @default(0)
+  currency      String   @default("RSD")
+  status        String   @default("pending")
+  dueDate       String
+  paidDate      String   @default("")
+  paymentMethod String   @default("")
+  discount      Float    @default(0)
+  notes         String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ MEDICAL RECORDS (ZDRAVSTVENI KARTON) ============
+
+model MedicalRecord {
+  id              String   @id @default(cuid())
+  companyId       String
+  patientName     String
+  dateOfBirth     String   @default("")
+  gender          String   @default("")
+  phone           String   @default("")
+  bloodType       String   @default("")
+  allergies       String   @default("[]")
+  diagnosis       String   @default("")
+  treatment       String   @default("")
+  medications     String   @default("[]")
+  visitDate       String
+  doctor          String   @default("")
+  department      String   @default("")
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ PRESCRIPTIONS (RECEPTI) ============
+
+model Prescription {
+  id              String   @id @default(cuid())
+  companyId       String
+  patientName     String
+  dateOfBirth     String   @default("")
+  doctor          String
+  date            String
+  status          String   @default("active")
+  medications     String   @default("[]")
+  diagnosis       String   @default("")
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+
+// ============ EVENT VENUES ============
+
+model EventVenue {
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  address       String   @default("")
+  capacity      Int      @default(100)
+  equipment     String   @default("[]") // JSON array
+  contact       String   @default("")
+  rating        Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ TRANSPORT ROUTES ============
+
+model TransportRoute {
+  id             String   @id @default(cuid())
+  companyId      String
+  name           String
+  code           String
+  driver         String   @default("")
+  vehicle        String   @default("")
+  origin         String   @default("")
+  destination    String   @default("")
+  status         String   @default("planned") // planned, in_progress, completed, delayed, cancelled
+  priority       String   @default("medium") // high, medium, low
+  totalDistance   Int      @default(0)
+  estimatedTime  String   @default("")
+  actualTime     String   @default("")
+  fuelCost       Float    @default(0)
+  tollCost       Float    @default(0)
+  stops          String   @default("[]") // JSON array
+  startDate      String   @default("")
+  endDate        String   @default("")
+  notes          String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
+}
+
+// ============ LAB EQUIPMENT ============
+
+model LabEquipment {
+  id               String   @id @default(cuid())
+  companyId        String
+  inventoryNo      String   @default("")
+  name             String
+  category         String   @default("measurement") // measurement, optical, electrical, chemical, mechanical, digital
+  manufacturer     String   @default("")
+  model            String   @default("")
+  serialNo         String   @default("")
+  location         String   @default("")
+  status           String   @default("operational") // operational, calibration, maintenance, out_of_order, stored
+  purchaseDate     String   @default("")
+  purchasePrice    Float    @default(0)
+  lastCalibration  String   @default("")
+  nextCalibration  String   @default("")
+  responsible      String   @default("")
+  condition        String   @default("good") // excellent, good, fair, poor
+  notes            String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ PACKAGING ORDERS ============
+
+model PackagingOrder {
+  id               String   @id @default(cuid())
+  companyId        String
+  orderNumber      String   @default("")
+  orderId          String   @default("")
+  customerName     String   @default("")
+  status           String   @default("pending") // pending, in_progress, quality_check, completed, shipped
+  priority         String   @default("normal") // urgent, normal, low
+  packagingType    String   @default("standard") // standard, fragile, temperature, bulk, custom
+  items            String   @default("[]") // JSON array
+  totalWeight      Float    @default(0)
+  totalVolume      Float    @default(0)
+  boxCount         Int      @default(0)
+  packagingCost    Float    @default(0)
+  assignedTo       String   @default("")
+  startDate        String   @default("")
+  completedDate    String   @default("")
+  notes            String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, orderNumber])
+}
+
+// ============ PREGLEDI NEKRETNINA ============
+
+model PropertyViewing {
+  id             String   @id @default(cuid())
+  companyId      String
+  viewingNo      String
+  propertyTitle  String
+  clientName     String
+  phone          String   @default("")
+  agent          String   @default("")
+  date           String   @default("")
+  time           String   @default("17:00")
+  duration       Int      @default(30)
+  status         String   @default("scheduled")  // scheduled, completed, cancelled, no_show
+  clientInterest String   @default("medium")     // high, medium, low, none
+  feedback       String   @default("")
+  notes          String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, viewingNo])
+}
+
+// ============ POSLOVNICE ============
+
+model Store {
+  id             String   @id @default(cuid())
+  companyId      String
+  storeNo        String
+  name           String
+  code           String   @default("")
+  city           String   @default("")
+  address        String   @default("")
+  phone          String   @default("")
+  email          String   @default("")
+  manager        String   @default("")
+  type           String   @default("retail")     // retail, warehouse, office, factory
+  status         String   @default("active")     // active, closed, renovation
+  openDate       String   @default("")
+  area           Float    @default(0)
+  employees      Int      @default(0)
+  monthlyRevenue Float    @default(0)
+  notes          String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, storeNo])
+}
+
+// ============ ETIKETE ============
+
+model Label {
+  id           String   @id @default(cuid())
+  companyId    String
+  labelNo      String
+  name         String
+  sku          String   @default("")
+  category     String   @default("product")     // product, shipping, promotion, barcode, qr, price, warning, ingredient
+  status       String   @default("active")      // active, inactive
+  size         String   @default("")
+  material     String   @default("")
+  color        String   @default("")
+  quantity     Int      @default(0)
+  costPerUnit  Float    @default(0)
+  printDate    String   @default("")
+  notes        String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, labelNo])
+}
+
+// ============ CENOVNICI V2 ============
+
+model PriceListV2 {
+  id         String   @id @default(cuid())
+  companyId  String
+  listNo     String
+  name       String
+  category   String   @default("")
+  type       String   @default("retail")     // retail, wholesale, special
+  validFrom  String   @default("")
+  validUntil String   @default("")
+  items      Int      @default(0)
+  status     String   @default("draft")      // active, draft, archived
+  createdBy  String   @default("")
+  notes      String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, listNo])
+}
+
+// ============ CARINSKA DOKUMENTACIJA ============
+
+model CustomsDoc {
+  id               String   @id @default(cuid())
+  companyId        String
+  declarationNo    String
+  docType          String   @default("import")       // import, export, transit
+  status           String   @default("draft")         // draft, submitted, processing, cleared, held, rejected, released
+  country          String   @default("")
+  borderCrossing   String   @default("")
+  declarantName    String   @default("")
+  declarantPIB     String   @default("")
+  goodsDescription String   @default("")
+  hsCode           String   @default("")
+  totalValue       Float    @default(0)
+  totalWeight      Float    @default(0)
+  currency         String   @default("EUR")
+  customsValue     Float    @default(0)
+  dutiesAmount     Float    @default(0)
+  vatAmount        Float    @default(0)
+  totalDues        Float    @default(0)
+  vehiclePlate     String   @default("")
+  submissionDate   String   @default("")
+  clearanceDate    String?
+  referenceNumber  String   @default("")
+  notes            String   @default("")
+  items            String   @default("[]")            // JSON array of items
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, declarationNo])
+}
+
+// ============ RASPORED NASTAVE ============
+
+model TimetableEntry {
+  id          String   @id @default(cuid())
+  companyId   String
+  subject     String
+  teacher     String
+  classGroup  String   @default("")
+  room        String   @default("")
+  dayOfWeek   String   @default("ponedeljak")         // ponedeljak, utorak, sreda, cetvrtak, petak, subota
+  timeStart   String   @default("08:00")
+  timeEnd     String   @default("09:30")
+  type        String   @default("lecture")            // lecture, exercise, lab, seminar, exam
+  semester    String   @default("2023/2024 zimski")
+  status      String   @default("active")             // active, cancelled, rescheduled, completed
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ NACRTI / PROJEKTOVANJE ============
+
+model Blueprint {
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  code          String
+  project       String   @default("")
+  category      String   @default("architectural")   // architectural, structural, mechanical, electrical, plumbing, geodetic, interior
+  status        String   @default("draft")            // draft, review, approved, revision, final, archived
+  version       String   @default("v1.0")
+  author        String   @default("")
+  client        String   @default("")
+  scale         String   @default("")
+  sheetSize     String   @default("")
+  fileSize      Float    @default(0)
+  fileFormat    String   @default("PDF")
+  approvedBy    String?
+  approvedDate  String?
+  notes         String   @default("")
+  revisions     String   @default("[]")               // JSON array of revisions
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
+}
+
+// ============ BARCODE / QR KODOVI ============
+
+model BarcodeItem {
+  id          String   @id @default(cuid())
+  companyId   String
+  code        String
+  type        String   @default("EAN13")             // EAN13, EAN8, QR, CODE128, UPC
+  productName String
+  productId   String   @default("")
+  category    String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ BACKUP RECORDS ============
+
+model BackupRecord {
+  id          String    @id @default(cuid())
+  companyId   String
+  name        String
+  type        String    @default("full")          // full, incremental, snapshot
+  status      String    @default("completed")     // completed, failed, in_progress, scheduled
+  size        String    @default("")
+  duration    String    @default("")
+  location    String    @default("Local")
+  expiresAt   DateTime?
+  autoDelete  Boolean   @default(true)
+  encrypted   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ BACKUP SCHEDULES ============
+
+model BackupSchedule {
+  id             String    @id @default(cuid())
+  companyId      String
+  name           String
+  frequency      String    @default("daily")      // daily, weekly, monthly
+  time           String    @default("02:00")
+  type           String    @default("full")        // full, incremental
+  retentionDays  Int       @default(30)
+  lastRun        DateTime?
+  nextRun        DateTime?
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ CLIENT PORTAL - INVOICES ============
+
+model PortalInvoice {
+  id          String   @id @default(cuid())
+  companyId   String
+  number      String
+  amount      Float
+  status      String   @default("nacrt")    // poslata, placena, prekocena, nacrt
+  date        String
+  dueDate     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, number])
+}
+
+// ============ CLIENT PORTAL - ORDERS ============
+
+model PortalOrder {
+  id            String    @id @default(cuid())
+  companyId     String
+  orderNo       String
+  items         Int       @default(1)
+  total         Float     @default(0)
+  status        String    @default("nacrt")   // isporuceno, u_toku, nacrt, otkazano
+  date          String
+  deliveryDate  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, orderNo])
+}
+
+// ============ CLIENT PORTAL - TICKETS ============
+
+model PortalTicket {
+  id          String   @id @default(cuid())
+  companyId   String
+  subject     String
+  status      String   @default("open")     // open, in_progress, resolved, closed
+  priority    String   @default("medium")   // low, medium, high
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ CLIENT PORTAL - DOCUMENTS ============
+
+model PortalDoc {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  type        String   @default("pdf")       // pdf, xlsx, doc, csv, zip
+  size        String   @default("")
+  date        String
+  category    String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ GAMIFICATION - GOALS ============
+
+model GamificationGoal {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  description   String   @default("")
+  category      String   @default("productivity")
+  type          String   @default("individual")
+  targetValue   Int      @default(0)
+  currentValue  Int      @default(0)
+  unit          String   @default("")
+  deadline      String   @default("")
+  assignee      String   @default("")
+  assigneeId    String   @default("")
+  status        String   @default("active")
+  points        Int      @default(0)
+  progress      Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ GAMIFICATION - CHALLENGES ============
+
+model GamificationChallenge {
+  id               String   @id @default(cuid())
+  companyId        String
+  title            String
+  description      String   @default("")
+  type             String   @default("daily")
+  startDate        String   @default("")
+  endDate          String   @default("")
+  reward           String   @default("")
+  rewardPoints     Int      @default(0)
+  participantCount Int      @default(0)
+  maxParticipants  Int      @default(50)
+  status           String   @default("upcoming")
+  difficulty       String   @default("medium")
+  completedCount   Int      @default(0)
+  criteria         String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ GAMIFICATION - BADGES ============
+
+model GamificationBadge {
+  id           String   @id @default(cuid())
+  companyId    String
+  name         String
+  description  String   @default("")
+  icon         String   @default("🏆")
+  color        String   @default("#f59e0b")
+  category     String   @default("productivity")
+  requirement  String   @default("")
+  earnedBy     Int      @default(0)
+  points       Int      @default(0)
+  isRare       Boolean  @default(false)
+  isSecret     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ MANUFACTURING - PRODUCTION ORDERS ============
+
+model MfgProductionOrder {
+  id               String   @id @default(cuid())
+  companyId        String
+  orderNumber      String
+  productName      String
+  quantityOrdered  Int      @default(0)
+  quantityProduced Int      @default(0)
+  status           String   @default("draft") // draft, planned, in_progress, quality_check, completed, cancelled
+  priority         String   @default("normal") // normal, high, urgent
+  startDate        String   @default("")
+  endDate          String   @default("")
+  bomComponents    String   @default("[]") // JSON: BomComponent[]
+  machineId        String   @default("")
+  timeTracking     Int      @default(0) // hours
+  qualityNotes     String   @default("")
+  notes            String   @default("")
+  progress         Int      @default(0) // 0-100
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, orderNumber])
+}
+
+// ============ MANUFACTURING - MACHINES ============
+
+model MfgMachine {
+  id              String   @id @default(cuid())
+  companyId       String
+  name            String
+  type            String   @default("CNC") // CNC, Press, Assembly, Package, Other
+  status          String   @default("available") // available, working, maintenance, down
+  location        String   @default("")
+  capacityPerHour Int      @default(50)
+  currentLoad     Int      @default(0)
+  totalHours      Int      @default(0)
+  downtimeLog     String   @default("[]") // JSON: DowntimeEntry[]
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ VoIP - CALL LOGS ============
+
+model VoipCallLog {
+  id            String   @id @default(cuid())
+  companyId     String
+  direction     String   @default("inbound") // inbound, outbound, internal
+  caller        String   @default("") // from
+  callee        String   @default("") // to
+  duration      Int      @default(0) // seconds
+  extension     String   @default("")
+  status        String   @default("answered") // answered, missed, voicemail
+  recording     Boolean  @default(false)
+  notes         String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ VoIP - EXTENSIONS ============
+
+model VoipExtension {
+  id                 String   @id @default(cuid())
+  companyId          String
+  number             String
+  name               String
+  department         String   @default("")
+  type               String   @default("Desk") // Desk, Softphone, Mobile
+  status             String   @default("Offline") // Online, Busy, Away, Offline
+  device             String   @default("")
+  ipAddress          String   @default("")
+  provisioningStatus String   @default("pending") // active, pending, inactive
+  notes              String   @default("")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, number])
+}
+
+
+// ============ GAMIFICATION - LEADERBOARD ENTRIES ============
+
+model GamificationLeaderboardEntry {
+  id              String   @id @default(cuid())
+  companyId       String
+  employeeId      String   @default("")
+  employeeName    String
+  department      String   @default("")
+  avatar          String   @default("")
+  totalPoints     Int      @default(0)
+  level           Int      @default(1)
+  rank            Int      @default(0)
+  previousRank    Int      @default(0)
+  badges          Int      @default(0)
+  completedGoals  Int      @default(0)
+  streak          Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ PLM (Product Lifecycle Management) ============
+
+model PlmProduct {
+  id              String   @id @default(cuid())
+  companyId       String
+  name            String
+  sku             String
+  category        String   @default("Elektronika")
+  lifecycleStage  String   @default("concept")  // concept, design, prototype, testing, launch, production, eol
+  status          String   @default("development")  // active, development, discontinued
+  version         String   @default("0.1.0")
+  owner           String   @default("")
+  description     String   @default("")
+  bomRef          String   @default("")
+  revisionCount   Int      @default(0)
+  revisions       String   @default("[]")  // JSON: array of revision objects
+  documents       String   @default("[]")  // JSON: array of document objects
+  ecrs            String   @default("[]")  // JSON: array of ECR objects
+  ecos            String   @default("[]")  // JSON: array of ECO objects
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, sku])
 }

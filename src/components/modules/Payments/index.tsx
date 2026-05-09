@@ -1,53 +1,194 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'; import { Input } from '@/components/ui/input'; import { Badge } from '@/components/ui/badge'; import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, CreditCard, CheckCircle2, AlertTriangle, Clock } from 'lucide-react'; import { toast } from 'sonner'; import { formatDate } from '@/lib/helpers'
+import { Plus, Search, Trash2, Pencil, Eye, CreditCard, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { toast } from 'sonner'
+import { formatDate } from '@/lib/helpers'
 
-type Payment = { id: string; invoiceNo: string; client: string; amount: number; currency: string; date: string; dueDate: string; paidDate: string; method: 'bank_transfer' | 'cash' | 'card' | 'standing_order'; status: 'paid' | 'pending' | 'overdue' | 'partial' | 'cancelled'; reference: string; category: 'invoice' | 'salary' | 'rent' | 'supplier' | 'utility' | 'other'; notes: string }
-const INITIAL: Payment[] = [
-  { id: '1', invoiceNo: 'Fak-2024-001', client: 'Fabrika "Zvezda"', amount: 185000, currency: 'RSD', date: '2024-06-14', dueDate: '2024-06-28', paidDate: '2024-06-25', method: 'bank_transfer', status: 'paid', reference: 'REF-2024-11111', category: 'invoice', notes: 'Za narudžbu NAR-2024-001 — plaćeno na vreme' },
-  { id: '2', invoiceNo: 'Fak-2024-002', client: 'IT Solutions DOO', amount: 285000, currency: 'RSD', date: '2024-06-16', dueDate: '2024-06-30', paidDate: '', method: 'bank_transfer', status: 'pending', reference: 'REF-2024-22222', category: 'invoice', notes: '' },
-  { id: '3', invoiceNo: 'Fak-2024-003', client: 'SBB DOO', amount: 45000, currency: 'RSD', date: '2024-06-15', dueDate: '2024-06-29', paidDate: '', method: 'bank_transfer', status: 'pending', reference: 'REF-2024-33333', category: 'supplier', notes: 'Papir — 30 dana rok' },
-  { id: '4', invoiceNo: 'PLA-2024-006', client: 'Zaposleni (20)', amount: 1250000, currency: 'RSD', date: '2024-06-01', dueDate: '2024-06-30', paidDate: '2024-06-01', method: 'bank_transfer', status: 'paid', reference: '', category: 'salary', notes: 'Junski plaćeni — 20 zaposlenih' },
-  { id: '5', invoiceNo: 'IZN-2024-003', client: 'Dragan Milić', amount: 800, currency: 'EUR', date: '2024-06-01', dueDate: '2024-06-01', paidDate: '2024-06-01', method: 'standing_order', status: 'paid', reference: '', category: 'rent', notes: 'Kirija za jun — stalni nalog' },
-  { id: '6', invoiceNo: 'KOM-2024-006', client: 'EPS Distribucija', amount: 38500, currency: 'RSD', date: '2024-06-05', dueDate: '2024-06-20', paidDate: '2024-06-18', method: 'bank_transfer', status: 'paid', reference: 'INV-2024-44444', category: 'utility', notes: 'Struja za jun' },
-  { id: '7', invoiceNo: 'Fak-2024-004', client: 'Restoran "Kafana"', amount: 32000, currency: 'RSD', date: '2024-06-15', dueDate: '2024-06-22', paidDate: '', method: 'cash', status: 'overdue', reference: '', category: 'supplier', notes: 'Kasni — 7 dana kasni' },
-  { id: '8', invoiceNo: 'Fak-2024-005', client: 'Poslovnica Novi Sad', amount: 145000, currency: 'RSD', date: '2024-06-10', dueDate: '2024-06-24', paidDate: '2024-06-22', method: 'bank_transfer', status: 'paid', reference: 'REF-2024-55555', category: 'invoice', notes: '' },
-]
-const STATUSES: Record<string, { color: string; label: string }> = { paid: { color: 'bg-emerald-100 text-emerald-800', label: 'Plaćeno' }, pending: { color: 'bg-amber-100 text-amber-800', label: 'Na čekanju' }, overdue: { color: 'bg-red-100 text-red-800', label: 'Kasni' }, partial: { color: 'bg-blue-100 text-blue-800', label: 'Delimično' }, cancelled: { color: 'bg-gray-100 text-gray-800', label: 'Otkazan' } }
+interface Payment {
+  id: string; invoiceNo: string; client: string; amount: number; currency: string
+  date: string; dueDate: string; paidDate: string; method: string; status: string
+  reference: string; category: string; notes: string; createdAt: string
+}
+
+const STATUSES: Record<string, { color: string; label: string }> = {
+  paid: { color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300', label: 'Plaćeno' },
+  pending: { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300', label: 'Na čekanju' },
+  overdue: { color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', label: 'Kasni' },
+  partial: { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', label: 'Delimično' },
+  cancelled: { color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300', label: 'Otkazan' },
+}
 const CATEGORIES: Record<string, string> = { invoice: 'Faktura', salary: 'Plata', rent: 'Kirija', supplier: 'Dobavljač', utility: 'Komunalije', other: 'Ostalo' }
+const METHODS: Record<string, string> = { bank_transfer: 'Bankovni prenos', cash: 'Gotovina', card: 'Kartica', standing_order: 'Stalni nalog' }
+
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 function formatAmount(a: number, c: string) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(a) }
 
 export function Payments() {
-  const [data, setData] = useState<Payment[]>(INITIAL); const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState(''); const [statusFilter, setStatusFilter] = useState(''); const [catFilter, setCatFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<Payment | null>(null)
-  const [detailId, setDetailId] = useState<string | null>(null); const [form, setForm] = useState<Partial<Payment>>({}); const [activeTab, setActiveTab] = useState('pregled')
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
-  const filtered = data.filter(i => { const ms = !search || [i.invoiceNo, i.client, i.reference].some(v => v.toLowerCase().includes(search.toLowerCase())); const ms2 = !statusFilter || i.status === statusFilter; const mc = !catFilter || i.category === catFilter; return ms && ms2 && mc })
-  const handleDelete = (id: string) => { if (!confirm('Obrisati?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
-  const openCreate = () => { setEditItem(null); setForm({ invoiceNo: '', client: '', amount: 0, currency: 'RSD', date: new Date().toISOString().split('T')[0], dueDate: '', paidDate: '', method: 'bank_transfer', status: 'pending', reference: '', category: 'invoice', notes: '' }); setDialogOpen(true) }
+  const [data, setData] = useState<Payment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [catFilter, setCatFilter] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editItem, setEditItem] = useState<Payment | null>(null)
+  const [detailId, setDetailId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState<Record<string, string | number>>({})
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (search) params.set('search', search)
+      if (statusFilter) params.set('status', statusFilter)
+      if (catFilter) params.set('category', catFilter)
+      const res = await fetch(`/api/payments?${params}`)
+      if (res.ok) setData(await res.json())
+    } catch (err) { console.error(err) } finally { setLoading(false) }
+  }, [search, statusFilter, catFilter])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati?')) return
+    try { const res = await fetch(`/api/payments/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Obrisano'); if (detailId === id) setDetailId(null); fetchData() } } catch { toast.error('Greška') }
+  }
+
+  const openCreate = () => {
+    setEditItem(null)
+    setForm({ invoiceNo: '', client: '', amount: 0, currency: 'RSD', date: new Date().toISOString().split('T')[0], dueDate: '', paidDate: '', method: 'bank_transfer', status: 'pending', reference: '', category: 'invoice', notes: '' })
+    setDialogOpen(true)
+  }
   const openEdit = (item: Payment) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
-  const handleSave = () => { if (!form.client || !form.amount) { toast.error('Popunite obavezna polja'); return }; if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Payment : i)); toast.success('Ažurirano') } else { setData(prev => [{ id: Date.now().toString(), ...form } as Payment, ...prev]); toast.success('Kreirano') }; setDialogOpen(false) }
-  if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
+
+  const handleSave = async () => {
+    if (!form.client || !form.amount) { toast.error('Popunite obavezna polja'); return }
+    setSaving(true)
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/payments/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        if (res.ok) { toast.success('Ažurirano'); setDialogOpen(false); fetchData() }
+      } else {
+        const res = await fetch('/api/payments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        if (res.ok) { toast.success('Kreirano'); setDialogOpen(false); fetchData() }
+      }
+    } catch { toast.error('Greška') } finally { setSaving(false) }
+  }
+
+  if (loading && data.length === 0) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
+
   const detailItem = detailId ? data.find(i => i.id === detailId) : null
   const paidRSD = data.filter(i => i.status === 'paid' && i.currency === 'RSD').reduce((s, i) => s + i.amount, 0)
   const paidEUR = data.filter(i => i.status === 'paid' && i.currency === 'EUR').reduce((s, i) => s + i.amount, 0)
   const overdueAmount = data.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amount, 0)
 
-  return (<div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div><h1 className="text-2xl font-bold tracking-tight">Plaćanja</h1><p className="text-sm text-muted-foreground">Fakture, uplate, praćenja i praćenje</p></div><Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novo plaćanje</Button></div>
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3"><Card className="p-4"><div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><CreditCard className="h-3 w-3" />Ukupno</div><p className="text-2xl font-bold">{data.length}</p></Card><Card className="p-4"><div className="text-xs text-emerald-600 mb-1 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Plaćeno RSD</div><p className="text-lg font-bold text-emerald-700">{new Intl.NumberFormat('sr-RS').format(paidRSD)}</p></Card><Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Plaćeno EUR</div><p className="text-lg font-bold text-emerald-700">{new Intl.NumberFormat('sr-RS').format(paidEUR)} €</p></Card><Card className="p-4"><div className="text-xs text-red-600 mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Kasni</div><p className="text-lg font-bold text-red-700">{new Intl.NumberFormat('sr-RS').format(overdueAmount)}</p></Card></div>
-    <Tabs value={activeTab} onValueChange={setActiveTab}><TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
-      <TabsContent value="pregled" className="mt-4"><Card><CardHeader className="pb-3"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><CardTitle className="text-base">Lista plaćanja</CardTitle><div className="flex gap-2 items-center"><div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-40 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div><Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem><SelectItem value="paid">Plaćeno</SelectItem><SelectItem value="pending">Na čekanju</SelectItem><SelectItem value="overdue">Kasni</SelectItem></SelectContent></Select><Select value={catFilter || 'all'} onValueChange={v => setCatFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem><SelectItem value="invoice">Faktura</SelectItem><SelectItem value="salary">Plata</SelectItem><SelectItem value="rent">Kirija</SelectItem><SelectItem value="supplier">Dobavljač</SelectItem><SelectItem value="utility">Komunalije</SelectItem></SelectContent></Select></div></div></CardHeader><CardContent><div className="max-h-[480px] overflow-y-auto"><Table><TableHeader><TableRow><TableHead className="text-xs">Br. fakture</TableHead><TableHead className="text-xs">Klijent</TableHead><TableHead className="text-xs hidden sm:table-cell">Tip</TableHead><TableHead className="text-xs hidden md:table-cell">Iznos</TableHead><TableHead className="text-xs hidden lg:table-cell">Rok</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader><TableBody>{filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema</TableCell></TableRow> : filtered.map(item => (<TableRow key={item.id}><TableCell className="text-xs font-mono">{item.invoiceNo}</TableCell><TableCell className="text-xs font-medium">{item.client}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{CATEGORIES[item.category]}</TableCell><TableCell className="text-xs hidden md:table-cell font-semibold">{formatAmount(item.amount, item.currency)}</TableCell><TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{formatDate(item.dueDate)}</TableCell><TableCell>{getStatusBadge(item.status)}</TableCell><TableCell className="text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell></TableRow>))}</TableBody></Table></div></CardContent></Card></TabsContent>
-      <TabsContent value="dodaj" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Novo plaćanje</CardTitle></CardHeader><CardContent><div className="grid gap-4"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Klijent *</Label><Input className="text-xs" value={form.client || ''} onChange={e => setForm({ ...form, client: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'invoice'} onValueChange={v => setForm({ ...form, category: v as Payment['category'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="invoice">Faktura</SelectItem><SelectItem value="salary">Plata</SelectItem><SelectItem value="rent">Kirija</SelectItem><SelectItem value="supplier">Dobavljač</SelectItem><SelectItem value="utility">Komunalije</SelectItem></SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input className="text-xs" type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: Number(e.target.value) })} /></div><div className="grid gap-2"><Label className="text-xs">Valuta</Label><Select value={form.currency || 'RSD'} onValueChange={v => setForm({ ...form, currency: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="RSD">RSD</SelectItem><SelectItem value="EUR">EUR</SelectItem></SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Datum fakture</Label><Input className="text-xs" type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Rok plaćanja</Label><Input className="text-xs" type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Referenca</Label><Input className="text-xs" value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} /></div></div><Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" /> Kreiraj</Button></div></CardContent></Card></TabsContent>
-      <TabsContent value="uredi" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Uredi</CardTitle></CardHeader><CardContent><div className="max-h-[500px] overflow-y-auto space-y-3">{data.map(item => (<div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg"><div className="flex-1 min-w-0"><div className="flex items-center gap-2"><span className="text-xs font-mono">{item.invoiceNo}</span><span className="text-xs font-medium">{item.client}</span>{getStatusBadge(item.status)}</div><p className="text-xs text-muted-foreground truncate">{formatAmount(item.amount, item.currency)} — {CATEGORIES[item.category]} — Rok: {formatDate(item.dueDate)}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div>))}</div></CardContent></Card></TabsContent>
-    </Tabs>
-    <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>{detailItem?.invoiceNo}</DialogTitle></DialogHeader>{detailItem && (<div className="space-y-3"><div className="flex items-center gap-2">{getStatusBadge(detailItem.status)}<Badge className="text-xs bg-muted">{CATEGORIES[detailItem.category]}</Badge></div><div className="grid grid-cols-2 gap-3">{[['Klijent', detailItem.client],['Valuta', detailItem.currency],['Iznos', formatAmount(detailItem.amount, detailItem.currency)],['Datum', formatDate(detailItem.date)],['Rok plaćanja', formatDate(detailItem.dueDate)],['Datum plaćanja', detailItem.paidDate ? formatDate(detailItem.paidDate) : 'Nije plaćeno'],['Način', detailItem.method === 'bank_transfer' ? 'Bankovni prenos' : detailItem.method === 'cash' ? 'Gotovina' : 'Stalni nalog'],['Referenca', detailItem.reference || '—']].map(([l, v]) => (<div key={l} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{l}</div><div className="text-xs font-medium">{v}</div></div>))}</div></div>)}</DialogContent></Dialog>
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Novo'}</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="grid grid-cols-2 gap-3"><div className="grid gap-2"><Label className="text-xs">Klijent *</Label><Input className="text-xs" value={form.client || ''} onChange={e => setForm({ ...form, client: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v as Payment['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="paid">Plaćeno</SelectItem><SelectItem value="pending">Na čekanju</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="cancelled">Otkazano</SelectItem></SelectContent></Select></div></div></div><DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
-  </div>)
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30"><CreditCard className="h-5 w-5 text-emerald-700 dark:text-emerald-400" /></div>
+          <div><h1 className="text-2xl font-bold tracking-tight">Plaćanja</h1><p className="text-sm text-muted-foreground">Fakture, uplate, praćenje</p></div>
+        </div>
+        <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novo plaćanje</Button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><CreditCard className="h-3 w-3" />Ukupno</div><p className="text-2xl font-bold">{data.length}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Plaćeno RSD</div><p className="text-lg font-bold text-emerald-700">{new Intl.NumberFormat('sr-RS').format(paidRSD)}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Plaćeno EUR</div><p className="text-lg font-bold text-emerald-700">{new Intl.NumberFormat('sr-RS').format(paidEUR)} €</p></Card>
+        <Card className="p-4"><div className="text-xs text-red-600 mb-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Kasni</div><p className="text-lg font-bold text-red-700">{new Intl.NumberFormat('sr-RS').format(overdueAmount)}</p></Card>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <CardTitle className="text-base">Lista plaćanja</CardTitle>
+            <div className="flex gap-2 items-center flex-wrap">
+              <div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-40 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div>
+              <Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={catFilter || 'all'} onValueChange={v => setCatFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="max-h-[520px] overflow-y-auto">
+            <Table>
+              <TableHeader><TableRow>
+                <TableHead className="text-xs">Br. fakture</TableHead><TableHead className="text-xs">Klijent</TableHead><TableHead className="text-xs hidden sm:table-cell">Tip</TableHead><TableHead className="text-xs hidden md:table-cell">Iznos</TableHead><TableHead className="text-xs hidden lg:table-cell">Rok</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs text-right">Akcije</TableHead>
+              </TableRow></TableHeader>
+              <TableBody>
+                {data.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema plaćanja</TableCell></TableRow> : data.map(item => (
+                  <TableRow key={item.id}>
+                    <TableCell className="text-xs font-mono">{item.invoiceNo}</TableCell>
+                    <TableCell className="text-xs font-medium">{item.client}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{CATEGORIES[item.category] || item.category}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell font-semibold">{formatAmount(item.amount, item.currency)}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{formatDate(item.dueDate)}</TableCell>
+                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                    <TableCell className="text-right"><div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Detail Dialog */}
+      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader><DialogTitle>{detailItem?.invoiceNo}</DialogTitle></DialogHeader>
+          {detailItem && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">{getStatusBadge(detailItem.status)}<Badge className="text-xs bg-muted">{CATEGORIES[detailItem.category] || detailItem.category}</Badge></div>
+              <div className="grid grid-cols-2 gap-3">
+                {([['Klijent', detailItem.client],['Valuta', detailItem.currency],['Iznos', formatAmount(detailItem.amount, detailItem.currency)],['Datum', formatDate(detailItem.date)],['Rok plaćanja', formatDate(detailItem.dueDate)],['Datum plaćanja', detailItem.paidDate ? formatDate(detailItem.paidDate) : 'Nije plaćeno'],['Način', METHODS[detailItem.method] || detailItem.method],['Referenca', detailItem.reference || '—']] as [string, string][]).map(([l, v]) => (
+                  <div key={l} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{l}</div><div className="text-xs font-medium">{v}</div></div>
+                ))}
+              </div>
+              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editItem ? 'Uredi plaćanje' : 'Novo plaćanje'}</DialogTitle></DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2"><Label className="text-xs">Klijent *</Label><Input className="text-xs" value={form.client || ''} onChange={e => setForm({ ...form, client: e.target.value })} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'invoice'} onValueChange={v => setForm({ ...form, category: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+              <div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input type="number" className="text-xs" value={form.amount || ''} onChange={e => setForm({ ...form, amount: Number(e.target.value) })} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Valuta</Label><Select value={form.currency || 'RSD'} onValueChange={v => setForm({ ...form, currency: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="RSD">RSD</SelectItem><SelectItem value="EUR">EUR</SelectItem></SelectContent></Select></div>
+              <div className="grid gap-2"><Label className="text-xs">Br. fakture</Label><Input className="text-xs" value={form.invoiceNo || ''} onChange={e => setForm({ ...form, invoiceNo: e.target.value })} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+              <div className="grid gap-2"><Label className="text-xs">Datum fakture</Label><Input type="date" className="text-xs" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Rok plaćanja</Label><Input type="date" className="text-xs" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Datum plaćanja</Label><Input type="date" className="text-xs" value={form.paidDate || ''} onChange={e => setForm({ ...form, paidDate: e.target.value })} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Način plaćanja</Label><Select value={form.method || 'bank_transfer'} onValueChange={v => setForm({ ...form, method: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(METHODS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+              <div className="grid gap-2 col-span-2"><Label className="text-xs">Referenca</Label><Input className="text-xs" value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} /></div>
+              <div className="grid gap-2 col-span-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+            </div>
+          </div>
+          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
 }

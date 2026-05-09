@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
+import { useToast } from '@/hooks/use-toast'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -161,55 +162,7 @@ const goalCategoryConfig: Record<string, { label: string; color: string; icon: R
   innovation: { label: 'Inovacije', color: 'bg-cyan-100 text-cyan-700', icon: <Sparkles className="h-4 w-4" /> },
 }
 
-const mockGoals: Goal[] = [
-  { id: 'g-1', title: 'Zatvori 10 ponuda ovog meseca', description: 'Cilj za prodajni tim', category: 'sales', type: 'individual', targetValue: 10, currentValue: 7, unit: 'ponuda', deadline: '2025-01-31', assignee: 'Prodajni tim', assigneeId: 'team-1', status: 'active', points: 500, progress: 70, createdAt: '2025-01-01' },
-  { id: 'g-2', title: '100 commit-ova nedeljno', description: 'Timski cilj za razvojni tim', category: 'productivity', type: 'team', targetValue: 100, currentValue: 85, unit: 'commit-a', deadline: '2025-01-19', assignee: 'Dev tim', assigneeId: 'team-2', status: 'active', points: 300, progress: 85, createdAt: '2025-01-13' },
-  { id: 'g-3', title: 'Završiti AWS sertifikaciju', description: 'Individualni cilj za DevOps inženjera', category: 'learning', type: 'individual', targetValue: 1, currentValue: 0, unit: 'sertifikat', deadline: '2025-03-31', assignee: 'Nikola Ilić', assigneeId: 'emp-6', status: 'active', points: 1000, progress: 0, createdAt: '2025-01-01' },
-  { id: 'g-4', title: 'Koraci izazov - 50.000 koraka', description: 'Zdravstveni cilj za ceo tim', category: 'health', type: 'team', targetValue: 50000, currentValue: 32000, unit: 'koraka', deadline: '2025-01-31', assignee: 'Svi zaposleni', assigneeId: 'team-all', status: 'active', points: 200, progress: 64, createdAt: '2025-01-01' },
-  { id: 'g-5', title: 'Predstaviti 3 nove ideje', description: 'Inovacioni cilj', category: 'innovation', type: 'individual', targetValue: 3, currentValue: 3, unit: 'ideje', deadline: '2025-01-15', assignee: 'Marko Petrović', assigneeId: 'emp-1', status: 'completed', points: 800, progress: 100, createdAt: '2025-01-01' },
-  { id: 'g-6', title: 'Smanjiti response time na < 200ms', description: 'Tehnički cilj za backend tim', category: 'productivity', type: 'team', targetValue: 200, currentValue: 245, unit: 'ms', deadline: '2025-02-28', assignee: 'Backend tim', assigneeId: 'team-3', status: 'active', points: 600, progress: 0, createdAt: '2025-01-05' },
-  { id: 'g-7', title: 'Vežbanje 3 puta nedeljno', description: 'Lični zdravstveni cilj', category: 'health', type: 'individual', targetValue: 12, currentValue: 8, unit: 'treninga', deadline: '2025-01-31', assignee: 'Ana Nikolić', assigneeId: 'emp-2', status: 'active', points: 400, progress: 67, createdAt: '2025-01-01' },
-  { id: 'g-8', title: 'Proučiti novi framework', description: 'Edukacioni cilj', category: 'learning', type: 'individual', targetValue: 20, currentValue: 20, unit: 'sati', deadline: '2025-01-10', assignee: 'Ivan Đorđević', assigneeId: 'emp-5', status: 'completed', points: 500, progress: 100, createdAt: '2025-01-01' },
-]
-
-const mockChallenges: Challenge[] = [
-  { id: 'ch-1', title: 'Maraton kodiranja', description: 'Napiši 1000 linija kvalitetnog koda u jednom danu', type: 'daily', startDate: '2025-01-20', endDate: '2025-01-20', reward: 'Badge: Code Warrior', rewardPoints: 200, participantCount: 12, maxParticipants: 20, status: 'upcoming', difficulty: 'hard', completedCount: 0, criteria: '1000 linija koda sa testovima', createdAt: '2025-01-15' },
-  { id: 'ch-2', title: 'Sedmična produktivnost', description: 'Postigni sve dnevne zadatke svaki dan ove nedelje', type: 'weekly', startDate: '2025-01-13', endDate: '2025-01-19', reward: '500 poena + Badge: Productivity Master', rewardPoints: 500, participantCount: 25, maxParticipants: 50, status: 'active', difficulty: 'medium', completedCount: 8, criteria: '100% dnevnih zadataka 5 dana', createdAt: '2025-01-10' },
-  { id: 'ch-3', title: 'Januarski prodajni sprint', description: 'Postigni prodajni cilj od 50.000 EUR ovog meseca', type: 'monthly', startDate: '2025-01-01', endDate: '2025-01-31', reward: 'Team dinner + 1000 poena', rewardPoints: 1000, participantCount: 8, maxParticipants: 10, status: 'active', difficulty: 'hard', completedCount: 0, criteria: '50.000 EUR ukupne prodaje', createdAt: '2025-01-01' },
-  { id: 'ch-4', title: 'Novogodišnji zdravstveni izazov', description: '30 dana aktivnosti - bar 30 min svaki dan', type: 'monthly', startDate: '2025-01-01', endDate: '2025-01-30', reward: 'Badge: Health Champion + 300 poena', rewardPoints: 300, participantCount: 35, maxParticipants: 100, status: 'active', difficulty: 'medium', completedCount: 12, criteria: '30 min aktivnosti 30 dana', createdAt: '2024-12-28' },
-  { id: 'ch-5', title: 'Zimski hackathon', description: '48-satni hackathon sa timom', type: 'special', startDate: '2025-02-15', endDate: '2025-02-16', reward: 'Pobednički tim: 2000 poena + Trophy', rewardPoints: 2000, participantCount: 0, maxParticipants: 40, status: 'upcoming', difficulty: 'epic', completedCount: 0, criteria: 'Najbolji prototip po oceni žirija', createdAt: '2025-01-10' },
-  { id: 'ch-6', title: 'Kviz: Tehnologije', description: 'Tehnološki kviz sa 50 pitanja', type: 'daily', startDate: '2025-01-17', endDate: '2025-01-17', reward: '100 poena', rewardPoints: 100, participantCount: 18, maxParticipants: 50, status: 'completed', difficulty: 'easy', completedCount: 15, criteria: 'Minimalno 70% tačnosti', createdAt: '2025-01-15' },
-]
-
-const mockBadges: BadgeItem[] = [
-  { id: 'b-1', name: 'Code Warrior', description: 'Napisao 1000+ linija koda u jednom danu', icon: '⚔️', color: '#ef4444', category: 'productivity', requirement: '1000 linija koda/dan', earnedBy: 5, points: 200, isRare: true, isSecret: false },
-  { id: 'b-2', name: 'Sales Master', description: 'Zatvorio 50+ ponuda', icon: '💰', color: '#22c55e', category: 'sales', requirement: '50 zatvorenih ponuda', earnedBy: 3, points: 500, isRare: true, isSecret: false },
-  { id: 'b-3', name: 'Team Player', description: 'Učestvovao u 10+ timskih projekata', icon: '🤝', color: '#3b82f6', category: 'team', requirement: '10 timskih projekata', earnedBy: 12, points: 300, isRare: false, isSecret: false },
-  { id: 'b-4', name: 'Quick Learner', description: 'Završio 5+ kurseva', icon: '📚', color: '#a855f7', category: 'learning', requirement: '5 završenih kurseva', earnedBy: 8, points: 400, isRare: false, isSecret: false },
-  { id: 'b-5', name: 'Health Champion', description: '30 dana uzastopne aktivnosti', icon: '🏋️', color: '#f97316', category: 'health', requirement: '30 dana aktivnosti', earnedBy: 6, points: 300, isRare: false, isSecret: false },
-  { id: 'b-6', name: 'Innovation Spark', description: 'Predložio 10+ ideja za poboljšanje', icon: '💡', color: '#eab308', category: 'innovation', requirement: '10 predloga ideja', earnedBy: 4, points: 350, isRare: false, isSecret: false },
-  { id: 'b-7', name: 'Mentor', description: 'Mentorisao 5+ junior zaposlenih', icon: '🎓', color: '#06b6d4', category: 'team', requirement: '5 mentoring relacija', earnedBy: 3, points: 600, isRare: true, isSecret: false },
-  { id: 'b-8', name: 'Night Owl', description: 'Rad posle ponoći 20+ puta', icon: '🦉', color: '#6366f1', category: 'productivity', requirement: '20 radnih noći', earnedBy: 2, points: 150, isRare: true, isSecret: true },
-  { id: 'b-9', name: 'Streak Master', description: '30 dana uzastopnog zadovoljavanja ciljeva', icon: '🔥', color: '#dc2626', category: 'productivity', requirement: '30 dana streak', earnedBy: 1, points: 1000, isRare: true, isSecret: false },
-  { id: 'b-10', name: 'First Blood', description: 'Prvi zaposleni koji je završio izazov', icon: '🏆', color: '#f59e0b', category: 'special', requirement: 'Prvi u izazovu', earnedBy: 7, points: 100, isRare: false, isSecret: false },
-  { id: 'b-11', name: 'Certified Pro', description: 'Dobio 3+ profesionalna sertifikata', icon: '🎖️', color: '#059669', category: 'learning', requirement: '3 sertifikata', earnedBy: 2, points: 800, isRare: true, isSecret: false },
-  { id: 'b-12', name: 'Helping Hand', description: 'Pomogao 50+ kolega na forumu/podršci', icon: '🤲', color: '#0ea5e9', category: 'team', requirement: '50 pomoći', earnedBy: 5, points: 250, isRare: false, isSecret: false },
-]
-
-const mockLeaderboard: LeaderboardEntry[] = [
-  { id: 'lb-1', employeeId: 'emp-2', employeeName: 'Ana Nikolić', department: 'Razvoj', avatar: 'AN', totalPoints: 4250, level: 12, rank: 1, previousRank: 2, badges: 8, completedGoals: 15, streak: 14 },
-  { id: 'lb-2', employeeId: 'emp-4', employeeName: 'Petar Jovanović', department: 'Razvoj', avatar: 'PJ', totalPoints: 3980, level: 11, rank: 2, previousRank: 1, badges: 7, completedGoals: 14, streak: 10 },
-  { id: 'lb-3', employeeId: 'emp-3', employeeName: 'Jelena Stanković', department: 'Razvoj', avatar: 'JS', totalPoints: 3650, level: 10, rank: 3, previousRank: 3, badges: 6, completedGoals: 12, streak: 8 },
-  { id: 'lb-4', employeeId: 'emp-1', employeeName: 'Marko Petrović', department: 'Razvoj', avatar: 'MP', totalPoints: 3200, level: 9, rank: 4, previousRank: 5, badges: 5, completedGoals: 11, streak: 21 },
-  { id: 'lb-5', employeeId: 'emp-6', employeeName: 'Nikola Ilić', department: 'DevOps', avatar: 'NI', totalPoints: 2950, level: 9, rank: 5, previousRank: 4, badges: 5, completedGoals: 10, streak: 6 },
-  { id: 'lb-6', employeeId: 'emp-5', employeeName: 'Ivan Đorđević', department: 'Dizajn', avatar: 'ID', totalPoints: 2600, level: 8, rank: 6, previousRank: 7, badges: 4, completedGoals: 9, streak: 5 },
-  { id: 'lb-7', employeeId: 'emp-7', employeeName: 'Milena Radovanović', department: 'Marketing', avatar: 'MR', totalPoints: 1800, level: 6, rank: 7, previousRank: 8, badges: 3, completedGoals: 5, streak: 3 },
-  { id: 'lb-8', employeeId: 'emp-8', employeeName: 'Lazar Matić', department: 'Razvoj', avatar: 'LM', totalPoints: 1500, level: 5, rank: 8, previousRank: 6, badges: 2, completedGoals: 4, streak: 0 },
-  { id: 'lb-9', employeeId: 'emp-9', employeeName: 'Sanja Vuković', department: 'Admin', avatar: 'SV', totalPoints: 1200, level: 4, rank: 9, previousRank: 9, badges: 2, completedGoals: 3, streak: 2 },
-  { id: 'lb-10', employeeId: 'emp-10', employeeName: 'Dragan Stojanović', department: 'Finansije', avatar: 'DS', totalPoints: 900, level: 3, rank: 10, previousRank: 10, badges: 1, completedGoals: 2, streak: 0 },
-]
-
-const mockTemplates: GoalTemplate[] = [
+const templates: GoalTemplate[] = [
   { id: 'tpl-1', title: 'Dnevna prodaja', description: 'Postigni dnevni prodajni cilj', category: 'sales', type: 'individual', targetValue: 5, unit: 'prodaja', points: 100, difficulty: 'easy' },
   { id: 'tpl-2', title: 'Sedmični kod revju', description: 'Odradi 3 kod revjua nedeljno', category: 'productivity', type: 'individual', targetValue: 3, unit: 'revjua', points: 150, difficulty: 'medium' },
   { id: 'tpl-3', title: 'Mesečno učenje', description: 'Provedi 20 sati na edukaciji mesečno', category: 'learning', type: 'individual', targetValue: 20, unit: 'sati', points: 300, difficulty: 'medium' },
@@ -217,46 +170,12 @@ const mockTemplates: GoalTemplate[] = [
   { id: 'tpl-5', title: 'Timski sprint', description: 'Završite sprint bez zaduženja', category: 'productivity', type: 'team', targetValue: 100, unit: '%', points: 500, difficulty: 'hard' },
 ]
 
-const mockDashboard: GamificationDashboard = {
-  activeGoals: 6,
-  completedGoals: 15,
-  activeChallenges: 3,
-  completedChallenges: 12,
-  totalBadges: 12,
-  earnedBadges: 47,
-  totalParticipants: 35,
-  topScorer: 'Ana Nikolić',
-  avgPoints: 2800,
-  recentAchievements: [
-    { employee: 'Marko Petrović', action: 'Završio cilj: Predstavi 3 ideje', points: 800, time: 'Pre 2 sata' },
-    { employee: 'Ivan Đorđević', action: 'Završio cilj: Prouči framework', points: 500, time: 'Pre 5 sati' },
-    { employee: 'Ana Nikolić', action: 'Badge: Code Warrior', points: 200, time: 'Pre 1 dan' },
-    { employee: 'Tim Dev', action: 'Sedmični cilj: 100 commit-a', points: 300, time: 'Pre 1 dan' },
-    { employee: 'Petar Jovanović', action: 'Izazov: Tehno kviz', points: 100, time: 'Pre 2 dana' },
-  ],
-  categoryBreakdown: [
-    { category: 'sales', goals: 3, avgProgress: 65 },
-    { category: 'productivity', goals: 5, avgProgress: 72 },
-    { category: 'learning', goals: 4, avgProgress: 55 },
-    { category: 'health', goals: 3, avgProgress: 68 },
-    { category: 'team', goals: 4, avgProgress: 80 },
-    { category: 'innovation', goals: 2, avgProgress: 45 },
-  ],
-  monthlyPoints: [
-    { month: 'Avg', points: 12000 },
-    { month: 'Sep', points: 14500 },
-    { month: 'Okt', points: 13800 },
-    { month: 'Nov', points: 15200 },
-    { month: 'Dec', points: 9800 },
-    { month: 'Jan', points: 16500 },
-  ],
-}
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Gamification() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
+  const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('overview')
   const [goals, setGoals] = useState<Goal[]>([])
   const [challenges, setChallenges] = useState<Challenge[]>([])
@@ -291,29 +210,29 @@ export function Gamification() {
   }
   const [badgeForm, setBadgeForm] = useState(emptyBadgeForm)
 
-  // ─── Data Loading ───────────────────────────────────────────────────────
+  // ─── Data Loading (API) ──────────────────────────────────────────────
 
-  const loadGoals = useCallback(async () => {
+  const loadAll = useCallback(async () => {
     if (!activeCompanyId) return
     setLoading(true)
     try {
-      setGoals(mockGoals)
-    } catch { setGoals(mockGoals) }
+      const res = await fetch(`/api/gamification?companyId=${activeCompanyId}&section=all`)
+      const json = await res.json()
+      if (json.success) {
+        setGoals(json.data.goals || [])
+        setChallenges(json.data.challenges || [])
+        setBadges(json.data.badges || [])
+        setLeaderboard(json.data.leaderboard || [])
+        setDashboard(json.data.dashboard || null)
+      }
+    } catch (e) {
+      console.error('Failed to load gamification data', e)
+      toast({ title: 'Greška', description: 'Neuspelo učitavanje podataka', variant: 'destructive' })
+    }
     setLoading(false)
   }, [activeCompanyId])
 
-  const loadChallenges = useCallback(async () => { setChallenges(mockChallenges) }, [])
-  const loadBadges = useCallback(async () => { setBadges(mockBadges) }, [])
-  const loadLeaderboard = useCallback(async () => { setLeaderboard(mockLeaderboard) }, [])
-
-  const loadDashboard = useCallback(async () => {
-    if (!activeCompanyId) return
-    try { setDashboard(mockDashboard) } catch { setDashboard(mockDashboard) }
-  }, [activeCompanyId])
-
-  useEffect(() => {
-    loadGoals(); loadChallenges(); loadBadges(); loadLeaderboard(); loadDashboard()
-  }, [activeCompanyId, loadGoals, loadChallenges, loadBadges, loadLeaderboard, loadDashboard])
+  useEffect(() => { loadAll() }, [loadAll])
 
   // ─── Computed ───────────────────────────────────────────────────────────
 
@@ -324,54 +243,88 @@ export function Gamification() {
     return true
   })
 
-  // ─── Handlers ───────────────────────────────────────────────────────────
+  // ─── Handlers (API) ───────────────────────────────────────────────────
 
   const handleCreateGoal = async () => {
-    if (!goalForm.title.trim()) return
-    const newGoal: Goal = {
-      id: `g-${Date.now()}`, title: goalForm.title, description: goalForm.description,
-      category: goalForm.category, type: goalForm.type,
-      targetValue: parseInt(goalForm.targetValue) || 0, currentValue: 0, unit: goalForm.unit,
-      deadline: goalForm.deadline, assignee: goalForm.assignee, assigneeId: `a-${Date.now()}`,
-      status: 'active', points: parseInt(goalForm.points) || 0, progress: 0,
-      createdAt: new Date().toISOString(),
+    if (!goalForm.title.trim() || !activeCompanyId) return
+    try {
+      const res = await fetch('/api/gamification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section: 'goals', companyId: activeCompanyId, ...goalForm }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        toast({ title: 'Uspešno', description: 'Cilj je kreiran' })
+        setGoalDialogOpen(false)
+        setGoalForm(emptyGoalForm)
+        loadAll()
+      } else {
+        toast({ title: 'Greška', description: json.error || 'Greška pri kreiranju', variant: 'destructive' })
+      }
+    } catch {
+      toast({ title: 'Greška', description: 'Greška pri kreiranju cilja', variant: 'destructive' })
     }
-    setGoals([newGoal, ...goals])
-    setGoalDialogOpen(false)
-    setGoalForm(emptyGoalForm)
-    loadDashboard()
   }
 
   const handleCreateChallenge = async () => {
-    if (!challengeForm.title.trim()) return
-    const newChallenge: Challenge = {
-      id: `ch-${Date.now()}`, title: challengeForm.title, description: challengeForm.description,
-      type: challengeForm.type, startDate: challengeForm.startDate, endDate: challengeForm.endDate,
-      reward: challengeForm.reward, rewardPoints: parseInt(challengeForm.rewardPoints) || 0,
-      participantCount: 0, maxParticipants: parseInt(challengeForm.maxParticipants) || 50,
-      status: 'upcoming', difficulty: challengeForm.difficulty, completedCount: 0,
-      criteria: challengeForm.criteria, createdAt: new Date().toISOString(),
+    if (!challengeForm.title.trim() || !activeCompanyId) return
+    try {
+      const res = await fetch('/api/gamification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section: 'challenges', companyId: activeCompanyId, ...challengeForm }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        toast({ title: 'Uspešno', description: 'Izazov je kreiran' })
+        setChallengeDialogOpen(false)
+        setChallengeForm(emptyChallengeForm)
+        loadAll()
+      } else {
+        toast({ title: 'Greška', description: json.error || 'Greška pri kreiranju', variant: 'destructive' })
+      }
+    } catch {
+      toast({ title: 'Greška', description: 'Greška pri kreiranju izazova', variant: 'destructive' })
     }
-    setChallenges([newChallenge, ...challenges])
-    setChallengeDialogOpen(false)
-    setChallengeForm(emptyChallengeForm)
   }
 
   const handleCreateBadge = async () => {
-    if (!badgeForm.name.trim()) return
-    const newBadge: BadgeItem = {
-      id: `b-${Date.now()}`, ...badgeForm, earnedBy: 0, points: parseInt(badgeForm.points) || 0,
-      isRare: false, isSecret: false,
+    if (!badgeForm.name.trim() || !activeCompanyId) return
+    try {
+      const res = await fetch('/api/gamification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section: 'badges', companyId: activeCompanyId, ...badgeForm }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        toast({ title: 'Uspešno', description: 'Značka je kreirana' })
+        setBadgeDialogOpen(false)
+        setBadgeForm(emptyBadgeForm)
+        loadAll()
+      } else {
+        toast({ title: 'Greška', description: json.error || 'Greška pri kreiranju', variant: 'destructive' })
+      }
+    } catch {
+      toast({ title: 'Greška', description: 'Greška pri kreiranju značke', variant: 'destructive' })
     }
-    setBadges([...badges, newBadge])
-    setBadgeDialogOpen(false)
-    setBadgeForm(emptyBadgeForm)
   }
 
-  const handleDeleteGoal = (id: string) => {
-    if (!confirm('Obrisati cilj?')) return
-    setGoals(goals.filter((g) => g.id !== id))
-    loadDashboard()
+  const handleDeleteGoal = async (id: string) => {
+    if (!activeCompanyId) return
+    try {
+      const res = await fetch(`/api/gamification?section=goals&id=${id}&companyId=${activeCompanyId}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (json.success) {
+        toast({ title: 'Obrisano', description: 'Cilj je uspešno obrisan' })
+        loadAll()
+      } else {
+        toast({ title: 'Greška', description: json.error || 'Greška pri brisanju', variant: 'destructive' })
+      }
+    } catch {
+      toast({ title: 'Greška', description: 'Greška pri brisanju cilja', variant: 'destructive' })
+    }
   }
 
   const getCategoryLabel = (catId: string) => goalCategoryConfig[catId]?.label || catId
@@ -394,7 +347,7 @@ export function Gamification() {
           <p className="text-sm text-muted-foreground">Ciljevi, izazovi, značke i rang lista</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => { loadGoals(); loadDashboard(); }}>
+          <Button variant="outline" size="sm" onClick={() => loadAll()}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
           <Button size="sm" onClick={() => { setGoalForm(emptyGoalForm); setGoalDialogOpen(true); }}>

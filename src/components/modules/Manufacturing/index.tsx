@@ -137,84 +137,14 @@ const SCHEDULE_COLORS: Record<string, string> = {
 
 const PIE_COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444', '#ec4899']
 
-// ======================== MOCK DATA ========================
+// ======================== DEFAULT BOM COMPONENTS ========================
 
-const MOCK_BOM_COMPONENTS: BomComponent[] = [
-  { name: 'Čelična ploča 2mm', requiredQty: 4, consumedQty: 3, unit: 'kom', costPerUnit: 1250 },
-  { name: 'Zavarivačka žica 1.2mm', requiredQty: 2.5, consumedQty: 2.1, unit: 'kg', costPerUnit: 850 },
-  { name: 'Lak za metal', requiredQty: 1, consumedQty: 0.8, unit: 'l', costPerUnit: 3200 },
-  { name: 'Sićušni vijci M6', requiredQty: 24, consumedQty: 22, unit: 'kom', costPerUnit: 15 },
-  { name: 'Guma za brtvljenje', requiredQty: 2, consumedQty: 2, unit: 'kom', costPerUnit: 450 },
-]
-
-const MOCK_ORDERS: ProductionOrder[] = [
-  {
-    id: 'o1', orderNumber: 'MO-2024-001', productName: 'Metalna kućišta A100', quantityOrdered: 500, quantityProduced: 420,
-    status: 'in_progress', priority: 'high', startDate: '2024-12-01', endDate: '2024-12-15',
-    bomComponents: MOCK_BOM_COMPONENTS, machineId: 'm1', timeTracking: 38, qualityNotes: '', notes: 'Prioritetna isporuka', progress: 84,
-  },
-  {
-    id: 'o2', orderNumber: 'MO-2024-002', productName: 'Plastični poklopci B200', quantityOrdered: 1000, quantityProduced: 1000,
-    status: 'completed', priority: 'normal', startDate: '2024-11-20', endDate: '2024-12-05',
-    bomComponents: MOCK_BOM_COMPONENTS.slice(0, 3), machineId: 'm2', timeTracking: 24, qualityNotes: 'Sve mere u toleranciji', notes: '', progress: 100,
-  },
-  {
-    id: 'o3', orderNumber: 'MO-2024-003', productName: 'Aluminijumske profile C50', quantityOrdered: 300, quantityProduced: 0,
-    status: 'planned', priority: 'urgent', startDate: '2024-12-10', endDate: '2024-12-20',
-    bomComponents: MOCK_BOM_COMPONENTS.slice(0, 2), machineId: 'm3', timeTracking: 0, qualityNotes: '', notes: 'Hitna narudžba kupca', progress: 0,
-  },
-  {
-    id: 'o4', orderNumber: 'MO-2024-004', productName: 'Elektronske pločice D80', quantityOrdered: 2000, quantityProduced: 800,
-    status: 'in_progress', priority: 'normal', startDate: '2024-12-03', endDate: '2024-12-18',
-    bomComponents: MOCK_BOM_COMPONENTS.slice(1, 4), machineId: 'm4', timeTracking: 52, qualityNotes: '3 odbijene u kontroli', notes: '', progress: 40,
-  },
-  {
-    id: 'o5', orderNumber: 'MO-2024-005', productName: 'Gumene brtve E30', quantityOrdered: 5000, quantityProduced: 3500,
-    status: 'quality_check', priority: 'normal', startDate: '2024-11-25', endDate: '2024-12-10',
-    bomComponents: MOCK_BOM_COMPONENTS.slice(3, 5), machineId: 'm5', timeTracking: 45, qualityNotes: 'Na čekanju finalne kontrole', notes: '', progress: 70,
-  },
-  {
-    id: 'o6', orderNumber: 'MO-2024-006', productName: 'Ventili F120', quantityOrdered: 800, quantityProduced: 0,
-    status: 'draft', priority: 'normal', startDate: '2024-12-15', endDate: '2024-12-28',
-    bomComponents: MOCK_BOM_COMPONENTS.slice(0, 4), machineId: 'm6', timeTracking: 0, qualityNotes: '', notes: 'Čeka odobrenje', progress: 0,
-  },
-  {
-    id: 'o7', orderNumber: 'MO-2024-007', productName: 'Čelične opruge G60', quantityOrdered: 2000, quantityProduced: 1900,
-    status: 'in_progress', priority: 'high', startDate: '2024-12-02', endDate: '2024-12-12',
-    bomComponents: MOCK_BOM_COMPONENTS.slice(2, 5), machineId: 'm1', timeTracking: 30, qualityNotes: '', notes: '', progress: 95,
-  },
-  {
-    id: 'o8', orderNumber: 'MO-2024-008', productName: 'Plastične kutije H90', quantityOrdered: 1500, quantityProduced: 1500,
-    status: 'completed', priority: 'normal', startDate: '2024-11-18', endDate: '2024-12-02',
-    bomComponents: MOCK_BOM_COMPONENTS.slice(0, 2), machineId: 'm2', timeTracking: 18, qualityNotes: 'Kvalitet odličan', notes: '', progress: 100,
-  },
-]
-
-const MOCK_BOMS: Bom[] = [
-  { id: 'b1', productName: 'Metalna kućišta A100', version: 'v2.1', components: MOCK_BOM_COMPONENTS, status: 'active', createdDate: '2024-10-15' },
-  { id: 'b2', productName: 'Plastični poklopci B200', version: 'v1.3', components: MOCK_BOM_COMPONENTS.slice(0, 3), status: 'active', createdDate: '2024-09-20' },
-  { id: 'b3', productName: 'Aluminijumske profile C50', version: 'v3.0', components: MOCK_BOM_COMPONENTS.slice(0, 2), status: 'active', createdDate: '2024-11-01' },
-  { id: 'b4', productName: 'Elektronske pločice D80', version: 'v1.1', components: MOCK_BOM_COMPONENTS.slice(1, 4), status: 'draft', createdDate: '2024-11-28' },
-  { id: 'b5', productName: 'Ventili F120', version: 'v1.0', components: MOCK_BOM_COMPONENTS.slice(0, 4), status: 'archived', createdDate: '2024-06-10' },
-]
-
-const MOCK_MACHINES: Machine[] = [
-  { id: 'm1', name: 'CNC Frizer Alpha', type: 'CNC', status: 'working', location: 'Hala A', capacityPerHour: 50, currentLoad: 85, totalHours: 2340, downtimeLog: [{ date: '2024-11-15', hours: 4, reason: 'Zamena alata' }] },
-  { id: 'm2', name: 'Hidraulična presa Beta', type: 'Press', status: 'working', location: 'Hala A', capacityPerHour: 80, currentLoad: 72, totalHours: 1890, downtimeLog: [{ date: '2024-11-20', hours: 8, reason: 'Hidraulična pumpa' }] },
-  { id: 'm3', name: 'Montažna linija Gamma', type: 'Assembly', status: 'available', location: 'Hala B', capacityPerHour: 30, currentLoad: 0, totalHours: 3200, downtimeLog: [] },
-  { id: 'm4', name: 'Pakovalica Delta', type: 'Package', status: 'working', location: 'Hala B', capacityPerHour: 120, currentLoad: 65, totalHours: 1500, downtimeLog: [{ date: '2024-12-01', hours: 2, reason: 'Kalibracija' }] },
-  { id: 'm5', name: 'CNC Strug Epsilon', type: 'CNC', status: 'maintenance', location: 'Hala A', capacityPerHour: 40, currentLoad: 0, totalHours: 980, downtimeLog: [{ date: '2024-12-05', hours: 16, reason: 'Servis glavnog vretena' }] },
-  { id: 'm6', name: 'Rotaciona presa Zeta', type: 'Press', status: 'down', location: 'Hala C', capacityPerHour: 60, currentLoad: 0, totalHours: 750, downtimeLog: [{ date: '2024-12-06', hours: 24, reason: 'Kvar motora' }] },
-]
-
-const MOCK_SCHEDULE: ScheduleItem[] = [
-  { id: 's1', productName: 'Kućišta A100', startDay: 0, duration: 5, status: 'in_progress', quantity: 500 },
-  { id: 's2', productName: 'Poklopci B200', startDay: 0, duration: 3, status: 'completed', quantity: 1000 },
-  { id: 's3', productName: 'Profile C50', startDay: 2, duration: 4, status: 'planned', quantity: 300 },
-  { id: 's4', productName: 'Pločice D80', startDay: 1, duration: 6, status: 'in_progress', quantity: 2000 },
-  { id: 's5', productName: 'Brtve E30', startDay: 3, duration: 3, status: 'delayed', quantity: 5000 },
-  { id: 's6', productName: 'Opruge G60', startDay: 4, duration: 2, status: 'in_progress', quantity: 2000 },
-  { id: 's7', productName: 'Kutije H90', startDay: 5, duration: 2, status: 'planned', quantity: 1500 },
+const DEFAULT_BOM_COMPONENTS: BomComponent[] = [
+  { name: 'Čelična ploča 2mm', requiredQty: 4, consumedQty: 0, unit: 'kom', costPerUnit: 1250 },
+  { name: 'Zavarivačka žica 1.2mm', requiredQty: 2.5, consumedQty: 0, unit: 'kg', costPerUnit: 850 },
+  { name: 'Lak za metal', requiredQty: 1, consumedQty: 0, unit: 'l', costPerUnit: 3200 },
+  { name: 'Sićušni vijci M6', requiredQty: 24, consumedQty: 0, unit: 'kom', costPerUnit: 15 },
+  { name: 'Guma za brtvljenje', requiredQty: 2, consumedQty: 0, unit: 'kom', costPerUnit: 450 },
 ]
 
 const MOCK_DAILY_TREND = [
@@ -299,10 +229,51 @@ export function Manufacturing() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
-  const [orders] = useState<ProductionOrder[]>(MOCK_ORDERS)
-  const [boms] = useState<Bom[]>(MOCK_BOMS)
-  const [machines, setMachines] = useState<Machine[]>(MOCK_MACHINES)
-  const [schedule] = useState<ScheduleItem[]>(MOCK_SCHEDULE)
+  const [orders, setOrders] = useState<ProductionOrder[]>([])
+  const [boms, setBoms] = useState<Bom[]>([])
+  const [machines, setMachines] = useState<Machine[]>([])
+  const [schedule] = useState<ScheduleItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch orders
+  const fetchOrders = useCallback(async () => {
+    if (!activeCompanyId) return
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/manufacturing?companyId=${activeCompanyId}`)
+      if (res.ok) {
+        const { items } = await res.json()
+        setOrders(items.map((o: any) => ({ ...o, bomComponents: JSON.parse(o.bomComponents || '[]') })))
+      }
+    } catch { /* empty */ } finally { setLoading(false) }
+  }, [activeCompanyId])
+
+  // Fetch machines
+  const fetchMachines = useCallback(async () => {
+    if (!activeCompanyId) return
+    try {
+      const res = await fetch(`/api/manufacturing?companyId=${activeCompanyId}&type=machines`)
+      if (res.ok) {
+        const { items } = await res.json()
+        setMachines(items.map((m: any) => ({ ...m, downtimeLog: JSON.parse(m.downtimeLog || '[]') })))
+      }
+    } catch { /* empty */ }
+ }, [activeCompanyId])
+
+  // Fetch BOMs
+  const fetchBoms = useCallback(async () => {
+    if (!activeCompanyId) return
+    try {
+      const res = await fetch(`/api/manufacturing/bom?companyId=${activeCompanyId}`)
+      if (res.ok) {
+        const { items } = await res.json()
+        setBoms(items.map((b: any) => ({ ...b, components: JSON.parse(b.components || '[]') })))
+      }
+    } catch { /* empty */ }
+ }, [activeCompanyId])
+
+  useEffect(() => { void Promise.all([fetchOrders(), fetchMachines()]) }, [fetchOrders, fetchMachines])
+  useEffect(() => { fetchBoms() }, [fetchBoms])
 
   // Order tab state
   const [orderSearch, setOrderSearch] = useState('')
@@ -368,27 +339,54 @@ export function Manufacturing() {
   }, [orders])
 
   // Machine status cycle
-  const cycleMachineStatus = (machine: Machine) => {
+  const cycleMachineStatus = async (machine: Machine) => {
     const cycle: Machine['status'][] = ['available', 'working', 'maintenance', 'down']
     const idx = cycle.indexOf(machine.status)
     const nextStatus = cycle[(idx + 1) % cycle.length]
-    setMachines(prev => prev.map(m => m.id === machine.id ? { ...m, status: nextStatus, currentLoad: nextStatus === 'available' || nextStatus === 'down' || nextStatus === 'maintenance' ? 0 : m.currentLoad } : m))
+    try {
+      await fetch(`/api/manufacturing/${machine.id}?XTransformPort=3003`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: nextStatus, currentLoad: nextStatus === 'available' || nextStatus === 'down' || nextStatus === 'maintenance' ? 0 : machine.currentLoad }) })
+      setMachines(prev => prev.map(m => m.id === machine.id ? { ...m, status: nextStatus, currentLoad: nextStatus === 'available' || nextStatus === 'down' || nextStatus === 'maintenance' ? 0 : m.currentLoad } : m))
+    } catch { /* toast handled */ }
   }
 
   // Handle create order
-  const handleCreateOrder = () => {
+  const handleCreateOrder = async () => {
+    if (!activeCompanyId) return
+    try {
+      const orderNum = `MO-${new Date().getFullYear()}-${String(orders.length + 1).padStart(3, '0')}`
+      const res = await fetch('/api/manufacturing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ companyId: activeCompanyId, orderNumber: orderNum, productName: orderForm.productName, quantityOrdered: orderForm.quantity, status: 'draft', priority: orderForm.priority, startDate: orderForm.startDate, endDate: orderForm.endDate, notes: orderForm.notes, bomComponents: JSON.stringify(DEFAULT_BOM_COMPONENTS) }) })
+      if (res.ok) {
+        const newOrder = await res.json()
+        setOrders(prev => [...prev, { ...newOrder, bomComponents: JSON.parse(newOrder.bomComponents || '[]') }])
+        toast({ title: t('production.newOrder'), description: t('common.created') })
+      }
+    } catch { toast({ title: 'Error', description: t('common.error'), variant: 'destructive' }) }
     setOrderDialogOpen(false)
     setOrderForm({ productName: '', quantity: 100, startDate: '', endDate: '', priority: 'normal', notes: '' })
   }
 
   // Handle order status change
-  const handleOrderStatusChange = (order: ProductionOrder, newStatus: ProductionOrder['status']) => {
-    void order
-    void newStatus
+  const handleOrderStatusChange = async (order: ProductionOrder, newStatus: ProductionOrder['status']) => {
+    try {
+      const res = await fetch(`/api/manufacturing/${order.id}?XTransformPort=3003`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus, progress: newStatus === 'completed' ? 100 : order.progress }) })
+      if (res.ok) {
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: newStatus, progress: newStatus === 'completed' ? 100 : o.progress } : o))
+        toast({ title: t('common.status'), description: t('common.updated') })
+      }
+    } catch { toast({ title: 'Error', description: t('common.error'), variant: 'destructive' }) }
   }
 
   // Handle add machine
-  const handleAddMachine = () => {
+  const handleAddMachine = async () => {
+    if (!activeCompanyId) return
+    try {
+      const res = await fetch('/api/manufacturing?XTransformPort=3003', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ companyId: activeCompanyId, name: machineForm.name, type: machineForm.type, location: machineForm.location, capacityPerHour: machineForm.capacityPerHour }) })
+      if (res.ok) {
+        const newM = await res.json()
+        setMachines(prev => [...prev, { ...newM, downtimeLog: [] }])
+        toast({ title: t('production.addMachine'), description: t('common.created') })
+ }
+    } catch { toast({ title: 'Error', description: t('common.error'), variant: 'destructive' }) }
     setMachineDialogOpen(false)
     setMachineForm({ name: '', type: 'CNC', location: '', capacityPerHour: 50 })
   }

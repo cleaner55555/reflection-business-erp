@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,17 +38,6 @@ interface DockAppointment {
   handlingInstructions: string
 }
 
-const INITIAL_DATA: DockAppointment[] = [
-  { id: '1', dockNumber: 'R-01', dockType: 'unloading', vehiclePlate: 'BG-123-AB', driverName: 'Marko Petrović', companyName: 'Distributerija d.o.o.', appointmentDate: '2024-06-15', scheduledTime: '06:00', actualStart: '06:15', actualEnd: '07:45', status: 'completed', cargoType: 'Elektronika', cargoWeight: 5200, cargoUnit: 'kg', palletCount: 24, priority: 'normal', notes: '', doorAssignment: 'Vrata 1', handlingInstructions: 'Pažljivo, lomljivo' },
-  { id: '2', dockNumber: 'R-02', dockType: 'loading', vehiclePlate: 'NS-456-CD', driverName: 'Jovan Stanković', companyName: 'EksportLog', appointmentDate: '2024-06-15', scheduledTime: '08:00', actualStart: '08:00', actualEnd: null, status: 'in_progress', cargoType: 'Tekstil', cargoWeight: 3800, cargoUnit: 'kg', palletCount: 18, priority: 'normal', notes: '', doorAssignment: 'Vrata 2', handlingInstructions: 'Standardno' },
-  { id: '3', dockNumber: 'R-03', dockType: 'unloading', vehiclePlate: 'BG-789-EF', driverName: 'Slobodan Nikolić', companyName: 'FreshFoods', appointmentDate: '2024-06-15', scheduledTime: '09:30', actualStart: null, actualEnd: null, status: 'checked_in', cargoType: 'Hrana', cargoWeight: 8500, cargoUnit: 'kg', palletCount: 42, priority: 'urgent', notes: 'Hlađeni teret - -18°C', doorAssignment: 'Vrata 3 (hlađeno)', handlingInstructions: 'Lanac hladnjače obavezan' },
-  { id: '4', dockNumber: 'R-04', dockType: 'both', vehiclePlate: 'KG-321-GH', driverName: 'Dragan Milić', companyName: 'AutoParts RS', appointmentDate: '2024-06-15', scheduledTime: '11:00', actualStart: null, actualEnd: null, status: 'scheduled', cargoType: 'Auto delovi', cargoWeight: 6200, cargoUnit: 'kg', palletCount: 30, priority: 'normal', notes: '', doorAssignment: 'Vrata 4', handlingInstructions: 'Utovar i istovar - prvo istovar povratne robe' },
-  { id: '5', dockNumber: 'R-01', dockType: 'loading', vehiclePlate: 'SUB-654-IJ', driverName: 'Predrag Tomić', companyName: 'PharmaExpress', appointmentDate: '2024-06-15', scheduledTime: '13:00', actualStart: null, actualEnd: null, status: 'scheduled', cargoType: 'Lekovi', cargoWeight: 1200, cargoUnit: 'kg', palletCount: 8, priority: 'urgent', notes: 'Temperaturno kontrolisano', doorAssignment: 'Vrata 1 ( nakon čišćenja)', handlingInstructions: 'Temperatura 2-8°C' },
-  { id: '6', dockNumber: 'R-02', dockType: 'unloading', vehiclePlate: 'NI-987-KL', driverName: 'Nebojša Jovanović', companyName: 'BuildMat', appointmentDate: '2024-06-15', scheduledTime: '10:00', actualStart: null, actualEnd: null, status: 'no_show', cargoType: 'Građevinski materijal', cargoWeight: 15000, cargoUnit: 'kg', palletCount: 60, priority: 'low', notes: 'Vozač nije došao', doorAssignment: 'Vrata 2', handlingInstructions: 'Teška roba - potrebna viljuškar' },
-  { id: '7', dockNumber: 'R-03', dockType: 'unloading', vehiclePlate: 'CZ-147-MN', driverName: 'Goran Đorđević', companyName: 'AgroSupply', appointmentDate: '2024-06-16', scheduledTime: '07:00', actualStart: null, actualEnd: null, status: 'scheduled', cargoType: 'Poljoprivredna oprema', cargoWeight: 9800, cargoUnit: 'kg', palletCount: 35, priority: 'normal', notes: '', doorAssignment: 'Vrata 3', handlingInstructions: 'Velike palete - širina 120cm' },
-  { id: '8', dockNumber: 'R-04', dockType: 'loading', vehiclePlate: 'BG-258-OP', driverName: 'Milan Stojanović', companyName: 'RetailChain', appointmentDate: '2024-06-16', scheduledTime: '09:00', actualStart: null, actualEnd: null, status: 'scheduled', cargoType: 'Mješovita roba', cargoWeight: 7200, cargoUnit: 'kg', palletCount: 36, priority: 'normal', notes: '', doorAssignment: 'Vrata 4', handlingInstructions: 'Razvrstavanje po zonama' },
-]
-
 const STATUSES: Record<string, { color: string; label: string }> = {
   scheduled: { color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', label: 'Zakazano' },
   checked_in: { color: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300', label: 'Prijavljen' },
@@ -80,7 +69,7 @@ function getPriorityBadge(p: string) {
 }
 
 export function LoadingDock() {
-  const [data, setData] = useState<DockAppointment[]>(INITIAL_DATA)
+  const [data, setData] = useState<DockAppointment[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -91,7 +80,18 @@ export function LoadingDock() {
   const [activeTab, setActiveTab] = useState('schedule')
   const [formData, setFormData] = useState({ dockNumber: '', dockType: 'unloading' as DockAppointment['dockType'], vehiclePlate: '', driverName: '', companyName: '', appointmentDate: '', scheduledTime: '', cargoType: '', cargoWeight: 0, palletCount: 0, priority: 'normal' as DockAppointment['priority'], doorAssignment: '', handlingInstructions: '', notes: '' })
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/loading-docks')
+      if (!res.ok) throw new Error()
+      const json = await res.json()
+      setData(json)
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
 
   const filtered = useMemo(() => data.filter(item => {
     const matchSearch = !search || item.vehiclePlate.toLowerCase().includes(search.toLowerCase()) || item.driverName.toLowerCase().includes(search.toLowerCase()) || item.companyName.toLowerCase().includes(search.toLowerCase())
@@ -119,37 +119,72 @@ export function LoadingDock() {
     })
   }, [data])
 
-  const handleStatusChange = (id: string, newStatus: DockAppointment['status']) => {
-    setData(prev => prev.map(d => d.id === id ? { ...d, status: newStatus, actualStart: (newStatus === 'in_progress' && !d.actualStart) ? new Date().toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' }) : d.actualStart, actualEnd: newStatus === 'completed' ? new Date().toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' }) : null } : d))
-    toast.success(`Status: ${STATUSES[newStatus]?.label}`)
-  }
+  const handleStatusChange = useCallback(async (id: string, newStatus: DockAppointment['status']) => {
+    const item = data.find(d => d.id === id)
+    if (!item) return
+    const now = new Date().toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })
+    const actualStart = (newStatus === 'in_progress' && !item.actualStart) ? now : item.actualStart
+    const actualEnd = newStatus === 'completed' ? now : null
+    try {
+      const res = await fetch(`/api/loading-docks/${id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, actualStart, actualEnd }),
+      })
+      if (!res.ok) throw new Error()
+      const updated = await res.json()
+      setData(prev => prev.map(d => d.id === id ? { ...d, ...updated } : d))
+      toast.success(`Status: ${STATUSES[newStatus]?.label}`)
+    } catch { toast.error('Greška pri promeni statusa') }
+  }, [data])
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati termin?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Termin obrisan') }
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm('Obrisati termin?')) return
+    try {
+      const res = await fetch(`/api/loading-docks/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Termin obrisan')
+    } catch { toast.error('Greška pri brisanju') }
+  }, [])
 
-  const handleOpenCreate = () => {
+  const handleOpenCreate = useCallback(() => {
     setFormData({ dockNumber: '', dockType: 'unloading', vehiclePlate: '', driverName: '', companyName: '', appointmentDate: '', scheduledTime: '', cargoType: '', cargoWeight: 0, palletCount: 0, priority: 'normal', doorAssignment: '', handlingInstructions: '', notes: '' })
+    setEditItem(null)
     setDialogOpen(true)
-  }
+  }, [])
 
-  const handleOpenEdit = (item: DockAppointment) => {
+  const handleOpenEdit = useCallback((item: DockAppointment) => {
     setFormData({ dockNumber: item.dockNumber, dockType: item.dockType, vehiclePlate: item.vehiclePlate, driverName: item.driverName, companyName: item.companyName, appointmentDate: item.appointmentDate, scheduledTime: item.scheduledTime, cargoType: item.cargoType, cargoWeight: item.cargoWeight, palletCount: item.palletCount, priority: item.priority, doorAssignment: item.doorAssignment, handlingInstructions: item.handlingInstructions, notes: item.notes })
     setEditItem(item)
     setDialogOpen(true)
-  }
+  }, [])
 
-  const handleSave = () => {
+  const handleSave = useCallback(async () => {
     if (!formData.vehiclePlate || !formData.driverName || !formData.companyName || !formData.scheduledTime) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) {
-      setData(prev => prev.map(d => d.id === editItem.id ? { ...d, ...formData } : d))
-      toast.success('Termin ažuriran')
-    } else {
-      const newItem: DockAppointment = { ...formData, id: String(Date.now()), status: 'scheduled', cargoUnit: 'kg', actualStart: null, actualEnd: null }
-      setData(prev => [newItem, ...prev])
-      toast.success('Novi termin kreiran')
-    }
-    setDialogOpen(false)
-    setEditItem(null)
-  }
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/loading-docks/${editItem.id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+        if (!res.ok) throw new Error()
+        const updated = await res.json()
+        setData(prev => prev.map(d => d.id === editItem.id ? updated : d))
+        toast.success('Termin ažuriran')
+      } else {
+        const res = await fetch('/api/loading-docks', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+        if (!res.ok) throw new Error()
+        const created = await res.json()
+        setData(prev => [created, ...prev])
+        toast.success('Novi termin kreiran')
+      }
+      setDialogOpen(false)
+      setEditItem(null)
+    } catch { toast.error('Greška pri čuvanju') }
+  }, [formData, editItem])
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
 

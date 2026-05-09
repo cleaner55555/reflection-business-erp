@@ -26,7 +26,7 @@ interface BackupRecord {
   duration: string
   location: string
   createdAt: string
-  expiresAt: string
+  expiresAt: string | null
   autoDelete: boolean
   encrypted: boolean
 }
@@ -42,23 +42,6 @@ interface BackupSchedule {
   nextRun: string | null
   active: boolean
 }
-
-// ==================== DATA ====================
-
-const INITIAL_BACKUPS: BackupRecord[] = [
-  { id: '1', name: 'Full Backup — 15 Jun 2024', type: 'full', status: 'completed', size: '245 MB', duration: '4m 32s', location: 'Local + Cloud', createdAt: '2024-06-15T02:00:00', expiresAt: '2024-09-15T02:00:00', autoDelete: true, encrypted: true },
-  { id: '2', name: 'Incremental — 14 Jun 2024', type: 'incremental', status: 'completed', size: '12 MB', duration: '0m 45s', location: 'Local', createdAt: '2024-06-14T02:00:00', expiresAt: '2024-08-14T02:00:00', autoDelete: true, encrypted: true },
-  { id: '3', name: 'Full Backup — 10 Jun 2024', type: 'full', status: 'completed', size: '238 MB', duration: '4m 18s', location: 'Local + Cloud', createdAt: '2024-06-10T02:00:00', expiresAt: '2024-09-10T02:00:00', autoDelete: true, encrypted: true },
-  { id: '4', name: 'Snapshot — Pre-migration', type: 'snapshot', status: 'completed', size: '231 MB', duration: '0m 12s', location: 'Local', createdAt: '2024-06-08T14:30:00', expiresAt: '2024-12-08T14:30:00', autoDelete: false, encrypted: true },
-  { id: '5', name: 'Incremental — 13 Jun 2024', type: 'incremental', status: 'failed', size: '—', duration: '2m 05s', location: 'Cloud', createdAt: '2024-06-13T02:00:00', expiresAt: '2024-08-13T02:00:00', autoDelete: true, encrypted: true },
-  { id: '6', name: 'Full Backup — 01 Jun 2024', type: 'full', status: 'completed', size: '220 MB', duration: '3m 55s', location: 'Local + Cloud', createdAt: '2024-06-01T02:00:00', expiresAt: '2024-09-01T02:00:00', autoDelete: true, encrypted: true },
-]
-
-const INITIAL_SCHEDULES: BackupSchedule[] = [
-  { id: '1', name: 'Dnevni backup', frequency: 'daily', time: '02:00', type: 'incremental', retentionDays: 30, lastRun: '2024-06-15T02:00:00', nextRun: '2024-06-16T02:00:00', active: true },
-  { id: '2', name: 'Nedeljni full backup', frequency: 'weekly', time: '03:00', type: 'full', retentionDays: 90, lastRun: '2024-06-10T02:00:00', nextRun: '2024-06-17T03:00:00', active: true },
-  { id: '3', name: 'Mesečni arhivski backup', frequency: 'monthly', time: '01:00', type: 'full', retentionDays: 365, lastRun: '2024-06-01T01:00:00', nextRun: '2024-07-01T01:00:00', active: true },
-]
 
 // ==================== HELPERS ====================
 
@@ -97,10 +80,32 @@ export function Backup() {
   const [typeFilter, setTypeFilter] = useState('')
   const [backupInProgress, setBackupInProgress] = useState(false)
 
-  useEffect(() => {
-    setLoading(true)
-    setTimeout(() => { setBackups(INITIAL_BACKUPS); setSchedules(INITIAL_SCHEDULES); setLoading(false) }, 300)
+  const fetchBackups = useCallback(async () => {
+    try {
+      const params = new URLSearchParams()
+      if (typeFilter) params.set('type', typeFilter)
+      if (search) params.set('search', search)
+      const res = await fetch(`/api/backups?${params.toString()}`)
+      if (res.ok) {
+        const data = await res.json()
+        setBackups(data)
+      }
+    } catch { /* ignore */ }
+  }, [search, typeFilter])
+
+  const fetchSchedules = useCallback(async () => {
+    try {
+      const res = await fetch('/api/backups/schedules')
+      if (res.ok) {
+        const data = await res.json()
+        setSchedules(data)
+      }
+    } catch { /* ignore */ }
   }, [])
+
+  useEffect(() => {
+    Promise.all([fetchBackups(), fetchSchedules()]).finally(() => setLoading(false))
+  }, [fetchBackups, fetchSchedules])
 
   const stats = {
     total: backups.length,
@@ -111,25 +116,37 @@ export function Backup() {
     activeSchedules: schedules.filter(s => s.active).length,
   }
 
-  const filtered = backups.filter(b => {
-    const matchSearch = !search || b.name.toLowerCase().includes(search.toLowerCase())
-    const matchType = !typeFilter || b.type === typeFilter
-    return matchSearch && matchType
-  })
+  const filtered = backups
 
-  const handleCreateBackup = () => {
+  const handleCreateBackup = async () => {
     setBackupInProgress(true)
     toast.info('Backup započet...')
-    setTimeout(() => {
-      const newBackup: BackupRecord = {
-        id: `bak-${Date.now()}`, name: `Manual Backup — ${new Date().toLocaleDateString('sr-RS')}`, type: 'full', status: 'completed',
-        size: `${(Math.floor(Math.random() * 50) + 220)} MB`, duration: `${Math.floor(Math.random() * 3) + 3}m ${Math.floor(Math.random() * 50) + 10}s`,
-        location: 'Local', createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 90 * 86400000).toISOString(), autoDelete: true, encrypted: true
+    try {
+      const res = await fetch('/api/backups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `Manual Backup — ${new Date().toLocaleDateString('sr-RS')}`,
+          type: 'full',
+          status: 'completed',
+          size: `${(Math.floor(Math.random() * 50) + 220)} MB`,
+          duration: `${Math.floor(Math.random() * 3) + 3}m ${Math.floor(Math.random() * 50) + 10}s`,
+          location: 'Local',
+          expiresAt: new Date(Date.now() + 90 * 86400000).toISOString(),
+          autoDelete: true,
+          encrypted: true,
+        }),
+      })
+      if (res.ok) {
+        await fetchBackups()
+        toast.success('Backup uspešno kreiran!')
+      } else {
+        toast.error('Greška pri kreiranju backup-a')
       }
-      setBackups(prev => [newBackup, ...prev])
-      setBackupInProgress(false)
-      toast.success('Backup uspešno kreiran!')
-    }, 3000)
+    } catch {
+      toast.error('Greška pri kreiranju backup-a')
+    }
+    setBackupInProgress(false)
   }
 
   const handleRestore = (id: string) => {
@@ -138,15 +155,37 @@ export function Backup() {
     setTimeout(() => toast.success('Restauracija uspešna!'), 2000)
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Obrisati backup?')) return
-    setBackups(prev => prev.filter(b => b.id !== id))
-    toast.success('Backup obrisan')
+    try {
+      const res = await fetch(`/api/backups/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setBackups(prev => prev.filter(b => b.id !== id))
+        toast.success('Backup obrisan')
+      } else {
+        toast.error('Greška pri brisanju')
+      }
+    } catch {
+      toast.error('Greška pri brisanju')
+    }
   }
 
-  const toggleSchedule = (id: string) => {
-    setSchedules(prev => prev.map(s => s.id === id ? { ...s, active: !s.active } : s))
-    toast.success('Raspored ažuriran')
+  const toggleSchedule = async (id: string) => {
+    const sched = schedules.find(s => s.id === id)
+    if (!sched) return
+    try {
+      const res = await fetch(`/api/backups/schedules/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !sched.active }),
+      })
+      if (res.ok) {
+        setSchedules(prev => prev.map(s => s.id === id ? { ...s, active: !s.active } : s))
+        toast.success('Raspored ažuriran')
+      }
+    } catch {
+      toast.error('Greška pri ažuriranju rasporeda')
+    }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-48" /><div className="grid grid-cols-2 lg:grid-cols-3 gap-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div></div>
@@ -217,7 +256,7 @@ export function Backup() {
                       <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                         <span>{getFreqLabel(s.frequency)}</span><span>·</span><span>{s.time}</span><span>·</span><span>{getTypeBadge(s.type)}</span><span>·</span><span>Zadržavanje: {s.retentionDays} дана</span>
                       </div>
-                      {s.lastRun && <p className="text-xs text-muted-foreground">Poslednje: {formatDateTime(s.lastRun)} · Sledeće: {formatDateTime(s.nextRun!)}</p>}
+                      {s.lastRun && <p className="text-xs text-muted-foreground">Poslednje: {formatDateTime(s.lastRun)} · Sledeće: {s.nextRun ? formatDateTime(s.nextRun) : '—'}</p>}
                     </div>
                     <Button variant="outline" size="sm" onClick={() => toggleSchedule(s.id)}>{s.active ? 'Паузирај' : 'Активирај'}</Button>
                   </div>

@@ -25,17 +25,6 @@ interface BarcodeItem {
   createdAt: string
 }
 
-const INITIAL_ITEMS: BarcodeItem[] = [
-  { id: '1', code: '8601234567890', type: 'EAN13', productName: 'Hleb beli 500g', productId: 'prod-001', category: 'Hrana', createdAt: '2024-06-01T10:00:00' },
-  { id: '2', code: '8609876543210', type: 'EAN13', productName: 'Mleko 1L', productId: 'prod-002', category: 'Piće', createdAt: '2024-06-01T10:05:00' },
-  { id: '3', code: '8601112223334', type: 'EAN13', productName: 'Kafa zrna 250g', productId: 'prod-003', category: 'Hrana', createdAt: '2024-06-02T09:00:00' },
-  { id: '4', code: '8605556667778', type: 'EAN13', productName: 'Šećer 1kg', productId: 'prod-004', category: 'Hrana', createdAt: '2024-06-03T11:00:00' },
-  { id: '5', code: 'QR-INV-001', type: 'QR', productName: 'Faktura F-2024-0234', productId: 'inv-234', category: 'Fakture', createdAt: '2024-06-10T14:00:00' },
-  { id: '6', code: 'CODE128-001', type: 'CODE128', productName: 'Paket — dokumenta', productId: 'pkg-001', category: 'Logistika', createdAt: '2024-06-12T08:00:00' },
-  { id: '7', code: '8607778889990', type: 'EAN8', productName: 'Cokolada 100g', productId: 'prod-015', category: 'Hrana', createdAt: '2024-06-13T16:00:00' },
-  { id: '8', code: '8602223334445', type: 'EAN13', productName: 'Ulje 1L', productId: 'prod-008', category: 'Hrana', createdAt: '2024-06-14T10:30:00' },
-]
-
 function getTypeBadge(type: string) {
   const map: Record<string, { color: string; label: string }> = {
     EAN13: { color: 'bg-blue-100 text-blue-800', label: 'EAN-13' },
@@ -61,7 +50,18 @@ export function Barcode() {
   const [printMode, setPrintMode] = useState(false)
   const [selectedForPrint, setSelectedForPrint] = useState<Set<string>>(new Set())
 
-  useEffect(() => { setLoading(true); setTimeout(() => { setItems(INITIAL_ITEMS); setLoading(false) }, 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/barcode-items')
+      if (!res.ok) throw new Error()
+      const json = await res.json()
+      setItems(json)
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
 
   const categories = [...new Set(items.map(i => i.category))]
 
@@ -72,34 +72,46 @@ export function Barcode() {
     return matchSearch && matchType && matchCat
   })
 
-  const handleScan = () => {
+  const handleScan = useCallback(() => {
     if (!scanInput) return
     const found = items.find(i => i.code === scanInput)
     if (found) { toast.success(`Pronađeno: ${found.productName}`, { description: found.code }) }
     else { toast.error('Barkod nije pronađen', { description: scanInput }) }
     setScanInput('')
-  }
+  }, [scanInput, items])
 
-  const handleNew = () => { setEditing(null); setFormData({ code: '', type: 'EAN13', productName: '', productId: '', category: '' }); setDialogOpen(true) }
-  const handleEdit = (item: BarcodeItem) => { setEditing(item); setFormData({ code: item.code, type: item.type, productName: item.productName, productId: item.productId, category: item.category }); setDialogOpen(true) }
+  const handleNew = useCallback(() => { setEditing(null); setFormData({ code: '', type: 'EAN13', productName: '', productId: '', category: '' }); setDialogOpen(true) }, [])
 
-  const handleSave = () => {
+  const handleEdit = useCallback((item: BarcodeItem) => { setEditing(item); setFormData({ code: item.code, type: item.type, productName: item.productName, productId: item.productId, category: item.category }); setDialogOpen(true) }, [])
+
+  const handleSave = useCallback(async () => {
     if (!formData.code || !formData.productName) { toast.error('Popunite sva polja'); return }
-    if (editing) {
-      setItems(prev => prev.map(i => i.id === editing.id ? { ...i, ...formData } : i))
-      toast.success('Barkod ažuriran')
-    } else {
-      setItems(prev => [{ id: `bc-${Date.now()}`, ...formData, createdAt: new Date().toISOString() }, ...prev])
-      toast.success('Barkod kreiran')
-    }
-    setDialogOpen(false)
-  }
+    try {
+      if (editing) {
+        const res = await fetch(`/api/barcode-items/${editing.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
+        if (!res.ok) throw new Error()
+        const updated = await res.json()
+        setItems(prev => prev.map(i => i.id === editing.id ? updated : i))
+        toast.success('Barkod ažuriran')
+      } else {
+        const res = await fetch('/api/barcode-items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
+        if (!res.ok) throw new Error()
+        const created = await res.json()
+        setItems(prev => [created, ...prev])
+        toast.success('Barkod kreiran')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
+  }, [formData, editing])
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Obrisati barkod?')) return
-    setItems(prev => prev.filter(i => i.id !== id))
-    toast.success('Barkod obrisan')
-  }
+    try {
+      await fetch(`/api/barcode-items/${id}`, { method: 'DELETE' })
+      setItems(prev => prev.filter(i => i.id !== id))
+      toast.success('Barkod obrisan')
+    } catch { toast.error('Greška pri brisanju') }
+  }, [])
 
   const togglePrint = (id: string) => {
     const next = new Set(selectedForPrint)

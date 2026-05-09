@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, Pill, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Pill, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -32,17 +32,6 @@ type Prescription = {
   notes: string
 }
 
-const INITIAL: Prescription[] = [
-  { id: '1', prescriptionNo: 'REC-2024-001', patientName: 'Luka Petrović', doctor: 'Dr. Jelena Marković', date: '2024-06-10', status: 'active', type: 'reimbursable', medications: [{ name: 'Metformin 1000mg', dosage: '1000mg', frequency: '2x dnevno', duration: '90 dana', quantity: '180 tableta' }, { name: 'Vitamin D3 2000IU', dosage: '2000IU', frequency: '1x dnevno', duration: '90 dana', quantity: '90 kapsula' }], diagnosis: 'E11 — Dijabetes tip 2', totalCost: 3200, patientShare: 640, insuranceCoverage: 2560, pharmacy: 'Apoteka "Lek"', validUntil: '2024-07-10', notes: 'Reemburzibilni recept — 80% pokriće' },
-  { id: '2', prescriptionNo: 'REC-2024-002', patientName: 'Ana Stanković', doctor: 'Dr. Dragan Milić', date: '2024-06-14', status: 'active', type: 'reimbursable', medications: [{ name: 'Amoksicilin/Clav 875/125mg', dosage: '875/125mg', frequency: '3x dnevno', duration: '10 dana', quantity: '30 tableta' }, { name: 'Paracetamol 500mg', dosage: '500mg', frequency: '3x dnevno po potrebi', duration: '10 dana', quantity: '30 tableta' }], diagnosis: 'J18.0 — Pneumonija', totalCost: 1850, patientShare: 370, insuranceCoverage: 1480, pharmacy: '', validUntil: '2024-07-14', notes: '' },
-  { id: '3', prescriptionNo: 'REC-2024-003', patientName: 'Nikola Milić', doctor: 'Dr. Snežana Đorđević', date: '2024-06-15', status: 'active', type: 'special', medications: [{ name: 'Nifedipin 10mg', dosage: '10mg sublingvalno', frequency: 'Hitno', duration: 'Jednokratno', quantity: '1 tableta' }, { name: 'Kaptopril 25mg', dosage: '25mg', frequency: '2x dnevno', duration: 'Neprekidno', quantity: '60 tableta' }], diagnosis: 'I10 — Hipertenzivna kriza', totalCost: 950, patientShare: 950, insuranceCoverage: 0, pharmacy: 'Bolnička apoteka', validUntil: '2024-06-22', notes: 'Hitni recept — hospitalizacija' },
-  { id: '4', prescriptionNo: 'REC-2024-004', patientName: 'Gordana Đorđević', doctor: 'Dr. Jelena Marković', date: '2024-06-13', status: 'completed', type: 'reimbursable', medications: [{ name: 'Atorvastatin 20mg', dosage: '20mg', frequency: '1x dnevno (veče)', duration: '90 dana', quantity: '90 tableta' }, { name: 'Omega-3 1000mg', dosage: '1000mg', frequency: '1x dnevno', duration: '90 dana', quantity: '90 kapsula' }], diagnosis: 'E78.5 — Hiperholesterolemija', totalCost: 4100, patientShare: 820, insuranceCoverage: 3280, pharmacy: 'Apoteka "Zdravlje"', validUntil: '2024-07-13', notes: 'Realizovan 13.06.' },
-  { id: '5', prescriptionNo: 'REC-2024-005', patientName: 'Mira Stojanović', doctor: 'Dr. Goran Savić', date: '2024-06-12', status: 'active', type: 'reimbursable', medications: [{ name: 'Metformin 850mg', dosage: '850mg', frequency: '2x dnevno', duration: '90 dana', quantity: '180 tableta' }, { name: 'Insulin Glargin 100IU/mL', dosage: '24U', frequency: '1x dnevno (veče)', duration: '90 dana', quantity: '3 olovke x 3mL' }, { name: 'Ramipril 10mg', dosage: '10mg', frequency: '1x dnevno', duration: '90 dana', quantity: '90 tableta' }, { name: 'Amlodipin 5mg', dosage: '5mg', frequency: '1x dnevno', duration: '90 dana', quantity: '90 tableta' }, { name: 'Atorvastatin 10mg', dosage: '10mg', frequency: '1x dnevno', duration: '90 dana', quantity: '90 tableta' }], diagnosis: 'E11 + I10 — Dijabetes + Hipertenzija', totalCost: 18500, patientShare: 3700, insuranceCoverage: 14800, pharmacy: '', validUntil: '2024-07-12', notes: 'Politerapija — 5 lekova' },
-  { id: '6', prescriptionNo: 'REC-2024-006', patientName: 'Stefan Ilić', doctor: 'Dr. Dragan Milić', date: '2024-06-08', status: 'completed', type: 'private', medications: [{ name: 'Paracetamol 500mg', dosage: '500mg', frequency: 'Po potrebi (max 4x/dan)', duration: '14 dana', quantity: '28 tableta' }, { name: 'Vitamin C 1000mg', dosage: '1000mg', frequency: '1x dnevno', duration: '30 dana', quantity: '30 tableta' }], diagnosis: 'B27.9 — Mononukleoza (otpust)', totalCost: 850, patientShare: 850, insuranceCoverage: 0, pharmacy: 'Apoteka "Lek"', validUntil: '2024-06-22', notes: 'Privatni recept — analgetik + suplement' },
-  { id: '7', prescriptionNo: 'REC-2024-007', patientName: 'Marko Jovanović', doctor: 'Dr. Ana Nikolić', date: '2024-06-05', status: 'expired', type: 'reimbursable', medications: [{ name: 'Salbutamol 100μg/inh', dosage: '200μg', frequency: 'Po potrebi', duration: 'Neprekidno', quantity: '1 inhalator' }, { name: 'Budesonid/Formoterol 160/4.5μg', dosage: '2 udisaja', frequency: '2x dnevno', duration: '90 dana', quantity: '1 inhalator' }], diagnosis: 'J45 — Astma', totalCost: 3200, patientShare: 640, insuranceCoverage: 2560, pharmacy: '', validUntil: '2024-06-20', notes: 'Nije realizovan — istekao rok' },
-  { id: '8', prescriptionNo: 'REC-2024-008', patientName: 'Milan Marković', doctor: 'Dr. Ana Nikolić', date: '2024-06-05', status: 'active', type: 'narcotic', medications: [{ name: 'Morfijum 10mg/ml amp.', dosage: '10mg', frequency: 'Po potrebi (max 4x/dan)', duration: '14 dana', quantity: '10 ampula' }], diagnosis: 'J44.1 — KOPB (simptomatska terapija)', totalCost: 450, patientShare: 90, insuranceCoverage: 360, pharmacy: '', validUntil: '2024-06-19', notes: 'Recept na posebnom obrascu — narkotik' },
-]
-
 const STATUSES: Record<string, { color: string; label: string }> = {
   active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' },
   completed: { color: 'bg-blue-100 text-blue-800', label: 'Realizovan' },
@@ -62,8 +51,9 @@ function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge classNa
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
 export function Prescriptions() {
-  const [data, setData] = useState<Prescription[]>(INITIAL)
+  const [data, setData] = useState<Prescription[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -72,15 +62,40 @@ export function Prescriptions() {
   const [form, setForm] = useState<Partial<Prescription>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (search) params.set('search', search)
+      if (statusFilter) params.set('status', statusFilter)
+      const res = await fetch(`/api/prescriptions?${params.toString()}`)
+      if (!res.ok) throw new Error('Greška pri učitavanju')
+      const json = await res.json()
+      setData(json)
+    } catch (err) {
+      console.error(err)
+      toast.error('Greška pri učitavanju recepata')
+    } finally {
+      setLoading(false)
+    }
+  }, [search, statusFilter])
 
-  const filtered = data.filter(item => {
-    const matchSearch = !search || [item.prescriptionNo, item.patientName, item.doctor, item.diagnosis].some(v => v.toLowerCase().includes(search.toLowerCase()))
-    const matchStatus = !statusFilter || item.status === statusFilter
-    return matchSearch && matchStatus
-  })
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati recept?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Recept obrisan') }
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati recept?')) return
+    try {
+      const res = await fetch(`/api/prescriptions/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Greška pri brisanju')
+      toast.success('Recept obrisan')
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      toast.error('Greška pri brisanju recepta')
+    }
+  }
 
   const openCreate = () => {
     setEditItem(null)
@@ -90,11 +105,27 @@ export function Prescriptions() {
 
   const openEdit = (item: Prescription) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.patientName || !form.doctor) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Prescription : i)); toast.success('Recept ažuriran') }
-    else { setData(prev => [{ id: Date.now().toString(), ...form } as Prescription, ...prev]); toast.success('Recept kreiran') }
-    setDialogOpen(false)
+    try {
+      setSaving(true)
+      if (editItem) {
+        const res = await fetch(`/api/prescriptions/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        if (!res.ok) throw new Error('Greška pri ažuriranju')
+        toast.success('Recept ažuriran')
+      } else {
+        const res = await fetch('/api/prescriptions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        if (!res.ok) throw new Error('Greška pri kreiranju')
+        toast.success('Recept kreiran')
+      }
+      setDialogOpen(false)
+      fetchData()
+    } catch (err) {
+      console.error(err)
+      toast.error(editItem ? 'Greška pri ažuriranju recepta' : 'Greška pri kreiranju recepta')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
@@ -136,7 +167,7 @@ export function Prescriptions() {
                 <Table>
                   <TableHeader><TableRow><TableHead className="text-xs">Br. recepta</TableHead><TableHead className="text-xs">Pacijent</TableHead><TableHead className="text-xs hidden sm:table-cell">Lekar</TableHead><TableHead className="text-xs hidden md:table-cell">Lekovi</TableHead><TableHead className="text-xs hidden lg:table-cell">Vrednost</TableHead><TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema recepata</TableCell></TableRow> : filtered.map(item => (
+                    {data.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema recepata</TableCell></TableRow> : data.map(item => (
                       <TableRow key={item.id}>
                         <TableCell className="text-xs font-mono">{item.prescriptionNo}</TableCell>
                         <TableCell className="text-xs font-medium">{item.patientName}</TableCell>
@@ -177,7 +208,7 @@ export function Prescriptions() {
                   <div className="grid gap-2"><Label className="text-xs">Ukupna vrednost (RSD)</Label><Input className="text-xs" type="number" value={form.totalCost || ''} onChange={e => setForm({ ...form, totalCost: Number(e.target.value) })} /></div>
                   <div className="grid gap-2"><Label className="text-xs">Učešće pacijenta (RSD)</Label><Input className="text-xs" type="number" value={form.patientShare || ''} onChange={e => setForm({ ...form, patientShare: Number(e.target.value), insuranceCoverage: (form.totalCost || 0) - Number(e.target.value) })} /></div>
                 </div>
-                <Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Kreiraj recept</Button>
+                <Button size="sm" className="w-fit gap-2" disabled={saving} onClick={handleSave}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}{saving ? 'Čuvanje...' : 'Kreiraj recept'}</Button>
               </div>
             </CardContent>
           </Card>
@@ -247,7 +278,7 @@ export function Prescriptions() {
             </div>
             <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Otkaži</Button><Button size="sm" disabled={saving} onClick={handleSave}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Sačuvaj</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

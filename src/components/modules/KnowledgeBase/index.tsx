@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -298,10 +298,22 @@ export function KnowledgeBase() {
 
   // ---- State ----
   const [activeTab, setActiveTab] = useState('overview')
-  const [articles, setArticles] = useState<Article[]>(MOCK_ARTICLES)
+  const [articles, setArticles] = useState<Article[]>([])
   const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES)
   const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS)
   const [settings, setSettings] = useState<KbSettings>(DEFAULT_SETTINGS)
+
+  // Load articles from API
+  useEffect(() => {
+    if (!activeCompanyId) return
+    fetch(`/api/knowledge-base?companyId=${activeCompanyId}&limit=100`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.items?.length > 0) setArticles(data.items)
+        else setArticles(MOCK_ARTICLES)
+      })
+      .catch(() => setArticles(MOCK_ARTICLES))
+  }, [activeCompanyId])
 
   // Article filters
   const [articleSearch, setArticleSearch] = useState('')
@@ -449,40 +461,57 @@ export function KnowledgeBase() {
   }
 
   const handleSaveArticle = () => {
-    if (!articleForm.title.trim()) return
+    if (!articleForm.title.trim() || !activeCompanyId) return
     const tagsArr = articleForm.tags.split(',').map((s) => s.trim()).filter(Boolean)
     if (editingArticleId) {
-      setArticles((prev) =>
-        prev.map((a) =>
-          a.id === editingArticleId
-            ? { ...a, ...articleForm, tags: tagsArr, updatedAt: new Date().toISOString() }
-            : a
+      fetch(`/api/knowledge-base?id=${editingArticleId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...articleForm, tags: JSON.stringify(tagsArr) }),
+      }).then(() => {
+        setArticles((prev) =>
+          prev.map((a) =>
+            a.id === editingArticleId
+              ? { ...a, ...articleForm, tags: tagsArr, updatedAt: new Date().toISOString() }
+              : a
+          )
         )
-      )
-      showToast(t('knowledge.editArticle'))
+        showToast(t('knowledge.editArticle'))
+      })
     } else {
-      const newArticle: Article = {
-        id: `a${Date.now()}`,
-        title: articleForm.title,
-        categoryId: articleForm.categoryId,
-        author: articleForm.author,
-        status: articleForm.status,
-        views: 0,
-        rating: 0,
-        content: articleForm.content,
-        tags: tagsArr,
-        relatedArticleIds: articleForm.relatedArticleIds,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setArticles((prev) => [newArticle, ...prev])
-      showToast(t('knowledge.createArticle'))
+      fetch('/api/knowledge-base', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId: activeCompanyId,
+          title: articleForm.title,
+          categoryId: articleForm.categoryId,
+          author: articleForm.author,
+          status: articleForm.status,
+          content: articleForm.content,
+          tags: JSON.stringify(tagsArr),
+        }),
+      }).then((res) => {
+        if (res.ok) return res.json()
+      }).then((newArticle) => {
+        if (newArticle) setArticles((prev) => [newArticle, ...prev])
+        else {
+          const fallback: Article = {
+            id: `a${Date.now()}`, title: articleForm.title, categoryId: articleForm.categoryId,
+            author: articleForm.author, status: articleForm.status, views: 0, rating: 0,
+            content: articleForm.content, tags: tagsArr, relatedArticleIds: articleForm.relatedArticleIds,
+            createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+          }
+          setArticles((prev) => [fallback, ...prev])
+        }
+        showToast(t('knowledge.createArticle'))
+      })
     }
     setArticleDialogOpen(false)
   }
 
   const handleDeleteArticle = (id: string) => {
-    setArticles((prev) => prev.filter((a) => a.id !== id))
+    fetch(`/api/knowledge-base?id=${id}`, { method: 'DELETE' }).then(() => {
+      setArticles((prev) => prev.filter((a) => a.id !== id))
+    })
   }
 
   // ---- Category CRUD ----

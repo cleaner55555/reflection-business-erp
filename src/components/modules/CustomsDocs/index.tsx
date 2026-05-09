@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,73 +42,6 @@ interface CustomsDocument {
   items: { hsCode: string; description: string; origin: string; quantity: number; unit: string; unitValue: number; totalValue: number; weight: number; dutyRate: number }[]
 }
 
-const INITIAL_DATA: CustomsDocument[] = [
-  {
-    id: '1', declarationNumber: 'CU-2024-00001', docType: 'import', status: 'cleared', country: 'Nemačka', borderCrossing: 'Šid',
-    declarantName: 'TehnoImport d.o.o.', declarantPIB: '100123456', goodsDescription: 'Elektronska oprema', hsCode: '8471.30',
-    totalValue: 45000, totalWeight: 1200, currency: 'EUR', customsValue: 54000, dutiesAmount: 2700, vatAmount: 10260, totalDues: 12960,
-    vehiclePlate: 'BG-111-AB', submissionDate: '2024-06-10', clearanceDate: '2024-06-12', referenceNumber: 'REF-DE-2024-001',
-    notes: 'Standardna uvozna carina',
-    items: [
-      { hsCode: '8471.30', description: 'Laptop računari', origin: 'DE', quantity: 50, unit: 'kom', unitValue: 600, totalValue: 30000, weight: 600, dutyRate: 0 },
-      { hsCode: '8517.62', description: 'Ruteri', origin: 'DE', quantity: 100, unit: 'kom', unitValue: 150, totalValue: 15000, weight: 600, dutyRate: 0 },
-    ]
-  },
-  {
-    id: '2', declarationNumber: 'CU-2024-00002', docType: 'export', status: 'submitted', country: 'Bosna i Hercegovina', borderCrossing: 'Šamac',
-    declarantName: 'EksportPro d.o.o.', declarantPIB: '100654321', goodsDescription: 'Tekstilne robe', hsCode: '6203.42',
-    totalValue: 28000, totalWeight: 3500, currency: 'EUR', customsValue: 28000, dutiesAmount: 0, vatAmount: 0, totalDues: 0,
-    vehiclePlate: 'BG-222-CD', submissionDate: '2024-06-14', clearanceDate: null, referenceNumber: 'REF-EX-2024-001',
-    notes: 'Eksport u BiH - preferencijalne tarife CEFTA',
-    items: [
-      { hsCode: '6203.42', description: 'Muške košulje', origin: 'RS', quantity: 500, unit: 'kom', unitValue: 35, totalValue: 17500, weight: 1500, dutyRate: 0 },
-      { hsCode: '6204.62', description: 'Ženske haljine', origin: 'RS', quantity: 300, unit: 'kom', unitValue: 35, totalValue: 10500, weight: 2000, dutyRate: 0 },
-    ]
-  },
-  {
-    id: '3', declarationNumber: 'CU-2024-00003', docType: 'import', status: 'processing', country: 'Kina', borderCrossing: 'Subotica (željeznička)',
-    declarantName: 'AsiaTrade d.o.o.', declarantPIB: '100789012', goodsDescription: 'Potrošačka elektronika', hsCode: '8516.71',
-    totalValue: 62000, totalWeight: 4800, currency: 'EUR', customsValue: 74400, dutiesAmount: 3720, vatAmount: 14136, totalDues: 17856,
-    vehiclePlate: 'N/A (željeznica)', submissionDate: '2024-06-13', clearanceDate: null, referenceNumber: 'REF-CN-2024-001',
-    notes: 'Kontrola kvaliteta - uzorak uzet. Čeka se laboratorijski izveštaj.',
-    items: [
-      { hsCode: '8516.71', description: 'Grejači', origin: 'CN', quantity: 2000, unit: 'kom', unitValue: 25, totalValue: 50000, weight: 3000, dutyRate: 5 },
-      { hsCode: '8516.79', description: 'Aparati za kafu', origin: 'CN', quantity: 500, unit: 'kom', unitValue: 24, totalValue: 12000, weight: 1800, dutyRate: 5 },
-    ]
-  },
-  {
-    id: '4', declarationNumber: 'CU-2024-00004', docType: 'transit', status: 'held', country: 'Turska → Austrija', borderCrossing: 'Preševo',
-    declarantName: 'TransitLogistics', declarantPIB: '100345678', goodsDescription: 'Auto delovi u tranzitu', hsCode: '8708.99',
-    totalValue: 85000, totalWeight: 6200, currency: 'EUR', customsValue: 85000, dutiesAmount: 0, vatAmount: 0, totalDues: 0,
-    vehiclePlate: 'TR-333-FG', submissionDate: '2024-06-14', clearanceDate: null, referenceNumber: 'NCTS-2024-001',
-    notes: 'TR tranzit dokument. Zadržan na granici - nedostaje sertifikat porekla.',
-    items: [
-      { hsCode: '8708.99', description: 'Auto delovi - karoserija', origin: 'TR', quantity: 500, unit: 'kom', unitValue: 80, totalValue: 40000, weight: 2500, dutyRate: 0 },
-      { hsCode: '8708.29', description: 'Auto delovi - trap', origin: 'TR', quantity: 300, unit: 'kom', unitValue: 150, totalValue: 45000, weight: 3700, dutyRate: 0 },
-    ]
-  },
-  {
-    id: '5', declarationNumber: 'CU-2024-00005', docType: 'import', status: 'rejected', country: 'Italija', borderCrossing: 'Šid',
-    declarantName: 'FoodImport', declarantPIB: '100456789', goodsDescription: 'Prehrambeni proizvodi', hsCode: '2204.21',
-    totalValue: 12000, totalWeight: 4800, currency: 'EUR', customsValue: 14400, dutiesAmount: 1440, vatAmount: 2736, totalDues: 4176,
-    vehiclePlate: 'BG-444-HI', submissionDate: '2024-06-12', clearanceDate: null, referenceNumber: 'REF-IT-2024-001',
-    notes: 'Odbijeno - nedostaju sanitarni certifikati za uvoz hrane.',
-    items: [
-      { hsCode: '2204.21', description: 'Vino - crveno', origin: 'IT', quantity: 2000, unit: 'l', unitValue: 6, totalValue: 12000, weight: 2400, dutyRate: 10 },
-    ]
-  },
-  {
-    id: '6', declarationNumber: 'CU-2024-00006', docType: 'import', status: 'draft', country: 'Poljska', borderCrossing: 'Subotica',
-    declarantName: 'WoodCraft d.o.o.', declarantPIB: '100567890', goodsDescription: 'Drvna građa', hsCode: '4407.99',
-    totalValue: 35000, totalWeight: 12000, currency: 'EUR', customsValue: 42000, dutiesAmount: 0, vatAmount: 7980, totalDues: 7980,
-    vehiclePlate: 'PL-555-JK', submissionDate: '', clearanceDate: null, referenceNumber: '',
-    notes: 'Priprema dokumentacije za uvoz drva.',
-    items: [
-      { hsCode: '4407.99', description: 'Iverica - ploče', origin: 'PL', quantity: 200, unit: 'm3', unitValue: 175, totalValue: 35000, weight: 12000, dutyRate: 0 },
-    ]
-  },
-]
-
 const STATUSES: Record<string, { color: string; label: string }> = {
   draft: { color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', label: 'Priprema' },
   submitted: { color: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300', label: 'Podnet' },
@@ -130,7 +63,7 @@ function getDocTypeBadge(t: string) { const r = DOC_TYPES[t]; return r ? <Badge 
 function formatCurrency(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(n) }
 
 export function CustomsDocs() {
-  const [data, setData] = useState<CustomsDocument[]>(INITIAL_DATA)
+  const [data, setData] = useState<CustomsDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -141,7 +74,18 @@ export function CustomsDocs() {
   const [activeTab, setActiveTab] = useState('list')
   const [formData, setFormData] = useState({ declarationNumber: '', docType: 'import' as CustomsDocument['docType'], country: '', borderCrossing: '', declarantName: '', declarantPIB: '', goodsDescription: '', hsCode: '', totalValue: 0, totalWeight: 0, currency: 'EUR', vehiclePlate: '', referenceNumber: '', notes: '' })
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/customs-docs')
+      if (!res.ok) throw new Error('Failed')
+      const json = await res.json()
+      setData(json.map((d: Record<string, unknown>) => ({ ...d, items: typeof d.items === 'string' ? JSON.parse(d.items) : d.items || [] })))
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
 
   const filtered = useMemo(() => data.filter(item => {
     const matchSearch = !search || item.declarationNumber.toLowerCase().includes(search.toLowerCase()) || item.declarantName.toLowerCase().includes(search.toLowerCase()) || item.goodsDescription.toLowerCase().includes(search.toLowerCase()) || item.referenceNumber.toLowerCase().includes(search.toLowerCase())
@@ -157,15 +101,54 @@ export function CustomsDocs() {
     totalValue: data.reduce((s, d) => s + d.totalValue, 0), totalDues: data.reduce((s, d) => s + d.totalDues, 0),
   }), [data])
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati dokument?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Dokument obrisan') }
-  const handleOpenCreate = () => { setFormData({ declarationNumber: `CU-${new Date().getFullYear()}-${String(data.length + 1).padStart(5, '0')}`, docType: 'import', country: '', borderCrossing: '', declarantName: '', declarantPIB: '', goodsDescription: '', hsCode: '', totalValue: 0, totalWeight: 0, currency: 'EUR', vehiclePlate: '', referenceNumber: '', notes: '' }); setDialogOpen(true) }
-  const handleOpenEdit = (item: CustomsDocument) => { setFormData({ declarationNumber: item.declarationNumber, docType: item.docType, country: item.country, borderCrossing: item.borderCrossing, declarantName: item.declarantName, declarantPIB: item.declarantPIB, goodsDescription: item.goodsDescription, hsCode: item.hsCode, totalValue: item.totalValue, totalWeight: item.totalWeight, currency: item.currency, vehiclePlate: item.vehiclePlate, referenceNumber: item.referenceNumber, notes: item.notes }); setEditItem(item); setDialogOpen(true) }
-  const handleSave = () => {
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm('Obrisati dokument?')) return
+    try {
+      await fetch(`/api/customs-docs/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Dokument obrisan')
+    } catch { toast.error('Greška pri brisanju') }
+  }, [])
+
+  const handleOpenCreate = useCallback(() => {
+    setFormData({ declarationNumber: `CU-${new Date().getFullYear()}-${String(data.length + 1).padStart(5, '0')}`, docType: 'import', country: '', borderCrossing: '', declarantName: '', declarantPIB: '', goodsDescription: '', hsCode: '', totalValue: 0, totalWeight: 0, currency: 'EUR', vehiclePlate: '', referenceNumber: '', notes: '' }); setDialogOpen(true)
+  }, [data.length])
+
+  const handleOpenEdit = useCallback((item: CustomsDocument) => {
+    setFormData({ declarationNumber: item.declarationNumber, docType: item.docType, country: item.country, borderCrossing: item.borderCrossing, declarantName: item.declarantName, declarantPIB: item.declarantPIB, goodsDescription: item.goodsDescription, hsCode: item.hsCode, totalValue: item.totalValue, totalWeight: item.totalWeight, currency: item.currency, vehiclePlate: item.vehiclePlate, referenceNumber: item.referenceNumber, notes: item.notes }); setEditItem(item); setDialogOpen(true)
+  }, [])
+
+  const handleSave = useCallback(async () => {
     if (!formData.declarantName || !formData.goodsDescription) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) { setData(prev => prev.map(d => d.id === editItem.id ? { ...d, ...formData } : d)); toast.success('Dokument ažuriran') }
-    else { const newItem: CustomsDocument = { ...formData, id: String(Date.now()), status: 'draft', customsValue: formData.totalValue * 1.2, dutiesAmount: formData.totalValue * 0.05, vatAmount: formData.totalValue * 1.2 * 0.2, totalDues: 0, submissionDate: '', clearanceDate: null, items: [] }; newItem.totalDues = newItem.dutiesAmount + newItem.vatAmount; setData(prev => [newItem, ...prev]); toast.success('Novi dokument kreiran') }
-    setDialogOpen(false); setEditItem(null)
-  }
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/customs-docs/${editItem.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+        if (!res.ok) throw new Error()
+        const updated = await res.json()
+        setData(prev => prev.map(d => d.id === editItem.id ? { ...d, ...updated, items: typeof updated.items === 'string' ? JSON.parse(updated.items) : updated.items || [] } : d))
+        toast.success('Dokument ažuriran')
+      } else {
+        const customsValue = formData.totalValue * 1.2
+        const dutiesAmount = formData.totalValue * 0.05
+        const vatAmount = customsValue * 0.2
+        const totalDues = dutiesAmount + vatAmount
+        const res = await fetch('/api/customs-docs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...formData, customsValue, dutiesAmount, vatAmount, totalDues, status: 'draft', submissionDate: '', clearanceDate: null, items: [] }),
+        })
+        if (!res.ok) throw new Error()
+        const created = await res.json()
+        setData(prev => [{ ...created, items: typeof created.items === 'string' ? JSON.parse(created.items) : created.items || [] }, ...prev])
+        toast.success('Novi dokument kreiran')
+      }
+      setDialogOpen(false); setEditItem(null)
+    } catch { toast.error('Greška pri čuvanju') }
+  }, [formData, editItem])
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
   const detailItem = detailId ? data.find(i => i.id === detailId) : null

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,17 +45,6 @@ type Property = {
   notes: string
 }
 
-const INITIAL: Property[] = [
-  { id: '1', propertyNo: 'NEK-001', title: 'Trosoban stan — Vračar', type: 'apartment', transactionType: 'sale', status: 'available', address: 'Nebojšina 45/7', city: 'Beograd', neighborhood: 'Vračar', area: 78, landArea: 0, price: 185000, pricePerSqm: 2372, bedrooms: 3, bathrooms: 1, floor: '3/5', yearBuilt: 1985, heating: 'gas', furnishing: 'unfurnished', parking: true, elevator: false, terrace: true, registered: true, agent: 'Milan Ristić', listedDate: '2024-06-01', views: 245, inquiries: 18, notes: 'Renoviran 2022 — nova kupatila, podovi' },
-  { id: '2', propertyNo: 'NEK-002', title: 'Dvosoban stan — Novi Beograd', type: 'apartment', transactionType: 'rent', status: 'rented', address: 'Bulevar Mihajla Pupina 165/12', city: 'Beograd', neighborhood: 'Novi Beograd', area: 55, landArea: 0, price: 550, pricePerSqm: 10, bedrooms: 2, bathrooms: 1, floor: '8/16', yearBuilt: 2018, heating: 'central', furnishing: 'furnished', parking: true, elevator: true, terrace: true, registered: true, agent: 'Jelena Kovačević', listedDate: '2024-03-15', views: 512, inquiries: 42, notes: 'Zakup na godinu dana — zakupac zadovoljan' },
-  { id: '3', propertyNo: 'NEK-003', title: 'Porodična kuća — Zvezdara', type: 'house', transactionType: 'sale', status: 'available', address: 'Koste Stamenkovića 28', city: 'Beograd', neighborhood: 'Zvezdara', area: 160, landArea: 350, price: 285000, pricePerSqm: 1781, bedrooms: 4, bathrooms: 2, floor: 'Prizemlje+sprat', yearBuilt: 2005, heating: 'gas', furnishing: 'semi_furnished', parking: true, elevator: false, terrace: true, registered: true, agent: 'Milan Ristić', listedDate: '2024-05-20', views: 189, inquiries: 12, notes: 'Dvorište, letnja kuhinja, garaža za 2 auto' },
-  { id: '4', propertyNo: 'NEK-004', title: 'Lokal — Knez Mihailova', type: 'commercial', transactionType: 'both', status: 'available', address: 'Knez Mihajlova 28', city: 'Beograd', neighborhood: 'Centar', area: 120, landArea: 0, price: 4500, pricePerSqm: 37, bedrooms: 0, bathrooms: 1, floor: 'Prizemlje', yearBuilt: 1935, heating: 'electric', furnishing: 'unfurnished', parking: false, elevator: false, terrace: false, registered: true, agent: 'Nenad Stanković', listedDate: '2024-06-05', views: 378, inquiries: 25, notes: 'Izlog na ulicu, klima, alarm — idealan za prodavnicu' },
-  { id: '5', propertyNo: 'NEK-005', title: 'Gradilište — Surčin', type: 'land', transactionType: 'sale', status: 'available', address: 'Put za Obrenovac bb', city: 'Beograd', neighborhood: 'Surčin', area: 0, landArea: 1500, price: 45000, pricePerSqm: 30, bedrooms: 0, bathrooms: 0, floor: '—', yearBuilt: 0, heating: 'none', furnishing: 'unfurnished', parking: false, elevator: false, terrace: false, registered: true, agent: 'Nenad Stanković', listedDate: '2024-05-10', views: 98, inquiries: 7, notes: 'Građevinsko zemljište, dozvoljena izgradnja P+2' },
-  { id: '6', propertyNo: 'NEK-006', title: 'Garsonjera — Stari Grad', type: 'apartment', transactionType: 'rent', status: 'available', address: 'Gospodar Jevremova 22/4', city: 'Beograd', neighborhood: 'Stari Grad', area: 28, landArea: 0, price: 400, pricePerSqm: 14, bedrooms: 1, bathrooms: 1, floor: '2/4', yearBuilt: 1960, heating: 'electric', furnishing: 'furnished', parking: false, elevator: false, terrace: false, registered: true, agent: 'Jelena Kovačević', listedDate: '2024-06-12', views: 320, inquiries: 35, notes: '' },
-  { id: '7', propertyNo: 'NEK-007', title: 'Luksuzni stan — Dedinje', type: 'apartment', transactionType: 'sale', status: 'reserved', address: 'Bulevar vojvode Bojovića 88', city: 'Beograd', neighborhood: 'Dedinje', area: 180, landArea: 0, price: 520000, pricePerSqm: 2889, bedrooms: 4, bathrooms: 2, floor: '5/6', yearBuilt: 2022, heating: 'central', furnishing: 'furnished', parking: true, elevator: true, terrace: true, registered: true, agent: 'Milan Ristić', listedDate: '2024-04-01', views: 456, inquiries: 28, notes: 'Rezervisan — čeka se depozit. Bazen, teretana, podrum' },
-  { id: '8', propertyNo: 'NEK-008', title: 'Kancelarija — Niš', type: 'office', transactionType: 'rent', status: 'available', address: 'Vojvode Mišića 14', city: 'Niš', neighborhood: 'Centar', area: 85, landArea: 0, price: 800, pricePerSqm: 9, bedrooms: 0, bathrooms: 1, floor: '2/5', yearBuilt: 2010, heating: 'ac', furnishing: 'semi_furnished', parking: true, elevator: true, terrace: false, registered: true, agent: 'Ivana Đurić', listedDate: '2024-06-08', views: 145, inquiries: 9, notes: 'Open space, kuhinja, 2 parking mesta' },
-]
-
 const STATUSES: Record<string, { color: string; label: string }> = { available: { color: 'bg-emerald-100 text-emerald-800', label: 'Dostupno' }, reserved: { color: 'bg-amber-100 text-amber-800', label: 'Rezervisano' }, sold: { color: 'bg-gray-100 text-gray-800', label: 'Prodato' }, rented: { color: 'bg-blue-100 text-blue-800', label: 'Iznajmljeno' }, off_market: { color: 'bg-red-100 text-red-800', label: 'Uklonjeno' } }
 const TYPES: Record<string, string> = { apartment: 'Stan', house: 'Kuća', commercial: 'Lokal', land: 'Zemljište', garage: 'Garaža', office: 'Kancelarija' }
 
@@ -63,7 +52,7 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function formatPrice(p: number, perSqm?: boolean) { const suffix = perSqm ? '/m²' : ''; return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(p) + suffix }
 
 export function Property() {
-  const [data, setData] = useState<Property[]>(INITIAL)
+  const [data, setData] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -74,17 +63,65 @@ export function Property() {
   const [form, setForm] = useState<Partial<Property>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/properties')
+      if (!res.ok) throw new Error('Failed')
+      const json = await res.json()
+      setData(json)
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.title, item.address, item.city, item.neighborhood].some(v => v.toLowerCase().includes(search.toLowerCase()))
     const matchStatus = !statusFilter || item.status === statusFilter
     const matchType = !typeFilter || item.type === typeFilter
     return matchSearch && matchStatus && matchType
   })
-  const handleDelete = (id: string) => { if (!confirm('Obrisati?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
-  const openCreate = () => { setEditItem(null); setForm({ propertyNo: `NEK-${String(data.length + 1).padStart(3, '0')}`, title: '', type: 'apartment', transactionType: 'sale', status: 'available', address: '', city: '', neighborhood: '', area: 60, landArea: 0, price: 0, pricePerSqm: 0, bedrooms: 2, bathrooms: 1, floor: '', yearBuilt: 2000, heating: 'gas', furnishing: 'unfurnished', parking: false, elevator: false, terrace: false, registered: true, agent: '', listedDate: new Date().toISOString().split('T')[0], views: 0, inquiries: 0, notes: '' }); setDialogOpen(true) }
-  const openEdit = (item: Property) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
-  const handleSave = () => { if (!form.title || !form.city) { toast.error('Popunite obavezna polja'); return }; if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Property : i)); toast.success('Ažurirano') } else { setData(prev => [{ id: Date.now().toString(), ...form } as Property, ...prev]); toast.success('Kreirano') }; setDialogOpen(false) }
+
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm('Obrisati?')) return
+    try {
+      const res = await fetch(`/api/properties/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Obrisano')
+    } catch { toast.error('Greška pri brisanju') }
+  }, [])
+
+  const openCreate = useCallback(() => {
+    setEditItem(null)
+    setForm({ propertyNo: `NEK-${String(data.length + 1).padStart(3, '0')}`, title: '', type: 'apartment', transactionType: 'sale', status: 'available', address: '', city: '', neighborhood: '', area: 60, landArea: 0, price: 0, pricePerSqm: 0, bedrooms: 2, bathrooms: 1, floor: '', yearBuilt: 2000, heating: 'gas', furnishing: 'unfurnished', parking: false, elevator: false, terrace: false, registered: true, agent: '', listedDate: new Date().toISOString().split('T')[0], views: 0, inquiries: 0, notes: '' })
+    setDialogOpen(true)
+  }, [data.length])
+
+  const openEdit = useCallback((item: Property) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }, [])
+
+  const handleSave = useCallback(async () => {
+    if (!form.title || !form.city) { toast.error('Popunite obavezna polja'); return }
+    try {
+      const pricePerSqm = form.area ? form.price / form.area : form.pricePerSqm
+      const payload = { ...form, pricePerSqm: pricePerSqm || 0 }
+      if (editItem) {
+        const res = await fetch(`/api/properties/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (!res.ok) throw new Error()
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? updated : i))
+        toast.success('Ažurirano')
+      } else {
+        const res = await fetch('/api/properties', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (!res.ok) throw new Error()
+        const created = await res.json()
+        setData(prev => [created, ...prev])
+        toast.success('Kreirano')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
+  }, [form, editItem])
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
   const detailItem = detailId ? data.find(i => i.id === detailId) : null

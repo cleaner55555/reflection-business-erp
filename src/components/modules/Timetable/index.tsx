@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,21 +32,6 @@ type ScheduleEntry = {
 const DAYS = ['ponedeljak', 'utorak', 'sreda', 'cetvrtak', 'petak', 'subota'] as const
 const DAY_LABELS: Record<string, string> = { ponedeljak: 'Ponedeljak', utorak: 'Utorak', sreda: 'Sreda', cetvrtak: 'Četvrtak', petak: 'Petak', subota: 'Subota' }
 
-const INITIAL: ScheduleEntry[] = [
-  { id: '1', subject: 'Matematika III', teacher: 'Prof. Jelena Marković', classGroup: 'II-1', room: 'A-101', dayOfWeek: 'ponedeljak', timeStart: '08:00', timeEnd: '09:30', type: 'lecture', semester: '2023/2024 zimski', status: 'active', notes: '' },
-  { id: '2', subject: 'Matematika III — Vežbe', teacher: 'Asist. Miloš Rakić', classGroup: 'II-1', room: 'A-203', dayOfWeek: 'ponedeljak', timeStart: '10:00', timeEnd: '11:30', type: 'exercise', semester: '2023/2024 zimski', status: 'active', notes: '' },
-  { id: '3', subject: 'Fizika II', teacher: 'Prof. Snežana Đorđević', classGroup: 'II-1', room: 'A-102', dayOfWeek: 'utorak', timeStart: '08:00', timeEnd: '09:30', type: 'lecture', semester: '2023/2024 zimski', status: 'active', notes: '' },
-  { id: '4', subject: 'Fizika II — Laboratorija', teacher: 'Asist. Branislav Popović', classGroup: 'II-1 (grupa A)', room: 'B-105', dayOfWeek: 'utorak', timeStart: '13:00', timeEnd: '16:00', type: 'lab', semester: '2023/2024 zimski', status: 'active', notes: 'Dve grupe — A (13-16) i B (16-19)' },
-  { id: '5', subject: 'Programiranje II', teacher: 'Nenad Stojanović', classGroup: 'II-1', room: 'B-201', dayOfWeek: 'sreda', timeStart: '08:00', timeEnd: '09:30', type: 'lecture', semester: '2023/2024 zimski', status: 'active', notes: '' },
-  { id: '6', subject: 'Programiranje II — Vežbe', teacher: 'Asist. Dejan Stefanović', classGroup: 'II-1', room: 'B-201', dayOfWeek: 'sreda', timeStart: '10:00', timeEnd: '11:30', type: 'exercise', semester: '2023/2024 zimski', status: 'active', notes: 'Računarska sala — laptop ne potreban' },
-  { id: '7', subject: 'Hemija', teacher: 'Prof. Goran Savić', classGroup: 'II-1', room: 'A-101', dayOfWeek: 'cetvrtak', timeStart: '08:00', timeEnd: '09:30', type: 'lecture', semester: '2023/2024 zimski', status: 'active', notes: '' },
-  { id: '8', subject: 'Elektrotehnika', teacher: 'Prof. Zoran Antić', classGroup: 'II-1', room: 'A-102', dayOfWeek: 'petak', timeStart: '08:00', timeEnd: '09:30', type: 'lecture', semester: '2023/2024 zimski', status: 'cancelled', notes: 'Otkazano 14.06. — profesor odsutan' },
-  { id: '9', subject: 'Kolokvijum — Matematika III', teacher: 'Prof. Jelena Marković', classGroup: 'II-1', room: 'C-001', dayOfWeek: 'petak', timeStart: '10:00', timeEnd: '12:00', type: 'exam', semester: '2023/2024 zimski', status: 'completed', notes: 'Pisani kolokvijum iz integralnog računa' },
-  { id: '10', subject: 'Engleski jezik B2', teacher: 'Ana Kostić', classGroup: 'II-1', room: 'B-302', dayOfWeek: 'subota', timeStart: '09:00', timeEnd: '10:30', type: 'exercise', semester: '2023/2024 zimski', status: 'active', notes: '' },
-  { id: '11', subject: 'Ekonomija', teacher: 'Prof. Dragan Milić', classGroup: 'II-2', room: 'A-101', dayOfWeek: 'ponedeljak', timeStart: '10:00', timeEnd: '11:30', type: 'lecture', semester: '2023/2024 zimski', status: 'active', notes: '' },
-  { id: '12', subject: 'Preduzetništvo', teacher: 'Prof. Ana Nikolić', classGroup: 'II-2', room: 'A-203', dayOfWeek: 'sreda', timeStart: '13:00', timeEnd: '14:30', type: 'seminar', semester: '2023/2024 zimski', status: 'active', notes: ' gost predavač iz privrede 19.06.' },
-]
-
 const STATUSES: Record<string, { color: string; label: string }> = {
   active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivno' },
   cancelled: { color: 'bg-red-100 text-red-800', label: 'Otkazano' },
@@ -66,7 +51,7 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 export function Timetable() {
-  const [data, setData] = useState<ScheduleEntry[]>(INITIAL)
+  const [data, setData] = useState<ScheduleEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [dayFilter, setDayFilter] = useState('')
@@ -78,9 +63,20 @@ export function Timetable() {
   const [activeTab, setActiveTab] = useState('pregled')
   const [viewMode, setViewMode] = useState<'list' | 'table'>('list')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/timetable')
+      if (!res.ok) throw new Error()
+      const json = await res.json()
+      setData(json)
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }, [])
 
-  const groups = [...new Set(data.map(i => i.classGroup.split(' (')[0]))]
+  useEffect(() => { fetchData() }, [fetchData])
+
+  const groups = [...new Set(data.map(i => i.classGroup.split(' (')[0]).filter(Boolean))]
 
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.subject, item.teacher, item.room].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -89,36 +85,46 @@ export function Timetable() {
     return matchSearch && matchDay && matchGroup
   })
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Obrisati unos rasporeda?')) return
-    setData(prev => prev.filter(i => i.id !== id))
-    toast.success('Unos obrisan')
-  }
+    try {
+      await fetch(`/api/timetable/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Unos obrisan')
+    } catch { toast.error('Greška pri brisanju') }
+  }, [])
 
-  const openCreate = () => {
+  const openCreate = useCallback(() => {
     setEditItem(null)
     setForm({ subject: '', teacher: '', classGroup: '', room: '', dayOfWeek: 'ponedeljak', timeStart: '08:00', timeEnd: '09:30', type: 'lecture', semester: '2023/2024 zimski', status: 'active', notes: '' })
     setDialogOpen(true)
-  }
+  }, [])
 
-  const openEdit = (item: ScheduleEntry) => {
+  const openEdit = useCallback((item: ScheduleEntry) => {
     setEditItem(item)
     setForm({ ...item })
     setDialogOpen(true)
-  }
+  }, [])
 
-  const handleSave = () => {
+  const handleSave = useCallback(async () => {
     if (!form.subject || !form.teacher) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) {
-      setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as ScheduleEntry : i))
-      toast.success('Raspored ažuriran')
-    } else {
-      const newItem: ScheduleEntry = { id: Date.now().toString(), ...form } as ScheduleEntry
-      setData(prev => [...prev, newItem])
-      toast.success('Unos kreiran')
-    }
-    setDialogOpen(false)
-  }
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/timetable/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        if (!res.ok) throw new Error()
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...updated } : i))
+        toast.success('Raspored ažuriran')
+      } else {
+        const res = await fetch('/api/timetable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        if (!res.ok) throw new Error()
+        const created = await res.json()
+        setData(prev => [...prev, created])
+        toast.success('Unos kreiran')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
+  }, [form, editItem])
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
 

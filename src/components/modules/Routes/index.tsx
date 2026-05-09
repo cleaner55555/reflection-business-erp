@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress'
 import { Plus, Search, Trash2, Pencil, Eye, Filter, MapPin, Truck, Clock, Fuel, Navigation, Route, BarChart3, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
+import { useAppStore } from '@/lib/store'
 
 // ─── Types ───────────────────────────────────────────────
 interface Stop {
@@ -49,70 +50,6 @@ interface RouteItem {
   endDate: string | null
   notes: string
 }
-
-// ─── Data ────────────────────────────────────────────────
-const INITIAL_ROUTES: RouteItem[] = [
-  {
-    id: '1', name: 'Beograd - Novi Sad - Subotica', code: 'RT-2024-001', driver: 'Marko Petrović', vehicle: 'Kamion A-123',
-    origin: 'Beograd', destination: 'Subotica', status: 'in_progress', priority: 'high', totalDistance: 190,
-    estimatedTime: '3h 30m', actualTime: null, fuelCost: 85, tollCost: 32,
-    stops: [
-      { id: 's1', location: 'Novi Sad', address: 'Bulevar oslobođenja 45', estimatedArrival: '09:30', estimatedDeparture: '10:00', status: 'completed', cargo: 'Electronics', weight: 1200, notes: '' },
-      { id: 's2', location: 'Subotica', address: ' Industrijska zona bb', estimatedArrival: '12:00', estimatedDeparture: '12:30', status: 'in_transit', cargo: 'Electronics', weight: 800, notes: 'Back entrance' },
-    ],
-    startDate: '2024-06-15', endDate: null, notes: 'Express delivery'
-  },
-  {
-    id: '2', name: 'Niš - Skopje - Solun', code: 'RT-2024-002', driver: 'Jovan Stanković', vehicle: 'Kamion B-456',
-    origin: 'Niš', destination: 'Solun', status: 'planned', priority: 'medium', totalDistance: 450,
-    estimatedTime: '5h 45m', actualTime: null, fuelCost: 210, tollCost: 55,
-    stops: [
-      { id: 's3', location: 'Skopje', address: 'Bulevar Partizanski Odredi 12', estimatedArrival: '11:00', estimatedDeparture: '11:30', status: 'pending', cargo: 'Textiles', weight: 2500, notes: '' },
-      { id: 's4', location: 'Solun', address: 'Port of Thessaloniki', estimatedArrival: '15:00', estimatedDeparture: '16:00', status: 'pending', cargo: 'Textiles', weight: 1800, notes: 'Port customs' },
-    ],
-    startDate: '2024-06-16', endDate: null, notes: 'International route - customs docs required'
-  },
-  {
-    id: '3', name: 'Beograd - Pančevo - Zrenjanin', code: 'RT-2024-003', driver: 'Slobodan Nikolić', vehicle: 'Kamion C-789',
-    origin: 'Beograd', destination: 'Zrenjanin', status: 'completed', priority: 'low', totalDistance: 85,
-    estimatedTime: '1h 45m', actualTime: '2h 10m', fuelCost: 38, tollCost: 15,
-    stops: [
-      { id: 's5', location: 'Pančevo', address: 'Vojvođanska 23', estimatedArrival: '09:00', estimatedDeparture: '09:15', status: 'completed', cargo: 'Food products', weight: 600, notes: '' },
-      { id: 's6', location: 'Zrenjanin', address: 'Nikole Pašića 5', estimatedArrival: '10:00', estimatedDeparture: '10:30', status: 'completed', cargo: 'Food products', weight: 400, notes: 'Cold storage required' },
-    ],
-    startDate: '2024-06-14', endDate: '2024-06-14', notes: 'Food transport - temperature controlled'
-  },
-  {
-    id: '4', name: 'Kragujevac - Čačak - Užice', code: 'RT-2024-004', driver: 'Dragan Milić', vehicle: 'Kamion D-321',
-    origin: 'Kragujevac', destination: 'Užice', status: 'delayed', priority: 'high', totalDistance: 130,
-    estimatedTime: '2h 30m', actualTime: null, fuelCost: 62, tollCost: 20,
-    stops: [
-      { id: 's7', location: 'Čačak', address: 'Gavrila Principa 8', estimatedArrival: '10:30', estimatedDeparture: '10:45', status: 'completed', cargo: 'Auto parts', weight: 900, notes: '' },
-      { id: 's8', location: 'Užice', address: 'Dimitrija Tucovića 15', estimatedArrival: '12:00', estimatedDeparture: '12:30', status: 'in_transit', cargo: 'Auto parts', weight: 700, notes: 'Road closure detour' },
-    ],
-    startDate: '2024-06-15', endDate: null, notes: 'Road construction on main road - use detour via Valjevo'
-  },
-  {
-    id: '5', name: 'Beograd - Valjevo - Loznica', code: 'RT-2024-005', driver: 'Nebojša Jovanović', vehicle: 'Kamion E-654',
-    origin: 'Beograd', destination: 'Loznica', status: 'cancelled', priority: 'low', totalDistance: 165,
-    estimatedTime: '3h 00m', actualTime: null, fuelCost: 75, tollCost: 28,
-    stops: [
-      { id: 's9', location: 'Valjevo', address: 'Knez Miloša 1', estimatedArrival: '10:00', estimatedDeparture: '10:20', status: 'pending', cargo: 'Building materials', weight: 3500, notes: '' },
-      { id: 's10', location: 'Loznica', address: 'Vuka Karadžića 30', estimatedArrival: '11:30', estimatedDeparture: '12:00', status: 'pending', cargo: 'Building materials', weight: 2000, notes: '' },
-    ],
-    startDate: '2024-06-15', endDate: null, notes: 'Cancelled due to client request'
-  },
-  {
-    id: '6', name: 'Subotica - Sombor - Apatin', code: 'RT-2024-006', driver: 'Predrag Tomić', vehicle: 'Kamion F-987',
-    origin: 'Subotica', destination: 'Apatin', status: 'planned', priority: 'medium', totalDistance: 95,
-    estimatedTime: '1h 30m', actualTime: null, fuelCost: 42, tollCost: 10,
-    stops: [
-      { id: 's11', location: 'Sombor', address: 'Trg Slobode 5', estimatedArrival: '14:00', estimatedDeparture: '14:20', status: 'pending', cargo: 'Agricultural supplies', weight: 1800, notes: '' },
-      { id: 's12', location: 'Apatin', address: 'Sindikat 12', estimatedArrival: '15:00', estimatedDeparture: '15:30', status: 'pending', cargo: 'Agricultural supplies', weight: 1200, notes: '' },
-    ],
-    startDate: '2024-06-17', endDate: null, notes: 'Seasonal agricultural transport'
-  },
-]
 
 const STATUSES: Record<string, { color: string; label: string; icon: typeof CheckCircle2 }> = {
   planned: { color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', label: 'Planirana', icon: Route },
@@ -162,17 +99,14 @@ function calcRouteProgress(stops: Stop[]) {
   return Math.round((completed / stops.length) * 100)
 }
 
-function calcTotalWeight(stops: Stop[]) {
-  return stops.reduce((sum, s) => sum + s.weight, 0)
-}
-
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 0 }).format(n)
 }
 
 // ─── Component ───────────────────────────────────────────
 export function Routes() {
-  const [data, setData] = useState<RouteItem[]>(INITIAL_ROUTES)
+  const { activeCompanyId } = useAppStore()
+  const [data, setData] = useState<RouteItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -183,7 +117,17 @@ export function Routes() {
   const [activeTab, setActiveTab] = useState('list')
   const [formData, setFormData] = useState({ name: '', code: '', driver: '', vehicle: '', origin: '', destination: '', priority: 'medium' as RouteItem['priority'], totalDistance: 0, estimatedTime: '', fuelCost: 0, tollCost: 0, notes: '' })
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/routes?companyId=${activeCompanyId}`)
+      if (res.ok) {
+        const items = await res.json()
+        setData(items)
+      }
+    } catch { /* empty */ } finally { setLoading(false) }
+  }, [activeCompanyId])
+
+  useEffect(() => { fetchData() }, [fetchData])
 
   const filtered = useMemo(() => data.filter(item => {
     const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) || item.code.toLowerCase().includes(search.toLowerCase()) || item.driver.toLowerCase().includes(search.toLowerCase()) || item.origin.toLowerCase().includes(search.toLowerCase()) || item.destination.toLowerCase().includes(search.toLowerCase())
@@ -203,14 +147,17 @@ export function Routes() {
     totalStops: data.reduce((s, r) => s + r.stops.length, 0),
   }), [data])
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Obrisati rutu?')) return
-    setData(prev => prev.filter(i => i.id !== id))
-    toast.success('Ruta obrisana')
-  }
+    try {
+      const res = await fetch(`/api/routes/${id}?companyId=${activeCompanyId}`, { method: 'DELETE' })
+      if (res.ok) { setData(prev => prev.filter(i => i.id !== id)); toast.success('Ruta obrisana') }
+    } catch { toast.error('Greška pri brisanju') }
+  }, [activeCompanyId])
 
   const handleOpenCreate = () => {
     setFormData({ name: '', code: `RT-${new Date().getFullYear()}-${String(data.length + 1).padStart(3, '0')}`, driver: '', vehicle: '', origin: '', destination: '', priority: 'medium', totalDistance: 0, estimatedTime: '', fuelCost: 0, tollCost: 0, notes: '' })
+    setEditItem(null)
     setDialogOpen(true)
   }
 
@@ -220,22 +167,21 @@ export function Routes() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
-    if (!formData.name || !formData.origin || !formData.destination || !formData.driver) {
-      toast.error('Popunite sva obavezna polja')
-      return
-    }
-    if (editItem) {
-      setData(prev => prev.map(r => r.id === editItem.id ? { ...r, ...formData } : r))
-      toast.success('Ruta ažurirana')
-    } else {
-      const newItem: RouteItem = { ...formData, id: String(Date.now()), status: 'planned', stops: [], startDate: new Date().toISOString().split('T')[0], endDate: null, actualTime: null }
-      setData(prev => [newItem, ...prev])
-      toast.success('Nova ruta kreirana')
-    }
-    setDialogOpen(false)
-    setEditItem(null)
-  }
+  const handleSave = useCallback(async () => {
+    if (!formData.name || !formData.origin || !formData.destination || !formData.driver) { toast.error('Popunite sva obavezna polja'); return }
+    try {
+      const url = editItem ? `/api/routes/${editItem.id}?companyId=${activeCompanyId}` : `/api/routes?companyId=${activeCompanyId}`
+      const method = editItem ? 'PUT' : 'POST'
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editItem ? { ...formData, companyId: activeCompanyId } : { ...formData, companyId: activeCompanyId, stops: '[]', startDate: new Date().toISOString().split('T')[0], status: 'planned' }) })
+      if (res.ok) {
+        const saved = await res.json()
+        if (editItem) { setData(prev => prev.map(r => r.id === editItem.id ? { ...r, ...formData } : r)) } else { setData(prev => [saved, ...prev]) }
+        toast.success(editItem ? 'Ruta ažurirana' : 'Nova ruta kreirana')
+        setDialogOpen(false)
+        setEditItem(null)
+      }
+    } catch { toast.error('Greška pri čuvanju') }
+  }, [editItem, formData, activeCompanyId])
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /><Skeleton className="h-32" /></div>
 
@@ -247,8 +193,7 @@ export function Routes() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30"><Navigation className="h-5 w-5 text-blue-700 dark:text-blue-400" /></div>
-          <div><h1 className="text-2xl font-bold tracking-tight">Rute</h1><p className="text-sm text-muted-foreground">Upravljanje transportnim rutama</p></div>
-        </div>
+          <div><h1 className="text-2xl font-bold tracking-tight">Rute</h1><p className="text-sm text-muted-foreground">Upravljanje transportnim rutama</p></div></div>
         <Button size="sm" className="gap-2" onClick={handleOpenCreate}><Plus className="h-4 w-4" />Nova ruta</Button>
       </div>
 

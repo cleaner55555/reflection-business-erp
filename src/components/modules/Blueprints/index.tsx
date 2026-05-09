@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,62 +37,6 @@ interface Blueprint {
   revisions: { version: string; date: string; author: string; description: string }[]
 }
 
-const INITIAL_DATA: Blueprint[] = [
-  {
-    id: '1', name: 'Arhitektonski projekat stambenog objekta', code: 'BP-2024-001', project: 'Naselje Sunčani breg', category: 'architectural', status: 'approved',
-    version: 'v2.1', author: 'Branko Kovačević', client: 'Invest Plus d.o.o.', scale: '1:100', sheetSize: 'A1', fileSize: 24.5, fileFormat: 'PDF',
-    createdDate: '2024-05-15', updatedDate: '2024-06-10', approvedBy: 'Marko Savić', approvedDate: '2024-06-12', notes: 'Izmenjen balkon na spratu 3-5',
-    revisions: [
-      { version: 'v1.0', date: '2024-05-15', author: 'Branko Kovačević', description: 'Inicijalni nacrt' },
-      { version: 'v1.5', date: '2024-05-28', author: 'Branko Kovačević', description: 'Proširenje garáže' },
-      { version: 'v2.0', date: '2024-06-03', author: 'Branko Kovačević', description: 'Dodat lift' },
-      { version: 'v2.1', date: '2024-06-10', author: 'Branko Kovačević', description: 'Modifikacija balkona' },
-    ]
-  },
-  {
-    id: '2', name: 'Statički proračun - armiranobetonska konstrukcija', code: 'BP-2024-002', project: 'Naselje Sunčani breg', category: 'structural', status: 'review',
-    version: 'v1.3', author: 'Nenad Stojanović', client: 'Invest Plus d.o.o.', scale: '1:50', sheetSize: 'A0', fileSize: 18.2, fileFormat: 'DWG',
-    createdDate: '2024-05-20', updatedDate: '2024-06-14', approvedBy: null, approvedDate: null, notes: 'Čeka potvrdu od stručnjaka za seizmiku',
-    revisions: [
-      { version: 'v1.0', date: '2024-05-20', author: 'Nenad Stojanović', description: 'Početni proračun' },
-      { version: 'v1.2', date: '2024-06-01', author: 'Nenad Stojanović', description: 'Korekcija armature - sprat 4' },
-      { version: 'v1.3', date: '2024-06-14', author: 'Nenad Stojanović', description: 'Seizmička analiza - revizija' },
-    ]
-  },
-  {
-    id: '3', name: 'Elektro instalacije - raspored i šema', code: 'BP-2024-003', project: 'Naselje Sunčani breg', category: 'electrical', status: 'draft',
-    version: 'v0.5', author: 'Ivana Petrović', client: 'Invest Plus d.o.o.', scale: '1:100', sheetSize: 'A1', fileSize: 8.7, fileFormat: 'PDF',
-    createdDate: '2024-06-10', updatedDate: null, approvedBy: null, approvedDate: null, notes: 'Priprema za prvu reviziju',
-    revisions: [{ version: 'v0.5', date: '2024-06-10', author: 'Ivana Petrović', description: 'Radna verzija - 60% kompletno' }]
-  },
-  {
-    id: '4', name: 'Geodetski elaborat', code: 'BP-2024-004', project: 'Tržni centar Nova', category: 'geodetic', status: 'final',
-    version: 'v3.0', author: 'Slobodan Radovanović', client: 'Nova Commerce', scale: '1:500', sheetSize: 'A0', fileSize: 45.3, fileFormat: 'PDF',
-    createdDate: '2024-04-01', updatedDate: '2024-05-20', approvedBy: 'Dragan Milić', approvedDate: '2024-05-22', notes: 'Kompletan elaborat sa katastarskim planom',
-    revisions: [
-      { version: 'v1.0', date: '2024-04-01', author: 'Slobodan Radovanović', description: 'Poligonska mreža' },
-      { version: 'v2.0', date: '2024-04-20', author: 'Slobodan Radovanović', description: 'Detaljno merenje terena' },
-      { version: 'v3.0', date: '2024-05-20', author: 'Slobodan Radovanović', description: 'Finalna verzija sa katastarskim planom' },
-    ]
-  },
-  {
-    id: '5', name: 'Vodovodne i kanalizacione instalacije', code: 'BP-2024-005', project: 'Tržni centar Nova', category: 'plumbing', status: 'revision',
-    version: 'v2.1', author: 'Goran Janković', client: 'Nova Commerce', scale: '1:100', sheetSize: 'A1', fileSize: 12.1, fileFormat: 'DWG',
-    createdDate: '2024-05-01', updatedDate: '2024-06-13', approvedBy: null, approvedDate: null, notes: 'Revizija - promenjena lokacija glavnog kolektora',
-    revisions: [
-      { version: 'v1.0', date: '2024-05-01', author: 'Goran Janković', description: 'Inicijalni projekat' },
-      { version: 'v2.0', date: '2024-05-25', author: 'Goran Janković', description: 'Kompletan projekat' },
-      { version: 'v2.1', date: '2024-06-13', author: 'Goran Janković', description: 'Promena kolektora po zahtevu komunalije' },
-    ]
-  },
-  {
-    id: '6', name: 'Enterijer - dnevni boravak i kuhinja', code: 'BP-2024-006', project: 'Vila Panorama', category: 'interior', status: 'draft',
-    version: 'v1.0', author: 'Jelena Nikolić', client: ' Privatni klijent', scale: '1:50', sheetSize: 'A2', fileSize: 15.8, fileFormat: 'PDF',
-    createdDate: '2024-06-12', updatedDate: null, approvedBy: null, approvedDate: null, notes: 'Prva skica za klijenta',
-    revisions: [{ version: 'v1.0', date: '2024-06-12', author: 'Jelena Nikolić', description: 'Konceptualni dizajn - dnevni boravak i kuhinja' }]
-  },
-]
-
 const STATUSES: Record<string, { color: string; label: string }> = {
   draft: { color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300', label: 'Nacrt' },
   review: { color: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300', label: 'Pregled' },
@@ -118,7 +62,7 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function getCategoryBadge(c: string) { const r = CATEGORIES[c]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{c}</Badge> }
 
 export function Blueprints() {
-  const [data, setData] = useState<Blueprint[]>(INITIAL_DATA)
+  const [data, setData] = useState<Blueprint[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -128,7 +72,18 @@ export function Blueprints() {
   const [editItem, setEditItem] = useState<Blueprint | null>(null)
   const [formData, setFormData] = useState({ name: '', code: '', project: '', category: 'architectural' as Blueprint['category'], author: '', client: '', scale: '', sheetSize: '', notes: '' })
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/blueprints')
+      if (!res.ok) throw new Error()
+      const json = await res.json()
+      setData(json.map((d: Record<string, unknown>) => ({ ...d, revisions: typeof d.revisions === 'string' ? JSON.parse(d.revisions) : d.revisions || [] })))
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
 
   const filtered = useMemo(() => data.filter(item => {
     const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) || item.code.toLowerCase().includes(search.toLowerCase()) || item.project.toLowerCase().includes(search.toLowerCase()) || item.author.toLowerCase().includes(search.toLowerCase())
@@ -144,31 +99,45 @@ export function Blueprints() {
     projects: [...new Set(data.map(d => d.project))].length,
   }), [data])
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati nacrt?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Nacrt obrisan') }
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm('Obrisati nacrt?')) return
+    try {
+      await fetch(`/api/blueprints/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Nacrt obrisan')
+    } catch { toast.error('Greška pri brisanju') }
+  }, [])
 
-  const handleOpenCreate = () => {
+  const handleOpenCreate = useCallback(() => {
     setFormData({ name: '', code: `BP-${new Date().getFullYear()}-${String(data.length + 1).padStart(3, '0')}`, project: '', category: 'architectural', author: '', client: '', scale: '', sheetSize: '', notes: '' })
     setDialogOpen(true)
-  }
+  }, [data.length])
 
-  const handleOpenEdit = (item: Blueprint) => {
+  const handleOpenEdit = useCallback((item: Blueprint) => {
     setFormData({ name: item.name, code: item.code, project: item.project, category: item.category, author: item.author, client: item.client, scale: item.scale, sheetSize: item.sheetSize, notes: item.notes })
     setEditItem(item)
     setDialogOpen(true)
-  }
+  }, [])
 
-  const handleSave = () => {
+  const handleSave = useCallback(async () => {
     if (!formData.name || !formData.project || !formData.author) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) {
-      setData(prev => prev.map(d => d.id === editItem.id ? { ...d, ...formData, updatedDate: new Date().toISOString().split('T')[0] } : d))
-      toast.success('Nacrt ažuriran')
-    } else {
-      const newItem: Blueprint = { ...formData, id: String(Date.now()), status: 'draft', version: 'v1.0', fileSize: 0, fileFormat: 'PDF', createdDate: new Date().toISOString().split('T')[0], updatedDate: null, approvedBy: null, approvedDate: null, revisions: [{ version: 'v1.0', date: new Date().toISOString().split('T')[0], author: formData.author, description: 'Kreiran novi nacrt' }] }
-      setData(prev => [newItem, ...prev])
-      toast.success('Novi nacrt kreiran')
-    }
-    setDialogOpen(false); setEditItem(null)
-  }
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/blueprints/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
+        if (!res.ok) throw new Error()
+        const updated = await res.json()
+        setData(prev => prev.map(d => d.id === editItem.id ? { ...d, ...updated, revisions: typeof updated.revisions === 'string' ? JSON.parse(updated.revisions) : updated.revisions || [] } : d))
+        toast.success('Nacrt ažuriran')
+      } else {
+        const res = await fetch('/api/blueprints', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
+        if (!res.ok) throw new Error()
+        const created = await res.json()
+        setData(prev => [{ ...created, revisions: typeof created.revisions === 'string' ? JSON.parse(created.revisions) : created.revisions || [] }, ...prev])
+        toast.success('Novi nacrt kreiran')
+      }
+      setDialogOpen(false); setEditItem(null)
+    } catch { toast.error('Greška pri čuvanju') }
+  }, [formData, editItem])
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
 
@@ -229,7 +198,7 @@ export function Blueprints() {
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                     <TableCell className="text-xs font-mono hidden md:table-cell">{item.version}</TableCell>
                     <TableCell className="text-xs hidden lg:table-cell">{item.author}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{formatDate(item.createdDate)}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{formatDate(item.createdAt)}</TableCell>
                     <TableCell className="text-right"><div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -256,7 +225,7 @@ export function Blueprints() {
                 <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Klijent</div><p className="text-xs font-medium">{detailItem.client}</p></div>
                 <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Format</div><p className="text-xs font-medium">{detailItem.scale} · {detailItem.sheetSize} · {detailItem.fileSize}MB {detailItem.fileFormat}</p></div>
               </div>
-              {detailItem.approvedBy && <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-xs text-emerald-700">Odobrio: {detailItem.approvedBy} · {formatDate(detailItem.approvedDate!)}</p></div>}
+              {detailItem.approvedBy && <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-xs text-emerald-700">Odobrio: {detailItem.approvedBy} · {detailItem.approvedDate ? formatDate(detailItem.approvedDate) : ''}</p></div>}
               {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
 
               <div className="space-y-2">

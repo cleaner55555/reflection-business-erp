@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useAppStore } from '@/lib/store'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,8 +26,7 @@ import type {
 
 import {
   mockEmployees, mockProjects, mockTasks,
-  mockTimeEntries, mockActivityLog, defaultSettings,
-  fetchTimeEntries, createTimeEntry, updateTimeEntry, deleteTimeEntry,
+  defaultSettings,
   generateProjectReport, generateEmployeeReport, generateWeeklySummary,
   calculateReportSummary, calculateDashboardStats,
   createActivityEntry, formatDuration,
@@ -41,6 +41,8 @@ import {
 // ============ MAIN EXPORT ============
 
 export function TimeTracking() {
+  const { activeCompanyId } = useAppStore()
+
   // ============ STATE ============
 
   const [activeTab, setActiveTab] = useState('pracenje')
@@ -60,7 +62,7 @@ export function TimeTracking() {
 
   // Data state
   const [entries, setEntries] = useState<TimeEntry[]>([])
-  const [activities, setActivities] = useState<ActivityLogEntry[]>(mockActivityLog)
+  const [activities, setActivities] = useState<ActivityLogEntry[]>([])
   const [settings, setSettings] = useState<TimeTrackingSettings>(defaultSettings)
 
   // Tracking tab filters
@@ -91,34 +93,54 @@ export function TimeTracking() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
+  // ============ API HELPERS ============
+
+  const apiFetch = useCallback(async (url: string, options?: RequestInit) => {
+    const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options })
+    if (!res.ok) throw new Error('API error')
+    const json = await res.json()
+    if (!json.success) throw new Error(json.error || 'Unknown error')
+    return json.data
+  }, [])
+
   // ============ LOAD DATA ============
 
-  useEffect(() => {
-    async function load() {
-      setIsLoading(true)
-      try {
-        const data = await fetchTimeEntries()
-        setEntries(data)
-        // Set default date range for tracking tab (current month)
-        const today = new Date()
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
-          .toISOString().split('T')[0]
-        setTrackingDateFrom(firstDay)
-        setTrackingDateTo(today.toISOString().split('T')[0])
-        // Set default date range for reports (current week)
-        const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1
-        const monday = new Date(today)
-        monday.setDate(today.getDate() - dayOfWeek)
-        setReportDateFrom(monday.toISOString().split('T')[0])
-        setReportDateTo(today.toISOString().split('T')[0])
-      } catch {
-        toast.error('Грешка при учитавању података')
-      } finally {
-        setIsLoading(false)
-      }
+  const loadEntries = useCallback(async () => {
+    if (!activeCompanyId) return
+    setIsLoading(true)
+    try {
+      const params = new URLSearchParams({ companyId: activeCompanyId })
+      if (trackingDateFrom) params.set('dateFrom', trackingDateFrom)
+      if (trackingDateTo) params.set('dateTo', trackingDateTo)
+      if (trackingProjectFilter !== 'all') params.set('projectId', trackingProjectFilter)
+      if (trackingEmployeeFilter !== 'all') params.set('employeeId', trackingEmployeeFilter)
+      if (trackingStatusFilter !== 'all') params.set('status', trackingStatusFilter)
+      const data = await apiFetch(`/api/time-tracking?${params}`)
+      setEntries(data)
+    } catch {
+      toast.error('Грешка при учитавању података')
+    } finally {
+      setIsLoading(false)
     }
-    load()
-  }, [])
+  }, [activeCompanyId, apiFetch, trackingDateFrom, trackingDateTo, trackingProjectFilter, trackingEmployeeFilter, trackingStatusFilter])
+
+  useEffect(() => {
+    loadEntries()
+    // Set default date ranges
+    const today = new Date()
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
+    setTrackingDateFrom(firstDay)
+    setTrackingDateTo(today.toISOString().split('T')[0])
+    const dayOfWeek = today.getDay() === 0 ? 6 : today.getDay() - 1
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - dayOfWeek)
+    setReportDateFrom(monday.toISOString().split('T')[0])
+    setReportDateTo(today.toISOString().split('T')[0])
+  }, [activeCompanyId])
+
+  useEffect(() => {
+    if (activeCompanyId) loadEntries()
+  }, [activeCompanyId, trackingDateFrom, trackingDateTo, trackingProjectFilter, trackingEmployeeFilter, trackingStatusFilter])
 
   // ============ TIMER INTERVAL ============
 
@@ -157,10 +179,9 @@ export function TimeTracking() {
       elapsed: 0,
       entryId: `timer-${Date.now()}`,
     })
-    const employee = mockEmployees.find((e) => e.id === timer.entryId)
-    const empName = employee?.name || 'Корисник'
     const project = mockProjects.find((p) => p.id === timer.projectId)
     const task = mockTasks.find((t) => t.id === timer.taskId)
+    const empName = mockEmployees.find((e) => e.id === timer.entryId)?.name || 'Корисник'
     setActivities((prev) => [
       createActivityEntry(
         'timer_started',
@@ -174,25 +195,20 @@ export function TimeTracking() {
 
   const handleTimerPause = useCallback(() => {
     setTimer((prev) => {
-      const newTimer = { ...prev, status: 'paused' as const }
-      const employee = mockEmployees.find((e) => e.id === prev.entryId)
-      const empName = employee?.name || 'Корисник'
+      const empName = mockEmployees.find((e) => e.id === prev.entryId)?.name || 'Корисник'
       setActivities((a) => [
         createActivityEntry('timer_paused', 'Паузирао тајмер', empName),
         ...a,
       ])
-      return newTimer
+      return { ...prev, status: 'paused' as const }
     })
     toast.info('Тајмер паузиран')
   }, [])
 
   const handleTimerResume = useCallback(() => {
-    const now = new Date().toISOString()
     setTimer((prev) => {
-      // Adjust start time to account for already elapsed time
       const adjustedStart = new Date(Date.now() - prev.elapsed * 1000).toISOString()
-      const employee = mockEmployees.find((e) => e.id === prev.entryId)
-      const empName = employee?.name || 'Корисник'
+      const empName = mockEmployees.find((e) => e.id === prev.entryId)?.name || 'Корисник'
       setActivities((a) => [
         createActivityEntry('timer_resumed', 'Наставио рад након паузе', empName),
         ...a,
@@ -202,44 +218,59 @@ export function TimeTracking() {
     toast.success('Тајмер настављен')
   }, [])
 
-  const handleTimerStop = useCallback(() => {
-    setTimer((prev) => {
-      if (prev.elapsed < 60) {
-        toast.error('Минимално 1 минут за унос')
-        return prev
-      }
-      const durationMinutes = Math.floor(prev.elapsed / 60)
-      const now = new Date()
-      const startTime = prev.startTime ? new Date(prev.startTime) : now
-      const endTime = new Date(startTime.getTime() + prev.elapsed * 1000)
+  const handleTimerStop = useCallback(async () => {
+    if (timer.elapsed < 60) {
+      toast.error('Минимално 1 минут за унос')
+      return
+    }
+    const durationMinutes = Math.floor(timer.elapsed / 60)
+    const now = new Date()
+    const startTime = timer.startTime ? new Date(timer.startTime) : now
+    const endTime = new Date(startTime.getTime() + timer.elapsed * 1000)
 
-      const pad2 = (n: number) => n.toString().padStart(2, '0')
-      const startTimeStr = `${pad2(startTime.getHours())}:${pad2(startTime.getMinutes())}`
-      const endTimeStr = `${pad2(endTime.getHours())}:${pad2(endTime.getMinutes())}`
-      const dateStr = now.toISOString().split('T')[0]
+    const pad2 = (n: number) => n.toString().padStart(2, '0')
+    const startTimeStr = `${pad2(startTime.getHours())}:${pad2(startTime.getMinutes())}`
+    const endTimeStr = `${pad2(endTime.getHours())}:${pad2(endTime.getMinutes())}`
+    const dateStr = now.toISOString().split('T')[0]
 
-      const project = mockProjects.find((p) => p.id === prev.projectId)
-      const task = mockTasks.find((t) => t.id === prev.taskId)
-      const employee = mockEmployees.find((e) => e.id === prev.entryId)
-      const empName = employee?.name || 'Корисник'
+    const project = mockProjects.find((p) => p.id === timer.projectId)
+    const task = mockTasks.find((t) => t.id === timer.taskId)
+    const empName = mockEmployees.find((e) => e.id === timer.entryId)?.name || 'Корисник'
 
-      const newEntry: TimeEntry = {
-        id: `te-${Date.now()}`,
-        employeeId: prev.entryId || 'emp-1',
+    try {
+      const newEntry = await apiFetch('/api/time-tracking', {
+        method: 'POST',
+        body: JSON.stringify({
+          companyId: activeCompanyId,
+          projectId: timer.projectId,
+          taskId: timer.taskId,
+          employeeId: timer.entryId || 'emp-1',
+          employeeName: empName,
+          date: dateStr,
+          startTime: startTimeStr,
+          endTime: endTimeStr,
+          duration: durationMinutes,
+          description: timer.description,
+          status: 'draft',
+        }),
+      })
+
+      setEntries((prev) => [{
+        id: newEntry.id,
+        employeeId: timer.entryId || 'emp-1',
         employeeName: empName,
-        projectId: prev.projectId,
+        projectId: timer.projectId,
         projectName: project?.name || '',
         taskTitle: task?.title || '',
-        description: prev.description,
+        description: timer.description,
         date: dateStr,
         startTime: startTimeStr,
         endTime: endTimeStr,
         duration: durationMinutes,
         status: 'draft',
         createdAt: dateStr,
-      }
+      }, ...prev])
 
-      setEntries((prevEntries) => [newEntry, ...prevEntries])
       setActivities((a) => [
         createActivityEntry(
           'timer_stopped',
@@ -255,37 +286,36 @@ export function TimeTracking() {
       ])
       toast.success(`Унос креиран: ${formatDuration(durationMinutes)}`)
 
-      return {
+      setTimer({
         status: 'idle' as const,
         entryId: null,
-        projectId: prev.projectId,
-        taskId: prev.taskId,
+        projectId: timer.projectId,
+        taskId: timer.taskId,
         description: '',
         startTime: null,
         elapsed: 0,
-      }
-    })
-  }, [])
+      })
+    } catch {
+      toast.error('Грешка при креирању уноса')
+    }
+  }, [timer, activeCompanyId, apiFetch])
 
   const handleTimerReset = useCallback(() => {
-    setTimer((prev) => {
-      const employee = mockEmployees.find((e) => e.id === prev.entryId)
-      const empName = employee?.name || 'Корисник'
-      setActivities((a) => [
-        createActivityEntry('timer_stopped', 'Поништио тајмер', empName),
-        ...a,
-      ])
-      return {
-        ...prev,
-        status: 'idle',
-        entryId: null,
-        description: '',
-        startTime: null,
-        elapsed: 0,
-      }
-    })
+    const empName = mockEmployees.find((e) => e.id === timer.entryId)?.name || 'Корисник'
+    setActivities((a) => [
+      createActivityEntry('timer_stopped', 'Поништио тајмер', empName),
+      ...a,
+    ])
+    setTimer((prev) => ({
+      ...prev,
+      status: 'idle',
+      entryId: null,
+      description: '',
+      startTime: null,
+      elapsed: 0,
+    }))
     toast.info('Тајмер поништен')
-  }, [])
+  }, [timer])
 
   // ============ ENTRY CRUD ============
 
@@ -294,14 +324,42 @@ export function TimeTracking() {
     description: string; date: string; startTime: string; endTime: string
   }) => {
     try {
-      const newEntry = await createTimeEntry(data)
-      setEntries((prev) => [newEntry, ...prev])
-      const employee = mockEmployees.find((e) => e.id === data.employeeId)
+      const project = mockProjects.find((p) => p.id === data.projectId)
       const task = mockTasks.find((t) => t.id === data.taskId)
+      const employee = mockEmployees.find((e) => e.id === data.employeeId)
+
+      const [sh, sm] = data.startTime.split(':').map(Number)
+      const [eh, em] = data.endTime.split(':').map(Number)
+      const duration = Math.max(0, (eh * 60 + em) - (sh * 60 + sm))
+
+      const newEntry = await apiFetch('/api/time-tracking', {
+        method: 'POST',
+        body: JSON.stringify({
+          companyId: activeCompanyId,
+          projectId: data.projectId,
+          taskId: data.taskId,
+          employeeId: data.employeeId,
+          employeeName: employee?.name || '',
+          date: data.date,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          duration,
+          description: data.description,
+          status: 'draft',
+        }),
+      })
+
+      setEntries((prev) => [{
+        ...newEntry,
+        projectName: project?.name || '',
+        taskTitle: task?.title || '',
+        employeeName: employee?.name || '',
+      }, ...prev])
+
       setActivities((prev) => [
         createActivityEntry(
           'entry_created',
-          `Креирао унос за "${task?.title || ''}" (${formatDuration(newEntry.duration)})`,
+          `Креирао унос за "${task?.title || ''}" (${formatDuration(duration)})`,
           employee?.name || ''
         ),
         ...prev,
@@ -310,7 +368,7 @@ export function TimeTracking() {
     } catch {
       toast.error('Грешка при креирању уноса')
     }
-  }, [])
+  }, [activeCompanyId, apiFetch])
 
   const handleEditEntry = useCallback((entry: TimeEntry) => {
     setEditingEntry(entry)
@@ -323,25 +381,61 @@ export function TimeTracking() {
   }) => {
     if (!editingEntry) return
     try {
-      const updated = await updateTimeEntry({ ...data, id: editingEntry.id })
-      if (updated) {
-        setEntries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
+      const [sh, sm] = data.startTime.split(':').map(Number)
+      const [eh, em] = data.endTime.split(':').map(Number)
+      const duration = Math.max(0, (eh * 60 + em) - (sh * 60 + sm))
+
+      await apiFetch('/api/time-tracking', {
+        method: 'PUT',
+        body: JSON.stringify({
+          id: editingEntry.id,
+          companyId: activeCompanyId,
+          projectId: data.projectId,
+          taskId: data.taskId,
+          employeeId: data.employeeId,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          duration,
+          description: data.description,
+          status: editingEntry.status,
+        }),
+      })
+
+      setEntries((prev) => prev.map((e) => {
+        if (e.id !== editingEntry.id) return e
+        const project = mockProjects.find((p) => p.id === data.projectId)
+        const task = mockTasks.find((t) => t.id === data.taskId)
         const employee = mockEmployees.find((emp) => emp.id === data.employeeId)
-        setActivities((prev) => [
-          createActivityEntry(
-            'entry_updated',
-            `Ажурирао унос #${updated.id.slice(-4)}`,
-            employee?.name || ''
-          ),
-          ...prev,
-        ])
-        toast.success('Унос ажуриран')
-      }
+        return {
+          ...e,
+          employeeId: data.employeeId,
+          employeeName: employee?.name || e.employeeName,
+          projectId: data.projectId,
+          projectName: project?.name || e.projectName,
+          taskTitle: task?.title || e.taskTitle,
+          description: data.description,
+          date: data.date,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          duration,
+        }
+      }))
+
+      const employee = mockEmployees.find((emp) => emp.id === data.employeeId)
+      setActivities((prev) => [
+        createActivityEntry(
+          'entry_updated',
+          `Ажурирао унос #${editingEntry.id.slice(-4)}`,
+          employee?.name || ''
+        ),
+        ...prev,
+      ])
+      toast.success('Унос ажуриран')
       setEditingEntry(null)
     } catch {
       toast.error('Грешка при ажурирању')
     }
-  }, [editingEntry])
+  }, [editingEntry, activeCompanyId, apiFetch])
 
   const handleDeleteEntry = useCallback((id: string) => {
     setDeletingId(id)
@@ -349,9 +443,11 @@ export function TimeTracking() {
   }, [])
 
   const confirmDelete = useCallback(async () => {
-    if (!deletingId) return
+    if (!deletingId || !activeCompanyId) return
     try {
-      await deleteTimeEntry(deletingId)
+      await apiFetch(`/api/time-tracking?id=${deletingId}&companyId=${activeCompanyId}`, {
+        method: 'DELETE',
+      })
       setEntries((prev) => prev.filter((e) => e.id !== deletingId))
       setActivities((prev) => [
         createActivityEntry('entry_deleted', `Обрисао унос #${deletingId.slice(-4)}`, 'Корисник'),
@@ -364,11 +460,16 @@ export function TimeTracking() {
       setDeleteDialogOpen(false)
       setDeletingId(null)
     }
-  }, [deletingId])
+  }, [deletingId, activeCompanyId, apiFetch])
 
-  const handleStatusChange = useCallback((id: string, status: EntryStatus) => {
-    setEntries((prev) =>
-      prev.map((e) => {
+  const handleStatusChange = useCallback(async (id: string, status: EntryStatus) => {
+    if (!activeCompanyId) return
+    try {
+      await apiFetch('/api/time-tracking', {
+        method: 'PUT',
+        body: JSON.stringify({ id, companyId: activeCompanyId, status }),
+      })
+      setEntries((prev) => prev.map((e) => {
         if (e.id !== id) return e
         const statusLabels: Record<EntryStatus, string> = {
           draft: 'Нацрт', submitted: 'Предат', approved: 'Одобрен', rejected: 'Одбијен',
@@ -382,9 +483,11 @@ export function TimeTracking() {
           ...a,
         ])
         return { ...e, status }
-      })
-    )
-  }, [])
+      }))
+    } catch {
+      toast.error('Грешка при промени статуса')
+    }
+  }, [activeCompanyId, apiFetch])
 
   // ============ FILTER ENTRIES (TRACKING TAB) ============
 
@@ -432,7 +535,6 @@ export function TimeTracking() {
     toast.success('Извештај генерисан')
   }, [entries, reportDateFrom, reportDateTo, reportProjectId, reportEmployeeId])
 
-  // Generate reports on filter change
   useEffect(() => {
     if (entries.length > 0 && reportDateFrom && reportDateTo) {
       handleGenerateReports()
@@ -818,10 +920,17 @@ export function TimeTracking() {
                 <Button
                   variant="outline"
                   className="text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950"
-                  onClick={() => {
-                    setEntries([])
-                    setActivities([])
-                    toast.info('Сви уноси су обрисани')
+                  onClick={async () => {
+                    try {
+                      for (const e of entries) {
+                        await apiFetch(`/api/time-tracking?id=${e.id}&companyId=${activeCompanyId}`, { method: 'DELETE' })
+                      }
+                      setEntries([])
+                      setActivities([])
+                      toast.info('Сви уноси су обрисани')
+                    } catch {
+                      toast.error('Грешка при брисању')
+                    }
                   }}
                 >
                   Обриши све уносе

@@ -1,0 +1,38 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const companyId = searchParams.get('companyId') || ''
+    const search = searchParams.get('search') || ''
+    const status = searchParams.get('status') || ''
+    const priority = searchParams.get('priority') || ''
+    const where: Record<string, unknown> = { companyId }
+    if (search) where.OR = [
+      { name: { contains: search } },
+      { code: { contains: search } },
+      { driver: { contains: search } },
+      { origin: { contains: search } },
+      { destination: { contains: search } },
+    ]
+    if (status) where.status = status
+    if (priority) where.priority = priority
+    const items = await db.transportRoute.findMany({ where, orderBy: { createdAt: 'desc' } })
+    return NextResponse.json(items)
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json({ error: 'Failed to fetch routes' }, { status: 500 })
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const item = await db.transportRoute.create({ data: body })
+    return NextResponse.json(item, { status: 201 })
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json({ error: 'Failed to create route' }, { status: 500 })
+  }
+}

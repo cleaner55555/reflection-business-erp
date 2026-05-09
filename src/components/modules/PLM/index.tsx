@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,6 +28,8 @@ import {
   Copy, ArrowRight, Users, Calendar, Filter, History, Package,
   Cog, Shield, Target, Zap,
 } from 'lucide-react'
+import { toast } from 'sonner'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // ======================== TYPES ========================
 
@@ -159,61 +161,7 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
 
 const PIE_COLORS = ['#6366f1', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#22c55e', '#ef4444']
 
-// ======================== MOCK DATA ========================
-
-const MOCK_PRODUCTS: PLMProduct[] = [
-  { id: 'p1', name: 'Kontrolna ploča KP-200', sku: 'KP-200-001', category: 'Elektronika', lifecycleStage: 'production', status: 'active', version: '3.2.1', owner: 'Marko Petrović', lastUpdated: '2024-12-08', createdAt: '2023-06-15', description: 'Glavna kontrolna ploča za industrijske sisteme', bomRef: 'BOM-KP200-v3', revisionCount: 7 },
-  { id: 'p2', name: 'Hidraulični cilindar HC-150', sku: 'HC-150-002', category: 'Mehanika', lifecycleStage: 'design', status: 'development', version: '2.0.0', owner: 'Jelena Stanković', lastUpdated: '2024-12-10', createdAt: '2024-03-01', description: 'Hidraulični cilindar nove generacije', bomRef: 'BOM-HC150-v2', revisionCount: 4 },
-  { id: 'p3', name: 'Senzor temperature ST-80', sku: 'ST-80-003', category: 'Elektronika', lifecycleStage: 'testing', status: 'development', version: '1.5.0', owner: 'Nenad Jovanović', lastUpdated: '2024-12-09', createdAt: '2024-01-20', description: 'Digitalni senzor temperature sa I2C interfejsom', bomRef: 'BOM-ST80-v1', revisionCount: 5 },
-  { id: 'p4', name: 'Aluminijsko kućište AK-300', sku: 'AK-300-004', category: 'Mehanika', lifecycleStage: 'production', status: 'active', version: '4.1.0', owner: 'Ana Nikolić', lastUpdated: '2024-11-28', createdAt: '2022-09-10', description: 'Aluminijsko kućište za elektroniku', bomRef: 'BOM-AK300-v4', revisionCount: 9 },
-  { id: 'p5', name: 'Power Supply PS-500', sku: 'PS-500-005', category: 'Elektronika', lifecycleStage: 'prototype', status: 'development', version: '1.0.0', owner: 'Dejan Milić', lastUpdated: '2024-12-11', createdAt: '2024-08-15', description: 'Prekidački napajanje 500W', bomRef: 'BOM-PS500-v1', revisionCount: 2 },
-  { id: 'p6', name: 'Plastična maska PM-100', sku: 'PM-100-006', category: 'Dizajn', lifecycleStage: 'launch', status: 'active', version: '2.3.0', owner: 'Ivana Đorđević', lastUpdated: '2024-12-05', createdAt: '2023-11-22', description: 'Prednja maska za kontrolni panel', bomRef: 'BOM-PM100-v2', revisionCount: 6 },
-  { id: 'p7', name: 'Servo motor SM-60', sku: 'SM-60-007', category: 'Mehanika', lifecycleStage: 'concept', status: 'development', version: '0.1.0', owner: 'Slobodan Tanasijević', lastUpdated: '2024-12-12', createdAt: '2024-11-01', description: 'Servo motor za robotiku', bomRef: '', revisionCount: 1 },
-  { id: 'p8', name: 'Konektor za ploču CP-12', sku: 'CP-12-008', category: 'Elektronika', lifecycleStage: 'production', status: 'active', version: '5.0.2', owner: 'Marko Petrović', lastUpdated: '2024-12-01', createdAt: '2021-04-08', description: 'Visokopin konektor za PCB', bomRef: 'BOM-CP12-v5', revisionCount: 11 },
-  { id: 'p9', name: 'Ventil za rashladni sistem VR-45', sku: 'VR-45-009', category: 'Mehanika', lifecycleStage: 'eol', status: 'discontinued', version: '3.8.0', owner: 'Jelena Stanković', lastUpdated: '2024-06-15', createdAt: '2019-02-20', description: 'Ventil za rashladni sistem - zastareo', bomRef: 'BOM-VR45-v3', revisionCount: 8 },
-  { id: 'p10', name: 'LED modul LM-250', sku: 'LM-250-010', category: 'Elektronika', lifecycleStage: 'production', status: 'active', version: '2.0.0', owner: 'Nenad Jovanović', lastUpdated: '2024-12-07', createdAt: '2023-08-05', description: 'LED modul za indikaciju', bomRef: 'BOM-LM250-v2', revisionCount: 3 },
-]
-
-const MOCK_REVISIONS: PLMRevision[] = [
-  { id: 'r1', productId: 'p1', productName: 'Kontrolna ploča KP-200', version: '3.2.1', description: 'Dodat novi ADC kanal za senzor pritiska', author: 'Marko Petrović', date: '2024-12-08', status: 'approved', changeType: 'Minor', affectedComponents: 'U9, R12, C5' },
-  { id: 'r2', productId: 'p1', productName: 'Kontrolna ploča KP-200', version: '3.2.0', description: 'Popravka bug-a u firmware bootloaderu', author: 'Marko Petrović', date: '2024-11-20', status: 'approved', changeType: 'Patch', affectedComponents: 'U1 firmware' },
-  { id: 'r3', productId: 'p2', productName: 'Hidraulični cilindar HC-150', version: '2.0.0', description: 'Kompletna redizajn osovine i zaptivki', author: 'Jelena Stanković', date: '2024-12-10', status: 'submitted', changeType: 'Major', affectedComponents: 'Osovina, zaptivke, cilindar' },
-  { id: 'r4', productId: 'p3', productName: 'Senzor temperature ST-80', version: '1.5.0', description: 'Prošireni temperaturni raspon na -40°C do +125°C', author: 'Nenad Jovanović', date: '2024-12-09', status: 'draft', changeType: 'Major', affectedComponents: 'NTC termistor, kalibracija' },
-  { id: 'r5', productId: 'p4', productName: 'Aluminijsko kućište AK-300', version: '4.1.0', description: 'Nova ventilaciona rupa na gornjoj strani', author: 'Ana Nikolić', date: '2024-11-28', status: 'approved', changeType: 'Minor', affectedComponents: 'Gornji poklopac' },
-  { id: 'r6', productId: 'p5', productName: 'Power Supply PS-500', version: '1.0.0', description: 'Inicijalna revizija - prototip napravljen', author: 'Dejan Milić', date: '2024-12-11', status: 'submitted', changeType: 'Major', affectedComponents: 'Kompletna ploča' },
-  { id: 'r7', productId: 'p6', productName: 'Plastična maska PM-100', version: '2.3.0', description: 'Promena boje i logotipa', author: 'Ivana Đorđević', date: '2024-12-05', status: 'approved', changeType: 'Patch', affectedComponents: 'Prednja površina' },
-  { id: 'r8', productId: 'p8', productName: 'Konektor za ploču CP-12', version: '5.0.2', description: 'Ispravka tolerancije pinova', author: 'Marko Petrović', date: '2024-12-01', status: 'approved', changeType: 'Patch', affectedComponents: 'Pinovi konektora' },
-]
-
-const MOCK_DOCUMENTS: PLMDocument[] = [
-  { id: 'd1', title: 'Šema KP-200 Rev 3.2', productId: 'p1', productName: 'Kontrolna ploča KP-200', docType: 'drawing', version: '3.2.1', status: 'approved', author: 'Marko Petrović', date: '2024-12-08', hasFile: true, size: '2.4 MB' },
-  { id: 'd2', title: 'Specifikacija KP-200', productId: 'p1', productName: 'Kontrolna ploča KP-200', docType: 'specification', version: '3.2', status: 'approved', author: 'Jelena Stanković', date: '2024-12-08', hasFile: true, size: '1.1 MB' },
-  { id: 'd3', title: 'Crtež cilindra HC-150', productId: 'p2', productName: 'Hidraulični cilindar HC-150', docType: 'drawing', version: '2.0', status: 'submitted', author: 'Ana Nikolić', date: '2024-12-10', hasFile: true, size: '3.7 MB' },
-  { id: 'd4', title: 'Test izveštaj ST-80', productId: 'p3', productName: 'Senzor temperature ST-80', docType: 'test_report', version: '1.5', status: 'draft', author: 'Nenad Jovanović', date: '2024-12-09', hasFile: true, size: '890 KB' },
-  { id: 'd5', title: 'Sertifikat materijala AK-300', productId: 'p4', productName: 'Aluminijsko kućište AK-300', docType: 'material_cert', version: '4.1', status: 'approved', author: 'Dejan Milić', date: '2024-11-28', hasFile: true, size: '450 KB' },
-  { id: 'd6', title: 'Uputstvo za montažu PM-100', productId: 'p6', productName: 'Plastična maska PM-100', docType: 'manual', version: '2.3', status: 'approved', author: 'Ivana Đorđević', date: '2024-12-05', hasFile: true, size: '1.8 MB' },
-  { id: 'd7', title: 'Specifikacija napajanja PS-500', productId: 'p5', productName: 'Power Supply PS-500', docType: 'specification', version: '1.0', status: 'submitted', author: 'Dejan Milić', date: '2024-12-11', hasFile: false, size: '-' },
-  { id: 'd8', title: 'Crtež kućišta PS-500', productId: 'p5', productName: 'Power Supply PS-500', docType: 'drawing', version: '1.0', status: 'draft', author: 'Ana Nikolić', date: '2024-12-11', hasFile: true, size: '5.2 MB' },
-  { id: 'd9', title: 'Test izveštaj CP-12', productId: 'p8', productName: 'Konektor za ploču CP-12', docType: 'test_report', version: '5.0', status: 'approved', author: 'Nenad Jovanović', date: '2024-12-01', hasFile: true, size: '670 KB' },
-  { id: 'd10', title: 'Sertifikat LM-250 CE', productId: 'p10', productName: 'LED modul LM-250', docType: 'material_cert', version: '2.0', status: 'approved', author: 'Jelena Stanković', date: '2024-12-07', hasFile: true, size: '320 KB' },
-  { id: 'd11', title: 'Uputstvo za kalibraciju ST-80', productId: 'p3', productName: 'Senzor temperature ST-80', docType: 'manual', version: '1.4', status: 'approved', author: 'Nenad Jovanović', date: '2024-10-15', hasFile: true, size: '1.5 MB' },
-  { id: 'd12', title: 'Crtež konektora CP-12', productId: 'p8', productName: 'Konektor za ploču CP-12', docType: 'drawing', version: '5.0.2', status: 'approved', author: 'Marko Petrović', date: '2024-12-01', hasFile: true, size: '4.1 MB' },
-]
-
-const MOCK_ECRS: PLM_ECR[] = [
-  { id: 'ecr1', number: 'ECR-2024-001', productId: 'p1', productName: 'Kontrolna ploča KP-200', description: 'Zamena ADC konvertora za bolju preciznost', priority: 'high', requester: 'Nenad Jovanović', status: 'approved', justification: 'Trenutni ADC ima grešku od ±2 LSB, potrebno ±0.5 LSB', affectedAreas: 'Hardver, Firmware', createdAt: '2024-11-25', convertedToECO: true, ecoNumber: 'ECO-2024-001' },
-  { id: 'ecr2', number: 'ECR-2024-002', productId: 'p2', productName: 'Hidraulični cilindar HC-150', description: 'Promena materijala zaptivki na Viton', priority: 'critical', requester: 'Jelena Stanković', status: 'under_review', justification: 'Trenutne zaptivke ne podnose visoke temperature', affectedAreas: 'Mehanika, Nabavka', createdAt: '2024-12-01', convertedToECO: false, ecoNumber: null },
-  { id: 'ecr3', number: 'ECR-2024-003', productId: 'p3', productName: 'Senzor temperature ST-80', description: 'Proširenje temperaturnog raspona', priority: 'medium', requester: 'Dejan Milić', status: 'approved', justification: 'Klijent zahteva rad na temperaturama ispod -20°C', affectedAreas: 'Hardver, Testiranje', createdAt: '2024-12-03', convertedToECO: true, ecoNumber: 'ECO-2024-002' },
-  { id: 'ecr4', number: 'ECR-2024-004', productId: 'p4', productName: 'Aluminijsko kućište AK-300', description: 'Dodat konektor za spoljni ventilator', priority: 'low', requester: 'Ana Nikolić', status: 'draft', justification: 'Poboljšanje hlađenja za nove konfiguracije', affectedAreas: 'Mehanika, Dizajn', createdAt: '2024-12-08', convertedToECO: false, ecoNumber: null },
-  { id: 'ecr5', number: 'ECR-2024-005', productId: 'p8', productName: 'Konektor za ploču CP-12', description: 'Povećanje broja pinova sa 12 na 16', priority: 'high', requester: 'Marko Petrović', status: 'implemented', justification: 'Novi interfejs zahteva 4 dodatna signala', affectedAreas: 'Hardver, Proizvodnja', createdAt: '2024-11-10', convertedToECO: true, ecoNumber: 'ECO-2024-003' },
-  { id: 'ecr6', number: 'ECR-2024-006', productId: 'p10', productName: 'LED modul LM-250', description: 'Prebačen na SMD LED diode', priority: 'medium', requester: 'Nenad Jovanović', status: 'rejected', justification: 'Smanjenje troškova proizvodnje za 30%', affectedAreas: 'Hardver, Proizvodnja, Nabavka', createdAt: '2024-11-18', convertedToECO: false, ecoNumber: null },
-]
-
-const MOCK_ECOS: PLM_ECO[] = [
-  { id: 'eco1', ecrNumber: 'ECR-2024-001', productName: 'Kontrolna ploča KP-200', implementationPlan: 'Zamena ADC chipa, ažuriranje PCB layauta, testiranje', assignedTeam: 'Tim za elektroniku', targetDate: '2025-01-15', completion: 65, status: 'in_progress', approvalChain: ['Nenad J.', 'Marko P.', 'Jelena S.'] },
-  { id: 'eco2', ecrNumber: 'ECR-2024-003', productName: 'Senzor temperature ST-80', implementationPlan: 'Novi NTC termistor, rekalibracija, test na ekstremnim temperaturama', assignedTeam: 'Tim za senzore', targetDate: '2025-02-01', completion: 30, status: 'in_progress', approvalChain: ['Dejan M.', 'Nenad J.'] },
-  { id: 'eco3', ecrNumber: 'ECR-2024-005', productName: 'Konektor za ploču CP-12', implementationPlan: 'Redizajn konektora, nova masnica, kvalitetna kontrola', assignedTeam: 'Tim za konektore', targetDate: '2024-12-20', completion: 100, status: 'completed', approvalChain: ['Marko P.', 'Ana N.', 'Ivana Đ.'] },
-]
+// ======================== CHART DATA (static reference) ========================
 
 const MOCK_STAGE_PIE = [
   { name: 'Koncept', value: 1 },
@@ -292,13 +240,64 @@ const MOCK_TOP_INNOVATORS = [
 
 // ======================== COMPONENT ========================
 
+// ======================== DB Row type ========================
+
+interface DbPlmProduct {
+  id: string
+  companyId: string
+  name: string
+  sku: string
+  category: string
+  lifecycleStage: string
+  status: string
+  version: string
+  owner: string
+  description: string
+  bomRef: string
+  revisionCount: number
+  revisions: string
+  documents: string
+  ecrs: string
+  ecos: string
+  createdAt: string
+  updatedAt: string
+}
+
+function mapDbToProduct(db: DbPlmProduct): PLMProduct {
+  return {
+    id: db.id,
+    name: db.name,
+    sku: db.sku,
+    category: db.category,
+    lifecycleStage: db.lifecycleStage,
+    status: db.status,
+    version: db.version,
+    owner: db.owner,
+    lastUpdated: db.updatedAt ? new Date(db.updatedAt).toISOString().split('T')[0] : '',
+    createdAt: db.createdAt ? new Date(db.createdAt).toISOString().split('T')[0] : '',
+    description: db.description || '',
+    bomRef: db.bomRef || '',
+    revisionCount: db.revisionCount || 0,
+  }
+}
+
+function safeParse<T>(json: string): T[] {
+  try { return JSON.parse(json) || [] } catch { return [] }
+}
+
+// ======================== COMPONENT ========================
+
 export function PLM() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
 
-  // Products state
-  const [products, setProducts] = useState<PLMProduct[]>(MOCK_PRODUCTS)
+  // DB state
+  const [dbProducts, setDbProducts] = useState<DbPlmProduct[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Products state (derived from DB)
+  const products = useMemo(() => dbProducts.map(mapDbToProduct), [dbProducts])
   const [productSearch, setProductSearch] = useState('')
   const [productCategoryFilter, setProductCategoryFilter] = useState('all')
   const [productStageFilter, setProductStageFilter] = useState('all')
@@ -307,26 +306,57 @@ export function PLM() {
   const [productDetailOpen, setProductDetailOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<PLMProduct | null>(null)
 
-  // Revisions state
-  const [revisions, setRevisions] = useState<PLMRevision[]>(MOCK_REVISIONS)
+  // Revisions (derived from embedded JSON in products)
+  const revisions = useMemo(() => dbProducts.flatMap(p => safeParse<PLMRevision>(p.revisions)), [dbProducts])
   const [revisionDialogOpen, setRevisionDialogOpen] = useState(false)
   const [revisionSearch, setRevisionSearch] = useState('')
   const [revisionStatusFilter, setRevisionStatusFilter] = useState('all')
 
-  // Documents state
-  const [documents, setDocuments] = useState<PLMDocument[]>(MOCK_DOCUMENTS)
+  // Documents (derived from embedded JSON in products)
+  const documents = useMemo(() => dbProducts.flatMap(p => safeParse<PLMDocument>(p.documents)), [dbProducts])
   const [docDialogOpen, setDocDialogOpen] = useState(false)
   const [docSearch, setDocSearch] = useState('')
   const [docTypeFilter, setDocTypeFilter] = useState('all')
   const [docStatusFilter, setDocStatusFilter] = useState('all')
 
-  // ECR/ECO state
-  const [ecrs, setEcrs] = useState<PLM_ECR[]>(MOCK_ECRS)
-  const [ecos, setEcos] = useState<PLM_ECO[]>(MOCK_ECOS)
+  // ECR/ECO (derived from embedded JSON in products)
+  const ecrs = useMemo(() => dbProducts.flatMap(p => safeParse<PLM_ECR>(p.ecrs)), [dbProducts])
+  const ecos = useMemo(() => dbProducts.flatMap(p => safeParse<PLM_ECO>(p.ecos)), [dbProducts])
   const [ecrDialogOpen, setEcrDialogOpen] = useState(false)
   const [ecoDialogOpen, setEcoDialogOpen] = useState(false)
   const [selectedEco, setSelectedEco] = useState<PLM_ECO | null>(null)
   const [ecrStatusFilter, setEcrStatusFilter] = useState('all')
+
+  // Fetch data
+  const fetchData = useCallback(async () => {
+    if (!activeCompanyId) return
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/plm?companyId=${activeCompanyId}`)
+      if (!res.ok) throw new Error()
+      const json = await res.json()
+      setDbProducts(json)
+    } catch { toast.error('Greška pri učitavanju PLM podataka') }
+    finally { setLoading(false) }
+  }, [activeCompanyId])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  // Helper to update embedded JSON in a product
+  const updateProductJson = useCallback(async (productId: string, field: 'revisions' | 'documents' | 'ecrs' | 'ecos', newValue: unknown[]) => {
+    const product = dbProducts.find(p => p.id === productId)
+    if (!product) return
+    try {
+      const res = await fetch(`/api/plm/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: JSON.stringify(newValue) }),
+      })
+      if (!res.ok) throw new Error()
+      const updated = await res.json()
+      setDbProducts(prev => prev.map(p => p.id === productId ? updated : p))
+    } catch { toast.error('Greška pri ažuriranju') }
+  }, [dbProducts])
 
   // Forms
   const emptyProductForm = { name: '', sku: '', category: 'Elektronika', lifecycleStage: 'concept', status: 'development', version: '0.1.0', owner: '', description: '' }

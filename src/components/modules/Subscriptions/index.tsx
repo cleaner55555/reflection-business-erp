@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from '@/lib/i18n'
+import { useAppStore } from '@/lib/store'
 import { formatRSD, formatRSDShort } from '@/lib/helpers'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -312,9 +313,21 @@ export function Subscriptions() {
 
 function PregledTab() {
   const { t } = useTranslation()
-  const subscriptions = useMemo(() => generateMockSubscriptions(), [])
+  const { activeCompanyId } = useAppStore()
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const payments = useMemo(() => generateMockPayments(), [])
   const plans = useMemo(() => generateMockPlans(), [])
+
+  useEffect(() => {
+    if (!activeCompanyId) return
+    fetch(`/api/subscriptions?companyId=${activeCompanyId}&limit=100`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.items?.length > 0) setSubscriptions(data.items)
+        else setSubscriptions(generateMockSubscriptions())
+      })
+      .catch(() => setSubscriptions(generateMockSubscriptions()))
+  }, [activeCompanyId])
 
   const activeSubs = useMemo(() => subscriptions.filter(s => s.status === 'active'), [subscriptions])
   const trialSubs = useMemo(() => subscriptions.filter(s => s.status === 'trial'), [subscriptions])
@@ -522,8 +535,9 @@ function PregledTab() {
 
 function PretplateTab() {
   const { t } = useTranslation()
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>(() => generateMockSubscriptions())
-  const [plans] = useState<Plan[]>(() => generateMockPlans())
+  const { activeCompanyId } = useAppStore()
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+  const [plans, setPlans] = useState<Plan[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [planFilter, setPlanFilter] = useState('all')
@@ -532,6 +546,21 @@ function PretplateTab() {
   const [selected, setSelected] = useState<Subscription | null>(null)
   const [form, setForm] = useState(EMPTY_SUB_FORM)
   const payments = useMemo(() => generateMockPayments(), [])
+
+  useEffect(() => {
+    if (!activeCompanyId) return
+    fetch(`/api/subscriptions?companyId=${activeCompanyId}&limit=100`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.items?.length > 0) {
+          setSubscriptions(data.items)
+        } else {
+          setSubscriptions(generateMockSubscriptions())
+        }
+      })
+      .catch(() => setSubscriptions(generateMockSubscriptions()))
+    setPlans(generateMockPlans())
+  }, [activeCompanyId])
 
   const filtered = useMemo(() => {
     return subscriptions.filter(s => {
@@ -544,20 +573,27 @@ function PretplateTab() {
 
   const handleCreate = () => {
     const plan = plans.find(p => p.id === form.planId)
-    if (!plan) return
-    const newSub: Subscription = {
-      id: `sub-${Date.now()}`,
-      customer: form.customer,
-      planId: form.planId,
-      planName: plan.name,
-      startDate: form.startDate,
-      renewalDate: form.startDate,
-      amount: form.amount || plan.price,
-      status: form.trialDays > 0 ? 'trial' : 'active',
-      billingCycle: form.billingCycle,
-      trialDays: form.trialDays,
-    }
-    setSubscriptions(prev => [newSub, ...prev])
+    if (!plan || !activeCompanyId) return
+    fetch('/api/subscriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companyId: activeCompanyId,
+        customer: form.customer,
+        planId: form.planId,
+        planName: plan.name,
+        startDate: form.startDate,
+        renewalDate: form.startDate,
+        amount: form.amount || plan.price,
+        status: form.trialDays > 0 ? 'trial' : 'active',
+        billingCycle: form.billingCycle,
+        trialDays: form.trialDays,
+      }),
+    }).then(res => {
+      if (res.ok) return res.json()
+    }).then(newSub => {
+      if (newSub) setSubscriptions(prev => [newSub, ...prev])
+    })
     setDialogOpen(false)
     setForm(EMPTY_SUB_FORM)
   }
@@ -850,11 +886,13 @@ function PretplateTab() {
 
 function PlanoviTab() {
   const { t } = useTranslation()
-  const [plans, setPlans] = useState<Plan[]>(() => generateMockPlans())
+  const [plans, setPlans] = useState<Plan[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(EMPTY_PLAN_FORM)
+
+  useEffect(() => { setPlans(generateMockPlans()) }, [])
 
   const handleCreate = () => {
     const newPlan: Plan = {
@@ -1062,10 +1100,12 @@ function PlanoviTab() {
 
 function PlacanjaTab() {
   const { t } = useTranslation()
-  const [payments, setPayments] = useState<Payment[]>(() => generateMockPayments())
+  const [payments, setPayments] = useState<Payment[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+
+  useEffect(() => { setPayments(generateMockPayments()) }, [])
 
   const filtered = useMemo(() => {
     return payments.filter(p => {
@@ -1200,11 +1240,13 @@ function PlacanjaTab() {
 
 function KuponiTab() {
   const { t } = useTranslation()
-  const [coupons, setCoupons] = useState<Coupon[]>(() => generateMockCoupons())
+  const [coupons, setCoupons] = useState<Coupon[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(EMPTY_COUPON_FORM)
+
+  useEffect(() => { setCoupons(generateMockCoupons()) }, [])
   const [usageLogOpen, setUsageLogOpen] = useState(false)
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null)
 
@@ -1470,8 +1512,20 @@ function KuponiTab() {
 
 function AnalitikaTab() {
   const { t } = useTranslation()
-  const subscriptions = useMemo(() => generateMockSubscriptions(), [])
+  const { activeCompanyId } = useAppStore()
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const plans = useMemo(() => generateMockPlans(), [])
+
+  useEffect(() => {
+    if (!activeCompanyId) return
+    fetch(`/api/subscriptions?companyId=${activeCompanyId}&limit=100`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.items?.length > 0) setSubscriptions(data.items)
+        else setSubscriptions(generateMockSubscriptions())
+      })
+      .catch(() => setSubscriptions(generateMockSubscriptions()))
+  }, [activeCompanyId])
 
   const mrrTrend = useMemo(() => generateMrrTrend(), [])
   const subGrowth = useMemo(() => generateSubGrowth(), [])

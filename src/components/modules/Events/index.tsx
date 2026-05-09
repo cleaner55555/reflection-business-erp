@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { formatRSD } from '@/lib/helpers'
@@ -168,99 +168,6 @@ const PAYMENT_COLORS: Record<string, string> = {
 
 const CHART_COLORS = ['#8b5cf6', '#14b8a6', '#f59e0b', '#0ea5e9', '#f43f5e']
 
-// ============ MOCK DATA ============
-
-function generateMockEvents(): EventItem[] {
-  const venues = ['Beograd Hub', 'Novi Sad Center', 'Niš Space', 'Kragujevac Hall', 'Subotica Venue', 'Zlatibor Resort']
-  const organizers = ['Marko Petrović', 'Ana Jovanović', 'Jelena Stanković', 'Nikola Đorđević', 'Ivana Milić']
-  const types = EVENT_TYPES
-  const statuses: Array<'draft' | 'published' | 'cancelled' | 'completed'> = ['draft', 'published', 'cancelled', 'completed']
-  const titles = [
-    'Tech Summit 2025', 'AI Workshop', 'Marketing Meetup', 'DevOps Conference',
-    'Startup Pitch Night', 'UX Design Sprint', 'Cloud Architecture Day', 'Data Science Forum',
-    'Agile Retrospective', 'Product Management Circle', 'Frontend Masters', 'Cybersecurity Bootcamp',
-  ]
-  return titles.map((title, i) => {
-    const month = (i % 12) + 1
-    const day = (i * 3 % 28) + 1
-    const cap = [100, 50, 80, 200, 30, 60, 150, 120, 40, 70, 90, 110][i]
-    const reg = Math.min(cap, Math.floor(cap * (0.3 + Math.random() * 0.7)))
-    const price = types[i % 5] === 'social' ? 0 : [2500, 1500, 3500, 5000, 0, 2000, 4000, 3000, 1800, 2200, 1000, 4500][i]
-    return {
-      id: `ev-${i + 1}`,
-      title,
-      type: types[i % 5],
-      description: `${title} - comprehensive session for professionals in the field.`,
-      startDate: `2025-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-      endDate: `2025-${String(month).padStart(2, '0')}-${String(Math.min(28, day + 1)).padStart(2, '0')}`,
-      startTime: `${9 + (i % 4)}:00`,
-      endTime: `${17 + (i % 3)}:00`,
-      venue: venues[i % 6],
-      capacity: cap,
-      registered: reg,
-      price,
-      maxAttendees: cap,
-      organizer: organizers[i % 5],
-      notes: '',
-      status: statuses[i % 4],
-    }
-  })
-}
-
-function generateMockRegistrations(events: EventItem[]): RegistrationItem[] {
-  const names = [
-    'Luka Matić', 'Sara Popović', 'Miloš Tanasijević', 'Nina Vasić', 'Stefan Ilić',
-    'Milica Savić', 'Andrej Nikolić', 'Jovana Radovanović', 'Đorđe Marković', 'Maja Stojanović',
-    'Petar Janković', 'Katarina Todorović', 'Vuk Đurđević', 'Lana Bojović', 'Nemanja Kostić',
-    'Ivana Pavlović', 'Aleksandar Stojković', 'Tijana Simić', 'Bogdan Zlatanović', 'Emina Hadžić',
-  ]
-  const ticketTypes = ['General', 'VIP', 'Early Bird', 'Student']
-  return names.map((name, i) => {
-    const ev = events[i % events.length]
-    const payStatuses: Array<'paid' | 'pending' | 'failed'> = ['paid', 'pending', 'failed']
-    const regStatuses: Array<'registered' | 'checked_in' | 'cancelled' | 'no_show'> = ['registered', 'checked_in', 'cancelled', 'no_show']
-    return {
-      id: `reg-${i + 1}`,
-      attendee: name,
-      eventId: ev.id,
-      eventTitle: ev.title,
-      date: ev.startDate,
-      status: regStatuses[i % 4],
-      ticketType: ticketTypes[i % 4],
-      paymentStatus: payStatuses[i % 3],
-      emailSent: i % 3 !== 2,
-    }
-  })
-}
-
-function generateMockVenues(): VenueItem[] {
-  return [
-    { id: 'v1', name: 'Beograd Hub', address: 'Knez Mihailova 24, Beograd', capacity: 200, equipment: ['projector', 'wifi', 'sound', 'ac', 'parking'], contact: '+381 11 123 4567', rating: 4.8 },
-    { id: 'v2', name: 'Novi Sad Center', address: 'Trg Slobode 5, Novi Sad', capacity: 150, equipment: ['projector', 'wifi', 'sound', 'whiteboard', 'ac'], contact: '+381 21 234 5678', rating: 4.5 },
-    { id: 'v3', name: 'Niš Space', address: 'Obrenovićeva 12, Niš', capacity: 100, equipment: ['projector', 'wifi', 'whiteboard'], contact: '+381 18 345 6789', rating: 4.2 },
-    { id: 'v4', name: 'Kragujevac Hall', address: 'Terazije 3, Kragujevac', capacity: 300, equipment: ['projector', 'wifi', 'sound', 'ac', 'parking', 'whiteboard'], contact: '+381 34 456 7890', rating: 4.6 },
-    { id: 'v5', name: 'Subotica Venue', address: 'Korzo 8, Subotica', capacity: 80, equipment: ['wifi', 'sound', 'ac'], contact: '+381 24 567 8901', rating: 4.0 },
-    { id: 'v6', name: 'Zlatibor Resort', address: 'Zlatibor bb, Zlatibor', capacity: 50, equipment: ['wifi', 'whiteboard', 'ac'], contact: '+381 31 678 9012', rating: 4.9 },
-  ]
-}
-
-function generateMockTickets(events: EventItem[]): TicketItem[] {
-  const tiers = TICKET_TIERS
-  const prices: Record<string, number> = { general: 2500, vip: 5000, early_bird: 1500, student: 1000 }
-  return events.slice(0, 8).flatMap((ev) =>
-    tiers.slice(0, 1 + Math.floor(Math.random() * 3)).map((tier, j) => ({
-      id: `t-${ev.id}-${tier}`,
-      eventId: ev.id,
-      eventTitle: ev.title,
-      name: `${TIER_KEYS[tier] ? '' : tier} - ${ev.title}`,
-      tier,
-      price: ev.price > 0 ? prices[tier] : 0,
-      available: 20 + Math.floor(Math.random() * 30),
-      sold: Math.floor(Math.random() * 25),
-    }))
-  )
-}
-
 // ============ SUB-COMPONENTS ============
 
 function KPICard({ icon: Icon, label, value, subtext, color }: {
@@ -317,10 +224,48 @@ export function Events() {
   const [activeTab, setActiveTab] = useState('overview')
 
   // Data
-  const [events, setEvents] = useState<EventItem[]>(() => generateMockEvents())
-  const [registrations, setRegistrations] = useState<RegistrationItem[]>(() => generateMockRegistrations(generateMockEvents()))
-  const [venues, setVenues] = useState<VenueItem[]>(() => generateMockVenues())
-  const [tickets] = useState<TicketItem[]>(() => generateMockTickets(generateMockEvents()))
+  const [events, setEvents] = useState<EventItem[]>([])
+  const [registrations, setRegistrations] = useState<RegistrationItem[]>([])
+  const [venues, setVenues] = useState<VenueItem[]>([])
+  const [tickets, setTickets] = useState<TicketItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch data from API
+  const loadEvents = useCallback(async () => {
+    if (!activeCompanyId) return
+    try {
+      const res = await fetch(`/api/events?companyId=${activeCompanyId}`)
+      if (res.ok) setEvents(await res.json())
+    } catch { /* empty */ }
+  }, [activeCompanyId])
+
+  const loadRegistrations = useCallback(async () => {
+    if (!activeCompanyId) return
+    try {
+      const res = await fetch(`/api/event-registrations?companyId=${activeCompanyId}`)
+      if (res.ok) setRegistrations(await res.json())
+    } catch { /* empty */ }
+  }, [activeCompanyId])
+
+  const loadVenues = useCallback(async () => {
+    if (!activeCompanyId) return
+    try {
+      const res = await fetch(`/api/event-venues?companyId=${activeCompanyId}`)
+      if (res.ok) setVenues(await res.json())
+    } catch { /* empty */ }
+  }, [activeCompanyId])
+
+  const loadTickets = useCallback(async () => {
+    try {
+      const res = await fetch('/api/event-tickets')
+      if (res.ok) setTickets(await res.json())
+    } catch { /* empty */ }
+  }, [])
+
+  useEffect(() => {
+    Promise.all([loadEvents(), loadRegistrations(), loadVenues(), loadTickets()])
+      .finally(() => setLoading(false))
+  }, [loadEvents, loadRegistrations, loadVenues, loadTickets])
 
   // Filters
   const [eventSearch, setEventSearch] = useState('')
@@ -512,34 +457,51 @@ export function Events() {
   }
 
   function saveEvent() {
+    if (!activeCompanyId) return
+    const payload = { ...eventForm, companyId: activeCompanyId }
     if (isEditing && selectedEvent) {
-      setEvents((prev) => prev.map((e) => e.id === selectedEvent.id ? { ...e, ...eventForm } : e))
+      fetch(`/api/events?id=${selectedEvent.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      }).then(() => loadEvents())
     } else {
-      setEvents((prev) => [...prev, { ...eventForm, id: `ev-${Date.now()}` }])
+      fetch('/api/events', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      }).then(() => loadEvents())
     }
     setEventDialogOpen(false)
   }
 
   function deleteEvent(id: string) {
     if (!confirm(t('events.deleteConfirm'))) return
-    setEvents((prev) => prev.filter((e) => e.id !== id))
+    fetch(`/api/events?id=${id}`, { method: 'DELETE' }).then(() => loadEvents())
   }
 
   function changeEventStatus(id: string, status: EventItem['status']) {
-    setEvents((prev) => prev.map((e) => e.id === id ? { ...e, status } : e))
+    fetch(`/api/events?id=${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status })
+    }).then(() => loadEvents())
   }
 
   function checkInRegistration(id: string) {
-    setRegistrations((prev) => prev.map((r) => r.id === id ? { ...r, status: 'checked_in' as const } : r))
+    fetch(`/api/event-registrations?id=${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'checked_in' })
+    }).then(() => loadRegistrations())
   }
 
   function cancelRegistration(id: string) {
     if (!confirm(t('events.confirmCancelReg'))) return
-    setRegistrations((prev) => prev.map((r) => r.id === id ? { ...r, status: 'cancelled' as const } : r))
+    fetch(`/api/event-registrations?id=${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' })
+    }).then(() => loadRegistrations())
   }
 
   function toggleEmail(id: string) {
-    setRegistrations((prev) => prev.map((r) => r.id === id ? { ...r, emailSent: !r.emailSent } : r))
+    const reg = registrations.find((r) => r.id === id)
+    if (reg) {
+      fetch(`/api/event-registrations?id=${id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ emailSent: !reg.emailSent })
+      }).then(() => loadRegistrations())
+    }
   }
 
   function openCreateVenue() {
@@ -552,25 +514,30 @@ export function Events() {
 
   function openEditVenue(v: VenueItem) {
     setVenueForm(v)
-    setVenueEquip([...v.equipment])
+    setVenueEquip(typeof v.equipment === 'string' ? JSON.parse(v.equipment) : [...v.equipment])
     setSelectedVenue(v)
     setIsEditing(true)
     setVenueDialogOpen(true)
   }
 
   function saveVenue() {
-    const venueData = { ...venueForm, equipment: venueEquip }
+    if (!activeCompanyId) return
+    const venueData = { ...venueForm, equipment: JSON.stringify(venueEquip), companyId: activeCompanyId }
     if (isEditing && selectedVenue) {
-      setVenues((prev) => prev.map((v) => v.id === selectedVenue.id ? venueData as VenueItem : v))
+      fetch(`/api/event-venues?id=${selectedVenue.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(venueData)
+      }).then(() => loadVenues())
     } else {
-      setVenues((prev) => [...prev, { ...venueData, id: `v-${Date.now()}` } as VenueItem])
+      fetch('/api/event-venues', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(venueData)
+      }).then(() => loadVenues())
     }
     setVenueDialogOpen(false)
   }
 
   function deleteVenue(id: string) {
     if (!confirm(t('events.deleteConfirm'))) return
-    setVenues((prev) => prev.filter((v) => v.id !== id))
+    fetch(`/api/event-venues?id=${id}`, { method: 'DELETE' }).then(() => loadVenues())
   }
 
   function toggleEquip(eq: string) {
@@ -1359,8 +1326,9 @@ export function Events() {
           <p className="text-sm text-muted-foreground">{t('events.subtitle')}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => {
-          setEvents(generateMockEvents())
-          setRegistrations(generateMockRegistrations(events))
+          setLoading(true)
+          Promise.all([loadEvents(), loadRegistrations(), loadVenues(), loadTickets()])
+            .finally(() => setLoading(false))
         }}>
           <RefreshCw className="h-4 w-4 mr-1" /> {t('common.refresh')}
         </Button>
