@@ -121,7 +121,7 @@ export function Barcode() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><ScanBarcodeIconclassName="h-6 w-6" />Баркод и QR код</h1><p className="text-sm text-muted-foreground">Генерисање, управљање и штампање баркодова</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><ScanBarcode className="h-6 w-6" />Баркод и QR код</h1><p className="text-sm text-muted-foreground">Генерисање, управљање и штампање баркодова</p></div>
         <div className="flex gap-2">
           {selectedForPrint.size > 0 && <Button variant="outline" size="sm" className="gap-2" onClick={() => { toast.success(`Štampa ${selectedForPrint.size} barkodova...`); setSelectedForPrint(new Set()) }}><Printer className="h-4 w-4" />Штампај ({selectedForPrint.size})</Button>}
           <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" />Novi barkod</Button>
@@ -131,7 +131,7 @@ export function Barcode() {
       <Card className="border-dashed">
         <CardContent className="p-4">
           <div className="flex gap-2 items-center">
-            <div className="relative flex-1"><ScanBarcodeIconclassName="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Skeniraj ili unesi barkod..." className="pl-8 h-10 text-sm font-mono" value={scanInput} onChange={e => setScanInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()} /></div>
+            <div className="relative flex-1"><ScanBarcode className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Skeniraj ili unesi barkod..." className="pl-8 h-10 text-sm font-mono" value={scanInput} onChange={e => setScanInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()} /></div>
             <Button onClick={handleScan} variant="secondary">Skeniraj</Button>
           </div>
         </CardContent>
