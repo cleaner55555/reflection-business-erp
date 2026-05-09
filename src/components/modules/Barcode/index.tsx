@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ScanBarcode, Plus, Search, Trash2, Pencil, Printer, Download, QrCode, Barcode, Tag, Package, AlertTriangle } from 'lucide-react'
+import { ScanBarcode, Plus, Search, Trash2, Pencil, Printer, Download, QrCode, BarcodeIcon, Tag, Package, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -121,7 +121,7 @@ export function Barcode() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><ScanBarcode className="h-6 w-6" />Баркод и QR код</h1><p className="text-sm text-muted-foreground">Генерисање, управљање и штампање баркодова</p></div>
+        <div><h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><ScanBarcodeIconclassName="h-6 w-6" />Баркод и QR код</h1><p className="text-sm text-muted-foreground">Генерисање, управљање и штампање баркодова</p></div>
         <div className="flex gap-2">
           {selectedForPrint.size > 0 && <Button variant="outline" size="sm" className="gap-2" onClick={() => { toast.success(`Štampa ${selectedForPrint.size} barkodova...`); setSelectedForPrint(new Set()) }}><Printer className="h-4 w-4" />Штампај ({selectedForPrint.size})</Button>}
           <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" />Novi barkod</Button>
@@ -131,15 +131,15 @@ export function Barcode() {
       <Card className="border-dashed">
         <CardContent className="p-4">
           <div className="flex gap-2 items-center">
-            <div className="relative flex-1"><ScanBarcode className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Skeniraj ili unesi barkod..." className="pl-8 h-10 text-sm font-mono" value={scanInput} onChange={e => setScanInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()} /></div>
+            <div className="relative flex-1"><ScanBarcodeIconclassName="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Skeniraj ili unesi barkod..." className="pl-8 h-10 text-sm font-mono" value={scanInput} onChange={e => setScanInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleScan()} /></div>
             <Button onClick={handleScan} variant="secondary">Skeniraj</Button>
           </div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Barcode className="h-3.5 w-3.5" />Ukupno</div><p className="text-2xl font-bold">{items.length}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-blue-600 mb-1"><Barcode className="h-3.5 w-3.5" />EAN-13</div><p className="text-2xl font-bold">{items.filter(i => i.type === 'EAN13').length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><BarcodeIconclassName="h-3.5 w-3.5" />Ukupno</div><p className="text-2xl font-bold">{items.length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2 text-xs text-blue-600 mb-1"><BarcodeIconclassName="h-3.5 w-3.5" />EAN-13</div><p className="text-2xl font-bold">{items.filter(i => i.type === 'EAN13').length}</p></Card>
         <Card className="p-4"><div className="flex items-center gap-2 text-xs text-violet-600 mb-1"><QrCode className="h-3.5 w-3.5" />QR kodovi</div><p className="text-2xl font-bold">{items.filter(i => i.type === 'QR').length}</p></Card>
         <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Tag className="h-3.5 w-3.5" />Kategorije</div><p className="text-2xl font-bold">{categories.length}</p></Card>
       </div>
