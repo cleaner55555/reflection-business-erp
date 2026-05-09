@@ -60,7 +60,7 @@ function CorpColor(rate: number) {
   return 'text-red-600 bg-red-50 border-red-200'
 }
 
-export function Zakoni() {
+export function Laws() {
   const { t } = useTranslation()
   const [selectedCountry, setSelectedCountry] = useState<string>('RS')
   const [searchQuery, setSearchQuery] = useState('')

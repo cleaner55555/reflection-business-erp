@@ -22,7 +22,7 @@ import { Podesavanja } from '@/components/modules/Settings'
 import { Integracije } from '@/components/modules/Integracije'
 import { BankSync } from '@/components/modules/BankSync'
 import { AIAssistant } from '@/components/modules/AIAssistant'
-import { Zakoni } from '@/components/modules/Zakoni'
+import { Laws } from '@/components/modules/Laws'
 import { Maloprodaja } from '@/components/modules/Retail'
 import { Shipping } from '@/components/modules/Shipping'
 import { Marketplace } from '@/components/modules/Marketplace'
@@ -149,7 +149,7 @@ export const moduleComponents: Record<string, React.ComponentType> = {
   settings: Podesavanja,
   integrations: Integracije,
   'bank-sync': BankSync,
-  laws: Zakoni,
+  laws: Laws,
   pos: Maloprodaja,
   shipping: Shipping,
   marketplace: Marketplace,
