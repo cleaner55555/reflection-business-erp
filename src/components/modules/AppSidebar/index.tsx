@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useMemo } from 'react'
 import { useAppStore, type ModuleType } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
 import { useTranslation } from '@/lib/i18n'
@@ -14,6 +15,7 @@ import {
   SidebarGroupLabel,
   SidebarFooter,
   useSidebar,
+  SidebarInput,
 } from '@/components/ui/sidebar'
 import { openAppLauncher } from '@/components/modules/AppLauncher'
 import {
@@ -252,10 +254,35 @@ export function AppSidebar() {
   const companyName = useThemeStore((s) => s.companyName)
   const isModuleEnabled = useAppStore((s) => s.isModuleEnabled)
 
+  const [search, setSearch] = useState('')
+
   const handleModuleClick = (module: ModuleType) => {
     setActiveModule(module)
     if (isMobile) setOpenMobile(false)
   }
+
+  // Filter groups based on search
+  const filteredGroups = useMemo(() => {
+    if (!search.trim()) return menuGroups
+    const q = search.toLowerCase().trim()
+    return menuGroups
+      .map((group) => {
+        const groupLabel = t(group.labelKey).toLowerCase()
+        const filteredItems = group.items.filter((item) => {
+          const label = t(item.labelKey).toLowerCase()
+          const moduleName = item.module.toLowerCase()
+          return label.includes(q) || moduleName.includes(q)
+        })
+        // If search matches group label, show all enabled items
+        if (groupLabel.includes(q)) {
+          return { ...group, items: group.items.filter((item) => isModuleEnabled(item.module)) }
+        }
+        return { ...group, items: filteredItems.filter((item) => isModuleEnabled(item.module)) }
+      })
+      .filter((group) => group.items.length > 0)
+  }, [search, t, isModuleEnabled])
+
+  const totalModuleCount = menuGroups.reduce((sum, g) => sum + g.items.length, 0)
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/50">
@@ -289,7 +316,31 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {menuGroups.map((group) => (
+        {/* Search */}
+        <div className="px-3 pb-2 group-data-[collapsible=icon]:hidden">
+          <SidebarInput
+            placeholder="Pretraži module..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* Collapsed search icon */}
+        <div className="group-data-[collapsible=icon]:flex hidden px-2 pb-2 justify-center">
+          <button
+            onClick={() => openAppLauncher()}
+            className="flex items-center justify-center rounded-lg p-2 hover:bg-sidebar-accent transition-colors"
+            title="Pretraži module"
+          >
+            <div className="grid grid-cols-3 gap-[3px]">
+              {[...Array(9)].map((_, i) => (
+                <span key={i} className="block h-[3px] w-[3px] rounded-full bg-sidebar-foreground/60" />
+              ))}
+            </div>
+          </button>
+        </div>
+
+        {filteredGroups.map((group) => (
           <SidebarGroup key={group.labelKey}>
             <SidebarGroupLabel>{t(group.labelKey)}</SidebarGroupLabel>
             <SidebarMenu>
@@ -311,6 +362,13 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroup>
         ))}
+
+        {/* No results */}
+        {filteredGroups.length === 0 && search.trim() && (
+          <div className="px-4 py-6 text-center">
+            <p className="text-xs text-muted-foreground">Nema rezultata za &quot;{search}&quot;</p>
+          </div>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-2">
@@ -341,7 +399,7 @@ export function AppSidebar() {
             <span className="text-xs font-medium text-sidebar-foreground truncate max-w-[120px]">
               {companyName || 'Reflection Business'}
             </span>
-            <span className="text-[10px] text-sidebar-foreground/50">ERP + CRM v4.0 · {menuGroups.reduce((sum, g) => sum + g.items.length, 0)} modula</span>
+            <span className="text-xs text-sidebar-foreground/50">ERP + CRM v4.0 · {totalModuleCount} modula</span>
           </div>
         </div>
       </SidebarFooter>
