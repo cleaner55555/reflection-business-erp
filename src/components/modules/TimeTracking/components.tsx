@@ -826,7 +826,7 @@ export function ActivityLog({ activities }: ActivityLogProps) {
                       </span>
                       <Badge
                         variant="outline"
-                        className="text-[10px] px-1.5 py-0"
+                        className="text-xs px-1.5 py-0"
                       >
                         {ACTIVITY_ACTION_LABELS[activity.action]}
                       </Badge>
@@ -1055,14 +1055,14 @@ export function WeeklySummaryTable({ data }: WeeklySummaryTableProps) {
                         key={pb.projectName}
                         className="flex items-center gap-2"
                       >
-                        <span className="text-[10px] text-muted-foreground truncate w-[80px]">
+                        <span className="text-xs text-muted-foreground truncate w-[80px]">
                           {pb.projectName}
                         </span>
                         <Progress
                           value={(pb.hours / maxHours) * 100}
                           className="h-1.5 flex-1"
                         />
-                        <span className="text-[10px] font-mono w-[30px] text-right">
+                        <span className="text-xs font-mono w-[30px] text-right">
                           {pb.hours}ч
                         </span>
                       </div>

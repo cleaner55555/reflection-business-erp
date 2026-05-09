@@ -376,7 +376,7 @@ export function ServiceCenter() {
                 <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Aktivni</span><Wrench className="h-4 w-4 text-blue-500" /></div><p className="text-2xl font-bold text-blue-600">{stats.open + stats.inProgress}</p></Card>
                 <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Završeni</span><CheckCircle2 className="h-4 w-4 text-green-500" /></div><p className="text-2xl font-bold text-green-600">{stats.delivered}</p></Card>
                 <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Prosečno dana</span><Clock className="h-4 w-4 text-primary" /></div><p className="text-2xl font-bold">{stats.avgRepairDays}</p></Card>
-                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Prihodi</span><TrendingUp className="h-4 w-4 text-emerald-500" /></div><p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p><p className="text-[10px] text-muted-foreground">prosek {formatCurrency(stats.avgCost)}/nalog</p></Card>
+                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Prihodi</span><TrendingUp className="h-4 w-4 text-emerald-500" /></div><p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p><p className="text-xs text-muted-foreground">prosek {formatCurrency(stats.avgCost)}/nalog</p></Card>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -392,7 +392,7 @@ export function ServiceCenter() {
                   <CardHeader className="pb-3"><CardTitle className="text-sm">Tehničari</CardTitle></CardHeader>
                   <CardContent className="space-y-3">
                     {stats.byTechnician.map((t) => { const max = Math.max(...stats.byTechnician.map((x) => x.count)); return (
-                      <div key={t.tech} className="flex items-center gap-3"><span className="text-xs w-32 truncate">{t.tech}</span><div className="flex-1 bg-muted rounded-full h-2"><div className="h-2 rounded-full bg-emerald-500" style={{ width: `${(t.count / max) * 100}%` }} /></div><span className="text-xs font-medium w-6 text-right">{t.count}</span><span className="text-[10px] text-muted-foreground w-20 text-right">{formatCurrency(t.revenue)}</span></div>
+                      <div key={t.tech} className="flex items-center gap-3"><span className="text-xs w-32 truncate">{t.tech}</span><div className="flex-1 bg-muted rounded-full h-2"><div className="h-2 rounded-full bg-emerald-500" style={{ width: `${(t.count / max) * 100}%` }} /></div><span className="text-xs font-medium w-6 text-right">{t.count}</span><span className="text-xs text-muted-foreground w-20 text-right">{formatCurrency(t.revenue)}</span></div>
                     ) })}
                   </CardContent>
                 </Card>
@@ -402,7 +402,7 @@ export function ServiceCenter() {
                 <CardHeader className="pb-3"><CardTitle className="text-sm">Najviše servisirani brendovi</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                   {stats.topBrands.map((b, i) => (
-                    <div key={b.brand} className="flex items-center gap-3"><span className="text-xs font-bold w-5 text-muted-foreground">{i + 1}.</span><span className="text-xs flex-1">{b.brand}</span><Badge variant="outline" className="text-[10px]">{b.count}</Badge></div>
+                    <div key={b.brand} className="flex items-center gap-3"><span className="text-xs font-bold w-5 text-muted-foreground">{i + 1}.</span><span className="text-xs flex-1">{b.brand}</span><Badge variant="outline" className="text-xs">{b.count}</Badge></div>
                   ))}
                 </CardContent>
               </Card>
@@ -433,10 +433,10 @@ export function ServiceCenter() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-xs font-mono text-muted-foreground">{o.number}</span>
-                              <Badge variant="outline" className={`text-[10px] ${sCfg?.color}`}>{sCfg?.label}</Badge>
-                              <span className="text-[10px]">{cCfg?.icon} {o.productBrand} {o.productModel}</span>
-                              {o.warranty && <Badge variant="secondary" className="text-[10px]">Garancija</Badge>}
-                              {o.parts.length > 0 && <Badge variant="outline" className="text-[10px]">{o.parts.length} delova</Badge>}
+                              <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                              <span className="text-xs">{cCfg?.icon} {o.productBrand} {o.productModel}</span>
+                              {o.warranty && <Badge variant="secondary" className="text-xs">Garancija</Badge>}
+                              {o.parts.length > 0 && <Badge variant="outline" className="text-xs">{o.parts.length} delova</Badge>}
                             </div>
                             <h3 className="text-sm font-medium">{o.clientName}</h3>
                             <p className="text-xs text-muted-foreground line-clamp-1">{o.description}</p>
@@ -483,10 +483,10 @@ export function ServiceCenter() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Klijent</p><p className="text-sm font-medium">{selected.clientName}</p><p className="text-xs text-muted-foreground">{selected.clientAddress}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Tehničar</p><p className="text-sm font-medium">{selected.assignedTechnician}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Procenjeni trošak</p><p className="text-sm font-bold">{formatCurrency(selected.estimatedCost)}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Stvarni trošak</p><p className="text-sm font-bold">{selected.actualCost > 0 ? formatCurrency(selected.actualCost) : '—'}</p>{selected.actualCost > 0 && <p className="text-[10px] text-muted-foreground">Delovi: {formatCurrency(selected.partsCost)} · Rad: {formatCurrency(selected.laborCost)}</p>}</div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Klijent</p><p className="text-sm font-medium">{selected.clientName}</p><p className="text-xs text-muted-foreground">{selected.clientAddress}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Tehničar</p><p className="text-sm font-medium">{selected.assignedTechnician}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Procenjeni trošak</p><p className="text-sm font-bold">{formatCurrency(selected.estimatedCost)}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Stvarni trošak</p><p className="text-sm font-bold">{selected.actualCost > 0 ? formatCurrency(selected.actualCost) : '—'}</p>{selected.actualCost > 0 && <p className="text-xs text-muted-foreground">Delovi: {formatCurrency(selected.partsCost)} · Rad: {formatCurrency(selected.laborCost)}</p>}</div>
                 </div>
 
                 <div><h4 className="text-sm font-medium mb-2">Opis kvara</h4><div className="p-3 rounded-lg bg-muted/50 text-sm whitespace-pre-wrap">{selected.description}</div></div>
@@ -509,7 +509,7 @@ export function ServiceCenter() {
                 <div><h4 className="text-sm font-medium mb-3">Vremenska linija</h4>
                   <div className="space-y-3">
                     {selected.timeline.map((ev) => (
-                      <div key={ev.id} className="flex gap-3"><div className="flex flex-col items-center"><div className="w-2.5 h-2.5 rounded-full bg-primary" /><div className="w-px flex-1 bg-border" /></div><div className="pb-3"><p className="text-xs font-medium">{ev.action}</p><p className="text-[10px] text-muted-foreground">{ev.description} · {ev.performedBy} · {new Date(ev.timestamp).toLocaleString('sr-RS')}</p></div></div>
+                      <div key={ev.id} className="flex gap-3"><div className="flex flex-col items-center"><div className="w-2.5 h-2.5 rounded-full bg-primary" /><div className="w-px flex-1 bg-border" /></div><div className="pb-3"><p className="text-xs font-medium">{ev.action}</p><p className="text-xs text-muted-foreground">{ev.description} · {ev.performedBy} · {new Date(ev.timestamp).toLocaleString('sr-RS')}</p></div></div>
                     ))}
                   </div>
                 </div>

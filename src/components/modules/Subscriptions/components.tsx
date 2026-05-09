@@ -378,13 +378,13 @@ function PretplateTab() {
                     <TableRow key={sub.id} className="hover:bg-muted/30">
                       <TableCell className="text-xs font-medium">{sub.customer}</TableCell>
                       <TableCell className="text-xs">
-                        <Badge variant="secondary" className="text-[10px]">{sub.planName}</Badge>
+                        <Badge variant="secondary" className="text-xs">{sub.planName}</Badge>
                       </TableCell>
                       <TableCell className="text-xs hidden md:table-cell">{sub.startDate}</TableCell>
                       <TableCell className="text-xs hidden lg:table-cell">{sub.renewalDate}</TableCell>
                       <TableCell className="text-xs text-right font-semibold">{formatRSD(sub.amount)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || sub.status}</Badge>
+                        <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || sub.status}</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
@@ -492,7 +492,7 @@ function PretplateTab() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">{t('common.status')}</p>
-                  <Badge variant="outline" className={`text-[10px] ${SUB_STATUS_CONFIG[selected.status]?.color || ''}`}>
+                  <Badge variant="outline" className={`text-xs ${SUB_STATUS_CONFIG[selected.status]?.color || ''}`}>
                     {SUB_STATUS_CONFIG[selected.status]?.label || selected.status}
                   </Badge>
                 </div>
@@ -540,7 +540,7 @@ function PretplateTab() {
                             <TableCell className="text-xs text-right font-semibold">{formatRSD(p.amount)}</TableCell>
                             <TableCell className="text-xs">{PAYMENT_METHOD_LABELS[p.method]}</TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={`text-[10px] ${pCfg?.color || ''}`}>{pCfg?.label || p.status}</Badge>
+                              <Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || p.status}</Badge>
                             </TableCell>
                           </TableRow>
                         )
@@ -642,7 +642,7 @@ function PlanoviTab() {
           <Card key={plan.id} className={`relative ${!plan.isActive ? 'opacity-60' : ''}`}>
             {plan.isActive && (
               <div className="absolute top-3 right-3">
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
                   <Zap className="h-3 w-3 mr-1" /> {t('common.active')}
                 </Badge>
               </div>
@@ -872,10 +872,10 @@ function PlacanjaTab() {
                       <TableCell className="text-xs hidden md:table-cell">{p.subscriptionName}</TableCell>
                       <TableCell className="text-xs text-right font-semibold">{formatRSD(p.amount)}</TableCell>
                       <TableCell className="text-xs hidden sm:table-cell">
-                        <Badge variant="secondary" className="text-[10px]">{PAYMENT_METHOD_LABELS[p.method]}</Badge>
+                        <Badge variant="secondary" className="text-xs">{PAYMENT_METHOD_LABELS[p.method]}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || p.status}</Badge>
+                        <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || p.status}</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
@@ -1038,7 +1038,7 @@ function KuponiTab() {
                       {coupon.validFrom} — {coupon.validTo}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`text-[10px] ${
+                      <Badge variant="outline" className={`text-xs ${
                         coupon.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                         coupon.status === 'expired' ? 'bg-red-50 text-red-700 border-red-200' :
                         'bg-slate-100 text-slate-700 border-slate-200'

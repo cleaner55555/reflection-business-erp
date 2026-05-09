@@ -665,7 +665,7 @@ export function PLM() {
                       <div className="flex-1 min-w-0">
                         <span className="text-sm font-medium">{milestone.title}</span>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <Badge variant="outline" className={`text-[10px] ${STAGE_CONFIG[milestone.stage]?.color || ''}`}>
+                          <Badge variant="outline" className={`text-xs ${STAGE_CONFIG[milestone.stage]?.color || ''}`}>
                             {STAGE_CONFIG[milestone.stage]?.label}
                           </Badge>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -691,7 +691,7 @@ export function PLM() {
                         <span className="text-sm font-medium truncate block">{product.name}</span>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-muted-foreground">{product.sku}</span>
-                          <Badge variant="outline" className={`text-[10px] ${STATUS_CONFIG[product.status]?.color || ''}`}>
+                          <Badge variant="outline" className={`text-xs ${STATUS_CONFIG[product.status]?.color || ''}`}>
                             {STATUS_CONFIG[product.status]?.label}
                           </Badge>
                         </div>
@@ -760,12 +760,12 @@ export function PLM() {
                       <TableCell className="font-mono text-xs">{product.sku}</TableCell>
                       <TableCell>{product.category}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${STAGE_CONFIG[product.lifecycleStage]?.color || ''}`}>
+                        <Badge variant="outline" className={`text-xs ${STAGE_CONFIG[product.lifecycleStage]?.color || ''}`}>
                           {STAGE_CONFIG[product.lifecycleStage]?.label}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${STATUS_CONFIG[product.status]?.color || ''}`}>
+                        <Badge variant="outline" className={`text-xs ${STATUS_CONFIG[product.status]?.color || ''}`}>
                           {STATUS_CONFIG[product.status]?.label}
                         </Badge>
                       </TableCell>
@@ -831,7 +831,7 @@ export function PLM() {
                       <TableCell className="font-mono text-xs">v{rev.version}</TableCell>
                       <TableCell className="text-sm max-w-[200px] truncate">{rev.description}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${rev.changeType === 'Major' ? 'bg-red-100 text-red-700' : rev.changeType === 'Minor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>
+                        <Badge variant="outline" className={`text-xs ${rev.changeType === 'Major' ? 'bg-red-100 text-red-700' : rev.changeType === 'Minor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>
                           {rev.changeType}
                         </Badge>
                       </TableCell>
@@ -839,7 +839,7 @@ export function PLM() {
                       <TableCell className="text-xs">{rev.author}</TableCell>
                       <TableCell className="text-xs">{rev.date}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${REVISION_STATUS_CONFIG[rev.status]?.color || ''}`}>
+                        <Badge variant="outline" className={`text-xs ${REVISION_STATUS_CONFIG[rev.status]?.color || ''}`}>
                           {REVISION_STATUS_CONFIG[rev.status]?.label}
                         </Badge>
                       </TableCell>
@@ -883,7 +883,7 @@ export function PLM() {
                   const count = revisions.filter(r => r.status === key).length
                   return (
                     <div key={key} className="flex items-center gap-2">
-                      <Badge variant="outline" className={`text-[10px] ${config.color}`}>{config.label}</Badge>
+                      <Badge variant="outline" className={`text-xs ${config.color}`}>{config.label}</Badge>
                       <span className="text-lg font-bold">{count}</span>
                     </div>
                   )
@@ -942,13 +942,13 @@ export function PLM() {
                       <TableCell className="font-medium text-sm">{doc.title}</TableCell>
                       <TableCell className="text-sm">{doc.productName}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${DOC_TYPE_CONFIG[doc.docType]?.color || ''}`}>
+                        <Badge variant="outline" className={`text-xs ${DOC_TYPE_CONFIG[doc.docType]?.color || ''}`}>
                           {DOC_TYPE_CONFIG[doc.docType]?.label}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-mono text-xs">v{doc.version}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${REVISION_STATUS_CONFIG[doc.status]?.color || ''}`}>
+                        <Badge variant="outline" className={`text-xs ${REVISION_STATUS_CONFIG[doc.status]?.color || ''}`}>
                           {REVISION_STATUS_CONFIG[doc.status]?.label || doc.status}
                         </Badge>
                       </TableCell>
@@ -956,11 +956,11 @@ export function PLM() {
                       <TableCell className="text-xs">{doc.date}</TableCell>
                       <TableCell>
                         {doc.hasFile ? (
-                          <Badge className="bg-emerald-100 text-emerald-700 text-[10px] gap-1">
+                          <Badge className="bg-emerald-100 text-emerald-700 text-xs gap-1">
                             <Upload className="h-3 w-3" /> {doc.size}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[10px] text-muted-foreground">-</Badge>
+                          <Badge variant="outline" className="text-xs text-muted-foreground">-</Badge>
                         )}
                       </TableCell>
                       <TableCell>
@@ -1025,19 +1025,19 @@ export function PLM() {
                           <TableCell className="text-sm">{ecr.productName}</TableCell>
                           <TableCell className="text-sm max-w-[200px] truncate">{ecr.description}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={`text-[10px] ${PRIORITY_CONFIG[ecr.priority]?.color || ''}`}>
+                            <Badge variant="outline" className={`text-xs ${PRIORITY_CONFIG[ecr.priority]?.color || ''}`}>
                               {PRIORITY_CONFIG[ecr.priority]?.label}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs">{ecr.requester}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={`text-[10px] ${ECR_STATUS_CONFIG[ecr.status]?.color || ''}`}>
+                            <Badge variant="outline" className={`text-xs ${ECR_STATUS_CONFIG[ecr.status]?.color || ''}`}>
                               {ECR_STATUS_CONFIG[ecr.status]?.label}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs">
                             {ecr.ecoNumber ? (
-                              <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">{ecr.ecoNumber}</Badge>
+                              <Badge className="bg-emerald-100 text-emerald-700 text-xs">{ecr.ecoNumber}</Badge>
                             ) : '-'}
                           </TableCell>
                           <TableCell>
@@ -1076,7 +1076,7 @@ export function PLM() {
                         <span className="font-medium text-sm">{eco.productName}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={`text-[10px] ${ECO_STATUS_CONFIG[eco.status]?.color || ''}`}>
+                        <Badge variant="outline" className={`text-xs ${ECO_STATUS_CONFIG[eco.status]?.color || ''}`}>
                           {ECO_STATUS_CONFIG[eco.status]?.label}
                         </Badge>
                         <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setSelectedEco(eco); setEcoDialogOpen(true) }}>
@@ -1100,7 +1100,7 @@ export function PLM() {
                       <span className="text-xs text-muted-foreground">{t('plm.approvalChain')}:</span>
                       {eco.approvalChain.map((approver, idx) => (
                         <div key={idx} className="flex items-center gap-1">
-                          <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700">
+                          <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700">
                             <Shield className="h-3 w-3 mr-0.5" /> {approver}
                           </Badge>
                           {idx < eco.approvalChain.length - 1 && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
@@ -1348,7 +1348,7 @@ export function PLM() {
                           <TableCell className="text-sm">{rev.description}</TableCell>
                           <TableCell className="text-xs">{rev.date}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={`text-[10px] ${REVISION_STATUS_CONFIG[rev.status]?.color || ''}`}>
+                            <Badge variant="outline" className={`text-xs ${REVISION_STATUS_CONFIG[rev.status]?.color || ''}`}>
                               {REVISION_STATUS_CONFIG[rev.status]?.label}
                             </Badge>
                           </TableCell>
@@ -1370,7 +1370,7 @@ export function PLM() {
                     <div key={doc.id} className="flex items-center gap-2 border rounded-md p-2">
                       <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span className="text-sm flex-1 truncate">{doc.title}</span>
-                      <Badge variant="outline" className={`text-[10px] shrink-0 ${DOC_TYPE_CONFIG[doc.docType]?.color || ''}`}>
+                      <Badge variant="outline" className={`text-xs shrink-0 ${DOC_TYPE_CONFIG[doc.docType]?.color || ''}`}>
                         {DOC_TYPE_CONFIG[doc.docType]?.label}
                       </Badge>
                       <span className="text-xs text-muted-foreground">v{doc.version}</span>

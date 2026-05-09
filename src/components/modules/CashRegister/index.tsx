@@ -732,14 +732,14 @@ export function CashRegister() {
                       {product.stock <= 3 && product.stock > 0 && (
                         <Badge
                           variant="destructive"
-                          className="absolute -top-1.5 -right-1.5 text-[9px] px-1 py-0"
+                          className="absolute -top-1.5 -right-1.5 text-xs px-1 py-0"
                         >
                           {product.stock}
                         </Badge>
                       )}
                       {product.stock <= 0 && (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-lg">
-                          <span className="text-[10px] text-muted-foreground font-medium">
+                          <span className="text-xs text-muted-foreground font-medium">
                             Нема на залихи
                           </span>
                         </div>
@@ -751,11 +751,11 @@ export function CashRegister() {
                         <span className="text-sm font-bold text-emerald-600">
                           {formatRsd(product.price)}
                         </span>
-                        <Badge variant="outline" className="text-[9px] px-1">
+                        <Badge variant="outline" className="text-xs px-1">
                           {product.pdvRate}%
                         </Badge>
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {getCategoryLabel(product.category)} · {product.stock} {product.unit}
                       </p>
                     </button>
@@ -805,7 +805,7 @@ export function CashRegister() {
                                 <p className="text-xs font-medium truncate">
                                   {item.product.name}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                   {formatRsd(item.product.price)} × {item.quantity}
                                 </p>
                               </div>

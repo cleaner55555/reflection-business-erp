@@ -392,13 +392,13 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
                           <h3 className="text-sm font-semibold truncate">{tc(c.name)}</h3>
                           <p className="text-xs text-muted-foreground truncate mt-0.5">{tc(c.subject)}</p>
                         </div>
-                        <Badge variant="outline" className={`text-[10px] ml-2 shrink-0 ${CAMPAIGN_STATUS[c.status]?.color || ''}`}>
+                        <Badge variant="outline" className={`text-xs ml-2 shrink-0 ${CAMPAIGN_STATUS[c.status]?.color || ''}`}>
                           {CAMPAIGN_STATUS[c.status]?.label || c.status}
                         </Badge>
                       </div>
 
                       {c.list && (
-                        <p className="text-[10px] text-muted-foreground mb-2">
+                        <p className="text-xs text-muted-foreground mb-2">
                           <FileText className="h-3 w-3 inline mr-1" />{c.list.name}
                         </p>
                       )}
@@ -406,15 +406,15 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="text-center">
                           <p className="text-xs font-bold">{c.sentCount}</p>
-                          <p className="text-[10px] text-muted-foreground">{t('emailMarketing.sentCount')}</p>
+                          <p className="text-xs text-muted-foreground">{t('emailMarketing.sentCount')}</p>
                         </div>
                         <div className="text-center">
                           <p className="text-xs font-bold text-emerald-600">{c.openRate?.toFixed(1)}%</p>
-                          <p className="text-[10px] text-muted-foreground">{t('emailMarketing.openings')}</p>
+                          <p className="text-xs text-muted-foreground">{t('emailMarketing.openings')}</p>
                         </div>
                         <div className="text-center">
                           <p className="text-xs font-bold text-blue-600">{c.clickRate?.toFixed(1)}%</p>
-                          <p className="text-[10px] text-muted-foreground">{t('emailMarketing.clicks')}</p>
+                          <p className="text-xs text-muted-foreground">{t('emailMarketing.clicks')}</p>
                         </div>
                       </div>
 
@@ -429,28 +429,28 @@ function KampanjeTab({ campaigns, lists, loading, onRefresh }: {
                         </div>
                       </div>
 
-                      <p className="text-[10px] text-muted-foreground mb-3">
+                      <p className="text-xs text-muted-foreground mb-3">
                         {c.sentAt ? `${t('emailMarketing.sent')}: ${formatDate(c.sentAt)}` : c.scheduledAt ? `${t('emailMarketing.scheduled')}: ${formatDate(c.scheduledAt)}` : `${t('emailMarketing.created')}: ${formatDate(c.createdAt)}`}
                       </p>
 
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {c.status === 'nacrt' && (
-                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-[10px] text-emerald-600" onClick={() => handleStatusChange(c.id, 'poslata')}>
+                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-emerald-600" onClick={() => handleStatusChange(c.id, 'poslata')}>
                             <Send className="h-3 w-3" /> {t('emailMarketing.send')}
                           </Button>
                         )}
                         {c.status === 'nacrt' && (
-                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-[10px] text-blue-600" onClick={() => handleStatusChange(c.id, 'zakazana')}>
+                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-blue-600" onClick={() => handleStatusChange(c.id, 'zakazana')}>
                             <Clock className="h-3 w-3" /> {t('emailMarketing.schedule')}
                           </Button>
                         )}
-                        <Button variant="ghost" size="sm" className="h-7 gap-1 text-[10px]" onClick={() => handleDuplicate(c)}>
+                        <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => handleDuplicate(c)}>
                           <Copy className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => { setEditing(c); setViewMode('form') }}>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { setEditing(c); setViewMode('form') }}>
                           <Pencil className="h-3 w-3" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-7 text-[10px] text-red-500" onClick={() => handleDelete(c.id)}>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs text-red-500" onClick={() => handleDelete(c.id)}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -645,7 +645,7 @@ function PretplatniciTab({ subscribers, lists, loading, onRefresh }: {
                         </TableCell>
                         <TableCell className="text-xs hidden md:table-cell">{s.list?.name || '-'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[10px] ${SUBSCRIBER_STATUS[s.status]?.color || ''}`}>
+                          <Badge variant="outline" className={`text-xs ${SUBSCRIBER_STATUS[s.status]?.color || ''}`}>
                             {SUBSCRIBER_STATUS[s.status]?.label || s.status}
                           </Badge>
                         </TableCell>
@@ -779,7 +779,7 @@ function ListeTab({ lists, loading, onRefresh }: {
                           </div>
                           <div>
                             <h3 className="text-sm font-semibold">{l.name}</h3>
-                            <p className="text-[10px] text-muted-foreground">{t('emailMarketing.created')}: {formatDate(l.createdAt)}</p>
+                            <p className="text-xs text-muted-foreground">{t('emailMarketing.created')}: {formatDate(l.createdAt)}</p>
                           </div>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -798,12 +798,12 @@ function ListeTab({ lists, loading, onRefresh }: {
                         <div className="flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-xs font-medium">{l._count?.subscribers || 0}</span>
-                          <span className="text-[10px] text-muted-foreground">{t('emailMarketing.subscribersCount')}</span>
+                          <span className="text-xs text-muted-foreground">{t('emailMarketing.subscribersCount')}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-xs font-medium">{l._count?.campaigns || 0}</span>
-                          <span className="text-[10px] text-muted-foreground">{t('emailMarketing.campaignsCount')}</span>
+                          <span className="text-xs text-muted-foreground">{t('emailMarketing.campaignsCount')}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -968,18 +968,18 @@ function SabloniTab({ templates, loading, onRefresh }: {
                       </div>
 
                       {tmpl.category && (
-                        <Badge variant="outline" className={`text-[10px] mb-3 ${getCategoryColor(tmpl.category)}`}>
+                        <Badge variant="outline" className={`text-xs mb-3 ${getCategoryColor(tmpl.category)}`}>
                           {TEMPLATE_CATEGORIES[tmpl.category] || tmpl.category}
                         </Badge>
                       )}
 
                       <div className="mt-2 rounded-md bg-muted/50 border p-2 max-h-16 overflow-hidden">
-                        <p className="text-[10px] text-muted-foreground line-clamp-3 font-mono whitespace-pre-wrap break-all">
+                        <p className="text-xs text-muted-foreground line-clamp-3 font-mono whitespace-pre-wrap break-all">
                           {tmpl.content.replace(/<[^>]*>/g, '').substring(0, 120) || t('emailMarketing.htmlContent')}
                         </p>
                       </div>
 
-                      <p className="text-[10px] text-muted-foreground mt-2">
+                      <p className="text-xs text-muted-foreground mt-2">
                         {t('emailMarketing.created')}: {formatDate(tmpl.createdAt)}
                       </p>
                     </CardContent>

@@ -389,7 +389,7 @@ function KPICard({
             <div className="flex items-center gap-1">
               {trend === 'up' && <TrendingUp className="h-3 w-3 text-emerald-600" />}
               {trend === 'down' && <TrendingDown className="h-3 w-3 text-red-500" />}
-              <span className={`text-[11px] font-medium ${trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
+              <span className={`text-xs font-medium ${trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
                 {trendLabel}
               </span>
             </div>
@@ -1083,7 +1083,7 @@ export function Reports() {
                         </div>
                         <div className="h-6 w-full rounded bg-muted overflow-hidden">
                           <div
-                            className="h-full rounded flex items-center pl-2 text-[10px] text-white font-semibold transition-all"
+                            className="h-full rounded flex items-center pl-2 text-xs text-white font-semibold transition-all"
                             style={{
                               width: `${widthPercent}%`,
                               backgroundColor: COLORS[i % COLORS.length],
@@ -1192,7 +1192,7 @@ export function Reports() {
                           <TableRow key={i}>
                             <TableCell className="text-xs font-medium">{ls.name}</TableCell>
                             <TableCell className="text-xs text-center">
-                              <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{ls.current}</Badge>
+                              <Badge variant="destructive" className="text-xs px-1.5 py-0">{ls.current}</Badge>
                             </TableCell>
                             <TableCell className="text-xs text-center text-muted-foreground">{ls.minimum}</TableCell>
                             <TableCell className="text-xs text-right">{formatRSD(ls.value)}</TableCell>
@@ -1277,7 +1277,7 @@ export function Reports() {
                         <TableCell className="text-xs font-medium">{ds.name}</TableCell>
                         <TableCell className="text-xs text-right">{formatRSD(ds.stockValue)}</TableCell>
                         <TableCell className="text-xs text-center">
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-red-600 border-red-200">
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 text-red-600 border-red-200">
                             {ds.daysInactive}d
                           </Badge>
                         </TableCell>
@@ -1312,7 +1312,7 @@ export function Reports() {
                       <TableRow key={i}>
                         <TableCell className="text-xs font-medium">{pa.name}</TableCell>
                         <TableCell className="text-xs">
-                          <Badge variant="outline" className="text-[10px] px-2 py-0">
+                          <Badge variant="outline" className="text-xs px-2 py-0">
                             {getStatusLabel(pa.type)}
                           </Badge>
                         </TableCell>
@@ -1373,7 +1373,7 @@ export function Reports() {
                             {formatRSD(td.overdueAmount)}
                           </TableCell>
                           <TableCell className="text-xs text-center">
-                            <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                            <Badge variant="destructive" className="text-xs px-1.5 py-0">
                               {td.daysOverdue}d
                             </Badge>
                           </TableCell>
@@ -1442,7 +1442,7 @@ export function Reports() {
                         <TableRow key={i}>
                           <TableCell className="text-xs font-medium">{ed.name}</TableCell>
                           <TableCell className="text-xs">
-                            <Badge variant="outline" className="text-[10px] px-2 py-0">{ed.department}</Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-0">{ed.department}</Badge>
                           </TableCell>
                           <TableCell className="text-xs text-center">{ed.tasksCompleted}</TableCell>
                           <TableCell className="text-xs text-right font-medium">{formatRSD(ed.revenueGenerated)}</TableCell>
@@ -1505,7 +1505,7 @@ export function Reports() {
                         <TableCell className="text-xs text-center">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] px-1.5 py-0 ${
+                            className={`text-xs px-1.5 py-0 ${
                               ed.attendanceRate >= 95
                                 ? 'text-emerald-600 border-emerald-200'
                                 : ed.attendanceRate >= 90
@@ -1518,7 +1518,7 @@ export function Reports() {
                         </TableCell>
                         <TableCell className="text-xs text-center">
                           {ed.overtimeHours > 15 ? (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-amber-600 border-amber-200">
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 text-amber-600 border-amber-200">
                               {ed.overtimeHours}h
                             </Badge>
                           ) : (
@@ -1743,10 +1743,10 @@ export function Reports() {
                             {sr.description || '—'}
                           </TableCell>
                           <TableCell className="text-xs hidden md:table-cell">
-                            <Badge variant="outline" className="text-[10px] px-2 py-0">{sr.metric}</Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-0">{sr.metric}</Badge>
                           </TableCell>
                           <TableCell className="text-xs hidden md:table-cell">
-                            <Badge variant="outline" className="text-[10px] px-2 py-0">{sr.dimension}</Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-0">{sr.dimension}</Badge>
                           </TableCell>
                           <TableCell className="text-xs text-right">
                             <div className="flex items-center justify-end gap-1">

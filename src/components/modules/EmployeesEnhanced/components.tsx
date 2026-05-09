@@ -337,10 +337,10 @@ function OrganigramTab() {
 
   const getContractBadge = (type: string | null) => {
     switch (type) {
-      case 'neodredjeno': return <Badge className="bg-emerald-100 text-emerald-700 text-[9px] px-1.5 py-0">Neodređeno</Badge>
-      case 'odredjeno': return <Badge className="bg-amber-100 text-amber-700 text-[9px] px-1.5 py-0">Određeno</Badge>
-      case 'honorarno': return <Badge className="bg-violet-100 text-violet-700 text-[9px] px-1.5 py-0">Honorarno</Badge>
-      case 'praksa': return <Badge className="bg-teal-100 text-teal-700 text-[9px] px-1.5 py-0">Praksa</Badge>
+      case 'neodredjeno': return <Badge className="bg-emerald-100 text-emerald-700 text-xs px-1.5 py-0">Neodređeno</Badge>
+      case 'odredjeno': return <Badge className="bg-amber-100 text-amber-700 text-xs px-1.5 py-0">Određeno</Badge>
+      case 'honorarno': return <Badge className="bg-violet-100 text-violet-700 text-xs px-1.5 py-0">Honorarno</Badge>
+      case 'praksa': return <Badge className="bg-teal-100 text-teal-700 text-xs px-1.5 py-0">Praksa</Badge>
       default: return null
     }
   }
@@ -399,7 +399,7 @@ function OrganigramTab() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-medium">{emp.firstName} {emp.lastName}</span>
               {emp.department && (
-                <Badge variant="outline" className="text-[9px] px-1.5 py-0">{emp.department}</Badge>
+                <Badge variant="outline" className="text-xs px-1.5 py-0">{emp.department}</Badge>
               )}
               {getContractBadge(emp.contractType)}
             </div>
@@ -499,7 +499,7 @@ function OrganigramTab() {
                     <h3 className="text-sm font-semibold mt-2">{selectedEmployee.firstName} {selectedEmployee.lastName}</h3>
                     <p className="text-xs text-muted-foreground">{selectedEmployee.position || 'Nema poziciju'}</p>
                     {selectedEmployee.department && (
-                      <Badge variant="outline" className="text-[10px] mt-1">{selectedEmployee.department}</Badge>
+                      <Badge variant="outline" className="text-xs mt-1">{selectedEmployee.department}</Badge>
                     )}
                   </div>
 
@@ -536,7 +536,7 @@ function OrganigramTab() {
                             className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer text-xs"
                             onClick={() => { setSelectedId(dr.id); if (!expanded.has(dr.id)) toggleExpand(dr.id) }}
                           >
-                            <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold">
+                            <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
                               {dr.firstName[0]}{dr.lastName[0]}
                             </div>
                             <span className="font-medium">{dr.firstName} {dr.lastName}</span>

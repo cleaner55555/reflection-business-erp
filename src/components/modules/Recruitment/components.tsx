@@ -195,7 +195,7 @@ export function OverviewTab({
                     <div className="text-right">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${cfg?.color || ""}`}
+                        className={`text-xs ${cfg?.color || ""}`}
                       >
                         {cfg?.label || j.status}
                       </Badge>
@@ -304,7 +304,7 @@ export function JobsTab({
                       <td className="p-3">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${cfg?.color || ""}`}
+                          className={`text-xs ${cfg?.color || ""}`}
                         >
                           {cfg?.label || j.status}
                         </Badge>

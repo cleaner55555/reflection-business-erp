@@ -453,7 +453,7 @@ export function Messaging() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview"><BarChart3 className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
-          <TabsTrigger value="messages"><MessageSquare className="h-3.5 w-3.5 mr-1" /> Poruke <Badge variant="secondary" className="ml-1 text-[9px] px-1.5 py-0">{stats.unread}</Badge></TabsTrigger>
+          <TabsTrigger value="messages"><MessageSquare className="h-3.5 w-3.5 mr-1" /> Poruke <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0">{stats.unread}</Badge></TabsTrigger>
           <TabsTrigger value="templates"><FileText className="h-3.5 w-3.5 mr-1" /> Template-i</TabsTrigger>
           <TabsTrigger value="chatbot"><Bot className="h-3.5 w-3.5 mr-1" /> Chatbot</TabsTrigger>
           <TabsTrigger value="campaigns"><Send className="h-3.5 w-3.5 mr-1" /> Kampanje</TabsTrigger>
@@ -482,7 +482,7 @@ export function Messaging() {
                       <div key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-amber-50 dark:hover:bg-amber-900/10 cursor-pointer" onClick={() => { setSelectedConv(c); setActiveTab('messages') }}>
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(c.contactName)}`}>{getInitials(c.contactName)}</div>
                         <div className="flex-1 min-w-0"><p className="text-sm font-medium">{c.contactName}</p><p className="text-xs text-muted-foreground truncate">{c.lastMessage}</p></div>
-                        <Badge variant="outline" className="text-[10px] bg-amber-100 text-amber-700">{c.unreadCount}</Badge>
+                        <Badge variant="outline" className="text-xs bg-amber-100 text-amber-700">{c.unreadCount}</Badge>
                       </div>
                     ))}
                   </div>
@@ -505,7 +505,7 @@ export function Messaging() {
                     )
                   })}
                 </div>
-                <div className="flex justify-between mt-1 text-[9px] text-muted-foreground"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+                <div className="flex justify-between mt-1 text-xs text-muted-foreground"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
               </CardContent>
             </Card>
 
@@ -524,15 +524,15 @@ export function Messaging() {
                 <div className="space-y-2">
                   <p className="text-xs font-medium">Template-i</p>
                   <div className="flex items-center gap-2 text-xs">
-                    <Badge variant="secondary" className="text-[10px]">{templates.filter(t => t.status === 'approved').length} odobrenih</Badge>
-                    <Badge variant="outline" className="text-[10px]">{templates.filter(t => t.status === 'pending').length} na čekanju</Badge>
+                    <Badge variant="secondary" className="text-xs">{templates.filter(t => t.status === 'approved').length} odobrenih</Badge>
+                    <Badge variant="outline" className="text-xs">{templates.filter(t => t.status === 'pending').length} na čekanju</Badge>
                   </div>
                 </div>
                 <Separator />
                 <div className="space-y-2">
                   <p className="text-xs font-medium">Chatbot</p>
                   <div className="flex items-center gap-2 text-xs">
-                    <Badge variant="secondary" className="text-[10px]">{autoReplies.filter(a => a.enabled).length} aktivnih pravila</Badge>
+                    <Badge variant="secondary" className="text-xs">{autoReplies.filter(a => a.enabled).length} aktivnih pravila</Badge>
                     <span className="text-muted-foreground">{autoReplies.reduce((s, a) => s + a.matchCount, 0)} ukupno pokretanja</span>
                   </div>
                 </div>
@@ -540,7 +540,7 @@ export function Messaging() {
                 <div className="space-y-2">
                   <p className="text-xs font-medium">Kampanje</p>
                   <div className="flex items-center gap-2 text-xs">
-                    <Badge variant="secondary" className="text-[10px]">{campaigns.filter(c => c.status === 'completed').length} završenih</Badge>
+                    <Badge variant="secondary" className="text-xs">{campaigns.filter(c => c.status === 'completed').length} završenih</Badge>
                     <span className="text-muted-foreground">{campaigns.reduce((s, c) => s + c.readCount, 0)} pročitanih</span>
                   </div>
                 </div>
@@ -578,9 +578,9 @@ export function Messaging() {
                     const maxD = Math.max(...Object.values(stats.msgByDay), 1)
                     return (
                       <div key={day} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="text-[9px] text-muted-foreground">{count}</span>
+                        <span className="text-xs text-muted-foreground">{count}</span>
                         <div className="w-full rounded-t-sm bg-green-400" style={{ height: `${(count / maxD) * 100}%`, minHeight: '4px' }} />
-                        <span className="text-[9px] text-muted-foreground">{day}</span>
+                        <span className="text-xs text-muted-foreground">{day}</span>
                       </div>
                     )
                   })}
@@ -600,18 +600,18 @@ export function Messaging() {
               <div className="space-y-2">
                 {conversations.map(c => (
                   <div key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedConv(c); setActiveTab('messages') }}>
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-[10px] font-medium shrink-0 ${getAvatarColor(c.contactName)}`}>{getInitials(c.contactName)}</div>
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-medium shrink-0 ${getAvatarColor(c.contactName)}`}>{getInitials(c.contactName)}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-medium">{c.contactName}</span>
                         {c.isStarred && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}
                       </div>
-                      <p className="text-[10px] text-muted-foreground">{c.contactPhone}</p>
+                      <p className="text-xs text-muted-foreground">{c.contactPhone}</p>
                     </div>
-                    <Badge variant="outline" className={`text-[9px] ${CONV_STATUS[c.status]?.color}`}>{CONV_STATUS[c.status]?.label}</Badge>
+                    <Badge variant="outline" className={`text-xs ${CONV_STATUS[c.status]?.color}`}>{CONV_STATUS[c.status]?.label}</Badge>
                     <div className="text-right shrink-0">
-                      <p className="text-[10px] text-muted-foreground">{formatDate(c.lastMessageTime)}</p>
-                      <p className="text-[9px] text-muted-foreground">{c.messages.length} poruka</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(c.lastMessageTime)}</p>
+                      <p className="text-xs text-muted-foreground">{c.messages.length} poruka</p>
                     </div>
                   </div>
                 ))}
@@ -634,7 +634,7 @@ export function Messaging() {
                 ].map(f => (
                   <div key={f.name} className="flex items-start gap-3 p-3 border rounded-lg">
                     <div className="h-9 w-9 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center shrink-0"><f.icon className="h-4 w-4 text-green-600" /></div>
-                    <div><p className="text-xs font-medium">{f.name}</p><p className="text-[10px] text-muted-foreground">{f.desc}</p></div>
+                    <div><p className="text-xs font-medium">{f.name}</p><p className="text-xs text-muted-foreground">{f.desc}</p></div>
                   </div>
                 ))}
               </div>
@@ -650,8 +650,8 @@ export function Messaging() {
               <div className="p-3 space-y-2 border-b">
                 <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži..." className="pl-9 h-8 text-xs" value={convSearch} onChange={(e) => setConvSearch(e.target.value)} /></div>
                 <div className="flex gap-1">
-                  <Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(CONV_STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-                  {stats.allTags.length > 0 && <Select value={filterTag} onValueChange={setFilterTag}><SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi tagovi</SelectItem>{stats.allTags.map(t => <SelectItem key={t} value={t}>#{t}</SelectItem>)}</SelectContent></Select>}
+                  <Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(CONV_STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+                  {stats.allTags.length > 0 && <Select value={filterTag} onValueChange={setFilterTag}><SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi tagovi</SelectItem>{stats.allTags.map(t => <SelectItem key={t} value={t}>#{t}</SelectItem>)}</SelectContent></Select>}
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto">
@@ -659,18 +659,18 @@ export function Messaging() {
                   <div key={c.id} className={`flex items-start gap-3 p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedConv?.id === c.id ? 'bg-muted' : ''}`} onClick={() => setSelectedConv(c)}>
                     <div className="relative shrink-0">
                       <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(c.contactName)}`}>{getInitials(c.contactName)}</div>
-                      {c.unreadCount > 0 && <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center">{c.unreadCount}</div>}
+                      {c.unreadCount > 0 && <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">{c.unreadCount}</div>}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5"><span className="text-xs font-medium truncate">{c.contactName}</span>{c.isStarred && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}</div>
-                        <span className="text-[10px] text-muted-foreground shrink-0">{formatDate(c.lastMessageTime)}</span>
+                        <span className="text-xs text-muted-foreground shrink-0">{formatDate(c.lastMessageTime)}</span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">{c.lastMessage}</p>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{c.lastMessage}</p>
                       <div className="flex items-center gap-1 mt-1">
                         <Badge variant="outline" className={`text-[8px] px-1 py-0 ${CONV_STATUS[c.status]?.color}`}>{CONV_STATUS[c.status]?.label}</Badge>
                         {c.tags.slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="text-[8px] px-1 py-0">#{tag}</Badge>)}
-                        {c.assignedTo && <span className="text-[9px] text-muted-foreground ml-auto">{c.assignedTo}</span>}
+                        {c.assignedTo && <span className="text-xs text-muted-foreground ml-auto">{c.assignedTo}</span>}
                       </div>
                     </div>
                   </div>
@@ -689,7 +689,7 @@ export function Messaging() {
                       <div className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(selectedConv.contactName)}`}>{getInitials(selectedConv.contactName)}</div>
                       <div>
                         <p className="text-sm font-medium">{selectedConv.contactName}</p>
-                        <p className="text-[10px] text-muted-foreground">{selectedConv.contactPhone}</p>
+                        <p className="text-xs text-muted-foreground">{selectedConv.contactPhone}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -708,8 +708,8 @@ export function Messaging() {
                           <div className={`max-w-[75%] rounded-lg p-3 ${isInbound ? 'bg-muted' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'}`}>
                             <p className="text-sm">{msg.content}</p>
                             <div className="flex items-center gap-1.5 mt-1 justify-end">
-                              <span className="text-[10px] text-muted-foreground">{new Date(msg.timestamp).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
-                              {!isInbound && <span className="text-[10px] text-green-600">{STATUS_CONFIG[msg.status]?.icon}</span>}
+                              <span className="text-xs text-muted-foreground">{new Date(msg.timestamp).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
+                              {!isInbound && <span className="text-xs text-green-600">{STATUS_CONFIG[msg.status]?.icon}</span>}
                             </div>
                           </div>
                         </div>
@@ -756,11 +756,11 @@ export function Messaging() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p className="text-sm font-medium">{tpl.name}</p>
-                          <Badge variant="outline" className={`text-[10px] ${STATUS_CONFIG[tpl.status === 'approved' ? 'delivered' : tpl.status === 'pending' ? 'pending' : 'failed']?.color}`}>{tpl.status === 'approved' ? '✅ Odobren' : tpl.status === 'pending' ? '⏳ Na čekanju' : '❌ Odbijen'}</Badge>
-                          <Badge variant="secondary" className={`text-[10px] ${catCfg?.color}`}>{catCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${STATUS_CONFIG[tpl.status === 'approved' ? 'delivered' : tpl.status === 'pending' ? 'pending' : 'failed']?.color}`}>{tpl.status === 'approved' ? '✅ Odobren' : tpl.status === 'pending' ? '⏳ Na čekanju' : '❌ Odbijen'}</Badge>
+                          <Badge variant="secondary" className={`text-xs ${catCfg?.color}`}>{catCfg?.label}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground bg-muted/30 rounded p-2 mt-1">{tpl.body}</p>
-                        <div className="flex gap-3 mt-2 text-[10px] text-muted-foreground">
+                        <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
                           <span>🇷🇸 {tpl.language}</span>
                           <span>{tpl.variables} promenljivih</span>
                           <span>Korišćen {tpl.usedCount}x</span>
@@ -790,13 +790,13 @@ export function Messaging() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-sm font-medium">{ar.name}</p>
-                        <Badge variant="outline" className="text-[10px]">Trigger: {TRIGGER_LABELS[ar.trigger]}</Badge>
-                        {ar.enabled ? <Badge variant="secondary" className="text-[9px] bg-green-100 text-green-700"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Aktivno</Badge> : <Badge variant="secondary" className="text-[9px]">Neaktivno</Badge>}
+                        <Badge variant="outline" className="text-xs">Trigger: {TRIGGER_LABELS[ar.trigger]}</Badge>
+                        {ar.enabled ? <Badge variant="secondary" className="text-xs bg-green-100 text-green-700"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Aktivno</Badge> : <Badge variant="secondary" className="text-xs">Neaktivno</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground">{ar.description}</p>
-                      {ar.keyword && <p className="text-[10px] text-muted-foreground mt-1">Ključne reči: {ar.keyword.split(',').map(k => <Badge key={k} variant="secondary" className="text-[9px] mr-1">#{k.trim()}</Badge>)}</p>}
+                      {ar.keyword && <p className="text-xs text-muted-foreground mt-1">Ključne reči: {ar.keyword.split(',').map(k => <Badge key={k} variant="secondary" className="text-xs mr-1">#{k.trim()}</Badge>)}</p>}
                       <p className="text-xs bg-muted/30 rounded p-2 mt-1">{ar.response}</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">Pokrenuto {ar.matchCount}x {ar.delaySeconds > 0 ? `· Kašnjenje: ${ar.delaySeconds}s` : ''}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Pokrenuto {ar.matchCount}x {ar.delaySeconds > 0 ? `· Kašnjenje: ${ar.delaySeconds}s` : ''}</p>
                     </div>
                     <Switch checked={ar.enabled} onCheckedChange={() => handleToggleAutoReply(ar.id)} />
                   </div>
@@ -822,14 +822,14 @@ export function Messaging() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p className="text-sm font-medium">{cmp.name}</p>
-                          <Badge variant="outline" className={`text-[10px] ${statusCfg?.color}`}>{statusCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${statusCfg?.color}`}>{statusCfg?.label}</Badge>
                         </div>
-                        {cmp.scheduledAt && <p className="text-[10px] text-muted-foreground">Zakazano: {formatDate(cmp.scheduledAt)}</p>}
+                        {cmp.scheduledAt && <p className="text-xs text-muted-foreground">Zakazano: {formatDate(cmp.scheduledAt)}</p>}
                         <div className="grid grid-cols-4 gap-3 mt-3">
-                          <div className="text-center p-2 bg-muted/30 rounded"><p className="text-[10px] text-muted-foreground">Primaoca</p><p className="text-sm font-bold">{cmp.recipientCount}</p></div>
-                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/10 rounded"><p className="text-[10px] text-muted-foreground">Poslato</p><p className="text-sm font-bold">{cmp.sentCount}</p></div>
-                          <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded"><p className="text-[10px] text-muted-foreground">Pročitano</p><p className="text-sm font-bold">{cmp.readCount}</p></div>
-                          <div className="text-center p-2 bg-red-50 dark:bg-red-900/10 rounded"><p className="text-[10px] text-muted-foreground">Greške</p><p className="text-sm font-bold text-red-600">{cmp.failedCount}</p></div>
+                          <div className="text-center p-2 bg-muted/30 rounded"><p className="text-xs text-muted-foreground">Primaoca</p><p className="text-sm font-bold">{cmp.recipientCount}</p></div>
+                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/10 rounded"><p className="text-xs text-muted-foreground">Poslato</p><p className="text-sm font-bold">{cmp.sentCount}</p></div>
+                          <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded"><p className="text-xs text-muted-foreground">Pročitano</p><p className="text-sm font-bold">{cmp.readCount}</p></div>
+                          <div className="text-center p-2 bg-red-50 dark:bg-red-900/10 rounded"><p className="text-xs text-muted-foreground">Greške</p><p className="text-sm font-bold text-red-600">{cmp.failedCount}</p></div>
                         </div>
                         {cmp.recipientCount > 0 && <Progress value={(cmp.readCount / cmp.recipientCount) * 100} className="mt-2 h-2" />}
                       </div>
@@ -900,7 +900,7 @@ export function Messaging() {
             </div>
             <div className="space-y-2"><Label className="text-xs">Jezik</Label><Select value={templateForm.language} onValueChange={(v) => setTemplateForm({ ...templateForm, language: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_LANGUAGES.map(l => <SelectItem key={l} value={l}>{l.toUpperCase()}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label className="text-xs">Sadržaj poruke * (koristite {'{{1}}'}, {'{{2}}'} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={4} placeholder="Vaša poruka sa {{1}} i {{2}}..." /></div>
-            <p className="text-[10px] text-muted-foreground">Promenljive: {(templateForm.body.match(/\{\{(\d+)\}\}/g) || []).length}</p>
+            <p className="text-xs text-muted-foreground">Promenljive: {(templateForm.body.match(/\{\{(\d+)\}\}/g) || []).length}</p>
           </div>
           <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button><Button onClick={handleSaveTemplate}>{editingTemplate ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
         </DialogContent>
@@ -973,25 +973,25 @@ export function Messaging() {
           <Card className="p-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center"><MessageSquare className="h-4 w-4 text-green-600" /></div>
-              <div><p className="text-[10px] text-muted-foreground">Danas</p><p className="text-lg font-bold">{stats.todayMsgs}</p></div>
+              <div><p className="text-xs text-muted-foreground">Danas</p><p className="text-lg font-bold">{stats.todayMsgs}</p></div>
             </div>
           </Card>
           <Card className="p-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center"><PhoneIncoming className="h-4 w-4 text-blue-600" /></div>
-              <div><p className="text-[10px] text-muted-foreground">Nepročitane</p><p className="text-lg font-bold">{stats.unread}</p></div>
+              <div><p className="text-xs text-muted-foreground">Nepročitane</p><p className="text-lg font-bold">{stats.unread}</p></div>
             </div>
           </Card>
           <Card className="p-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center"><Bot className="h-4 w-4 text-amber-600" /></div>
-              <div><p className="text-[10px] text-muted-foreground">Auto odgovori</p><p className="text-lg font-bold">{autoReplies.filter(a => a.enabled).length}</p></div>
+              <div><p className="text-xs text-muted-foreground">Auto odgovori</p><p className="text-lg font-bold">{autoReplies.filter(a => a.enabled).length}</p></div>
             </div>
           </Card>
           <Card className="p-3">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center"><Users className="h-4 w-4 text-purple-600" /></div>
-              <div><p className="text-[10px] text-muted-foreground">Kontakti</p><p className="text-lg font-bold">{stats.totalContacts}</p></div>
+              <div><p className="text-xs text-muted-foreground">Kontakti</p><p className="text-lg font-bold">{stats.totalContacts}</p></div>
             </div>
           </Card>
         </div>

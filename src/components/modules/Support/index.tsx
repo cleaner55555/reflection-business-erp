@@ -242,8 +242,8 @@ export function Support() {
                               <div className="text-xs text-muted-foreground">{tk.customerName} · {categoryLabels[tk.category] || tk.category}</div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className={`text-[10px] ${pCfg?.color || ''}`}>{pCfg?.label || tk.priority}</Badge>
-                              <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || tk.status}</Badge>
+                              <Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || tk.priority}</Badge>
+                              <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || tk.status}</Badge>
                             </div>
                           </div>
                         )
@@ -294,8 +294,8 @@ export function Support() {
                         <td className="p-3 font-mono text-xs">{tk.ticketNumber}</td>
                         <td className="p-3 font-medium">{tk.subject}</td>
                         <td className="p-3">{tk.customerName}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${pCfg?.color || ''}`}>{pCfg?.label || tk.priority}</Badge></td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${sCfg?.color || ''}`}>{sCfg?.label || tk.status}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || tk.priority}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${sCfg?.color || ''}`}>{sCfg?.label || tk.status}</Badge></td>
                         <td className="p-3">
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(tk); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>

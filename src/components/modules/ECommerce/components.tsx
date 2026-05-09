@@ -29,7 +29,7 @@ function RevenueChart({ data }: { data: { label: string; value: number }[] }) {
       <div className="flex items-end gap-1.5 h-40">
         {data.map((d, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
-            <span className="text-[10px] text-muted-foreground font-medium">{(d.value / 1000).toFixed(0)}k</span>
+            <span className="text-xs text-muted-foreground font-medium">{(d.value / 1000).toFixed(0)}k</span>
             <div
               className="w-full bg-primary/80 hover:bg-primary transition-colors rounded-t"
               style={{ height: `${(d.value / maxValue) * 100}%`, minHeight: d.value > 0 ? 4 : 0 }}
@@ -39,7 +39,7 @@ function RevenueChart({ data }: { data: { label: string; value: number }[] }) {
       </div>
       <div className="flex gap-1.5">
         {data.map((d, i) => (
-          <div key={i} className="flex-1 text-center text-[10px] text-muted-foreground truncate">{d.label}</div>
+          <div key={i} className="flex-1 text-center text-xs text-muted-foreground truncate">{d.label}</div>
         ))}
       </div>
     </div>
@@ -178,7 +178,7 @@ function OverviewTab({ products, orders, categories }: { products: StoreProduct[
                     <div key={status} className="space-y-1">
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={`text-[10px] ${cfg?.color}`}>{cfg?.label || status}</Badge>
+                          <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label || status}</Badge>
                         </div>
                         <span className="font-medium">{count} ({pct.toFixed(0)}%)</span>
                       </div>
@@ -201,7 +201,7 @@ function OverviewTab({ products, orders, categories }: { products: StoreProduct[
             <div className="space-y-2">
               {topProducts.map((p, i) => (
                 <div key={p.id} className="flex items-center gap-3 py-1.5">
-                  <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">{i + 1}</span>
+                  <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-xs font-medium">{i + 1}</span>
                   <div className="h-9 w-9 rounded bg-muted flex items-center justify-center"><ShoppingBag className="h-4 w-4 text-muted-foreground" /></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{p.name}</p>
@@ -231,7 +231,7 @@ function OverviewTab({ products, orders, categories }: { products: StoreProduct[
                       <p className="text-sm font-medium truncate">{o.customerName}</p>
                       <p className="text-xs text-muted-foreground">{o.orderNumber} • {o.items.length} artikala</p>
                     </div>
-                    <Badge variant="outline" className={`text-[10px] shrink-0 ${cfg?.color}`}>{cfg?.label}</Badge>
+                    <Badge variant="outline" className={`text-xs shrink-0 ${cfg?.color}`}>{cfg?.label}</Badge>
                     <span className="text-sm font-bold shrink-0">{formatCurrency(o.total)}</span>
                   </div>
                 )
@@ -360,7 +360,7 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
                     <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Edit className="h-3 w-3" /></Button>
                     <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => toggleFeatured(p.id)}><Star className="h-3 w-3" /></Button>
                   </div>
-                  <Badge variant="outline" className={`absolute bottom-2 right-2 text-[10px] ${cfg?.color}`}>{cfg?.label}</Badge>
+                  <Badge variant="outline" className={`absolute bottom-2 right-2 text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
                 </CardHeader>
                 <CardContent className="p-3 space-y-1.5">
                   <p className="text-sm font-medium truncate" title={p.name}>{p.name}</p>
@@ -374,7 +374,7 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Zaliha: <Badge variant={p.stock <= 5 ? 'destructive' : 'outline'} className="text-[10px] px-1">{p.stock}</Badge></span>
+                    <span>Zaliha: <Badge variant={p.stock <= 5 ? 'destructive' : 'outline'} className="text-xs px-1">{p.stock}</Badge></span>
                     <span>⭐ {p.rating} ({p.reviews})</span>
                   </div>
                 </CardContent>
@@ -417,7 +417,7 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
                     <TableCell className="text-right">
                       <Badge variant={p.stock <= 5 ? 'destructive' : 'outline'} className="text-xs">{p.stock}</Badge>
                     </TableCell>
-                    <TableCell><Badge variant="outline" className={`text-[10px] ${cfg?.color}`}>{cfg?.label}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Edit className="h-3 w-3" /></Button>
@@ -653,8 +653,8 @@ function OrdersTab({ orders, setOrders }: { orders: StoreOrder[]; setOrders: Rea
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-sm font-bold">{o.orderNumber}</span>
-                      <Badge variant="outline" className={`text-[10px] ${cfg?.color}`}>{cfg?.label}</Badge>
-                      <Badge variant="outline" className={`text-[10px] ${payCfg?.color}`}>{payCfg?.label}</Badge>
+                      <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
+                      <Badge variant="outline" className={`text-xs ${payCfg?.color}`}>{payCfg?.label}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mt-0.5">{o.customerName} • {o.customerEmail}</p>
                     <p className="text-xs text-muted-foreground">{formatDate(o.createdAt)} • {o.items.length} artikla • {paymentMethodLabels[o.paymentMethod]}</p>
@@ -737,10 +737,10 @@ function OrdersTab({ orders, setOrders }: { orders: StoreOrder[]; setOrders: Rea
                     </CardHeader>
                     <CardContent className="space-y-1.5 text-sm">
                       <div className="flex justify-between"><span className="text-muted-foreground">Način plaćanja:</span><span className="font-medium">{paymentMethodLabels[selectedOrder.paymentMethod]}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Status plaćanja:</span><Badge variant="outline" className={`text-[10px] ${paymentStatusConfig[selectedOrder.paymentStatus]?.color}`}>{paymentStatusConfig[selectedOrder.paymentStatus]?.label}</Badge></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Status plaćanja:</span><Badge variant="outline" className={`text-xs ${paymentStatusConfig[selectedOrder.paymentStatus]?.color}`}>{paymentStatusConfig[selectedOrder.paymentStatus]?.label}</Badge></div>
                       {selectedOrder.shippingMethod && <div className="flex justify-between"><span className="text-muted-foreground">Dostava:</span><span>{selectedOrder.shippingMethod}</span></div>}
                       {selectedOrder.trackingNumber && <div className="flex justify-between"><span className="text-muted-foreground">Broj praćenja:</span><span className="font-mono">{selectedOrder.trackingNumber}</span></div>}
-                      {selectedOrder.couponCode && <div className="flex justify-between"><span className="text-muted-foreground">Kupon:</span><Badge variant="outline" className="text-[10px]">{selectedOrder.couponCode}</Badge></div>}
+                      {selectedOrder.couponCode && <div className="flex justify-between"><span className="text-muted-foreground">Kupon:</span><Badge variant="outline" className="text-xs">{selectedOrder.couponCode}</Badge></div>}
                     </CardContent>
                   </Card>
                 </div>
@@ -801,7 +801,7 @@ function OrdersTab({ orders, setOrders }: { orders: StoreOrder[]; setOrders: Rea
                             </div>
                             <div className="flex-1 pb-3">
                               <div className="flex items-center gap-2">
-                                <Badge variant="outline" className={`text-[10px] ${cfg?.color}`}>{cfg?.label || entry.status}</Badge>
+                                <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label || entry.status}</Badge>
                                 <span className="text-xs text-muted-foreground">{formatDate(entry.date)}</span>
                               </div>
                               {entry.note && <p className="text-xs text-muted-foreground mt-0.5">{entry.note}</p>}
@@ -917,7 +917,7 @@ function CategoriesTab({ categories, setCategories }: { categories: Category[]; 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{cat.name}</span>
-                    {!cat.isActive && <Badge variant="secondary" className="text-[10px]">Neaktivna</Badge>}
+                    {!cat.isActive && <Badge variant="secondary" className="text-xs">Neaktivna</Badge>}
                   </div>
                   <p className="text-xs text-muted-foreground">/{cat.slug} • {cat.productCount} proizvoda</p>
                   {cat.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{cat.description}</p>}
@@ -1057,9 +1057,9 @@ function CouponsTab({ coupons, setCoupons }: { coupons: Coupon[]; setCoupons: Re
                         </button>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-[10px]">{typeLabels[coupon.type]}</Badge>
-                        {expired && <Badge variant="destructive" className="text-[10px]">Istekao</Badge>}
-                        {scheduled && <Badge variant="secondary" className="text-[10px]">Zakazan</Badge>}
+                        <Badge variant="outline" className="text-xs">{typeLabels[coupon.type]}</Badge>
+                        {expired && <Badge variant="destructive" className="text-xs">Istekao</Badge>}
+                        {scheduled && <Badge variant="secondary" className="text-xs">Zakazan</Badge>}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -1297,7 +1297,7 @@ function ReportsTab({ products, orders }: { products: StoreProduct[]; orders: St
                     </div>
                     <div className="h-6 rounded bg-muted overflow-hidden">
                       <div className={`h-full rounded ${step.color} transition-all flex items-center justify-end pr-2`} style={{ width: `${widthPct}%` }}>
-                        <span className="text-[10px] text-white font-medium">{widthPct.toFixed(0)}%</span>
+                        <span className="text-xs text-white font-medium">{widthPct.toFixed(0)}%</span>
                       </div>
                     </div>
                   </div>
@@ -1318,7 +1318,7 @@ function ReportsTab({ products, orders }: { products: StoreProduct[]; orders: St
             <div className="space-y-2">
               {topSellingProducts.map((p, i) => (
                 <div key={p.id} className="flex items-center gap-3 text-sm">
-                  <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">{i + 1}</span>
+                  <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{p.name}</p>
                     <p className="text-xs text-muted-foreground">{p.category}</p>

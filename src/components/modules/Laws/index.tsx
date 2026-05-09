@@ -418,23 +418,23 @@ export function Laws() {
           {/* Socket connection indicator */}
           <div className={`h-2 w-2 rounded-full ${socketConnected ? 'bg-emerald-500' : 'bg-red-400'}`} title={socketConnected ? 'WebSocket connected' : 'WebSocket disconnected'} />
           {updateStatus === 'updated' && updateChanges.length > 0 && (
-            <Badge variant="destructive" className="text-[10px]">
+            <Badge variant="destructive" className="text-xs">
               {updateChanges.length} {t('zakoni.changes') || 'promena'}
             </Badge>
           )}
           {updateStatus === 'success' && (
-            <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">
+            <Badge className="bg-emerald-100 text-emerald-700 text-xs">
               <Check className="h-2.5 w-2.5 mr-0.5" /> {t('zakoni.upToDate') || 'Aktuelno'}
             </Badge>
           )}
           {isBatchRunning && (
-            <Badge className="bg-blue-100 text-blue-700 text-[10px]">
+            <Badge className="bg-blue-100 text-blue-700 text-xs">
               <Loader2 className="h-2.5 w-2.5 mr-0.5 animate-spin" />
               {batchProcessed}/{batchTotal}
             </Badge>
           )}
           {autoUpdateEnabled && (
-            <Badge className="bg-green-100 text-green-700 text-[10px]">
+            <Badge className="bg-green-100 text-green-700 text-xs">
               <Play className="h-2.5 w-2.5 mr-0.5" />
               {t('zakoni.autoEnabled') || 'Auto-žuriranje'}
             </Badge>
@@ -505,7 +505,7 @@ export function Laws() {
             {isBatchRunning && (
               <div className="mb-3 space-y-1">
                 <Progress value={(batchProcessed / batchTotal) * 100} className="h-2" />
-                <div className="flex justify-between text-[10px] text-muted-foreground">
+                <div className="flex justify-between text-xs text-muted-foreground">
                   <span>
                     {batchDelayMessage || (
                       currentProcessingCountry
@@ -529,7 +529,7 @@ export function Laws() {
                 return (
                   <div
                     key={code}
-                    className={`flex items-center gap-1.5 p-1.5 rounded-md text-[10px] transition-all ${
+                    className={`flex items-center gap-1.5 p-1.5 rounded-md text-xs transition-all ${
                       status === 'processing'
                         ? 'bg-blue-50 border border-blue-300 animate-pulse'
                         : status === 'updated'
@@ -602,28 +602,28 @@ export function Laws() {
           <CardContent className="p-3">
             <p className="text-xs font-medium opacity-70">{t('zakoni.pdvRate') || 'PDV Stopa'}</p>
             <p className="text-2xl font-bold">{law.vat.standardRate}%</p>
-            <p className="text-[10px] opacity-60">{law.vat.type.toUpperCase()}</p>
+            <p className="text-xs opacity-60">{law.vat.type.toUpperCase()}</p>
           </CardContent>
         </Card>
         <Card className={`border ${CorpColor(law.corporateTax.rate)}`}>
           <CardContent className="p-3">
             <p className="text-xs font-medium opacity-70">{t('zakoni.corpTax') || 'Porez na dobit'}</p>
             <p className="text-2xl font-bold">{law.corporateTax.rate}%</p>
-            <p className="text-[10px] opacity-60">{law.corporateTax.specialRegimes[0] || ''}</p>
+            <p className="text-xs opacity-60">{law.corporateTax.specialRegimes[0] || ''}</p>
           </CardContent>
         </Card>
         <Card className="border border-blue-200 bg-blue-50">
           <CardContent className="p-3">
             <p className="text-xs font-medium opacity-70">{t('zakoni.totalEmployee') || 'Ukupno doprinosi zaposleni'}</p>
             <p className="text-2xl font-bold text-blue-700">{law.socialContributions.totalEmployee}%</p>
-            <p className="text-[10px] opacity-60">+ {law.socialContributions.totalEmployer}% {t('zakoni.employer') || 'poslodavac'}</p>
+            <p className="text-xs opacity-60">+ {law.socialContributions.totalEmployer}% {t('zakoni.employer') || 'poslodavac'}</p>
           </CardContent>
         </Card>
         <Card className="border border-purple-200 bg-purple-50">
           <CardContent className="p-3">
             <p className="text-xs font-medium opacity-70">{t('zakoni.minWage') || 'Minimalna plata'}</p>
             <p className="text-2xl font-bold text-purple-700">{formatNum(law.payroll.minimumWage)}</p>
-            <p className="text-[10px] opacity-60">{curSym} / {t('zakoni.month') || 'mesec'}</p>
+            <p className="text-xs opacity-60">{curSym} / {t('zakoni.month') || 'mesec'}</p>
           </CardContent>
         </Card>
       </motion.div>
@@ -683,10 +683,10 @@ export function Laws() {
                         <span className="text-xl">{c.flag}</span>
                         <div className="min-w-0">
                           <p className="text-xs font-semibold truncate">{c.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{c.currency} · {REGION_NAMES[c.region]}</p>
+                          <p className="text-xs text-muted-foreground">{c.currency} · {REGION_NAMES[c.region]}</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-1 text-[10px]">
+                      <div className="grid grid-cols-2 gap-1 text-xs">
                         <div>
                           <span className="text-muted-foreground">PDV</span>
                           <p className={`font-bold ${c.vat.type === 'none' ? 'text-gray-400' : ''}`}>
@@ -707,7 +707,7 @@ export function Laws() {
                         </div>
                       </div>
                       {c.invoiceRequirements.eInvoiceSystem && (
-                        <Badge variant="secondary" className="mt-2 text-[9px] h-4">
+                        <Badge variant="secondary" className="mt-2 text-xs h-4">
                           <FileCheck className="h-2.5 w-2.5 mr-0.5" />
                           {c.invoiceRequirements.eInvoiceSystem}
                         </Badge>
@@ -772,7 +772,7 @@ export function Laws() {
                   <p className="text-sm font-medium mb-2">{t('zakoni.exemptions') || 'Oslobođenja'}</p>
                   <div className="flex flex-wrap gap-1">
                     {law.vat.exemptions.map((e, i) => (
-                      <Badge key={i} variant="outline" className="text-[10px]">{e}</Badge>
+                      <Badge key={i} variant="outline" className="text-xs">{e}</Badge>
                     ))}
                   </div>
                 </div>
@@ -804,7 +804,7 @@ export function Laws() {
                     <p className="text-sm font-medium mb-1">{t('zakoni.specialRegimes') || 'Specijalni režimi'}</p>
                     <div className="flex flex-wrap gap-1">
                       {law.corporateTax.specialRegimes.map((r, i) => (
-                        <Badge key={i} variant="outline" className="text-[10px]">{r}</Badge>
+                        <Badge key={i} variant="outline" className="text-xs">{r}</Badge>
                       ))}
                     </div>
                   </div>
@@ -1066,17 +1066,17 @@ export function Laws() {
                       <Separator className="my-3" />
                       <div className="grid grid-cols-3 gap-3 p-3 bg-green-50 rounded-lg">
                         <div className="text-center">
-                          <p className="text-[10px] text-muted-foreground">{t('zakoni.bruto') || 'Bruto'}</p>
+                          <p className="text-xs text-muted-foreground">{t('zakoni.bruto') || 'Bruto'}</p>
                           <p className="text-sm font-bold">{formatNum(salaryResult.income.gross)}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-[10px] text-muted-foreground">{t('zakoni.deductions') || 'Otpisi'}</p>
+                          <p className="text-xs text-muted-foreground">{t('zakoni.deductions') || 'Otpisi'}</p>
                           <p className="text-sm font-bold text-red-600">
                             − {formatNum(salaryResult.income.socialContributions + salaryResult.income.incomeTax)}
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-[10px] text-muted-foreground">{t('zakoni.netSalary') || 'Neto zarada'}</p>
+                          <p className="text-xs text-muted-foreground">{t('zakoni.netSalary') || 'Neto zarada'}</p>
                           <p className="text-lg font-bold text-green-600">{formatNum(salaryResult.income.netSalary)}</p>
                         </div>
                       </div>
@@ -1107,17 +1107,17 @@ export function Laws() {
                       <Separator className="my-3" />
                       <div className="grid grid-cols-3 gap-3 p-3 bg-blue-50 rounded-lg">
                         <div className="text-center">
-                          <p className="text-[10px] text-muted-foreground">{t('zakoni.bruto') || 'Bruto'}</p>
+                          <p className="text-xs text-muted-foreground">{t('zakoni.bruto') || 'Bruto'}</p>
                           <p className="text-sm font-bold">{formatNum(salaryResult.employer.gross)}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-[10px] text-muted-foreground">{t('zakoni.employerContrib') || 'Doprinosi'}</p>
+                          <p className="text-xs text-muted-foreground">{t('zakoni.employerContrib') || 'Doprinosi'}</p>
                           <p className="text-sm font-bold text-blue-600">
                             + {formatNum(salaryResult.employer.employerContributions)}
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-[10px] text-muted-foreground">{t('zakoni.totalCost') || 'Ukupno trošak'}</p>
+                          <p className="text-xs text-muted-foreground">{t('zakoni.totalCost') || 'Ukupno trošak'}</p>
                           <p className="text-lg font-bold text-blue-600">{formatNum(salaryResult.employer.totalCost)}</p>
                         </div>
                       </div>
@@ -1245,7 +1245,7 @@ export function Laws() {
                           <TableCell className="font-mono font-medium">{form.code}</TableCell>
                           <TableCell className="text-sm">{form.name}</TableCell>
                           <TableCell className="text-center">
-                            <Badge variant="outline" className="text-[10px]">{form.frequency}</Badge>
+                            <Badge variant="outline" className="text-xs">{form.frequency}</Badge>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{form.description}</TableCell>
                         </TableRow>
@@ -1287,7 +1287,7 @@ export function Laws() {
                     <div key={i} className="p-3 bg-muted/50 rounded-lg">
                       <div className="flex items-center gap-2 mb-1">
                         <item.icon className={`h-3.5 w-3.5 ${item.color}`} />
-                        <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                        <p className="text-xs text-muted-foreground">{item.label}</p>
                       </div>
                       <p className="text-sm font-bold">{item.value}</p>
                     </div>
@@ -1324,7 +1324,7 @@ export function Laws() {
                     <p className="text-xs text-muted-foreground">{t('zakoni.mandatoryReports') || 'Obavezni izveštaji'}</p>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {law.accounting.mandatoryReports.map((r, i) => (
-                        <Badge key={i} variant="outline" className="text-[10px]">{r}</Badge>
+                        <Badge key={i} variant="outline" className="text-xs">{r}</Badge>
                       ))}
                     </div>
                   </div>

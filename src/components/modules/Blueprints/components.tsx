@@ -94,8 +94,8 @@ const CATEGORIES: Record<string, { color: string; label: string }> = {
 
 const AUTHORS = ['Branko Kovačević', 'Nenad Stojanović', 'Ivana Petrović', 'Slobodan Radovanović', 'Goran Janković', 'Jelena Nikolić', 'Marko Đorđević']
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
-function getCategoryBadge(c: string) { const r = CATEGORIES[c]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{c}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
+function getCategoryBadge(c: string) { const r = CATEGORIES[c]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{c}</Badge> }
 
 export function Projektovanje() {
   const [data, setData] = useState<Blueprint[]>(INITIAL_DATA)
@@ -165,13 +165,13 @@ export function Projektovanje() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-slate-600 mb-1">Nacrti</div><p className="text-xl font-bold text-slate-700">{stats.draft}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-sky-600 mb-1">Pregled</div><p className="text-xl font-bold text-sky-700">{stats.review}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-emerald-600 mb-1">Odobreni</div><p className="text-xl font-bold text-emerald-700">{stats.approved}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-violet-600 mb-1">Finalni</div><p className="text-xl font-bold text-violet-700">{stats.final}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Projekti</div><p className="text-xl font-bold">{stats.projects}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Veličina</div><p className="text-xl font-bold">{stats.totalSize.toFixed(1)} MB</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
+        <Card className="p-4"><div className="text-xs text-slate-600 mb-1">Nacrti</div><p className="text-xl font-bold text-slate-700">{stats.draft}</p></Card>
+        <Card className="p-4"><div className="text-xs text-sky-600 mb-1">Pregled</div><p className="text-xl font-bold text-sky-700">{stats.review}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Odobreni</div><p className="text-xl font-bold text-emerald-700">{stats.approved}</p></Card>
+        <Card className="p-4"><div className="text-xs text-violet-600 mb-1">Finalni</div><p className="text-xl font-bold text-violet-700">{stats.final}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Projekti</div><p className="text-xl font-bold">{stats.projects}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Veličina</div><p className="text-xl font-bold">{stats.totalSize.toFixed(1)} MB</p></Card>
       </div>
 
       <Card>
@@ -203,7 +203,7 @@ export function Projektovanje() {
                 {filtered.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-sm">Nema nacrta</TableCell></TableRow> : filtered.map(item => (
                   <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
                     <TableCell className="text-xs font-mono">{item.code}</TableCell>
-                    <TableCell><div className="text-xs font-medium max-w-[200px] truncate">{item.name}</div><div className="text-[10px] text-muted-foreground">{item.scale} · {item.sheetSize} · {item.fileSize}MB</div></TableCell>
+                    <TableCell><div className="text-xs font-medium max-w-[200px] truncate">{item.name}</div><div className="text-xs text-muted-foreground">{item.scale} · {item.sheetSize} · {item.fileSize}MB</div></TableCell>
                     <TableCell className="text-xs hidden sm:table-cell">{item.project}</TableCell>
                     <TableCell>{getCategoryBadge(item.category)}</TableCell>
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
@@ -231,21 +231,21 @@ export function Projektovanje() {
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-lg font-bold">{detailItem.name}</p><p className="text-xs text-muted-foreground font-mono">{detailItem.code} · {detailItem.version}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getCategoryBadge(detailItem.category)}</div></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Projekat</div><p className="text-xs font-medium">{detailItem.project}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Autor</div><p className="text-xs font-medium">{detailItem.author}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Klijent</div><p className="text-xs font-medium">{detailItem.client}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Format</div><p className="text-xs font-medium">{detailItem.scale} · {detailItem.sheetSize} · {detailItem.fileSize}MB {detailItem.fileFormat}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Projekat</div><p className="text-xs font-medium">{detailItem.project}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Autor</div><p className="text-xs font-medium">{detailItem.author}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Klijent</div><p className="text-xs font-medium">{detailItem.client}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Format</div><p className="text-xs font-medium">{detailItem.scale} · {detailItem.sheetSize} · {detailItem.fileSize}MB {detailItem.fileFormat}</p></div>
               </div>
               {detailItem.approvedBy && <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-xs text-emerald-700">Odobrio: {detailItem.approvedBy} · {formatDate(detailItem.approvedDate!)}</p></div>}
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
 
               <div className="space-y-2">
                 <p className="text-xs font-medium flex items-center gap-2"><Layers className="h-3.5 w-3.5" />Istorija revizija</p>
                 <div className="space-y-1.5 max-h-48 overflow-y-auto">
                   {[...detailItem.revisions].reverse().map((rev, idx) => (
                     <div key={idx} className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
-                      <Badge variant="outline" className="text-[10px] font-mono shrink-0 mt-0.5">{rev.version}</Badge>
-                      <div className="flex-1"><p className="text-xs">{rev.description}</p><p className="text-[10px] text-muted-foreground">{rev.author} · {formatDate(rev.date)}</p></div>
+                      <Badge variant="outline" className="text-xs font-mono shrink-0 mt-0.5">{rev.version}</Badge>
+                      <div className="flex-1"><p className="text-xs">{rev.description}</p><p className="text-xs text-muted-foreground">{rev.author} · {formatDate(rev.date)}</p></div>
                     </div>
                   ))}
                 </div>

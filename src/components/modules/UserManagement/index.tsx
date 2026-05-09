@@ -825,7 +825,7 @@ export function UserManagement() {
                       <span className="flex items-center gap-2">
                         <Badge
                           variant="secondary"
-                          className={cn('text-[10px] py-0 px-1.5', getRoleBadgeClasses(role.name))}
+                          className={cn('text-xs py-0 px-1.5', getRoleBadgeClasses(role.name))}
                         >
                           {role.displayName}
                         </Badge>

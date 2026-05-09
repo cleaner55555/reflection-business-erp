@@ -1400,7 +1400,7 @@ export function PLMContent() {
                         <div className="flex items-center gap-2 mt-0.5">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${STAGE_CONFIG[milestone.stage]?.color || ""}`}
+                            className={`text-xs ${STAGE_CONFIG[milestone.stage]?.color || ""}`}
                           >
                             {STAGE_CONFIG[milestone.stage]?.label}
                           </Badge>
@@ -1439,7 +1439,7 @@ export function PLMContent() {
                           </span>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${STATUS_CONFIG[product.status]?.color || ""}`}
+                            className={`text-xs ${STATUS_CONFIG[product.status]?.color || ""}`}
                           >
                             {STATUS_CONFIG[product.status]?.label}
                           </Badge>
@@ -1556,7 +1556,7 @@ export function PLMContent() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${STAGE_CONFIG[product.lifecycleStage]?.color || ""}`}
+                          className={`text-xs ${STAGE_CONFIG[product.lifecycleStage]?.color || ""}`}
                         >
                           {STAGE_CONFIG[product.lifecycleStage]?.label}
                         </Badge>
@@ -1564,7 +1564,7 @@ export function PLMContent() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${STATUS_CONFIG[product.status]?.color || ""}`}
+                          className={`text-xs ${STATUS_CONFIG[product.status]?.color || ""}`}
                         >
                           {STATUS_CONFIG[product.status]?.label}
                         </Badge>
@@ -1674,7 +1674,7 @@ export function PLMContent() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${rev.changeType === "Major" ? "bg-red-100 text-red-700" : rev.changeType === "Minor" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-700"}`}
+                          className={`text-xs ${rev.changeType === "Major" ? "bg-red-100 text-red-700" : rev.changeType === "Minor" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-700"}`}
                         >
                           {rev.changeType}
                         </Badge>
@@ -1687,7 +1687,7 @@ export function PLMContent() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${REVISION_STATUS_CONFIG[rev.status]?.color || ""}`}
+                          className={`text-xs ${REVISION_STATUS_CONFIG[rev.status]?.color || ""}`}
                         >
                           {REVISION_STATUS_CONFIG[rev.status]?.label}
                         </Badge>
@@ -1769,7 +1769,7 @@ export function PLMContent() {
                     <div key={key} className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${config.color}`}
+                        className={`text-xs ${config.color}`}
                       >
                         {config.label}
                       </Badge>
@@ -1850,7 +1850,7 @@ export function PLMContent() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${DOC_TYPE_CONFIG[doc.docType]?.color || ""}`}
+                          className={`text-xs ${DOC_TYPE_CONFIG[doc.docType]?.color || ""}`}
                         >
                           {DOC_TYPE_CONFIG[doc.docType]?.label}
                         </Badge>
@@ -1861,7 +1861,7 @@ export function PLMContent() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${REVISION_STATUS_CONFIG[doc.status]?.color || ""}`}
+                          className={`text-xs ${REVISION_STATUS_CONFIG[doc.status]?.color || ""}`}
                         >
                           {REVISION_STATUS_CONFIG[doc.status]?.label ||
                             doc.status}
@@ -1871,13 +1871,13 @@ export function PLMContent() {
                       <TableCell className="text-xs">{doc.date}</TableCell>
                       <TableCell>
                         {doc.hasFile ? (
-                          <Badge className="bg-emerald-100 text-emerald-700 text-[10px] gap-1">
+                          <Badge className="bg-emerald-100 text-emerald-700 text-xs gap-1">
                             <Upload className="h-3 w-3" /> {doc.size}
                           </Badge>
                         ) : (
                           <Badge
                             variant="outline"
-                            className="text-[10px] text-muted-foreground"
+                            className="text-xs text-muted-foreground"
                           >
                             -
                           </Badge>
@@ -1980,7 +1980,7 @@ export function PLMContent() {
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${PRIORITY_CONFIG[ecr.priority]?.color || ""}`}
+                              className={`text-xs ${PRIORITY_CONFIG[ecr.priority]?.color || ""}`}
                             >
                               {PRIORITY_CONFIG[ecr.priority]?.label}
                             </Badge>
@@ -1991,14 +1991,14 @@ export function PLMContent() {
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${ECR_STATUS_CONFIG[ecr.status]?.color || ""}`}
+                              className={`text-xs ${ECR_STATUS_CONFIG[ecr.status]?.color || ""}`}
                             >
                               {ECR_STATUS_CONFIG[ecr.status]?.label}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs">
                             {ecr.ecoNumber ? (
-                              <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">
+                              <Badge className="bg-emerald-100 text-emerald-700 text-xs">
                                 {ecr.ecoNumber}
                               </Badge>
                             ) : (
@@ -2066,7 +2066,7 @@ export function PLMContent() {
                       <div className="flex items-center gap-2">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${ECO_STATUS_CONFIG[eco.status]?.color || ""}`}
+                          className={`text-xs ${ECO_STATUS_CONFIG[eco.status]?.color || ""}`}
                         >
                           {ECO_STATUS_CONFIG[eco.status]?.label}
                         </Badge>
@@ -2117,7 +2117,7 @@ export function PLMContent() {
                         <div key={idx} className="flex items-center gap-1">
                           <Badge
                             variant="outline"
-                            className="text-[10px] bg-emerald-50 text-emerald-700"
+                            className="text-xs bg-emerald-50 text-emerald-700"
                           >
                             <Shield className="h-3 w-3 mr-0.5" /> {approver}
                           </Badge>
@@ -2623,7 +2623,7 @@ export function PLMContent() {
                             <TableCell>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] ${REVISION_STATUS_CONFIG[rev.status]?.color || ""}`}
+                                className={`text-xs ${REVISION_STATUS_CONFIG[rev.status]?.color || ""}`}
                               >
                                 {REVISION_STATUS_CONFIG[rev.status]?.label}
                               </Badge>
@@ -2666,7 +2666,7 @@ export function PLMContent() {
                         </span>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] shrink-0 ${DOC_TYPE_CONFIG[doc.docType]?.color || ""}`}
+                          className={`text-xs shrink-0 ${DOC_TYPE_CONFIG[doc.docType]?.color || ""}`}
                         >
                           {DOC_TYPE_CONFIG[doc.docType]?.label}
                         </Badge>

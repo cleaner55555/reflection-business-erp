@@ -717,7 +717,7 @@ export function Forum() {
                     {categoryPieData.map((entry, i) => (
                       <div key={entry.name} className="flex items-center gap-1">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
-                        <span className="text-[10px] text-muted-foreground">{entry.name} ({entry.value})</span>
+                        <span className="text-xs text-muted-foreground">{entry.name} ({entry.value})</span>
                       </div>
                     ))}
                   </div>
@@ -748,7 +748,7 @@ export function Forum() {
                             <p className="text-xs text-muted-foreground">{user.posts} postova</p>
                           </div>
                         </div>
-                        <Badge variant="outline" className={`text-[10px] ${user.color}`}>{user.badge}</Badge>
+                        <Badge variant="outline" className={`text-xs ${user.color}`}>{user.badge}</Badge>
                       </div>
                     ))}
                   </div>
@@ -870,21 +870,21 @@ export function Forum() {
                               </Tooltip>
                             )}
                             <span className="text-sm font-medium">{topic.title}</span>
-                            <Badge variant="outline" className={`text-[10px] ${catColor}`}>{catLabel}</Badge>
+                            <Badge variant="outline" className={`text-xs ${catColor}`}>{catLabel}</Badge>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{topic.content}</p>
                           {topic.tags && topic.tags.length > 0 && (
                             <div className="flex items-center gap-1 mt-2 flex-wrap">
                               {topic.tags.slice(0, 3).map(tg => (
-                                <Badge key={tg} variant="secondary" className="text-[10px] px-1.5 py-0">#{tg}</Badge>
+                                <Badge key={tg} variant="secondary" className="text-xs px-1.5 py-0">#{tg}</Badge>
                               ))}
                               {topic.tags.length > 3 && (
-                                <span className="text-[10px] text-muted-foreground">+{topic.tags.length - 3}</span>
+                                <span className="text-xs text-muted-foreground">+{topic.tags.length - 3}</span>
                               )}
                             </div>
                           )}
                           <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                               {topic.authorAvatar}
                             </div>
                             <span className="font-medium">{topic.authorName}</span>
@@ -933,7 +933,7 @@ export function Forum() {
                       <div>
                         <p className="text-sm font-semibold">{cat.label}</p>
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{cat.description}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1.5">{cat.topicCount} tema</p>
+                        <p className="text-xs text-muted-foreground mt-1.5">{cat.topicCount} tema</p>
                       </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
@@ -1007,9 +1007,9 @@ export function Forum() {
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{q.content}</p>
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                           {q.tags.map(tg => (
-                            <Badge key={tg} variant="outline" className="text-[10px] px-1.5 py-0">#{tg}</Badge>
+                            <Badge key={tg} variant="outline" className="text-xs px-1.5 py-0">#{tg}</Badge>
                           ))}
-                          <span className="text-[10px] text-muted-foreground ml-auto">
+                          <span className="text-xs text-muted-foreground ml-auto">
                             {q.answerCount} odgovora · {formatDate(q.createdAt)}
                           </span>
                         </div>
@@ -1363,7 +1363,7 @@ export function Forum() {
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">{selectedTopic.authorAvatar}</div>
+                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">{selectedTopic.authorAvatar}</div>
                       <span className="font-medium">{selectedTopic.authorName}</span>
                     </div>
                     <span className="flex items-center gap-0.5"><Eye className="h-3.5 w-3.5" />{selectedTopic.views}</span>
@@ -1374,7 +1374,7 @@ export function Forum() {
                   {selectedTopic.tags && selectedTopic.tags.length > 0 && (
                     <div className="flex gap-1 flex-wrap">
                       {selectedTopic.tags.map(tg => (
-                        <Badge key={tg} variant="secondary" className="text-[10px] px-1.5 py-0">#{tg}</Badge>
+                        <Badge key={tg} variant="secondary" className="text-xs px-1.5 py-0">#{tg}</Badge>
                       ))}
                     </div>
                   )}
@@ -1415,12 +1415,12 @@ export function Forum() {
                       <div key={reply.id} className={`p-3 rounded-lg border ${reply.isBest ? 'border-emerald-300 bg-emerald-50/50' : ''}`}>
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                               {reply.authorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                             </div>
                             <span className="text-xs font-medium">{reply.authorName}</span>
                             {reply.isBest && (
-                              <Badge variant="outline" className="text-[10px] bg-emerald-100 text-emerald-700 border-emerald-200">
+                              <Badge variant="outline" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
                                 <Star className="h-2.5 w-2.5 mr-0.5" /> Najbolji odgovor
                               </Badge>
                             )}
@@ -1499,7 +1499,7 @@ export function Forum() {
                       key={color}
                       variant={catForm.color === color ? 'default' : 'outline'}
                       size="sm"
-                      className={`text-[10px] ${catForm.color !== color ? color : ''}`}
+                      className={`text-xs ${catForm.color !== color ? color : ''}`}
                       onClick={() => setCatForm(f => ({ ...f, color }))}
                     >
                       Izaberite
@@ -1546,7 +1546,7 @@ export function Forum() {
 
                   <div className="flex gap-1 flex-wrap">
                     {selectedQuestion.tags.map(tg => (
-                      <Badge key={tg} variant="outline" className="text-[10px] px-1.5 py-0">#{tg}</Badge>
+                      <Badge key={tg} variant="outline" className="text-xs px-1.5 py-0">#{tg}</Badge>
                     ))}
                   </div>
 
@@ -1561,12 +1561,12 @@ export function Forum() {
                       <div key={answer.id} className={`p-3 rounded-lg border ${answer.isAccepted ? 'border-emerald-300 bg-emerald-50/50' : ''}`}>
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                               {answer.authorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                             </div>
                             <span className="text-xs font-medium">{answer.authorName}</span>
                             {answer.isAccepted && (
-                              <Badge variant="outline" className="text-[10px] bg-emerald-100 text-emerald-700 border-emerald-200">
+                              <Badge variant="outline" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
                                 <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Prihvaćeno
                               </Badge>
                             )}
@@ -1656,7 +1656,7 @@ export function Forum() {
                     <Badge
                       key={color}
                       variant={tagForm.color === color ? 'default' : 'outline'}
-                      className={`cursor-pointer text-[10px] ${tagForm.color !== color ? color : ''}`}
+                      className={`cursor-pointer text-xs ${tagForm.color !== color ? color : ''}`}
                       onClick={() => setTagForm(f => ({ ...f, color }))}
                     >
                       Izaberite

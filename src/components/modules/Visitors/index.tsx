@@ -536,12 +536,12 @@ export function Visitors() {
                     <div className="flex items-end gap-2 h-40">
                       {hourlyFlow.map((h) => (
                         <div key={h.hour} className="flex-1 flex flex-col items-center gap-1">
-                          <span className="text-[10px] text-muted-foreground">{h.count}</span>
+                          <span className="text-xs text-muted-foreground">{h.count}</span>
                           <div
                             className="w-full bg-primary rounded-t-sm min-h-[4px] transition-all"
                             style={{ height: `${(h.count / maxHourlyCount) * 120}px` }}
                           />
-                          <span className="text-[10px] text-muted-foreground">{h.hour}</span>
+                          <span className="text-xs text-muted-foreground">{h.hour}</span>
                         </div>
                       ))}
                     </div>
@@ -580,11 +580,11 @@ export function Visitors() {
                             </div>
                             <div className="flex items-center gap-2">
                               {v.badgeNumber && (
-                                <Badge variant="outline" className="text-[10px]">
+                                <Badge variant="outline" className="text-xs">
                                   <BadgeCheck className="h-3 w-3 mr-1" /> {v.badgeNumber}
                                 </Badge>
                               )}
-                              <Badge variant="outline" className="text-[10px] bg-green-100 text-green-700">
+                              <Badge variant="outline" className="text-xs bg-green-100 text-green-700">
                                 {purposeLabels[v.purpose] || v.purpose}
                               </Badge>
                               <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleCheckOut(v)}>
@@ -688,14 +688,14 @@ export function Visitors() {
                           </td>
                           <td className="p-3 text-xs">{v.company || '-'}</td>
                           <td className="p-3">
-                            <Badge variant="outline" className="text-[10px]">
+                            <Badge variant="outline" className="text-xs">
                               {purposeLabels[v.purpose] || v.purpose}
                             </Badge>
                           </td>
                           <td className="p-3 text-xs">{departmentLabels[v.department || ''] || v.department || '-'}</td>
                           <td className="p-3 text-xs">{v.hostName || '-'}</td>
                           <td className="p-3">
-                            <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>
+                            <Badge variant="outline" className={`text-xs ${cfg.color}`}>
                               <cfg.icon className="h-3 w-3 mr-1" /> {cfg.label}
                             </Badge>
                           </td>
@@ -864,7 +864,7 @@ export function Visitors() {
                             </div>
                             <div className="flex items-center gap-2">
                               {v.isPreRegistered && (
-                                <Badge variant="secondary" className="text-[10px]">Pre-reg.</Badge>
+                                <Badge variant="secondary" className="text-xs">Pre-reg.</Badge>
                               )}
                               <Button size="sm" className="h-7 text-xs" onClick={() => handleCheckIn(v)}>
                                 <LogIn className="h-3 w-3 mr-1" /> Prijava
@@ -917,7 +917,7 @@ export function Visitors() {
                               </div>
                               <div>
                                 <div className="text-sm">{v.firstName} {v.lastName}</div>
-                                <div className="text-[10px] text-muted-foreground">{v.company}</div>
+                                <div className="text-xs text-muted-foreground">{v.company}</div>
                               </div>
                             </div>
                             <div className="text-xs text-muted-foreground">
@@ -1000,7 +1000,7 @@ export function Visitors() {
                   .map(([key, data]) => (
                     <div key={key} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px]">{purposeLabels[key] || key}</Badge>
+                        <Badge variant="outline" className="text-xs">{purposeLabels[key] || key}</Badge>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-muted-foreground">{data.checkedIn} aktivno</span>
@@ -1021,12 +1021,12 @@ export function Visitors() {
                   const maxMonth = Math.max(...monthlyTrend.map((x) => x.visitors), 1)
                   return (
                     <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                      <span className="text-[10px] text-muted-foreground font-medium">{m.visitors}</span>
+                      <span className="text-xs text-muted-foreground font-medium">{m.visitors}</span>
                       <div
                         className="w-full bg-primary/80 rounded-t-sm min-h-[4px] transition-all"
                         style={{ height: `${(m.visitors / maxMonth) * 150}px` }}
                       />
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {m.month.split('-')[1]}/{m.month.split('-')[0].slice(2)}
                       </span>
                     </div>
@@ -1063,18 +1063,18 @@ export function Visitors() {
                           <tr key={v.id} className="border-b last:border-0 hover:bg-muted/50">
                             <td className="py-2 pr-4">
                               <div className="flex items-center gap-2">
-                                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">
+                                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
                                   {v.firstName[0]}{v.lastName[0]}
                                 </div>
                                 <div>
                                   <div className="font-medium text-xs">{v.firstName} {v.lastName}</div>
-                                  {v.email && <div className="text-[10px] text-muted-foreground">{v.email}</div>}
+                                  {v.email && <div className="text-xs text-muted-foreground">{v.email}</div>}
                                 </div>
                               </div>
                             </td>
                             <td className="py-2 pr-4 text-xs">{v.company || '-'}</td>
                             <td className="py-2 pr-4">
-                              <Badge variant="outline" className="text-[10px]">
+                              <Badge variant="outline" className="text-xs">
                                 {purposeLabels[v.purpose] || v.purpose}
                               </Badge>
                             </td>
@@ -1406,7 +1406,7 @@ export function Visitors() {
                 {selectedVisitor.isPreRegistered && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Pre-registracija</span>
-                    <Badge variant="secondary" className="text-[10px]">Da</Badge>
+                    <Badge variant="secondary" className="text-xs">Da</Badge>
                   </div>
                 )}
               </div>

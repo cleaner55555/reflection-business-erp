@@ -72,7 +72,7 @@ export function OverviewContent({ dashboard, loading }: { dashboard: DashboardDa
                 return (
                   <div key={r.id} className="flex items-center justify-between py-2 border-b last:border-0">
                     <div><div className="text-sm font-medium">{r.employeeName}</div><div className="text-xs text-muted-foreground">{typeLabels[r.type] || r.type} · {r.daysCount} dana · {new Date(r.startDate).toLocaleDateString('sr-RS')}</div></div>
-                    <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge>
+                    <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge>
                   </div>
                 )
               })}
@@ -107,7 +107,7 @@ export function RequestsList({ items, loading, search, filter, onSearch, onFilte
                 <td className="p-3 font-medium">{r.employeeName}</td><td className="p-3">{typeLabels[r.type] || r.type}</td>
                 <td className="p-3 text-xs">{new Date(r.startDate).toLocaleDateString('sr-RS')} - {new Date(r.endDate).toLocaleDateString('sr-RS')}</td>
                 <td className="p-3">{r.daysCount}</td>
-                <td className="p-3"><Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge></td>
+                <td className="p-3"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge></td>
                 <td className="p-3"><div className="flex gap-1">
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onView(r)}><Eye className="h-3.5 w-3.5" /></Button>
                   {r.status === 'pending' && (<><Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => onApprove(r.id)}><CheckCircle2 className="h-3.5 w-3.5" /></Button><Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" onClick={() => onReject(r.id)}><XCircle className="h-3.5 w-3.5" /></Button></>)}

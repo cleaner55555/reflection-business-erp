@@ -135,12 +135,12 @@ const VEHICLES = ['Kamion A-123', 'Kamion B-456', 'Kamion C-789', 'Kamion D-321'
 function getStatusBadge(s: string) {
   const r = STATUSES[s]
   const Icon = r?.icon || Route
-  return r ? <Badge className={`${r.color} text-[10px] gap-1`}><Icon className="h-3 w-3" />{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs gap-1`}><Icon className="h-3 w-3" />{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 
 function getPriorityBadge(p: string) {
   const r = PRIORITIES[p]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{p}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{p}</Badge>
 }
 
 function getStopStatusBadge(s: string) {
@@ -153,7 +153,7 @@ function getStopStatusBadge(s: string) {
   const labels: Record<string, string> = {
     pending: 'Na čekanju', in_transit: 'U tranzitu', completed: 'Završeno', skipped: 'Preskočeno',
   }
-  return <Badge className={`${colors[s] || ''} text-[10px]`}>{labels[s] || s}</Badge>
+  return <Badge className={`${colors[s] || ''} text-xs`}>{labels[s] || s}</Badge>
 }
 
 function calcRouteProgress(stops: Stop[]) {
@@ -254,13 +254,13 @@ export function Routes() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-slate-600 mb-1">Planirane</div><p className="text-xl font-bold text-slate-700">{stats.planned}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-blue-600 mb-1">U toku</div><p className="text-xl font-bold text-blue-700">{stats.inProgress}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-emerald-600 mb-1">Završene</div><p className="text-xl font-bold text-emerald-700">{stats.completed}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-amber-600 mb-1">Kasne</div><p className="text-xl font-bold text-amber-700">{stats.delayed}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Udaljenost</div><p className="text-xl font-bold">{stats.totalDistance} km</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Troškovi</div><p className="text-xl font-bold">{formatCurrency(stats.totalCost)}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
+        <Card className="p-4"><div className="text-xs text-slate-600 mb-1">Planirane</div><p className="text-xl font-bold text-slate-700">{stats.planned}</p></Card>
+        <Card className="p-4"><div className="text-xs text-blue-600 mb-1">U toku</div><p className="text-xl font-bold text-blue-700">{stats.inProgress}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Završene</div><p className="text-xl font-bold text-emerald-700">{stats.completed}</p></Card>
+        <Card className="p-4"><div className="text-xs text-amber-600 mb-1">Kasne</div><p className="text-xl font-bold text-amber-700">{stats.delayed}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Udaljenost</div><p className="text-xl font-bold">{stats.totalDistance} km</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Troškovi</div><p className="text-xl font-bold">{formatCurrency(stats.totalCost)}</p></Card>
       </div>
 
       {/* Tabs */}
@@ -298,12 +298,12 @@ export function Routes() {
                       return (
                         <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
                           <TableCell className="text-xs font-mono">{item.code}</TableCell>
-                          <TableCell><div className="text-xs font-medium">{item.name}</div><div className="text-[10px] text-muted-foreground flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{item.origin} → {item.destination}</div></TableCell>
+                          <TableCell><div className="text-xs font-medium">{item.name}</div><div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{item.origin} → {item.destination}</div></TableCell>
                           <TableCell className="text-xs hidden sm:table-cell"><div className="flex items-center gap-1"><Truck className="h-3 w-3 text-muted-foreground" />{item.driver}</div></TableCell>
                           <TableCell>{getStatusBadge(item.status)}</TableCell>
                           <TableCell className="hidden md:table-cell">{getPriorityBadge(item.priority)}</TableCell>
                           <TableCell className="text-xs hidden lg:table-cell">{item.totalDistance} km</TableCell>
-                          <TableCell className="hidden lg:table-cell"><div className="w-16"><Progress value={progress} className="h-1.5" /><span className="text-[10px] text-muted-foreground">{progress}%</span></div></TableCell>
+                          <TableCell className="hidden lg:table-cell"><div className="w-16"><Progress value={progress} className="h-1.5" /><span className="text-xs text-muted-foreground">{progress}%</span></div></TableCell>
                           <TableCell className="text-right"><div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -338,7 +338,7 @@ export function Routes() {
                       <MapPin className="h-3 w-3" />{r.origin} → {r.destination}
                     </div>
                     <Progress value={calcRouteProgress(r.stops)} className="h-2" />
-                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{r.stops.filter(s => s.status === 'completed').length}/{r.stops.length} stanica</span>
                       <span>{r.totalDistance} km</span>
                     </div>
@@ -362,7 +362,7 @@ export function Routes() {
                       <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{r.totalDistance} km</span>
                       <span className="flex items-center gap-1"><Fuel className="h-3 w-3" />{formatCurrency(r.fuelCost)}</span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">Datum: {formatDate(r.startDate)}</p>
+                    <p className="text-xs text-muted-foreground">Datum: {formatDate(r.startDate)}</p>
                   </div>
                 ))}
               </CardContent>
@@ -373,8 +373,8 @@ export function Routes() {
               <CardContent className="space-y-2 max-h-64 overflow-y-auto">
                 {data.map(r => (
                   <div key={r.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div><p className="text-xs font-medium">{r.code}</p><p className="text-[10px] text-muted-foreground">{r.origin} → {r.destination}</p></div>
-                    <div className="text-right"><p className="text-xs font-bold">{formatCurrency(r.fuelCost + r.tollCost)}</p><p className="text-[10px] text-muted-foreground">Gorivo: {formatCurrency(r.fuelCost)}</p></div>
+                    <div><p className="text-xs font-medium">{r.code}</p><p className="text-xs text-muted-foreground">{r.origin} → {r.destination}</p></div>
+                    <div className="text-right"><p className="text-xs font-bold">{formatCurrency(r.fuelCost + r.tollCost)}</p><p className="text-xs text-muted-foreground">Gorivo: {formatCurrency(r.fuelCost)}</p></div>
                   </div>
                 ))}
               </CardContent>
@@ -393,8 +393,8 @@ export function Routes() {
                   })
                   return Object.entries(driverMap).sort((a, b) => b[1].routes - a[1].routes).map(([driver, info]) => (
                     <div key={driver} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                      <div><p className="text-xs font-medium">{driver}</p><p className="text-[10px] text-muted-foreground">{info.routes} ruta · {info.distance} km</p></div>
-                      {info.active > 0 && <Badge className="bg-blue-100 text-blue-700 text-[10px]">{info.active} aktivna</Badge>}
+                      <div><p className="text-xs font-medium">{driver}</p><p className="text-xs text-muted-foreground">{info.routes} ruta · {info.distance} km</p></div>
+                      {info.active > 0 && <Badge className="bg-blue-100 text-blue-700 text-xs">{info.active} aktivna</Badge>}
                     </div>
                   ))
                 })()}
@@ -416,16 +416,16 @@ export function Routes() {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.driver}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-medium">{detailItem.vehicle}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Udaljenost</div><p className="text-xs font-medium">{detailItem.totalDistance} km</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Vreme</div><p className="text-xs font-medium">{detailItem.estimatedTime}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.driver}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-medium">{detailItem.vehicle}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Udaljenost</div><p className="text-xs font-medium">{detailItem.totalDistance} km</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vreme</div><p className="text-xs font-medium">{detailItem.estimatedTime}</p></div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Gorivo</div><p className="text-xs font-medium">{formatCurrency(detailItem.fuelCost)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Putarine</div><p className="text-xs font-medium">{formatCurrency(detailItem.tollCost)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Ukupno</div><p className="text-xs font-bold">{formatCurrency(detailItem.fuelCost + detailItem.tollCost)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Gorivo</div><p className="text-xs font-medium">{formatCurrency(detailItem.fuelCost)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Putarine</div><p className="text-xs font-medium">{formatCurrency(detailItem.tollCost)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xs font-bold">{formatCurrency(detailItem.fuelCost + detailItem.tollCost)}</p></div>
               </div>
 
               {/* Route visualization */}
@@ -434,7 +434,7 @@ export function Routes() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /></div>
-                    <div><p className="text-xs font-medium">{detailItem.origin}</p><p className="text-[10px] text-muted-foreground">Polazak: {formatDate(detailItem.startDate)}</p></div>
+                    <div><p className="text-xs font-medium">{detailItem.origin}</p><p className="text-xs text-muted-foreground">Polazak: {formatDate(detailItem.startDate)}</p></div>
                   </div>
                   {detailItem.stops.map((stop, idx) => (
                     <div key={stop.id} className="flex items-center gap-3 ml-2">
@@ -444,8 +444,8 @@ export function Routes() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2"><p className="text-xs font-medium">{stop.location}</p>{getStopStatusBadge(stop.status)}</div>
-                        <p className="text-[10px] text-muted-foreground">{stop.address}</p>
-                        <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
+                        <p className="text-xs text-muted-foreground">{stop.address}</p>
+                        <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
                           <span>{stop.cargo} · {stop.weight}kg</span>
                           <span>{stop.estimatedArrival} - {stop.estimatedDeparture}</span>
                         </div>
@@ -454,7 +454,7 @@ export function Routes() {
                   ))}
                   <div className="flex items-center gap-3">
                     <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center"><MapPin className="h-3.5 w-3.5 text-blue-600" /></div>
-                    <div><p className="text-xs font-medium">{detailItem.destination}</p><p className="text-[10px] text-muted-foreground">{detailItem.endDate ? `Dolazak: ${formatDate(detailItem.endDate)}` : 'Predviđeni dolazak'}</p></div>
+                    <div><p className="text-xs font-medium">{detailItem.destination}</p><p className="text-xs text-muted-foreground">{detailItem.endDate ? `Dolazak: ${formatDate(detailItem.endDate)}` : 'Predviđeni dolazak'}</p></div>
                   </div>
                 </div>
               </div>
@@ -462,7 +462,7 @@ export function Routes() {
               <Progress value={calcRouteProgress(detailItem.stops)} className="h-2" />
               <p className="text-xs text-muted-foreground text-center">Napredak: {calcRouteProgress(detailItem.stops)}% · {detailItem.stops.filter(s => s.status === 'completed').length}/{detailItem.stops.length} stanica</p>
 
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
             </div>
           )}
         </DialogContent>

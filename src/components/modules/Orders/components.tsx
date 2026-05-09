@@ -4,12 +4,12 @@ import { STATUSES, PRIORITIES } from './data'
 
 export function getStatusBadge(s: string) {
   const r = STATUSES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 
 export function getPriorityBadge(s: string) {
   const r = PRIORITIES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 
 export function formatRSD(p: number) {

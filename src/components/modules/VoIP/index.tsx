@@ -515,7 +515,7 @@ export function VoIP() {
                     <p className="text-sm font-medium truncate">{ext.name}</p>
                     <p className="text-xs text-muted-foreground">Ext {ext.number} · {ext.department}</p>
                   </div>
-                  <Badge variant="outline" className={`ml-auto text-[10px] shrink-0 ${statusCfg.color}`}>{ext.status}</Badge>
+                  <Badge variant="outline" className={`ml-auto text-xs shrink-0 ${statusCfg.color}`}>{ext.status}</Badge>
                 </div>
               )
             })}
@@ -588,12 +588,12 @@ export function VoIP() {
                   <TableCell className="text-xs font-mono">{call.from}</TableCell>
                   <TableCell className="text-xs font-mono">{call.to}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={`text-[10px] ${dirCfg.color}`}>{t(dirCfg.labelKey)}</Badge>
+                    <Badge variant="outline" className={`text-xs ${dirCfg.color}`}>{t(dirCfg.labelKey)}</Badge>
                   </TableCell>
                   <TableCell className="text-xs">{formatDuration(call.duration)}</TableCell>
                   <TableCell className="text-xs">{call.extension}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={`text-[10px] ${statCfg.color}`}>{t(statCfg.labelKey)}</Badge>
+                    <Badge variant="outline" className={`text-xs ${statCfg.color}`}>{t(statCfg.labelKey)}</Badge>
                   </TableCell>
                   <TableCell>
                     {call.recording ? <Mic className="h-3.5 w-3.5 text-green-600" /> : <span className="text-xs text-muted-foreground">—</span>}
@@ -708,17 +708,17 @@ export function VoIP() {
                   <TableCell className="text-xs font-mono font-medium">{ext.number}</TableCell>
                   <TableCell className="text-xs">{ext.name}</TableCell>
                   <TableCell className="text-xs">{ext.department}</TableCell>
-                  <TableCell><Badge variant="outline" className="text-[10px]">{ext.type}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className="text-xs">{ext.type}</Badge></TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
                       <div className={`h-2 w-2 rounded-full ${statusCfg.dotColor}`} />
-                      <Badge variant="outline" className={`text-[10px] ${statusCfg.color}`}>{ext.status}</Badge>
+                      <Badge variant="outline" className={`text-xs ${statusCfg.color}`}>{ext.status}</Badge>
                     </div>
                   </TableCell>
                   <TableCell className="text-xs">{ext.device}</TableCell>
                   <TableCell className="text-xs font-mono">{ext.ipAddress}</TableCell>
                   <TableCell>
-                    <Badge variant={ext.provisioningStatus === 'active' ? 'default' : 'outline'} className="text-[10px]">
+                    <Badge variant={ext.provisioningStatus === 'active' ? 'default' : 'outline'} className="text-xs">
                       {ext.provisioningStatus === 'active' ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <AlertCircle className="h-3 w-3 mr-1" />}
                       {ext.provisioningStatus}
                     </Badge>
@@ -813,7 +813,7 @@ export function VoIP() {
                 <p className="text-xs font-medium text-muted-foreground">{t('voip.ivr.entries')} ({ivr.entries.length})</p>
                 {ivr.entries.map((entry) => (
                   <div key={entry.id} className="flex items-center gap-2 text-xs">
-                    <Badge variant="outline" className="font-mono text-[10px] min-w-[24px] justify-center">{entry.keyPress}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs min-w-[24px] justify-center">{entry.keyPress}</Badge>
                     <span className="truncate">{entry.label}</span>
                     <span className="text-muted-foreground ml-auto">→ {entry.target}</span>
                   </div>
@@ -1010,7 +1010,7 @@ export function VoIP() {
                 <TableCell className="text-xs">{formatFileSize(rec.fileSize)}</TableCell>
                 <TableCell>
                   {rec.tag ? (
-                    <Badge variant="outline" className={`text-[10px] ${TAG_COLORS[rec.tag]}`}>{t(`voip.rec.tag.${rec.tag}`)}</Badge>
+                    <Badge variant="outline" className={`text-xs ${TAG_COLORS[rec.tag]}`}>{t(`voip.rec.tag.${rec.tag}`)}</Badge>
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>
                   )}
@@ -1076,7 +1076,7 @@ export function VoIP() {
                     <TableCell className="text-xs font-mono">{trunk.host}</TableCell>
                     <TableCell className="text-xs">{trunk.port}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`text-[10px] ${trunk.status === 'connected' ? 'bg-green-100 text-green-700' : trunk.status === 'disconnected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                      <Badge variant="outline" className={`text-xs ${trunk.status === 'connected' ? 'bg-green-100 text-green-700' : trunk.status === 'disconnected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
                         <div className={`h-1.5 w-1.5 rounded-full mr-1 ${trunk.status === 'connected' ? 'bg-green-500' : trunk.status === 'disconnected' ? 'bg-red-500' : 'bg-amber-500'}`} />
                         {trunk.status}
                       </Badge>
@@ -1144,7 +1144,7 @@ export function VoIP() {
             {MOCK_FORWARDING.map((rule) => (
               <div key={rule.id} className="flex items-center justify-between rounded-lg border p-3">
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="text-[10px] capitalize">{rule.type.replace('_', ' ')}</Badge>
+                  <Badge variant="outline" className="text-xs capitalize">{rule.type.replace('_', ' ')}</Badge>
                   <div>
                     <p className="text-sm">→ {rule.target}</p>
                     {rule.schedule && <p className="text-xs text-muted-foreground">{rule.schedule}</p>}
@@ -1173,7 +1173,7 @@ export function VoIP() {
               <div key={queue.id} className="rounded-lg border p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium">{queue.name}</p>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-xs">
                     <Users className="h-3 w-3 mr-1" /> {queue.agents.length}
                   </Badge>
                 </div>
@@ -1183,7 +1183,7 @@ export function VoIP() {
                 </div>
                 <div className="flex gap-1.5 mt-2">
                   {queue.agents.map((agent) => (
-                    <Badge key={agent} variant="outline" className="text-[10px] font-mono">{agent}</Badge>
+                    <Badge key={agent} variant="outline" className="text-xs font-mono">{agent}</Badge>
                   ))}
                 </div>
               </div>

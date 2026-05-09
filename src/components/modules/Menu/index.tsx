@@ -139,10 +139,10 @@ export function Menu() {
                         <TableCell className="text-xs font-semibold hidden md:table-cell">{formatRSD(item.price)}</TableCell>
                         <TableCell className="text-xs hidden lg:table-cell"><div className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-500 fill-amber-500" /><span>{item.rating}</span><span className="text-muted-foreground">({item.orderCount})</span></div></TableCell>
                         <TableCell><div className="flex flex-wrap gap-0.5">
-                          {item.isVegetarian && <Badge className="text-[9px] bg-green-100 text-green-700">Veg</Badge>}
-                          {item.isVegan && <Badge className="text-[9px] bg-green-100 text-green-700">Vegan</Badge>}
-                          {item.isSpicy && <Badge className="text-[9px] bg-red-100 text-red-700">Ljuto</Badge>}
-                          {!item.isAvailable && <Badge className="text-[9px] bg-gray-100 text-gray-700">N/A</Badge>}
+                          {item.isVegetarian && <Badge className="text-xs bg-green-100 text-green-700">Veg</Badge>}
+                          {item.isVegan && <Badge className="text-xs bg-green-100 text-green-700">Vegan</Badge>}
+                          {item.isSpicy && <Badge className="text-xs bg-red-100 text-red-700">Ljuto</Badge>}
+                          {!item.isAvailable && <Badge className="text-xs bg-gray-100 text-gray-700">N/A</Badge>}
                         </div></TableCell>
                         <TableCell className="text-right"><div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
@@ -191,7 +191,7 @@ export function Menu() {
                 {data.map(item => (
                   <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span><Badge className="text-[10px] bg-muted">{CATEGORIES[item.category]?.label}</Badge>{!item.isAvailable && <Badge className="text-[10px] bg-gray-100 text-gray-700">N/A</Badge>}</div>
+                      <div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span><Badge className="text-xs bg-muted">{CATEGORIES[item.category]?.label}</Badge>{!item.isAvailable && <Badge className="text-xs bg-gray-100 text-gray-700">N/A</Badge>}</div>
                       <p className="text-xs text-muted-foreground truncate">{formatRSD(item.price)} — {item.description}</p>
                     </div>
                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -221,11 +221,11 @@ export function Menu() {
                   ['Vegetarijansko', detailItem.isVegetarian ? 'Da' : 'Ne'],
                   ['Vegansko', detailItem.isVegan ? 'Da' : 'Ne'],
                 ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
                 ))}
               </div>
-              <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Sastojci</div><div className="flex flex-wrap gap-1">{detailItem.ingredients.map(ing => <Badge key={ing} className="text-[10px] bg-muted">{ing}</Badge>)}</div></div>
-              {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-[10px] text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-[10px] bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
+              <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Sastojci</div><div className="flex flex-wrap gap-1">{detailItem.ingredients.map(ing => <Badge key={ing} className="text-xs bg-muted">{ing}</Badge>)}</div></div>
+              {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-xs bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
             </div>
           )}
         </DialogContent>

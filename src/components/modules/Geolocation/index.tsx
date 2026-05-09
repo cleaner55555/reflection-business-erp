@@ -482,7 +482,7 @@ export function Geolocation() {
                     </div>
                     <div className="flex items-center gap-3">
                       {emp.speed !== null && emp.speed > 0 && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{emp.speed} km/h</Badge>
+                        <Badge variant="outline" className="text-xs px-1.5 py-0">{emp.speed} km/h</Badge>
                       )}
                       {getBatteryIcon(emp.batteryLevel)}
                       <span className="text-xs text-muted-foreground">{emp.lastLocationAt ? formatRelativeTime(emp.lastLocationAt) : '-'}</span>
@@ -547,7 +547,7 @@ export function Geolocation() {
                       )}
                       <div className="flex items-center gap-1">
                         {emp.isTracked && getBatteryIcon(emp.batteryLevel)}
-                        {emp.isTracked && <span className="text-[10px] text-muted-foreground">{emp.batteryLevel}%</span>}
+                        {emp.isTracked && <span className="text-xs text-muted-foreground">{emp.batteryLevel}%</span>}
                       </div>
                       <Badge className={emp.isTracked ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}>
                         {emp.isTracked ? 'Praćen' : 'Nepraćen'}
@@ -665,7 +665,7 @@ export function Geolocation() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-sm font-medium">{ev.employeeName}</span>
-                              <Badge className={`text-[10px] px-1.5 py-0 ${cfg.color}`}>{cfg.label}</Badge>
+                              <Badge className={`text-xs px-1.5 py-0 ${cfg.color}`}>{cfg.label}</Badge>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {ev.locationName || ev.address || `${ev.latitude.toFixed(4)}, ${ev.longitude.toFixed(4)}`}
@@ -674,10 +674,10 @@ export function Geolocation() {
                           </div>
                           <div className="text-right flex-shrink-0">
                             <p className="text-xs font-medium">{formatTime(ev.timestamp)}</p>
-                            <p className="text-[10px] text-muted-foreground">{formatRelativeTime(ev.timestamp)}</p>
+                            <p className="text-xs text-muted-foreground">{formatRelativeTime(ev.timestamp)}</p>
                             <div className="flex items-center justify-end gap-1 mt-1">
                               {getBatteryIcon(ev.batteryLevel)}
-                              <span className="text-[10px] text-muted-foreground">{ev.batteryLevel}%</span>
+                              <span className="text-xs text-muted-foreground">{ev.batteryLevel}%</span>
                             </div>
                           </div>
                         </div>
@@ -702,10 +702,10 @@ export function Geolocation() {
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium">{alert.employeeName}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">{alert.message}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1">{formatRelativeTime(alert.createdAt)}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{formatRelativeTime(alert.createdAt)}</p>
                         </div>
                         {!alert.acknowledged && (
-                          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-shrink-0" onClick={() => handleAcknowledgeAlert(alert.id)}>
+                          <Button size="sm" variant="outline" className="h-6 text-xs flex-shrink-0" onClick={() => handleAcknowledgeAlert(alert.id)}>
                             OK
                           </Button>
                         )}

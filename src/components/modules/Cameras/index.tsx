@@ -386,10 +386,10 @@ export function Cameras() {
                   <Video className="h-8 w-8 text-white/30" />
                   <div className="absolute top-2 left-2 flex items-center gap-1">
                     <div className={`w-2 h-2 rounded-full ${STATUS_CONFIG[cam.status].dotColor} ${cam.status === 'recording' ? 'animate-pulse' : ''}`} />
-                    <span className="text-[10px] text-white/80">{STATUS_CONFIG[cam.status].label}</span>
+                    <span className="text-xs text-white/80">{STATUS_CONFIG[cam.status].label}</span>
                   </div>
                   <div className="absolute bottom-2 right-2">
-                    <span className="text-[10px] text-white/60">{cam.resolution}</span>
+                    <span className="text-xs text-white/60">{cam.resolution}</span>
                   </div>
                   {cam.status === 'recording' && (
                     <div className="absolute top-2 right-2">
@@ -402,7 +402,7 @@ export function Cameras() {
                   <p className="text-xs text-muted-foreground">{cam.location}</p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-2">
-                      {cam.nightVision && <Badge variant="outline" className="text-[9px] px-1 py-0">IR</Badge>}
+                      {cam.nightVision && <Badge variant="outline" className="text-xs px-1 py-0">IR</Badge>}
                       {cam.audioEnabled && <Volume2 className="h-3 w-3 text-muted-foreground" />}
                     </div>
                     <Progress value={(cam.storageUsed / cam.totalStorage) * 100} className="w-12 h-1.5" />
@@ -429,7 +429,7 @@ export function Cameras() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={`text-[10px] px-1.5 py-0 ${RECORDING_TYPE_CONFIG[rec.type].color}`}>{RECORDING_TYPE_CONFIG[rec.type].label}</Badge>
+                      <Badge className={`text-xs px-1.5 py-0 ${RECORDING_TYPE_CONFIG[rec.type].color}`}>{RECORDING_TYPE_CONFIG[rec.type].label}</Badge>
                       <span className="text-xs text-muted-foreground">{formatFileSize(rec.fileSize)}</span>
                     </div>
                   </div>
@@ -477,10 +477,10 @@ export function Cameras() {
                   )}
                   <div className="absolute top-2 left-2 flex items-center gap-1.5">
                     <div className={`w-2.5 h-2.5 rounded-full ${STATUS_CONFIG[cam.status].dotColor} ${cam.status === 'recording' ? 'animate-pulse' : ''}`} />
-                    <Badge className={`${STATUS_CONFIG[cam.status].color} text-[10px] px-1.5 py-0`}>{STATUS_CONFIG[cam.status].label}</Badge>
+                    <Badge className={`${STATUS_CONFIG[cam.status].color} text-xs px-1.5 py-0`}>{STATUS_CONFIG[cam.status].label}</Badge>
                   </div>
                   {cam.status === 'recording' && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded">
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">
                       <Circle className="h-2 w-2 fill-white animate-pulse" /> REC
                     </div>
                   )}
@@ -497,7 +497,7 @@ export function Cameras() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">IP</span>
-                      <span className="font-mono text-[10px]">{cam.ipAddress}</span>
+                      <span className="font-mono text-xs">{cam.ipAddress}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-xs">
@@ -508,9 +508,9 @@ export function Cameras() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 pt-1">
-                    <Badge className={`text-[10px] px-1.5 py-0 ${CAMERA_TYPE_CONFIG[cam.type].color}`}>{CAMERA_TYPE_CONFIG[cam.type].label}</Badge>
-                    {cam.nightVision && <Badge variant="outline" className="text-[10px] px-1.5 py-0">IR</Badge>}
-                    {cam.audioEnabled && <Badge variant="outline" className="text-[10px] px-1.5 py-0 flex items-center gap-0.5"><Volume2 className="h-2.5 w-2.5" /> Audio</Badge>}
+                    <Badge className={`text-xs px-1.5 py-0 ${CAMERA_TYPE_CONFIG[cam.type].color}`}>{CAMERA_TYPE_CONFIG[cam.type].label}</Badge>
+                    {cam.nightVision && <Badge variant="outline" className="text-xs px-1.5 py-0">IR</Badge>}
+                    {cam.audioEnabled && <Badge variant="outline" className="text-xs px-1.5 py-0 flex items-center gap-0.5"><Volume2 className="h-2.5 w-2.5" /> Audio</Badge>}
                   </div>
                   <div className="flex items-center gap-2 pt-1 border-t">
                     <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={() => { setSelectedCamera(cam); setCameraDetailOpen(true) }}>
@@ -575,13 +575,13 @@ export function Cameras() {
                     <div className="flex items-center gap-4">
                       <div className="text-right hidden md:block">
                         <p className="text-xs">{formatDuration(rec.duration)}</p>
-                        <p className="text-[10px] text-muted-foreground">{rec.resolution}</p>
+                        <p className="text-xs text-muted-foreground">{rec.resolution}</p>
                       </div>
-                      <Badge className={`text-[10px] px-1.5 py-0 ${RECORDING_TYPE_CONFIG[rec.type].color}`}>
+                      <Badge className={`text-xs px-1.5 py-0 ${RECORDING_TYPE_CONFIG[rec.type].color}`}>
                         {RECORDING_TYPE_CONFIG[rec.type].label}
                       </Badge>
                       <span className="text-xs text-muted-foreground hidden sm:block">{formatFileSize(rec.fileSize)}</span>
-                      <Badge className={`text-[10px] px-1.5 py-0 ${RECORDING_STATUS_CONFIG[rec.status].color}`}>
+                      <Badge className={`text-xs px-1.5 py-0 ${RECORDING_STATUS_CONFIG[rec.status].color}`}>
                         {RECORDING_STATUS_CONFIG[rec.status].label}
                       </Badge>
                       {rec.status === 'completed' && (
@@ -697,14 +697,14 @@ export function Cameras() {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">{alert.cameraName}</span>
-                              <Badge className={`text-[10px] px-1.5 py-0 ${typeCfg.color}`}>{typeCfg.label}</Badge>
+                              <Badge className={`text-xs px-1.5 py-0 ${typeCfg.color}`}>{typeCfg.label}</Badge>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">{alert.message}</p>
-                            <p className="text-[10px] text-muted-foreground mt-1">{formatRelativeTime(alert.createdAt)}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{formatRelativeTime(alert.createdAt)}</p>
                           </div>
                         </div>
                         {!alert.acknowledged && (
-                          <Button size="sm" variant="outline" className="h-6 text-[10px] flex-shrink-0" onClick={() => handleAcknowledgeAlert(alert.id)}>OK</Button>
+                          <Button size="sm" variant="outline" className="h-6 text-xs flex-shrink-0" onClick={() => handleAcknowledgeAlert(alert.id)}>OK</Button>
                         )}
                       </div>
                     )

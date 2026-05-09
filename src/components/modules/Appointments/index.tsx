@@ -242,7 +242,7 @@ function EmptyState({ icon, message, actionLabel, onAction }: {
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status]
   return (
-    <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>
+    <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>
       {cfg?.label || status}
     </Badge>
   )
@@ -257,7 +257,7 @@ function ReminderBadge({ status }: { status?: string }) {
   }
   const cfg = labels[status]
   if (!cfg) return null
-  return <Badge variant="outline" className={`text-[9px] ml-1 ${cfg.color}`}><Bell className="h-2.5 w-2.5 mr-0.5" />{cfg.text}</Badge>
+  return <Badge variant="outline" className={`text-xs ml-1 ${cfg.color}`}><Bell className="h-2.5 w-2.5 mr-0.5" />{cfg.text}</Badge>
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -722,7 +722,7 @@ export function Appointments() {
                         {slotAppts.map(a => (
                           <div
                             key={a.id}
-                            className="text-[10px] leading-tight rounded px-1 py-0.5 mb-0.5 truncate cursor-pointer text-white"
+                            className="text-xs leading-tight rounded px-1 py-0.5 mb-0.5 truncate cursor-pointer text-white"
                             style={{ backgroundColor: TYPE_COLORS[a.type] || '#6b7280', height: `${Math.max((a.duration / 30) * 24, 24)}px` }}
                             onClick={(e) => { e.stopPropagation(); setSelected(a); setDetailOpen(true) }}
                           >
@@ -808,7 +808,7 @@ export function Appointments() {
                       <td className="p-3 text-xs">{new Date(a.date).toLocaleDateString('sr-RS')}</td>
                       <td className="p-3 text-xs">{a.time}</td>
                       <td className="p-3 text-xs hidden md:table-cell">{a.duration} min</td>
-                      <td className="p-3 hidden md:table-cell"><Badge variant="outline" className="text-[10px]" style={{ borderColor: TYPE_COLORS[a.type], color: TYPE_COLORS[a.type] }}>{TYPE_LABELS[a.type] || a.type}</Badge></td>
+                      <td className="p-3 hidden md:table-cell"><Badge variant="outline" className="text-xs" style={{ borderColor: TYPE_COLORS[a.type], color: TYPE_COLORS[a.type] }}>{TYPE_LABELS[a.type] || a.type}</Badge></td>
                       <td className="p-3 text-xs hidden xl:table-cell">{a.assignedTo || '—'}</td>
                       <td className="p-3">
                         <div className="flex items-center gap-0.5">
@@ -875,9 +875,9 @@ export function Appointments() {
                       <td className="p-3 text-xs hidden lg:table-cell">{c.lastVisit ? new Date(c.lastVisit).toLocaleDateString('sr-RS') : '—'}</td>
                       <td className="p-3">
                         {c.isVip ? (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-700 text-[10px]"><Star className="h-2.5 w-2.5 mr-0.5" />VIP</Badge>
+                          <Badge variant="outline" className="bg-amber-100 text-amber-700 text-xs"><Star className="h-2.5 w-2.5 mr-0.5" />VIP</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[10px]">{t('appointments.regular') || 'Redovan'}</Badge>
+                          <Badge variant="outline" className="text-xs">{t('appointments.regular') || 'Redovan'}</Badge>
                         )}
                       </td>
                       <td className="p-3">
@@ -946,7 +946,7 @@ export function Appointments() {
                         <div className="text-sm font-medium">{s.bookingCount}</div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-[10px]" style={{ borderColor: CATEGORY_COLORS[s.category], color: CATEGORY_COLORS[s.category] }}>
+                    <Badge variant="outline" className="text-xs" style={{ borderColor: CATEGORY_COLORS[s.category], color: CATEGORY_COLORS[s.category] }}>
                       {CATEGORY_LABELS[s.category] || s.category}
                     </Badge>
                   </CardContent>
@@ -1081,7 +1081,7 @@ export function Appointments() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">{s.name}</span>
-                        <Badge variant="outline" className={`text-[10px] ${s.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        <Badge variant="outline" className={`text-xs ${s.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                           {s.isActive ? (t('appointments.active') || 'Aktivan') : (t('appointments.inactive') || 'Neaktivan')}
                         </Badge>
                       </div>

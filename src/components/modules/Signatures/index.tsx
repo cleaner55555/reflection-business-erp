@@ -243,7 +243,7 @@ export function Signatures() {
                               <div className="text-sm font-medium">{r.title}</div>
                               <div className="text-xs text-muted-foreground">{typeLabels[r.documentType] || r.documentType} · {r.signerName}</div>
                             </div>
-                            <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge>
+                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge>
                           </div>
                         )
                       })}
@@ -293,8 +293,8 @@ export function Signatures() {
                         <td className="p-3 font-medium">{r.title}</td>
                         <td className="p-3">{typeLabels[r.documentType] || r.documentType}</td>
                         <td className="p-3">{r.signerName}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${pCfg?.color || ''}`}>{pCfg?.label || r.priority}</Badge></td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${sCfg?.color || ''}`}>{sCfg?.label || r.status}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || r.priority}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${sCfg?.color || ''}`}>{sCfg?.label || r.status}</Badge></td>
                         <td className="p-3">
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(r); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>

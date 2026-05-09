@@ -773,7 +773,7 @@ export function KafeRestoranContent() {
             {activeOrders.length > 0 && (
               <Badge
                 variant="outline"
-                className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px] bg-amber-50 text-amber-700 border-amber-200"
+                className="ml-1.5 h-5 min-w-5 px-1.5 text-xs bg-amber-50 text-amber-700 border-amber-200"
               >
                 {activeOrders.length}
               </Badge>
@@ -1009,13 +1009,13 @@ export function KafeRestoranContent() {
                           </div>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${TABLE_STATUS_BADGE[table.status] || ""}`}
+                            className={`text-xs ${TABLE_STATUS_BADGE[table.status] || ""}`}
                           >
                             {TABLE_STATUS_LABEL[table.status] || table.status}
                           </Badge>
                           {(table.activeOrderCount || 0) > 0 && (
                             <div className="mt-2 pt-2 border-t">
-                              <p className="text-[10px] text-muted-foreground">
+                              <p className="text-xs text-muted-foreground">
                                 {table.activeOrderCount || 0}{" "}
                                 {t("cafeRestaurant.activeOrders").toLowerCase()}
                               </p>
@@ -1169,7 +1169,7 @@ export function KafeRestoranContent() {
                                   {item.name}
                                 </span>
                                 {item.category && (
-                                  <span className="text-[10px] text-muted-foreground">
+                                  <span className="text-xs text-muted-foreground">
                                     {item.category.name}
                                   </span>
                                 )}
@@ -1199,7 +1199,7 @@ export function KafeRestoranContent() {
                               <p className="text-sm font-medium truncate">
                                 {oi.menuItemName}
                               </p>
-                              <p className="text-[10px] text-muted-foreground">
+                              <p className="text-xs text-muted-foreground">
                                 {formatRSD(oi.unitPrice)} x {oi.quantity} ={" "}
                                 {formatRSD(oi.unitPrice * oi.quantity)}
                               </p>
@@ -1356,14 +1356,14 @@ export function KafeRestoranContent() {
                                     </span>
                                     <Badge
                                       variant="outline"
-                                      className={`text-[10px] ${ORDER_STATUS_BADGE[order.status] || ""}`}
+                                      className={`text-xs ${ORDER_STATUS_BADGE[order.status] || ""}`}
                                     >
                                       {ORDER_STATUS_LABEL[order.status] ||
                                         order.status}
                                     </Badge>
                                     <Badge
                                       variant="outline"
-                                      className={`text-[10px] ${ORDER_TYPE_BADGE[order.type] || ""}`}
+                                      className={`text-xs ${ORDER_TYPE_BADGE[order.type] || ""}`}
                                     >
                                       {ORDER_TYPE_LABEL[order.type] ||
                                         order.type}
@@ -1402,7 +1402,7 @@ export function KafeRestoranContent() {
                                       {formatRSD(order.totalAmount)}
                                     </p>
                                     {order.discountPct > 0 && (
-                                      <p className="text-[10px] text-amber-600">
+                                      <p className="text-xs text-amber-600">
                                         {t("cafeRestaurant.discount")}: -
                                         {order.discountPct}%
                                       </p>
@@ -1472,7 +1472,7 @@ export function KafeRestoranContent() {
                                               </span>
                                               <Badge
                                                 variant="outline"
-                                                className={`text-[10px] ${ITEM_STATUS_BADGE[item.status] || ""}`}
+                                                className={`text-xs ${ITEM_STATUS_BADGE[item.status] || ""}`}
                                               >
                                                 {ITEM_STATUS_LABEL[
                                                   item.status
@@ -1480,7 +1480,7 @@ export function KafeRestoranContent() {
                                               </Badge>
                                             </div>
                                             {item.notes && (
-                                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                              <p className="text-xs text-muted-foreground mt-0.5">
                                                 {item.notes}
                                               </p>
                                             )}
@@ -1489,7 +1489,7 @@ export function KafeRestoranContent() {
                                             <p className="text-sm font-medium">
                                               {formatRSD(item.total)}
                                             </p>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="text-xs text-muted-foreground">
                                               {formatRSD(item.unitPrice)} x{" "}
                                               {item.quantity}
                                             </p>
@@ -1500,7 +1500,7 @@ export function KafeRestoranContent() {
                                   )}
                                   {order.notes && (
                                     <div className="mt-2 p-2 rounded-md bg-muted/50">
-                                      <p className="text-[10px] text-muted-foreground font-medium">
+                                      <p className="text-xs text-muted-foreground font-medium">
                                         {t("cafeRestaurant.notes")}:
                                       </p>
                                       <p className="text-xs text-muted-foreground">
@@ -1801,7 +1801,7 @@ export function KafeRestoranContent() {
                               >
                                 <Badge
                                   variant="outline"
-                                  className={`text-[10px] ${cat.isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}
+                                  className={`text-xs ${cat.isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}
                                 >
                                   {cat.isActive
                                     ? t("cafeRestaurant.active")
@@ -1844,7 +1844,7 @@ export function KafeRestoranContent() {
                                             {!item.isAvailable && (
                                               <Badge
                                                 variant="outline"
-                                                className="text-[10px] bg-red-50 text-red-600 border-red-200"
+                                                className="text-xs bg-red-50 text-red-600 border-red-200"
                                               >
                                                 {t(
                                                   "cafeRestaurant.unavailable",
@@ -1858,7 +1858,7 @@ export function KafeRestoranContent() {
                                             </p>
                                           )}
                                           {item.cost > 0 && (
-                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                            <p className="text-xs text-muted-foreground mt-0.5">
                                               {t("cafeRestaurant.costPrice")}:{" "}
                                               {formatRSD(item.cost)}
                                             </p>

@@ -200,7 +200,7 @@ function AutomacijeTab() {
               {rule.actionData && (
                 <div className="p-2 bg-muted/50 rounded text-xs font-mono break-all">{rule.actionData}</div>
               )}
-              <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-2">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
                 <span>Pokrenuto: {rule.executedCount}x</span>
                 {rule.lastExecutedAt && <span>Poslednje: {rule.lastExecutedAt.split('T')[0]}</span>}
               </div>

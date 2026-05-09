@@ -32,7 +32,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="h-8 gap-2 px-2">
           <Avatar className="h-6 w-6">
-            <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
+            <AvatarFallback className="text-xs bg-primary text-primary-foreground">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -47,7 +47,7 @@ export function UserMenu() {
             <span className="text-sm font-medium">{currentUser.firstName} {currentUser.lastName}</span>
             <span className="text-xs text-muted-foreground">{currentUser.email}</span>
             {currentUser.isSuperAdmin && (
-              <span className="text-[10px] text-primary font-medium mt-0.5 flex items-center gap-1">
+              <span className="text-xs text-primary font-medium mt-0.5 flex items-center gap-1">
                 <Shield className="h-3 w-3" /> Super Admin
               </span>
             )}

@@ -840,7 +840,7 @@ export function KnowledgeBase() {
                         >
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-medium truncate">{a.title}</span>
-                            <Badge variant="outline" className={`text-[10px] shrink-0 ${statusCfg?.color ?? ''}`}>
+                            <Badge variant="outline" className={`text-xs shrink-0 ${statusCfg?.color ?? ''}`}>
                               {t(`knowledge.status${a.status.charAt(0).toUpperCase() + a.status.slice(1)}`)}
                             </Badge>
                           </div>
@@ -933,7 +933,7 @@ export function KnowledgeBase() {
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
                             {children.length > 0 && (
-                              <Badge variant="secondary" className="text-[10px]">
+                              <Badge variant="secondary" className="text-xs">
                                 {children.length} sub
                               </Badge>
                             )}
@@ -1041,7 +1041,7 @@ export function KnowledgeBase() {
                           />
                         </p>
                         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                          <Badge variant="outline" className="text-[10px]">{getCategoryName(a.categoryId)}</Badge>
+                          <Badge variant="outline" className="text-xs">{getCategoryName(a.categoryId)}</Badge>
                           <span>{formatDate(a.updatedAt)}</span>
                           <span className="flex items-center gap-0.5"><Eye className="h-3 w-3" />{a.views}</span>
                         </div>
@@ -1136,7 +1136,7 @@ export function KnowledgeBase() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-medium truncate">{articleTitle}</span>
-                            <Badge variant="outline" className={`text-[10px] shrink-0 ${revStatusCfg?.color ?? ''}`}>
+                            <Badge variant="outline" className={`text-xs shrink-0 ${revStatusCfg?.color ?? ''}`}>
                               {t(`knowledge.status${r.status.charAt(0).toUpperCase() + r.status.slice(1)}`)}
                             </Badge>
                           </div>
@@ -1456,7 +1456,7 @@ export function KnowledgeBase() {
                   <Badge variant="outline">{getCategoryName(selectedArticle.categoryId)}</Badge>
                 )}
                 {selectedArticle.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-[10px]">
+                  <Badge key={tag} variant="secondary" className="text-xs">
                     <Tag className="h-2.5 w-2.5 mr-0.5" />
                     {tag}
                   </Badge>

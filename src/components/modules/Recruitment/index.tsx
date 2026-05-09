@@ -235,7 +235,7 @@ export function Recruitment() {
                               <div className="text-xs text-muted-foreground">{j.department} · {j.location} · {typeLabels[j.type] || j.type}</div>
                             </div>
                             <div className="text-right">
-                              <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || j.status}</Badge>
+                              <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || j.status}</Badge>
                               <div className="text-xs text-muted-foreground mt-1">{j.applicantCount} kandidata</div>
                             </div>
                           </div>
@@ -287,7 +287,7 @@ export function Recruitment() {
                         <td className="p-3">{j.department}</td>
                         <td className="p-3">{typeLabels[j.type] || j.type}</td>
                         <td className="p-3"><span className="font-medium">{j.applicantCount}</span></td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || j.status}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || j.status}</Badge></td>
                         <td className="p-3">
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(j); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>

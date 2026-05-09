@@ -65,8 +65,8 @@ const CATEGORIES: Record<string, { color: string; label: string }> = {
   ohsas: { color: 'bg-amber-100 text-amber-700', label: 'OHSAS' }, other: { color: 'bg-slate-100 text-slate-700', label: 'Ostalo' },
 }
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
-function getCategoryBadge(c: string) { const r = CATEGORIES[c]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{c}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
+function getCategoryBadge(c: string) { const r = CATEGORIES[c]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{c}</Badge> }
 
 export function Standards() {
   const [data, setData] = useState<Standard[]>(INITIAL_DATA)
@@ -104,13 +104,13 @@ export function Standards() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-emerald-600 mb-1">Aktivni</div><p className="text-xl font-bold text-emerald-700">{stats.active}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-amber-600 mb-1">Ističu</div><p className="text-xl font-bold text-amber-700">{stats.expiring}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-blue-600 mb-1">U implement.</div><p className="text-xl font-bold text-blue-700">{stats.inProgress}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Usklađenost</div><p className="text-xl font-bold">{stats.avgCompliance}%</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-red-600 mb-1">Otvoreni nalazi</div><p className="text-xl font-bold text-red-700">{stats.openFindings}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-red-600 mb-1">Major</div><p className="text-xl font-bold text-red-700">{stats.majorFindings}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Aktivni</div><p className="text-xl font-bold text-emerald-700">{stats.active}</p></Card>
+        <Card className="p-4"><div className="text-xs text-amber-600 mb-1">Ističu</div><p className="text-xl font-bold text-amber-700">{stats.expiring}</p></Card>
+        <Card className="p-4"><div className="text-xs text-blue-600 mb-1">U implement.</div><p className="text-xl font-bold text-blue-700">{stats.inProgress}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Usklađenost</div><p className="text-xl font-bold">{stats.avgCompliance}%</p></Card>
+        <Card className="p-4"><div className="text-xs text-red-600 mb-1">Otvoreni nalazi</div><p className="text-xl font-bold text-red-700">{stats.openFindings}</p></Card>
+        <Card className="p-4"><div className="text-xs text-red-600 mb-1">Major</div><p className="text-xl font-bold text-red-700">{stats.majorFindings}</p></Card>
       </div>
 
       <Card>
@@ -138,13 +138,13 @@ export function Standards() {
                   return (
                     <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
                       <TableCell className="text-xs font-mono font-bold">{item.code}</TableCell>
-                      <TableCell><div className="text-xs font-medium">{item.name}</div><div className="text-[10px] text-muted-foreground">{item.scope}</div></TableCell>
+                      <TableCell><div className="text-xs font-medium">{item.name}</div><div className="text-xs text-muted-foreground">{item.scope}</div></TableCell>
                       <TableCell>{getCategoryBadge(item.category)}</TableCell>
                       <TableCell>{getStatusBadge(item.status)}</TableCell>
-                      <TableCell className="hidden md:table-cell"><div className="flex items-center gap-2"><div className={`w-10 h-1.5 rounded-full ${item.compliance >= 90 ? 'bg-emerald-500' : item.compliance >= 70 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${item.compliance}%` }} /><span className="text-[10px]">{item.compliance}%</span></div></TableCell>
+                      <TableCell className="hidden md:table-cell"><div className="flex items-center gap-2"><div className={`w-10 h-1.5 rounded-full ${item.compliance >= 90 ? 'bg-emerald-500' : item.compliance >= 70 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${item.compliance}%` }} /><span className="text-xs">{item.compliance}%</span></div></TableCell>
                       <TableCell className="text-xs hidden md:table-cell">{item.auditor || '-'}</TableCell>
                       <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{item.nextAudit ? formatDate(item.nextAudit) : '-'}</TableCell>
-                      <TableCell className="hidden lg:table-cell">{openF > 0 ? <Badge className="bg-red-100 text-red-700 text-[10px]">{openF}</Badge> : <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{openF > 0 ? <Badge className="bg-red-100 text-red-700 text-xs">{openF}</Badge> : <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />}</TableCell>
                       <TableCell className="text-right"><div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
@@ -166,22 +166,22 @@ export function Standards() {
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-lg font-bold">{detailItem.code}</p><p className="text-xs text-muted-foreground">{detailItem.name}</p></div><div className="flex gap-2">{getCategoryBadge(detailItem.category)}{getStatusBadge(detailItem.status)}</div></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Verzija</div><p className="text-xs font-medium">{detailItem.version}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Izdavalac</div><p className="text-xs font-medium">{detailItem.issuingBody}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Važi od</div><p className="text-xs">{detailItem.validFrom ? formatDate(detailItem.validFrom) : '-'}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Važi do</div><p className="text-xs">{detailItem.validUntil ? formatDate(detailItem.validUntil) : '-'}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Verzija</div><p className="text-xs font-medium">{detailItem.version}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Izdavalac</div><p className="text-xs font-medium">{detailItem.issuingBody}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Važi od</div><p className="text-xs">{detailItem.validFrom ? formatDate(detailItem.validFrom) : '-'}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Važi do</div><p className="text-xs">{detailItem.validUntil ? formatDate(detailItem.validUntil) : '-'}</p></div>
               </div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Opseg</div><p className="text-xs">{detailItem.scope}</p><p className="text-[10px] text-muted-foreground mt-1">Auditor: {detailItem.auditor || 'Nije dodeljen'} · Zadnji: {detailItem.lastAudit ? formatDate(detailItem.lastAudit) : 'N/A'} · Sledeći: {detailItem.nextAudit ? formatDate(detailItem.nextAudit) : 'N/A'}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Opseg</div><p className="text-xs">{detailItem.scope}</p><p className="text-xs text-muted-foreground mt-1">Auditor: {detailItem.auditor || 'Nije dodeljen'} · Zadnji: {detailItem.lastAudit ? formatDate(detailItem.lastAudit) : 'N/A'} · Sledeći: {detailItem.nextAudit ? formatDate(detailItem.nextAudit) : 'N/A'}</p></div>
               <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="flex justify-between items-center"><span className="text-xs text-emerald-600">Nivo usklađenosti</span><span className="text-lg font-bold text-emerald-700">{detailItem.compliance}%</span></div></div>
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
               {detailItem.findings.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs font-medium">Nalazi audita:</p>
                   {detailItem.findings.map(f => (
                     <div key={f.id} className="p-2 rounded-lg border space-y-1">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Badge className={`${f.type === 'major' ? 'bg-red-100 text-red-700' : f.type === 'minor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'} text-[10px]`}>{f.type}</Badge><Badge className={`${f.status === 'open' ? 'bg-red-100 text-red-600' : f.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'} text-[10px]`}>{f.status === 'open' ? 'Otvoren' : f.status === 'in_progress' ? 'U toku' : 'Zatvoren'}</Badge></div>
-                        <span className="text-[10px] text-muted-foreground">{f.deadline ? formatDate(f.deadline) : ''}</span>
+                        <div className="flex items-center gap-2"><Badge className={`${f.type === 'major' ? 'bg-red-100 text-red-700' : f.type === 'minor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'} text-xs`}>{f.type}</Badge><Badge className={`${f.status === 'open' ? 'bg-red-100 text-red-600' : f.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'} text-xs`}>{f.status === 'open' ? 'Otvoren' : f.status === 'in_progress' ? 'U toku' : 'Zatvoren'}</Badge></div>
+                        <span className="text-xs text-muted-foreground">{f.deadline ? formatDate(f.deadline) : ''}</span>
                       </div>
                       <p className="text-xs">{f.description}</p>
                     </div>

@@ -232,7 +232,7 @@ export function HealthScoreCard({
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className={cn('text-lg font-bold tabular-nums', scoreColor)}>{score}</span>
-              <span className="text-[10px] text-muted-foreground">/ 100</span>
+              <span className="text-xs text-muted-foreground">/ 100</span>
             </div>
           </div>
           <div className="flex-1 min-w-0 space-y-3">
@@ -390,7 +390,7 @@ export function ReceivablesCard({
               <div className={cn('h-1.5 w-1.5 rounded-full shrink-0', b.color)} />
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium truncate">{b.label}</p>
-                <p className="text-[11px] text-muted-foreground tabular-nums truncate">{formatCompactRSD(b.amount)} ({b.count})</p>
+                <p className="text-xs text-muted-foreground tabular-nums truncate">{formatCompactRSD(b.amount)} ({b.count})</p>
               </div>
             </div>
           ))}

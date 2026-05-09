@@ -266,10 +266,10 @@ export function WorkforcePlanner() {
           {!stats ? (<div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Aktivni</span><Users className="h-4 w-4 text-blue-500" /></div><p className="text-2xl font-bold text-blue-600">{stats.activeEmployees}<span className="text-sm text-muted-foreground">/{stats.totalEmployees}</span></p><p className="text-[10px] text-muted-foreground">{stats.absenceRate}% odsustvo</p></Card>
+                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Aktivni</span><Users className="h-4 w-4 text-blue-500" /></div><p className="text-2xl font-bold text-blue-600">{stats.activeEmployees}<span className="text-sm text-muted-foreground">/{stats.totalEmployees}</span></p><p className="text-xs text-muted-foreground">{stats.absenceRate}% odsustvo</p></Card>
                 <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Utilizacija</span><TrendingUp className="h-4 w-4 text-green-500" /></div><p className="text-2xl font-bold text-green-600">{stats.utilizationRate}%</p><Progress value={stats.utilizationRate} className="mt-2 h-2" /></Card>
-                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Troškovi rada</span><UserCog className="h-4 w-4 text-amber-500" /></div><p className="text-2xl font-bold">{formatCurrency(stats.laborCost)}</p><p className="text-[10px] text-muted-foreground">mesečni</p></Card>
-                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Upozorenja</span><AlertTriangle className="h-4 w-4 text-red-500" /></div><p className="text-2xl font-bold text-red-600">{stats.overtimeAlerts + stats.coverageGaps}</p><p className="text-[10px] text-muted-foreground">{stats.overtimeAlerts} prekovremene · {stats.coverageGaps} gapova</p></Card>
+                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Troškovi rada</span><UserCog className="h-4 w-4 text-amber-500" /></div><p className="text-2xl font-bold">{formatCurrency(stats.laborCost)}</p><p className="text-xs text-muted-foreground">mesečni</p></Card>
+                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Upozorenja</span><AlertTriangle className="h-4 w-4 text-red-500" /></div><p className="text-2xl font-bold text-red-600">{stats.overtimeAlerts + stats.coverageGaps}</p><p className="text-xs text-muted-foreground">{stats.overtimeAlerts} prekovremene · {stats.coverageGaps} gapova</p></Card>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -282,8 +282,8 @@ export function WorkforcePlanner() {
                         <div key={d.day} className="flex items-center gap-3">
                           <span className="text-xs w-10">{d.day}</span>
                           <div className="flex-1 grid grid-cols-2 gap-1">
-                            <div className="flex items-center gap-1"><div className="flex-1 bg-primary/20 rounded-full h-3"><div className="h-3 rounded-full bg-primary" style={{ width: `${(d.scheduled / max) * 100}%` }} /></div><span className="text-[9px] text-muted-foreground w-6">{d.scheduled}h</span></div>
-                            <div className="flex items-center gap-1"><div className="flex-1 bg-green-100 dark:bg-green-900/20 rounded-full h-3"><div className="h-3 rounded-full bg-green-500" style={{ width: `${(d.actual / max) * 100}%` }} /></div><span className="text-[9px] text-green-600 w-6">{d.actual}h</span></div>
+                            <div className="flex items-center gap-1"><div className="flex-1 bg-primary/20 rounded-full h-3"><div className="h-3 rounded-full bg-primary" style={{ width: `${(d.scheduled / max) * 100}%` }} /></div><span className="text-xs text-muted-foreground w-6">{d.scheduled}h</span></div>
+                            <div className="flex items-center gap-1"><div className="flex-1 bg-green-100 dark:bg-green-900/20 rounded-full h-3"><div className="h-3 rounded-full bg-green-500" style={{ width: `${(d.actual / max) * 100}%` }} /></div><span className="text-xs text-green-600 w-6">{d.actual}h</span></div>
                           </div>
                         </div>
                       )
@@ -301,7 +301,7 @@ export function WorkforcePlanner() {
                           <span className="text-xs w-24 truncate">{d.name}</span>
                           <div className="flex-1 bg-muted rounded-full h-3"><div className={`h-3 rounded-full ${pct > 100 ? 'bg-red-500' : pct > 90 ? 'bg-amber-500' : 'bg-green-500'}`} style={{ width: `${Math.min(pct, 100)}%` }} /></div>
                           <span className="text-xs font-medium w-10 text-right">{d.avgHours}h</span>
-                          <span className="text-[10px] text-muted-foreground w-8 text-right">{d.count}</span>
+                          <span className="text-xs text-muted-foreground w-8 text-right">{d.count}</span>
                         </div>
                       )
                     })}
@@ -321,7 +321,7 @@ export function WorkforcePlanner() {
                           <div className="flex-1 bg-muted rounded-full h-3"><div className={`h-3 rounded-full ${hasGap ? 'bg-red-400' : 'bg-green-500'}`} style={{ width: `${(g.available / Math.max(g.needed, 1)) * 100}%` }} /></div>
                           <span className="text-xs font-medium w-16 text-right">{g.available}/{g.needed}</span>
                         </div>
-                        {hasGap && <Badge variant="outline" className="text-[9px] text-red-500">-{g.needed - g.available}</Badge>}
+                        {hasGap && <Badge variant="outline" className="text-xs text-red-500">-{g.needed - g.available}</Badge>}
                       </div>
                     )
                   })}
@@ -351,12 +351,12 @@ export function WorkforcePlanner() {
               <div className="grid grid-cols-8 gap-px bg-border rounded-lg overflow-hidden">
                 {/* Header */}
                 <div className="bg-muted p-2 text-xs font-medium">Zaposleni</div>
-                {DAYS_SHORT.map((d, i) => <div key={d} className={`bg-muted p-2 text-center text-xs font-medium ${i >= 5 ? 'text-red-500' : ''}`}>{d}<br /><span className="text-[9px] text-muted-foreground">{new Date(weekDates[i]).getDate()}</span></div>)}
+                {DAYS_SHORT.map((d, i) => <div key={d} className={`bg-muted p-2 text-center text-xs font-medium ${i >= 5 ? 'text-red-500' : ''}`}>{d}<br /><span className="text-xs text-muted-foreground">{new Date(weekDates[i]).getDate()}</span></div>)}
 
                 {/* Rows */}
                 {activeEmps.filter((e) => deptFilter === 'Svi' || e.department === deptFilter).map((emp) => (
                   <div key={emp.id} className="contents">
-                    <div className="bg-background p-2 text-xs font-medium truncate border-b">{emp.name}<br /><span className="text-[10px] text-muted-foreground">{emp.department}</span></div>
+                    <div className="bg-background p-2 text-xs font-medium truncate border-b">{emp.name}<br /><span className="text-xs text-muted-foreground">{emp.department}</span></div>
                     {weekDates.map((date) => {
                       const dayShifts = getShiftsForDate(date).filter((s) => s.employeeId === emp.id)
                       return (
@@ -364,7 +364,7 @@ export function WorkforcePlanner() {
                           {dayShifts.length > 0 ? dayShifts.map((s) => {
                             const st = SHIFT_TYPES[s.type]
                             return (
-                              <div key={s.id} className={`rounded p-1 mb-1 text-[9px] cursor-pointer hover:opacity-80 ${st?.color}`}>
+                              <div key={s.id} className={`rounded p-1 mb-1 text-xs cursor-pointer hover:opacity-80 ${st?.color}`}>
                                 <div className="font-medium">{s.startTime}-{s.endTime}</div>
                                 <div className="text-[8px] opacity-70">{s.location}</div>
                                 {s.overtimeMinutes > 0 && <div className="text-[8px] text-red-500 font-medium">+{s.overtimeMinutes}min</div>}
@@ -382,7 +382,7 @@ export function WorkforcePlanner() {
 
           {/* Legend */}
           <div className="flex flex-wrap gap-3 mt-3">
-            {Object.entries(SHIFT_TYPES).map(([k, v]) => <div key={k} className="flex items-center gap-1"><div className={`h-3 w-3 rounded ${v.color}`} /><span className="text-[10px] text-muted-foreground">{v.label}</span></div>)}
+            {Object.entries(SHIFT_TYPES).map(([k, v]) => <div key={k} className="flex items-center gap-1"><div className={`h-3 w-3 rounded ${v.color}`} /><span className="text-xs text-muted-foreground">{v.label}</span></div>)}
           </div>
         </TabsContent>
 
@@ -405,9 +405,9 @@ export function WorkforcePlanner() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-medium">{e.name}</span>
-                          <Badge variant="secondary" className="text-[10px]">{e.department}</Badge>
-                          <Badge variant="outline" className="text-[10px]">{e.position}</Badge>
-                          {e.status === 'on_leave' && <Badge className="text-[10px] bg-amber-100 text-amber-700">Na odsustvu</Badge>}
+                          <Badge variant="secondary" className="text-xs">{e.department}</Badge>
+                          <Badge variant="outline" className="text-xs">{e.position}</Badge>
+                          {e.status === 'on_leave' && <Badge className="text-xs bg-amber-100 text-amber-700">Na odsustvu</Badge>}
                         </div>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span>Max: {e.maxHours}h</span>
@@ -417,9 +417,9 @@ export function WorkforcePlanner() {
                         </div>
                         <div className="flex items-center gap-2 mt-2">
                           <div className="flex-1 bg-muted rounded-full h-2"><div className={`h-2 rounded-full ${pct > 100 ? 'bg-red-500' : pct > 90 ? 'bg-amber-500' : 'bg-green-500'}`} style={{ width: `${Math.min(pct, 100)}%` }} /></div>
-                          <span className="text-[10px]">{pct.toFixed(0)}%</span>
+                          <span className="text-xs">{pct.toFixed(0)}%</span>
                         </div>
-                        {e.skills.length > 0 && <div className="flex flex-wrap gap-1 mt-2">{e.skills.map((sk) => <Badge key={sk} variant="outline" className="text-[9px]">{sk}</Badge>)}</div>}
+                        {e.skills.length > 0 && <div className="flex flex-wrap gap-1 mt-2">{e.skills.map((sk) => <Badge key={sk} variant="outline" className="text-xs">{sk}</Badge>)}</div>}
                       </div>
                     </div>
                   </CardContent>
@@ -445,7 +445,7 @@ export function WorkforcePlanner() {
                           <div><span className="text-sm">{e.name}</span><span className="text-xs text-muted-foreground ml-2">{e.department}</span></div>
                           <div className="flex items-center gap-3">
                             <span className="text-xs">{e.currentHours}/{e.maxHours}h</span>
-                            <Badge className="text-[10px] bg-red-100 text-red-700">+{e.currentHours - e.maxHours}h prekovremeno</Badge>
+                            <Badge className="text-xs bg-red-100 text-red-700">+{e.currentHours - e.maxHours}h prekovremeno</Badge>
                             <span className="text-xs font-medium text-red-600">{formatCurrency((e.currentHours - e.maxHours) * e.hourlyRate * 1.5)}</span>
                           </div>
                         </div>
@@ -466,11 +466,11 @@ export function WorkforcePlanner() {
                           return (
                             <div key={s.id} className="flex items-center justify-between p-2 rounded border">
                               <div className="flex items-center gap-3">
-                                <Badge variant="outline" className={`text-[10px] ${st?.color}`}>{st?.label}</Badge>
+                                <Badge variant="outline" className={`text-xs ${st?.color}`}>{st?.label}</Badge>
                                 <div><p className="text-sm">{s.employeeName}</p><p className="text-xs text-muted-foreground">{formatDate(s.date)} · {s.startTime}-{s.endTime} · {s.location}</p></div>
                               </div>
                               <div className="text-right">
-                                <Badge variant="outline" className="text-[10px] text-red-500">+{s.overtimeMinutes}min</Badge>
+                                <Badge variant="outline" className="text-xs text-red-500">+{s.overtimeMinutes}min</Badge>
                                 <p className="text-xs font-medium text-red-600 mt-1">{formatCurrency(otCost)}</p>
                               </div>
                             </div>
@@ -496,13 +496,13 @@ export function WorkforcePlanner() {
                 <DialogDescription>{selectedEmployee.department} · {selectedEmployee.position}</DialogDescription>
               </DialogHeader>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Max sati</p><p className="text-sm font-medium">{selectedEmployee.maxHours}h</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Trenutno</p><p className={`text-sm font-bold ${selectedEmployee.currentHours > selectedEmployee.maxHours ? 'text-red-600' : ''}`}>{selectedEmployee.currentHours}h</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Satnica</p><p className="text-sm font-medium">{formatCurrency(selectedEmployee.hourlyRate)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Dostupnost</p><p className="text-sm font-medium">{selectedEmployee.availability === 'full' ? 'Puno radno vreme' : 'Part-time'}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Max sati</p><p className="text-sm font-medium">{selectedEmployee.maxHours}h</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Trenutno</p><p className={`text-sm font-bold ${selectedEmployee.currentHours > selectedEmployee.maxHours ? 'text-red-600' : ''}`}>{selectedEmployee.currentHours}h</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Satnica</p><p className="text-sm font-medium">{formatCurrency(selectedEmployee.hourlyRate)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Dostupnost</p><p className="text-sm font-medium">{selectedEmployee.availability === 'full' ? 'Puno radno vreme' : 'Part-time'}</p></div>
               </div>
-              <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground mb-1">Veštine</p><div className="flex flex-wrap gap-1">{selectedEmployee.skills.length > 0 ? selectedEmployee.skills.map((sk) => <Badge key={sk} variant="outline" className="text-[10px]">{sk}</Badge>) : <span className="text-xs text-muted-foreground">Nije definisano</span>}</div></div>
-              <div><p className="text-sm font-medium mb-2">Smene ({getShiftsForEmployee(selectedEmployee.id).length})</p><ScrollArea className="max-h-[200px]"><div className="space-y-1">{getShiftsForEmployee(selectedEmployee.id).map((s) => { const st = SHIFT_TYPES[s.type]; return <div key={s.id} className="flex items-center justify-between p-2 rounded border text-xs"><div className="flex items-center gap-2"><Badge variant="outline" className={`text-[9px] ${st?.color}`}>{st?.label}</Badge><span>{formatDate(s.date)}</span><span>{s.startTime}-{s.endTime}</span><span className="text-muted-foreground">{s.location}</span></div><Badge variant="outline" className="text-[9px]">{s.status === 'confirmed' ? 'Potvrđena' : s.status === 'pending' ? 'Na čekanju' : 'Nacrt'}</Badge></div> })}</div></ScrollArea></div>
+              <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground mb-1">Veštine</p><div className="flex flex-wrap gap-1">{selectedEmployee.skills.length > 0 ? selectedEmployee.skills.map((sk) => <Badge key={sk} variant="outline" className="text-xs">{sk}</Badge>) : <span className="text-xs text-muted-foreground">Nije definisano</span>}</div></div>
+              <div><p className="text-sm font-medium mb-2">Smene ({getShiftsForEmployee(selectedEmployee.id).length})</p><ScrollArea className="max-h-[200px]"><div className="space-y-1">{getShiftsForEmployee(selectedEmployee.id).map((s) => { const st = SHIFT_TYPES[s.type]; return <div key={s.id} className="flex items-center justify-between p-2 rounded border text-xs"><div className="flex items-center gap-2"><Badge variant="outline" className={`text-xs ${st?.color}`}>{st?.label}</Badge><span>{formatDate(s.date)}</span><span>{s.startTime}-{s.endTime}</span><span className="text-muted-foreground">{s.location}</span></div><Badge variant="outline" className="text-xs">{s.status === 'confirmed' ? 'Potvrđena' : s.status === 'pending' ? 'Na čekanju' : 'Nacrt'}</Badge></div> })}</div></ScrollArea></div>
               <div><p className="text-sm font-medium mb-2">Kontakt</p><p className="text-xs text-muted-foreground">{selectedEmployee.email} · {selectedEmployee.phone}</p></div>
             </div>
           )}

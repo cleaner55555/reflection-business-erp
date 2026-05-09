@@ -707,7 +707,7 @@ export function Garancije() {
                   <p className="text-2xl font-bold text-amber-600">
                     {stats.expiringSoon}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     u narednih 90 dana
                   </p>
                 </Card>
@@ -824,7 +824,7 @@ export function Garancije() {
                                   height: `${max > 0 ? (m.count / max) * 80 : 0}px`,
                                 }}
                               />
-                              <span className="text-[10px] text-muted-foreground">
+                              <span className="text-xs text-muted-foreground">
                                 {m.month}
                               </span>
                             </div>
@@ -912,17 +912,17 @@ export function Garancije() {
                               </span>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] ${sCfg?.color}`}
+                                className={`text-xs ${sCfg?.color}`}
                               >
                                 {sCfg?.label}
                               </Badge>
-                              <span className="text-[10px]">
+                              <span className="text-xs">
                                 {cCfg?.icon} {TYPE_CONFIG[w.warrantyType]}
                               </span>
                               {w.claims.length > 0 && (
                                 <Badge
                                   variant="secondary"
-                                  className="text-[10px]"
+                                  className="text-xs"
                                 >
                                   {w.claims.length} rekl.
                                 </Badge>
@@ -957,7 +957,7 @@ export function Garancije() {
                                 value={progress}
                                 className={`h-1.5 flex-1 ${daysLeft > 0 && daysLeft <= 90 ? "[&>div]:bg-amber-400" : daysLeft <= 0 ? "[&>div]:bg-red-400" : ""}`}
                               />
-                              <span className="text-[10px] text-muted-foreground">
+                              <span className="text-xs text-muted-foreground">
                                 {w.durationMonths} mes.
                               </span>
                             </div>
@@ -1007,7 +1007,7 @@ export function Garancije() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">Kupac</p>
+                    <p className="text-xs text-muted-foreground">Kupac</p>
                     <p className="text-sm font-medium">
                       {selected.partnerName}
                     </p>
@@ -1016,7 +1016,7 @@ export function Garancije() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Davalac garancije
                     </p>
                     <p className="text-sm font-medium">{selected.provider}</p>
@@ -1025,7 +1025,7 @@ export function Garancije() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Period garancije
                     </p>
                     <p className="text-sm font-medium">
@@ -1040,7 +1040,7 @@ export function Garancije() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Kupovina
                     </p>
                     <p className="text-sm font-medium">
@@ -1104,13 +1104,13 @@ export function Garancije() {
                               <p className="text-xs font-medium">
                                 {cl.description}
                               </p>
-                              <p className="text-[10px] text-muted-foreground">
+                              <p className="text-xs text-muted-foreground">
                                 {formatDate(cl.date)}
                               </p>
                             </div>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${CLAIM_STATUS[cl.status]?.color}`}
+                              className={`text-xs ${CLAIM_STATUS[cl.status]?.color}`}
                             >
                               {CLAIM_STATUS[cl.status]?.label}
                             </Badge>

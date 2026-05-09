@@ -290,10 +290,10 @@ function InventuraTab() {
                   <div className="max-h-[150px] overflow-y-auto">
                     <Table>
                       <TableHeader><TableRow>
-                        <TableHead className="text-[10px]">Proizvod</TableHead>
-                        <TableHead className="text-[10px] text-right">Sistem</TableHead>
-                        <TableHead className="text-[10px] text-right">Brojeno</TableHead>
-                        <TableHead className="text-[10px] text-right">Razlika</TableHead>
+                        <TableHead className="text-xs">Proizvod</TableHead>
+                        <TableHead className="text-xs text-right">Sistem</TableHead>
+                        <TableHead className="text-xs text-right">Brojeno</TableHead>
+                        <TableHead className="text-xs text-right">Razlika</TableHead>
                       </TableRow></TableHeader>
                       <TableBody>
                         {count.items.map(item => (

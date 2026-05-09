@@ -1058,7 +1058,7 @@ export function ProgramLojalnosti() {
                       /{stats.totalMembers}
                     </span>
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     +{stats.newThisMonth} ovog meseca
                   </p>
                 </Card>
@@ -1074,7 +1074,7 @@ export function ProgramLojalnosti() {
                       stats.totalPointsIssued - stats.totalPointsRedeemed
                     ).toLocaleString()}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Iskorišćeno: {stats.totalPointsRedeemed.toLocaleString()}
                   </p>
                 </Card>
@@ -1088,7 +1088,7 @@ export function ProgramLojalnosti() {
                   <p className="text-2xl font-bold">
                     {formatCurrency(stats.totalRevenue)}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Prosek {formatCurrency(stats.avgOrderValue)}/kupovina
                   </p>
                 </Card>
@@ -1100,7 +1100,7 @@ export function ProgramLojalnosti() {
                     <Heart className="h-4 w-4 text-red-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.retentionRate}%</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.topTierMembers} Dijamant članova
                   </p>
                 </Card>
@@ -1156,7 +1156,7 @@ export function ProgramLojalnosti() {
                                   }}
                                 />
                               </div>
-                              <span className="text-[9px] text-green-600 w-8">
+                              <span className="text-xs text-green-600 w-8">
                                 +{(m.earned / 1000).toFixed(0)}k
                               </span>
                             </div>
@@ -1169,13 +1169,13 @@ export function ProgramLojalnosti() {
                                   }}
                                 />
                               </div>
-                              <span className="text-[9px] text-red-500 w-8">
+                              <span className="text-xs text-red-500 w-8">
                                 -{(m.redeemed / 1000).toFixed(0)}k
                               </span>
                             </div>
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-[9px]">
+                        <Badge variant="outline" className="text-xs">
                           +{m.newMembers}
                         </Badge>
                       </div>
@@ -1202,13 +1202,13 @@ export function ProgramLojalnosti() {
                           </span>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm truncate">{s.name}</p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {s.points.toLocaleString()} poena
                             </p>
                           </div>
                           <Badge
                             variant="outline"
-                            className={`text-[9px] ${tc?.bgColor}`}
+                            className={`text-xs ${tc?.bgColor}`}
                           >
                             {tc?.icon} {tc?.label}
                           </Badge>
@@ -1237,10 +1237,10 @@ export function ProgramLojalnosti() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm truncate">{r.name}</p>
                         </div>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {r.claimed}x
                         </span>
-                        <Badge variant="outline" className="text-[9px]">
+                        <Badge variant="outline" className="text-xs">
                           <Star className="h-3 w-3 mr-1" />
                           {r.cost.toLocaleString()}
                         </Badge>
@@ -1316,14 +1316,14 @@ export function ProgramLojalnosti() {
                             </span>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${tc?.bgColor} ${tc?.color}`}
+                              className={`text-xs ${tc?.bgColor} ${tc?.color}`}
                             >
                               {tc?.icon} {tc?.label}
                             </Badge>
                             {m.status === "inactive" && (
                               <Badge
                                 variant="secondary"
-                                className="text-[10px]"
+                                className="text-xs"
                               >
                                 Neaktivan
                               </Badge>
@@ -1389,7 +1389,7 @@ export function ProgramLojalnosti() {
                         </div>
                         <div className="grid grid-cols-2 gap-4 mt-3">
                           <div className="p-3 rounded-lg bg-muted/50">
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               Min. poeni
                             </p>
                             <p className="text-sm font-medium">
@@ -1397,7 +1397,7 @@ export function ProgramLojalnosti() {
                             </p>
                           </div>
                           <div className="p-3 rounded-lg bg-muted/50">
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               Min. potrošnja
                             </p>
                             <p className="text-sm font-medium">
@@ -1414,7 +1414,7 @@ export function ProgramLojalnosti() {
                               <Badge
                                 key={i}
                                 variant="outline"
-                                className="text-[10px]"
+                                className="text-xs"
                               >
                                 {b}
                               </Badge>
@@ -1453,12 +1453,12 @@ export function ProgramLojalnosti() {
                       {r.active ? (
                         <Badge
                           variant="default"
-                          className="text-[9px] bg-green-500"
+                          className="text-xs bg-green-500"
                         >
                           Aktivna
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-[9px]">
+                        <Badge variant="secondary" className="text-xs">
                           Neaktivna
                         </Badge>
                       )}
@@ -1473,18 +1473,18 @@ export function ProgramLojalnosti() {
                         <span className="text-sm font-bold">
                           {r.pointsCost.toLocaleString()}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           poena
                         </span>
                       </div>
                       <Badge
                         variant="outline"
-                        className={`text-[9px] ${requiredTier?.bgColor}`}
+                        className={`text-xs ${requiredTier?.bgColor}`}
                       >
                         {requiredTier?.icon} {requiredTier?.label}+
                       </Badge>
                     </div>
-                    <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
+                    <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
                       <span>Iskorišćeno: {r.claimed}</span>
                       <span>Max: {r.maxPerMember}/član</span>
                     </div>
@@ -1559,7 +1559,7 @@ export function ProgramLojalnosti() {
                         </span>
                         <Badge
                           variant="outline"
-                          className={`text-[9px] ${tt?.color}`}
+                          className={`text-xs ${tt?.color}`}
                         >
                           {tt?.label}
                         </Badge>
@@ -1575,7 +1575,7 @@ export function ProgramLojalnosti() {
                         {tx.points > 0 ? "+" : ""}
                         {tx.points.toLocaleString()}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {formatDate(tx.date)}
                       </p>
                     </div>
@@ -1613,11 +1613,11 @@ export function ProgramLojalnosti() {
                           <span className="text-sm font-medium">{c.name}</span>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${sc?.color}`}
+                            className={`text-xs ${sc?.color}`}
                           >
                             {sc?.label}
                           </Badge>
-                          <Badge variant="secondary" className="text-[10px]">
+                          <Badge variant="secondary" className="text-xs">
                             {c.type === "multiplier"
                               ? "Multiplikator"
                               : c.type === "signup_bonus"
@@ -1697,14 +1697,14 @@ export function ProgramLojalnosti() {
                     variant={
                       selectedItem.status === "active" ? "default" : "secondary"
                     }
-                    className="text-[10px]"
+                    className="text-xs"
                   >
                     {selectedItem.status === "active" ? "Aktivan" : "Neaktivan"}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Trenutni poeni
                     </p>
                     <p className="text-lg font-bold text-amber-600">
@@ -1712,7 +1712,7 @@ export function ProgramLojalnosti() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Ukupno potrošeno
                     </p>
                     <p className="text-lg font-bold">
@@ -1722,7 +1722,7 @@ export function ProgramLojalnosti() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Kupovina
                     </p>
                     <p className="text-sm font-medium">
@@ -1733,7 +1733,7 @@ export function ProgramLojalnosti() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Preporuke
                     </p>
                     <p className="text-sm font-medium">
@@ -1744,7 +1744,7 @@ export function ProgramLojalnosti() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Datum prijave
                     </p>
                     <p className="text-sm">
@@ -1752,7 +1752,7 @@ export function ProgramLojalnosti() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Poslednja aktivnost
                     </p>
                     <p className="text-sm">
@@ -1761,7 +1761,7 @@ export function ProgramLojalnosti() {
                   </div>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Životni poeni
                   </p>
                   <p className="text-sm font-medium">
@@ -1799,14 +1799,14 @@ export function ProgramLojalnosti() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">Period</p>
+                    <p className="text-xs text-muted-foreground">Period</p>
                     <p className="text-sm">
                       {formatDate((selectedItem as PromoCampaign).startDate)} —{" "}
                       {formatDate((selectedItem as PromoCampaign).endDate)}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Iskorišćeno
                     </p>
                     <p className="text-sm font-medium">
@@ -1814,7 +1814,7 @@ export function ProgramLojalnosti() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Dodeljeno poena
                     </p>
                     <p className="text-sm font-bold text-green-600">
@@ -1824,7 +1824,7 @@ export function ProgramLojalnosti() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">Budžet</p>
+                    <p className="text-xs text-muted-foreground">Budžet</p>
                     <p className="text-sm">
                       {formatCurrency(
                         (selectedItem as PromoCampaign).budgetUsed,

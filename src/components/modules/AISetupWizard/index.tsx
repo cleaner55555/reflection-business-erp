@@ -369,14 +369,14 @@ export function AISetupWizard() {
                     <div className="flex gap-1.5">
                       <button
                         onClick={() => setSelectedModules(new Set(ALL_MODULE_IDS))}
-                        className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
                         Izaberi sve
                       </button>
                       <span className="text-gray-300 dark:text-gray-600">·</span>
                       <button
                         onClick={() => setSelectedModules(new Set())}
-                        className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
                         Poništi
                       </button>
@@ -407,7 +407,7 @@ export function AISetupWizard() {
                           <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300">
                             {group}
                           </span>
-                          <Badge variant="outline" className="text-[9px] h-4 px-1">
+                          <Badge variant="outline" className="text-xs h-4 px-1">
                             {modules.filter(m => selectedModules.has(m.id)).length}/{modules.length}
                           </Badge>
                         </button>

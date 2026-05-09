@@ -820,7 +820,7 @@ export function Events() {
                       <div key={r.id} className="flex items-center justify-between py-1.5 border-b last:border-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm">{r.attendee}</span>
-                          <Badge variant="outline" className={`text-[10px] ${REG_STATUS_COLORS[r.status]}`}>
+                          <Badge variant="outline" className={`text-xs ${REG_STATUS_COLORS[r.status]}`}>
                             {t(REG_STATUS_KEYS[r.status])}
                           </Badge>
                         </div>
@@ -1053,7 +1053,7 @@ export function Events() {
                   <div className="flex items-center gap-0.5">{renderStars(v.rating)}</div>
                   <div className="flex flex-wrap gap-1">
                     {v.equipment.map((eq) => (
-                      <Badge key={eq} variant="outline" className="text-[10px]">{t(EQUIPMENT_KEYS[eq])}</Badge>
+                      <Badge key={eq} variant="outline" className="text-xs">{t(EQUIPMENT_KEYS[eq])}</Badge>
                     ))}
                   </div>
                 </CardContent>

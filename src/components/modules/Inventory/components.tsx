@@ -61,12 +61,12 @@ function StockOverview() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Proizvoda</p><p className="text-sm font-bold text-emerald-700">{stats.totalProducts}</p></div>
-        <div className="rounded-lg bg-blue-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Ukupna zaliha</p><p className="text-sm font-bold text-blue-700">{stats.totalStock.toLocaleString()}</p></div>
-        <div className="rounded-lg bg-purple-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Nabavna vrednost</p><p className="text-sm font-bold text-purple-700">{formatRSD(stats.totalValue)}</p></div>
-        <div className="rounded-lg bg-amber-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Prodajna vrednost</p><p className="text-sm font-bold text-amber-700">{formatRSD(stats.retailValue)}</p></div>
-        <div className="rounded-lg bg-red-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Upozorenja</p><p className="text-sm font-bold text-red-700">{stats.lowStock.length + stats.outOfStock.length}</p></div>
-        <div className="rounded-lg bg-slate-100 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Lokacije</p><p className="text-sm font-bold">{locations.length}</p></div>
+        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Proizvoda</p><p className="text-sm font-bold text-emerald-700">{stats.totalProducts}</p></div>
+        <div className="rounded-lg bg-blue-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Ukupna zaliha</p><p className="text-sm font-bold text-blue-700">{stats.totalStock.toLocaleString()}</p></div>
+        <div className="rounded-lg bg-purple-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Nabavna vrednost</p><p className="text-sm font-bold text-purple-700">{formatRSD(stats.totalValue)}</p></div>
+        <div className="rounded-lg bg-amber-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Prodajna vrednost</p><p className="text-sm font-bold text-amber-700">{formatRSD(stats.retailValue)}</p></div>
+        <div className="rounded-lg bg-red-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Upozorenja</p><p className="text-sm font-bold text-red-700">{stats.lowStock.length + stats.outOfStock.length}</p></div>
+        <div className="rounded-lg bg-slate-100 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Lokacije</p><p className="text-sm font-bold">{locations.length}</p></div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -79,14 +79,14 @@ function StockOverview() {
               <div className="space-y-1.5 max-h-64 overflow-y-auto">
                 {stats.outOfStock.map(p => (
                   <div key={p.id} className="flex items-center justify-between p-2 rounded bg-red-50 border border-red-200">
-                    <div className="flex items-center gap-2"><span className="text-xs font-medium">{p.name}</span><span className="text-[10px] text-muted-foreground">({p.sku})</span></div>
-                    <Badge variant="outline" className="text-[9px] bg-red-100 text-red-700 border-red-200">Nema na stanju</Badge>
+                    <div className="flex items-center gap-2"><span className="text-xs font-medium">{p.name}</span><span className="text-xs text-muted-foreground">({p.sku})</span></div>
+                    <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-200">Nema na stanju</Badge>
                   </div>
                 ))}
                 {stats.lowStock.map(p => (
                   <div key={p.id} className="flex items-center justify-between p-2 rounded bg-amber-50 border border-amber-200">
-                    <div className="flex items-center gap-2"><span className="text-xs font-medium">{p.name}</span><span className="text-[10px] text-muted-foreground">({p.sku})</span></div>
-                    <span className="text-[10px] font-medium text-amber-700">{p.currentStock}/{p.minStock} {p.unit}</span>
+                    <div className="flex items-center gap-2"><span className="text-xs font-medium">{p.name}</span><span className="text-xs text-muted-foreground">({p.sku})</span></div>
+                    <span className="text-xs font-medium text-amber-700">{p.currentStock}/{p.minStock} {p.unit}</span>
                   </div>
                 ))}
               </div>
@@ -100,7 +100,7 @@ function StockOverview() {
             <div className="space-y-1.5 max-h-64 overflow-y-auto">
               {topProducts.map((p, i) => (
                 <div key={p.id} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
-                  <div className="flex items-center gap-2"><span className="text-[10px] text-muted-foreground w-4">{i + 1}.</span><span className="text-xs font-medium">{p.name}</span><span className="text-[10px] text-muted-foreground">({p.currentStock} {p.unit})</span></div>
+                  <div className="flex items-center gap-2"><span className="text-xs text-muted-foreground w-4">{i + 1}.</span><span className="text-xs font-medium">{p.name}</span><span className="text-xs text-muted-foreground">({p.currentStock} {p.unit})</span></div>
                   <span className="text-xs font-semibold">{formatRSD(p.currentStock * p.purchasePrice)}</span>
                 </div>
               ))}
@@ -115,11 +115,11 @@ function StockOverview() {
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
                 <TrendingUp className="h-5 w-5 text-emerald-500" />
-                <div><p className="text-[10px] text-muted-foreground">Prijem</p><p className="text-sm font-bold text-emerald-700">{stats.last7DaysIn.toLocaleString()}</p></div>
+                <div><p className="text-xs text-muted-foreground">Prijem</p><p className="text-sm font-bold text-emerald-700">{stats.last7DaysIn.toLocaleString()}</p></div>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
                 <TrendingDown className="h-5 w-5 text-red-500" />
-                <div><p className="text-[10px] text-muted-foreground">Izdavanje</p><p className="text-sm font-bold text-red-700">{stats.last7DaysOut.toLocaleString()}</p></div>
+                <div><p className="text-xs text-muted-foreground">Izdavanje</p><p className="text-sm font-bold text-red-700">{stats.last7DaysOut.toLocaleString()}</p></div>
               </div>
             </div>
           </CardContent>
@@ -135,7 +135,7 @@ function StockOverview() {
                 return (
                   <div key={cat} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
                     <span className="text-xs font-medium">{cat}</span>
-                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{catProducts.length} art.</span>
                       <span className="font-medium text-foreground">{formatRSD(catValue)}</span>
                     </div>
@@ -251,7 +251,7 @@ function LokacijeTab() {
                     <TableRow key={loc.id}>
                       <TableCell className="text-xs font-mono font-medium">{loc.code}</TableCell>
                       <TableCell className="text-xs font-medium">{loc.name}</TableCell>
-                      <TableCell><Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeInfo.color}`}>{typeInfo.label}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo.color}`}>{typeInfo.label}</Badge></TableCell>
                       <TableCell className="text-xs text-muted-foreground">{loc.parent ? loc.parent.code : '-'}</TableCell>
                       <TableCell className="text-xs text-center">{loc._count?.children || 0}</TableCell>
                       <TableCell className="text-xs text-center">{loc._count?.stockMovements || 0}</TableCell>
@@ -517,7 +517,7 @@ function ArtikliTab() {
                       <TableCell className="text-xs font-mono">{tc(p.sku)}</TableCell>
                       <TableCell className="text-xs font-medium">{tc(p.name)}</TableCell>
                       <TableCell className="text-xs">
-                        <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                        <Badge variant="secondary" className="text-xs px-2 py-0">
                           {p.category ? tc(p.category) : '-'}
                         </Badge>
                       </TableCell>
@@ -755,11 +755,11 @@ function KretanjaTab() {
                       <TableCell className="text-xs">
                         <div>
                           <span className="font-medium">{tc(m.product?.name || '')}</span>
-                          <span className="text-muted-foreground ml-1 text-[10px]">({tc(m.product?.sku || '')})</span>
+                          <span className="text-muted-foreground ml-1 text-xs">({tc(m.product?.sku || '')})</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(m.type)}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(m.type)}`}>
                           {getStatusLabel(m.type)}
                         </Badge>
                       </TableCell>
@@ -1088,10 +1088,10 @@ function OtpremniceTab() {
                   <p className="text-xs text-gray-500 mt-1">{COMPANY.address}</p>
                   <p className="text-xs text-gray-500">{COMPANY.city}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    <span className="text-[10px] text-gray-500">PIB: {COMPANY.pib}</span>
-                    <span className="text-[10px] text-gray-500">MB: {COMPANY.maticniBr}</span>
-                    <span className="text-[10px] text-gray-500">{COMPANY.account}</span>
-                    <span className="text-[10px] text-gray-500">{COMPANY.bank}</span>
+                    <span className="text-xs text-gray-500">PIB: {COMPANY.pib}</span>
+                    <span className="text-xs text-gray-500">MB: {COMPANY.maticniBr}</span>
+                    <span className="text-xs text-gray-500">{COMPANY.account}</span>
+                    <span className="text-xs text-gray-500">{COMPANY.bank}</span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -1104,11 +1104,11 @@ function OtpremniceTab() {
 
               {/* Partner Info */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.recipient')}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.recipient')}</p>
                 <p className="text-sm font-semibold">{printNote.partner?.name ? tc(printNote.partner.name) : '-'}</p>
                 <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                   {printNote.partner?.pib && (
-                    <span className="text-[10px] text-gray-500">PIB: {printNote.partner.pib}</span>
+                    <span className="text-xs text-gray-500">PIB: {printNote.partner.pib}</span>
                   )}
                 </div>
               </div>
@@ -1150,7 +1150,7 @@ function OtpremniceTab() {
               {/* Notes */}
               {printNote.notes && (
                 <div className="mb-4 text-xs">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
                   <p className="text-gray-600">{tc(printNote.notes)}</p>
                 </div>
               )}
@@ -1158,7 +1158,7 @@ function OtpremniceTab() {
               {/* Invoice Number Reference */}
               {printNote.invoiceNumber && (
                 <div className="mb-6 text-xs">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.invoiceRef')}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.invoiceRef')}</p>
                   <p className="text-gray-600">{t('warehouse.invoice')} br: {printNote.invoiceNumber}</p>
                 </div>
               )}
@@ -1167,11 +1167,11 @@ function OtpremniceTab() {
               <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">{t('warehouse.issuerSignature')}</p>
+                  <p className="text-xs text-gray-400">{t('warehouse.issuerSignature')}</p>
                 </div>
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">{t('warehouse.receiverSignature')}</p>
+                  <p className="text-xs text-gray-400">{t('warehouse.receiverSignature')}</p>
                 </div>
               </div>
             </div>
@@ -1231,7 +1231,7 @@ function OtpremniceTab() {
                 {lineItems.map((li, idx) => (
                   <div key={li.tempId} className="grid grid-cols-[1fr_80px_100px_32px] gap-2 items-end">
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">{t('warehouse.productLabel')}</Label>
+                      <Label className="text-xs text-muted-foreground">{t('warehouse.productLabel')}</Label>
                       <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
                         <SelectTrigger className="h-8 text-xs">
                           <SelectValue placeholder={t('common.select')} />
@@ -1244,7 +1244,7 @@ function OtpremniceTab() {
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">{t('common.quantity')}</Label>
+                      <Label className="text-xs text-muted-foreground">{t('common.quantity')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1254,7 +1254,7 @@ function OtpremniceTab() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">{t('common.price')}</Label>
+                      <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1321,7 +1321,7 @@ function OtpremniceTab() {
                       <TableCell className="text-xs font-medium">{dn.partner?.name ? tc(dn.partner.name) : '-'}</TableCell>
                       <TableCell className="text-xs">{formatDate(dn.date)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(dn.status)}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(dn.status)}`}>
                           {getStatusLabel(dn.status)}
                         </Badge>
                       </TableCell>
@@ -1597,7 +1597,7 @@ function CenovniciTab() {
                 {lineItems.map((li) => (
                   <div key={li.tempId} className="grid grid-cols-[1fr_100px_80px_32px] gap-2 items-end">
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">{t('warehouse.productLabel')}</Label>
+                      <Label className="text-xs text-muted-foreground">{t('warehouse.productLabel')}</Label>
                       <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
                         <SelectTrigger className="h-8 text-xs">
                           <SelectValue placeholder={t('common.select')} />
@@ -1610,7 +1610,7 @@ function CenovniciTab() {
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">{t('common.price')}</Label>
+                      <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1620,7 +1620,7 @@ function CenovniciTab() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-muted-foreground">{t('warehouse.discountPct')}</Label>
+                      <Label className="text-xs text-muted-foreground">{t('warehouse.discountPct')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1685,7 +1685,7 @@ function CenovniciTab() {
                       <TableCell className="text-xs font-medium">{tc(pl.name)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{pl.description ? tc(pl.description) : '-'}</TableCell>
                       <TableCell className="text-xs text-center">
-                        <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                        <Badge variant="secondary" className="text-xs px-2 py-0">
                           {pl._count?.items ?? pl.items?.length ?? 0}
                         </Badge>
                       </TableCell>
@@ -1693,9 +1693,9 @@ function CenovniciTab() {
                       <TableCell className="text-xs">{pl.validTo ? formatDate(pl.validTo) : '-'}</TableCell>
                       <TableCell className="text-center">
                         {pl.isActive ? (
-                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-2 py-0">{t('common.active')}</Badge>
+                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs px-2 py-0">{t('common.active')}</Badge>
                         ) : (
-                          <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-[10px] px-2 py-0">{t('common.inactive')}</Badge>
+                          <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-xs px-2 py-0">{t('common.inactive')}</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-center">

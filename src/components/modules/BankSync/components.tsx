@@ -215,7 +215,7 @@ function AccountsTab() {
                                 {account.bank && <p className="text-xs text-muted-foreground">{account.bank}</p>}
                               </div>
                             </div>
-                            <Badge variant={account.isActive ? 'default' : 'secondary'} className="text-[10px]">
+                            <Badge variant={account.isActive ? 'default' : 'secondary'} className="text-xs">
                               {account.isActive ? t('common.active') : t('common.inactive')}
                             </Badge>
                           </div>
@@ -544,7 +544,7 @@ function TransactionsTab() {
                     <ArrowUpRight className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">{t('bankSync.totalInflow')}</p>
+                    <p className="text-xs text-muted-foreground">{t('bankSync.totalInflow')}</p>
                     <p className="text-sm font-bold text-emerald-600">{formatRSD(totalIn)}</p>
                   </div>
                 </div>
@@ -559,7 +559,7 @@ function TransactionsTab() {
                     <ArrowDownLeft className="h-4 w-4 text-red-500" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">{t('bankSync.totalOutflow')}</p>
+                    <p className="text-xs text-muted-foreground">{t('bankSync.totalOutflow')}</p>
                     <p className="text-sm font-bold text-red-600">{formatRSD(totalOut)}</p>
                   </div>
                 </div>
@@ -574,7 +574,7 @@ function TransactionsTab() {
                     <CheckCircle className="h-4 w-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">{t('bankSync.reconciled')}</p>
+                    <p className="text-xs text-muted-foreground">{t('bankSync.reconciled')}</p>
                     <p className="text-sm font-bold">{reconciled}/{transactions.length}</p>
                   </div>
                 </div>
@@ -589,7 +589,7 @@ function TransactionsTab() {
                     <Clock className="h-4 w-4 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground">{t('bankSync.pending')}</p>
+                    <p className="text-xs text-muted-foreground">{t('bankSync.pending')}</p>
                     <p className="text-sm font-bold">{transactions.length - reconciled}</p>
                   </div>
                 </div>
@@ -736,18 +736,18 @@ function TransactionsTab() {
                           </TableCell>
                           <TableCell>
                             {tx.isReconciled ? (
-                              <Badge variant="default" className="text-[10px] gap-1 bg-emerald-600 hover:bg-emerald-700">
+                              <Badge variant="default" className="text-xs gap-1 bg-emerald-600 hover:bg-emerald-700">
                                 <CheckCircle className="h-3 w-3" /> {t('bankSync.reconciled')}
                               </Badge>
                             ) : (
-                              <Badge variant="secondary" className="text-[10px] gap-1">
+                              <Badge variant="secondary" className="text-xs gap-1">
                                 <CircleDot className="h-3 w-3" /> {t('bankSync.pending')}
                               </Badge>
                             )}
                           </TableCell>
                           <TableCell className="text-xs">
                             {tx.invoice ? (
-                              <Badge variant="outline" className="text-[10px] gap-1">
+                              <Badge variant="outline" className="text-xs gap-1">
                                 <FileText className="h-3 w-3" />
                                 {tx.invoice.number}
                               </Badge>
@@ -849,7 +849,7 @@ function TransactionsTab() {
 
             {importPreview && (
               <div className="max-h-40 overflow-y-auto rounded-md border bg-muted/30 p-2">
-                <pre className="text-[10px] font-mono whitespace-pre">
+                <pre className="text-xs font-mono whitespace-pre">
                   {importPreview.split('\n').slice(0, 10).join('\n')}
                   {importPreview.split('\n').length > 10 && '\n...'}
                 </pre>
@@ -1120,7 +1120,7 @@ function ReconciliationTab() {
                   <Landmark className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">{t('bankSync.totalImported')}</p>
+                  <p className="text-xs text-muted-foreground">{t('bankSync.totalImported')}</p>
                   <p className="text-xl font-bold">{totalTransactions}</p>
                 </div>
               </div>
@@ -1135,7 +1135,7 @@ function ReconciliationTab() {
                   <CheckCircle className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">{t('bankSync.autoMatched')}</p>
+                  <p className="text-xs text-muted-foreground">{t('bankSync.autoMatched')}</p>
                   <p className="text-xl font-bold text-emerald-600">{autoMatched}</p>
                 </div>
               </div>
@@ -1150,7 +1150,7 @@ function ReconciliationTab() {
                   <AlertTriangle className="h-5 w-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">{t('bankSync.needsReview')}</p>
+                  <p className="text-xs text-muted-foreground">{t('bankSync.needsReview')}</p>
                   <p className="text-xl font-bold text-amber-600">{needsReview}</p>
                 </div>
               </div>
@@ -1165,7 +1165,7 @@ function ReconciliationTab() {
                   <XCircle className="h-5 w-5 text-red-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">{t('bankSync.unmatched')}</p>
+                  <p className="text-xs text-muted-foreground">{t('bankSync.unmatched')}</p>
                   <p className="text-xl font-bold text-red-600">{unmatched}</p>
                 </div>
               </div>
@@ -1246,7 +1246,7 @@ function ReconciliationTab() {
                             <TableCell className="text-xs">{match.partnerName}</TableCell>
                             <TableCell className="text-xs text-right font-medium">{formatRSD(match.amount)}</TableCell>
                             <TableCell>
-                              <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-700">
+                              <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-700">
                                 {match.confidence}%
                               </Badge>
                             </TableCell>
@@ -1284,11 +1284,11 @@ function ReconciliationTab() {
                             <TableCell className="text-xs">{match.partnerName}</TableCell>
                             <TableCell className="text-xs text-right font-medium">{formatRSD(match.amount)}</TableCell>
                             <TableCell>
-                              <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-700">
+                              <Badge variant="outline" className="text-xs border-amber-500 text-amber-700">
                                 {match.confidence}%
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-[10px] text-muted-foreground max-w-[150px] truncate">
+                            <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">
                               {match.reason}
                             </TableCell>
                             <TableCell>

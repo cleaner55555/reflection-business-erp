@@ -49,7 +49,7 @@ function PregledTab() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Ukupno zaposlenih</p>
               <p className="text-2xl font-bold mt-1">{stats.total}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.active} aktivnih, {stats.inactive} neaktivnih</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.active} aktivnih, {stats.inactive} neaktivnih</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
               <Users className="h-5 w-5 text-blue-600" />
@@ -61,7 +61,7 @@ function PregledTab() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Prosečna plata</p>
               <p className="text-2xl font-bold mt-1">{formatRSD(stats.avgSalary)}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Ukupno: {formatRSD(stats.totalSalaryCost)}/mes</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Ukupno: {formatRSD(stats.totalSalaryCost)}/mes</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-emerald-50 flex items-center justify-center">
               <DollarSign className="h-5 w-5 text-emerald-600" />
@@ -73,7 +73,7 @@ function PregledTab() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Novo ovog meseca</p>
               <p className="text-2xl font-bold mt-1 text-blue-600">{stats.newThisMonth}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.departments.length} departmana</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.departments.length} departmana</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
               <UserCog className="h-5 w-5 text-blue-600" />
@@ -85,7 +85,7 @@ function PregledTab() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Plate ({MONTHS[new Date().getMonth()]})</p>
               <p className="text-2xl font-bold mt-1">{formatRSD(stats.payrollTotal)}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.payrollPaid}/{stats.payrollTotalCount} isplaćeno</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.payrollPaid}/{stats.payrollTotalCount} isplaćeno</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-purple-50 flex items-center justify-center">
               <FileText className="h-5 w-5 text-purple-600" />
@@ -139,7 +139,7 @@ function PregledTab() {
                   return (
                     <div key={a.type} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeInfo?.color || ''}`}>{a.label}</Badge>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo?.color || ''}`}>{a.label}</Badge>
                       </div>
                       <div className="flex items-center gap-4 text-xs">
                         <span className="text-muted-foreground">{a.count} dana</span>
@@ -175,7 +175,7 @@ function PregledTab() {
                   </div>
                   <div>
                     <p className="text-xs font-medium">{a.firstName} {a.lastName}</p>
-                    <p className="text-[10px] text-muted-foreground">{a.years} god. radnog staža</p>
+                    <p className="text-xs text-muted-foreground">{a.years} god. radnog staža</p>
                   </div>
                 </div>
               ))}
@@ -399,7 +399,7 @@ function ZaposleniListTab() {
                         <TableCell className="text-xs font-medium">{tc(emp.firstName)} {tc(emp.lastName)}</TableCell>
                         <TableCell className="text-xs">{tc(emp.position || '') || '-'}</TableCell>
                         <TableCell className="text-xs hidden md:table-cell">
-                          {emp.department ? <Badge variant="outline" className="text-[10px] px-2 py-0">{emp.department}</Badge> : '-'}
+                          {emp.department ? <Badge variant="outline" className="text-xs px-2 py-0">{emp.department}</Badge> : '-'}
                         </TableCell>
                         <TableCell className="text-xs text-right font-medium">{formatRSD(emp.baseSalary)}</TableCell>
                         <TableCell className="text-xs hidden lg:table-cell text-muted-foreground">{formatDate(emp.hireDate)}</TableCell>
@@ -476,7 +476,7 @@ function ZaposleniListTab() {
                                 <TableCell className="text-xs">{MONTHS[p.month - 1]} {p.year}</TableCell>
                                 <TableCell className="text-xs text-right font-medium">{formatRSD(p.netSalary)}</TableCell>
                                 <TableCell className="text-xs text-center">
-                                  <Badge variant={p.status === 'isplaceno' ? 'default' : 'outline'} className="text-[10px]">
+                                  <Badge variant={p.status === 'isplaceno' ? 'default' : 'outline'} className="text-xs">
                                     {p.status === 'nacrt' ? 'Nacrt' : p.status === 'odobreno' ? 'Odobreno' : 'Isplaćeno'}
                                   </Badge>
                                 </TableCell>
@@ -511,7 +511,7 @@ function ZaposleniListTab() {
                                   <TableCell className="text-xs">{formatDate(a.date)}</TableCell>
                                   <TableCell className="text-xs text-center">{a.hoursWorked}h</TableCell>
                                   <TableCell className="text-xs">
-                                    <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeInfo?.color || ''}`}>
+                                    <Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo?.color || ''}`}>
                                       {typeInfo?.label || a.type}
                                     </Badge>
                                   </TableCell>
@@ -681,10 +681,10 @@ function PlateTab() {
             </div>
             {/* Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-              <div className="rounded-lg bg-muted px-3 py-2"><p className="text-[10px] text-muted-foreground">Osnovica</p><p className="text-sm font-bold">{formatRSD(totalBase)}</p></div>
-              <div className="rounded-lg bg-emerald-50 px-3 py-2"><p className="text-[10px] text-emerald-600">Bonusi</p><p className="text-sm font-bold text-emerald-700">+{formatRSD(totalBonuses)}</p></div>
-              <div className="rounded-lg bg-red-50 px-3 py-2"><p className="text-[10px] text-red-600">Odbitci</p><p className="text-sm font-bold text-red-600">-{formatRSD(totalDeductions)}</p></div>
-              <div className="rounded-lg bg-emerald-100 px-3 py-2"><p className="text-[10px] text-emerald-700">Neto ukupno</p><p className="text-sm font-bold text-emerald-700">{formatRSD(totalNet)}</p></div>
+              <div className="rounded-lg bg-muted px-3 py-2"><p className="text-xs text-muted-foreground">Osnovica</p><p className="text-sm font-bold">{formatRSD(totalBase)}</p></div>
+              <div className="rounded-lg bg-emerald-50 px-3 py-2"><p className="text-xs text-emerald-600">Bonusi</p><p className="text-sm font-bold text-emerald-700">+{formatRSD(totalBonuses)}</p></div>
+              <div className="rounded-lg bg-red-50 px-3 py-2"><p className="text-xs text-red-600">Odbitci</p><p className="text-sm font-bold text-red-600">-{formatRSD(totalDeductions)}</p></div>
+              <div className="rounded-lg bg-emerald-100 px-3 py-2"><p className="text-xs text-emerald-700">Neto ukupno</p><p className="text-sm font-bold text-emerald-700">{formatRSD(totalNet)}</p></div>
             </div>
           </>
         )}
@@ -763,7 +763,7 @@ function PlateTab() {
                       <TableCell className="text-xs text-right text-red-600">-{formatRSD(p.deductions)}</TableCell>
                       <TableCell className="text-xs text-right font-bold">{formatRSD(p.netSalary)}</TableCell>
                       <TableCell className="text-xs text-center">
-                        <Badge variant={p.status === 'isplaceno' ? 'default' : p.status === 'odobreno' ? 'secondary' : 'outline'} className="text-[10px]">
+                        <Badge variant={p.status === 'isplaceno' ? 'default' : p.status === 'odobreno' ? 'secondary' : 'outline'} className="text-xs">
                           {p.status === 'nacrt' ? 'Nacrt' : p.status === 'odobreno' ? 'Odobreno' : 'Isplaćeno'}
                         </Badge>
                       </TableCell>
@@ -898,10 +898,10 @@ function PrisustvoTab() {
             </div>
             {/* Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-              <div className="rounded-lg bg-muted px-3 py-2"><p className="text-[10px] text-muted-foreground">Ukupno sati</p><p className="text-sm font-bold">{totalHours.toFixed(1)}h</p></div>
-              <div className="rounded-lg bg-emerald-50 px-3 py-2"><p className="text-[10px] text-emerald-600">Rad</p><p className="text-sm font-bold text-emerald-700">{workHours.toFixed(1)}h</p></div>
-              <div className="rounded-lg bg-blue-50 px-3 py-2"><p className="text-[10px] text-blue-600">Godišnji</p><p className="text-sm font-bold text-blue-700">{leaveDays} dana</p></div>
-              <div className="rounded-lg bg-red-50 px-3 py-2"><p className="text-[10px] text-red-600">Bolovanje</p><p className="text-sm font-bold text-red-700">{sickDays} dana</p></div>
+              <div className="rounded-lg bg-muted px-3 py-2"><p className="text-xs text-muted-foreground">Ukupno sati</p><p className="text-sm font-bold">{totalHours.toFixed(1)}h</p></div>
+              <div className="rounded-lg bg-emerald-50 px-3 py-2"><p className="text-xs text-emerald-600">Rad</p><p className="text-sm font-bold text-emerald-700">{workHours.toFixed(1)}h</p></div>
+              <div className="rounded-lg bg-blue-50 px-3 py-2"><p className="text-xs text-blue-600">Godišnji</p><p className="text-sm font-bold text-blue-700">{leaveDays} dana</p></div>
+              <div className="rounded-lg bg-red-50 px-3 py-2"><p className="text-xs text-red-600">Bolovanje</p><p className="text-sm font-bold text-red-700">{sickDays} dana</p></div>
             </div>
           </>
         )}
@@ -969,7 +969,7 @@ function PrisustvoTab() {
                         <TableCell className="text-xs">{formatDate(a.date)}</TableCell>
                         <TableCell className="text-xs text-center">{a.hoursWorked}h</TableCell>
                         <TableCell className="text-xs">
-                          <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeInfo?.color || ''}`}>
+                          <Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo?.color || ''}`}>
                             {typeInfo?.label || a.type}
                           </Badge>
                         </TableCell>

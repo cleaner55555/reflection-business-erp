@@ -431,16 +431,16 @@ export function Nabavka() {
                   </p>
                   <p className="text-xs text-gray-500">{COMPANY.city}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-xs text-gray-500">
                       PIB: {COMPANY.pib}
                     </span>
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-xs text-gray-500">
                       MB: {COMPANY.maticniBr}
                     </span>
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-xs text-gray-500">
                       {COMPANY.account}
                     </span>
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-xs text-gray-500">
                       {COMPANY.bank}
                     </span>
                   </div>
@@ -466,7 +466,7 @@ export function Nabavka() {
 
               {/* Partner Info */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">
                   {t("procurement.supplier")}
                 </p>
                 <p className="text-sm font-semibold">
@@ -475,7 +475,7 @@ export function Nabavka() {
                 {printOrder.partner && (
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                     {printOrder.partner.address && (
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-xs text-gray-500">
                         {tc(printOrder.partner.address)}
                         {printOrder.partner.city
                           ? `, ${tc(printOrder.partner.city)}`
@@ -483,22 +483,22 @@ export function Nabavka() {
                       </span>
                     )}
                     {printOrder.partner.pib && (
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-xs text-gray-500">
                         PIB: {printOrder.partner.pib}
                       </span>
                     )}
                     {printOrder.partner.maticniBr && (
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-xs text-gray-500">
                         MB: {printOrder.partner.maticniBr}
                       </span>
                     )}
                     {printOrder.partner.account && (
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-xs text-gray-500">
                         {printOrder.partner.account}
                       </span>
                     )}
                     {printOrder.partner.bank && (
-                      <span className="text-[10px] text-gray-500">
+                      <span className="text-xs text-gray-500">
                         {printOrder.partner.bank}
                       </span>
                     )}
@@ -577,7 +577,7 @@ export function Nabavka() {
               {/* Payment Info */}
               <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">
                     {t("procurement.payment")}
                   </p>
                   <p>
@@ -600,13 +600,13 @@ export function Nabavka() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">
                     {t("common.status")}
                   </p>
                   <p>
                     <Badge
                       variant="outline"
-                      className={`text-[10px] px-2 py-0 ${getStatusColor(printOrder.status)}`}
+                      className={`text-xs px-2 py-0 ${getStatusColor(printOrder.status)}`}
                     >
                       {getStatusLabel(printOrder.status)}
                     </Badge>
@@ -617,7 +617,7 @@ export function Nabavka() {
               {/* Notes */}
               {printOrder.notes && (
                 <div className="mb-6 text-xs">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">
                     {t("common.notes")}
                   </p>
                   <p className="text-gray-600">{tc(printOrder.notes)}</p>
@@ -628,13 +628,13 @@ export function Nabavka() {
               <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">
+                  <p className="text-xs text-gray-400">
                     {t("procurement.ordererSignature")}
                   </p>
                 </div>
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">
+                  <p className="text-xs text-gray-400">
                     {t("procurement.supplierSignature")}
                   </p>
                 </div>
@@ -695,7 +695,7 @@ export function Nabavka() {
                 <div key={idx} className="grid grid-cols-12 gap-2 items-end">
                   <div className="col-span-5">
                     {idx === 0 && (
-                      <Label className="text-[10px] text-muted-foreground">
+                      <Label className="text-xs text-muted-foreground">
                         {t("procurement.product")}
                       </Label>
                     )}
@@ -717,7 +717,7 @@ export function Nabavka() {
                   </div>
                   <div className="col-span-3">
                     {idx === 0 && (
-                      <Label className="text-[10px] text-muted-foreground">
+                      <Label className="text-xs text-muted-foreground">
                         {t("common.quantity")}
                       </Label>
                     )}
@@ -737,7 +737,7 @@ export function Nabavka() {
                   </div>
                   <div className="col-span-3">
                     {idx === 0 && (
-                      <Label className="text-[10px] text-muted-foreground">
+                      <Label className="text-xs text-muted-foreground">
                         {t("procurement.unitPrice")}
                       </Label>
                     )}
@@ -868,7 +868,7 @@ export function Nabavka() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] px-2 py-0 ${getStatusColor(po.status)}`}
+                          className={`text-xs px-2 py-0 ${getStatusColor(po.status)}`}
                         >
                           {getStatusLabel(po.status)}
                         </Badge>

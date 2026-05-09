@@ -598,7 +598,7 @@ export function IoT() {
           <TabsTrigger value="overview"><BarChart3 className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="sensors"><Wifi className="h-3.5 w-3.5 mr-1" /> Senzori</TabsTrigger>
           <TabsTrigger value="data"><Activity className="h-3.5 w-3.5 mr-1" /> Podaci</TabsTrigger>
-          <TabsTrigger value="alerts-tab"><Bell className="h-3.5 w-3.5 mr-1" /> Upozorenja <Badge variant="destructive" className="ml-1 text-[9px] px-1.5 py-0">{stats.unackAlerts}</Badge></TabsTrigger>
+          <TabsTrigger value="alerts-tab"><Bell className="h-3.5 w-3.5 mr-1" /> Upozorenja <Badge variant="destructive" className="ml-1 text-xs px-1.5 py-0">{stats.unackAlerts}</Badge></TabsTrigger>
           <TabsTrigger value="rules"><ShieldAlert className="h-3.5 w-3.5 mr-1" /> Pravila</TabsTrigger>
           <TabsTrigger value="automation"><Play className="h-3.5 w-3.5 mr-1" /> Automatizacija</TabsTrigger>
           <TabsTrigger value="groups"><LayoutGrid className="h-3.5 w-3.5 mr-1" /> Grupe</TabsTrigger>
@@ -707,7 +707,7 @@ export function IoT() {
                     const pct = Math.round((count / Math.max(stats.total, 1)) * 100)
                     return (
                       <div key={status} className="flex items-center gap-3">
-                        <Badge variant="outline" className={`text-[10px] w-24 justify-center ${cfg.color}`}>{cfg.label}</Badge>
+                        <Badge variant="outline" className={`text-xs w-24 justify-center ${cfg.color}`}>{cfg.label}</Badge>
                         <div className="flex-1 bg-muted rounded-full h-3">
                           <div className="h-3 rounded-full bg-primary" style={{ width: `${pct}%` }} />
                         </div>
@@ -734,7 +734,7 @@ export function IoT() {
                   <div key={key} className="p-3 border rounded-lg text-center hover:bg-muted/30 transition-colors">
                     <span className="text-2xl">{cfg.icon}</span>
                     <p className="text-xs font-medium mt-1">{cfg.label}</p>
-                    {cfg.unit && <p className="text-[10px] text-muted-foreground">{cfg.unit}</p>}
+                    {cfg.unit && <p className="text-xs text-muted-foreground">{cfg.unit}</p>}
                   </div>
                 ))}
               </div>
@@ -806,7 +806,7 @@ export function IoT() {
                             <p className="text-xs text-muted-foreground">{sensor.location || 'Nema lokacije'}</p>
                           </div>
                         </div>
-                        <Badge variant="outline" className={`text-[10px] ${statCfg?.color}`}>{statCfg?.label}</Badge>
+                        <Badge variant="outline" className={`text-xs ${statCfg?.color}`}>{statCfg?.label}</Badge>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -819,7 +819,7 @@ export function IoT() {
 
                       {sensor.minThreshold !== null && sensor.maxThreshold !== null && sensor.lastReading !== null && (
                         <div className="space-y-1">
-                          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
                             <span>{sensor.minThreshold}{sensor.unit}</span>
                             <span>Dozvoljeni opseg</span>
                             <span>{sensor.maxThreshold}{sensor.unit}</span>
@@ -841,8 +841,8 @@ export function IoT() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex gap-1">
-                          <Badge variant="secondary" className="text-[9px]">{sensor.protocol}</Badge>
-                          <Badge variant="secondary" className="text-[9px]">{sensor.firmware}</Badge>
+                          <Badge variant="secondary" className="text-xs">{sensor.protocol}</Badge>
+                          <Badge variant="secondary" className="text-xs">{sensor.firmware}</Badge>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditSensor(sensor) }}><Edit3 className="h-3.5 w-3.5" /></Button>
@@ -851,7 +851,7 @@ export function IoT() {
                       </div>
 
                       {sensor.lastAlertAt && (
-                        <div className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <div className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3" /> Poslednji alert: {formatDate(sensor.lastAlertAt)} ({sensor.totalAlerts} ukupno)
                         </div>
                       )}
@@ -887,16 +887,16 @@ export function IoT() {
                               <span className="text-sm">{typeCfg?.icon}</span>
                               <div>
                                 <p className="text-xs font-medium">{sensor.name}</p>
-                                <p className="text-[10px] text-muted-foreground">{sensor.protocol} · {sensor.firmware}</p>
+                                <p className="text-xs text-muted-foreground">{sensor.protocol} · {sensor.firmware}</p>
                               </div>
                             </div>
                           </td>
-                          <td className="p-3 hidden md:table-cell"><Badge variant="secondary" className="text-[10px]">{typeCfg?.label || sensor.type}</Badge></td>
+                          <td className="p-3 hidden md:table-cell"><Badge variant="secondary" className="text-xs">{typeCfg?.label || sensor.type}</Badge></td>
                           <td className="p-3 hidden lg:table-cell text-xs">{sensor.location || '-'}</td>
                           <td className="p-3 text-right text-xs font-medium">{sensor.lastReading !== null ? `${sensor.lastReading} ${sensor.unit || ''}` : 'N/A'}</td>
                           <td className="p-3 hidden md:table-cell"><div className="flex items-center gap-1.5">{getBatteryIcon(sensor.batteryLevel)}<span className="text-xs">{sensor.batteryLevel}%</span></div></td>
                           <td className="p-3 hidden lg:table-cell"><div className="flex items-center gap-1.5">{getSignalBars(sensor.signalStrength)}<span className="text-xs">{sensor.signalStrength}%</span></div></td>
-                          <td className="p-3"><Badge variant="outline" className={`text-[10px] ${statCfg?.color}`}>{statCfg?.label}</Badge></td>
+                          <td className="p-3"><Badge variant="outline" className={`text-xs ${statCfg?.color}`}>{statCfg?.label}</Badge></td>
                           <td className="p-3">
                             <div className="flex gap-1">
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditSensor(sensor) }}><Edit3 className="h-3.5 w-3.5" /></Button>
@@ -932,7 +932,7 @@ export function IoT() {
                         <span className="text-lg">{typeCfg?.icon}</span>
                         <CardTitle className="text-sm">{sensor.name}</CardTitle>
                       </div>
-                      <Badge variant="outline" className="text-[10px]">{typeCfg?.label} ({sensor.unit})</Badge>
+                      <Badge variant="outline" className="text-xs">{typeCfg?.label} ({sensor.unit})</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -951,15 +951,15 @@ export function IoT() {
                         )
                       })}
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>Min: {minVal.toFixed(1)}</span>
                       <span>Prosek: {avgVal.toFixed(1)}</span>
                       <span>Max: {maxVal.toFixed(1)}</span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/10 rounded-lg"><p className="text-[10px] text-muted-foreground">Min</p><p className="text-sm font-bold">{minVal.toFixed(1)}</p></div>
-                      <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded-lg"><p className="text-[10px] text-muted-foreground">Prosek</p><p className="text-sm font-bold">{avgVal.toFixed(1)}</p></div>
-                      <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/10 rounded-lg"><p className="text-[10px] text-muted-foreground">Max</p><p className="text-sm font-bold">{maxVal.toFixed(1)}</p></div>
+                      <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/10 rounded-lg"><p className="text-xs text-muted-foreground">Min</p><p className="text-sm font-bold">{minVal.toFixed(1)}</p></div>
+                      <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded-lg"><p className="text-xs text-muted-foreground">Prosek</p><p className="text-sm font-bold">{avgVal.toFixed(1)}</p></div>
+                      <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/10 rounded-lg"><p className="text-xs text-muted-foreground">Max</p><p className="text-sm font-bold">{maxVal.toFixed(1)}</p></div>
                     </div>
                   </CardContent>
                 </Card>
@@ -994,10 +994,10 @@ export function IoT() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-sm font-medium">{alert.sensorName}</span>
-                            <Badge variant="outline" className={`text-[10px] ${sevCfg?.color}`}>{sevCfg?.label}</Badge>
+                            <Badge variant="outline" className={`text-xs ${sevCfg?.color}`}>{sevCfg?.label}</Badge>
                           </div>
                           <p className="text-xs text-muted-foreground">{alert.message}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1">{formatDate(alert.createdAt)}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{formatDate(alert.createdAt)}</p>
                         </div>
                         <Button size="sm" variant="outline" className="shrink-0 text-xs" onClick={() => handleAcknowledgeAlert(alert.id)}>
                           <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Potvrdi
@@ -1014,7 +1014,7 @@ export function IoT() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Sva upozorenja</CardTitle>
-                <Badge variant="outline" className="text-[10px]">{alerts.length} ukupno</Badge>
+                <Badge variant="outline" className="text-xs">{alerts.length} ukupno</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -1027,15 +1027,15 @@ export function IoT() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{alert.sensorName}</span>
-                          <Badge variant="outline" className={`text-[9px] ${sevCfg?.color}`}>{sevCfg?.label}</Badge>
-                          {alert.acknowledged && <Badge variant="secondary" className="text-[9px]"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Potvrđen</Badge>}
+                          <Badge variant="outline" className={`text-xs ${sevCfg?.color}`}>{sevCfg?.label}</Badge>
+                          {alert.acknowledged && <Badge variant="secondary" className="text-xs"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Potvrđen</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground">{alert.message}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-[10px] text-muted-foreground">{formatDate(alert.createdAt)}</p>
+                        <p className="text-xs text-muted-foreground">{formatDate(alert.createdAt)}</p>
                         {!alert.acknowledged && (
-                          <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2 mt-1" onClick={() => handleAcknowledgeAlert(alert.id)}>Potvrdi</Button>
+                          <Button size="sm" variant="ghost" className="text-xs h-6 px-2 mt-1" onClick={() => handleAcknowledgeAlert(alert.id)}>Potvrdi</Button>
                         )}
                       </div>
                     </div>
@@ -1063,8 +1063,8 @@ export function IoT() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p className="text-sm font-medium">{rule.name}</p>
-                          <Badge variant="outline" className={`text-[10px] ${sevCfg?.color}`}>{sevCfg?.label}</Badge>
-                          {rule.enabled ? <Badge variant="secondary" className="text-[9px]"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Aktivno</Badge> : <Badge variant="secondary" className="text-[9px]">Neaktivno</Badge>}
+                          <Badge variant="outline" className={`text-xs ${sevCfg?.color}`}>{sevCfg?.label}</Badge>
+                          {rule.enabled ? <Badge variant="secondary" className="text-xs"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Aktivno</Badge> : <Badge variant="secondary" className="text-xs">Neaktivno</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {rule.condition === 'battery_low' ? 'Baterija <' : rule.condition === 'offline' ? 'Senzor offline >' : ''}
@@ -1076,12 +1076,12 @@ export function IoT() {
                           ) : ` ${rule.threshold}%`}
                         </p>
                         <div className="flex gap-2 mt-2">
-                          {rule.notifyEmail && <Badge variant="secondary" className="text-[9px]">📧 Email</Badge>}
-                          {rule.notifyPush && <Badge variant="secondary" className="text-[9px]">📱 Push</Badge>}
-                          {rule.notifySms && <Badge variant="secondary" className="text-[9px]">💬 SMS</Badge>}
+                          {rule.notifyEmail && <Badge variant="secondary" className="text-xs">📧 Email</Badge>}
+                          {rule.notifyPush && <Badge variant="secondary" className="text-xs">📱 Push</Badge>}
+                          {rule.notifySms && <Badge variant="secondary" className="text-xs">💬 SMS</Badge>}
                         </div>
                         {rule.lastTriggeredAt && (
-                          <p className="text-[10px] text-muted-foreground mt-1">Poslednje okidanje: {formatDate(rule.lastTriggeredAt)} · {rule.triggerCount} puta</p>
+                          <p className="text-xs text-muted-foreground mt-1">Poslednje okidanje: {formatDate(rule.lastTriggeredAt)} · {rule.triggerCount} puta</p>
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -1111,15 +1111,15 @@ export function IoT() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-sm font-medium">{rule.name}</p>
-                        {rule.enabled ? <Badge variant="secondary" className="text-[9px] bg-green-100 text-green-700"><Play className="h-2.5 w-2.5 mr-0.5" /> Aktivna</Badge> : <Badge variant="secondary" className="text-[9px]"><Pause className="h-2.5 w-2.5 mr-0.5" /> Pauzirana</Badge>}
+                        {rule.enabled ? <Badge variant="secondary" className="text-xs bg-green-100 text-green-700"><Play className="h-2.5 w-2.5 mr-0.5" /> Aktivna</Badge> : <Badge variant="secondary" className="text-xs"><Pause className="h-2.5 w-2.5 mr-0.5" /> Pauzirana</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground">{rule.description}</p>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="outline" className="text-[9px]">Trigger: {TRIGGER_TYPE_LABELS[rule.triggerType]}</Badge>
-                        <Badge variant="outline" className="text-[9px]">Akcija: {ACTION_TYPE_LABELS[rule.actionType]}</Badge>
+                        <Badge variant="outline" className="text-xs">Trigger: {TRIGGER_TYPE_LABELS[rule.triggerType]}</Badge>
+                        <Badge variant="outline" className="text-xs">Akcija: {ACTION_TYPE_LABELS[rule.actionType]}</Badge>
                       </div>
                       {rule.lastExecutedAt && (
-                        <p className="text-[10px] text-muted-foreground mt-1">Poslednje izvršenje: {formatDate(rule.lastExecutedAt)} · {rule.executionCount} puta</p>
+                        <p className="text-xs text-muted-foreground mt-1">Poslednje izvršenje: {formatDate(rule.lastExecutedAt)} · {rule.executionCount} puta</p>
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -1148,14 +1148,14 @@ export function IoT() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-sm">{g.name}</CardTitle>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">{g.description || g.location || ''}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{g.description || g.location || ''}</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">{groupSensors.length} senzora</span>
-                      <Badge variant="secondary" className="text-[10px]"><CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />{onlineCount} online</Badge>
+                      <Badge variant="secondary" className="text-xs"><CheckCircle2 className="h-3 w-3 mr-1 text-green-500" />{onlineCount} online</Badge>
                     </div>
                     {groupSensors.length > 0 && (
                       <div className="mt-2 space-y-1">
@@ -1165,11 +1165,11 @@ export function IoT() {
                             <div key={s.id} className="flex items-center gap-2 text-xs">
                               <div className={`h-1.5 w-1.5 rounded-full ${statCfg?.dotColor}`} />
                               <span className="truncate">{SENSOR_TYPE_CONFIG[s.type]?.icon} {s.name}</span>
-                              <Badge variant="outline" className={`text-[9px] ml-auto ${statCfg?.color}`}>{statCfg?.label}</Badge>
+                              <Badge variant="outline" className={`text-xs ml-auto ${statCfg?.color}`}>{statCfg?.label}</Badge>
                             </div>
                           )
                         })}
-                        {groupSensors.length > 3 && <p className="text-[10px] text-muted-foreground pl-3.5">+{groupSensors.length - 3} više</p>}
+                        {groupSensors.length > 3 && <p className="text-xs text-muted-foreground pl-3.5">+{groupSensors.length - 3} više</p>}
                       </div>
                     )}
                   </CardContent>
@@ -1211,9 +1211,9 @@ export function IoT() {
                       <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center"><int.icon className="h-4 w-4 text-muted-foreground" /></div>
                       <div className="flex-1">
                         <p className="text-xs font-medium">{int.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{int.desc}</p>
+                        <p className="text-xs text-muted-foreground">{int.desc}</p>
                       </div>
-                      <Badge variant={int.connected ? 'default' : 'secondary'} className="text-[10px]">{int.connected ? 'Povezano' : 'Nije povezano'}</Badge>
+                      <Badge variant={int.connected ? 'default' : 'secondary'} className="text-xs">{int.connected ? 'Povezano' : 'Nije povezano'}</Badge>
                     </div>
                   ))}
                 </div>
@@ -1234,7 +1234,7 @@ export function IoT() {
               <div className="space-y-2">
                 <h3 className="text-sm font-medium">Protokoli</h3>
                 <div className="flex flex-wrap gap-2">
-                  {PROTOCOLS.map(p => <Badge key={p} variant="secondary" className="text-[10px]">{p}</Badge>)}
+                  {PROTOCOLS.map(p => <Badge key={p} variant="secondary" className="text-xs">{p}</Badge>)}
                 </div>
               </div>
             </CardContent>
@@ -1340,16 +1340,16 @@ export function IoT() {
 
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center p-3 bg-muted/30 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">Baterija</p>
+                    <p className="text-xs text-muted-foreground">Baterija</p>
                     <div className="flex items-center justify-center gap-1 mt-1">{getBatteryIcon(selectedSensor.batteryLevel)}<span className="text-sm font-bold">{selectedSensor.batteryLevel}%</span></div>
                     <Progress value={selectedSensor.batteryLevel} className="mt-1 h-1.5" />
                   </div>
                   <div className="text-center p-3 bg-muted/30 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">Signal</p>
+                    <p className="text-xs text-muted-foreground">Signal</p>
                     <div className="flex items-center justify-center gap-1 mt-1">{getSignalBars(selectedSensor.signalStrength)}<span className="text-sm font-bold">{selectedSensor.signalStrength}%</span></div>
                   </div>
                   <div className="text-center p-3 bg-muted/30 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">Uptime</p>
+                    <p className="text-xs text-muted-foreground">Uptime</p>
                     <p className="text-sm font-bold mt-1">{formatUptime(selectedSensor.uptime)}</p>
                   </div>
                 </div>

@@ -348,7 +348,7 @@ export function WebhookManager() {
               <p>
                 Svaki webhook ima tajni ključ (secret) za verifikaciju potpisa u
                 zaglavlju{" "}
-                <code className="px-1 py-0.5 bg-muted rounded text-[10px] font-mono">
+                <code className="px-1 py-0.5 bg-muted rounded text-xs font-mono">
                   X-Webhook-Signature
                 </code>
                 .
@@ -402,7 +402,7 @@ export function WebhookManager() {
                         </h3>
                         <Badge
                           variant={webhook.isActive ? "default" : "outline"}
-                          className={`text-[10px] ${webhook.isActive ? "bg-emerald-100 text-emerald-700 border-emerald-200" : ""}`}
+                          className={`text-xs ${webhook.isActive ? "bg-emerald-100 text-emerald-700 border-emerald-200" : ""}`}
                         >
                           {webhook.isActive ? "Aktivan" : "Neaktivan"}
                         </Badge>
@@ -448,7 +448,7 @@ export function WebhookManager() {
                               <Badge
                                 key={e}
                                 variant="secondary"
-                                className="text-[10px]"
+                                className="text-xs"
                               >
                                 {evt?.icon} {evt?.label || e}
                               </Badge>
@@ -464,7 +464,7 @@ export function WebhookManager() {
                           }
                           return (
                             events.length > 5 && (
-                              <Badge variant="outline" className="text-[10px]">
+                              <Badge variant="outline" className="text-xs">
                                 +{events.length - 5} više
                               </Badge>
                             )
@@ -473,7 +473,7 @@ export function WebhookManager() {
                       </div>
 
                       {/* Meta */}
-                      <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>{eventCount} događaja</span>
                         {webhook.secret && (
                           <span className="flex items-center gap-1">
@@ -568,7 +568,7 @@ export function WebhookManager() {
                 placeholder="https://hooks.slack.com/services/..."
                 className="font-mono text-xs"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 HTTP POST zahtev će biti poslat na ovaj URL
               </p>
             </div>
@@ -580,7 +580,7 @@ export function WebhookManager() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 text-[10px] gap-1"
+                  className="h-6 text-xs gap-1"
                   onClick={generateSecret}
                 >
                   Generiši
@@ -593,7 +593,7 @@ export function WebhookManager() {
                 className="font-mono text-xs"
                 type="password"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Koristi se za HMAC-SHA256 potpis u zaglavlju X-Webhook-Signature
               </p>
             </div>
@@ -608,7 +608,7 @@ export function WebhookManager() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-xs">Događaji *</Label>
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-xs">
                   {formEvents.length} odabrano
                 </Badge>
               </div>
@@ -669,7 +669,7 @@ export function WebhookManager() {
                               }`}
                             >
                               <div
-                                className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] transition-colors shrink-0 ${
+                                className={`flex h-4 w-4 items-center justify-center rounded border text-xs transition-colors shrink-0 ${
                                   isSelected
                                     ? "bg-primary border-primary text-primary-foreground"
                                     : "border-muted-foreground/30"

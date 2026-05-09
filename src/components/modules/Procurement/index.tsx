@@ -364,10 +364,10 @@ export function Procurement() {
                   <p className="text-xs text-gray-500 mt-1">{COMPANY.address}</p>
                   <p className="text-xs text-gray-500">{COMPANY.city}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    <span className="text-[10px] text-gray-500">PIB: {COMPANY.pib}</span>
-                    <span className="text-[10px] text-gray-500">MB: {COMPANY.maticniBr}</span>
-                    <span className="text-[10px] text-gray-500">{COMPANY.account}</span>
-                    <span className="text-[10px] text-gray-500">{COMPANY.bank}</span>
+                    <span className="text-xs text-gray-500">PIB: {COMPANY.pib}</span>
+                    <span className="text-xs text-gray-500">MB: {COMPANY.maticniBr}</span>
+                    <span className="text-xs text-gray-500">{COMPANY.account}</span>
+                    <span className="text-xs text-gray-500">{COMPANY.bank}</span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -380,24 +380,24 @@ export function Procurement() {
 
               {/* Partner Info */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('procurement.supplier')}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('procurement.supplier')}</p>
                 <p className="text-sm font-semibold">{printOrder.partner?.name ? tc(printOrder.partner.name) : '-'}</p>
                 {printOrder.partner && (
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                     {printOrder.partner.address && (
-                      <span className="text-[10px] text-gray-500">{tc(printOrder.partner.address)}{printOrder.partner.city ? `, ${tc(printOrder.partner.city)}` : ''}</span>
+                      <span className="text-xs text-gray-500">{tc(printOrder.partner.address)}{printOrder.partner.city ? `, ${tc(printOrder.partner.city)}` : ''}</span>
                     )}
                     {printOrder.partner.pib && (
-                      <span className="text-[10px] text-gray-500">PIB: {printOrder.partner.pib}</span>
+                      <span className="text-xs text-gray-500">PIB: {printOrder.partner.pib}</span>
                     )}
                     {printOrder.partner.maticniBr && (
-                      <span className="text-[10px] text-gray-500">MB: {printOrder.partner.maticniBr}</span>
+                      <span className="text-xs text-gray-500">MB: {printOrder.partner.maticniBr}</span>
                     )}
                     {printOrder.partner.account && (
-                      <span className="text-[10px] text-gray-500">{printOrder.partner.account}</span>
+                      <span className="text-xs text-gray-500">{printOrder.partner.account}</span>
                     )}
                     {printOrder.partner.bank && (
-                      <span className="text-[10px] text-gray-500">{printOrder.partner.bank}</span>
+                      <span className="text-xs text-gray-500">{printOrder.partner.bank}</span>
                     )}
                   </div>
                 )}
@@ -448,15 +448,15 @@ export function Procurement() {
               {/* Payment Info */}
               <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('procurement.payment')}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('procurement.payment')}</p>
                   <p><span className="text-gray-500">{t('procurement.method')}: </span>{t('procurement.orderPayment')}</p>
                   <p><span className="text-gray-500">{t('procurement.account')}: </span>{COMPANY.account}</p>
                   <p><span className="text-gray-500">{t('procurement.bank')}: </span>{COMPANY.bank}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.status')}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.status')}</p>
                   <p>
-                    <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(printOrder.status)}`}>
+                    <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(printOrder.status)}`}>
                       {getStatusLabel(printOrder.status)}
                     </Badge>
                   </p>
@@ -466,7 +466,7 @@ export function Procurement() {
               {/* Notes */}
               {printOrder.notes && (
                 <div className="mb-6 text-xs">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
                   <p className="text-gray-600">{tc(printOrder.notes)}</p>
                 </div>
               )}
@@ -475,11 +475,11 @@ export function Procurement() {
               <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">{t('procurement.ordererSignature')}</p>
+                  <p className="text-xs text-gray-400">{t('procurement.ordererSignature')}</p>
                 </div>
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">{t('procurement.supplierSignature')}</p>
+                  <p className="text-xs text-gray-400">{t('procurement.supplierSignature')}</p>
                 </div>
               </div>
             </div>
@@ -519,7 +519,7 @@ export function Procurement() {
               {lineItems.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2 items-end">
                   <div className="col-span-5">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('procurement.product')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('procurement.product')}</Label>}
                     <Select
                       value={item.productId}
                       onValueChange={(v) => updateLineItem(idx, 'productId', v)}
@@ -535,7 +535,7 @@ export function Procurement() {
                     </Select>
                   </div>
                   <div className="col-span-3">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('common.quantity')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.quantity')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -545,7 +545,7 @@ export function Procurement() {
                     />
                   </div>
                   <div className="col-span-3">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('procurement.unitPrice')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('procurement.unitPrice')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -628,7 +628,7 @@ export function Procurement() {
                       <TableCell className="text-xs">{po.partner?.name ? tc(po.partner.name) : '-'}</TableCell>
                       <TableCell className="text-xs">{formatDate(po.date)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(po.status)}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(po.status)}`}>
                           {getStatusLabel(po.status)}
                         </Badge>
                       </TableCell>

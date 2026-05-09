@@ -440,7 +440,7 @@ export function Shipping() {
                         <div key={c.carrierId} className="flex items-center justify-between">
                           <div>
                             <span className="text-sm font-medium">{c.carrierName}</span>
-                            <Badge variant="outline" className="ml-2 text-[10px]">{c.carrierCode}</Badge>
+                            <Badge variant="outline" className="ml-2 text-xs">{c.carrierCode}</Badge>
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-xs text-muted-foreground">{c.count} pošiljki</span>
@@ -483,7 +483,7 @@ export function Shipping() {
                                 <td className="py-2 pr-4">{o.carrier?.name || '-'}</td>
                                 <td className="py-2 pr-4">{o.recipientName || o.partner?.name || '-'}</td>
                                 <td className="py-2 pr-4">
-                                  <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
+                                  <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
                                 </td>
                                 <td className="py-2 pr-4">{formatCurrency(o.shippingCost)}</td>
                                 <td className="py-2 text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString('sr-RS')}</td>
@@ -567,7 +567,7 @@ export function Shipping() {
                           <td className="p-3 text-xs">{o.weight} kg</td>
                           <td className="p-3 text-xs font-medium">{o.codAmount > 0 ? formatCurrency(o.codAmount) : '-'}</td>
                           <td className="p-3">
-                            <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
+                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
                           </td>
                           <td className="p-3 text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString('sr-RS')}</td>
                           <td className="p-3">
@@ -615,7 +615,7 @@ export function Shipping() {
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="text-base">{c.name}</CardTitle>
-                        <Badge variant="outline" className="mt-1 text-[10px]">{carrierTypeLabels[c.type] || c.type}</Badge>
+                        <Badge variant="outline" className="mt-1 text-xs">{carrierTypeLabels[c.type] || c.type}</Badge>
                       </div>
                       <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteCarrier(c.id)}>
                         <Trash2 className="h-3.5 w-3.5" />
@@ -653,7 +653,7 @@ export function Shipping() {
                       <span className="font-medium">{c.defaultPrice > 0 ? formatCurrency(c.defaultPrice) : 'Prilagođena'}</span>
                     </div>
                     {!c.isActive && (
-                      <Badge variant="secondary" className="text-[10px]">Neaktivan</Badge>
+                      <Badge variant="secondary" className="text-xs">Neaktivan</Badge>
                     )}
                   </CardContent>
                 </Card>
@@ -695,7 +695,7 @@ export function Shipping() {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-medium">{o.number}</span>
-                            <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
+                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
                             {o.carrier?.name && <span>{o.carrier.name} · </span>}

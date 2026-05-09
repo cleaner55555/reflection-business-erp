@@ -460,22 +460,22 @@ export function Compliance() {
                   <div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Usklađenost</span><ShieldCheck className="h-4 w-4 text-green-500" /></div>
                   <p className="text-2xl font-bold text-green-600">{stats.complianceRate}%</p>
                   <Progress value={stats.complianceRate} className="mt-2 h-2" />
-                  <p className="text-[10px] text-muted-foreground mt-1">{stats.compliantRequirements}/{stats.totalRequirements} zahteva</p>
+                  <p className="text-xs text-muted-foreground mt-1">{stats.compliantRequirements}/{stats.totalRequirements} zahteva</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Otvoreni NC</span><AlertOctagon className="h-4 w-4 text-red-500" /></div>
                   <p className="text-2xl font-bold text-red-600">{stats.openNC}</p>
-                  <p className="text-[10px] text-muted-foreground">od {stats.totalNC} ukupno · {stats.criticalNC} kritično</p>
+                  <p className="text-xs text-muted-foreground">od {stats.totalNC} ukupno · {stats.criticalNC} kritično</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">CAPA</span><Target className="h-4 w-4 text-amber-500" /></div>
                   <p className="text-2xl font-bold text-amber-600">{stats.openCAPA}</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.overdueCAPA} prekoračenih roka</p>
+                  <p className="text-xs text-muted-foreground">{stats.overdueCAPA} prekoračenih roka</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Prosek audit</span><ClipboardCheck className="h-4 w-4 text-primary" /></div>
                   <p className="text-2xl font-bold">{stats.avgAuditScore}%</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.completedAudits} od {stats.totalAudits} završenih</p>
+                  <p className="text-xs text-muted-foreground">{stats.completedAudits} od {stats.totalAudits} završenih</p>
                 </Card>
               </div>
 
@@ -502,7 +502,7 @@ export function Compliance() {
                           <div className={`h-2 rounded-full ${c.rate >= 80 ? 'bg-green-500' : c.rate >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${c.rate}%` }} />
                         </div>
                         <span className={`text-xs font-bold w-10 text-right ${c.rate >= 80 ? 'text-green-600' : c.rate >= 50 ? 'text-amber-600' : 'text-red-600'}`}>{c.rate}%</span>
-                        <span className="text-[10px] text-muted-foreground w-14 text-right">{c.compliant}/{c.total}</span>
+                        <span className="text-xs text-muted-foreground w-14 text-right">{c.compliant}/{c.total}</span>
                       </div>
                     ))}
                   </CardContent>
@@ -518,7 +518,7 @@ export function Compliance() {
                           <div className={`h-2 rounded-full ${d.rate >= 80 ? 'bg-green-500' : d.rate >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${d.rate}%` }} />
                         </div>
                         <span className={`text-xs font-bold w-10 text-right ${d.rate >= 80 ? 'text-green-600' : d.rate >= 50 ? 'text-amber-600' : 'text-red-600'}`}>{d.rate}%</span>
-                        <span className="text-[10px] text-muted-foreground w-14 text-right">{d.compliant}/{d.total}</span>
+                        <span className="text-xs text-muted-foreground w-14 text-right">{d.compliant}/{d.total}</span>
                       </div>
                     ))}
                   </CardContent>
@@ -532,15 +532,15 @@ export function Compliance() {
                     <div className="grid grid-cols-3 gap-4">
                       <div className="text-center p-3 rounded-lg bg-red-50 dark:bg-red-900/10">
                         <p className="text-2xl font-bold text-red-600">{stats.highRisks}</p>
-                        <p className="text-[10px] text-red-600/70">Visoko</p>
+                        <p className="text-xs text-red-600/70">Visoko</p>
                       </div>
                       <div className="text-center p-3 rounded-lg bg-amber-50 dark:bg-amber-900/10">
                         <p className="text-2xl font-bold text-amber-600">{stats.mediumRisks}</p>
-                        <p className="text-[10px] text-amber-600/70">Srednje</p>
+                        <p className="text-xs text-amber-600/70">Srednje</p>
                       </div>
                       <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-900/10">
                         <p className="text-2xl font-bold text-green-600">{stats.lowRisks}</p>
-                        <p className="text-[10px] text-green-600/70">Nisko</p>
+                        <p className="text-xs text-green-600/70">Nisko</p>
                       </div>
                     </div>
                   </CardContent>
@@ -554,9 +554,9 @@ export function Compliance() {
                         <span className="text-xs w-10">{m.month}</span>
                         <div className="flex-1 bg-muted rounded-full h-3 relative">
                           <div className="h-3 rounded-full bg-primary/70" style={{ width: `${m.rate}%` }} />
-                          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-medium">{m.rate > 0 ? `${m.rate}%` : ''}</span>
+                          <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">{m.rate > 0 ? `${m.rate}%` : ''}</span>
                         </div>
-                        <span className="text-[10px] text-muted-foreground w-16 text-right">{m.audits} aud · {m.nc} NC</span>
+                        <span className="text-xs text-muted-foreground w-16 text-right">{m.audits} aud · {m.nc} NC</span>
                       </div>
                     ))}
                   </CardContent>
@@ -591,9 +591,9 @@ export function Compliance() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <span className="text-xs font-mono text-muted-foreground">{r.number}</span>
-                            <Badge variant="outline" className={`text-[10px] ${sc?.color}`}>{sc?.label}</Badge>
-                            <Badge variant="secondary" className="text-[10px]">{r.category}</Badge>
-                            <Badge variant="outline" className="text-[10px]">{r.regulation}</Badge>
+                            <Badge variant="outline" className={`text-xs ${sc?.color}`}>{sc?.label}</Badge>
+                            <Badge variant="secondary" className="text-xs">{r.category}</Badge>
+                            <Badge variant="outline" className="text-xs">{r.regulation}</Badge>
                           </div>
                           <h3 className="text-sm font-medium">{r.title}</h3>
                           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
@@ -632,9 +632,9 @@ export function Compliance() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="text-xs font-mono text-muted-foreground">{a.number}</span>
-                          <Badge variant="outline" className={`text-[10px] ${sc?.color}`}>{sc?.label}</Badge>
-                          <Badge variant="secondary" className="text-[10px]">{a.type === 'internal' ? 'Interni' : 'Eksterni'}</Badge>
-                          <Badge variant="outline" className="text-[10px]">{a.department}</Badge>
+                          <Badge variant="outline" className={`text-xs ${sc?.color}`}>{sc?.label}</Badge>
+                          <Badge variant="secondary" className="text-xs">{a.type === 'internal' ? 'Interni' : 'Eksterni'}</Badge>
+                          <Badge variant="outline" className="text-xs">{a.department}</Badge>
                         </div>
                         <h3 className="text-sm font-medium">{a.title}</h3>
                         <p className="text-xs text-muted-foreground line-clamp-1">{a.description}</p>
@@ -678,10 +678,10 @@ export function Compliance() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="text-xs font-mono text-muted-foreground">{n.number}</span>
-                          <Badge variant="outline" className={`text-[10px] ${sev?.color}`}>{sev?.label}</Badge>
-                          <Badge variant="outline" className={`text-[10px] ${st?.color}`}>{st?.label}</Badge>
-                          <Badge variant="secondary" className="text-[10px]">{n.type === 'product' ? 'Proizvod' : n.type === 'process' ? 'Proces' : n.type === 'safety' ? 'Bezbednost' : 'Dokument'}</Badge>
-                          {isOverdue && <Badge className="text-[10px] bg-red-500 text-white">PREKORAČEN ROK</Badge>}
+                          <Badge variant="outline" className={`text-xs ${sev?.color}`}>{sev?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${st?.color}`}>{st?.label}</Badge>
+                          <Badge variant="secondary" className="text-xs">{n.type === 'product' ? 'Proizvod' : n.type === 'process' ? 'Proces' : n.type === 'safety' ? 'Bezbednost' : 'Dokument'}</Badge>
+                          {isOverdue && <Badge className="text-xs bg-red-500 text-white">PREKORAČEN ROK</Badge>}
                         </div>
                         <h3 className="text-sm font-medium">{n.title}</h3>
                         <p className="text-xs text-muted-foreground line-clamp-1">{n.description}</p>
@@ -722,10 +722,10 @@ export function Compliance() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="text-xs font-mono text-muted-foreground">{c.number}</span>
-                          <Badge variant="outline" className={`text-[10px] ${st?.color}`}>{st?.label}</Badge>
-                          <Badge variant="secondary" className="text-[10px]">{c.type === 'corrective' ? 'Korektivna' : 'Preventivna'}</Badge>
-                          {c.linkedNc && <Badge variant="outline" className="text-[10px]">→ {c.linkedNc}</Badge>}
-                          {isOverdue && <Badge className="text-[10px] bg-red-500 text-white">PREKORAČEN ROK</Badge>}
+                          <Badge variant="outline" className={`text-xs ${st?.color}`}>{st?.label}</Badge>
+                          <Badge variant="secondary" className="text-xs">{c.type === 'corrective' ? 'Korektivna' : 'Preventivna'}</Badge>
+                          {c.linkedNc && <Badge variant="outline" className="text-xs">→ {c.linkedNc}</Badge>}
+                          {isOverdue && <Badge className="text-xs bg-red-500 text-white">PREKORAČEN ROK</Badge>}
                         </div>
                         <h3 className="text-sm font-medium">{c.title}</h3>
                         <p className="text-xs text-muted-foreground line-clamp-1">{c.description}</p>
@@ -764,15 +764,15 @@ export function Compliance() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="text-xs font-mono text-muted-foreground">{r.number}</span>
-                          <Badge variant="outline" className={`text-[10px] ${lv?.color}`}>{lv?.label} ({r.riskScore})</Badge>
-                          <Badge variant="secondary" className="text-[10px]">{r.category}</Badge>
-                          <Badge variant="outline" className="text-[10px]">{r.department}</Badge>
+                          <Badge variant="outline" className={`text-xs ${lv?.color}`}>{lv?.label} ({r.riskScore})</Badge>
+                          <Badge variant="secondary" className="text-xs">{r.category}</Badge>
+                          <Badge variant="outline" className="text-xs">{r.department}</Badge>
                         </div>
                         <h3 className="text-sm font-medium">{r.title}</h3>
                         <div className="flex items-center gap-6 mt-2 text-xs text-muted-foreground">
                           <span>Verovatnoća: <strong>{r.likelihood}</strong></span>
                           <span>Uticaj: <strong>{r.impact}</strong></span>
-                          <span>Rezidualni: <Badge variant="outline" className={`text-[9px] ${rlv?.color}`}>{rlv?.label} ({r.residualScore})</Badge></span>
+                          <span>Rezidualni: <Badge variant="outline" className={`text-xs ${rlv?.color}`}>{rlv?.label} ({r.residualScore})</Badge></span>
                           <span><CalendarDays className="h-3 w-3 inline mr-1" />Pregled: {formatDate(r.reviewDate)}</span>
                         </div>
                       </div>
@@ -811,8 +811,8 @@ export function Compliance() {
                     </div>
                     <div><h4 className="text-sm font-medium mb-2">Opis</h4><div className="p-3 rounded-lg bg-muted/50 text-sm whitespace-pre-wrap">{(selectedItem as Requirement).description}</div></div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Dokaz</p><p className="text-sm">{(selectedItem as Requirement).evidence || '—'}</p></div>
-                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Rok</p><p className="text-sm">{formatDate((selectedItem as Requirement).dueDate)}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Dokaz</p><p className="text-sm">{(selectedItem as Requirement).evidence || '—'}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Rok</p><p className="text-sm">{formatDate((selectedItem as Requirement).dueDate)}</p></div>
                     </div>
                     {(selectedItem as Requirement).notes && <div><h4 className="text-sm font-medium mb-2">Napomene</h4><div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-sm">{(selectedItem as Requirement).notes}</div></div>}
                   </div>
@@ -829,8 +829,8 @@ export function Compliance() {
                     {(selectedItem as NonConformance).rootCause && <div><h4 className="text-sm font-medium mb-2">Koreni uzrok</h4><div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-sm">{(selectedItem as NonConformance).rootCause}</div></div>}
                     {(selectedItem as NonConformance).correctiveAction && <div><h4 className="text-sm font-medium mb-2">Korektivna mera</h4><div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 text-sm whitespace-pre-wrap">{(selectedItem as NonConformance).correctiveAction}</div></div>}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Odgovoran</p><p className="text-sm">{(selectedItem as NonConformance).responsible}</p></div>
-                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Finansijski uticaj</p><p className="text-sm font-bold text-red-600">{formatCurrency((selectedItem as NonConformance).costImpact)}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Odgovoran</p><p className="text-sm">{(selectedItem as NonConformance).responsible}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Finansijski uticaj</p><p className="text-sm font-bold text-red-600">{formatCurrency((selectedItem as NonConformance).costImpact)}</p></div>
                     </div>
                     {(selectedItem as NonConformance).verification && <div><h4 className="text-sm font-medium mb-2">Verifikacija</h4><div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-sm">{(selectedItem as NonConformance).verification}</div></div>}
                   </div>
@@ -845,8 +845,8 @@ export function Compliance() {
                       {(selectedItem as Audit).score !== null && <Badge variant="outline">Ocena: {(selectedItem as Audit).score}/{(selectedItem as Audit).maxScore}</Badge>}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Auditor</p><p className="text-sm">{(selectedItem as Audit).auditor}</p></div>
-                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Datum</p><p className="text-sm">{formatDate((selectedItem as Audit).scheduledDate)}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Auditor</p><p className="text-sm">{(selectedItem as Audit).auditor}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Datum</p><p className="text-sm">{formatDate((selectedItem as Audit).scheduledDate)}</p></div>
                     </div>
                     {(selectedItem as Audit).checklist.length > 0 && (
                       <div>
@@ -854,7 +854,7 @@ export function Compliance() {
                         <div className="space-y-2">
                           {(selectedItem as Audit).checklist.map((ci) => (
                             <div key={ci.id} className="flex items-center gap-3 p-2 rounded border text-xs">
-                              <Badge variant={ci.status === 'pass' ? 'default' : ci.status === 'fail' ? 'destructive' : ci.status === 'partial' ? 'secondary' : 'outline'} className="text-[9px] w-14 justify-center">
+                              <Badge variant={ci.status === 'pass' ? 'default' : ci.status === 'fail' ? 'destructive' : ci.status === 'partial' ? 'secondary' : 'outline'} className="text-xs w-14 justify-center">
                                 {ci.status === 'pass' ? 'OK' : ci.status === 'fail' ? 'NOK' : ci.status === 'partial' ? 'DEO' : 'N/A'}
                               </Badge>
                               <span className="font-mono text-muted-foreground w-10">{ci.clause}</span>
@@ -887,14 +887,14 @@ export function Compliance() {
                 {'riskScore' in selectedItem && 'mitigationPlan' in selectedItem && 'likelihood' in selectedItem && !('actionPlan' in selectedItem) && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Nivo rizika</p><p className="text-lg font-bold">{(selectedItem as RiskAssessment).riskScore} - <Badge variant="outline" className={RISK_LEVELS[(selectedItem as RiskAssessment).riskLevel]?.color}>{RISK_LEVELS[(selectedItem as RiskAssessment).riskLevel]?.label}</Badge></p></div>
-                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Rezidualni</p><p className="text-lg font-bold">{(selectedItem as RiskAssessment).residualScore} - <Badge variant="outline" className={RISK_LEVELS[(selectedItem as RiskAssessment).residualLevel]?.color}>{RISK_LEVELS[(selectedItem as RiskAssessment).residualLevel]?.label}</Badge></p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Nivo rizika</p><p className="text-lg font-bold">{(selectedItem as RiskAssessment).riskScore} - <Badge variant="outline" className={RISK_LEVELS[(selectedItem as RiskAssessment).riskLevel]?.color}>{RISK_LEVELS[(selectedItem as RiskAssessment).riskLevel]?.label}</Badge></p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Rezidualni</p><p className="text-lg font-bold">{(selectedItem as RiskAssessment).residualScore} - <Badge variant="outline" className={RISK_LEVELS[(selectedItem as RiskAssessment).residualLevel]?.color}>{RISK_LEVELS[(selectedItem as RiskAssessment).residualLevel]?.label}</Badge></p></div>
                     </div>
                     <div className="grid grid-cols-4 gap-3 text-center">
-                      <div className="p-2 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Verovatnoća</p><p className="font-bold">{(selectedItem as RiskAssessment).likelihood}</p></div>
-                      <div className="p-2 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Uticaj</p><p className="font-bold">{(selectedItem as RiskAssessment).impact}</p></div>
-                      <div className="p-2 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Rez. ver.</p><p className="font-bold">{(selectedItem as RiskAssessment).residualLikelihood}</p></div>
-                      <div className="p-2 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Rez. ut.</p><p className="font-bold">{(selectedItem as RiskAssessment).residualImpact}</p></div>
+                      <div className="p-2 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Verovatnoća</p><p className="font-bold">{(selectedItem as RiskAssessment).likelihood}</p></div>
+                      <div className="p-2 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Uticaj</p><p className="font-bold">{(selectedItem as RiskAssessment).impact}</p></div>
+                      <div className="p-2 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Rez. ver.</p><p className="font-bold">{(selectedItem as RiskAssessment).residualLikelihood}</p></div>
+                      <div className="p-2 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Rez. ut.</p><p className="font-bold">{(selectedItem as RiskAssessment).residualImpact}</p></div>
                     </div>
                     <div><h4 className="text-sm font-medium mb-2">Postojeće kontrole</h4><div className="p-3 rounded-lg bg-muted/50 text-sm">{(selectedItem as RiskAssessment).existingControls}</div></div>
                     <div><h4 className="text-sm font-medium mb-2">Plan mitigacije</h4><div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-sm whitespace-pre-wrap">{(selectedItem as RiskAssessment).mitigationPlan}</div></div>

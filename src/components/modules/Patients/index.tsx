@@ -66,8 +66,8 @@ const INSURANCE: Record<string, { color: string; label: string }> = {
   pending: { color: 'bg-amber-100 text-amber-800', label: 'Na čekanju' },
 }
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
-function getInsuranceBadge(s: string) { const r = INSURANCE[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
+function getInsuranceBadge(s: string) { const r = INSURANCE[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 export function Patients() {
   const [data, setData] = useState<Patient[]>(INITIAL)
@@ -255,12 +255,12 @@ export function Patients() {
                   ['Sledeći termin', detailItem.nextAppointment ? formatDate(detailItem.nextAppointment) : '—'],
                   ['Ukupno poseta', String(detailItem.totalVisits)],
                 ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
                 ))}
               </div>
-              {detailItem.allergies.length > 0 && <div className="p-2 rounded-lg bg-red-50"><div className="text-[10px] text-red-600 mb-1">⚠ Alergije</div><div className="flex flex-wrap gap-1">{detailItem.allergies.map(a => <Badge key={a} className="text-[10px] bg-red-100 text-red-700">{a}</Badge>)}</div></div>}
-              {detailItem.chronicConditions.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-[10px] text-amber-600 mb-1">Hronične bolesti</div><div className="flex flex-wrap gap-1">{detailItem.chronicConditions.map(c => <Badge key={c} className="text-[10px] bg-amber-100 text-amber-700">{c}</Badge>)}</div></div>}
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+              {detailItem.allergies.length > 0 && <div className="p-2 rounded-lg bg-red-50"><div className="text-xs text-red-600 mb-1">⚠ Alergije</div><div className="flex flex-wrap gap-1">{detailItem.allergies.map(a => <Badge key={a} className="text-xs bg-red-100 text-red-700">{a}</Badge>)}</div></div>}
+              {detailItem.chronicConditions.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">Hronične bolesti</div><div className="flex flex-wrap gap-1">{detailItem.chronicConditions.map(c => <Badge key={c} className="text-xs bg-amber-100 text-amber-700">{c}</Badge>)}</div></div>}
+              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           )}
         </DialogContent>

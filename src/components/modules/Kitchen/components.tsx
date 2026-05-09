@@ -14,7 +14,7 @@ import { formatDate } from '@/lib/helpers'
 import type { KitchenItem } from './types'
 import { STATUSES, CATEGORIES, formatRSD } from './data'
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 export function KpiCards({ data }: { data: KitchenItem[] }) {
   const totalValue = data.reduce((s, i) => s + (i.quantity * i.unitPrice), 0)
@@ -64,7 +64,7 @@ export function TableSection({ filtered, search, statusFilter, categoryFilter, o
                 <TableRow key={item.id}>
                   <TableCell className="text-xs font-medium">{item.name}</TableCell>
                   <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{CATEGORIES[item.category]}</TableCell>
-                  <TableCell className="text-xs hidden md:table-cell"><div className="flex items-center gap-2"><span className={item.quantity <= item.minQuantity ? 'text-amber-600 font-semibold' : ''}>{item.quantity} {item.unit}</span><span className="text-[10px] text-muted-foreground">(min: {item.minQuantity})</span></div></TableCell>
+                  <TableCell className="text-xs hidden md:table-cell"><div className="flex items-center gap-2"><span className={item.quantity <= item.minQuantity ? 'text-amber-600 font-semibold' : ''}>{item.quantity} {item.unit}</span><span className="text-xs text-muted-foreground">(min: {item.minQuantity})</span></div></TableCell>
                   <TableCell className="text-xs hidden md:table-cell">{formatRSD(item.unitPrice)}</TableCell>
                   <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{item.supplier}</TableCell>
                   <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{item.expiryDate ? formatDate(item.expiryDate) : '—'}</TableCell>
@@ -118,7 +118,7 @@ export function EditTab({ data, onEdit, onDelete }: { data: KitchenItem[]; onEdi
           {data.map(item => (
             <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span>{getStatusBadge(item.status)}<Badge className="text-[10px] bg-muted">{CATEGORIES[item.category]}</Badge></div>
+                <div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span>{getStatusBadge(item.status)}<Badge className="text-xs bg-muted">{CATEGORIES[item.category]}</Badge></div>
                 <p className="text-xs text-muted-foreground truncate">{item.quantity} {item.unit} — {item.supplier} — {formatRSD(item.quantity * item.unitPrice)}</p>
               </div>
               <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => onEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -151,12 +151,12 @@ export function DetailDialog({ detailItem, onClose }: { detailItem: KitchenItem 
                 ['Datum prijema', formatDate(detailItem.receivedDate)],
                 ['Rok trajanja', formatDate(detailItem.expiryDate)],
               ] as [string, string][]).map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
               ))}
             </div>
-            <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-            {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-[10px] text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-[10px] bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
+            {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-xs bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
+            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
           </div>
         )}
       </DialogContent>

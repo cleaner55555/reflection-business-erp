@@ -577,7 +577,7 @@ export function Dashboard() {
                       <TableCell className="text-xs hidden sm:table-cell max-w-[180px] truncate">{tc(inv.partner?.name || '-')}</TableCell>
                       <TableCell className="text-xs hidden md:table-cell whitespace-nowrap">{formatDate(inv.date)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('text-[10px] px-2 py-0', getStatusColor(inv.status))}>
+                        <Badge variant="outline" className={cn('text-xs px-2 py-0', getStatusColor(inv.status))}>
                           {getStatusLabel(inv.status)}
                         </Badge>
                       </TableCell>
@@ -608,7 +608,7 @@ export function Dashboard() {
                 data.topPartners.map((p, i) => (
                   <div key={p.partnerId} className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold">{i + 1}</span>
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">{i + 1}</span>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{tc(p.partnerName)}</p>
                         <p className="text-xs text-muted-foreground">{p.invoiceCount} faktura</p>
@@ -627,7 +627,7 @@ export function Dashboard() {
             icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
             action={
               lowStock.length > 0 && (
-                <Badge variant="destructive" className="text-[10px]">{lowStock.length}</Badge>
+                <Badge variant="destructive" className="text-xs">{lowStock.length}</Badge>
               )
             }
           >
@@ -662,7 +662,7 @@ export function Dashboard() {
         <SectionCard
           title={t('dashboard.todayTasks')}
           icon={<Clock className="h-4 w-4 text-amber-500" />}
-          action={overdueAndDueToday > 0 && <Badge variant="destructive" className="text-[10px]">{overdueAndDueToday}</Badge>}
+          action={overdueAndDueToday > 0 && <Badge variant="destructive" className="text-xs">{overdueAndDueToday}</Badge>}
         >
           <div className="space-y-3 max-h-72 overflow-y-auto">
             <div>

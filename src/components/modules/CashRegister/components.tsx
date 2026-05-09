@@ -122,7 +122,7 @@ export function ReceiptPreview({
             ПИБ: {COMPANY_INFO.pib} | МБ: {COMPANY_INFO.maticniBr}
           </p>
           <p>ЖР: {COMPANY_INFO.account}</p>
-          <p className="text-[10px] text-gray-500">{COMPANY_INFO.bank}</p>
+          <p className="text-xs text-gray-500">{COMPANY_INFO.bank}</p>
         </div>
 
         <Separator className="mx-4" />
@@ -151,7 +151,7 @@ export function ReceiptPreview({
 
         {/* Items */}
         <div className="px-4 py-2">
-          <div className="grid grid-cols-12 gap-1 font-bold text-[10px] border-b border-dashed border-gray-300 pb-1 mb-1">
+          <div className="grid grid-cols-12 gap-1 font-bold text-xs border-b border-dashed border-gray-300 pb-1 mb-1">
             <span className="col-span-6">Артикал</span>
             <span className="col-span-2 text-right">Кол.</span>
             <span className="col-span-2 text-right">Цена</span>
@@ -180,9 +180,9 @@ export function ReceiptPreview({
 
         {/* PDV breakdown */}
         <div className="px-4 py-2">
-          <p className="font-bold mb-1 text-[10px]">ПДВ обрачун:</p>
+          <p className="font-bold mb-1 text-xs">ПДВ обрачун:</p>
           {Object.entries(pdvLines).map(([rate, vals]) => (
-            <div key={rate} className="flex justify-between text-[10px]">
+            <div key={rate} className="flex justify-between text-xs">
               <span>ПДВ {rate}%</span>
               <span>
                 {vals.base.toFixed(2)} + {vals.tax.toFixed(2)} ={" "}
@@ -214,11 +214,11 @@ export function ReceiptPreview({
 
         {/* Footer */}
         <div className="text-center px-4 py-4 space-y-1">
-          <p className="text-[10px] text-gray-500">
+          <p className="text-xs text-gray-500">
             Фискални рачун је издат електронски
           </p>
-          <p className="text-[10px] text-gray-500">Хвала на куповини!</p>
-          <p className="text-[9px] text-gray-400 mt-2">
+          <p className="text-xs text-gray-500">Хвала на куповини!</p>
+          <p className="text-xs text-gray-400 mt-2">
             =================================
           </p>
         </div>

@@ -113,7 +113,7 @@ export function StatCards({ stats }: { stats: FleetStats }) {
           Укупно
         </div>
         <p className="text-2xl font-bold">{stats.totalTrucks}</p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {formatMileage(stats.totalMileage)}
         </p>
       </Card>
@@ -125,7 +125,7 @@ export function StatCards({ stats }: { stats: FleetStats }) {
         <p className="text-2xl font-bold text-emerald-700">
           {stats.activeTrucks}
         </p>
-        <p className="text-[10px] text-muted-foreground">на путу</p>
+        <p className="text-xs text-muted-foreground">на путу</p>
       </Card>
       <Card className="p-4">
         <div className="flex items-center gap-2 text-xs text-amber-600 mb-1">
@@ -135,7 +135,7 @@ export function StatCards({ stats }: { stats: FleetStats }) {
         <p className="text-2xl font-bold text-amber-700">
           {stats.inService + stats.inGarage}
         </p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {stats.breakdowns} кварова
         </p>
       </Card>
@@ -147,7 +147,7 @@ export function StatCards({ stats }: { stats: FleetStats }) {
         <p className="text-2xl font-bold text-orange-700">
           {stats.maintenanceDueCount}
         </p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           заказано / преkoročено
         </p>
       </Card>
@@ -159,7 +159,7 @@ export function StatCards({ stats }: { stats: FleetStats }) {
         <p className="text-2xl font-bold text-red-700">
           {stats.registrationDueCount + stats.insuranceDueCount}
         </p>
-        <p className="text-[10px] text-muted-foreground">истиче / истекло</p>
+        <p className="text-xs text-muted-foreground">истиче / истекло</p>
       </Card>
       <Card className="p-4">
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -167,7 +167,7 @@ export function StatCards({ stats }: { stats: FleetStats }) {
           Трошкови
         </div>
         <p className="text-lg font-bold">{formatRSDShort(stats.totalCosts)}</p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Гориво: {formatRSDShort(stats.fuelCostsTotal)}
         </p>
       </Card>
@@ -237,7 +237,7 @@ export function MonthlyCostsBar({ stats }: { stats: FleetStats }) {
                     title={`Остало: ${formatRSD(m.other)}`}
                   />
                 </div>
-                <div className="flex gap-3 text-[10px] text-muted-foreground">
+                <div className="flex gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
                     Гориво {formatRSDShort(m.fuel)}
@@ -421,14 +421,14 @@ export function FleetTable({
                       <TableCell className="hidden md:table-cell">
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1.5 py-0"
+                          className="text-xs px-1.5 py-0"
                         >
                           {getFuelLabel(truck.fuelType)}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
-                          className={`text-[10px] px-2 py-0 ${getStatusBadgeClass(truck.status)}`}
+                          className={`text-xs px-2 py-0 ${getStatusBadgeClass(truck.status)}`}
                         >
                           {getStatusLabel(truck.status)}
                         </Badge>
@@ -901,12 +901,12 @@ export function RegistrationTab({ items }: RegistrationTabProps) {
           </div>
           <div className="flex items-center gap-2">
             {urgentCount > 0 && (
-              <Badge className="bg-red-100 text-red-800 text-[10px]">
+              <Badge className="bg-red-100 text-red-800 text-xs">
                 {urgentCount} истекло
               </Badge>
             )}
             {warningCount > 0 && (
-              <Badge className="bg-amber-100 text-amber-800 text-[10px]">
+              <Badge className="bg-amber-100 text-amber-800 text-xs">
                 {warningCount} истиче ускоро
               </Badge>
             )}
@@ -1012,7 +1012,7 @@ export function RegistrationTab({ items }: RegistrationTabProps) {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        className={`text-[10px] px-2 py-0 ${getRegStatusColor(item.status)}`}
+                        className={`text-xs px-2 py-0 ${getRegStatusColor(item.status)}`}
                       >
                         {getRegStatusLabel(item.status)}
                       </Badge>
@@ -1176,7 +1176,7 @@ export function MaintenanceTab({
                     </TableCell>
                     <TableCell>
                       <Badge
-                        className={`text-[10px] px-2 py-0 ${getMaintenanceStatusColor(record.status)}`}
+                        className={`text-xs px-2 py-0 ${getMaintenanceStatusColor(record.status)}`}
                       >
                         {getMaintenanceStatusLabel(record.status)}
                       </Badge>
@@ -1540,7 +1540,7 @@ export function CostsTab({ costs, trucks, onAdd, onDelete }: CostsTabProps) {
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className="text-[10px] px-1.5 py-0"
+                        className="text-xs px-1.5 py-0"
                       >
                         {getCostLabel(cost.type)}
                       </Badge>

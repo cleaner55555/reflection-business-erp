@@ -151,7 +151,7 @@ export function CompanySwitcher() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{company.name}</p>
                   {company.pib && (
-                    <p className="text-[10px] text-muted-foreground">PIB: {company.pib}</p>
+                    <p className="text-xs text-muted-foreground">PIB: {company.pib}</p>
                   )}
                 </div>
               </div>

@@ -1217,8 +1217,8 @@ export function Spreadsheet() {
               <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={deleteRow}><Trash2 className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Obriši red</TooltipContent></Tooltip>
               <Separator orientation="vertical" className="h-6 mx-1" />
               <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-                <Badge variant="outline" className="text-[10px]">{filledCells} ćelija</Badge>
-                <Badge variant="outline" className="text-[10px]">{getColLetter(DEFAULT_COLS - 1)}{DEFAULT_ROWS}</Badge>
+                <Badge variant="outline" className="text-xs">{filledCells} ćelija</Badge>
+                <Badge variant="outline" className="text-xs">{getColLetter(DEFAULT_COLS - 1)}{DEFAULT_ROWS}</Badge>
                 <label className="cursor-pointer">
                   <FileUp className="h-4 w-4" />
                   <input type="file" accept=".csv" className="hidden" onChange={importCSV} />
@@ -1265,11 +1265,11 @@ export function Spreadsheet() {
               <table className="w-full border-collapse text-xs">
                 <thead className="sticky top-0 z-10">
                   <tr>
-                    <th className="border bg-muted/80 p-0 w-10 text-center text-muted-foreground text-[10px] font-medium sticky left-0 z-20">#</th>
+                    <th className="border bg-muted/80 p-0 w-10 text-center text-muted-foreground text-xs font-medium sticky left-0 z-20">#</th>
                     {Array.from({ length: DEFAULT_COLS }, (_, c) => {
                       const letter = getColLetter(c)
                       return (
-                        <th key={c} className="border bg-muted/80 p-0 min-w-[100px] text-[10px] font-medium text-center text-muted-foreground">
+                        <th key={c} className="border bg-muted/80 p-0 min-w-[100px] text-xs font-medium text-center text-muted-foreground">
                           <button
                             className="w-full h-7 hover:bg-primary/10 transition-colors"
                             onClick={() => setSelectedCell(getCellRef(0, c))}
@@ -1282,7 +1282,7 @@ export function Spreadsheet() {
                 <tbody>
                   {Array.from({ length: DEFAULT_ROWS }, (_, r) => (
                     <tr key={r} className={`${selectedCell.startsWith(String(r + 1)) ? 'bg-primary/5' : ''} hover:bg-muted/20`}>
-                      <td className="border bg-muted/30 p-0 w-10 text-center text-[10px] text-muted-foreground font-mono sticky left-0 z-[5]">
+                      <td className="border bg-muted/30 p-0 w-10 text-center text-xs text-muted-foreground font-mono sticky left-0 z-[5]">
                         <button className="w-full h-7 hover:bg-primary/10" onClick={() => setSelectedCell(getCellRef(r, 0))}>{r + 1}</button>
                       </td>
                       {Array.from({ length: DEFAULT_COLS }, (_, c) => {
@@ -1385,12 +1385,12 @@ export function Spreadsheet() {
                     <span className="text-2xl">{tmpl.icon}</span>
                     {tmpl.name}
                   </CardTitle>
-                  <Badge variant="secondary" className="text-[10px] w-fit">{tmpl.category}</Badge>
+                  <Badge variant="secondary" className="text-xs w-fit">{tmpl.category}</Badge>
                 </CardHeader>
                 <CardContent>
                   <p className="text-xs text-muted-foreground mb-3">{tmpl.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">{tmpl.sheetCount} list(ova)</span>
+                    <span className="text-xs text-muted-foreground">{tmpl.sheetCount} list(ova)</span>
                     <Button size="sm" variant="outline">Koristi</Button>
                   </div>
                 </CardContent>
@@ -1424,8 +1424,8 @@ export function Spreadsheet() {
                       <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">{f.name.slice(0, 2)}</div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">{f.name}</p>
-                        <p className="text-[11px] text-muted-foreground">{f.desc}</p>
-                        <p className="text-[10px] font-mono text-muted-foreground mt-1 bg-muted/50 rounded px-1.5 py-0.5 truncate">{f.syntax}</p>
+                        <p className="text-xs text-muted-foreground">{f.desc}</p>
+                        <p className="text-xs font-mono text-muted-foreground mt-1 bg-muted/50 rounded px-1.5 py-0.5 truncate">{f.syntax}</p>
                       </div>
                     </div>
                   </Card>
@@ -1447,7 +1447,7 @@ export function Spreadsheet() {
                 ].map(([key, desc]) => (
                   <div key={key} className="flex items-center justify-between p-2 rounded bg-muted/30">
                     <span className="text-muted-foreground">{desc}</span>
-                    <kbd className="bg-background border rounded px-1.5 py-0.5 text-[10px] font-mono">{key}</kbd>
+                    <kbd className="bg-background border rounded px-1.5 py-0.5 text-xs font-mono">{key}</kbd>
                   </div>
                 ))}
               </div>
@@ -1475,7 +1475,7 @@ export function Spreadsheet() {
                     <FileSpreadsheet className="h-8 w-8 text-green-500 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{doc.name}</p>
-                      <p className="text-[11px] text-muted-foreground mt-1">Sačuvano: {new Date(doc.date).toLocaleString('sr-RS')}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Sačuvano: {new Date(doc.date).toLocaleString('sr-RS')}</p>
                       <div className="flex gap-2 mt-2">
                         <Button size="sm" onClick={() => handleLoad(doc.name)}><Upload className="h-3 w-3 mr-1" /> Učitaj</Button>
                         <Button size="sm" variant="outline" className="text-destructive" onClick={() => {

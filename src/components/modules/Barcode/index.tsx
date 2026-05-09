@@ -45,7 +45,7 @@ function getTypeBadge(type: string) {
     UPC: { color: 'bg-rose-100 text-rose-800', label: 'UPC-A' },
   }
   const s = map[type] || map.EAN13
-  return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
+  return <Badge className={`${s.color} text-xs`}>{s.label}</Badge>
 }
 
 export function Barcode() {
@@ -166,9 +166,9 @@ export function Barcode() {
                   <TableRow key={item.id}>
                     <TableCell><input type="checkbox" checked={selectedForPrint.has(item.id)} onChange={() => togglePrint(item.id)} className="h-4 w-4 rounded" /></TableCell>
                     <TableCell><span className="text-xs font-mono font-bold">{item.code}</span></TableCell>
-                    <TableCell><div><p className="text-xs font-medium">{item.productName}</p><p className="text-[10px] text-muted-foreground">{item.productId}</p></div></TableCell>
+                    <TableCell><div><p className="text-xs font-medium">{item.productName}</p><p className="text-xs text-muted-foreground">{item.productId}</p></div></TableCell>
                     <TableCell className="hidden sm:table-cell">{getTypeBadge(item.type)}</TableCell>
-                    <TableCell className="hidden md:table-cell"><Badge variant="outline" className="text-[10px]"><Package className="h-2.5 w-2.5 mr-1" />{item.category}</Badge></TableCell>
+                    <TableCell className="hidden md:table-cell"><Badge variant="outline" className="text-xs"><Package className="h-2.5 w-2.5 mr-1" />{item.category}</Badge></TableCell>
                     <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">{formatDate(item.createdAt)}</TableCell>
                     <TableCell className="text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toast.info('Barkod generisan za stampu...')} title="Stampaj"><Printer className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
                   </TableRow>

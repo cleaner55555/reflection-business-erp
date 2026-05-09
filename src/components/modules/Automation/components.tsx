@@ -82,7 +82,7 @@ function getLogStatusBadge(status: string) {
     warning: { color: 'bg-amber-100 text-amber-800', label: 'Упозорење' },
   }
   const s = map[status] || map.success
-  return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
+  return <Badge className={`${s.color} text-xs`}>{s.label}</Badge>
 }
 
 function getTriggerLabel(val: string) {
@@ -210,7 +210,7 @@ export function Automatizacija() {
       <Tabs defaultValue="pravila" className="space-y-4">
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="pravila" className="gap-1.5"><Settings className="h-3.5 w-3.5" />Правила</TabsTrigger>
-          <TabsTrigger value="logovi" className="gap-1.5"><FileText className="h-3.5 w-3.5" />Евиденција <Badge variant="secondary" className="ml-1 text-[10px] px-1.5">{logs.length}</Badge></TabsTrigger>
+          <TabsTrigger value="logovi" className="gap-1.5"><FileText className="h-3.5 w-3.5" />Евиденција <Badge variant="secondary" className="ml-1 text-xs px-1.5">{logs.length}</Badge></TabsTrigger>
         </TabsList>
 
         <TabsContent value="pravila">
@@ -240,7 +240,7 @@ export function Automatizacija() {
                   <TableBody>
                     {filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Нема правила</TableCell></TableRow> : filtered.map(rule => (
                       <TableRow key={rule.id}>
-                        <TableCell><div><p className="text-xs font-medium">{rule.name}</p><p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{rule.description}</p></div></TableCell>
+                        <TableCell><div><p className="text-xs font-medium">{rule.name}</p><p className="text-xs text-muted-foreground truncate max-w-[200px]">{rule.description}</p></div></TableCell>
                         <TableCell className="hidden md:table-cell"><span className="text-xs">{getTriggerLabel(rule.trigger)}</span></TableCell>
                         <TableCell className="hidden lg:table-cell"><span className="text-xs">{getActionLabel(rule.action)}</span></TableCell>
                         <TableCell>{getStatusBadge(rule.status)}</TableCell>

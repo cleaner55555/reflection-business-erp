@@ -218,7 +218,7 @@ export function SocialMedia() {
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{platCfg?.icon}</span>
                           <Badge variant="outline" className={platCfg?.color}>{platCfg?.label}</Badge>
-                          <Badge variant="outline" className={`text-[10px] ${statCfg?.color}`}>{statCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${statCfg?.color}`}>{statCfg?.label}</Badge>
                         </div>
                         <div className="flex gap-1">
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(p); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>

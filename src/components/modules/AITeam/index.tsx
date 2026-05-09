@@ -138,7 +138,7 @@ function InlineChart({ chartData, chartType, chartConfig }: {
       {chartType === 'pie' ? renderPieChart() : chartType === 'line' ? renderLineChart() : chartType === 'area' ? renderAreaChart() : renderBarChart()}
       <div className="mt-2 flex flex-wrap justify-center gap-3">
         {Object.entries(chartConfig).map(([key, config]) => (
-          <div key={key} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div key={key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: config.color }} />
             {config.label}
           </div>
@@ -158,7 +158,7 @@ function KPICards({ kpis }: { kpis: Array<{ label: string; value: string; trend?
           'rounded-lg border p-2.5',
           kpi.trend === 'warning' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-gradient-to-r from-primary/5 to-transparent'
         )}>
-          <p className="text-[10px] text-muted-foreground truncate">{kpi.label}</p>
+          <p className="text-xs text-muted-foreground truncate">{kpi.label}</p>
           <p className="text-sm font-bold text-foreground tabular-nums truncate">{kpi.value}</p>
         </div>
       ))}
@@ -176,7 +176,7 @@ function ResultsTable({ columns, rows }: { columns: Array<{ key: string; label: 
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30">
               {columns.map((col) => (
-                <TableHead key={col.key} className="text-[11px] font-semibold h-8 px-2.5">{col.label}</TableHead>
+                <TableHead key={col.key} className="text-xs font-semibold h-8 px-2.5">{col.label}</TableHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -192,7 +192,7 @@ function ResultsTable({ columns, rows }: { columns: Array<{ key: string; label: 
         </Table>
       </ScrollArea>
       {rows.length > 8 && (
-        <div className="border-t px-3 py-1.5 text-[11px] text-muted-foreground bg-muted/20 text-center">
+        <div className="border-t px-3 py-1.5 text-xs text-muted-foreground bg-muted/20 text-center">
           + još {rows.length - 8} redova
         </div>
       )}
@@ -238,7 +238,7 @@ function SummaryCard({ value, label }: { value: string | number; label: string }
         <BarChart3 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
       </div>
       <div>
-        <p className="text-[11px] text-muted-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
         <p className="text-lg font-bold text-foreground tabular-nums">{value}</p>
       </div>
     </div>
@@ -271,7 +271,7 @@ function AgentCard({ agent, isSelected, onSelect, unreadCount }: {
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-sm font-semibold text-foreground truncate">{agent.name}</h3>
             {unreadCount ? (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shrink-0">
                 {unreadCount}
               </span>
             ) : (
@@ -279,13 +279,13 @@ function AgentCard({ agent, isSelected, onSelect, unreadCount }: {
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">{agent.role}</p>
-          <p className="text-[11px] text-muted-foreground/70 mt-1 line-clamp-2">{agent.description}</p>
+          <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-2">{agent.description}</p>
           <div className="flex flex-wrap gap-1 mt-2">
             {agent.specialties.slice(0, 3).map(s => (
-              <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0 h-5">{s}</Badge>
+              <Badge key={s} variant="secondary" className="text-xs px-1.5 py-0 h-5">{s}</Badge>
             ))}
             {agent.specialties.length > 3 && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">+{agent.specialties.length - 3}</Badge>
+              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5">+{agent.specialties.length - 3}</Badge>
             )}
           </div>
         </div>
@@ -560,7 +560,7 @@ export function AITeam() {
           )}
         </Button>
         {!isOpen && hasNewMessage && (
-          <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold ring-2 ring-background">
+          <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-bold ring-2 ring-background">
             !
           </span>
         )}
@@ -584,14 +584,14 @@ export function AITeam() {
                     <button onClick={backToHub} className="flex items-center gap-2 hover:opacity-70 transition-opacity">
                       <ChevronLeft className="h-4 w-4" />
                       <span>{currentAgent.name}</span>
-                      <Badge variant="outline" className="text-[10px] ml-1">{currentAgent.role}</Badge>
+                      <Badge variant="outline" className="text-xs ml-1">{currentAgent.role}</Badge>
                     </button>
                   ) : (
                     'AI Business Team'
                   )}
                 </SheetTitle>
                 {viewMode.type === 'hub' && (
-                  <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                     8 stručnih agenata za vaše poslovanje
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   </p>
@@ -686,13 +686,13 @@ export function AITeam() {
                 {/* Agent info bar */}
                 {currentAgent && (
                   <div className="shrink-0 px-4 py-2 border-b bg-muted/30">
-                    <p className="text-[11px] text-muted-foreground">{currentAgent.greeting}</p>
+                    <p className="text-xs text-muted-foreground">{currentAgent.greeting}</p>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {currentAgent.quickActions.map(action => (
                         <button
                           key={action}
                           onClick={() => sendMessage(action)}
-                          className="text-[11px] px-2.5 py-1 rounded-full border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                          className="text-xs px-2.5 py-1 rounded-full border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors"
                         >
                           {action}
                         </button>
@@ -764,7 +764,7 @@ export function AITeam() {
                           </Badge>
                         )}
 
-                        <p className={cn('text-[10px] mt-1.5', msg.role === 'user' ? 'text-primary-foreground/60' : 'text-muted-foreground')}>
+                        <p className={cn('text-xs mt-1.5', msg.role === 'user' ? 'text-primary-foreground/60' : 'text-muted-foreground')}>
                           {msg.timestamp.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
@@ -798,7 +798,7 @@ export function AITeam() {
                             <button
                               key={action}
                               onClick={() => sendMessage(action)}
-                              className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-full border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors whitespace-nowrap shrink-0"
+                              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors whitespace-nowrap shrink-0"
                             >
                               <Lightbulb className="h-2.5 w-2.5" />
                               {action}
@@ -820,7 +820,7 @@ export function AITeam() {
                           disabled={isLoading}
                           className="flex-1 text-sm h-9 rounded-full border-border/60 pl-4 pr-12"
                         />
-                        <kbd className="pointer-events-none absolute right-12 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                        <kbd className="pointer-events-none absolute right-12 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-xs font-medium text-muted-foreground">
                           Ctrl+J
                         </kbd>
                       </div>

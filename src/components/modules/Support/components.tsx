@@ -211,13 +211,13 @@ export function OverviewTab({
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${pCfg?.color || ""}`}
+                        className={`text-xs ${pCfg?.color || ""}`}
                       >
                         {pCfg?.label || tk.priority}
                       </Badge>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${cfg?.color || ""}`}
+                        className={`text-xs ${cfg?.color || ""}`}
                       >
                         {cfg?.label || tk.status}
                       </Badge>
@@ -324,7 +324,7 @@ export function TicketsTab({
                       <td className="p-3">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${pCfg?.color || ""}`}
+                          className={`text-xs ${pCfg?.color || ""}`}
                         >
                           {pCfg?.label || tk.priority}
                         </Badge>
@@ -332,7 +332,7 @@ export function TicketsTab({
                       <td className="p-3">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${sCfg?.color || ""}`}
+                          className={`text-xs ${sCfg?.color || ""}`}
                         >
                           {sCfg?.label || tk.status}
                         </Badge>

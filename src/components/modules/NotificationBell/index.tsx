@@ -194,7 +194,7 @@ export function NotificationBell() {
         )}
         {unreadCount > 0 && (
           <Badge
-            className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+            className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white"
           >
             {unreadCount > 99 ? '99+' : unreadCount}
           </Badge>
@@ -218,7 +218,7 @@ export function NotificationBell() {
                   {t('notifications.title')}
                 </h3>
                 {unreadCount > 0 && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                  <Badge variant="secondary" className="text-xs px-1.5 py-0">
                     {unreadCount}
                   </Badge>
                 )}
@@ -286,7 +286,7 @@ export function NotificationBell() {
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                           {notif.message}
                         </p>
-                        <p className="text-[10px] text-muted-foreground/70 mt-1">
+                        <p className="text-xs text-muted-foreground/70 mt-1">
                           {formatTimeAgo(notif.createdAt, t)}
                         </p>
                       </div>

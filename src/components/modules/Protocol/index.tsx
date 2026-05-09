@@ -249,14 +249,14 @@ export function Protocol() {
 
   const statusBadge = (status: string) => {
     const cfg = STATUS_CONFIG[status]
-    if (!cfg) return <Badge variant="outline" className="text-[10px]">{status}</Badge>
-    return <Badge variant="outline" className={`text-[10px] ${cfg.className}`}>{cfg.label}</Badge>
+    if (!cfg) return <Badge variant="outline" className="text-xs">{status}</Badge>
+    return <Badge variant="outline" className={`text-xs ${cfg.className}`}>{cfg.label}</Badge>
   }
 
   const priorityBadge = (priority: string) => {
     const cfg = PRIORITY_CONFIG[priority]
-    if (!cfg) return <Badge variant="secondary" className="text-[10px]">{priority}</Badge>
-    return <Badge variant="secondary" className={`text-[10px] ${cfg.className}`}>{cfg.label}</Badge>
+    if (!cfg) return <Badge variant="secondary" className="text-xs">{priority}</Badge>
+    return <Badge variant="secondary" className={`text-xs ${cfg.className}`}>{cfg.label}</Badge>
   }
 
   const statsCards = [
@@ -593,7 +593,7 @@ export function Protocol() {
                                 </TableCell>
                                 <TableCell className="text-xs">
                                   {entry.documentType
-                                    ? <Badge variant="secondary" className="text-[10px] font-normal">
+                                    ? <Badge variant="secondary" className="text-xs font-normal">
                                         {DOC_TYPES[entry.documentType] || entry.documentType}
                                       </Badge>
                                     : <span className="text-muted-foreground">-</span>

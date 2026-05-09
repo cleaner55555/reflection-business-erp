@@ -671,7 +671,7 @@ export function PlanerRadneSile() {
                       /{stats.totalEmployees}
                     </span>
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.absenceRate}% odsustvo
                   </p>
                 </Card>
@@ -700,7 +700,7 @@ export function PlanerRadneSile() {
                   <p className="text-2xl font-bold">
                     {formatCurrency(stats.laborCost)}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">mesečni</p>
+                  <p className="text-xs text-muted-foreground">mesečni</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -712,7 +712,7 @@ export function PlanerRadneSile() {
                   <p className="text-2xl font-bold text-red-600">
                     {stats.overtimeAlerts + stats.coverageGaps}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.overtimeAlerts} prekovremene · {stats.coverageGaps}{" "}
                     gapova
                   </p>
@@ -745,7 +745,7 @@ export function PlanerRadneSile() {
                                   }}
                                 />
                               </div>
-                              <span className="text-[9px] text-muted-foreground w-6">
+                              <span className="text-xs text-muted-foreground w-6">
                                 {d.scheduled}h
                               </span>
                             </div>
@@ -758,7 +758,7 @@ export function PlanerRadneSile() {
                                   }}
                                 />
                               </div>
-                              <span className="text-[9px] text-green-600 w-6">
+                              <span className="text-xs text-green-600 w-6">
                                 {d.actual}h
                               </span>
                             </div>
@@ -792,7 +792,7 @@ export function PlanerRadneSile() {
                           <span className="text-xs font-medium w-10 text-right">
                             {d.avgHours}h
                           </span>
-                          <span className="text-[10px] text-muted-foreground w-8 text-right">
+                          <span className="text-xs text-muted-foreground w-8 text-right">
                             {d.count}
                           </span>
                         </div>
@@ -828,7 +828,7 @@ export function PlanerRadneSile() {
                         {hasGap && (
                           <Badge
                             variant="outline"
-                            className="text-[9px] text-red-500"
+                            className="text-xs text-red-500"
                           >
                             -{g.needed - g.available}
                           </Badge>
@@ -908,7 +908,7 @@ export function PlanerRadneSile() {
                   >
                     {d}
                     <br />
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {new Date(weekDates[i]).getDate()}
                     </span>
                   </div>
@@ -924,7 +924,7 @@ export function PlanerRadneSile() {
                       <div className="bg-background p-2 text-xs font-medium truncate border-b">
                         {emp.name}
                         <br />
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {emp.department}
                         </span>
                       </div>
@@ -943,7 +943,7 @@ export function PlanerRadneSile() {
                                 return (
                                   <div
                                     key={s.id}
-                                    className={`rounded p-1 mb-1 text-[9px] cursor-pointer hover:opacity-80 ${st?.color}`}
+                                    className={`rounded p-1 mb-1 text-xs cursor-pointer hover:opacity-80 ${st?.color}`}
                                   >
                                     <div className="font-medium">
                                       {s.startTime}-{s.endTime}
@@ -978,7 +978,7 @@ export function PlanerRadneSile() {
             {Object.entries(SHIFT_TYPES).map(([k, v]) => (
               <div key={k} className="flex items-center gap-1">
                 <div className={`h-3 w-3 rounded ${v.color}`} />
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {v.label}
                 </span>
               </div>
@@ -1031,14 +1031,14 @@ export function PlanerRadneSile() {
                             <span className="text-sm font-medium">
                               {e.name}
                             </span>
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant="secondary" className="text-xs">
                               {e.department}
                             </Badge>
-                            <Badge variant="outline" className="text-[10px]">
+                            <Badge variant="outline" className="text-xs">
                               {e.position}
                             </Badge>
                             {e.status === "on_leave" && (
-                              <Badge className="text-[10px] bg-amber-100 text-amber-700">
+                              <Badge className="text-xs bg-amber-100 text-amber-700">
                                 Na odsustvu
                               </Badge>
                             )}
@@ -1067,7 +1067,7 @@ export function PlanerRadneSile() {
                                 style={{ width: `${Math.min(pct, 100)}%` }}
                               />
                             </div>
-                            <span className="text-[10px]">
+                            <span className="text-xs">
                               {pct.toFixed(0)}%
                             </span>
                           </div>
@@ -1077,7 +1077,7 @@ export function PlanerRadneSile() {
                                 <Badge
                                   key={sk}
                                   variant="outline"
-                                  className="text-[9px]"
+                                  className="text-xs"
                                 >
                                   {sk}
                                 </Badge>
@@ -1127,7 +1127,7 @@ export function PlanerRadneSile() {
                             <span className="text-xs">
                               {e.currentHours}/{e.maxHours}h
                             </span>
-                            <Badge className="text-[10px] bg-red-100 text-red-700">
+                            <Badge className="text-xs bg-red-100 text-red-700">
                               +{e.currentHours - e.maxHours}h prekovremeno
                             </Badge>
                             <span className="text-xs font-medium text-red-600">
@@ -1174,7 +1174,7 @@ export function PlanerRadneSile() {
                               <div className="flex items-center gap-3">
                                 <Badge
                                   variant="outline"
-                                  className={`text-[10px] ${st?.color}`}
+                                  className={`text-xs ${st?.color}`}
                                 >
                                   {st?.label}
                                 </Badge>
@@ -1189,7 +1189,7 @@ export function PlanerRadneSile() {
                               <div className="text-right">
                                 <Badge
                                   variant="outline"
-                                  className="text-[10px] text-red-500"
+                                  className="text-xs text-red-500"
                                 >
                                   +{s.overtimeMinutes}min
                                 </Badge>
@@ -1223,13 +1223,13 @@ export function PlanerRadneSile() {
               </DialogHeader>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-[10px] text-muted-foreground">Max sati</p>
+                  <p className="text-xs text-muted-foreground">Max sati</p>
                   <p className="text-sm font-medium">
                     {selectedEmployee.maxHours}h
                   </p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-[10px] text-muted-foreground">Trenutno</p>
+                  <p className="text-xs text-muted-foreground">Trenutno</p>
                   <p
                     className={`text-sm font-bold ${selectedEmployee.currentHours > selectedEmployee.maxHours ? "text-red-600" : ""}`}
                   >
@@ -1237,13 +1237,13 @@ export function PlanerRadneSile() {
                   </p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-[10px] text-muted-foreground">Satnica</p>
+                  <p className="text-xs text-muted-foreground">Satnica</p>
                   <p className="text-sm font-medium">
                     {formatCurrency(selectedEmployee.hourlyRate)}
                   </p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Dostupnost
                   </p>
                   <p className="text-sm font-medium">
@@ -1254,13 +1254,13 @@ export function PlanerRadneSile() {
                 </div>
               </div>
               <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-[10px] text-muted-foreground mb-1">
+                <p className="text-xs text-muted-foreground mb-1">
                   Veštine
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {selectedEmployee.skills.length > 0 ? (
                     selectedEmployee.skills.map((sk) => (
-                      <Badge key={sk} variant="outline" className="text-[10px]">
+                      <Badge key={sk} variant="outline" className="text-xs">
                         {sk}
                       </Badge>
                     ))
@@ -1287,7 +1287,7 @@ export function PlanerRadneSile() {
                           <div className="flex items-center gap-2">
                             <Badge
                               variant="outline"
-                              className={`text-[9px] ${st?.color}`}
+                              className={`text-xs ${st?.color}`}
                             >
                               {st?.label}
                             </Badge>
@@ -1299,7 +1299,7 @@ export function PlanerRadneSile() {
                               {s.location}
                             </span>
                           </div>
-                          <Badge variant="outline" className="text-[9px]">
+                          <Badge variant="outline" className="text-xs">
                             {s.status === "confirmed"
                               ? "Potvrđena"
                               : s.status === "pending"

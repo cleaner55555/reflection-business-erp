@@ -886,13 +886,13 @@ export function VozniPark() {
                           <div className="flex flex-wrap items-center gap-2 mb-3">
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${STATUS_BADGES[vehicle.status] || ""}`}
+                              className={`text-xs ${STATUS_BADGES[vehicle.status] || ""}`}
                             >
                               {STATUS_LABELS[vehicle.status] || vehicle.status}
                             </Badge>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${FUEL_TYPE_BADGES[vehicle.fuelType] || ""}`}
+                              className={`text-xs ${FUEL_TYPE_BADGES[vehicle.fuelType] || ""}`}
                             >
                               <Fuel className="h-2.5 w-2.5 mr-0.5" />
                               {FUEL_TYPE_LABELS[vehicle.fuelType] ||
@@ -986,7 +986,7 @@ export function VozniPark() {
                                           <div className="flex items-center gap-2">
                                             <Badge
                                               variant="outline"
-                                              className="text-[10px] bg-slate-50"
+                                              className="text-xs bg-slate-50"
                                             >
                                               {SERVICE_TYPE_LABELS[
                                                 service.type
@@ -999,7 +999,7 @@ export function VozniPark() {
                                           <p className="truncate mt-0.5 text-muted-foreground">
                                             {service.description}
                                           </p>
-                                          <div className="flex gap-3 mt-0.5 text-[10px] text-muted-foreground">
+                                          <div className="flex gap-3 mt-0.5 text-xs text-muted-foreground">
                                             <span>
                                               {service.mileage.toLocaleString(
                                                 "sr-RS",
@@ -1063,7 +1063,7 @@ export function VozniPark() {
                                           <div className="flex items-center gap-2">
                                             <Badge
                                               variant="outline"
-                                              className="text-[10px] bg-slate-50"
+                                              className="text-xs bg-slate-50"
                                             >
                                               {EXPENSE_TYPE_LABELS[
                                                 expense.type
@@ -1076,7 +1076,7 @@ export function VozniPark() {
                                           <p className="truncate mt-0.5 text-muted-foreground">
                                             {expense.description}
                                           </p>
-                                          <span className="text-[10px] text-muted-foreground">
+                                          <span className="text-xs text-muted-foreground">
                                             {expense.mileage.toLocaleString(
                                               "sr-RS",
                                             )}{" "}

@@ -233,7 +233,7 @@ export function Leave() {
                               <div className="text-sm font-medium">{r.employeeName}</div>
                               <div className="text-xs text-muted-foreground">{typeLabels[r.type] || r.type} · {r.daysCount} dana · {new Date(r.startDate).toLocaleDateString('sr-RS')}</div>
                             </div>
-                            <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge>
+                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge>
                           </div>
                         )
                       })}
@@ -283,7 +283,7 @@ export function Leave() {
                         <td className="p-3">{typeLabels[r.type] || r.type}</td>
                         <td className="p-3 text-xs">{new Date(r.startDate).toLocaleDateString('sr-RS')} - {new Date(r.endDate).toLocaleDateString('sr-RS')}</td>
                         <td className="p-3">{r.daysCount}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge></td>
                         <td className="p-3">
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(r); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>

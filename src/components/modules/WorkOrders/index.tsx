@@ -670,7 +670,7 @@ export function WorkOrders() {
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-mono text-[10px] text-muted-foreground">
+                                    <span className="font-mono text-xs text-muted-foreground">
                                       {order.orderNumber}
                                     </span>
                                     <PriorityBadge priority={order.priority} />
@@ -854,7 +854,7 @@ export function WorkOrders() {
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
                               {wo ? (
-                                <Badge variant="outline" className="font-mono text-[10px]">
+                                <Badge variant="outline" className="font-mono text-xs">
                                   {wo.orderNumber}
                                 </Badge>
                               ) : (

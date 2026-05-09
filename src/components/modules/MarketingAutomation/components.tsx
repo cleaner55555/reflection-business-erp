@@ -211,7 +211,7 @@ export function MktAutomatizacija() {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">{w.name}</span>
-                              <Badge variant="outline" className={`text-[10px] ${statCfg?.color}`}>{statCfg?.label}</Badge>
+                              <Badge variant="outline" className={`text-xs ${statCfg?.color}`}>{statCfg?.label}</Badge>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Badge variant="outline" className={trigCfg?.color}>{trigCfg?.label}</Badge>

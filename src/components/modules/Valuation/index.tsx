@@ -446,7 +446,7 @@ export function Valuation() {
                   <p className={`text-2xl font-bold ${getRatingColor(avgRating)}`}>{avgRating}/5</p>
                   <div className="flex items-center gap-1 mt-1">
                     <TrendingUp className="h-3 w-3 text-emerald-500" />
-                    <span className="text-[10px] text-emerald-500">+0.3 vs prethodni period</span>
+                    <span className="text-xs text-emerald-500">+0.3 vs prethodni period</span>
                   </div>
                 </Card>
                 <Card className="p-4">
@@ -455,7 +455,7 @@ export function Valuation() {
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                   </div>
                   <p className="text-2xl font-bold">{completed.length}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">od {appraisals.length} ukupno</p>
+                  <p className="text-xs text-muted-foreground mt-1">od {appraisals.length} ukupno</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -463,7 +463,7 @@ export function Valuation() {
                     <Clock className="h-4 w-4 text-amber-500" />
                   </div>
                   <p className="text-2xl font-bold text-amber-600">{pending.length}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{pending.filter(p => p.status === 'zatrazeno').length} novih, {pending.filter(p => p.status === 'u_toku').length} u toku</p>
+                  <p className="text-xs text-muted-foreground mt-1">{pending.filter(p => p.status === 'zatrazeno').length} novih, {pending.filter(p => p.status === 'u_toku').length} u toku</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -471,7 +471,7 @@ export function Valuation() {
                     <Users className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold text-blue-600">{deptsCovered}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">od {DEPARTMENTS.length} sektora</p>
+                  <p className="text-xs text-muted-foreground mt-1">od {DEPARTMENTS.length} sektora</p>
                 </Card>
               </div>
 
@@ -503,7 +503,7 @@ export function Valuation() {
                       <div key={d.department} className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-[100px]">
                           <span className="text-sm font-medium">{d.department}</span>
-                          <span className="text-[10px] text-muted-foreground">({d.count})</span>
+                          <span className="text-xs text-muted-foreground">({d.count})</span>
                         </div>
                         <div className="flex items-center gap-3 flex-1 ml-4">
                           <div className="flex-1 bg-muted rounded-full h-2.5">
@@ -608,7 +608,7 @@ export function Valuation() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="text-sm font-medium truncate">{ap.employeeName}</h3>
-                              <Badge variant="outline" className={`text-[10px] shrink-0 ${stCfg?.color}`}>{stCfg?.label}</Badge>
+                              <Badge variant="outline" className={`text-xs shrink-0 ${stCfg?.color}`}>{stCfg?.label}</Badge>
                             </div>
                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               <span>{ap.department}</span>
@@ -650,7 +650,7 @@ export function Valuation() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Kriterijumi ocenjivanja</CardTitle>
-                <Badge variant="outline" className="text-[10px]">Ukupna težina: {criteria.filter(c => c.active).reduce((s, c) => s + c.weight, 0)}%</Badge>
+                <Badge variant="outline" className="text-xs">Ukupna težina: {criteria.filter(c => c.active).reduce((s, c) => s + c.weight, 0)}%</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -664,8 +664,8 @@ export function Valuation() {
                         <div className="flex items-center gap-2">
                           <Target className="h-4 w-4 text-primary" />
                           <h3 className="text-sm font-semibold">{crit.name}</h3>
-                          <Badge variant="outline" className={`text-[10px] ${catColor}`}>{catLabel}</Badge>
-                          {!crit.active && <Badge variant="outline" className="text-[10px] bg-gray-100 text-gray-500">Neaktivan</Badge>}
+                          <Badge variant="outline" className={`text-xs ${catColor}`}>{catLabel}</Badge>
+                          {!crit.active && <Badge variant="outline" className="text-xs bg-gray-100 text-gray-500">Neaktivan</Badge>}
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-lg font-bold text-primary">{crit.weight}%</span>
@@ -679,13 +679,13 @@ export function Valuation() {
                       </div>
                       <p className="text-xs text-muted-foreground mb-3">{crit.description}</p>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground">Skala ocenjivanja:</span>
+                        <span className="text-xs text-muted-foreground">Skala ocenjivanja:</span>
                         <div className="flex gap-1">
                           {Array.from({ length: crit.scaleMax }, (_, i) => i + 1).map(v => (
-                            <Badge key={v} variant="outline" className="text-[10px] px-1.5">{v}</Badge>
+                            <Badge key={v} variant="outline" className="text-xs px-1.5">{v}</Badge>
                           ))}
                         </div>
-                        <span className="text-[10px] text-muted-foreground ml-2">(1 - Nedovoljno, {crit.scaleMax} - Izuzetno)</span>
+                        <span className="text-xs text-muted-foreground ml-2">(1 - Nedovoljno, {crit.scaleMax} - Izuzetno)</span>
                       </div>
                     </div>
                   )
@@ -712,7 +712,7 @@ export function Valuation() {
                       <span className="text-sm font-bold">{sc.value}</span>
                     </div>
                     <p className="text-xs font-medium">{sc.label}</p>
-                    <p className="text-[10px] text-muted-foreground">{sc.desc}</p>
+                    <p className="text-xs text-muted-foreground">{sc.desc}</p>
                   </div>
                 ))}
               </div>
@@ -739,7 +739,7 @@ export function Valuation() {
                         <div key={p.period} className="flex-1 flex flex-col items-center gap-2">
                           <span className={`text-sm font-bold ${getRatingColor(p.avgRating)}`}>{p.avgRating.toFixed(1)}</span>
                           {trend !== 0 && (
-                            <span className={`text-[10px] flex items-center gap-0.5 ${trend > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                            <span className={`text-xs flex items-center gap-0.5 ${trend > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                               <TrendingUp className={`h-3 w-3 ${trend < 0 ? 'rotate-180' : ''}`} />
                               {trend > 0 ? '+' : ''}{trend.toFixed(1)}
                             </span>
@@ -748,7 +748,7 @@ export function Valuation() {
                             <div className="absolute bottom-0 w-full bg-primary rounded-t transition-all" style={{ height: '100%' }} />
                           </div>
                           <span className="text-xs text-muted-foreground font-medium">{p.period}</span>
-                          <span className="text-[10px] text-muted-foreground">{p.completedCount}/{p.totalCount} završeno</span>
+                          <span className="text-xs text-muted-foreground">{p.completedCount}/{p.totalCount} završeno</span>
                         </div>
                       )
                     })}
@@ -774,7 +774,7 @@ export function Valuation() {
                           <span className={`text-sm font-bold w-12 text-right ${deptAp.length > 0 ? getRatingColor(avg) : 'text-muted-foreground'}`}>
                             {deptAp.length > 0 ? avg.toFixed(1) : '-'}
                           </span>
-                          <span className="text-[10px] text-muted-foreground w-16 text-right">{deptAp.length} ocena</span>
+                          <span className="text-xs text-muted-foreground w-16 text-right">{deptAp.length} ocena</span>
                         </div>
                       )
                     })}
@@ -802,7 +802,7 @@ export function Valuation() {
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-sm font-bold">{seg.count}</span>
-                            <span className="text-[10px] text-muted-foreground">({completed.length > 0 ? Math.round((seg.count / completed.length) * 100) : 0}%)</span>
+                            <span className="text-xs text-muted-foreground">({completed.length > 0 ? Math.round((seg.count / completed.length) * 100) : 0}%)</span>
                           </div>
                         </div>
                       ))}
@@ -816,12 +816,12 @@ export function Valuation() {
                     <div className="space-y-2">
                       {topPerformers.map((ap, idx) => (
                         <div key={ap.id} className="flex items-center gap-3 py-1">
-                          <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-amber-700' : 'bg-muted text-muted-foreground'}`}>
+                          <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-amber-700' : 'bg-muted text-muted-foreground'}`}>
                             {idx + 1}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{ap.employeeName}</p>
-                            <p className="text-[10px] text-muted-foreground">{ap.department}</p>
+                            <p className="text-xs text-muted-foreground">{ap.department}</p>
                           </div>
                           <div className="flex items-center gap-2">
                             <Award className={`h-4 w-4 ${idx === 0 ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground'}`} />
@@ -850,7 +850,7 @@ export function Valuation() {
                           <p className="text-xs text-muted-foreground mb-1">{crit.name}</p>
                           <p className={`text-2xl font-bold ${scores.length > 0 ? getRatingColor(avg) : 'text-muted-foreground'}`}>{scores.length > 0 ? avg.toFixed(1) : '-'}</p>
                           <Progress value={(avg / 5) * 100} className="h-1.5 mt-2" />
-                          <p className="text-[10px] text-muted-foreground mt-1">{crit.weight}% težina</p>
+                          <p className="text-xs text-muted-foreground mt-1">{crit.weight}% težina</p>
                         </div>
                       )
                     })}
@@ -903,7 +903,7 @@ export function Valuation() {
                   <div key={crit.id} className="flex items-center justify-between py-2 border-b last:border-0">
                     <div>
                       <p className="text-sm font-medium">{crit.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{crit.description} · Težina: {crit.weight}%</p>
+                      <p className="text-xs text-muted-foreground">{crit.description} · Težina: {crit.weight}%</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <StarRating value={currentScore} interactive onChange={v => {
@@ -978,7 +978,7 @@ export function Valuation() {
                       <div key={crit.id} className="flex items-center justify-between py-2 border-b last:border-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm">{crit.name}</span>
-                          <span className="text-[10px] text-muted-foreground">({crit.weight}%)</span>
+                          <span className="text-xs text-muted-foreground">({crit.weight}%)</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <StarRating value={val} />
@@ -1010,7 +1010,7 @@ export function Valuation() {
                 )}
 
                 {/* Metadata */}
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-2 border-t">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                   <span>Kreirano: {formatDate(selected.createdAt)}</span>
                   {selected.evaluatedAt && <span>Završeno: {formatDate(selected.evaluatedAt)}</span>}
                 </div>

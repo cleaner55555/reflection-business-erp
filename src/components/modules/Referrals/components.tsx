@@ -195,7 +195,7 @@ export function OverviewTab({
                     </div>
                     <Badge
                       variant="outline"
-                      className={`text-[10px] ${cfg?.color || ""}`}
+                      className={`text-xs ${cfg?.color || ""}`}
                     >
                       {cfg?.label || r.status}
                     </Badge>
@@ -298,7 +298,7 @@ export function ReferralsTab({
                       <td className="p-3">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${cfg?.color || ""}`}
+                          className={`text-xs ${cfg?.color || ""}`}
                         >
                           {cfg?.label || r.status}
                         </Badge>

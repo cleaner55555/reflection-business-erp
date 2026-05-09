@@ -365,7 +365,7 @@ function POSTerminal({ companyId }: { companyId: string | null }) {
                 className="relative p-3 rounded-lg border bg-card hover:bg-accent transition-colors text-left group"
               >
                 {inCart && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
                     {inCart.quantity}
                   </Badge>
                 )}
@@ -374,7 +374,7 @@ function POSTerminal({ companyId }: { companyId: string | null }) {
                 <div className="text-base font-bold mt-1.5">
                   {product.sellingPrice.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">
+                <div className="text-xs text-muted-foreground mt-0.5">
                   Zaliha: {product.currentStock} {product.unit}
                 </div>
               </button>
@@ -443,7 +443,7 @@ function POSTerminal({ companyId }: { companyId: string | null }) {
                       max={100}
                       value={item.discountPct || ''}
                       onChange={e => updateDiscount(item.productId, parseFloat(e.target.value) || 0)}
-                      className="w-14 h-6 text-[10px] ml-auto"
+                      className="w-14 h-6 text-xs ml-auto"
                       placeholder="%"
                     />
                   </div>
@@ -949,7 +949,7 @@ function POSReports({ companyId }: { companyId: string | null }) {
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {dashboard.topProducts.map((p, i) => (
                 <div key={p.id} className="flex items-center gap-3 text-sm">
-                  <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">
+                  <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
                     {i + 1}
                   </span>
                   <span className="flex-1 truncate">{p.name}</span>
@@ -976,7 +976,7 @@ function POSReports({ companyId }: { companyId: string | null }) {
             {dashboard.recentOrders.map(order => (
               <div key={order.id} className="flex items-center gap-3 text-sm py-1">
                 <span className="font-mono text-xs text-muted-foreground w-28 truncate">{order.orderNumber}</span>
-                <Badge variant={order.status === 'placen' ? 'default' : 'secondary'} className="text-[10px]">
+                <Badge variant={order.status === 'placen' ? 'default' : 'secondary'} className="text-xs">
                   {order.status === 'placen' ? 'Plaćen' : order.status}
                 </Badge>
                 <span className="text-xs text-muted-foreground">{order.itemsCount} stavki</span>

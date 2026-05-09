@@ -287,14 +287,14 @@ function PipelineTab() {
         <>
           {/* Analytics KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-            <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">{t('crm.won')}</p><p className="text-sm font-bold text-emerald-700">{formatRSD(stats.totalWon)}</p></div>
-            <div className="rounded-lg bg-blue-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">{t('crm.pipeline')}</p><p className="text-sm font-bold text-blue-700">{formatRSD(stats.pipelineValue)}</p></div>
-            <div className="rounded-lg bg-purple-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">{t('crm.weightedPipeline')}</p><p className="text-sm font-bold text-purple-700">{formatRSD(stats.weightedPipeline)}</p></div>
-            <div className="rounded-lg bg-sky-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">{t('crm.avgProbability')}</p><p className="text-sm font-bold text-sky-700">{stats.avgProbability}%</p></div>
-            <div className="rounded-lg bg-slate-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">{t('crm.activeDeals')}</p><p className="text-sm font-bold">{stats.activeCount}</p></div>
-            <div className="rounded-lg bg-amber-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">{t('crm.closingThisMonth')}</p><p className="text-sm font-bold text-amber-700">{stats.closingThisMonth}</p></div>
-            <div className="rounded-lg bg-red-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">{t('crm.atRisk')}</p><p className="text-sm font-bold text-red-700">{stats.atRisk > 0 ? stats.atRisk : '✓'}</p></div>
-            <div className="rounded-lg bg-teal-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Win Rate</p><p className="text-sm font-bold text-teal-700">{stats.winRate}%</p></div>
+            <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">{t('crm.won')}</p><p className="text-sm font-bold text-emerald-700">{formatRSD(stats.totalWon)}</p></div>
+            <div className="rounded-lg bg-blue-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">{t('crm.pipeline')}</p><p className="text-sm font-bold text-blue-700">{formatRSD(stats.pipelineValue)}</p></div>
+            <div className="rounded-lg bg-purple-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">{t('crm.weightedPipeline')}</p><p className="text-sm font-bold text-purple-700">{formatRSD(stats.weightedPipeline)}</p></div>
+            <div className="rounded-lg bg-sky-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">{t('crm.avgProbability')}</p><p className="text-sm font-bold text-sky-700">{stats.avgProbability}%</p></div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">{t('crm.activeDeals')}</p><p className="text-sm font-bold">{stats.activeCount}</p></div>
+            <div className="rounded-lg bg-amber-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">{t('crm.closingThisMonth')}</p><p className="text-sm font-bold text-amber-700">{stats.closingThisMonth}</p></div>
+            <div className="rounded-lg bg-red-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">{t('crm.atRisk')}</p><p className="text-sm font-bold text-red-700">{stats.atRisk > 0 ? stats.atRisk : '✓'}</p></div>
+            <div className="rounded-lg bg-teal-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Win Rate</p><p className="text-sm font-bold text-teal-700">{stats.winRate}%</p></div>
           </div>
 
           {/* Filters + Actions */}
@@ -321,9 +321,9 @@ function PipelineTab() {
                   <div key={stage} className={`min-w-[280px] w-[280px] flex-shrink-0 rounded-xl border-2 p-3 ${STAGE_COLORS[stage]}`}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${STAGE_DOT[stage]}`} /><h3 className="text-xs font-bold">{STAGE_LABELS[stage]}</h3></div>
-                      <Badge variant="secondary" className="text-[10px]">{stageDeals.length}</Badge>
+                      <Badge variant="secondary" className="text-xs">{stageDeals.length}</Badge>
                     </div>
-                    <p className="text-[10px] text-muted-foreground mb-3">{formatRSD(stageTotal)}</p>
+                    <p className="text-xs text-muted-foreground mb-3">{formatRSD(stageTotal)}</p>
                     <div className="space-y-2 max-h-[420px] overflow-y-auto">
                       {stageDeals.map((deal: Deal) => {
                         const days = daysUntil(deal.closeDate)
@@ -336,12 +336,12 @@ function PipelineTab() {
                               <div className="flex-1 min-w-0">
                                 {/* Title + Source */}
                                 <div className="flex items-center gap-1.5 mb-1">
-                                  <span className="text-[10px]">{SOURCE_ICONS[deal.source] || '✍️'}</span>
+                                  <span className="text-xs">{SOURCE_ICONS[deal.source] || '✍️'}</span>
                                   <span className="text-xs font-medium truncate">{tc(deal.title)}</span>
-                                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${scoreColor(deal.score)}`}>{deal.score}</span>
+                                  <span className={`text-xs px-1.5 py-0.5 rounded-full border ${scoreColor(deal.score)}`}>{deal.score}</span>
                                 </div>
                                 {/* Value */}
-                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                   <span className="font-semibold text-foreground/80">{formatRSD(deal.value)}</span>
                                   <span>~{formatRSD(expected)}</span>
                                 </div>
@@ -350,17 +350,17 @@ function PipelineTab() {
                                   {deal.contact && (
                                     <div className="flex items-center gap-1">
                                       <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold ${avatarColor(deal.contact.firstName + deal.contact.lastName)}`}>{initials(deal.contact.firstName, deal.contact.lastName)}</div>
-                                      <span className="text-[10px] text-muted-foreground truncate max-w-[80px]">{tc(`${deal.contact.firstName} ${deal.contact.lastName}`)}</span>
+                                      <span className="text-xs text-muted-foreground truncate max-w-[80px]">{tc(`${deal.contact.firstName} ${deal.contact.lastName}`)}</span>
                                     </div>
                                   )}
                                   {deal.partner && !deal.contact && (
                                     <div className="flex items-center gap-1">
                                       <Building2 className="h-3 w-3 text-muted-foreground" />
-                                      <span className="text-[10px] text-muted-foreground truncate max-w-[90px]">{deal.partner.name}</span>
+                                      <span className="text-xs text-muted-foreground truncate max-w-[90px]">{deal.partner.name}</span>
                                     </div>
                                   )}
                                   {deal._count && deal._count.activities > 0 && (
-                                    <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground"><Activity className="h-2.5 w-2.5" />{deal._count.activities}</span>
+                                    <span className="flex items-center gap-0.5 text-xs text-muted-foreground"><Activity className="h-2.5 w-2.5" />{deal._count.activities}</span>
                                   )}
                                 </div>
                                 {/* Tags */}
@@ -373,9 +373,9 @@ function PipelineTab() {
                                   </div>
                                 )}
                                 {/* Overdue / Days left */}
-                                {isOverdue && <p className="text-[9px] text-red-500 font-bold mt-1">{t('crm.overdue')}</p>}
-                                {!isOverdue && days !== null && days <= 7 && days >= 0 && <p className="text-[9px] text-amber-600 mt-1">{days} {t('crm.daysLeft')}</p>}
-                                {deal.lostReason && <p className="text-[9px] text-red-400 mt-1 italic">{deal.lostReason}</p>}
+                                {isOverdue && <p className="text-xs text-red-500 font-bold mt-1">{t('crm.overdue')}</p>}
+                                {!isOverdue && days !== null && days <= 7 && days >= 0 && <p className="text-xs text-amber-600 mt-1">{days} {t('crm.daysLeft')}</p>}
+                                {deal.lostReason && <p className="text-xs text-red-400 mt-1 italic">{deal.lostReason}</p>}
                               </div>
                               <div className="flex gap-0.5 flex-shrink-0">
                                 {nextStage(stage) && (
@@ -388,7 +388,7 @@ function PipelineTab() {
                           </Card>
                         )
                       })}
-                      {stageDeals.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-4">{t('crm.noDealsFound')}</p>}
+                      {stageDeals.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">{t('crm.noDealsFound')}</p>}
                     </div>
                   </div>
                 )
@@ -502,7 +502,7 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant="outline" className={STAGE_BADGE[deal.stage]}>{STAGE_LABELS[deal.stage]}</Badge>
             <span className={`text-xs px-2 py-0.5 rounded-full border ${scoreColor(deal.score)}`}>{t('crm.score')}: {deal.score}</span>
-            {deal.source !== 'manual' && <Badge variant="secondary" className="text-[10px]">{SOURCE_ICONS[deal.source]} {SOURCE_LABELS[deal.source]}</Badge>}
+            {deal.source !== 'manual' && <Badge variant="secondary" className="text-xs">{SOURCE_ICONS[deal.source]} {SOURCE_LABELS[deal.source]}</Badge>}
           </div>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
@@ -519,10 +519,10 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
 
       {/* Metrics */}
       <div className="grid grid-cols-2 gap-3">
-        <Card className="p-3"><p className="text-[10px] text-muted-foreground">{t('crm.dealValue')}</p><p className="text-sm font-bold">{formatRSD(deal.value)}</p></Card>
-        <Card className="p-3"><p className="text-[10px] text-muted-foreground">{t('crm.expectedValue')}</p><p className="text-sm font-bold text-purple-700">{formatRSD(expected)}</p></Card>
-        <Card className="p-3"><p className="text-[10px] text-muted-foreground">{t('crm.probability')}</p><p className="text-sm font-bold">{deal.probability}%</p></Card>
-        <Card className="p-3"><p className="text-[10px] text-muted-foreground">{t('crm.closeDate')}</p>
+        <Card className="p-3"><p className="text-xs text-muted-foreground">{t('crm.dealValue')}</p><p className="text-sm font-bold">{formatRSD(deal.value)}</p></Card>
+        <Card className="p-3"><p className="text-xs text-muted-foreground">{t('crm.expectedValue')}</p><p className="text-sm font-bold text-purple-700">{formatRSD(expected)}</p></Card>
+        <Card className="p-3"><p className="text-xs text-muted-foreground">{t('crm.probability')}</p><p className="text-sm font-bold">{deal.probability}%</p></Card>
+        <Card className="p-3"><p className="text-xs text-muted-foreground">{t('crm.closeDate')}</p>
           <p className="text-sm font-bold">
             {deal.closeDate ? formatDate(deal.closeDate) : '-'}
             {isOverdue && <span className="text-red-500 ml-1">{t('crm.overdue')}</span>}
@@ -535,19 +535,19 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
       <div className="grid grid-cols-2 gap-3">
         {deal.contact && (
           <Card className="p-3">
-            <p className="text-[10px] text-muted-foreground">{t('crm.contact')}</p>
+            <p className="text-xs text-muted-foreground">{t('crm.contact')}</p>
             <div className="flex items-center gap-2 mt-1">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${avatarColor(deal.contact.firstName + deal.contact.lastName)}`}>{initials(deal.contact.firstName, deal.contact.lastName)}</div>
               <div className="min-w-0">
                 <p className="text-xs font-medium truncate">{tc(`${deal.contact.firstName} ${deal.contact.lastName}`)}</p>
-                {deal.contact.email && <p className="text-[10px] text-muted-foreground truncate">{deal.contact.email}</p>}
+                {deal.contact.email && <p className="text-xs text-muted-foreground truncate">{deal.contact.email}</p>}
               </div>
             </div>
           </Card>
         )}
         {deal.partner && (
           <Card className="p-3">
-            <p className="text-[10px] text-muted-foreground">{t('crm.company')}</p>
+            <p className="text-xs text-muted-foreground">{t('crm.company')}</p>
             <div className="flex items-center gap-2 mt-1">
               <Building2 className="h-4 w-4 text-muted-foreground" />
               <p className="text-xs font-medium truncate">{deal.partner.name}</p>
@@ -567,7 +567,7 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
 
       {/* Lost Reason */}
       {deal.lostReason && (
-        <Card className="p-3 border-red-200 bg-red-50"><p className="text-[10px] text-muted-foreground">{t('crm.lostReason')}</p><p className="text-xs text-red-700 mt-1">{deal.lostReason}</p></Card>
+        <Card className="p-3 border-red-200 bg-red-50"><p className="text-xs text-muted-foreground">{t('crm.lostReason')}</p><p className="text-xs text-red-700 mt-1">{deal.lostReason}</p></Card>
       )}
 
       {/* Score Breakdown */}
@@ -576,7 +576,7 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
         <div className="w-full bg-slate-200 rounded-full h-2 mb-2"><div className={`h-2 rounded-full ${deal.score >= 67 ? 'bg-emerald-500' : deal.score >= 34 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${deal.score}%` }} /></div>
         <div className="space-y-1">
           {scoreItems.map((item) => (
-            <div key={item.label} className="flex items-center justify-between text-[10px]">
+            <div key={item.label} className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">{item.label}</span>
               <span className={item.value > 0 ? 'text-emerald-600 font-medium' : 'text-muted-foreground'}>{item.value > 0 ? `+${item.value}` : '0'}</span>
             </div>
@@ -610,7 +610,7 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
       {/* Activity Timeline */}
       <div>
         <p className="text-xs font-semibold mb-2">{t('crm.activityTimeline')} ({activities.length})</p>
-        {activities.length === 0 ? <p className="text-[10px] text-muted-foreground">{t('crm.noActivities')}</p> : (
+        {activities.length === 0 ? <p className="text-xs text-muted-foreground">{t('crm.noActivities')}</p> : (
           <div className="space-y-1.5 max-h-60 overflow-y-auto">
             {activities.map((act: CrmActivity) => {
               const typeInfo = ACTIVITY_TYPES[act.type] || { icon: '📝', label: act.type }
@@ -626,7 +626,7 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
                       <span>{typeInfo.icon}</span>
                       <p className={`font-medium truncate ${act.completed ? 'line-through' : ''}`}>{tc(act.title)}</p>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[9px] text-muted-foreground">
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                       <span>{formatDate(act.createdAt)}</span>
                       {act.dueDate && (
                         <>
@@ -636,7 +636,7 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
                       )}
                       {act.deal && <span>· {STAGE_LABELS[act.deal.stage]}</span>}
                     </div>
-                    {act.description && <p className="text-[10px] text-muted-foreground mt-1">{act.description}</p>}
+                    {act.description && <p className="text-xs text-muted-foreground mt-1">{act.description}</p>}
                   </div>
                   <button className="flex-shrink-0 text-muted-foreground hover:text-red-500" onClick={() => deleteActivity(act.id)}>
                     <Trash2 className="h-3 w-3" />
@@ -649,7 +649,7 @@ function DealDetail({ deal, contacts, partners, onClose, onEdit, onDelete, onMov
       </div>
 
       {/* Notes */}
-      {deal.notes && <Card className="p-3"><p className="text-[10px] text-muted-foreground">{t('common.notes')}</p><p className="text-xs mt-1 whitespace-pre-wrap">{deal.notes}</p></Card>}
+      {deal.notes && <Card className="p-3"><p className="text-xs text-muted-foreground">{t('common.notes')}</p><p className="text-xs mt-1 whitespace-pre-wrap">{deal.notes}</p></Card>}
     </div>
   )
 }
@@ -692,10 +692,10 @@ function ForecastTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="p-4"><div className="flex items-center gap-2"><Target className="h-4 w-4 text-emerald-500" /><p className="text-[10px] text-muted-foreground">{t('crm.winRate')}</p></div><p className="text-2xl font-bold mt-1">{winRate}%</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-blue-500" /><p className="text-[10px] text-muted-foreground">{t('crm.avgDealSize')}</p></div><p className="text-2xl font-bold mt-1">{formatRSD(avgDealSize)}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-purple-500" /><p className="text-[10px] text-muted-foreground">{t('crm.expectedRevenue')}</p></div><p className="text-2xl font-bold mt-1">{formatRSD(forecast.reduce((s, m) => s + m.expected, 0))}</p></Card>
-        <Card className="p-4"><div className="flex items-center gap-2"><Activity className="h-4 w-4 text-amber-500" /><p className="text-[10px] text-muted-foreground">{t('crm.activeDeals')}</p></div><p className="text-2xl font-bold mt-1">{deals.filter((d: Deal) => !['won', 'lost'].includes(d.stage)).length}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2"><Target className="h-4 w-4 text-emerald-500" /><p className="text-xs text-muted-foreground">{t('crm.winRate')}</p></div><p className="text-2xl font-bold mt-1">{winRate}%</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-blue-500" /><p className="text-xs text-muted-foreground">{t('crm.avgDealSize')}</p></div><p className="text-2xl font-bold mt-1">{formatRSD(avgDealSize)}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-purple-500" /><p className="text-xs text-muted-foreground">{t('crm.expectedRevenue')}</p></div><p className="text-2xl font-bold mt-1">{formatRSD(forecast.reduce((s, m) => s + m.expected, 0))}</p></Card>
+        <Card className="p-4"><div className="flex items-center gap-2"><Activity className="h-4 w-4 text-amber-500" /><p className="text-xs text-muted-foreground">{t('crm.activeDeals')}</p></div><p className="text-2xl font-bold mt-1">{deals.filter((d: Deal) => !['won', 'lost'].includes(d.stage)).length}</p></Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -707,7 +707,7 @@ function ForecastTab() {
                 <div key={m.label} className="space-y-1">
                   <div className="flex justify-between text-xs"><span className="font-medium">{m.label}</span><span>{formatRSD(m.expected)}</span></div>
                   <div className="w-full bg-slate-100 rounded-full h-3"><div className="h-3 rounded-full bg-gradient-to-r from-purple-400 to-purple-600" style={{ width: `${Math.min((m.expected / maxForecast) * 100, 100)}%` }} /></div>
-                  <div className="flex gap-4 text-[9px] text-muted-foreground"><span>{t('crm.deals')}: {m.count}</span><span>{t('crm.won')}: {formatRSD(m.won)}</span></div>
+                  <div className="flex gap-4 text-xs text-muted-foreground"><span>{t('crm.deals')}: {m.count}</span><span>{t('crm.won')}: {formatRSD(m.won)}</span></div>
                 </div>
               ))}
             </div>
@@ -919,8 +919,8 @@ function KontaktiTab() {
                 <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedContact(c)}>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${avatarColor(c.firstName + c.lastName)}`}>{initials(c.firstName, c.lastName)}</div>
-                      <div className="min-w-0"><p className="text-xs font-medium truncate">{tc(`${c.firstName} ${c.lastName}`)}</p>{c.position && <p className="text-[10px] text-muted-foreground truncate">{c.position}</p>}</div>
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${avatarColor(c.firstName + c.lastName)}`}>{initials(c.firstName, c.lastName)}</div>
+                      <div className="min-w-0"><p className="text-xs font-medium truncate">{tc(`${c.firstName} ${c.lastName}`)}</p>{c.position && <p className="text-xs text-muted-foreground truncate">{c.position}</p>}</div>
                     </div>
                   </TableCell>
                   <TableCell className="text-xs hidden sm:table-cell">{c.email || '-'}</TableCell>
@@ -928,9 +928,9 @@ function KontaktiTab() {
                   <TableCell className="text-xs hidden lg:table-cell">{c.company || c.partner?.name || '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-wrap">
-                      {c.isLead && <Badge variant="outline" className="text-[9px] bg-slate-100">Lead</Badge>}
-                      {c.isClient && <Badge variant="outline" className="text-[9px] bg-emerald-50 text-emerald-700">Klijent</Badge>}
-                      {c.isSupplier && <Badge variant="outline" className="text-[9px] bg-amber-50 text-amber-700">Dobavljač</Badge>}
+                      {c.isLead && <Badge variant="outline" className="text-xs bg-slate-100">Lead</Badge>}
+                      {c.isClient && <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700">Klijent</Badge>}
+                      {c.isSupplier && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700">Dobavljač</Badge>}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -968,12 +968,12 @@ function KontaktiTab() {
                 {selectedContact.phone && <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-muted-foreground" /><span>{selectedContact.phone}</span></div>}
                 {(selectedContact.company || selectedContact.partner?.name) && <div className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5 text-muted-foreground" /><span>{selectedContact.company || selectedContact.partner?.name}</span></div>}
                 <div className="flex gap-2 mt-2">
-                  {selectedContact.isLead && <Badge variant="outline" className="text-[9px]">Lead</Badge>}
-                  {selectedContact.isClient && <Badge variant="outline" className="text-[9px] bg-emerald-50 text-emerald-700">Klijent</Badge>}
-                  {selectedContact.isSupplier && <Badge variant="outline" className="text-[9px] bg-amber-50 text-amber-700">Dobavljač</Badge>}
+                  {selectedContact.isLead && <Badge variant="outline" className="text-xs">Lead</Badge>}
+                  {selectedContact.isClient && <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700">Klijent</Badge>}
+                  {selectedContact.isSupplier && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700">Dobavljač</Badge>}
                 </div>
                 {selectedContact._count && (
-                  <div className="flex gap-4 mt-2 text-[10px] text-muted-foreground">
+                  <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
                     <span>{t('crm.deals')}: {selectedContact._count.deals || 0}</span>
                     <span>{t('crm.activities')}: {selectedContact._count.activities || 0}</span>
                   </div>
@@ -1057,10 +1057,10 @@ function AktivnostiTab() {
     <div className="space-y-4">
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-lg bg-blue-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Ukupno</p><p className="text-sm font-bold text-blue-700">{activities.length}</p></div>
-        <div className="rounded-lg bg-amber-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Na čekanju</p><p className="text-sm font-bold text-amber-700">{pendingCount}</p></div>
-        <div className="rounded-lg bg-red-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Kasne</p><p className="text-sm font-bold text-red-700">{overdueCount}</p></div>
-        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center"><p className="text-[10px] text-muted-foreground">Završene</p><p className="text-sm font-bold text-emerald-700">{activities.length - pendingCount}</p></div>
+        <div className="rounded-lg bg-blue-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Ukupno</p><p className="text-sm font-bold text-blue-700">{activities.length}</p></div>
+        <div className="rounded-lg bg-amber-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Na čekanju</p><p className="text-sm font-bold text-amber-700">{pendingCount}</p></div>
+        <div className="rounded-lg bg-red-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Kasne</p><p className="text-sm font-bold text-red-700">{overdueCount}</p></div>
+        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-center"><p className="text-xs text-muted-foreground">Završene</p><p className="text-sm font-bold text-emerald-700">{activities.length - pendingCount}</p></div>
       </div>
 
       {/* Filters */}
@@ -1123,9 +1123,9 @@ function AktivnostiTab() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm">{typeInfo.icon}</span>
                   <p className={`text-sm font-medium ${act.completed ? 'line-through' : ''}`}>{tc(act.title)}</p>
-                  <Badge variant="outline" className="text-[9px]">{typeInfo.label}</Badge>
+                  <Badge variant="outline" className="text-xs">{typeInfo.label}</Badge>
                 </div>
-                <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
                   <span>{formatDate(act.createdAt)}</span>
                   {act.dueDate && (
                     <span className={isOverdue ? 'text-red-500 font-medium' : ''}>📅 {formatDate(act.dueDate)}{actDays !== null && actDays >= 0 && actDays <= 3 && ` (${actDays}d)`}</span>
@@ -1183,14 +1183,14 @@ function IzvoriTab() {
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{SOURCE_ICONS[source] || '❓'}</span>
                       <span className="font-semibold text-sm">{SOURCE_LABELS[source] || source}</span>
-                      <Badge variant="secondary" className="text-[10px]">{stat.count} ({totalDeals > 0 ? Math.round(stat.count / totalDeals * 100) : 0}%)</Badge>
+                      <Badge variant="secondary" className="text-xs">{stat.count} ({totalDeals > 0 ? Math.round(stat.count / totalDeals * 100) : 0}%)</Badge>
                     </div>
                     <div className="flex gap-3 text-xs">
                       <span className="text-emerald-600 font-medium">Win: {winRate}%</span>
                       <span className="text-muted-foreground">{formatRSD(stat.totalValue)}</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-[10px]">
+                  <div className="grid grid-cols-3 gap-3 text-xs">
                     <div><span className="text-muted-foreground">Ukupno:</span> <span className="font-medium">{stat.count}</span></div>
                     <div><span className="text-muted-foreground">Won:</span> <span className="font-medium text-emerald-600">{stat.won}</span></div>
                     <div><span className="text-muted-foreground">Lost:</span> <span className="font-medium text-red-500">{stat.lost}</span></div>

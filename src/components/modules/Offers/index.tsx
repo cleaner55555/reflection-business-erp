@@ -739,7 +739,7 @@ export function Offers() {
                         <td className="py-2 pr-4">{o.partnerName || '-'}</td>
                         <td className="py-2 pr-4">{formatRSD(o.totalAmount)}</td>
                         <td className="py-2 pr-4">
-                          <Badge variant="outline" className={`text-[10px] ${getStatusColor(o.status)}`}>
+                          <Badge variant="outline" className={`text-xs ${getStatusColor(o.status)}`}>
                             {t(getStatusLabelKey(o.status))}
                           </Badge>
                         </td>
@@ -821,7 +821,7 @@ export function Offers() {
                     <td className="p-3">20%</td>
                     <td className="p-3 font-medium">{formatRSD(o.totalAmount)}</td>
                     <td className="p-3">
-                      <Badge variant="outline" className={`text-[10px] ${getStatusColor(o.status)}`}>
+                      <Badge variant="outline" className={`text-xs ${getStatusColor(o.status)}`}>
                         {t(getStatusLabelKey(o.status))}
                       </Badge>
                     </td>
@@ -888,7 +888,7 @@ export function Offers() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{pl.name}</span>
-                      {pl.isActive && <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">{t('offers.active')}</Badge>}
+                      {pl.isActive && <Badge className="bg-emerald-100 text-emerald-700 text-xs">{t('offers.active')}</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{pl.description}</p>
                   </div>
@@ -958,7 +958,7 @@ export function Offers() {
                 <CardTitle className="text-sm flex items-center gap-2">
                   <BookTemplate className="h-4 w-4" /> {tpl.name}
                 </CardTitle>
-                <Badge variant="secondary" className="text-[10px]">{tpl.useCount}x</Badge>
+                <Badge variant="secondary" className="text-xs">{tpl.useCount}x</Badge>
               </div>
               <p className="text-xs text-muted-foreground">{tpl.description}</p>
             </CardHeader>
@@ -1151,7 +1151,7 @@ export function Offers() {
                     <td className="p-3 font-mono text-xs">{entry.orderNumber}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
                           {entry.userName.charAt(0)}
                         </div>
                         {entry.userName}
@@ -1160,11 +1160,11 @@ export function Offers() {
                     <td className="p-3 text-xs text-muted-foreground">{new Date(entry.timestamp).toLocaleString('sr-RS')}</td>
                     <td className="p-3">
                       {entry.oldStatus ? (
-                        <Badge variant="outline" className={`text-[10px] ${getStatusColor(entry.oldStatus)}`}>{t(getStatusLabelKey(entry.oldStatus))}</Badge>
+                        <Badge variant="outline" className={`text-xs ${getStatusColor(entry.oldStatus)}`}>{t(getStatusLabelKey(entry.oldStatus))}</Badge>
                       ) : <span className="text-xs text-muted-foreground">—</span>}
                     </td>
                     <td className="p-3">
-                      <Badge variant="outline" className={`text-[10px] ${getStatusColor(entry.newStatus)}`}>{t(getStatusLabelKey(entry.newStatus))}</Badge>
+                      <Badge variant="outline" className={`text-xs ${getStatusColor(entry.newStatus)}`}>{t(getStatusLabelKey(entry.newStatus))}</Badge>
                     </td>
                     <td className="p-3 text-xs">{entry.description}</td>
                   </tr>
@@ -1430,15 +1430,15 @@ export function Offers() {
               {tplForm.lineItems.map((li, idx) => (
                 <div key={li.id} className="flex gap-2 items-end">
                   <div className="flex-1 space-y-1">
-                    <span className="text-[10px] text-muted-foreground">{t('offers.product')}</span>
+                    <span className="text-xs text-muted-foreground">{t('offers.product')}</span>
                     <Input className="h-8 text-xs" value={li.productName} onChange={(e) => { const items = [...tplForm.lineItems]; items[idx] = { ...items[idx], productName: e.target.value }; setTplForm(prev => ({ ...prev, lineItems: items })) }} />
                   </div>
                   <div className="w-16 space-y-1">
-                    <span className="text-[10px] text-muted-foreground">{t('offers.qty')}</span>
+                    <span className="text-xs text-muted-foreground">{t('offers.qty')}</span>
                     <Input type="number" min="1" className="h-8 text-xs" value={li.quantity || ''} onChange={(e) => updateTemplateLineItem(idx, 'quantity', parseFloat(e.target.value) || 0)} />
                   </div>
                   <div className="w-24 space-y-1">
-                    <span className="text-[10px] text-muted-foreground">{t('offers.unitPrice')}</span>
+                    <span className="text-xs text-muted-foreground">{t('offers.unitPrice')}</span>
                     <Input type="number" min="0" className="h-8 text-xs" value={li.unitPrice || ''} onChange={(e) => updateTemplateLineItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)} />
                   </div>
                   <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive shrink-0" onClick={() => setTplForm(prev => ({ ...prev, lineItems: prev.lineItems.filter((_, i) => i !== idx) }))}>

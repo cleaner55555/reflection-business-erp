@@ -460,19 +460,19 @@ export function Maintenance() {
   const getStatusBadge = (status: string) => {
     const cfg = statusConfig[status]
     if (!cfg) return null
-    return <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{t(`maintenance.${cfg.labelKey}`)}</Badge>
+    return <Badge variant="outline" className={`text-xs ${cfg.color}`}>{t(`maintenance.${cfg.labelKey}`)}</Badge>
   }
 
   const getPriorityBadge = (priority: string) => {
     const cfg = priorityConfig[priority]
     if (!cfg) return null
-    return <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{t(`maintenance.${cfg.labelKey}`)}</Badge>
+    return <Badge variant="outline" className={`text-xs ${cfg.color}`}>{t(`maintenance.${cfg.labelKey}`)}</Badge>
   }
 
   const getEquipStatusBadge = (status: string) => {
     const cfg = equipmentStatusConfig[status]
     if (!cfg) return null
-    return <Badge variant="outline" className={`text-[10px] ${cfg.color}`}>{t(`maintenance.${cfg.labelKey}`)}</Badge>
+    return <Badge variant="outline" className={`text-xs ${cfg.color}`}>{t(`maintenance.${cfg.labelKey}`)}</Badge>
   }
 
   const getHealthColor = (score: number) => {
@@ -939,7 +939,7 @@ export function Maintenance() {
                       <TableCell className="text-sm font-medium">
                         {part.name}
                         {isLow && (
-                          <Badge variant="destructive" className="ml-2 text-[9px] px-1 py-0">
+                          <Badge variant="destructive" className="ml-2 text-xs px-1 py-0">
                             <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
                             {t('maintenance.lowStock')}
                           </Badge>
@@ -1055,7 +1055,7 @@ export function Maintenance() {
                     {topRepairs.map((r, i) => (
                       <TableRow key={i}>
                         <TableCell className="text-sm">{r.equipment}</TableCell>
-                        <TableCell><Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700">{t(r.type)}</Badge></TableCell>
+                        <TableCell><Badge variant="outline" className="text-xs bg-amber-50 text-amber-700">{t(r.type)}</Badge></TableCell>
                         <TableCell className="text-sm text-right font-medium">{formatRSD(r.cost)}</TableCell>
                       </TableRow>
                     ))}

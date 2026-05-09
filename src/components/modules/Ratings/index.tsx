@@ -403,7 +403,7 @@ export function Ratings() {
                   <p className={`text-2xl font-bold ${getRatingColor(dashboard.avgRating)}`}>{dashboard.avgRating}/5</p>
                   <div className="flex items-center gap-1 mt-1">
                     {dashboard.trendDirection === 'up' ? <TrendingUp className="h-3 w-3 text-green-500" /> : dashboard.trendDirection === 'down' ? <TrendingDown className="h-3 w-3 text-red-500" /> : <Minus className="h-3 w-3 text-gray-500" />}
-                    <span className={`text-[10px] ${dashboard.trendDirection === 'up' ? 'text-green-500' : dashboard.trendDirection === 'down' ? 'text-red-500' : 'text-gray-500'}`}>
+                    <span className={`text-xs ${dashboard.trendDirection === 'up' ? 'text-green-500' : dashboard.trendDirection === 'down' ? 'text-red-500' : 'text-gray-500'}`}>
                       {dashboard.trendValue > 0 ? '+' : ''}{dashboard.trendValue} vs prošli mesec
                     </span>
                   </div>
@@ -414,7 +414,7 @@ export function Ratings() {
                     <BarChart3 className="h-4 w-4 text-primary" />
                   </div>
                   <p className="text-2xl font-bold">{dashboard.totalRatings}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.responseRate}% stopa odgovora</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.responseRate}% stopa odgovora</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -422,7 +422,7 @@ export function Ratings() {
                     <ThumbsUp className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold text-green-600">{dashboard.distribution[0]?.count || 0}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.distribution[0]?.percentage || 0}% svih ocena</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.distribution[0]?.percentage || 0}% svih ocena</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -430,7 +430,7 @@ export function Ratings() {
                     <MessageSquare className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold text-blue-600">{surveys.filter((s) => s.status === 'active').length}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{surveys.reduce((sum, s) => sum + s.responseCount, 0)} odgovora</p>
+                  <p className="text-xs text-muted-foreground mt-1">{surveys.reduce((sum, s) => sum + s.responseCount, 0)} odgovora</p>
                 </Card>
               </div>
 
@@ -469,14 +469,14 @@ export function Ratings() {
                       return (
                         <div key={cat.category} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={`text-[10px] ${catCfg?.color}`}>{catCfg?.label}</Badge>
+                            <Badge variant="outline" className={`text-xs ${catCfg?.color}`}>{catCfg?.label}</Badge>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-20 bg-muted rounded-full h-2">
                               <div className="h-2 rounded-full bg-primary" style={{ width: `${(cat.avg / maxAvg) * 100}%` }} />
                             </div>
                             <span className={`text-sm font-medium w-8 text-right ${getRatingColor(cat.avg)}`}>{cat.avg.toFixed(1)}</span>
-                            <span className="text-[10px] text-muted-foreground w-8 text-right">({cat.count})</span>
+                            <span className="text-xs text-muted-foreground w-8 text-right">({cat.count})</span>
                           </div>
                         </div>
                       )
@@ -499,7 +499,7 @@ export function Ratings() {
                         <div key={cr.id} className={`p-4 rounded-lg text-center ${getRatingBg(4)}`}>
                           <p className="text-sm font-medium mb-1">{cr.name}</p>
                           <p className={`text-2xl font-bold ${getRatingColor(4)}`}>{cr.weight}%</p>
-                          <Badge variant="outline" className={`text-[10px] mt-2 ${catCfg?.color}`}>{catCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs mt-2 ${catCfg?.color}`}>{catCfg?.label}</Badge>
                         </div>
                       )
                     })}
@@ -590,31 +590,31 @@ export function Ratings() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="text-sm font-medium">{r.targetName}</h3>
-                              <Badge variant="outline" className={`text-[10px] ${tCfg?.color}`}>{tCfg?.label}</Badge>
-                              <Badge variant="outline" className={`text-[10px] ${catCfg?.color}`}>{catCfg?.label}</Badge>
+                              <Badge variant="outline" className={`text-xs ${tCfg?.color}`}>{tCfg?.label}</Badge>
+                              <Badge variant="outline" className={`text-xs ${catCfg?.color}`}>{catCfg?.label}</Badge>
                             </div>
                             {r.comment && <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{r.comment}</p>}
                             <div className="flex items-center gap-6">
                               <div className="flex items-center gap-1">
-                                <span className="text-[10px] text-muted-foreground">Ukupno:</span>
+                                <span className="text-xs text-muted-foreground">Ukupno:</span>
                                 <StarRating value={Math.round(r.overall)} size="sm" />
                                 <span className={`text-sm font-bold ${getRatingColor(r.overall)}`}>{r.overall.toFixed(1)}</span>
                               </div>
                               {r.quality > 0 && (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-[10px] text-muted-foreground">Kvalitet:</span>
+                                  <span className="text-xs text-muted-foreground">Kvalitet:</span>
                                   <span className="text-xs font-medium">{r.quality}</span>
                                 </div>
                               )}
                               {r.service > 0 && (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-[10px] text-muted-foreground">Usluga:</span>
+                                  <span className="text-xs text-muted-foreground">Usluga:</span>
                                   <span className="text-xs font-medium">{r.service}</span>
                                 </div>
                               )}
                               {r.price > 0 && (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-[10px] text-muted-foreground">Cena:</span>
+                                  <span className="text-xs text-muted-foreground">Cena:</span>
                                   <span className="text-xs font-medium">{r.price}</span>
                                 </div>
                               )}
@@ -622,8 +622,8 @@ export function Ratings() {
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1 ml-3">
-                          <span className="text-[10px] text-muted-foreground">{r.ratedBy}</span>
-                          <span className="text-[10px] text-muted-foreground">{new Date(r.ratedAt).toLocaleDateString('sr-RS')}</span>
+                          <span className="text-xs text-muted-foreground">{r.ratedBy}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(r.ratedAt).toLocaleDateString('sr-RS')}</span>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive mt-1" onClick={(e) => { e.stopPropagation(); handleDelete(r.id); }}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -647,25 +647,25 @@ export function Ratings() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-medium line-clamp-1">{s.name}</h3>
-                      <Badge variant="outline" className={`text-[10px] ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                      <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{s.description}</p>
                     <div className="grid grid-cols-3 gap-2 mb-3">
                       <div className="text-center p-2 bg-muted/50 rounded">
                         <p className="text-lg font-bold">{s.questionCount}</p>
-                        <p className="text-[10px] text-muted-foreground">Pitanja</p>
+                        <p className="text-xs text-muted-foreground">Pitanja</p>
                       </div>
                       <div className="text-center p-2 bg-muted/50 rounded">
                         <p className="text-lg font-bold">{s.responseCount}</p>
-                        <p className="text-[10px] text-muted-foreground">Odgovori</p>
+                        <p className="text-xs text-muted-foreground">Odgovori</p>
                       </div>
                       <div className="text-center p-2 bg-muted/50 rounded">
                         <p className={`text-lg font-bold ${getRatingColor(s.avgRating)}`}>{s.avgRating.toFixed(1)}</p>
-                        <p className="text-[10px] text-muted-foreground">Prosek</p>
+                        <p className="text-xs text-muted-foreground">Prosek</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">{new Date(s.createdAt).toLocaleDateString('sr-RS')}</span>
+                      <span className="text-xs text-muted-foreground">{new Date(s.createdAt).toLocaleDateString('sr-RS')}</span>
                       <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setSelected(null); setDetailOpen(true); }}>
                         <Eye className="h-3 w-3 mr-1" /> Detalji
                       </Button>
@@ -718,7 +718,7 @@ export function Ratings() {
                   ].map((item) => (
                     <div key={item.label} className={`text-center p-3 rounded-lg ${getRatingBg(item.value)}`}>
                       <p className={`text-xl font-bold ${getRatingColor(item.value)}`}>{item.value.toFixed(1)}</p>
-                      <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">{item.label}</p>
                     </div>
                   ))}
                 </div>
@@ -733,11 +733,11 @@ export function Ratings() {
                         const maxAvg = 5
                         return (
                           <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                            <span className="text-[10px] font-medium">{m.avg.toFixed(1)}</span>
+                            <span className="text-xs font-medium">{m.avg.toFixed(1)}</span>
                             <div className="w-full bg-primary/20 rounded-t relative" style={{ height: `${(m.avg / maxAvg) * 80}px` }}>
                               <div className="absolute bottom-0 w-full bg-primary rounded-t" style={{ height: '100%' }} />
                             </div>
-                            <span className="text-[10px] text-muted-foreground">{m.month}</span>
+                            <span className="text-xs text-muted-foreground">{m.month}</span>
                           </div>
                         )
                       })}
@@ -848,8 +848,8 @@ export function Ratings() {
                   <div>
                     <h3 className="text-lg font-semibold">{selected.targetName}</h3>
                     <div className="flex gap-2">
-                      <Badge variant="outline" className={`text-[10px] ${targetTypeConfig[selected.targetType]?.color}`}>{targetTypeConfig[selected.targetType]?.label}</Badge>
-                      <Badge variant="outline" className={`text-[10px] ${categoryConfig[selected.category]?.color}`}>{categoryConfig[selected.category]?.label}</Badge>
+                      <Badge variant="outline" className={`text-xs ${targetTypeConfig[selected.targetType]?.color}`}>{targetTypeConfig[selected.targetType]?.label}</Badge>
+                      <Badge variant="outline" className={`text-xs ${categoryConfig[selected.category]?.color}`}>{categoryConfig[selected.category]?.label}</Badge>
                     </div>
                   </div>
                 </div>
@@ -921,7 +921,7 @@ export function Ratings() {
                 ].map((item) => (
                   <div key={item.label} className={`text-center p-3 rounded-lg ${getRatingBg(item.value)}`}>
                     <p className={`text-xl font-bold ${getRatingColor(item.value)}`}>{item.value.toFixed(1)}</p>
-                    <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.label}</p>
                   </div>
                 ))}
               </div>
@@ -935,7 +935,7 @@ export function Ratings() {
                       <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
                         <span className="text-xs font-medium">{m.avg.toFixed(1)}</span>
                         <div className="w-full rounded-t" style={{ height: `${(m.avg / 5) * 120}px`, backgroundColor: m.avg >= 4 ? '#22c55e' : m.avg >= 3 ? '#f59e0b' : '#ef4444' }} />
-                        <span className="text-[10px] text-muted-foreground">{m.month}</span>
+                        <span className="text-xs text-muted-foreground">{m.month}</span>
                       </div>
                     ))}
                   </div>
@@ -956,7 +956,7 @@ export function Ratings() {
                         <div className="flex items-center gap-2">
                           <StarRating value={Math.round(item.rating)} size="sm" />
                           <span className={`text-sm font-bold ${getRatingColor(item.rating)}`}>{item.rating.toFixed(1)}</span>
-                          <span className="text-[10px] text-muted-foreground">({item.count})</span>
+                          <span className="text-xs text-muted-foreground">({item.count})</span>
                         </div>
                       </div>
                     ))}
@@ -976,7 +976,7 @@ export function Ratings() {
                         <div className="flex items-center gap-2">
                           <StarRating value={Math.round(item.rating)} size="sm" />
                           <span className={`text-sm font-bold ${getRatingColor(item.rating)}`}>{item.rating.toFixed(1)}</span>
-                          <span className="text-[10px] text-muted-foreground">({item.count})</span>
+                          <span className="text-xs text-muted-foreground">({item.count})</span>
                         </div>
                       </div>
                     ))}
@@ -992,7 +992,7 @@ export function Ratings() {
                       return (
                         <div key={cat.category} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={`text-[10px] ${catCfg?.color}`}>{catCfg?.label}</Badge>
+                            <Badge variant="outline" className={`text-xs ${catCfg?.color}`}>{catCfg?.label}</Badge>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-24 bg-muted rounded-full h-2">

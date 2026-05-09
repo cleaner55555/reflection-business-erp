@@ -236,7 +236,7 @@ export function Quality() {
                               <td className="py-2 pr-4">{i.title}</td>
                               <td className="py-2 pr-4">{typeLabels[i.type] || i.type}</td>
                               <td className="py-2 pr-4">{i.inspectorName}</td>
-                              <td className="py-2 pr-4"><Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || i.status}</Badge></td>
+                              <td className="py-2 pr-4"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || i.status}</Badge></td>
                               <td className="py-2 text-xs text-muted-foreground">{new Date(i.createdAt).toLocaleDateString('sr-RS')}</td>
                             </tr>
                           )
@@ -288,7 +288,7 @@ export function Quality() {
                         <td className="p-3">{typeLabels[i.type] || i.type}</td>
                         <td className="p-3">{i.inspectorName}</td>
                         <td className="p-3">{i.productName || '-'}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || i.status}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || i.status}</Badge></td>
                         <td className="p-3">
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(i); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>

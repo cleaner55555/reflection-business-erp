@@ -663,10 +663,10 @@ export function Fleet() {
                           </div>
 
                           <div className="flex flex-wrap items-center gap-2 mb-3">
-                            <Badge variant="outline" className={`text-[10px] ${STATUS_BADGES[vehicle.status] || ''}`}>
+                            <Badge variant="outline" className={`text-xs ${STATUS_BADGES[vehicle.status] || ''}`}>
                               {STATUS_LABELS[vehicle.status] || vehicle.status}
                             </Badge>
-                            <Badge variant="outline" className={`text-[10px] ${FUEL_TYPE_BADGES[vehicle.fuelType] || ''}`}>
+                            <Badge variant="outline" className={`text-xs ${FUEL_TYPE_BADGES[vehicle.fuelType] || ''}`}>
                               <Fuel className="h-2.5 w-2.5 mr-0.5" />
                               {FUEL_TYPE_LABELS[vehicle.fuelType] || vehicle.fuelType}
                             </Badge>
@@ -737,11 +737,11 @@ export function Fleet() {
                                     <div key={service.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs hover:bg-accent/50 transition-colors">
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
-                                          <Badge variant="outline" className="text-[10px] bg-slate-50">{SERVICE_TYPE_LABELS[service.type] || service.type}</Badge>
+                                          <Badge variant="outline" className="text-xs bg-slate-50">{SERVICE_TYPE_LABELS[service.type] || service.type}</Badge>
                                           <span className="text-muted-foreground">{formatDate(service.date)}</span>
                                         </div>
                                         <p className="truncate mt-0.5 text-muted-foreground">{service.description}</p>
-                                        <div className="flex gap-3 mt-0.5 text-[10px] text-muted-foreground">
+                                        <div className="flex gap-3 mt-0.5 text-xs text-muted-foreground">
                                           <span>{service.mileage.toLocaleString('sr-RS')} km</span>
                                           {service.nextDue && (
                                             <span className="text-amber-600">Sledeći: {formatDate(service.nextDue)}</span>
@@ -780,11 +780,11 @@ export function Fleet() {
                                     <div key={expense.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs hover:bg-accent/50 transition-colors">
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
-                                          <Badge variant="outline" className="text-[10px] bg-slate-50">{EXPENSE_TYPE_LABELS[expense.type] || expense.type}</Badge>
+                                          <Badge variant="outline" className="text-xs bg-slate-50">{EXPENSE_TYPE_LABELS[expense.type] || expense.type}</Badge>
                                           <span className="text-muted-foreground">{formatDate(expense.date)}</span>
                                         </div>
                                         <p className="truncate mt-0.5 text-muted-foreground">{expense.description}</p>
-                                        <span className="text-[10px] text-muted-foreground">{expense.mileage.toLocaleString('sr-RS')} km</span>
+                                        <span className="text-xs text-muted-foreground">{expense.mileage.toLocaleString('sr-RS')} km</span>
                                       </div>
                                       <div className="flex items-center gap-1 shrink-0">
                                         <span className="font-medium text-xs">{formatRSD(expense.amount)}</span>

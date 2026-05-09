@@ -583,11 +583,11 @@ function ConnectionsTab() {
                     </div>
                     <div>
                       <CardTitle className="text-sm font-semibold leading-tight">{connector.name}</CardTitle>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{CONNECTOR_TYPES[connector.type] || connector.type}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{CONNECTOR_TYPES[connector.type] || connector.type}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Badge variant="outline" className={`text-[10px] h-5 px-1.5 ${connector.isActive ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-gray-200 text-gray-500'}`}>
+                    <Badge variant="outline" className={`text-xs h-5 px-1.5 ${connector.isActive ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-gray-200 text-gray-500'}`}>
                       <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 ${statusColor(connector.status)}`} />
                       {t(`integrations.status${connector.status.charAt(0).toUpperCase() + connector.status.slice(1)}` as string)}
                     </Badge>
@@ -599,20 +599,20 @@ function ConnectionsTab() {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-muted/50 rounded-md p-2">
                     <p className="text-sm font-bold">{connector.totalSyncs}</p>
-                    <p className="text-[10px] text-muted-foreground">{t('integrations.totalSyncs')}</p>
+                    <p className="text-xs text-muted-foreground">{t('integrations.totalSyncs')}</p>
                   </div>
                   <div className="bg-muted/50 rounded-md p-2">
                     <p className="text-sm font-bold">{connector.totalRecords}</p>
-                    <p className="text-[10px] text-muted-foreground">{t('integrations.totalRecords')}</p>
+                    <p className="text-xs text-muted-foreground">{t('integrations.totalRecords')}</p>
                   </div>
                   <div className="bg-muted/50 rounded-md p-2">
                     <p className="text-sm font-bold">{connector.syncInterval}m</p>
-                    <p className="text-[10px] text-muted-foreground">{t('integrations.connectorInterval')}</p>
+                    <p className="text-xs text-muted-foreground">{t('integrations.connectorInterval')}</p>
                   </div>
                 </div>
 
                 {/* Sync info */}
-                <div className="flex flex-col gap-1 text-[10px] text-muted-foreground">
+                <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                   <div className="flex justify-between">
                     <span>{t('integrations.lastSync')}</span>
                     <span className="font-medium text-foreground">{formatTime(connector.lastSyncAt)}</span>
@@ -629,11 +629,11 @@ function ConnectionsTab() {
 
                 {/* Direction badge */}
                 <div className="flex items-center gap-1.5">
-                  <Badge variant="secondary" className="text-[10px] h-5">
+                  <Badge variant="secondary" className="text-xs h-5">
                     {connector.direction === 'bidirectional' ? t('integrations.directionBidirectional') : connector.direction === 'export' ? t('integrations.directionExport') : t('integrations.directionImport')}
                   </Badge>
                   {connector.isActive && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <Badge variant="secondary" className="text-xs h-5 bg-emerald-50 text-emerald-700 border-emerald-200">
                       <Zap className="h-2.5 w-2.5 mr-0.5" />
                       {t('integrations.autoSync')}
                     </Badge>
@@ -642,25 +642,25 @@ function ConnectionsTab() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1.5 pt-1">
-                  <Button variant="outline" size="sm" className="h-7 flex-1 gap-1 text-[10px]" onClick={() => handleTest(connector.id)} disabled={testing === connector.id}>
+                  <Button variant="outline" size="sm" className="h-7 flex-1 gap-1 text-xs" onClick={() => handleTest(connector.id)} disabled={testing === connector.id}>
                     {testing === connector.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wifi className="h-3 w-3" />}
                     {t('integrations.testConnection')}
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 flex-1 gap-1 text-[10px]" onClick={() => handleSync(connector.id)} disabled={syncing === connector.id || !connector.isActive}>
+                  <Button variant="outline" size="sm" className="h-7 flex-1 gap-1 text-xs" onClick={() => handleSync(connector.id)} disabled={syncing === connector.id || !connector.isActive}>
                     {syncing === connector.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
                     {t('integrations.syncNow')}
                   </Button>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Button variant="ghost" size="sm" className="h-7 flex-1 gap-1 text-[10px]" onClick={() => handleEdit(connector)}>
+                  <Button variant="ghost" size="sm" className="h-7 flex-1 gap-1 text-xs" onClick={() => handleEdit(connector)}>
                     <Edit2 className="h-3 w-3" />
                     {t('common.edit')}
                   </Button>
-                  <Button variant="ghost" size="sm" className={`h-7 flex-1 gap-1 text-[10px] ${connector.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'}`} onClick={() => toggleActive(connector)}>
+                  <Button variant="ghost" size="sm" className={`h-7 flex-1 gap-1 text-xs ${connector.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'}`} onClick={() => toggleActive(connector)}>
                     {connector.isActive ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
                     {connector.isActive ? t('integrations.stopSync') : t('integrations.startSync')}
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-7 text-[10px] text-destructive hover:text-destructive" onClick={() => handleDelete(connector.id)}>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => handleDelete(connector.id)}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -872,7 +872,7 @@ function ImportWizard() {
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground'
               }`}>
-                <span className="flex items-center justify-center h-5 w-5 rounded-full bg-current/20 text-[10px] font-bold">
+                <span className="flex items-center justify-center h-5 w-5 rounded-full bg-current/20 text-xs font-bold">
                   {s.num}
                 </span>
                 <span className="hidden sm:inline">{s.label}</span>
@@ -925,7 +925,7 @@ function ImportWizard() {
                       <p className="text-sm font-medium">{t('integrations.uploadFile')}</p>
                       <p className="text-xs text-muted-foreground mt-1">{t('integrations.dragDrop')}</p>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">{t('integrations.supportedFormats')}</p>
+                    <p className="text-xs text-muted-foreground">{t('integrations.supportedFormats')}</p>
                   </div>
                 )}
               </div>
@@ -1003,7 +1003,7 @@ function ImportWizard() {
                   {autoMapping ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                   {t('integrations.autoMap')}
                 </Button>
-                <span className="text-[10px] text-muted-foreground">{t('integrations.aiSuggest')}</span>
+                <span className="text-xs text-muted-foreground">{t('integrations.aiSuggest')}</span>
               </div>
 
               {/* Mapping Table */}
@@ -1058,7 +1058,7 @@ function ImportWizard() {
               </div>
 
               {/* Required fields notice */}
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 <span className="text-red-500">*</span> {t('integrations.requiredField')}
               </p>
 
@@ -1346,10 +1346,10 @@ function ExportTab() {
           <div className="flex items-center justify-between">
             <Label className="text-xs">{t('integrations.selectColumns')}</Label>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={selectAll}>
+              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={selectAll}>
                 {t('common.selectAll')}
               </Button>
-              <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={deselectAll}>
+              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={deselectAll}>
                 —
               </Button>
             </div>
@@ -1547,7 +1547,7 @@ function HistoryTab() {
                         {new Date(job.createdAt).toLocaleString()}
                       </TableCell>
                       <TableCell className="text-xs py-2">
-                        <Badge variant="outline" className="text-[10px] px-2 py-0">
+                        <Badge variant="outline" className="text-xs px-2 py-0">
                           {job.type === 'import' ? (
                             <span className="flex items-center gap-1">
                               <Upload className="h-3 w-3" />
@@ -1568,7 +1568,7 @@ function HistoryTab() {
                         {job.source || '-'}
                       </TableCell>
                       <TableCell className="text-xs text-center py-2">
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${(statusConfig[job.status] || statusConfig.pending).color}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${(statusConfig[job.status] || statusConfig.pending).color}`}>
                           <span className="flex items-center gap-1">
                             {(statusConfig[job.status] || statusConfig.pending).icon}
                             {job.status}

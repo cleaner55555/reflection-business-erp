@@ -72,11 +72,11 @@ const DOCK_TYPES: Record<string, { label: string; icon: typeof ArrowDownToLine }
 
 function getStatusBadge(s: string) {
   const r = STATUSES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 function getPriorityBadge(p: string) {
   const r = PRIORITIES[p]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{p}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{p}</Badge>
 }
 
 export function LoadingDock() {
@@ -166,14 +166,14 @@ export function LoadingDock() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Danas</div><p className="text-xl font-bold">{stats.total}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-slate-600 mb-1">Zakazano</div><p className="text-xl font-bold text-slate-700">{stats.scheduled}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-sky-600 mb-1">Prijavljeni</div><p className="text-xl font-bold text-sky-700">{stats.checkedIn}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-blue-600 mb-1">U toku</div><p className="text-xl font-bold text-blue-700">{stats.inProgress}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-emerald-600 mb-1">Završeno</div><p className="text-xl font-bold text-emerald-700">{stats.completed}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-red-600 mb-1">Nije došao</div><p className="text-xl font-bold text-red-700">{stats.noShow}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Težina</div><p className="text-xl font-bold">{(stats.totalWeight / 1000).toFixed(1)}t</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Palete</div><p className="text-xl font-bold">{stats.totalPallets}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Danas</div><p className="text-xl font-bold">{stats.total}</p></Card>
+        <Card className="p-4"><div className="text-xs text-slate-600 mb-1">Zakazano</div><p className="text-xl font-bold text-slate-700">{stats.scheduled}</p></Card>
+        <Card className="p-4"><div className="text-xs text-sky-600 mb-1">Prijavljeni</div><p className="text-xl font-bold text-sky-700">{stats.checkedIn}</p></Card>
+        <Card className="p-4"><div className="text-xs text-blue-600 mb-1">U toku</div><p className="text-xl font-bold text-blue-700">{stats.inProgress}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Završeno</div><p className="text-xl font-bold text-emerald-700">{stats.completed}</p></Card>
+        <Card className="p-4"><div className="text-xs text-red-600 mb-1">Nije došao</div><p className="text-xl font-bold text-red-700">{stats.noShow}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xl font-bold">{(stats.totalWeight / 1000).toFixed(1)}t</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Palete</div><p className="text-xl font-bold">{stats.totalPallets}</p></Card>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -209,10 +209,10 @@ export function LoadingDock() {
                     {filtered.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-sm">Nema termina</TableCell></TableRow> : filtered.map(item => (
                       <TableRow key={item.id}>
                         <TableCell className="text-xs font-mono font-bold">{item.dockNumber}</TableCell>
-                        <TableCell><div className="text-xs font-medium">{item.scheduledTime}</div><div className="text-[10px] text-muted-foreground">{formatDate(item.appointmentDate)}</div></TableCell>
-                        <TableCell><div className="text-xs font-medium">{item.vehiclePlate}</div><div className="text-[10px] text-muted-foreground">{item.driverName}</div></TableCell>
+                        <TableCell><div className="text-xs font-medium">{item.scheduledTime}</div><div className="text-xs text-muted-foreground">{formatDate(item.appointmentDate)}</div></TableCell>
+                        <TableCell><div className="text-xs font-medium">{item.vehiclePlate}</div><div className="text-xs text-muted-foreground">{item.driverName}</div></TableCell>
                         <TableCell className="text-xs hidden sm:table-cell">{item.companyName}</TableCell>
-                        <TableCell><Badge variant="outline" className="text-[10px]">{DOCK_TYPES[item.dockType]?.label}</Badge></TableCell>
+                        <TableCell><Badge variant="outline" className="text-xs">{DOCK_TYPES[item.dockType]?.label}</Badge></TableCell>
                         <TableCell>{getStatusBadge(item.status)}</TableCell>
                         <TableCell className="text-xs hidden md:table-cell">{item.cargoType}</TableCell>
                         <TableCell className="hidden lg:table-cell">{getPriorityBadge(item.priority)}</TableCell>
@@ -240,21 +240,21 @@ export function LoadingDock() {
                   <div className="flex justify-between text-xs"><span className="text-muted-foreground">Završeno</span><span className="font-medium text-emerald-700">{dock.completed}</span></div>
                   {dock.current && (
                     <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 space-y-1">
-                      <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" /><span className="text-[10px] font-medium text-blue-700">AKTIVNO</span></div>
+                      <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" /><span className="text-xs font-medium text-blue-700">AKTIVNO</span></div>
                       <p className="text-xs font-medium">{dock.current.vehiclePlate}</p>
-                      <p className="text-[10px] text-muted-foreground">{dock.current.companyName} · {dock.current.cargoType}</p>
-                      <p className="text-[10px] text-muted-foreground">{dock.current.scheduledTime} - {dock.current.actualStart || '?'}</p>
+                      <p className="text-xs text-muted-foreground">{dock.current.companyName} · {dock.current.cargoType}</p>
+                      <p className="text-xs text-muted-foreground">{dock.current.scheduledTime} - {dock.current.actualStart || '?'}</p>
                     </div>
                   )}
                   {!dock.current && dock.next && (
                     <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/20 space-y-1">
-                      <p className="text-[10px] font-medium text-sky-700">SLEDEĆI</p>
+                      <p className="text-xs font-medium text-sky-700">SLEDEĆI</p>
                       <p className="text-xs font-medium">{dock.next.vehiclePlate}</p>
-                      <p className="text-[10px] text-muted-foreground">{dock.next.companyName} · {dock.next.scheduledTime}</p>
+                      <p className="text-xs text-muted-foreground">{dock.next.companyName} · {dock.next.scheduledTime}</p>
                     </div>
                   )}
                   {!dock.current && !dock.next && (
-                    <div className="p-2 rounded-lg bg-muted/50 text-center"><p className="text-[10px] text-muted-foreground">Slobodna rampa</p></div>
+                    <div className="p-2 rounded-lg bg-muted/50 text-center"><p className="text-xs text-muted-foreground">Slobodna rampa</p></div>
                   )}
                 </CardContent>
               </Card>
@@ -277,7 +277,7 @@ export function LoadingDock() {
                   })
                   return Object.entries(typeMap).sort((a, b) => b[1].weight - a[1].weight).map(([type, info]) => (
                     <div key={type} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                      <div><p className="text-xs font-medium">{type}</p><p className="text-[10px] text-muted-foreground">{info.count} termin · {info.pallets} pal.</p></div>
+                      <div><p className="text-xs font-medium">{type}</p><p className="text-xs text-muted-foreground">{info.count} termin · {info.pallets} pal.</p></div>
                       <p className="text-xs font-bold">{(info.weight / 1000).toFixed(1)}t</p>
                     </div>
                   ))
@@ -293,7 +293,7 @@ export function LoadingDock() {
                   return Object.entries(firmMap).sort((a, b) => b[1] - a[1]).map(([firm, count]) => (
                     <div key={firm} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                       <p className="text-xs font-medium">{firm}</p>
-                      <Badge className="text-[10px] bg-slate-100">{count} termin</Badge>
+                      <Badge className="text-xs bg-slate-100">{count} termin</Badge>
                     </div>
                   ))
                 })()}
@@ -311,19 +311,19 @@ export function LoadingDock() {
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-lg font-bold">Rampa {detailItem.dockNumber}</p><p className="text-xs text-muted-foreground">{formatDate(detailItem.appointmentDate)} · {detailItem.scheduledTime}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div></div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-bold">{detailItem.vehiclePlate}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.driverName}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Firma</div><p className="text-xs font-medium">{detailItem.companyName}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Tip</div><p className="text-xs">{DOCK_TYPES[detailItem.dockType]?.label}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-bold">{detailItem.vehiclePlate}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.driverName}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Firma</div><p className="text-xs font-medium">{detailItem.companyName}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Tip</div><p className="text-xs">{DOCK_TYPES[detailItem.dockType]?.label}</p></div>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Roba</div><p className="text-xs font-medium">{detailItem.cargoType}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.cargoWeight} {detailItem.cargoUnit}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Palete</div><p className="text-xs font-medium">{detailItem.palletCount}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Roba</div><p className="text-xs font-medium">{detailItem.cargoType}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.cargoWeight} {detailItem.cargoUnit}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Palete</div><p className="text-xs font-medium">{detailItem.palletCount}</p></div>
               </div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Vrata</div><p className="text-xs font-medium">{detailItem.doorAssignment}</p><div className="text-[10px] text-muted-foreground mt-1">Instrukcije: {detailItem.handlingInstructions}</div></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vrata</div><p className="text-xs font-medium">{detailItem.doorAssignment}</p><div className="text-xs text-muted-foreground mt-1">Instrukcije: {detailItem.handlingInstructions}</div></div>
               {detailItem.actualStart && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-700">Početak: {detailItem.actualStart} {detailItem.actualEnd ? `· Kraj: ${detailItem.actualEnd}` : ''}</p></div>}
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
               <div className="flex gap-2"><Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v as DockAppointment['status'])}><SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
             </div>
           )}

@@ -428,7 +428,7 @@ export function Gamification() {
                     <Target className="h-4 w-4 text-primary" />
                   </div>
                   <p className="text-2xl font-bold">{dashboard.activeGoals}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.completedGoals} završenih</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.completedGoals} završenih</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -436,7 +436,7 @@ export function Gamification() {
                     <Swords className="h-4 w-4 text-amber-500" />
                   </div>
                   <p className="text-2xl font-bold text-amber-600">{dashboard.activeChallenges}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.totalParticipants} učesnika</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.totalParticipants} učesnika</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -451,7 +451,7 @@ export function Gamification() {
                     <Crown className="h-4 w-4 text-yellow-500" />
                   </div>
                   <p className="text-2xl font-bold text-yellow-600 truncate">{dashboard.topScorer}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Prosek: {dashboard.avgPoints} poena</p>
+                  <p className="text-xs text-muted-foreground mt-1">Prosek: {dashboard.avgPoints} poena</p>
                 </Card>
               </div>
 
@@ -466,7 +466,7 @@ export function Gamification() {
                         <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
                           <span className="text-xs font-medium">{(m.points / 1000).toFixed(1)}k</span>
                           <div className="w-full rounded-t bg-primary/80" style={{ height: `${(m.points / maxPts) * 120}px` }} />
-                          <span className="text-[10px] text-muted-foreground">{m.month}</span>
+                          <span className="text-xs text-muted-foreground">{m.month}</span>
                         </div>
                       )
                     })}
@@ -515,7 +515,7 @@ export function Gamification() {
                           </div>
                           <div className="text-right">
                             <span className="text-sm font-bold text-green-600">+{a.points}</span>
-                            <p className="text-[10px] text-muted-foreground">{a.time}</p>
+                            <p className="text-xs text-muted-foreground">{a.time}</p>
                           </div>
                         </div>
                       ))}
@@ -548,10 +548,10 @@ export function Gamification() {
                         <p className="text-sm font-medium">{entry.employeeName}</p>
                         <p className="text-xs text-muted-foreground">{entry.department}</p>
                         <p className="text-lg font-bold mt-1">{entry.totalPoints.toLocaleString()}</p>
-                        <p className="text-[10px] text-muted-foreground">poena</p>
+                        <p className="text-xs text-muted-foreground">poena</p>
                         <div className="flex items-center justify-center gap-2 mt-1">
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Award className="h-3 w-3" /> {entry.badges}</span>
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Flame className="h-3 w-3" /> {entry.streak}d</span>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1"><Award className="h-3 w-3" /> {entry.badges}</span>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1"><Flame className="h-3 w-3" /> {entry.streak}d</span>
                         </div>
                       </div>
                     ))}
@@ -613,7 +613,7 @@ export function Gamification() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="text-sm font-medium truncate">{goal.title}</h3>
-                              <Badge variant="outline" className={`text-[10px] shrink-0 ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                              <Badge variant="outline" className={`text-xs shrink-0 ${sCfg?.color}`}>{sCfg?.label}</Badge>
                             </div>
                             <p className="text-xs text-muted-foreground">{goal.description}</p>
                           </div>
@@ -635,9 +635,9 @@ export function Gamification() {
                         </div>
                         <Progress value={goal.progress} className="h-2" />
                       </div>
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <div className="flex gap-2">
-                          <Badge variant="outline" className={`text-[10px] ${getCategoryColor(goal.category)}`}>{getCategoryLabel(goal.category)}</Badge>
+                          <Badge variant="outline" className={`text-xs ${getCategoryColor(goal.category)}`}>{getCategoryLabel(goal.category)}</Badge>
                           <span>{goal.type === 'team' ? '👥 Timski' : '👤 Individualni'}</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -673,8 +673,8 @@ export function Gamification() {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xl">{chTCfg?.icon}</span>
                       <div className="flex gap-1">
-                        <Badge variant="outline" className={`text-[10px] ${chSCfg?.color}`}>{chSCfg?.label}</Badge>
-                        <Badge variant="outline" className={`text-[10px] ${dCfg?.color}`}>{'★'.repeat(dCfg?.stars || 1)}</Badge>
+                        <Badge variant="outline" className={`text-xs ${chSCfg?.color}`}>{chSCfg?.label}</Badge>
+                        <Badge variant="outline" className={`text-xs ${dCfg?.color}`}>{'★'.repeat(dCfg?.stars || 1)}</Badge>
                       </div>
                     </div>
                     <h3 className="text-sm font-medium mb-1">{ch.title}</h3>
@@ -694,11 +694,11 @@ export function Gamification() {
                     </div>
                     <Separator className="my-3" />
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1"><Gift className="h-3 w-3" /> {ch.rewardPoints}p</span>
                         <span>✅ {ch.completedCount}</span>
                       </div>
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {new Date(ch.startDate).toLocaleDateString('sr-RS')} - {new Date(ch.endDate).toLocaleDateString('sr-RS')}
                       </div>
                     </div>
@@ -724,12 +724,12 @@ export function Gamification() {
                 <CardContent className="p-4">
                   <div className="text-4xl mb-2">{badge.isSecret ? '🔒' : badge.icon}</div>
                   <h3 className="text-sm font-medium mb-1">{badge.isSecret ? '???' : badge.name}</h3>
-                  <p className="text-[10px] text-muted-foreground line-clamp-2 mb-2">{badge.isSecret ? 'Tajna značka' : badge.description}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{badge.isSecret ? 'Tajna značka' : badge.description}</p>
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Badge variant="outline" className={`text-[10px] ${getCategoryColor(badge.category)}`}>{getCategoryLabel(badge.category)}</Badge>
-                    {badge.isRare && <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700">⭐ Retko</Badge>}
+                    <Badge variant="outline" className={`text-xs ${getCategoryColor(badge.category)}`}>{getCategoryLabel(badge.category)}</Badge>
+                    {badge.isRare && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700">⭐ Retko</Badge>}
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Gift className="h-3 w-3" /> {badge.points}p</span>
                     <span>🏆 {badge.earnedBy}</span>
                   </div>
@@ -764,7 +764,7 @@ export function Gamification() {
                         </div>
                         <div>
                           <p className="text-sm font-medium">{entry.employeeName}</p>
-                          <p className="text-[10px] text-muted-foreground">{entry.department} · Nivo {entry.level}</p>
+                          <p className="text-xs text-muted-foreground">{entry.department} · Nivo {entry.level}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -776,7 +776,7 @@ export function Gamification() {
                         <div className="flex items-center gap-2 min-w-[120px] justify-end">
                           {rankDiff > 0 ? <ArrowUp className="h-4 w-4 text-green-500" /> : rankDiff < 0 ? <ArrowDown className="h-4 w-4 text-red-500" /> : null}
                           <span className="text-lg font-bold">{entry.totalPoints.toLocaleString()}</span>
-                          <span className="text-[10px] text-muted-foreground">poena</span>
+                          <span className="text-xs text-muted-foreground">poena</span>
                         </div>
                       </div>
                     </div>
@@ -804,14 +804,14 @@ export function Gamification() {
                       <div>
                         <h3 className="text-sm font-medium">{tpl.title}</h3>
                         <div className="flex gap-1 mt-1">
-                          <Badge variant="outline" className={`text-[10px] ${getCategoryColor(tpl.category)}`}>{getCategoryLabel(tpl.category)}</Badge>
-                          <Badge variant="outline" className={`text-[10px] ${dCfg?.color}`}>{dCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${getCategoryColor(tpl.category)}`}>{getCategoryLabel(tpl.category)}</Badge>
+                          <Badge variant="outline" className={`text-xs ${dCfg?.color}`}>{dCfg?.label}</Badge>
                         </div>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mb-3">{tpl.description}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">{tpl.targetValue} {tpl.unit} · {tpl.points}p</span>
+                      <span className="text-xs text-muted-foreground">{tpl.targetValue} {tpl.unit} · {tpl.points}p</span>
                       <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
                         setGoalForm({
                           ...emptyGoalForm, title: tpl.title, description: tpl.description,
@@ -979,8 +979,8 @@ export function Gamification() {
                 <div>
                   <h3 className="text-lg font-semibold">{selected.title}</h3>
                   <div className="flex gap-2">
-                    <Badge variant="outline" className={`text-[10px] ${getCategoryColor(selected.category)}`}>{getCategoryLabel(selected.category)}</Badge>
-                    <Badge variant="outline" className={`text-[10px] ${goalStatusConfig[selected.status]?.color}`}>{goalStatusConfig[selected.status]?.label}</Badge>
+                    <Badge variant="outline" className={`text-xs ${getCategoryColor(selected.category)}`}>{getCategoryLabel(selected.category)}</Badge>
+                    <Badge variant="outline" className={`text-xs ${goalStatusConfig[selected.status]?.color}`}>{goalStatusConfig[selected.status]?.label}</Badge>
                   </div>
                 </div>
               </div>

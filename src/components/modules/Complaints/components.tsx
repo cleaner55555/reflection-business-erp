@@ -1303,7 +1303,7 @@ export function ReklamacijeContent() {
                   <p className="text-2xl font-bold text-blue-600">
                     {stats.new}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.overdueCount} prekoračenih
                   </p>
                 </Card>
@@ -1317,7 +1317,7 @@ export function ReklamacijeContent() {
                   <p className="text-2xl font-bold text-amber-600">
                     {stats.inProgress}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     prosek {stats.avgResolutionDays} dana
                   </p>
                 </Card>
@@ -1331,7 +1331,7 @@ export function ReklamacijeContent() {
                   <p className="text-2xl font-bold text-green-600">
                     {stats.resolved}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     prosecna ocena {stats.avgSatisfaction}/5
                   </p>
                 </Card>
@@ -1345,7 +1345,7 @@ export function ReklamacijeContent() {
                   <p className="text-2xl font-bold text-red-600">
                     {stats.rejected}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.total > 0
                       ? Math.round((stats.rejected / stats.total) * 100)
                       : 0}
@@ -1467,7 +1467,7 @@ export function ReklamacijeContent() {
                         <span className="text-xs font-medium w-8 text-right">
                           {cat.count}
                         </span>
-                        <span className="text-[10px] text-muted-foreground w-24 text-right">
+                        <span className="text-xs text-muted-foreground w-24 text-right">
                           {formatCurrency(cat.amountRequested)}
                         </span>
                       </div>
@@ -1554,7 +1554,7 @@ export function ReklamacijeContent() {
                                 title={`Odbijene: ${m.rejected}`}
                               />
                             </div>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                               {m.month}
                             </span>
                           </div>
@@ -1596,10 +1596,10 @@ export function ReklamacijeContent() {
                         <span className="text-xs flex-1 truncate">
                           {p.product}
                         </span>
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-xs">
                           {p.count}
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground w-12 text-right">
+                        <span className="text-xs text-muted-foreground w-12 text-right">
                           {p.percentage}%
                         </span>
                       </div>
@@ -1621,10 +1621,10 @@ export function ReklamacijeContent() {
                         <span className="text-xs flex-1 truncate">
                           {p.partner}
                         </span>
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-xs">
                           {p.count}
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground w-24 text-right">
+                        <span className="text-xs text-muted-foreground w-24 text-right">
                           {formatCurrency(p.amount)}
                         </span>
                       </div>
@@ -1730,13 +1730,13 @@ export function ReklamacijeContent() {
                               </span>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] shrink-0 ${sCfg?.color}`}
+                                className={`text-xs shrink-0 ${sCfg?.color}`}
                               >
                                 {sCfg?.icon} {sCfg?.label}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] shrink-0 ${pCfg?.color}`}
+                                className={`text-xs shrink-0 ${pCfg?.color}`}
                               >
                                 <span
                                   className={`w-1.5 h-1.5 rounded-full ${pCfg?.dot} mr-1`}
@@ -1746,7 +1746,7 @@ export function ReklamacijeContent() {
                               {overdue && (
                                 <Badge
                                   variant="destructive"
-                                  className="text-[10px]"
+                                  className="text-xs"
                                 >
                                   Prekoračeno!
                                 </Badge>
@@ -1754,7 +1754,7 @@ export function ReklamacijeContent() {
                               {c.attachments.length > 0 && (
                                 <Badge
                                   variant="secondary"
-                                  className="text-[10px]"
+                                  className="text-xs"
                                 >
                                   <Paperclip className="h-3 w-3 mr-1" />
                                   {c.attachments.length}
@@ -1860,7 +1860,7 @@ export function ReklamacijeContent() {
                     return (
                       <div key={s} className="flex items-center gap-1 shrink-0">
                         <div
-                          className={`px-2 py-1 rounded text-[10px] font-medium ${isCurrent ? "bg-primary text-primary-foreground" : isPast ? "bg-muted text-muted-foreground" : "bg-muted/50 text-muted-foreground/50"}`}
+                          className={`px-2 py-1 rounded text-xs font-medium ${isCurrent ? "bg-primary text-primary-foreground" : isPast ? "bg-muted text-muted-foreground" : "bg-muted/50 text-muted-foreground/50"}`}
                         >
                           {STATUS_CONFIG[s]?.label}
                         </div>
@@ -1875,7 +1875,7 @@ export function ReklamacijeContent() {
                 {/* Info Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Kategorija
                     </p>
                     <p className="text-xs font-medium">
@@ -1884,7 +1884,7 @@ export function ReklamacijeContent() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Prioritet
                     </p>
                     <p className="text-xs font-medium">
@@ -1895,18 +1895,18 @@ export function ReklamacijeContent() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Proizvod
                     </p>
                     <p className="text-xs font-medium">
                       {selected.productName}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {selected.productCode} · {selected.batchNumber}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Zahtevana resolvacija
                     </p>
                     <p className="text-xs font-medium">
@@ -1965,7 +1965,7 @@ export function ReklamacijeContent() {
                             <p className="text-xs font-medium truncate">
                               {a.fileName}
                             </p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {(a.fileSize / 1024).toFixed(0)} KB ·{" "}
                               {formatDate(a.uploadedAt)}
                             </p>
@@ -2015,7 +2015,7 @@ export function ReklamacijeContent() {
                           <p className="text-xs font-medium">
                             {ev.description}
                           </p>
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {ev.performedBy} ·{" "}
                             {new Date(ev.timestamp).toLocaleString("sr-RS")}
                           </p>

@@ -49,7 +49,7 @@ function ActiveLanguagesPicker({ activeCodes, onToggle }: { activeCodes: string[
           .filter((r) => filtered.some((l) => ALL_LANGUAGES.indexOf(l) >= r.start && ALL_LANGUAGES.indexOf(l) < r.end))
           .map((region) => (
             <div key={region.label}>
-              <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/50 sticky top-0">
+              <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/50 sticky top-0">
                 {region.label}
               </div>
               {filtered

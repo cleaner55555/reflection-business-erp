@@ -355,7 +355,7 @@ export function HealthFund() {
                     <DollarSign className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold">{formatShort(stats.totalContributions)}</p>
-                  <p className="text-[10px] text-muted-foreground">Godišnji total</p>
+                  <p className="text-xs text-muted-foreground">Godišnji total</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -363,7 +363,7 @@ export function HealthFund() {
                     <TrendingUp className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold">{formatShort(stats.monthlyTotal)}</p>
-                  <p className="text-[10px] text-muted-foreground">Trenutni mesec</p>
+                  <p className="text-xs text-muted-foreground">Trenutni mesec</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -371,7 +371,7 @@ export function HealthFund() {
                     <ShieldCheck className="h-4 w-4 text-violet-500" />
                   </div>
                   <p className="text-2xl font-bold">{formatShort(stats.employerShare)}</p>
-                  <p className="text-[10px] text-muted-foreground">{((stats.employerShare / stats.monthlyTotal) * 100).toFixed(1)}% udeo</p>
+                  <p className="text-xs text-muted-foreground">{((stats.employerShare / stats.monthlyTotal) * 100).toFixed(1)}% udeo</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -379,7 +379,7 @@ export function HealthFund() {
                     <Users className="h-4 w-4 text-orange-500" />
                   </div>
                   <p className="text-2xl font-bold">{formatShort(stats.employeeShare)}</p>
-                  <p className="text-[10px] text-muted-foreground">{((stats.employeeShare / stats.monthlyTotal) * 100).toFixed(1)}% udeo</p>
+                  <p className="text-xs text-muted-foreground">{((stats.employeeShare / stats.monthlyTotal) * 100).toFixed(1)}% udeo</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -387,7 +387,7 @@ export function HealthFund() {
                     <Clock className="h-4 w-4 text-amber-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.pendingClaims}</p>
-                  <p className="text-[10px] text-muted-foreground">od {stats.totalClaims} zahteva</p>
+                  <p className="text-xs text-muted-foreground">od {stats.totalClaims} zahteva</p>
                 </Card>
               </div>
 
@@ -406,20 +406,20 @@ export function HealthFund() {
                             <div className="flex-1 bg-blue-100 dark:bg-blue-900/20 rounded-full h-2">
                               <div className="h-2 rounded-full bg-blue-500" style={{ width: `${(m.contributions / 140000) * 100}%` }} />
                             </div>
-                            <span className="text-[9px] text-blue-600 w-14 text-right">{formatShort(m.contributions)}</span>
+                            <span className="text-xs text-blue-600 w-14 text-right">{formatShort(m.contributions)}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <div className="flex-1 bg-emerald-100 dark:bg-emerald-900/20 rounded-full h-2">
                               <div className="h-2 rounded-full bg-emerald-500" style={{ width: `${(m.claims / 75000) * 100}%` }} />
                             </div>
-                            <span className="text-[9px] text-emerald-600 w-14 text-right">{formatShort(m.claims)}</span>
+                            <span className="text-xs text-emerald-600 w-14 text-right">{formatShort(m.claims)}</span>
                           </div>
                         </div>
                       </div>
                     ))}
                     <div className="flex gap-4 pt-2 border-t">
-                      <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-blue-500" /><span className="text-[10px] text-muted-foreground">Doprinosi</span></div>
-                      <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-emerald-500" /><span className="text-[10px] text-muted-foreground">Zahtevi</span></div>
+                      <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-blue-500" /><span className="text-xs text-muted-foreground">Doprinosi</span></div>
+                      <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-emerald-500" /><span className="text-xs text-muted-foreground">Zahtevi</span></div>
                     </div>
                   </CardContent>
                 </Card>
@@ -465,13 +465,13 @@ export function HealthFund() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">{cl.employeeName}</span>
-                              <Badge variant="outline" className={`text-[9px] ${sc.color}`}>{sc.label}</Badge>
+                              <Badge variant="outline" className={`text-xs ${sc.color}`}>{sc.label}</Badge>
                             </div>
                             <p className="text-xs text-muted-foreground">{cl.diagnosisName} · {cl.providerName}</p>
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-sm font-bold">{formatCurrency(cl.amount)}</p>
-                            <p className="text-[10px] text-muted-foreground">{formatDate(cl.serviceDate)}</p>
+                            <p className="text-xs text-muted-foreground">{formatDate(cl.serviceDate)}</p>
                           </div>
                         </div>
                       )
@@ -510,19 +510,19 @@ export function HealthFund() {
           {/* Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-lg border">
-              <p className="text-[10px] text-muted-foreground">Ukupno</p>
+              <p className="text-xs text-muted-foreground">Ukupno</p>
               <p className="text-sm font-bold">{formatCurrency(contribSummary.total)}</p>
             </div>
             <div className="p-3 rounded-lg border border-emerald-200 bg-emerald-50/50 dark:bg-emerald-900/10">
-              <p className="text-[10px] text-emerald-600">Plaćeno</p>
+              <p className="text-xs text-emerald-600">Plaćeno</p>
               <p className="text-sm font-bold text-emerald-700">{formatCurrency(contribSummary.paid)}</p>
             </div>
             <div className="p-3 rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-900/10">
-              <p className="text-[10px] text-amber-600">Na čekanju</p>
+              <p className="text-xs text-amber-600">Na čekanju</p>
               <p className="text-sm font-bold text-amber-700">{formatCurrency(contribSummary.pending)}</p>
             </div>
             <div className="p-3 rounded-lg border border-red-200 bg-red-50/50 dark:bg-red-900/10">
-              <p className="text-[10px] text-red-600">Odbijeno</p>
+              <p className="text-xs text-red-600">Odbijeno</p>
               <p className="text-sm font-bold text-red-700">{formatCurrency(contribSummary.rejected)}</p>
             </div>
           </div>
@@ -555,7 +555,7 @@ export function HealthFund() {
                         <td className="p-3 text-right text-orange-600">{formatCurrency(c.employeeShare)}</td>
                         <td className="p-3 text-right font-bold">{formatCurrency(c.totalAmount)}</td>
                         <td className="p-3 text-center">
-                          <Badge variant="outline" className={`text-[9px] ${sc.color}`}>{sc.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${sc.color}`}>{sc.label}</Badge>
                         </td>
                         <td className="p-3 text-center">
                           <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); setSelectedItem(c); setDetailOpen(true) }}>
@@ -596,19 +596,19 @@ export function HealthFund() {
           {/* Claims Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-lg border">
-              <p className="text-[10px] text-muted-foreground">Ukupno zahteva</p>
+              <p className="text-xs text-muted-foreground">Ukupno zahteva</p>
               <p className="text-sm font-bold">{claims.length}</p>
             </div>
             <div className="p-3 rounded-lg border border-emerald-200 bg-emerald-50/50 dark:bg-emerald-900/10">
-              <p className="text-[10px] text-emerald-600">Odobreno/Plaćeno</p>
+              <p className="text-xs text-emerald-600">Odobreno/Plaćeno</p>
               <p className="text-sm font-bold text-emerald-700">{formatCurrency(claimSummary.approved)}</p>
             </div>
             <div className="p-3 rounded-lg border border-blue-200 bg-blue-50/50 dark:bg-blue-900/10">
-              <p className="text-[10px] text-blue-600">Na čekanju</p>
+              <p className="text-xs text-blue-600">Na čekanju</p>
               <p className="text-sm font-bold text-blue-700">{claimSummary.pending} zahteva</p>
             </div>
             <div className="p-3 rounded-lg border border-red-200 bg-red-50/50 dark:bg-red-900/10">
-              <p className="text-[10px] text-red-600">Odbijeno</p>
+              <p className="text-xs text-red-600">Odbijeno</p>
               <p className="text-sm font-bold text-red-700">{claimSummary.rejected} zahteva</p>
             </div>
           </div>
@@ -624,8 +624,8 @@ export function HealthFund() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="text-xs font-mono text-muted-foreground">{cl.claimNumber}</span>
-                          <Badge variant="outline" className={`text-[9px] ${sc.color}`}>{sc.label}</Badge>
-                          <Badge variant="outline" className="text-[9px]">{cl.serviceType}</Badge>
+                          <Badge variant="outline" className={`text-xs ${sc.color}`}>{sc.label}</Badge>
+                          <Badge variant="outline" className="text-xs">{cl.serviceType}</Badge>
                         </div>
                         <h3 className="text-sm font-medium">{cl.employeeName}</h3>
                         <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
@@ -634,13 +634,13 @@ export function HealthFund() {
                           <span>{cl.providerName}</span>
                         </div>
                         {cl.notes && (
-                          <p className="text-[11px] text-muted-foreground mt-1 truncate">{cl.notes}</p>
+                          <p className="text-xs text-muted-foreground mt-1 truncate">{cl.notes}</p>
                         )}
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm font-bold">{formatCurrency(cl.amount)}</p>
                         {cl.approvedAmount !== null && (
-                          <p className="text-[10px] text-emerald-600">Odobreno: {formatCurrency(cl.approvedAmount)}</p>
+                          <p className="text-xs text-emerald-600">Odobreno: {formatCurrency(cl.approvedAmount)}</p>
                         )}
                       </div>
                     </div>
@@ -667,7 +667,7 @@ export function HealthFund() {
                     <BarChart3 className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold">{formatCurrency(stats.avgClaimAmount)}</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.totalClaims} ukupnih zahteva</p>
+                  <p className="text-xs text-muted-foreground">{stats.totalClaims} ukupnih zahteva</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -683,7 +683,7 @@ export function HealthFund() {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.approvedClaims + stats.paidClaims}</p>
-                  <p className="text-[10px] text-muted-foreground">od {stats.totalClaims} podnetih</p>
+                  <p className="text-xs text-muted-foreground">od {stats.totalClaims} podnetih</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -691,7 +691,7 @@ export function HealthFund() {
                     <AlertTriangle className="h-4 w-4 text-red-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.rejectedClaims}</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.totalClaims > 0 ? ((stats.rejectedClaims / stats.totalClaims) * 100).toFixed(1) : 0}% stopa odbijanja</p>
+                  <p className="text-xs text-muted-foreground">{stats.totalClaims > 0 ? ((stats.rejectedClaims / stats.totalClaims) * 100).toFixed(1) : 0}% stopa odbijanja</p>
                 </Card>
               </div>
 
@@ -824,10 +824,10 @@ export function HealthFund() {
           {selectedItem && 'claimNumber' in selectedItem && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Zaposleni</p><p className="text-sm font-medium">{selectedItem.employeeName}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Status</p><Badge variant="outline" className={`text-[9px] ${STATUS_CONFIG[selectedItem.status]?.color}`}>{STATUS_CONFIG[selectedItem.status]?.label}</Badge></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Iznos</p><p className="text-sm font-bold">{formatCurrency(selectedItem.amount)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Odobreno</p><p className="text-sm font-medium">{selectedItem.approvedAmount !== null ? formatCurrency(selectedItem.approvedAmount) : 'N/A'}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Zaposleni</p><p className="text-sm font-medium">{selectedItem.employeeName}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Status</p><Badge variant="outline" className={`text-xs ${STATUS_CONFIG[selectedItem.status]?.color}`}>{STATUS_CONFIG[selectedItem.status]?.label}</Badge></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Iznos</p><p className="text-sm font-bold">{formatCurrency(selectedItem.amount)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Odobreno</p><p className="text-sm font-medium">{selectedItem.approvedAmount !== null ? formatCurrency(selectedItem.approvedAmount) : 'N/A'}</p></div>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Tip usluge:</span><span>{selectedItem.serviceType}</span></div>
@@ -843,10 +843,10 @@ export function HealthFund() {
           {selectedItem && !('claimNumber' in selectedItem) && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Zaposleni</p><p className="text-sm font-medium">{selectedItem.employeeName}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Status</p><Badge variant="outline" className={`text-[9px] ${STATUS_CONFIG[selectedItem.status]?.color}`}>{STATUS_CONFIG[selectedItem.status]?.label}</Badge></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Osnovica</p><p className="text-sm font-bold">{formatCurrency(selectedItem.baseAmount)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Ukupno</p><p className="text-sm font-bold">{formatCurrency(selectedItem.totalAmount)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Zaposleni</p><p className="text-sm font-medium">{selectedItem.employeeName}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Status</p><Badge variant="outline" className={`text-xs ${STATUS_CONFIG[selectedItem.status]?.color}`}>{STATUS_CONFIG[selectedItem.status]?.label}</Badge></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Osnovica</p><p className="text-sm font-bold">{formatCurrency(selectedItem.baseAmount)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Ukupno</p><p className="text-sm font-bold">{formatCurrency(selectedItem.totalAmount)}</p></div>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Mesec:</span><span>{selectedItem.month} {selectedItem.year}.</span></div>

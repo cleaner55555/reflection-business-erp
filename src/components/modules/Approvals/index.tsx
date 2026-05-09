@@ -504,7 +504,7 @@ export function Approvals() {
                     <Clock className="h-4 w-4 text-amber-500" />
                   </div>
                   <p className="text-2xl font-bold text-amber-600">{dashboard.pendingRequests}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.urgentPendingCount} hitnih</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.urgentPendingCount} hitnih</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -512,7 +512,7 @@ export function Approvals() {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold text-green-600">{dashboard.approvedRequests}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.totalRequests > 0 ? Math.round((dashboard.approvedRequests / dashboard.totalRequests) * 100) : 0}% ukupno</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.totalRequests > 0 ? Math.round((dashboard.approvedRequests / dashboard.totalRequests) * 100) : 0}% ukupno</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -520,7 +520,7 @@ export function Approvals() {
                     <XCircle className="h-4 w-4 text-red-500" />
                   </div>
                   <p className="text-2xl font-bold text-red-600">{dashboard.rejectedRequests}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.totalRequests > 0 ? Math.round((dashboard.rejectedRequests / dashboard.totalRequests) * 100) : 0}% ukupno</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.totalRequests > 0 ? Math.round((dashboard.rejectedRequests / dashboard.totalRequests) * 100) : 0}% ukupno</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -528,7 +528,7 @@ export function Approvals() {
                     <TrendingUp className="h-4 w-4 text-primary" />
                   </div>
                   <p className="text-2xl font-bold">{dashboard.avgResponseHours}h</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">mojih na čekanju: {dashboard.myPendingCount}</p>
+                  <p className="text-xs text-muted-foreground mt-1">mojih na čekanju: {dashboard.myPendingCount}</p>
                 </Card>
               </div>
 
@@ -618,7 +618,7 @@ export function Approvals() {
                             <div className="w-5 bg-green-400 rounded-t" style={{ height: `${maxVal > 0 ? (m.approved / maxVal) * 100 : 0}%` }} title={`Odobreno: ${m.approved}`} />
                             <div className="w-5 bg-red-400 rounded-t" style={{ height: `${maxVal > 0 ? (m.rejected / maxVal) * 100 : 0}%` }} title={`Odbijeno: ${m.rejected}`} />
                           </div>
-                          <span className="text-[10px] text-muted-foreground">{m.month}</span>
+                          <span className="text-xs text-muted-foreground">{m.month}</span>
                         </div>
                       )
                     })}
@@ -647,7 +647,7 @@ export function Approvals() {
                               <p className="text-xs text-muted-foreground">{r.requestedBy} · {new Date(r.createdAt).toLocaleDateString('sr-RS')}</p>
                             </div>
                           </div>
-                          <Badge variant="outline" className={`text-[10px] ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
                         </div>
                       )
                     })}
@@ -713,8 +713,8 @@ export function Approvals() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
                                 <h3 className="text-sm font-medium truncate">{r.title}</h3>
-                                <Badge variant="outline" className={`text-[10px] shrink-0 ${sCfg?.color}`}>{sCfg?.label}</Badge>
-                                <Badge variant="outline" className={`text-[10px] shrink-0 ${pCfg?.color}`}>
+                                <Badge variant="outline" className={`text-xs shrink-0 ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                                <Badge variant="outline" className={`text-xs shrink-0 ${pCfg?.color}`}>
                                   <span className={`w-1.5 h-1.5 rounded-full ${pCfg?.dotColor} mr-1`} />
                                   {pCfg?.label}
                                 </Badge>
@@ -772,24 +772,24 @@ export function Approvals() {
                         <span className="text-2xl">{tCfg?.icon}</span>
                         <div>
                           <h3 className="text-sm font-medium">{tpl.name}</h3>
-                          <Badge variant="outline" className={`text-[10px] ${tCfg?.color}`}>{tCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${tCfg?.color}`}>{tCfg?.label}</Badge>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {!tpl.isActive && <Badge variant="outline" className="text-[10px] bg-gray-100">Neaktivan</Badge>}
+                        {!tpl.isActive && <Badge variant="outline" className="text-xs bg-gray-100">Neaktivan</Badge>}
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mb-3">{tpl.description}</p>
                     <div className="space-y-1 mb-3">
-                      <p className="text-[10px] text-muted-foreground">Obavezna polja:</p>
+                      <p className="text-xs text-muted-foreground">Obavezna polja:</p>
                       <div className="flex flex-wrap gap-1">
                         {tpl.requiredFields.map((f) => (
-                          <Badge key={f} variant="secondary" className="text-[10px]">{f}</Badge>
+                          <Badge key={f} variant="secondary" className="text-xs">{f}</Badge>
                         ))}
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">Korišćeno {tpl.usageCount} puta</span>
+                      <span className="text-xs text-muted-foreground">Korišćeno {tpl.usageCount} puta</span>
                       <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
                         setForm({ ...emptyForm, type: tpl.type, title: tpl.name, assignedTo: tpl.approverRole })
                         setDialogOpen(true)
@@ -987,7 +987,7 @@ export function Approvals() {
                       <div key={c.id} className="p-3 bg-muted/30 rounded-lg">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium">{c.author}</span>
-                          <span className="text-[10px] text-muted-foreground">{new Date(c.createdAt).toLocaleString('sr-RS')}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(c.createdAt).toLocaleString('sr-RS')}</span>
                         </div>
                         <p className="text-sm">{c.content}</p>
                       </div>

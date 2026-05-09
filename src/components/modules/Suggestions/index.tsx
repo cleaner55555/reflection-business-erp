@@ -441,7 +441,7 @@ export function Suggestions() {
                     <Lightbulb className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.totalVotes} glasova ukupno</p>
+                  <p className="text-xs text-muted-foreground">{stats.totalVotes} glasova ukupno</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -449,7 +449,7 @@ export function Suggestions() {
                     <Clock className="h-4 w-4 text-amber-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.pending}</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.approved} odobreno</p>
+                  <p className="text-xs text-muted-foreground">{stats.approved} odobreno</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -457,7 +457,7 @@ export function Suggestions() {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.implemented}</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.implementationRate}% stopa realizacije</p>
+                  <p className="text-xs text-muted-foreground">{stats.implementationRate}% stopa realizacije</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -465,7 +465,7 @@ export function Suggestions() {
                     <AlertTriangle className="h-4 w-4 text-red-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.rejected}</p>
-                  <p className="text-[10px] text-muted-foreground">Prosek {stats.avgResolutionDays} dana rešenja</p>
+                  <p className="text-xs text-muted-foreground">Prosek {stats.avgResolutionDays} dana rešenja</p>
                 </Card>
               </div>
 
@@ -479,7 +479,7 @@ export function Suggestions() {
                       const cfg = CATEGORY_CONFIG[cb.category]
                       return (
                         <div key={cb.category} className="flex items-center gap-3">
-                          <Badge variant="outline" className={`text-[10px] w-24 justify-center ${cfg?.bgColor} ${cfg?.color}`}>{cfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs w-24 justify-center ${cfg?.bgColor} ${cfg?.color}`}>{cfg?.label}</Badge>
                           <div className="flex-1 bg-muted rounded-full h-3">
                             <div className={`h-3 rounded-full ${cb.color}`} style={{ width: `${(cb.count / stats.total) * 100}%` }} />
                           </div>
@@ -503,20 +503,20 @@ export function Suggestions() {
                             <div className="flex-1 bg-blue-100 dark:bg-blue-900/20 rounded-full h-2">
                               <div className="h-2 rounded-full bg-blue-500" style={{ width: `${(m.submitted / 5) * 100}%` }} />
                             </div>
-                            <span className="text-[9px] text-blue-600 w-5">{m.submitted}</span>
+                            <span className="text-xs text-blue-600 w-5">{m.submitted}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <div className="flex-1 bg-green-100 dark:bg-green-900/20 rounded-full h-2">
                               <div className="h-2 rounded-full bg-green-500" style={{ width: `${(m.implemented / 2) * 100}%` }} />
                             </div>
-                            <span className="text-[9px] text-green-600 w-5">{m.implemented}</span>
+                            <span className="text-xs text-green-600 w-5">{m.implemented}</span>
                           </div>
                         </div>
                       </div>
                     ))}
                     <div className="flex items-center gap-4 pt-2 border-t">
-                      <div className="flex items-center gap-1"><div className="h-2 w-4 rounded bg-blue-500" /><span className="text-[9px] text-muted-foreground">Predloženo</span></div>
-                      <div className="flex items-center gap-1"><div className="h-2 w-4 rounded bg-green-500" /><span className="text-[9px] text-muted-foreground">Realizovano</span></div>
+                      <div className="flex items-center gap-1"><div className="h-2 w-4 rounded bg-blue-500" /><span className="text-xs text-muted-foreground">Predloženo</span></div>
+                      <div className="flex items-center gap-1"><div className="h-2 w-4 rounded bg-green-500" /><span className="text-xs text-muted-foreground">Realizovano</span></div>
                     </div>
                   </CardContent>
                 </Card>
@@ -533,11 +533,11 @@ export function Suggestions() {
                         <span className="text-xs font-bold w-5 text-muted-foreground">{i + 1}.</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm truncate">{c.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{c.dept}</p>
+                          <p className="text-xs text-muted-foreground">{c.dept}</p>
                         </div>
                         <div className="text-right">
-                          <Badge variant="outline" className="text-[9px] mr-1">{c.count} predloga</Badge>
-                          <Badge variant="outline" className="text-[9px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{c.implemented} realizovano</Badge>
+                          <Badge variant="outline" className="text-xs mr-1">{c.count} predloga</Badge>
+                          <Badge variant="outline" className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{c.implemented} realizovano</Badge>
                         </div>
                       </div>
                     ))}
@@ -563,7 +563,7 @@ export function Suggestions() {
                           <div className="flex-1 bg-muted rounded-full h-2">
                             <div className={`h-2 rounded-full ${d.rate >= 50 ? 'bg-green-500' : d.rate > 0 ? 'bg-amber-500' : 'bg-gray-300'}`} style={{ width: `${d.rate}%` }} />
                           </div>
-                          <span className="text-[10px] font-medium w-10 text-right">{d.rate}%</span>
+                          <span className="text-xs font-medium w-10 text-right">{d.rate}%</span>
                         </div>
                       ))}
                     </div>
@@ -624,9 +624,9 @@ export function Suggestions() {
                     <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <Badge variant="outline" className={`text-[10px] ${sc?.color}`}>{sc?.icon} {sc?.label}</Badge>
-                          <Badge variant="outline" className={`text-[10px] ${cc?.bgColor} ${cc?.color}`}>{cc?.label}</Badge>
-                          <Badge variant="outline" className={`text-[10px] ${pc?.color}`}>{pc?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${sc?.color}`}>{sc?.icon} {sc?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${cc?.bgColor} ${cc?.color}`}>{cc?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${pc?.color}`}>{pc?.label}</Badge>
                         </div>
                         <h3 className="text-sm font-medium mb-1 cursor-pointer hover:underline" onClick={() => { setSelectedSuggestion(s); setDetailOpen(true) }}>{s.title}</h3>
                         <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{s.description}</p>
@@ -660,7 +660,7 @@ export function Suggestions() {
                           <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setCommentingSuggestion(s); setCommentOpen(true) }}>
                             <MessageSquare className="h-3 w-3" />
                           </Button>
-                          <Badge variant="outline" className="text-[9px]">{s.comments}</Badge>
+                          <Badge variant="outline" className="text-xs">{s.comments}</Badge>
                         </div>
                       </div>
                     </div>
@@ -705,8 +705,8 @@ export function Suggestions() {
                       <div className="flex items-start gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <Badge variant="outline" className={`text-[10px] ${sc?.color}`}>{sc?.icon} {sc?.label}</Badge>
-                            <Badge variant="outline" className={`text-[10px] ${cc?.bgColor} ${cc?.color}`}>{cc?.label}</Badge>
+                            <Badge variant="outline" className={`text-xs ${sc?.color}`}>{sc?.icon} {sc?.label}</Badge>
+                            <Badge variant="outline" className={`text-xs ${cc?.bgColor} ${cc?.color}`}>{cc?.label}</Badge>
                           </div>
                           <h3 className="text-sm font-medium mb-1">{s.title}</h3>
                           <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{s.description}</p>
@@ -724,7 +724,7 @@ export function Suggestions() {
                               <ThumbsUp className="h-3 w-3 text-green-500" />
                               <span className="text-sm font-bold">{approvalPct}%</span>
                             </div>
-                            <p className="text-[9px] text-muted-foreground">{totalVotes} glasova</p>
+                            <p className="text-xs text-muted-foreground">{totalVotes} glasova</p>
                           </div>
                           {/* Comments */}
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -746,19 +746,19 @@ export function Suggestions() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="text-center">
                       <p className="text-lg font-bold">{mySuggestions.length}</p>
-                      <p className="text-[10px] text-muted-foreground">Ukupno</p>
+                      <p className="text-xs text-muted-foreground">Ukupno</p>
                     </div>
                     <div className="text-center">
                       <p className="text-lg font-bold text-amber-600">{mySuggestions.filter(s => s.status === 'pending').length}</p>
-                      <p className="text-[10px] text-muted-foreground">Na čekanju</p>
+                      <p className="text-xs text-muted-foreground">Na čekanju</p>
                     </div>
                     <div className="text-center">
                       <p className="text-lg font-bold text-green-600">{mySuggestions.filter(s => s.status === 'implemented').length}</p>
-                      <p className="text-[10px] text-muted-foreground">Realizovano</p>
+                      <p className="text-xs text-muted-foreground">Realizovano</p>
                     </div>
                     <div className="text-center">
                       <p className="text-lg font-bold text-red-600">{mySuggestions.filter(s => s.status === 'rejected').length}</p>
-                      <p className="text-[10px] text-muted-foreground">Odbijeno</p>
+                      <p className="text-xs text-muted-foreground">Odbijeno</p>
                     </div>
                   </div>
                 </CardContent>
@@ -781,7 +781,7 @@ export function Suggestions() {
                   </div>
                   <p className="text-2xl font-bold text-green-600">{stats.implementationRate}%</p>
                   <Progress value={stats.implementationRate} className="h-2 mt-2" />
-                  <p className="text-[10px] text-muted-foreground mt-1">{stats.implemented} od {stats.total} predloga</p>
+                  <p className="text-xs text-muted-foreground mt-1">{stats.implemented} od {stats.total} predloga</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -789,7 +789,7 @@ export function Suggestions() {
                     <Clock className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.avgResolutionDays}</p>
-                  <p className="text-[10px] text-muted-foreground">dana po predlogu</p>
+                  <p className="text-xs text-muted-foreground">dana po predlogu</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -799,7 +799,7 @@ export function Suggestions() {
                   <p className="text-2xl font-bold text-emerald-600">
                     {formatCurrency(suggestions.filter(s => s.status === 'implemented' && s.estimatedSaving).reduce((sum, s) => sum + (s.estimatedSaving || 0), 0))}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">od realizovanih predloga</p>
+                  <p className="text-xs text-muted-foreground">od realizovanih predloga</p>
                 </Card>
               </div>
 
@@ -821,7 +821,7 @@ export function Suggestions() {
                         <div key={key}>
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className={`text-[10px] ${cfg.bgColor} ${cfg.color}`}>{cfg.label}</Badge>
+                              <Badge variant="outline" className={`text-xs ${cfg.bgColor} ${cfg.color}`}>{cfg.label}</Badge>
                               <span className="text-xs text-muted-foreground">{catTotal} predloga</span>
                             </div>
                             <span className="text-sm font-bold">{catRate}%</span>
@@ -837,10 +837,10 @@ export function Suggestions() {
                             )}
                           </div>
                           <div className="flex items-center gap-3 mt-1">
-                            <span className="text-[9px] text-green-600">{catImplemented} realizovano</span>
-                            <span className="text-[9px] text-blue-600">{catApproved} odobreno</span>
-                            <span className="text-[9px] text-amber-600">{catTotal - catImplemented - catApproved - catRejected} na čekanju</span>
-                            {catRejected > 0 && <span className="text-[9px] text-red-500">{catRejected} odbijeno</span>}
+                            <span className="text-xs text-green-600">{catImplemented} realizovano</span>
+                            <span className="text-xs text-blue-600">{catApproved} odobreno</span>
+                            <span className="text-xs text-amber-600">{catTotal - catImplemented - catApproved - catRejected} na čekanju</span>
+                            {catRejected > 0 && <span className="text-xs text-red-500">{catRejected} odbijeno</span>}
                           </div>
                         </div>
                       )
@@ -876,7 +876,7 @@ export function Suggestions() {
                             <td className="text-center py-2.5 text-green-600 font-medium">{d.implemented}</td>
                             <td className="text-center py-2.5 text-red-500">{d.total - d.implemented - Math.max(0, d.total - d.implemented - (d.rate < 100 ? 1 : 0))}</td>
                             <td className="text-center py-2.5">
-                              <Badge variant="outline" className={`text-[10px] ${d.rate >= 50 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : d.rate > 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+                              <Badge variant="outline" className={`text-xs ${d.rate >= 50 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : d.rate > 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
                                 {d.rate}%
                               </Badge>
                             </td>
@@ -904,7 +904,7 @@ export function Suggestions() {
                       }, 0) / ps.length) : 0
                       return (
                         <div key={key} className="flex items-center gap-3">
-                          <Badge variant="outline" className={`text-[10px] ${pcfg.color} w-20 justify-center`}>{pcfg.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${pcfg.color} w-20 justify-center`}>{pcfg.label}</Badge>
                           <div className="flex-1">
                             <div className="bg-muted rounded-full h-2">
                               <div className="h-2 rounded-full bg-blue-500" style={{ width: `${Math.min((avgDays / 45) * 100, 100)}%` }} />
@@ -928,10 +928,10 @@ export function Suggestions() {
                       const implSaving = catSavings.filter(s => s.status === 'implemented').reduce((sum, s) => sum + (s.estimatedSaving || 0), 0)
                       return (
                         <div key={key} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50">
-                          <Badge variant="outline" className={`text-[10px] ${cfg.bgColor} ${cfg.color}`}>{cfg.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${cfg.bgColor} ${cfg.color}`}>{cfg.label}</Badge>
                           <div className="flex-1">
                             <p className="text-sm font-medium">{formatCurrency(implSaving)}</p>
-                            <p className="text-[10px] text-muted-foreground">od {formatCurrency(totalSaving)} procenjeno</p>
+                            <p className="text-xs text-muted-foreground">od {formatCurrency(totalSaving)} procenjeno</p>
                           </div>
                           <Progress value={totalSaving > 0 ? (implSaving / totalSaving) * 100 : 0} className="w-16 h-2" />
                         </div>
@@ -1009,9 +1009,9 @@ export function Suggestions() {
               <>
                 <DialogHeader>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className={`text-[10px] ${sc?.color}`}>{sc?.icon} {sc?.label}</Badge>
-                    <Badge variant="outline" className={`text-[10px] ${cc?.bgColor} ${cc?.color}`}>{cc?.label}</Badge>
-                    <Badge variant="outline" className={`text-[10px] ${pc?.color}`}>{pc?.label}</Badge>
+                    <Badge variant="outline" className={`text-xs ${sc?.color}`}>{sc?.icon} {sc?.label}</Badge>
+                    <Badge variant="outline" className={`text-xs ${cc?.bgColor} ${cc?.color}`}>{cc?.label}</Badge>
+                    <Badge variant="outline" className={`text-xs ${pc?.color}`}>{pc?.label}</Badge>
                   </div>
                   <DialogTitle className="text-lg">{s.title}</DialogTitle>
                   <DialogDescription>
@@ -1058,25 +1058,25 @@ export function Suggestions() {
                   <div className="grid grid-cols-2 gap-4">
                     {s.estimatedSaving && s.estimatedSaving > 0 && (
                       <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
-                        <p className="text-[10px] text-muted-foreground">Procenjena ušteda</p>
+                        <p className="text-xs text-muted-foreground">Procenjena ušteda</p>
                         <p className="text-sm font-bold text-green-600">{formatCurrency(s.estimatedSaving)}/god</p>
                       </div>
                     )}
                     {s.implementedAt && (
                       <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                        <p className="text-[10px] text-muted-foreground">Datum realizacije</p>
+                        <p className="text-xs text-muted-foreground">Datum realizacije</p>
                         <p className="text-sm font-bold text-blue-600">{formatDate(s.implementedAt)}</p>
                       </div>
                     )}
                     {s.implementerName && (
                       <div className="p-3 rounded-lg bg-muted/50">
-                        <p className="text-[10px] text-muted-foreground">Realizator</p>
+                        <p className="text-xs text-muted-foreground">Realizator</p>
                         <p className="text-sm font-medium">{s.implementerName}</p>
                       </div>
                     )}
                     {s.rejectionReason && (
                       <div className="col-span-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
-                        <p className="text-[10px] text-muted-foreground mb-1">Razlog odbijanja</p>
+                        <p className="text-xs text-muted-foreground mb-1">Razlog odbijanja</p>
                         <p className="text-sm text-red-700 dark:text-red-400">{s.rejectionReason}</p>
                       </div>
                     )}

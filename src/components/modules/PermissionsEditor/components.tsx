@@ -95,7 +95,7 @@ function PermissionMatrix({
         <div className="w-[180px] shrink-0" />
         <div className="flex-1 grid grid-cols-4 gap-2 text-center">
           {ACTIONS.map((action) => (
-            <span key={action} className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+            <span key={action} className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               {ACTION_LABELS[action]}
             </span>
           ))}
@@ -119,7 +119,7 @@ function PermissionMatrix({
           <div />
         </div>
         <div className="w-[50px] shrink-0 flex justify-center">
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-xs">
             {Object.values(permissions).filter((p) => p.length > 0).length}/{Object.keys(MODULE_LABELS).length}
           </Badge>
         </div>
@@ -146,7 +146,7 @@ function PermissionMatrix({
               <span className="text-sm">{group.icon}</span>
               <span className="text-xs font-bold text-foreground">{group.label}</span>
               <div className="flex-1" />
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-xs">
                 {groupModuleCount}/{group.modules.length}
               </Badge>
             </div>
@@ -185,7 +185,7 @@ function PermissionMatrix({
                   </div>
                   <div className="w-[50px] shrink-0 flex justify-center">
                     {modPerms.length > 0 && modPerms.length < ACTIONS.length && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         {modPerms.length}
                       </Badge>
                     )}

@@ -238,7 +238,7 @@ export function Referrals() {
                               <div className="text-sm font-medium">{r.refereeName}</div>
                               <div className="text-xs text-muted-foreground">od {r.referrerName} · {sourceLabels[r.source] || r.source}</div>
                             </div>
-                            <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge>
+                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge>
                           </div>
                         )
                       })}
@@ -287,7 +287,7 @@ export function Referrals() {
                         <td className="p-3 font-medium">{r.refereeName}</td>
                         <td className="p-3">{r.referrerName}</td>
                         <td className="p-3">{sourceLabels[r.source] || r.source}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge></td>
                         <td className="p-3">
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(r); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>

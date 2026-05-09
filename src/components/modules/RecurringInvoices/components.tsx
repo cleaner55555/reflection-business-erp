@@ -363,7 +363,7 @@ function RecurringInvoicesContent() {
                             {item.partner?.name}
                           </p>
                         </div>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 shrink-0 ${statusConfig.color}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 shrink-0 ${statusConfig.color}`}>
                           <StatusIcon className="h-3 w-3 mr-1" />
                           {statusConfig.label}
                         </Badge>
@@ -371,7 +371,7 @@ function RecurringInvoicesContent() {
 
                       {/* Middle row: Info */}
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getFrequencyBadgeClass(item.frequency)}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getFrequencyBadgeClass(item.frequency)}`}>
                           {getFrequencyIcon(item.frequency)} {getFrequencyLabel(item.frequency, t)}
                         </Badge>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -379,7 +379,7 @@ function RecurringInvoicesContent() {
                           <span>{formatDate(item.nextDate)}</span>
                         </div>
                         {days !== null && days >= 0 && days <= 30 && (
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             ({days === 0 ? t('recurring.today') : `${days}d`})
                           </span>
                         )}
@@ -559,7 +559,7 @@ function RecurringInvoicesContent() {
                   className="grid grid-cols-12 gap-2 items-end"
                 >
                   <div className="col-span-4">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('invoices.itemName')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('invoices.itemName')}</Label>}
                     <Select
                       value={item.productId}
                       onValueChange={(v) => updateFormItem(idx, 'productId', v)}
@@ -575,7 +575,7 @@ function RecurringInvoicesContent() {
                     </Select>
                   </div>
                   <div className="col-span-2">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('common.quantity')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.quantity')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -585,7 +585,7 @@ function RecurringInvoicesContent() {
                     />
                   </div>
                   <div className="col-span-2">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('common.price')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -594,7 +594,7 @@ function RecurringInvoicesContent() {
                     />
                   </div>
                   <div className="col-span-1">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('invoices.taxPct')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('invoices.taxPct')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"

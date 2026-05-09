@@ -20,7 +20,7 @@ export function getTypeBadge(type: string) {
     snapshot: { color: 'bg-violet-100 text-violet-800', label: 'Снимак' },
   }
   const s = map[type] || map.full
-  return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
+  return <Badge className={`${s.color} text-xs`}>{s.label}</Badge>
 }
 
 export function getStatusBadge(status: string) {
@@ -31,7 +31,7 @@ export function getStatusBadge(status: string) {
     scheduled: { color: 'bg-slate-100 text-slate-600', label: 'Заказано', icon: Clock },
   }
   const s = map[status] || map.completed
-  return <Badge className={`${s.color} gap-1 text-[10px]`}><s.icon className="h-3 w-3" />{s.label}</Badge>
+  return <Badge className={`${s.color} gap-1 text-xs`}><s.icon className="h-3 w-3" />{s.label}</Badge>
 }
 
 export function getFreqLabel(f: string) {
@@ -96,7 +96,7 @@ export function BackupTableSection({ filtered, search, typeFilter, setSearch, se
             <TableBody>
               {filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Нема бекапа</TableCell></TableRow> : filtered.map(b => (
                 <TableRow key={b.id}>
-                  <TableCell><div className="flex items-center gap-2"><ShieldCheck className={`h-3.5 w-3.5 ${b.encrypted ? 'text-emerald-600' : 'text-muted-foreground'}`} /><div><p className="text-xs font-medium">{b.name}</p><p className="text-[10px] text-muted-foreground">{b.duration}{b.autoDelete ? ' · Auto-brisanje' : ''}</p></div></div></TableCell>
+                  <TableCell><div className="flex items-center gap-2"><ShieldCheck className={`h-3.5 w-3.5 ${b.encrypted ? 'text-emerald-600' : 'text-muted-foreground'}`} /><div><p className="text-xs font-medium">{b.name}</p><p className="text-xs text-muted-foreground">{b.duration}{b.autoDelete ? ' · Auto-brisanje' : ''}</p></div></div></TableCell>
                   <TableCell className="hidden sm:table-cell">{getTypeBadge(b.type)}</TableCell>
                   <TableCell>{getStatusBadge(b.status)}</TableCell>
                   <TableCell className="hidden md:table-cell text-xs font-mono">{b.size}</TableCell>
@@ -128,11 +128,11 @@ export function ScheduleList({ schedules, onToggle }: ScheduleListProps) {
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2"><p className="text-sm font-semibold">{s.name}</p><Badge variant={s.active ? 'default' : 'secondary'} className="text-[10px]">{s.active ? 'Активан' : 'Неактиван'}</Badge></div>
+                <div className="flex items-center gap-2"><p className="text-sm font-semibold">{s.name}</p><Badge variant={s.active ? 'default' : 'secondary'} className="text-xs">{s.active ? 'Активан' : 'Неактиван'}</Badge></div>
                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                   <span>{getFreqLabel(s.frequency)}</span><span>·</span><span>{s.time}</span><span>·</span><span>{getTypeBadge(s.type)}</span><span>·</span><span>Zadržavanje: {s.retentionDays} дана</span>
                 </div>
-                {s.lastRun && <p className="text-[10px] text-muted-foreground">Poslednje: {formatDateTime(s.lastRun)} · Sledeće: {formatDateTime(s.nextRun!)}</p>}
+                {s.lastRun && <p className="text-xs text-muted-foreground">Poslednje: {formatDateTime(s.lastRun)} · Sledeće: {formatDateTime(s.nextRun!)}</p>}
               </div>
               <Button variant="outline" size="sm" onClick={() => onToggle(s.id)}>{s.active ? 'Паузирај' : 'Активирај'}</Button>
             </div>

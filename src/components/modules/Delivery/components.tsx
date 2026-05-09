@@ -115,12 +115,12 @@ export const PRIORITIES: Record<string, { color: string; label: string }> = {
 // ─── Helpers ─────────────────────────────────────────────
 export function getStatusBadge(s: string) {
   const r = STATUSES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 
 export function getPriorityBadge(p: string) {
   const r = PRIORITIES[p]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{p}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{p}</Badge>
 }
 
 export function formatCurrency(n: number) {
@@ -170,7 +170,7 @@ export function DeliveryListTab({ filtered, search, statusFilter, priorityFilter
               {filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema pronađenih pošiljki</TableCell></TableRow> : filtered.map(item => (
                 <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => onView(item.id)}>
                   <TableCell className="text-xs font-mono">{item.trackingNumber}</TableCell>
-                  <TableCell><div className="text-xs font-medium">{item.recipientName}</div><div className="text-[10px] text-muted-foreground">{item.recipientPhone}</div></TableCell>
+                  <TableCell><div className="text-xs font-medium">{item.recipientName}</div><div className="text-xs text-muted-foreground">{item.recipientPhone}</div></TableCell>
                   <TableCell className="text-xs text-muted-foreground hidden sm:table-cell max-w-[150px] truncate">{item.recipientAddress}</TableCell>
                   <TableCell>{getStatusBadge(item.status)}</TableCell>
                   <TableCell className="hidden md:table-cell">{getPriorityBadge(item.priority)}</TableCell>
@@ -218,7 +218,7 @@ export function TrackingTab({ data, onStatusChange, onView }: TrackingTabProps) 
             </div>
             <div className="space-y-1.5">
               {item.history.slice(-3).map((h, idx) => (
-                <div key={idx} className="flex items-start gap-2 text-[10px]">
+                <div key={idx} className="flex items-start gap-2 text-xs">
                   <div className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" />
                   <div><span className="text-muted-foreground">{h.date}</span> — <span className="font-medium">{STATUSES[h.status]?.label || h.status}</span> — {h.location}{h.note ? `: ${h.note}` : ''}</div>
                 </div>
@@ -266,7 +266,7 @@ export function OverviewTab({ data, stats }: OverviewTabProps) {
         <CardContent className="space-y-2 max-h-64 overflow-y-auto">
           {data.filter(d => !['delivered', 'returned', 'failed'].includes(d.status)).sort((a, b) => a.estimatedDelivery.localeCompare(b.estimatedDelivery)).map(d => (
             <div key={d.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-              <div><p className="text-xs font-medium">{d.trackingNumber}</p><p className="text-[10px] text-muted-foreground">{d.recipientName}</p></div>
+              <div><p className="text-xs font-medium">{d.trackingNumber}</p><p className="text-xs text-muted-foreground">{d.recipientName}</p></div>
               <div className="text-right"><p className="text-xs">{formatDate(d.estimatedDelivery)}</p>{getPriorityBadge(d.priority)}</div>
             </div>
           ))}
@@ -286,8 +286,8 @@ export function OverviewTab({ data, stats }: OverviewTabProps) {
             })
             return Object.entries(driverMap).map(([driver, info]) => (
               <div key={driver} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                <div><p className="text-xs font-medium">{driver}</p><p className="text-[10px] text-muted-foreground">{info.total} pošiljki · {info.delivered} isporučeno</p></div>
-                {info.active > 0 && <Badge className="bg-blue-100 text-blue-700 text-[10px]">{info.active} aktivna</Badge>}
+                <div><p className="text-xs font-medium">{driver}</p><p className="text-xs text-muted-foreground">{info.total} pošiljki · {info.delivered} isporučeno</p></div>
+                {info.active > 0 && <Badge className="bg-blue-100 text-blue-700 text-xs">{info.active} aktivna</Badge>}
               </div>
             ))
           })()}
@@ -298,9 +298,9 @@ export function OverviewTab({ data, stats }: OverviewTabProps) {
         <CardContent className="space-y-2 max-h-64 overflow-y-auto">
           {data.filter(d => d.status === 'failed').length === 0 ? <p className="text-xs text-muted-foreground">Nema neuspešnih isporuka</p> : data.filter(d => d.status === 'failed').map(d => (
             <div key={d.id} className="p-2 rounded-lg bg-red-50 dark:bg-red-950/20 space-y-1">
-              <div className="flex justify-between"><span className="text-xs font-mono">{d.trackingNumber}</span><Badge className="bg-red-100 text-red-700 text-[10px]">{d.attempt || 1}. pokušaj</Badge></div>
+              <div className="flex justify-between"><span className="text-xs font-mono">{d.trackingNumber}</span><Badge className="bg-red-100 text-red-700 text-xs">{d.attempt || 1}. pokušaj</Badge></div>
               <p className="text-xs">{d.recipientName} — {d.recipientAddress}</p>
-              <p className="text-[10px] text-muted-foreground">{d.notes}</p>
+              <p className="text-xs text-muted-foreground">{d.notes}</p>
             </div>
           ))}
         </CardContent>
@@ -324,25 +324,25 @@ export function DetailDialog({ detailItem, onClose, onStatusChange }: DetailDial
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 rounded-lg border space-y-1">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase">Pošiljalac</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p>
               <p className="text-xs font-medium">{detailItem.senderName}</p>
               <p className="text-xs text-muted-foreground">{detailItem.senderPhone}</p>
               <p className="text-xs text-muted-foreground">{detailItem.senderAddress}</p>
             </div>
             <div className="p-3 rounded-lg border space-y-1">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase">Primalac</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p>
               <p className="text-xs font-medium">{detailItem.recipientName}</p>
               <p className="text-xs text-muted-foreground">{detailItem.recipientPhone}</p>
               <p className="text-xs text-muted-foreground">{detailItem.recipientAddress}</p>
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.weight} kg</p></div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Dimenzije</div><p className="text-xs font-medium">{detailItem.dimensions}</p></div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Trošak</div><p className="text-xs font-medium">{formatCurrency(detailItem.shippingCost)}</p></div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">COD</div><p className="text-xs font-bold">{detailItem.codAmount > 0 ? formatCurrency(detailItem.codAmount) : 'Nema'}</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.weight} kg</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Dimenzije</div><p className="text-xs font-medium">{detailItem.dimensions}</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Trošak</div><p className="text-xs font-medium">{formatCurrency(detailItem.shippingCost)}</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">COD</div><p className="text-xs font-bold">{detailItem.codAmount > 0 ? formatCurrency(detailItem.codAmount) : 'Nema'}</p></div>
           </div>
-          <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.assignedDriver || 'Nije dodeljen'}</p><p className="text-[10px] text-muted-foreground mt-1">Trenutna lokacija: {detailItem.currentLocation}</p></div>
+          <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.assignedDriver || 'Nije dodeljen'}</p><p className="text-xs text-muted-foreground mt-1">Trenutna lokacija: {detailItem.currentLocation}</p></div>
           <div className="space-y-3">
             <p className="text-xs font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Istorija praćenja</p>
             <div className="space-y-2">
@@ -354,17 +354,17 @@ export function DetailDialog({ detailItem, onClose, onStatusChange }: DetailDial
                   </div>
                   <div className="pb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">{h.date}</span>
+                      <span className="text-xs text-muted-foreground">{h.date}</span>
                       {getStatusBadge(h.status)}
                     </div>
                     <p className="text-xs">{h.location}</p>
-                    {h.note && <p className="text-[10px] text-muted-foreground">{h.note}</p>}
+                    {h.note && <p className="text-xs text-muted-foreground">{h.note}</p>}
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+          {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
           <div className="flex gap-2">
             <Select value={detailItem.status} onValueChange={v => onStatusChange(detailItem.id, v as DeliveryItem['status'])}>
               <SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger>
@@ -386,7 +386,7 @@ export function DeliveryFormDialog({ open, editItem, formData, onOpenChange, onF
         <DialogHeader><DialogTitle>{editItem ? 'Uredi dostavu' : 'Nova dostava'}</DialogTitle></DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="p-3 rounded-lg border space-y-2">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase">Pošiljalac</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p>
             <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Naziv firme ili ime" className="text-xs" value={formData.senderName} onChange={e => onFormFieldChange('senderName', e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-2">
               <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.senderPhone} onChange={e => onFormFieldChange('senderPhone', e.target.value)} /></div>
@@ -395,7 +395,7 @@ export function DeliveryFormDialog({ open, editItem, formData, onOpenChange, onF
             <div className="grid gap-2"><Label className="text-xs">Adresa</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.senderAddress} onChange={e => onFormFieldChange('senderAddress', e.target.value)} /></div>
           </div>
           <div className="p-3 rounded-lg border space-y-2">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase">Primalac</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p>
             <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Ime primaoca" className="text-xs" value={formData.recipientName} onChange={e => onFormFieldChange('recipientName', e.target.value)} /></div>
             <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.recipientPhone} onChange={e => onFormFieldChange('recipientPhone', e.target.value)} /></div>
             <div className="grid gap-2"><Label className="text-xs">Adresa *</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.recipientAddress} onChange={e => onFormFieldChange('recipientAddress', e.target.value)} /></div>

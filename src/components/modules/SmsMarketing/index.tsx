@@ -393,7 +393,7 @@ export function SmsMarketing() {
                     if (count === 0) return null
                     return (
                       <div key={status} className="flex items-center gap-3">
-                        <Badge variant="outline" className={`text-[10px] w-24 justify-center ${cfg.color}`}>{cfg.label}</Badge>
+                        <Badge variant="outline" className={`text-xs w-24 justify-center ${cfg.color}`}>{cfg.label}</Badge>
                         <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${(count / Math.max(stats.totalCampaigns, 1)) * 100}%` }} /></div>
                         <span className="text-xs font-mono w-6 text-right">{count}</span>
                       </div>
@@ -416,8 +416,8 @@ export function SmsMarketing() {
                 <div className="space-y-2">
                   {campaigns.slice(0, 5).map(c => (
                     <div key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedCampaign(c); setDetailOpen(true) }}>
-                      <div className="flex-1 min-w-0"><p className="text-xs font-medium truncate">{c.name}</p><p className="text-[10px] text-muted-foreground">{c.recipientCount} primalaca</p></div>
-                      <Badge variant="outline" className={`text-[9px] ${STATUS_CONFIG[c.status]?.color}`}>{STATUS_CONFIG[c.status]?.label}</Badge>
+                      <div className="flex-1 min-w-0"><p className="text-xs font-medium truncate">{c.name}</p><p className="text-xs text-muted-foreground">{c.recipientCount} primalaca</p></div>
+                      <Badge variant="outline" className={`text-xs ${STATUS_CONFIG[c.status]?.color}`}>{STATUS_CONFIG[c.status]?.label}</Badge>
                     </div>
                   ))}
                 </div>
@@ -438,7 +438,7 @@ export function SmsMarketing() {
                     )
                   })}
                 </div>
-                <div className="flex justify-between mt-1 text-[9px] text-muted-foreground"><span>01 Jan</span><span>15 Jan</span><span>30 Jan</span></div>
+                <div className="flex justify-between mt-1 text-xs text-muted-foreground"><span>01 Jan</span><span>15 Jan</span><span>30 Jan</span></div>
               </CardContent>
             </Card>
 
@@ -446,10 +446,10 @@ export function SmsMarketing() {
               <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-green-600" /> Usaglašenost</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/10"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /><span className="text-[10px]">STOP opcija</span></div>
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/10"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /><span className="text-[10px]">Odjava kontakata</span></div>
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/10"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /><span className="text-[10px]">Evidencija 1g</span></div>
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10"><AlertCircle className="h-4 w-4 text-amber-500 shrink-0" /><span className="text-[10px]">DPA ugovor</span></div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/10"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /><span className="text-xs">STOP opcija</span></div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/10"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /><span className="text-xs">Odjava kontakata</span></div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/10"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /><span className="text-xs">Evidencija 1g</span></div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10"><AlertCircle className="h-4 w-4 text-amber-500 shrink-0" /><span className="text-xs">DPA ugovor</span></div>
                 </div>
               </CardContent>
             </Card>
@@ -466,9 +466,9 @@ export function SmsMarketing() {
                     <div key={sender.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center"><Smartphone className="h-4 w-4 text-muted-foreground" /></div>
-                        <div><p className="text-xs font-medium font-mono">{sender.id}</p><p className="text-[10px] text-muted-foreground">{sender.desc}</p></div>
+                        <div><p className="text-xs font-medium font-mono">{sender.id}</p><p className="text-xs text-muted-foreground">{sender.desc}</p></div>
                       </div>
-                      <Badge variant="outline" className={`text-[10px] ${sender.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{sender.status === 'active' ? 'Aktivan' : 'Neaktivan'}</Badge>
+                      <Badge variant="outline" className={`text-xs ${sender.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{sender.status === 'active' ? 'Aktivan' : 'Neaktivan'}</Badge>
                     </div>
                   ))}
                 </div>
@@ -487,9 +487,9 @@ export function SmsMarketing() {
                     <div key={p.name} className="p-3 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs font-medium">{p.name}</p>
-                        <Badge variant={p.connected ? 'default' : 'secondary'} className="text-[9px]">{p.connected ? 'Povezan' : 'Nije povezan'}</Badge>
+                        <Badge variant={p.connected ? 'default' : 'secondary'} className="text-xs">{p.connected ? 'Povezan' : 'Nije povezan'}</Badge>
                       </div>
-                      <p className="text-[10px] text-muted-foreground">{p.price}/SMS</p>
+                      <p className="text-xs text-muted-foreground">{p.price}/SMS</p>
                     </div>
                   ))}
                 </div>
@@ -500,11 +500,11 @@ export function SmsMarketing() {
               <CardHeader className="pb-3"><CardTitle className="text-sm">SMS servisi i mogućnosti</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-3 text-sm">
-                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Bulk slanje</p><p className="text-[10px] text-muted-foreground">Pošaljite SMS do hiljadu primalaca odjednom</p></div></div>
-                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Personalizovane poruke</p><p className="text-[10px] text-muted-foreground">Koristite promenljive za dinamički sadržaj</p></div></div>
-                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Zakazano slanje</p><p className="text-[10px] text-muted-foreground">Planirajte slanje za optimalno vreme</p></div></div>
-                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Auto odgovori na ključne reči</p><p className="text-[10px] text-muted-foreground">INFO, STOP, START i druge ključne reči</p></div></div>
-                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Izveštaji i analitika</p><p className="text-[10px] text-muted-foreground">Praćenje isporuke, odgovora i troškova</p></div></div>
+                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Bulk slanje</p><p className="text-xs text-muted-foreground">Pošaljite SMS do hiljadu primalaca odjednom</p></div></div>
+                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Personalizovane poruke</p><p className="text-xs text-muted-foreground">Koristite promenljive za dinamički sadržaj</p></div></div>
+                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Zakazano slanje</p><p className="text-xs text-muted-foreground">Planirajte slanje za optimalno vreme</p></div></div>
+                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Auto odgovori na ključne reči</p><p className="text-xs text-muted-foreground">INFO, STOP, START i druge ključne reči</p></div></div>
+                  <div className="flex items-start gap-3"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium text-xs">Izveštaji i analitika</p><p className="text-xs text-muted-foreground">Praćenje isporuke, odgovora i troškova</p></div></div>
                 </div>
               </CardContent>
             </Card>
@@ -550,12 +550,12 @@ export function SmsMarketing() {
                           <div className="bg-blue-500 h-3 rounded-full" style={{ width: '100%' }} />
                         </div>
                       </div>
-                      <span className="text-[9px] text-muted-foreground w-20 text-right">{deliveryPct}% · {replyPct}%</span>
+                      <span className="text-xs text-muted-foreground w-20 text-right">{deliveryPct}% · {replyPct}%</span>
                     </div>
                   )
                 })}
               </div>
-              <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-green-500" />Isporučeno</div>
                 <div className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-blue-500" />Odgovori</div>
               </div>
@@ -574,7 +574,7 @@ export function SmsMarketing() {
                     <div className="space-y-2">
                       {campaigns.filter(c => c.status === 'draft').map(c => (
                         <div key={c.id} className="flex items-center justify-between p-3 border border-dashed rounded-lg">
-                          <div><p className="text-xs font-medium">{c.name}</p><p className="text-[10px] text-muted-foreground">{c.content.length} znakova</p></div>
+                          <div><p className="text-xs font-medium">{c.name}</p><p className="text-xs text-muted-foreground">{c.content.length} znakova</p></div>
                           <div className="flex gap-1">
                             <Button variant="outline" size="sm" className="text-xs" onClick={() => { setSelectedCampaign(c); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</Button>
                             <Button size="sm" className="text-xs"><Send className="h-3.5 w-3.5 mr-1" /> Pošalji</Button>
@@ -593,7 +593,7 @@ export function SmsMarketing() {
                     <div className="space-y-2">
                       {campaigns.filter(c => c.status === 'scheduled').map(c => (
                         <div key={c.id} className="flex items-center justify-between p-3 border border-blue-200 bg-blue-50/50 rounded-lg">
-                          <div><p className="text-xs font-medium">{c.name}</p><p className="text-[10px] text-muted-foreground">📅 {c.scheduledDate ? formatDate(c.scheduledDate) : '-'} · {c.recipientCount} primalaca</p></div>
+                          <div><p className="text-xs font-medium">{c.name}</p><p className="text-xs text-muted-foreground">📅 {c.scheduledDate ? formatDate(c.scheduledDate) : '-'} · {c.recipientCount} primalaca</p></div>
                           <div className="flex gap-1">
                             <Button variant="outline" size="sm" className="text-xs" onClick={() => { setSelectedCampaign(c); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</Button>
                             <Button variant="outline" size="sm" className="text-xs text-red-600"><X className="h-3.5 w-3.5 mr-1" /> Otkaži</Button>
@@ -613,11 +613,11 @@ export function SmsMarketing() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p className="text-sm font-medium">{c.name}</p>
-                          <Badge variant="outline" className={`text-[10px] ${STATUS_CONFIG[c.status]?.color}`}>{STATUS_CONFIG[c.status]?.label}</Badge>
-                          <Badge variant="secondary" className="text-[9px]">{c.category}</Badge>
+                          <Badge variant="outline" className={`text-xs ${STATUS_CONFIG[c.status]?.color}`}>{STATUS_CONFIG[c.status]?.label}</Badge>
+                          <Badge variant="secondary" className="text-xs">{c.category}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground bg-muted/30 rounded p-2 line-clamp-2">{c.content}</p>
-                        <div className="flex flex-wrap gap-3 mt-2 text-[10px] text-muted-foreground">
+                        <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
                           <span>📱 {c.sentCount}/{c.recipientCount} poslato</span>
                           <span>✅ {c.deliveredCount} isporučeno</span>
                           {c.failedCount > 0 && <span className="text-red-500">❌ {c.failedCount} grešaka</span>}
@@ -664,7 +664,7 @@ export function SmsMarketing() {
                     <div key={tpl.id} className="flex items-center gap-3">
                       <span className="text-xs w-28 truncate">{tpl.name}</span>
                       <div className="flex-1 bg-muted rounded-full h-2.5"><div className={`h-2.5 rounded-full ${tpl.isDefault ? 'bg-amber-400' : 'bg-primary'}`} style={{ width: `${(tpl.usedCount / maxTpl) * 100}%` }} /></div>
-                      <span className="text-[10px] font-mono w-12 text-right">{tpl.usedCount}x</span>
+                      <span className="text-xs font-mono w-12 text-right">{tpl.usedCount}x</span>
                     </div>
                   )
                 })}
@@ -679,12 +679,12 @@ export function SmsMarketing() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-sm font-medium">{tpl.name}</p>
-                        <Badge variant="secondary" className="text-[10px]">{tpl.category}</Badge>
-                        {tpl.isDefault && <Badge variant="outline" className="text-[9px] text-amber-600">Podrazumevani</Badge>}
+                        <Badge variant="secondary" className="text-xs">{tpl.category}</Badge>
+                        {tpl.isDefault && <Badge variant="outline" className="text-xs text-amber-600">Podrazumevani</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground bg-muted/30 rounded p-2">{tpl.body}</p>
-                      {tpl.variables.length > 0 && <div className="flex gap-1 mt-2">{tpl.variables.map(v => <Badge key={v} variant="secondary" className="text-[9px]">{v}</Badge>)}</div>}
-                      <p className="text-[10px] text-muted-foreground mt-1">Korišćen {tpl.usedCount}x · {tpl.body.length}/{SMS_MAX_CHARS} znakova</p>
+                      {tpl.variables.length > 0 && <div className="flex gap-1 mt-2">{tpl.variables.map(v => <Badge key={v} variant="secondary" className="text-xs">{v}</Badge>)}</div>}
+                      <p className="text-xs text-muted-foreground mt-1">Korišćen {tpl.usedCount}x · {tpl.body.length}/{SMS_MAX_CHARS} znakova</p>
                     </div>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setTemplateForm({ name: tpl.name, category: tpl.category, body: tpl.body }); setTemplateDialogOpen(true) }}><Edit3 className="h-3.5 w-3.5" /></Button>
                   </div>
@@ -700,9 +700,9 @@ export function SmsMarketing() {
 
           {/* Contact Stats */}
           <div className="grid grid-cols-3 gap-3">
-            <Card className="p-3"><div className="flex items-center gap-2"><div className="h-7 w-7 rounded-full bg-green-100 flex items-center justify-center"><Users className="h-3.5 w-3.5 text-green-600" /></div><div><p className="text-lg font-bold">{stats.activeContacts}</p><p className="text-[10px] text-muted-foreground">Aktivnih</p></div></div></Card>
-            <Card className="p-3"><div className="flex items-center gap-2"><div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center"><UserPlus className="h-3.5 w-3.5 text-gray-600" /></div><div><p className="text-lg font-bold">{contacts.filter(c => c.status === 'inactive').length}</p><p className="text-[10px] text-muted-foreground">Neaktivnih</p></div></div></Card>
-            <Card className="p-3"><div className="flex items-center gap-2"><div className="h-7 w-7 rounded-full bg-red-100 flex items-center justify-center"><UserPlus className="h-3.5 w-3.5 text-red-600" /></div><div><p className="text-lg font-bold">{stats.unsubscribed}</p><p className="text-[10px] text-muted-foreground">Odjavljenih</p></div></div></Card>
+            <Card className="p-3"><div className="flex items-center gap-2"><div className="h-7 w-7 rounded-full bg-green-100 flex items-center justify-center"><Users className="h-3.5 w-3.5 text-green-600" /></div><div><p className="text-lg font-bold">{stats.activeContacts}</p><p className="text-xs text-muted-foreground">Aktivnih</p></div></div></Card>
+            <Card className="p-3"><div className="flex items-center gap-2"><div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center"><UserPlus className="h-3.5 w-3.5 text-gray-600" /></div><div><p className="text-lg font-bold">{contacts.filter(c => c.status === 'inactive').length}</p><p className="text-xs text-muted-foreground">Neaktivnih</p></div></div></Card>
+            <Card className="p-3"><div className="flex items-center gap-2"><div className="h-7 w-7 rounded-full bg-red-100 flex items-center justify-center"><UserPlus className="h-3.5 w-3.5 text-red-600" /></div><div><p className="text-lg font-bold">{stats.unsubscribed}</p><p className="text-xs text-muted-foreground">Odjavljenih</p></div></div></Card>
           </div>
 
           {/* Contact Groups */}
@@ -715,7 +715,7 @@ export function SmsMarketing() {
                   return (
                     <div key={group} className="flex items-center gap-2 p-2 border rounded-lg hover:bg-muted/30 cursor-pointer">
                       <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center"><Users className="h-3 w-3 text-primary" /></div>
-                      <div><p className="text-[10px] font-medium">{group}</p><p className="text-[9px] text-muted-foreground">{count}</p></div>
+                      <div><p className="text-xs font-medium">{group}</p><p className="text-xs text-muted-foreground">{count}</p></div>
                     </div>
                   )
                 })}
@@ -731,10 +731,10 @@ export function SmsMarketing() {
                     <tr key={c.id} className="border-b last:border-0 hover:bg-muted/30">
                       <td className="p-3 text-xs font-medium">{c.name}</td>
                       <td className="p-3 text-xs font-mono hidden md:table-cell">{c.phone}</td>
-                      <td className="p-3 hidden lg:table-cell"><div className="flex gap-1">{c.groups.map(g => <Badge key={g} variant="secondary" className="text-[9px]">{g}</Badge>)}</div></td>
-                      <td className="p-3"><Badge variant="outline" className={`text-[10px] ${CONTACT_STATUS[c.status]?.color}`}>{CONTACT_STATUS[c.status]?.label}</Badge></td>
+                      <td className="p-3 hidden lg:table-cell"><div className="flex gap-1">{c.groups.map(g => <Badge key={g} variant="secondary" className="text-xs">{g}</Badge>)}</div></td>
+                      <td className="p-3"><Badge variant="outline" className={`text-xs ${CONTACT_STATUS[c.status]?.color}`}>{CONTACT_STATUS[c.status]?.label}</Badge></td>
                       <td className="p-3 text-xs hidden md:table-cell">{c.totalSent}↑ {c.totalReceived}↓</td>
-                      <td className="p-3 text-[10px] text-muted-foreground hidden lg:table-cell">{c.lastActivity ? formatDate(c.lastActivity) : '-'}</td>
+                      <td className="p-3 text-xs text-muted-foreground hidden lg:table-cell">{c.lastActivity ? formatDate(c.lastActivity) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -763,18 +763,18 @@ export function SmsMarketing() {
               <div className="space-y-1">
                 {logs.map(log => (
                   <div key={log.id} className="flex items-start gap-3 p-3 border-b last:border-0 hover:bg-muted/30">
-                    <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-[10px] ${log.direction === 'inbound' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{log.direction === 'inbound' ? '↓' : '↑'}</div>
+                    <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-xs ${log.direction === 'inbound' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{log.direction === 'inbound' ? '↓' : '↑'}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium">{log.contactName || log.phone}</span>
-                        <span className="text-[10px] text-muted-foreground">{log.phone}</span>
+                        <span className="text-xs text-muted-foreground">{log.phone}</span>
                       </div>
                       <p className="text-xs mt-0.5">{log.content}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <Badge variant="outline" className={`text-[9px] ${log.status === 'delivered' ? 'bg-green-100 text-green-700' : log.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{log.status}</Badge>
-                      <p className="text-[9px] text-muted-foreground mt-1">{formatDate(log.createdAt)}</p>
-                      {log.cost > 0 && <p className="text-[9px] text-muted-foreground">{formatRSD(log.cost)}</p>}
+                      <Badge variant="outline" className={`text-xs ${log.status === 'delivered' ? 'bg-green-100 text-green-700' : log.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>{log.status}</Badge>
+                      <p className="text-xs text-muted-foreground mt-1">{formatDate(log.createdAt)}</p>
+                      {log.cost > 0 && <p className="text-xs text-muted-foreground">{formatRSD(log.cost)}</p>}
                     </div>
                   </div>
                 ))}
@@ -821,9 +821,9 @@ export function SmsMarketing() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-sm font-bold font-mono">{kw.keyword}</p>
-                        <Badge variant="secondary" className="text-[10px]">Pokrenuto {kw.matchCount}x</Badge>
-                        {kw.autoReply && <Badge variant="outline" className="text-[9px] bg-blue-100 text-blue-700">Auto odgovor</Badge>}
-                        {kw.forwardTo && <Badge variant="outline" className="text-[9px]">→ {kw.forwardTo}</Badge>}
+                        <Badge variant="secondary" className="text-xs">Pokrenuto {kw.matchCount}x</Badge>
+                        {kw.autoReply && <Badge variant="outline" className="text-xs bg-blue-100 text-blue-700">Auto odgovor</Badge>}
+                        {kw.forwardTo && <Badge variant="outline" className="text-xs">→ {kw.forwardTo}</Badge>}
                       </div>
                       {kw.response && <p className="text-xs text-muted-foreground bg-muted/30 rounded p-2 whitespace-pre-line">{kw.response}</p>}
                     </div>
@@ -911,7 +911,7 @@ export function SmsMarketing() {
             <div className="space-y-2">
               <Label className="text-xs">Sadržaj poruke * (max {SMS_MAX_CHARS} znakova)</Label>
               <Textarea value={campaignForm.content} onChange={(e) => setCampaignForm({ ...campaignForm, content: e.target.value })} rows={3} placeholder="Vaša poruka..." />
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground"><span>{campaignForm.content.length} znakova</span><span>{Math.ceil(campaignForm.content.length / SMS_MAX_CHARS)} SMS-a · {formatRSD(Math.ceil(campaignForm.content.length / SMS_MAX_CHARS) * 3.5)}</span></div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{campaignForm.content.length} znakova</span><span>{Math.ceil(campaignForm.content.length / SMS_MAX_CHARS)} SMS-a · {formatRSD(Math.ceil(campaignForm.content.length / SMS_MAX_CHARS) * 3.5)}</span></div>
               <Progress value={Math.min(100, (campaignForm.content.length / SMS_MAX_CHARS) * 100)} className="h-1.5" />
             </div>
             <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800"><AlertCircle className="h-4 w-4 text-amber-600" /><AlertDescription className="text-amber-700 dark:text-amber-400 text-xs">Podsetite se na STOP opciju za marketinške kampanje.</AlertDescription></Alert>
@@ -928,7 +928,7 @@ export function SmsMarketing() {
               <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} /></div>
               <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={templateForm.category} onValueChange={(v) => setTemplateForm({ ...templateForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
             </div>
-            <div className="space-y-2"><Label className="text-xs">Sadržaj * (koristite {ime}, {broj} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={3} /><p className="text-[10px] text-muted-foreground">{templateForm.body.length}/{SMS_MAX_CHARS} znakova · {(templateForm.body.match(/\{(\w+)\}/g) || []).length} promenljivih</p></div>
+            <div className="space-y-2"><Label className="text-xs">Sadržaj * (koristite {ime}, {broj} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={3} /><p className="text-xs text-muted-foreground">{templateForm.body.length}/{SMS_MAX_CHARS} znakova · {(templateForm.body.match(/\{(\w+)\}/g) || []).length} promenljivih</p></div>
           </div>
           <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateTemplate}>Kreiraj template</Button></DialogFooter>
         </DialogContent>
@@ -972,13 +972,13 @@ export function SmsMarketing() {
                 <div><span className="text-xs text-muted-foreground">Sender ID</span><br /><span className="text-xs">{selectedCampaign.senderId || '-'}</span></div>
               </div>
               <div className="grid grid-cols-4 gap-2">
-                <div className="text-center p-2 bg-muted/30 rounded"><p className="text-[10px] text-muted-foreground">Primalaca</p><p className="text-sm font-bold">{selectedCampaign.recipientCount}</p></div>
-                <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded"><p className="text-[10px] text-muted-foreground">Isporučeno</p><p className="text-sm font-bold">{selectedCampaign.deliveredCount}</p></div>
-                <div className="text-center p-2 bg-red-50 dark:bg-red-900/10 rounded"><p className="text-[10px] text-muted-foreground">Greške</p><p className="text-sm font-bold text-red-600">{selectedCampaign.failedCount}</p></div>
-                <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/10 rounded"><p className="text-[10px] text-muted-foreground">Odgovori</p><p className="text-sm font-bold">{selectedCampaign.replyCount}</p></div>
+                <div className="text-center p-2 bg-muted/30 rounded"><p className="text-xs text-muted-foreground">Primalaca</p><p className="text-sm font-bold">{selectedCampaign.recipientCount}</p></div>
+                <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded"><p className="text-xs text-muted-foreground">Isporučeno</p><p className="text-sm font-bold">{selectedCampaign.deliveredCount}</p></div>
+                <div className="text-center p-2 bg-red-50 dark:bg-red-900/10 rounded"><p className="text-xs text-muted-foreground">Greške</p><p className="text-sm font-bold text-red-600">{selectedCampaign.failedCount}</p></div>
+                <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/10 rounded"><p className="text-xs text-muted-foreground">Odgovori</p><p className="text-sm font-bold">{selectedCampaign.replyCount}</p></div>
               </div>
               <Progress value={selectedCampaign.recipientCount > 0 ? (selectedCampaign.deliveredCount / selectedCampaign.recipientCount) * 100 : 0} className="h-2" />
-              <p className="text-[10px] text-muted-foreground text-center">Dostava: {selectedCampaign.recipientCount > 0 ? Math.round((selectedCampaign.deliveredCount / selectedCampaign.recipientCount) * 100) : 0}%</p>
+              <p className="text-xs text-muted-foreground text-center">Dostava: {selectedCampaign.recipientCount > 0 ? Math.round((selectedCampaign.deliveredCount / selectedCampaign.recipientCount) * 100) : 0}%</p>
               <Separator />
               <div><span className="text-xs text-muted-foreground">Sadržaj poruke</span><p className="text-sm mt-1 p-3 bg-muted/30 rounded">{selectedCampaign.content}</p></div>
               <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Trošak</span><span className="font-medium">{formatRSD(selectedCampaign.totalCost)}</span></div>

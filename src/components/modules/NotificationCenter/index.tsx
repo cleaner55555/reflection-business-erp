@@ -245,7 +245,7 @@ export function NotificationCenter() {
               {tab.icon}
               <span className="hidden sm:inline">{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4 min-w-4">
+                <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0 h-4 min-w-4">
                   {tab.count}
                 </Badge>
               )}
@@ -301,7 +301,7 @@ export function NotificationCenter() {
                                   <span className={`text-sm font-medium ${!notif.isRead ? '' : 'text-muted-foreground'}`}>
                                     {notif.title}
                                   </span>
-                                  <Badge className={`text-[10px] px-1.5 py-0 h-4 ${priority.className}`}>
+                                  <Badge className={`text-xs px-1.5 py-0 h-4 ${priority.className}`}>
                                     {priority.label}
                                   </Badge>
                                 </div>

@@ -231,7 +231,7 @@ function PermissionMatrix({
         <div className="w-[180px] shrink-0" />
         <div className="flex-1 grid grid-cols-4 gap-2 text-center">
           {ACTIONS.map((action) => (
-            <span key={action} className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+            <span key={action} className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               {ACTION_LABELS[action]}
             </span>
           ))}
@@ -255,7 +255,7 @@ function PermissionMatrix({
           <div />
         </div>
         <div className="w-[50px] shrink-0 flex justify-center">
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-xs">
             {Object.values(permissions).filter((p) => p.length > 0).length}/{Object.keys(MODULE_LABELS).length}
           </Badge>
         </div>
@@ -282,7 +282,7 @@ function PermissionMatrix({
               <span className="text-sm">{group.icon}</span>
               <span className="text-xs font-bold text-foreground">{group.label}</span>
               <div className="flex-1" />
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-xs">
                 {groupModuleCount}/{group.modules.length}
               </Badge>
             </div>
@@ -321,7 +321,7 @@ function PermissionMatrix({
                   </div>
                   <div className="w-[50px] shrink-0 flex justify-center">
                     {modPerms.length > 0 && modPerms.length < ACTIONS.length && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         {modPerms.length}
                       </Badge>
                     )}
@@ -567,7 +567,7 @@ export function PermissionsEditor() {
             >
               {role.isDefault && (
                 <div className="absolute top-0 right-0">
-                  <div className="bg-primary/10 text-primary text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">
+                  <div className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-bl-lg">
                     DEFAULT
                   </div>
                 </div>
@@ -576,12 +576,12 @@ export function PermissionsEditor() {
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="min-w-0">
                     <h3 className="font-semibold text-sm text-foreground">{role.displayName}</h3>
-                    <p className="text-[11px] text-muted-foreground font-mono mt-0.5">{role.name}</p>
+                    <p className="text-xs text-muted-foreground font-mono mt-0.5">{role.name}</p>
                     {role.description && (
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{role.description}</p>
                     )}
                   </div>
-                  <Badge variant="outline" className={`shrink-0 text-[10px] ${getRoleColor(role.name)}`}>
+                  <Badge variant="outline" className={`shrink-0 text-xs ${getRoleColor(role.name)}`}>
                     {role._count?.userCompanies || 0}
                   </Badge>
                 </div>
@@ -595,14 +595,14 @@ export function PermissionsEditor() {
                       />
                     </div>
                   </div>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
                     {moduleCount}/{totalModules} modula · {actionCount} prava
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t">
                   <Users className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {role._count?.userCompanies || 0} korisnika
                   </span>
                   <div className="flex-1" />
@@ -770,7 +770,7 @@ export function PermissionsEditor() {
                   placeholder="npr. prodavac_vip"
                   className="font-mono text-xs"
                 />
-                <p className="text-[10px] text-muted-foreground">Samo mala slova, brojevi i _</p>
+                <p className="text-xs text-muted-foreground">Samo mala slova, brojevi i _</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs">Naziv (displayName) *</Label>

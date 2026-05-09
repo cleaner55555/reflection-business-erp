@@ -738,14 +738,14 @@ export function RentACar() {
 
                       {/* Badges */}
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <Badge variant="outline" className={`text-[10px] ${VEHICLE_STATUS_BADGES[vehicle.status] || ''}`}>
+                        <Badge variant="outline" className={`text-xs ${VEHICLE_STATUS_BADGES[vehicle.status] || ''}`}>
                           {VEHICLE_STATUS_LABELS[vehicle.status] || vehicle.status}
                         </Badge>
-                        <Badge variant="outline" className={`text-[10px] ${FUEL_TYPE_BADGES[vehicle.fuelType] || ''}`}>
+                        <Badge variant="outline" className={`text-xs ${FUEL_TYPE_BADGES[vehicle.fuelType] || ''}`}>
                           <Fuel className="h-2.5 w-2.5 mr-0.5" />
                           {FUEL_TYPE_LABELS[vehicle.fuelType] || vehicle.fuelType}
                         </Badge>
-                        <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200">
+                        <Badge variant="outline" className="text-xs bg-slate-50 text-slate-600 border-slate-200">
                           {TRANSMISSION_LABELS[vehicle.transmission] || vehicle.transmission}
                         </Badge>
                       </div>
@@ -790,7 +790,7 @@ export function RentACar() {
                       {(vehicle.weeklyRate || vehicle.monthlyRate) && (
                         <>
                           <Separator className="my-2" />
-                          <div className="flex gap-3 text-[10px] text-muted-foreground">
+                          <div className="flex gap-3 text-xs text-muted-foreground">
                             {vehicle.weeklyRate && (
                               <span>{t('rentACar.weekly')}: <span className="font-medium text-foreground">{formatRSD(vehicle.weeklyRate)}</span></span>
                             )}
@@ -994,7 +994,7 @@ export function RentACar() {
                           {/* Top row: number + status */}
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-semibold text-sm">{rental.number}</h3>
-                            <Badge variant="outline" className={`text-[10px] ${RENTAL_STATUS_BADGES[rental.status] || ''}`}>
+                            <Badge variant="outline" className={`text-xs ${RENTAL_STATUS_BADGES[rental.status] || ''}`}>
                               {RENTAL_STATUS_LABELS[rental.status] || rental.status}
                             </Badge>
                           </div>
@@ -1021,7 +1021,7 @@ export function RentACar() {
                               <Car className="h-3 w-3 shrink-0" />
                               <span className="truncate">{rental.vehicle?.name || t('rentACar.unknownVehicle')}</span>
                               {rental.vehicle?.registration && (
-                                <span className="font-mono text-[10px]">({rental.vehicle.registration})</span>
+                                <span className="font-mono text-xs">({rental.vehicle.registration})</span>
                               )}
                             </span>
                           </div>

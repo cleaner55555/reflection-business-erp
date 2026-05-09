@@ -659,7 +659,7 @@ export function Restaurant() {
           <TabsTrigger value="narudzbine">
             {t('cafeRestaurant.orders')}
             {activeOrders.length > 0 && (
-              <Badge variant="outline" className="ml-1.5 h-5 min-w-5 px-1.5 text-[10px] bg-amber-50 text-amber-700 border-amber-200">
+              <Badge variant="outline" className="ml-1.5 h-5 min-w-5 px-1.5 text-xs bg-amber-50 text-amber-700 border-amber-200">
                 {activeOrders.length}
               </Badge>
             )}
@@ -793,12 +793,12 @@ export function Restaurant() {
                               <div className="text-xs text-muted-foreground">{LOCATION_LABELS[table.location] || table.location}</div>
                             )}
                           </div>
-                          <Badge variant="outline" className={`text-[10px] ${TABLE_STATUS_BADGE[table.status] || ''}`}>
+                          <Badge variant="outline" className={`text-xs ${TABLE_STATUS_BADGE[table.status] || ''}`}>
                             {TABLE_STATUS_LABEL[table.status] || table.status}
                           </Badge>
                           {(table.activeOrderCount || 0) > 0 && (
                             <div className="mt-2 pt-2 border-t">
-                              <p className="text-[10px] text-muted-foreground">{(table.activeOrderCount || 0)} {t('cafeRestaurant.activeOrders').toLowerCase()}</p>
+                              <p className="text-xs text-muted-foreground">{(table.activeOrderCount || 0)} {t('cafeRestaurant.activeOrders').toLowerCase()}</p>
                             </div>
                           )}
                           <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -895,7 +895,7 @@ export function Restaurant() {
                             >
                               <div className="flex-1 min-w-0">
                                 <span className="font-medium truncate block">{item.name}</span>
-                                {item.category && <span className="text-[10px] text-muted-foreground">{item.category.name}</span>}
+                                {item.category && <span className="text-xs text-muted-foreground">{item.category.name}</span>}
                               </div>
                               <span className="text-xs text-muted-foreground ml-2 shrink-0">{formatRSD(item.price)}</span>
                             </button>
@@ -913,7 +913,7 @@ export function Restaurant() {
                           <div key={oi.menuItemId} className="flex items-center justify-between px-3 py-2">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{oi.menuItemName}</p>
-                              <p className="text-[10px] text-muted-foreground">{formatRSD(oi.unitPrice)} x {oi.quantity} = {formatRSD(oi.unitPrice * oi.quantity)}</p>
+                              <p className="text-xs text-muted-foreground">{formatRSD(oi.unitPrice)} x {oi.quantity} = {formatRSD(oi.unitPrice * oi.quantity)}</p>
                             </div>
                             <div className="flex items-center gap-1 shrink-0 ml-2">
                               <Button type="button" variant="outline" size="icon" className="h-6 w-6" onClick={() => updateOrderItemQty(oi.menuItemId, oi.quantity - 1)}>-</Button>
@@ -985,10 +985,10 @@ export function Restaurant() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="font-semibold text-sm">{t('cafeRestaurant.order')} #{order.orderNumber}</span>
-                                    <Badge variant="outline" className={`text-[10px] ${ORDER_STATUS_BADGE[order.status] || ''}`}>
+                                    <Badge variant="outline" className={`text-xs ${ORDER_STATUS_BADGE[order.status] || ''}`}>
                                       {ORDER_STATUS_LABEL[order.status] || order.status}
                                     </Badge>
-                                    <Badge variant="outline" className={`text-[10px] ${ORDER_TYPE_BADGE[order.type] || ''}`}>
+                                    <Badge variant="outline" className={`text-xs ${ORDER_TYPE_BADGE[order.type] || ''}`}>
                                       {ORDER_TYPE_LABEL[order.type] || order.type}
                                     </Badge>
                                   </div>
@@ -1009,7 +1009,7 @@ export function Restaurant() {
                                 <div className="flex items-center gap-3 shrink-0">
                                   <div className="text-right">
                                     <p className="font-bold text-sm">{formatRSD(order.totalAmount)}</p>
-                                    {order.discountPct > 0 && <p className="text-[10px] text-amber-600">{t('cafeRestaurant.discount')}: -{order.discountPct}%</p>}
+                                    {order.discountPct > 0 && <p className="text-xs text-amber-600">{t('cafeRestaurant.discount')}: -{order.discountPct}%</p>}
                                   </div>
                                   <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                     {nextStatus && (
@@ -1039,15 +1039,15 @@ export function Restaurant() {
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                               <span className="text-sm font-medium">{item.menuItemName}</span>
-                                              <Badge variant="outline" className={`text-[10px] ${ITEM_STATUS_BADGE[item.status] || ''}`}>
+                                              <Badge variant="outline" className={`text-xs ${ITEM_STATUS_BADGE[item.status] || ''}`}>
                                                 {ITEM_STATUS_LABEL[item.status] || item.status}
                                               </Badge>
                                             </div>
-                                            {item.notes && <p className="text-[10px] text-muted-foreground mt-0.5">{item.notes}</p>}
+                                            {item.notes && <p className="text-xs text-muted-foreground mt-0.5">{item.notes}</p>}
                                           </div>
                                           <div className="text-right shrink-0 ml-3">
                                             <p className="text-sm font-medium">{formatRSD(item.total)}</p>
-                                            <p className="text-[10px] text-muted-foreground">{formatRSD(item.unitPrice)} x {item.quantity}</p>
+                                            <p className="text-xs text-muted-foreground">{formatRSD(item.unitPrice)} x {item.quantity}</p>
                                           </div>
                                         </div>
                                       ))}
@@ -1055,7 +1055,7 @@ export function Restaurant() {
                                   )}
                                   {order.notes && (
                                     <div className="mt-2 p-2 rounded-md bg-muted/50">
-                                      <p className="text-[10px] text-muted-foreground font-medium">{t('cafeRestaurant.notes')}:</p>
+                                      <p className="text-xs text-muted-foreground font-medium">{t('cafeRestaurant.notes')}:</p>
                                       <p className="text-xs text-muted-foreground">{order.notes}</p>
                                     </div>
                                   )}
@@ -1197,7 +1197,7 @@ export function Restaurant() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                                <Badge variant="outline" className={`text-[10px] ${cat.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                                <Badge variant="outline" className={`text-xs ${cat.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                                   {cat.isActive ? t('cafeRestaurant.active') : t('cafeRestaurant.inactive')}
                                 </Badge>
                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditCategory(cat)}>
@@ -1218,11 +1218,11 @@ export function Restaurant() {
                                         <div className="flex items-center gap-2">
                                           <span className="font-medium text-sm">{item.name}</span>
                                           {!item.isAvailable && (
-                                            <Badge variant="outline" className="text-[10px] bg-red-50 text-red-600 border-red-200">{t('cafeRestaurant.unavailable')}</Badge>
+                                            <Badge variant="outline" className="text-xs bg-red-50 text-red-600 border-red-200">{t('cafeRestaurant.unavailable')}</Badge>
                                           )}
                                         </div>
                                         {item.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.description}</p>}
-                                        {item.cost > 0 && <p className="text-[10px] text-muted-foreground mt-0.5">{t('cafeRestaurant.costPrice')}: {formatRSD(item.cost)}</p>}
+                                        {item.cost > 0 && <p className="text-xs text-muted-foreground mt-0.5">{t('cafeRestaurant.costPrice')}: {formatRSD(item.cost)}</p>}
                                       </div>
                                       <div className="flex items-center gap-3 shrink-0">
                                         <div className="flex items-center gap-2">

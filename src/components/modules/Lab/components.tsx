@@ -16,7 +16,7 @@ import { CATEGORIES, STATUSES, CONDITIONS, formatPrice } from './data'
 
 function getStatusBadge(s: string) {
   const r = STATUSES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 
 export { getStatusBadge }
@@ -226,14 +226,14 @@ export function EquipmentDetailDialog({
                 ['Sledeća kalibracija', detailItem.nextCalibration ? formatDate(detailItem.nextCalibration) : '—'],
                 ['Odgovorna osoba', detailItem.responsible],
               ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
               ))}
             </div>
             <div className="flex gap-3">
-              <div className="p-2 rounded-lg bg-muted/50 flex-1"><div className="text-[10px] text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-              <div className="p-2 rounded-lg bg-muted/50 flex-1"><div className="text-[10px] text-muted-foreground mb-1">Stanje</div><Badge className={`${CONDITIONS[detailItem.condition]?.color} text-[10px]`}>{CONDITIONS[detailItem.condition]?.label}</Badge></div>
+              <div className="p-2 rounded-lg bg-muted/50 flex-1"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
+              <div className="p-2 rounded-lg bg-muted/50 flex-1"><div className="text-xs text-muted-foreground mb-1">Stanje</div><Badge className={`${CONDITIONS[detailItem.condition]?.color} text-xs`}>{CONDITIONS[detailItem.condition]?.label}</Badge></div>
             </div>
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
           </div>
         )}
       </DialogContent>

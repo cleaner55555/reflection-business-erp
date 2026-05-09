@@ -1147,7 +1147,7 @@ export function VeštineContent() {
                     <Zap className="h-4 w-4 text-primary" />
                   </div>
                   <p className="text-2xl font-bold">{dashboard.totalSkills}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {dashboard.totalCategories} kategorija
                   </p>
                 </Card>
@@ -1161,7 +1161,7 @@ export function VeštineContent() {
                   <p className="text-2xl font-bold text-green-600">
                     {dashboard.certifiedEmployees}
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {dashboard.totalCertifications} sertifikata
                   </p>
                 </Card>
@@ -1186,7 +1186,7 @@ export function VeštineContent() {
                   <p className="text-2xl font-bold text-blue-600">
                     {dashboard.skillCoverage}%
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {dashboard.expiringCertifications} uskoro ističe
                   </p>
                 </Card>
@@ -1250,14 +1250,14 @@ export function VeštineContent() {
                             <p className="text-sm font-medium">
                               {gap.skillName}
                             </p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {gap.employeeCount} zaposlenih
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${pCfg?.color}`}
+                              className={`text-xs ${pCfg?.color}`}
                             >
                               {pCfg?.label}
                             </Badge>
@@ -1436,7 +1436,7 @@ export function VeštineContent() {
                             <td className="p-2 sticky left-0 bg-background font-medium">
                               <div>
                                 <p className="text-sm">{emp.name}</p>
-                                <p className="text-[10px] text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                   {emp.department}
                                 </p>
                               </div>
@@ -1447,7 +1447,7 @@ export function VeštineContent() {
                                 <td key={s.id} className="p-2 text-center">
                                   <Badge
                                     variant="outline"
-                                    className={`text-[10px] ${getLevelColor(level)}`}
+                                    className={`text-xs ${getLevelColor(level)}`}
                                   >
                                     {level > 0 ? level : "-"}
                                   </Badge>
@@ -1493,7 +1493,7 @@ export function VeštineContent() {
                         <p className="text-lg font-bold">
                           {avgLevel.toFixed(1)}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           prosek
                         </p>
                       </div>
@@ -1512,7 +1512,7 @@ export function VeštineContent() {
                                 style={{ width: `${(es.level / 5) * 100}%` }}
                               />
                             </div>
-                            <span className="text-[10px] font-medium">
+                            <span className="text-xs font-medium">
                               {es.level}
                             </span>
                           </div>
@@ -1596,14 +1596,14 @@ export function VeštineContent() {
                             <h3 className="text-sm font-medium">
                               {skill.name}
                             </h3>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {catInfo?.name}
                             </p>
                           </div>
                         </div>
                         <Badge
                           variant={skill.isActive ? "default" : "secondary"}
-                          className="text-[10px]"
+                          className="text-xs"
                         >
                           {skill.isActive ? "Aktivna" : "Neaktivna"}
                         </Badge>
@@ -1687,7 +1687,7 @@ export function VeštineContent() {
                           <div>
                             <p className="font-medium text-sm">{cert.name}</p>
                             {cert.certificateNumber && (
-                              <p className="text-[10px] text-muted-foreground">
+                              <p className="text-xs text-muted-foreground">
                                 #{cert.certificateNumber}
                               </p>
                             )}
@@ -1715,7 +1715,7 @@ export function VeštineContent() {
                         <td className="p-3">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${sCfg?.color}`}
+                            className={`text-xs ${sCfg?.color}`}
                           >
                             {sCfg?.label}
                           </Badge>
@@ -1767,7 +1767,7 @@ export function VeštineContent() {
                           <p className="text-sm font-medium">{gap.skillName}</p>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${pCfg?.color}`}
+                            className={`text-xs ${pCfg?.color}`}
                           >
                             {pCfg?.label}
                           </Badge>
@@ -1782,7 +1782,7 @@ export function VeštineContent() {
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] text-muted-foreground w-12">
+                            <span className="text-xs text-muted-foreground w-12">
                               Zahtevano:
                             </span>
                             <div className="flex-1 bg-muted rounded-full h-2">
@@ -1793,12 +1793,12 @@ export function VeštineContent() {
                                 }}
                               />
                             </div>
-                            <span className="text-[10px] font-medium w-4">
+                            <span className="text-xs font-medium w-4">
                               {gap.requiredLevel}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-muted-foreground w-12">
+                            <span className="text-xs text-muted-foreground w-12">
                               Trenutno:
                             </span>
                             <div className="flex-1 bg-muted rounded-full h-2">
@@ -1809,7 +1809,7 @@ export function VeštineContent() {
                                 }}
                               />
                             </div>
-                            <span className="text-[10px] font-medium w-4">
+                            <span className="text-xs font-medium w-4">
                               {gap.currentLevel.toFixed(1)}
                             </span>
                           </div>
@@ -1861,12 +1861,12 @@ export function VeštineContent() {
                             {a.notes}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                               Procenio: {a.assessedBy}
                             </span>
                             <Badge
                               variant={improved ? "default" : "secondary"}
-                              className="text-[10px]"
+                              className="text-xs"
                             >
                               {improved ? "🟢 Napredak" : "🟡 Na istom nivou"}
                             </Badge>
@@ -2304,7 +2304,7 @@ export function VeštineContent() {
                   <span className="text-muted-foreground">Status:</span>{" "}
                   <Badge
                     variant={selected.isActive ? "default" : "secondary"}
-                    className="text-[10px]"
+                    className="text-xs"
                   >
                     {selected.isActive ? "Aktivna" : "Neaktivna"}
                   </Badge>
@@ -2327,18 +2327,18 @@ export function VeštineContent() {
                           <p className="text-sm font-medium">
                             {es.employeeName}
                           </p>
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {es.employeeDepartment}
                           </p>
                         </div>
                         <div className="text-right">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${getLevelColor(es.level)}`}
+                            className={`text-xs ${getLevelColor(es.level)}`}
                           >
                             {getLevelLabel(es.level)} ({es.level})
                           </Badge>
-                          <p className="text-[10px] text-muted-foreground mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             {es.yearsExperience} god. iskustva
                           </p>
                         </div>

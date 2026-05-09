@@ -41,7 +41,7 @@ function EmptyState({ icon, message, actionLabel, onAction }: {
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status]
   return (
-    <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>
+    <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>
       {cfg?.label || status}
     </Badge>
   )
@@ -56,5 +56,5 @@ function ReminderBadge({ status }: { status?: string }) {
   }
   const cfg = labels[status]
   if (!cfg) return null
-  return <Badge variant="outline" className={`text-[9px] ml-1 ${cfg.color}`}><Bell className="h-2.5 w-2.5 mr-0.5" />{cfg.text}</Badge>
+  return <Badge variant="outline" className={`text-xs ml-1 ${cfg.color}`}><Bell className="h-2.5 w-2.5 mr-0.5" />{cfg.text}</Badge>
 }

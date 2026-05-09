@@ -722,7 +722,7 @@ export function PredloziContent() {
                     <Lightbulb className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.totalVotes} glasova ukupno
                   </p>
                 </Card>
@@ -734,7 +734,7 @@ export function PredloziContent() {
                     <Clock className="h-4 w-4 text-amber-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.pending}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.approved} odobreno
                   </p>
                 </Card>
@@ -746,7 +746,7 @@ export function PredloziContent() {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.implemented}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.implementationRate}% stopa realizacije
                   </p>
                 </Card>
@@ -758,7 +758,7 @@ export function PredloziContent() {
                     <AlertTriangle className="h-4 w-4 text-red-500" />
                   </div>
                   <p className="text-2xl font-bold">{stats.rejected}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Prosek {stats.avgResolutionDays} dana rešenja
                   </p>
                 </Card>
@@ -781,7 +781,7 @@ export function PredloziContent() {
                         >
                           <Badge
                             variant="outline"
-                            className={`text-[10px] w-24 justify-center ${cfg?.bgColor} ${cfg?.color}`}
+                            className={`text-xs w-24 justify-center ${cfg?.bgColor} ${cfg?.color}`}
                           >
                             {cfg?.label}
                           </Badge>
@@ -820,7 +820,7 @@ export function PredloziContent() {
                                 style={{ width: `${(m.submitted / 5) * 100}%` }}
                               />
                             </div>
-                            <span className="text-[9px] text-blue-600 w-5">
+                            <span className="text-xs text-blue-600 w-5">
                               {m.submitted}
                             </span>
                           </div>
@@ -833,7 +833,7 @@ export function PredloziContent() {
                                 }}
                               />
                             </div>
-                            <span className="text-[9px] text-green-600 w-5">
+                            <span className="text-xs text-green-600 w-5">
                               {m.implemented}
                             </span>
                           </div>
@@ -843,13 +843,13 @@ export function PredloziContent() {
                     <div className="flex items-center gap-4 pt-2 border-t">
                       <div className="flex items-center gap-1">
                         <div className="h-2 w-4 rounded bg-blue-500" />
-                        <span className="text-[9px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           Predloženo
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <div className="h-2 w-4 rounded bg-green-500" />
-                        <span className="text-[9px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           Realizovano
                         </span>
                       </div>
@@ -876,17 +876,17 @@ export function PredloziContent() {
                         </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm truncate">{c.name}</p>
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {c.dept}
                           </p>
                         </div>
                         <div className="text-right">
-                          <Badge variant="outline" className="text-[9px] mr-1">
+                          <Badge variant="outline" className="text-xs mr-1">
                             {c.count} predloga
                           </Badge>
                           <Badge
                             variant="outline"
-                            className="text-[9px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                            className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                           >
                             {c.implemented} realizovano
                           </Badge>
@@ -929,7 +929,7 @@ export function PredloziContent() {
                               style={{ width: `${d.rate}%` }}
                             />
                           </div>
-                          <span className="text-[10px] font-medium w-10 text-right">
+                          <span className="text-xs font-medium w-10 text-right">
                             {d.rate}%
                           </span>
                         </div>
@@ -1028,19 +1028,19 @@ export function PredloziContent() {
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${sc?.color}`}
+                            className={`text-xs ${sc?.color}`}
                           >
                             {sc?.icon} {sc?.label}
                           </Badge>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${cc?.bgColor} ${cc?.color}`}
+                            className={`text-xs ${cc?.bgColor} ${cc?.color}`}
                           >
                             {cc?.label}
                           </Badge>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${pc?.color}`}
+                            className={`text-xs ${pc?.color}`}
                           >
                             {pc?.label}
                           </Badge>
@@ -1131,7 +1131,7 @@ export function PredloziContent() {
                           >
                             <MessageSquare className="h-3 w-3" />
                           </Button>
-                          <Badge variant="outline" className="text-[9px]">
+                          <Badge variant="outline" className="text-xs">
                             {s.comments}
                           </Badge>
                         </div>
@@ -1203,13 +1203,13 @@ export function PredloziContent() {
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${sc?.color}`}
+                              className={`text-xs ${sc?.color}`}
                             >
                               {sc?.icon} {sc?.label}
                             </Badge>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${cc?.bgColor} ${cc?.color}`}
+                              className={`text-xs ${cc?.bgColor} ${cc?.color}`}
                             >
                               {cc?.label}
                             </Badge>
@@ -1242,7 +1242,7 @@ export function PredloziContent() {
                                 {approvalPct}%
                               </span>
                             </div>
-                            <p className="text-[9px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {totalVotes} glasova
                             </p>
                           </div>
@@ -1270,7 +1270,7 @@ export function PredloziContent() {
                       <p className="text-lg font-bold">
                         {mySuggestions.length}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Ukupno
                       </p>
                     </div>
@@ -1281,7 +1281,7 @@ export function PredloziContent() {
                             .length
                         }
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Na čekanju
                       </p>
                     </div>
@@ -1293,7 +1293,7 @@ export function PredloziContent() {
                           ).length
                         }
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Realizovano
                       </p>
                     </div>
@@ -1304,7 +1304,7 @@ export function PredloziContent() {
                             .length
                         }
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Odbijeno
                       </p>
                     </div>
@@ -1338,7 +1338,7 @@ export function PredloziContent() {
                     value={stats.implementationRate}
                     className="h-2 mt-2"
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {stats.implemented} od {stats.total} predloga
                   </p>
                 </Card>
@@ -1352,7 +1352,7 @@ export function PredloziContent() {
                   <p className="text-2xl font-bold">
                     {stats.avgResolutionDays}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     dana po predlogu
                   </p>
                 </Card>
@@ -1373,7 +1373,7 @@ export function PredloziContent() {
                         .reduce((sum, s) => sum + (s.estimatedSaving || 0), 0),
                     )}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     od realizovanih predloga
                   </p>
                 </Card>
@@ -1413,7 +1413,7 @@ export function PredloziContent() {
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] ${cfg.bgColor} ${cfg.color}`}
+                                className={`text-xs ${cfg.bgColor} ${cfg.color}`}
                               >
                                 {cfg.label}
                               </Badge>
@@ -1456,13 +1456,13 @@ export function PredloziContent() {
                             )}
                           </div>
                           <div className="flex items-center gap-3 mt-1">
-                            <span className="text-[9px] text-green-600">
+                            <span className="text-xs text-green-600">
                               {catImplemented} realizovano
                             </span>
-                            <span className="text-[9px] text-blue-600">
+                            <span className="text-xs text-blue-600">
                               {catApproved} odobreno
                             </span>
-                            <span className="text-[9px] text-amber-600">
+                            <span className="text-xs text-amber-600">
                               {catTotal -
                                 catImplemented -
                                 catApproved -
@@ -1470,7 +1470,7 @@ export function PredloziContent() {
                               na čekanju
                             </span>
                             {catRejected > 0 && (
-                              <span className="text-[9px] text-red-500">
+                              <span className="text-xs text-red-500">
                                 {catRejected} odbijeno
                               </span>
                             )}
@@ -1543,7 +1543,7 @@ export function PredloziContent() {
                             <td className="text-center py-2.5">
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] ${d.rate >= 50 ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : d.rate > 0 ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500"}`}
+                                className={`text-xs ${d.rate >= 50 ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : d.rate > 0 ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500"}`}
                               >
                                 {d.rate}%
                               </Badge>
@@ -1590,7 +1590,7 @@ export function PredloziContent() {
                         <div key={key} className="flex items-center gap-3">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${pcfg.color} w-20 justify-center`}
+                            className={`text-xs ${pcfg.color} w-20 justify-center`}
                           >
                             {pcfg.label}
                           </Badge>
@@ -1641,7 +1641,7 @@ export function PredloziContent() {
                         >
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${cfg.bgColor} ${cfg.color}`}
+                            className={`text-xs ${cfg.bgColor} ${cfg.color}`}
                           >
                             {cfg.label}
                           </Badge>
@@ -1649,7 +1649,7 @@ export function PredloziContent() {
                             <p className="text-sm font-medium">
                               {formatCurrency(implSaving)}
                             </p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               od {formatCurrency(totalSaving)} procenjeno
                             </p>
                           </div>
@@ -1785,19 +1785,19 @@ export function PredloziContent() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${sc?.color}`}
+                        className={`text-xs ${sc?.color}`}
                       >
                         {sc?.icon} {sc?.label}
                       </Badge>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${cc?.bgColor} ${cc?.color}`}
+                        className={`text-xs ${cc?.bgColor} ${cc?.color}`}
                       >
                         {cc?.label}
                       </Badge>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${pc?.color}`}
+                        className={`text-xs ${pc?.color}`}
                       >
                         {pc?.label}
                       </Badge>
@@ -1888,7 +1888,7 @@ export function PredloziContent() {
                     <div className="grid grid-cols-2 gap-4">
                       {s.estimatedSaving && s.estimatedSaving > 0 && (
                         <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Procenjena ušteda
                           </p>
                           <p className="text-sm font-bold text-green-600">
@@ -1898,7 +1898,7 @@ export function PredloziContent() {
                       )}
                       {s.implementedAt && (
                         <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Datum realizacije
                           </p>
                           <p className="text-sm font-bold text-blue-600">
@@ -1908,7 +1908,7 @@ export function PredloziContent() {
                       )}
                       {s.implementerName && (
                         <div className="p-3 rounded-lg bg-muted/50">
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             Realizator
                           </p>
                           <p className="text-sm font-medium">
@@ -1918,7 +1918,7 @@ export function PredloziContent() {
                       )}
                       {s.rejectionReason && (
                         <div className="col-span-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
-                          <p className="text-[10px] text-muted-foreground mb-1">
+                          <p className="text-xs text-muted-foreground mb-1">
                             Razlog odbijanja
                           </p>
                           <p className="text-sm text-red-700 dark:text-red-400">

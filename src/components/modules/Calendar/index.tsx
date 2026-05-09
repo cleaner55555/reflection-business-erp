@@ -406,21 +406,21 @@ export function Calendar() {
                       onClick={() => setSelectedDay(new Date(year, month, day))}>
                       <div className="flex items-center justify-between mb-0.5">
                         <span className={`text-xs font-medium ${isToday(day) ? 'bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center' : 'text-muted-foreground'}`}>{day}</span>
-                        {dayEvents.length > 0 && <span className="text-[9px] text-muted-foreground">{dayEvents.length}</span>}
+                        {dayEvents.length > 0 && <span className="text-xs text-muted-foreground">{dayEvents.length}</span>}
                       </div>
                       <div className="space-y-0.5">
                         {dayEvents.slice(0, 3).map(ev => {
                           const typeInfo = EVENT_TYPES.find(t => t.value === ev.type)
                           const Icon = typeInfo?.icon || CalendarIcon
                           return (
-                            <button key={ev.id} className={`w-full text-left text-[10px] px-1 py-0.5 rounded border truncate flex items-center gap-0.5 ${COLORS[ev.color] || COLORS.primary}`}
+                            <button key={ev.id} className={`w-full text-left text-xs px-1 py-0.5 rounded border truncate flex items-center gap-0.5 ${COLORS[ev.color] || COLORS.primary}`}
                               onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setEventDetailOpen(true) }}>
                               <Icon className="h-2.5 w-2.5 shrink-0" /><span className="truncate">{ev.title}</span>
                             </button>
                           )
                         })}
                         {dayEvents.length > 3 && (
-                          <button className="w-full text-left text-[10px] px-1 py-0.5 text-muted-foreground hover:bg-muted/50 rounded" onClick={(e) => { e.stopPropagation(); setSelectedDay(new Date(year, month, day)); setActiveTab('list') }}>
+                          <button className="w-full text-left text-xs px-1 py-0.5 text-muted-foreground hover:bg-muted/50 rounded" onClick={(e) => { e.stopPropagation(); setSelectedDay(new Date(year, month, day)); setActiveTab('list') }}>
                             +{dayEvents.length - 3} više...
                           </button>
                         )}
@@ -457,7 +457,7 @@ export function Calendar() {
                   <div key={i} className={`p-3 ${isTodayDate ? 'bg-primary/5' : ''}`}>
                     <div className="flex items-center gap-3 mb-2">
                       <div className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center ${isTodayDate ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                        <span className="text-[10px] uppercase">{DAYS_SR[i]}</span>
+                        <span className="text-xs uppercase">{DAYS_SR[i]}</span>
                         <span className="text-lg font-bold leading-tight">{date.getDate()}</span>
                       </div>
                       <div className="flex-1">
@@ -475,9 +475,9 @@ export function Calendar() {
                             <Circle className={`h-2 w-2 fill-current ${COLOR_DOTS[ev.color] || 'bg-primary'}`} />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium truncate">{ev.title}</p>
-                              <p className="text-[10px] opacity-70">{ev.allDay ? 'Ceo dan' : `${formatTime(ev.startTime)}${ev.endTime ? ` — ${formatTime(ev.endTime)}` : ''}${ev.location ? ` · ${ev.location}` : ''}`}</p>
+                              <p className="text-xs opacity-70">{ev.allDay ? 'Ceo dan' : `${formatTime(ev.startTime)}${ev.endTime ? ` — ${formatTime(ev.endTime)}` : ''}${ev.location ? ` · ${ev.location}` : ''}`}</p>
                             </div>
-                            {ev.type && <Badge variant="outline" className="text-[9px] shrink-0">{EVENT_TYPES.find(t => t.value === ev.type)?.label || ev.type}</Badge>}
+                            {ev.type && <Badge variant="outline" className="text-xs shrink-0">{EVENT_TYPES.find(t => t.value === ev.type)?.label || ev.type}</Badge>}
                           </button>
                         ))}
                       </div>
@@ -539,11 +539,11 @@ export function Calendar() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium truncate">{ev.title}</p>
-                          {upcoming && <Badge variant="outline" className="text-[9px] text-amber-600 bg-amber-50">Uskoro</Badge>}
-                          {past && <Badge variant="outline" className="text-[9px] text-gray-400">Prošao</Badge>}
-                          {ev.priority === 'urgent' && <Badge variant="outline" className="text-[9px] text-red-600 bg-red-50"><AlertTriangle className="h-2.5 w-2.5 mr-0.5" />Hitno</Badge>}
+                          {upcoming && <Badge variant="outline" className="text-xs text-amber-600 bg-amber-50">Uskoro</Badge>}
+                          {past && <Badge variant="outline" className="text-xs text-gray-400">Prošao</Badge>}
+                          {ev.priority === 'urgent' && <Badge variant="outline" className="text-xs text-red-600 bg-red-50"><AlertTriangle className="h-2.5 w-2.5 mr-0.5" />Hitno</Badge>}
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                           <span className="flex items-center gap-1"><CalendarIcon className="h-3 w-3" />{formatDateShort(ev.startTime)}</span>
                           {!ev.allDay && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime(ev.startTime)}{ev.endTime ? ` — ${formatTime(ev.endTime)}` : ''}</span>}
                           {getEventDuration(ev.startTime, ev.endTime) && <span className="flex items-center gap-1"><Timer className="h-3 w-3" />{getEventDuration(ev.startTime, ev.endTime)}</span>}
@@ -596,7 +596,7 @@ export function Calendar() {
                       <Circle className={`h-2.5 w-2.5 fill-current ${COLOR_DOTS[ev.color] || 'bg-primary'}`} />
                       <div className="flex-1">
                         <p className="text-sm font-medium">{ev.title}</p>
-                        <p className="text-[11px] text-muted-foreground">{ev.allDay ? 'Ceo dan' : formatTime(ev.startTime)}{ev.location ? ` · ${ev.location}` : ''}</p>
+                        <p className="text-xs text-muted-foreground">{ev.allDay ? 'Ceo dan' : formatTime(ev.startTime)}{ev.location ? ` · ${ev.location}` : ''}</p>
                       </div>
                     </div>
                   ))}
@@ -620,11 +620,11 @@ export function Calendar() {
                 ) : upcomingEvents.map(ev => (
                   <div key={ev.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedEvent(ev); setEventDetailOpen(true) }}>
                     <div className={`h-8 w-8 rounded flex items-center justify-center ${COLORS[ev.color] || COLORS.primary}`}>
-                      <span className="text-[10px] font-bold">{new Date(ev.startTime).getDate()}</span>
+                      <span className="text-xs font-bold">{new Date(ev.startTime).getDate()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{ev.title}</p>
-                      <p className="text-[11px] text-muted-foreground">{formatDateFull(ev.startTime)} · {ev.allDay ? 'Ceo dan' : formatTime(ev.startTime)}</p>
+                      <p className="text-xs text-muted-foreground">{formatDateFull(ev.startTime)} · {ev.allDay ? 'Ceo dan' : formatTime(ev.startTime)}</p>
                     </div>
                   </div>
                 ))}
@@ -741,15 +741,15 @@ export function Calendar() {
               <DialogHeader><DialogTitle className="flex items-center gap-2"><CalendarDays className="h-5 w-5" /> {selectedEvent.title}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-xs text-muted-foreground">Tip:</span><br /><Badge variant="secondary" className="text-[10px] mt-1">{EVENT_TYPES.find(t => t.value === selectedEvent.type)?.label || selectedEvent.type}</Badge></div>
+                  <div><span className="text-xs text-muted-foreground">Tip:</span><br /><Badge variant="secondary" className="text-xs mt-1">{EVENT_TYPES.find(t => t.value === selectedEvent.type)?.label || selectedEvent.type}</Badge></div>
                   <div><span className="text-xs text-muted-foreground">Prioritet:</span><br /><span className={`text-xs mt-1 ${PRIORITY_OPTIONS.find(p => p.value === selectedEvent.priority)?.color || ''}`}>{PRIORITY_OPTIONS.find(p => p.value === selectedEvent.priority)?.label || '-'}</span></div>
                   <div><span className="text-xs text-muted-foreground">Datum:</span><br /><span className="text-xs">{formatDateFull(selectedEvent.startTime)}</span></div>
                   <div><span className="text-xs text-muted-foreground">Vreme:</span><br /><span className="text-xs">{selectedEvent.allDay ? 'Ceo dan' : `${formatTime(selectedEvent.startTime)}${selectedEvent.endTime ? ` — ${formatTime(selectedEvent.endTime)}` : ''}`}</span></div>
                   {getEventDuration(selectedEvent.startTime, selectedEvent.endTime) && <div><span className="text-xs text-muted-foreground">Trajanje:</span><br /><span className="text-xs">{getEventDuration(selectedEvent.startTime, selectedEvent.endTime)}</span></div>}
                   {selectedEvent.location && <div className="col-span-2"><span className="text-xs text-muted-foreground">Lokacija:</span><br /><span className="text-xs">{selectedEvent.location}</span></div>}
-                  {selectedEvent.attendees && <div className="col-span-2"><span className="text-xs text-muted-foreground">Učesnici:</span><br /><div className="flex gap-1 flex-wrap mt-1">{selectedEvent.attendees.split(',').map((a, i) => <Badge key={i} variant="outline" className="text-[10px]">{a.trim()}</Badge>)}</div></div>}
-                  {selectedEvent.recurrence && selectedEvent.recurrence !== 'none' && <div><span className="text-xs text-muted-foreground">Ponavljanje:</span><br /><Badge variant="outline" className="text-[10px] mt-1"><Repeat className="h-2.5 w-2.5 mr-0.5" />{RECURRENCE_OPTIONS.find(r => r.value === selectedEvent.recurrence)?.label}</Badge></div>}
-                  {selectedEvent.reminder && selectedEvent.reminder !== 'none' && <div><span className="text-xs text-muted-foreground">Podsetnik:</span><br /><Badge variant="outline" className="text-[10px] mt-1"><Bell className="h-2.5 w-2.5 mr-0.5" />{REMINDER_OPTIONS.find(r => r.value === selectedEvent.reminder)?.label}</Badge></div>}
+                  {selectedEvent.attendees && <div className="col-span-2"><span className="text-xs text-muted-foreground">Učesnici:</span><br /><div className="flex gap-1 flex-wrap mt-1">{selectedEvent.attendees.split(',').map((a, i) => <Badge key={i} variant="outline" className="text-xs">{a.trim()}</Badge>)}</div></div>}
+                  {selectedEvent.recurrence && selectedEvent.recurrence !== 'none' && <div><span className="text-xs text-muted-foreground">Ponavljanje:</span><br /><Badge variant="outline" className="text-xs mt-1"><Repeat className="h-2.5 w-2.5 mr-0.5" />{RECURRENCE_OPTIONS.find(r => r.value === selectedEvent.recurrence)?.label}</Badge></div>}
+                  {selectedEvent.reminder && selectedEvent.reminder !== 'none' && <div><span className="text-xs text-muted-foreground">Podsetnik:</span><br /><Badge variant="outline" className="text-xs mt-1"><Bell className="h-2.5 w-2.5 mr-0.5" />{REMINDER_OPTIONS.find(r => r.value === selectedEvent.reminder)?.label}</Badge></div>}
                 </div>
                 {selectedEvent.description && <div><span className="text-xs text-muted-foreground">Opis:</span><p className="text-sm mt-1 bg-muted/30 rounded p-2">{selectedEvent.description}</p></div>}
                 <Separator />
@@ -791,10 +791,10 @@ export function Calendar() {
         <CardHeader className="pb-3"><CardTitle className="text-sm">Prečice na tastaturi</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-            <div className="flex items-center justify-between p-2 rounded bg-muted/30"><span className="text-muted-foreground">Novi događaj</span><kbd className="bg-background border rounded px-1.5 py-0.5 text-[10px] font-mono">N</kbd></div>
-            <div className="flex items-center justify-between p-2 rounded bg-muted/30"><span className="text-muted-foreground">Sledeći mesec</span><kbd className="bg-background border rounded px-1.5 py-0.5 text-[10px] font-mono">→</kbd></div>
-            <div className="flex items-center justify-between p-2 rounded bg-muted/30"><span className="text-muted-foreground">Prethodni mesec</span><kbd className="bg-background border rounded px-1.5 py-0.5 text-[10px] font-mono">←</kbd></div>
-            <div className="flex items-center justify-between p-2 rounded bg-muted/30"><span className="text-muted-foreground">Danas</span><kbd className="bg-background border rounded px-1.5 py-0.5 text-[10px] font-mono">T</kbd></div>
+            <div className="flex items-center justify-between p-2 rounded bg-muted/30"><span className="text-muted-foreground">Novi događaj</span><kbd className="bg-background border rounded px-1.5 py-0.5 text-xs font-mono">N</kbd></div>
+            <div className="flex items-center justify-between p-2 rounded bg-muted/30"><span className="text-muted-foreground">Sledeći mesec</span><kbd className="bg-background border rounded px-1.5 py-0.5 text-xs font-mono">→</kbd></div>
+            <div className="flex items-center justify-between p-2 rounded bg-muted/30"><span className="text-muted-foreground">Prethodni mesec</span><kbd className="bg-background border rounded px-1.5 py-0.5 text-xs font-mono">←</kbd></div>
+            <div className="flex items-center justify-between p-2 rounded bg-muted/30"><span className="text-muted-foreground">Danas</span><kbd className="bg-background border rounded px-1.5 py-0.5 text-xs font-mono">T</kbd></div>
           </div>
         </CardContent>
       </Card>
@@ -819,7 +819,7 @@ export function Calendar() {
                   <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-xs font-medium">{h.name}</span>
                 </div>
-                <Badge variant="outline" className="text-[9px]">{h.date}</Badge>
+                <Badge variant="outline" className="text-xs">{h.date}</Badge>
               </div>
             ))}
           </div>
@@ -884,15 +884,15 @@ export function Calendar() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-3 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setActiveTab('month')}>
               <div className="flex items-center gap-2 mb-2"><LayoutGrid className="h-4 w-4 text-primary" /><span className="text-sm font-medium">Mesečni prikaz</span></div>
-              <p className="text-[11px] text-muted-foreground">Pregled celog meseca sa svim događajima. Kliknite na dan za detalje, kliknite na događaj za uređivanje.</p>
+              <p className="text-xs text-muted-foreground">Pregled celog meseca sa svim događajima. Kliknite na dan za detalje, kliknite na događaj za uređivanje.</p>
             </div>
             <div className="p-3 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setActiveTab('week')}>
               <div className="flex items-center gap-2 mb-2"><Grid3X3 className="h-4 w-4 text-primary" /><span className="text-sm font-medium">Nedeljni prikaz</span></div>
-              <p className="text-[11px] text-muted-foreground">Pregled aktuelne nedelje sa detaljnim prikazom svakog dana. Idealno za planiranje sedmice.</p>
+              <p className="text-xs text-muted-foreground">Pregled aktuelne nedelje sa detaljnim prikazom svakog dana. Idealno za planiranje sedmice.</p>
             </div>
             <div className="p-3 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setActiveTab('list')}>
               <div className="flex items-center gap-2 mb-2"><List className="h-4 w-4 text-primary" /><span className="text-sm font-medium">Lista događaja</span></div>
-              <p className="text-[11px] text-muted-foreground">Kronološki prikaz svih događaja sa pretragom i filtriranjem. Brzo pronalaženje i uređivanje.</p>
+              <p className="text-xs text-muted-foreground">Kronološki prikaz svih događaja sa pretragom i filtriranjem. Brzo pronalaženje i uređivanje.</p>
             </div>
           </div>
         </CardContent>

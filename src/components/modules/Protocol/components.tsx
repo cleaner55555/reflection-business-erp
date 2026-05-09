@@ -304,12 +304,12 @@ export function Protokol() {
     const cfg = STATUS_CONFIG[status];
     if (!cfg)
       return (
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-xs">
           {status}
         </Badge>
       );
     return (
-      <Badge variant="outline" className={`text-[10px] ${cfg.className}`}>
+      <Badge variant="outline" className={`text-xs ${cfg.className}`}>
         {cfg.label}
       </Badge>
     );
@@ -319,12 +319,12 @@ export function Protokol() {
     const cfg = PRIORITY_CONFIG[priority];
     if (!cfg)
       return (
-        <Badge variant="secondary" className="text-[10px]">
+        <Badge variant="secondary" className="text-xs">
           {priority}
         </Badge>
       );
     return (
-      <Badge variant="secondary" className={`text-[10px] ${cfg.className}`}>
+      <Badge variant="secondary" className={`text-xs ${cfg.className}`}>
         {cfg.label}
       </Badge>
     );
@@ -764,7 +764,7 @@ export function Protokol() {
                                   {entry.documentType ? (
                                     <Badge
                                       variant="secondary"
-                                      className="text-[10px] font-normal"
+                                      className="text-xs font-normal"
                                     >
                                       {DOC_TYPES[entry.documentType] ||
                                         entry.documentType}

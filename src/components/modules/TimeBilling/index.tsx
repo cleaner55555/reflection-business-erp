@@ -362,7 +362,7 @@ export function TimeBilling() {
             <Timer className="h-4 w-4" />
             Satnice
             {unbilledCount > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px] bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
                 {unbilledCount}
               </Badge>
             )}
@@ -371,7 +371,7 @@ export function TimeBilling() {
             <FileText className="h-4 w-4" />
             Fakturisanje
             {overdueCount > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px] bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
                 {overdueCount}
               </Badge>
             )}

@@ -243,7 +243,7 @@ export function FieldService() {
                               <div className="text-sm font-medium">{o.customerName}</div>
                               <div className="text-xs text-muted-foreground">{o.address} · {typeLabels[o.type] || o.type}</div>
                             </div>
-                            <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
+                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
                           </div>
                         )
                       })}
@@ -293,8 +293,8 @@ export function FieldService() {
                         <td className="p-3 font-mono text-xs">{o.orderNumber}</td>
                         <td className="p-3">{o.customerName}</td>
                         <td className="p-3">{typeLabels[o.type] || o.type}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${pCfg?.color || ''}`}>{pCfg?.label || o.priority}</Badge></td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${sCfg?.color || ''}`}>{sCfg?.label || o.status}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || o.priority}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${sCfg?.color || ''}`}>{sCfg?.label || o.status}</Badge></td>
                         <td className="p-3">
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(o); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>

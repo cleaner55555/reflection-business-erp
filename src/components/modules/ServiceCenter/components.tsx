@@ -842,7 +842,7 @@ export function Servis() {
                   <p className="text-2xl font-bold">
                     {formatCurrency(stats.totalRevenue)}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     prosek {formatCurrency(stats.avgCost)}/nalog
                   </p>
                 </Card>
@@ -903,7 +903,7 @@ export function Servis() {
                           <span className="text-xs font-medium w-6 text-right">
                             {t.count}
                           </span>
-                          <span className="text-[10px] text-muted-foreground w-20 text-right">
+                          <span className="text-xs text-muted-foreground w-20 text-right">
                             {formatCurrency(t.revenue)}
                           </span>
                         </div>
@@ -926,7 +926,7 @@ export function Servis() {
                         {i + 1}.
                       </span>
                       <span className="text-xs flex-1">{b.brand}</span>
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-xs">
                         {b.count}
                       </Badge>
                     </div>
@@ -1009,17 +1009,17 @@ export function Servis() {
                               </span>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] ${sCfg?.color}`}
+                                className={`text-xs ${sCfg?.color}`}
                               >
                                 {sCfg?.label}
                               </Badge>
-                              <span className="text-[10px]">
+                              <span className="text-xs">
                                 {cCfg?.icon} {o.productBrand} {o.productModel}
                               </span>
                               {o.warranty && (
                                 <Badge
                                   variant="secondary"
-                                  className="text-[10px]"
+                                  className="text-xs"
                                 >
                                   Garancija
                                 </Badge>
@@ -1027,7 +1027,7 @@ export function Servis() {
                               {o.parts.length > 0 && (
                                 <Badge
                                   variant="outline"
-                                  className="text-[10px]"
+                                  className="text-xs"
                                 >
                                   {o.parts.length} delova
                                 </Badge>
@@ -1130,14 +1130,14 @@ export function Servis() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">Klijent</p>
+                    <p className="text-xs text-muted-foreground">Klijent</p>
                     <p className="text-sm font-medium">{selected.clientName}</p>
                     <p className="text-xs text-muted-foreground">
                       {selected.clientAddress}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Tehničar
                     </p>
                     <p className="text-sm font-medium">
@@ -1145,7 +1145,7 @@ export function Servis() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Procenjeni trošak
                     </p>
                     <p className="text-sm font-bold">
@@ -1153,7 +1153,7 @@ export function Servis() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Stvarni trošak
                     </p>
                     <p className="text-sm font-bold">
@@ -1162,7 +1162,7 @@ export function Servis() {
                         : "—"}
                     </p>
                     {selected.actualCost > 0 && (
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Delovi: {formatCurrency(selected.partsCost)} · Rad:{" "}
                         {formatCurrency(selected.laborCost)}
                       </p>
@@ -1225,7 +1225,7 @@ export function Servis() {
                         </div>
                         <div className="pb-3">
                           <p className="text-xs font-medium">{ev.action}</p>
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {ev.description} · {ev.performedBy} ·{" "}
                             {new Date(ev.timestamp).toLocaleString("sr-RS")}
                           </p>

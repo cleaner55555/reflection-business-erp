@@ -160,7 +160,7 @@ function ActiveLanguagesPicker({ activeCodes, onToggle }: { activeCodes: string[
           .filter((r) => filtered.some((l) => ALL_LANGUAGES.indexOf(l) >= r.start && ALL_LANGUAGES.indexOf(l) < r.end))
           .map((region) => (
             <div key={region.label}>
-              <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/50 sticky top-0">
+              <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/50 sticky top-0">
                 {region.label}
               </div>
               {filtered
@@ -827,7 +827,7 @@ export function Settings() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-[10px] text-muted-foreground">Izaberite aktivni jezik za interfejs</p>
+                      <p className="text-xs text-muted-foreground">Izaberite aktivni jezik za interfejs</p>
                     </div>
                   </div>
                 </CardContent>
@@ -886,7 +886,7 @@ export function Settings() {
                       className="h-10 w-10 rounded-full border-2 border-white shadow-md transition-transform group-hover:scale-110"
                       style={{ backgroundColor: preset.settings.primaryColor }}
                     />
-                    <span className="text-[10px] text-muted-foreground leading-tight text-center">
+                    <span className="text-xs text-muted-foreground leading-tight text-center">
                       {locale === 'en' ? preset.nameEn : preset.name.split(' ')[0]}
                     </span>
                     {isPresetActive(preset) && (
@@ -1013,7 +1013,7 @@ export function Settings() {
                       onChange={handleLogoUpload}
                       className="hidden"
                     />
-                    <p className="text-[10px] text-muted-foreground">PNG, JPG, SVG (max 500KB)</p>
+                    <p className="text-xs text-muted-foreground">PNG, JPG, SVG (max 500KB)</p>
                   </div>
                 </div>
               </div>
@@ -1028,7 +1028,7 @@ export function Settings() {
                   onChange={(e) => setLocalCompanyName(e.target.value)}
                   maxLength={20}
                 />
-                <p className="text-[10px] text-muted-foreground">Prikažite vaš naziv kompanije umesto &quot;Reflection&quot; u bočnoj traci</p>
+                <p className="text-xs text-muted-foreground">Prikažite vaš naziv kompanije umesto &quot;Reflection&quot; u bočnoj traci</p>
               </div>
             </CardContent>
           </Card>

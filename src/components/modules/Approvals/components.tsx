@@ -873,7 +873,7 @@ export function Odobrenja() {
                   <p className="text-2xl font-bold text-amber-600">
                     {dashboard.pendingRequests}
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {dashboard.urgentPendingCount} hitnih
                   </p>
                 </Card>
@@ -887,7 +887,7 @@ export function Odobrenja() {
                   <p className="text-2xl font-bold text-green-600">
                     {dashboard.approvedRequests}
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {dashboard.totalRequests > 0
                       ? Math.round(
                           (dashboard.approvedRequests /
@@ -908,7 +908,7 @@ export function Odobrenja() {
                   <p className="text-2xl font-bold text-red-600">
                     {dashboard.rejectedRequests}
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {dashboard.totalRequests > 0
                       ? Math.round(
                           (dashboard.rejectedRequests /
@@ -929,7 +929,7 @@ export function Odobrenja() {
                   <p className="text-2xl font-bold">
                     {dashboard.avgResponseHours}h
                   </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     mojih na čekanju: {dashboard.myPendingCount}
                   </p>
                 </Card>
@@ -1087,7 +1087,7 @@ export function Odobrenja() {
                               title={`Odbijeno: ${m.rejected}`}
                             />
                           </div>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {m.month}
                           </span>
                         </div>
@@ -1133,7 +1133,7 @@ export function Odobrenja() {
                           </div>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${sCfg?.color}`}
+                            className={`text-xs ${sCfg?.color}`}
                           >
                             {sCfg?.label}
                           </Badge>
@@ -1235,13 +1235,13 @@ export function Odobrenja() {
                                 </h3>
                                 <Badge
                                   variant="outline"
-                                  className={`text-[10px] shrink-0 ${sCfg?.color}`}
+                                  className={`text-xs shrink-0 ${sCfg?.color}`}
                                 >
                                   {sCfg?.label}
                                 </Badge>
                                 <Badge
                                   variant="outline"
-                                  className={`text-[10px] shrink-0 ${pCfg?.color}`}
+                                  className={`text-xs shrink-0 ${pCfg?.color}`}
                                 >
                                   <span
                                     className={`w-1.5 h-1.5 rounded-full ${pCfg?.dotColor} mr-1`}
@@ -1350,7 +1350,7 @@ export function Odobrenja() {
                           <h3 className="text-sm font-medium">{tpl.name}</h3>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${tCfg?.color}`}
+                            className={`text-xs ${tCfg?.color}`}
                           >
                             {tCfg?.label}
                           </Badge>
@@ -1360,7 +1360,7 @@ export function Odobrenja() {
                         {!tpl.isActive && (
                           <Badge
                             variant="outline"
-                            className="text-[10px] bg-gray-100"
+                            className="text-xs bg-gray-100"
                           >
                             Neaktivan
                           </Badge>
@@ -1371,7 +1371,7 @@ export function Odobrenja() {
                       {tpl.description}
                     </p>
                     <div className="space-y-1 mb-3">
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Obavezna polja:
                       </p>
                       <div className="flex flex-wrap gap-1">
@@ -1379,7 +1379,7 @@ export function Odobrenja() {
                           <Badge
                             key={f}
                             variant="secondary"
-                            className="text-[10px]"
+                            className="text-xs"
                           >
                             {f}
                           </Badge>
@@ -1387,7 +1387,7 @@ export function Odobrenja() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         Korišćeno {tpl.usageCount} puta
                       </span>
                       <Button
@@ -1703,7 +1703,7 @@ export function Odobrenja() {
                           <span className="text-sm font-medium">
                             {c.author}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {new Date(c.createdAt).toLocaleString("sr-RS")}
                           </span>
                         </div>

@@ -57,8 +57,8 @@ const TYPES: Record<string, { color: string; label: string }> = {
   special: { color: 'bg-purple-100 text-purple-800', label: 'Specijalni' },
 }
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
-function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
+function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
 export function Prescriptions() {
@@ -221,15 +221,15 @@ export function Prescriptions() {
                   ['Učešće pacijenta', formatRSD(detailItem.patientShare)],
                   ['Pokriće osiguranja', formatRSD(detailItem.insuranceCoverage)],
                 ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
                 ))}
               </div>
-              <div className="p-2 rounded-lg bg-blue-50"><div className="text-[10px] text-blue-600 mb-2">Propisani lekovi</div>
+              <div className="p-2 rounded-lg bg-blue-50"><div className="text-xs text-blue-600 mb-2">Propisani lekovi</div>
                 {detailItem.medications.map((m, i) => (
                   <div key={i} className="text-xs mb-1"><span className="font-medium">{m.name}</span> — {m.dosage} — {m.frequency} — {m.duration} ({m.quantity})</div>
                 ))}
               </div>
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           )}
         </DialogContent>

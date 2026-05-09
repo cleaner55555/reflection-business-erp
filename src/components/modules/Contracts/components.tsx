@@ -28,7 +28,7 @@ export function OverviewTab({ sCfg, tCfg }: { sCfg: any, tCfg: any }) {
                 <AlertCircle className="h-4 w-4 text-amber-500" />
               </div>
               <p className="text-2xl font-bold text-amber-600">{dashboard.expiringSoon}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">{dashboard.renewalsDue} obnavljanja na čekanju</p>
+              <p className="text-xs text-muted-foreground mt-1">{dashboard.renewalsDue} obnavljanja na čekanju</p>
             </Card>
             <Card className="p-4">
               <div className="flex items-center justify-between mb-2">
@@ -43,7 +43,7 @@ export function OverviewTab({ sCfg, tCfg }: { sCfg: any, tCfg: any }) {
                 <DollarSign className="h-4 w-4 text-primary" />
               </div>
               <p className="text-2xl font-bold">{formatCurrency(dashboard.avgSalary)}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">Ukupno: {formatCurrency(dashboard.totalPayroll)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Ukupno: {formatCurrency(dashboard.totalPayroll)}</p>
             </Card>
           </div>
     
@@ -120,7 +120,7 @@ export function OverviewTab({ sCfg, tCfg }: { sCfg: any, tCfg: any }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={`text-[10px] ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                        <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
                         <span className="text-xs text-muted-foreground">{new Date(c.startDate).toLocaleDateString('sr-RS')}</span>
                       </div>
                     </div>
@@ -197,17 +197,17 @@ export function ContractsTab({ filteredContracts, k, loading, sCfg, search, setS
                     <tr key={c.id} className="border-t hover:bg-muted/30">
                       <td className="p-3">
                         <p className="font-medium">{c.employeeName}</p>
-                        <p className="text-[10px] text-muted-foreground">{c.contractNumber}</p>
+                        <p className="text-xs text-muted-foreground">{c.contractNumber}</p>
                       </td>
                       <td className="p-3 hidden md:table-cell">
                         <p className="text-sm">{c.position}</p>
-                        <p className="text-[10px] text-muted-foreground">{c.department}</p>
+                        <p className="text-xs text-muted-foreground">{c.department}</p>
                       </td>
                       <td className="p-3 hidden md:table-cell">
-                        <Badge variant="outline" className={`text-[10px] ${tCfg?.color}`}>{tCfg?.icon} {tCfg?.label}</Badge>
+                        <Badge variant="outline" className={`text-xs ${tCfg?.color}`}>{tCfg?.icon} {tCfg?.label}</Badge>
                       </td>
                       <td className="p-3">
-                        <Badge variant="outline" className={`text-[10px] ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                        <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
                       </td>
                       <td className="p-3 text-sm hidden lg:table-cell">{formatCurrency(c.salaryGross)}</td>
                       <td className="p-3 text-xs hidden lg:table-cell">
@@ -267,7 +267,7 @@ export function RenewalsTab({ renewals }: { renewals: any }) {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-sm font-medium">{r.employeeName}</h3>
-                      <Badge variant={r.status === 'pending' ? 'outline' : 'default'} className={`text-[10px] ${r.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                      <Badge variant={r.status === 'pending' ? 'outline' : 'default'} className={`text-xs ${r.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
                         {r.status === 'pending' ? 'Na čekanju' : 'Odobreno'}
                       </Badge>
                     </div>
@@ -302,7 +302,7 @@ export function RenewalsTab({ renewals }: { renewals: any }) {
                   <div key={c.id} className="flex items-center gap-4">
                     <div className="w-28 text-right">
                       <p className="text-xs font-medium">{c.employeeName.split(' ')[0]}</p>
-                      <p className="text-[10px] text-muted-foreground">{days} dana</p>
+                      <p className="text-xs text-muted-foreground">{days} dana</p>
                     </div>
                     <div className="flex-1">
                       <div className="bg-muted rounded-full h-3 relative">
@@ -348,13 +348,13 @@ export function DocumentsTab({  }: {  }) {
                     <FileText className="h-4 w-4 text-red-400" />
                     <div>
                       <p className="text-sm font-medium">{d.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{d.uploadedBy}</p>
+                      <p className="text-xs text-muted-foreground">{d.uploadedBy}</p>
                     </div>
                   </div>
                 </td>
                 <td className="p-3 text-sm">{c.employeeName}</td>
                 <td className="p-3 text-sm hidden md:table-cell">
-                  <Badge variant="outline" className="text-[10px] uppercase">{d.type}</Badge>
+                  <Badge variant="outline" className="text-xs uppercase">{d.type}</Badge>
                 </td>
                 <td className="p-3 text-xs hidden md:table-cell">{d.size}</td>
                 <td className="p-3 text-xs hidden lg:table-cell">{new Date(d.uploadedAt).toLocaleDateString('sr-RS')}</td>
@@ -390,12 +390,12 @@ export function TypesTab({ contractTypes, tCfg }: { contractTypes: any, tCfg: an
                   </div>
                   <div>
                     <h3 className="text-sm font-medium">{ct.name}</h3>
-                    <p className="text-[10px] text-muted-foreground">{ct.contractCount} ugovora</p>
+                    <p className="text-xs text-muted-foreground">{ct.contractCount} ugovora</p>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">{ct.description}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground">Trajanje: {ct.defaultDuration}</span>
+                  <span className="text-xs text-muted-foreground">Trajanje: {ct.defaultDuration}</span>
                   <div className="flex items-center gap-2">
                     <div className="w-12 bg-muted rounded-full h-1.5">
                       <div className="h-1.5 rounded-full" style={{ width: `${(ct.contractCount / 20) * 100}%`, backgroundColor: ct.color }} />
@@ -553,7 +553,7 @@ export function Detaljiugovora({ detailOpen, selected, setDetailOpen }: { detail
                               <FileText className="h-4 w-4 text-red-400" />
                               <div>
                                 <p className="text-sm font-medium">{doc.name}</p>
-                                <p className="text-[10px] text-muted-foreground">{doc.size} · {doc.uploadedBy} · {new Date(doc.uploadedAt).toLocaleDateString('sr-RS')}</p>
+                                <p className="text-xs text-muted-foreground">{doc.size} · {doc.uploadedBy} · {new Date(doc.uploadedAt).toLocaleDateString('sr-RS')}</p>
                               </div>
                             </div>
                             <Button size="sm" variant="outline" className="h-7 text-xs">

@@ -29,7 +29,7 @@ function KPICard({
             <div className="flex items-center gap-1">
               {trend === 'up' && <TrendingUp className="h-3 w-3 text-emerald-600" />}
               {trend === 'down' && <TrendingDown className="h-3 w-3 text-red-500" />}
-              <span className={`text-[11px] font-medium ${trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
+              <span className={`text-xs font-medium ${trend === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
                 {trendLabel}
               </span>
             </div>

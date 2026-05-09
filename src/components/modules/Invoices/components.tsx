@@ -80,9 +80,9 @@ function InvoiceDashboard() {
           <CardHeader className="pb-2"><CardTitle className="text-sm">Po tipu</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Izlazne fakture</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.izlazna.length}</span><p className="text-[10px] text-muted-foreground">{formatRSD(stats.byType.izlazna.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Ulazne fakture</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.ulazna.length}</span><p className="text-[10px] text-muted-foreground">{formatRSD(stats.byType.ulazna.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Predračuni</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.predracun.length}</span><p className="text-[10px] text-muted-foreground">{formatRSD(stats.byType.predracun.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Izlazne fakture</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.izlazna.length}</span><p className="text-xs text-muted-foreground">{formatRSD(stats.byType.izlazna.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Ulazne fakture</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.ulazna.length}</span><p className="text-xs text-muted-foreground">{formatRSD(stats.byType.ulazna.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><span className="text-xs">Predračuni</span><div className="text-right"><span className="text-sm font-bold">{stats.byType.predracun.length}</span><p className="text-xs text-muted-foreground">{formatRSD(stats.byType.predracun.reduce((s, i) => s + i.totalAmount, 0))}</p></div></div>
             </div>
           </CardContent>
         </Card>
@@ -95,8 +95,8 @@ function InvoiceDashboard() {
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
                 {stats.overdue.slice(0, 10).map(inv => (
                   <div key={inv.id} className="flex items-center justify-between p-2 rounded bg-red-50 border border-red-200">
-                    <div><span className="text-xs font-medium">{inv.number}</span><span className="text-[10px] text-muted-foreground ml-2">{inv.partner?.name || '—'}</span></div>
-                    <div className="text-right"><span className="text-xs font-bold text-red-600">{formatRSD(inv.totalAmount)}</span><p className="text-[10px] text-muted-foreground">Rok: {formatDate(inv.dueDate)}</p></div>
+                    <div><span className="text-xs font-medium">{inv.number}</span><span className="text-xs text-muted-foreground ml-2">{inv.partner?.name || '—'}</span></div>
+                    <div className="text-right"><span className="text-xs font-bold text-red-600">{formatRSD(inv.totalAmount)}</span><p className="text-xs text-muted-foreground">Rok: {formatDate(inv.dueDate)}</p></div>
                   </div>
                 ))}
               </div>
@@ -503,10 +503,10 @@ function FaktureTab() {
                   <p className="text-xs text-gray-500 mt-1">{COMPANY.address}</p>
                   <p className="text-xs text-gray-500">{COMPANY.city}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    <span className="text-[10px] text-gray-500">PIB: {COMPANY.pib}</span>
-                    <span className="text-[10px] text-gray-500">MB: {COMPANY.maticniBr}</span>
-                    <span className="text-[10px] text-gray-500">{COMPANY.account}</span>
-                    <span className="text-[10px] text-gray-500">{COMPANY.bank}</span>
+                    <span className="text-xs text-gray-500">PIB: {COMPANY.pib}</span>
+                    <span className="text-xs text-gray-500">MB: {COMPANY.maticniBr}</span>
+                    <span className="text-xs text-gray-500">{COMPANY.account}</span>
+                    <span className="text-xs text-gray-500">{COMPANY.bank}</span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -521,24 +521,24 @@ function FaktureTab() {
 
               {/* Partner Info */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('invoices.buyer')}</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('invoices.buyer')}</p>
                 <p className="text-sm font-semibold">{tc(printInvoice.partner?.name || '-')}</p>
                 {printInvoice.partner && (
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
                     {printInvoice.partner.address && (
-                      <span className="text-[10px] text-gray-500">{printInvoice.partner.address}{printInvoice.partner.city ? `, ${printInvoice.partner.city}` : ''}</span>
+                      <span className="text-xs text-gray-500">{printInvoice.partner.address}{printInvoice.partner.city ? `, ${printInvoice.partner.city}` : ''}</span>
                     )}
                     {printInvoice.partner.pib && (
-                      <span className="text-[10px] text-gray-500">PIB: {printInvoice.partner.pib}</span>
+                      <span className="text-xs text-gray-500">PIB: {printInvoice.partner.pib}</span>
                     )}
                     {printInvoice.partner.maticniBr && (
-                      <span className="text-[10px] text-gray-500">MB: {printInvoice.partner.maticniBr}</span>
+                      <span className="text-xs text-gray-500">MB: {printInvoice.partner.maticniBr}</span>
                     )}
                     {printInvoice.partner.account && (
-                      <span className="text-[10px] text-gray-500">{printInvoice.partner.account}</span>
+                      <span className="text-xs text-gray-500">{printInvoice.partner.account}</span>
                     )}
                     {printInvoice.partner.bank && (
-                      <span className="text-[10px] text-gray-500">{printInvoice.partner.bank}</span>
+                      <span className="text-xs text-gray-500">{printInvoice.partner.bank}</span>
                     )}
                   </div>
                 )}
@@ -605,16 +605,16 @@ function FaktureTab() {
               {/* Payment Info */}
               <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('finance.payment')}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('finance.payment')}</p>
                   <p><span className="text-gray-500">{t('finance.methodLabel')}: </span>{getStatusLabel(printInvoice.paymentMethod)}</p>
                   <p><span className="text-gray-500">{t('invoices.dueDate')}: </span>{formatDate(printInvoice.dueDate)}</p>
                   <p><span className="text-gray-500">{t('invoices.accountLabel')}: </span>{COMPANY.account}</p>
                   <p><span className="text-gray-500">{t('invoices.bankLabel')}: </span>{COMPANY.bank}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.status')}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.status')}</p>
                   <p>
-                    <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(printInvoice.status)}`}>
+                    <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(printInvoice.status)}`}>
                       {getStatusLabel(printInvoice.status)}
                     </Badge>
                   </p>
@@ -624,7 +624,7 @@ function FaktureTab() {
               {/* Notes */}
               {printInvoice.notes && (
                 <div className="mb-6 text-xs">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.note')}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.note')}</p>
                   <p className="text-gray-600">{tc(printInvoice.notes)}</p>
                 </div>
               )}
@@ -633,11 +633,11 @@ function FaktureTab() {
               <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">{t('invoices.signatureIssuer')}</p>
+                  <p className="text-xs text-gray-400">{t('invoices.signatureIssuer')}</p>
                 </div>
                 <div className="text-center">
                   <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-[10px] text-gray-400">{t('invoices.signatureReceiver')}</p>
+                  <p className="text-xs text-gray-400">{t('invoices.signatureReceiver')}</p>
                 </div>
               </div>
             </div>
@@ -708,7 +708,7 @@ function FaktureTab() {
               {lineItems.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2 items-end">
                   <div className="col-span-4">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('invoices.product')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('invoices.product')}</Label>}
                     <Select
                       value={item.productId}
                       onValueChange={(v) => updateLineItem(idx, 'productId', v)}
@@ -724,7 +724,7 @@ function FaktureTab() {
                     </Select>
                   </div>
                   <div className="col-span-2">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('common.quantity')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.quantity')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -734,7 +734,7 @@ function FaktureTab() {
                     />
                   </div>
                   <div className="col-span-2">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('common.price')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -743,7 +743,7 @@ function FaktureTab() {
                     />
                   </div>
                   <div className="col-span-2">
-                    {idx === 0 && <Label className="text-[10px] text-muted-foreground">{t('invoices.discountPct')}</Label>}
+                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('invoices.discountPct')}</Label>}
                     <Input
                       type="number"
                       className="h-9 text-xs"
@@ -825,7 +825,7 @@ function FaktureTab() {
                     <TableRow key={inv.id}>
                       <TableCell className="text-xs font-medium">{inv.number}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(inv.type || 'izlazna')}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(inv.type || 'izlazna')}`}>
                           {getStatusLabel(inv.type || 'izlazna')}
                         </Badge>
                       </TableCell>
@@ -834,11 +834,11 @@ function FaktureTab() {
                       <TableCell className="text-xs">{formatDate(inv.dueDate)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(inv.status)}`}>
+                          <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(inv.status)}`}>
                             {getStatusLabel(inv.status)}
                           </Badge>
                           {inv.postedToJournal && (
-                            <Badge className="bg-emerald-100 text-emerald-700 text-[9px] px-1.5 py-0 gap-0.5">
+                            <Badge className="bg-emerald-100 text-emerald-700 text-xs px-1.5 py-0 gap-0.5">
                               <BookOpen className="h-2.5 w-2.5" /> Knjiženo
                             </Badge>
                           )}
@@ -1166,7 +1166,7 @@ function EFaktureTab() {
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] px-2 py-0 ${getSefStatusColor(sefStatus)}`}
+                              className={`text-xs px-2 py-0 ${getSefStatusColor(sefStatus)}`}
                             >
                               {getSefStatusLabel(sefStatus)}
                             </Badge>

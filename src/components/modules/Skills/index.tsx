@@ -500,7 +500,7 @@ export function Skills() {
                     <Zap className="h-4 w-4 text-primary" />
                   </div>
                   <p className="text-2xl font-bold">{dashboard.totalSkills}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.totalCategories} kategorija</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.totalCategories} kategorija</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -508,7 +508,7 @@ export function Skills() {
                     <GraduationCap className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold text-green-600">{dashboard.certifiedEmployees}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.totalCertifications} sertifikata</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.totalCertifications} sertifikata</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -523,7 +523,7 @@ export function Skills() {
                     <Target className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold text-blue-600">{dashboard.skillCoverage}%</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{dashboard.expiringCertifications} uskoro ističe</p>
+                  <p className="text-xs text-muted-foreground mt-1">{dashboard.expiringCertifications} uskoro ističe</p>
                 </Card>
               </div>
 
@@ -559,10 +559,10 @@ export function Skills() {
                         <div key={gap.skillName} className="flex items-center justify-between">
                           <div>
                             <p className="text-sm font-medium">{gap.skillName}</p>
-                            <p className="text-[10px] text-muted-foreground">{gap.employeeCount} zaposlenih</p>
+                            <p className="text-xs text-muted-foreground">{gap.employeeCount} zaposlenih</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={`text-[10px] ${pCfg?.color}`}>{pCfg?.label}</Badge>
+                            <Badge variant="outline" className={`text-xs ${pCfg?.color}`}>{pCfg?.label}</Badge>
                             <span className="text-sm text-red-600 font-medium">-{gap.gap.toFixed(1)}</span>
                           </div>
                         </div>
@@ -679,14 +679,14 @@ export function Skills() {
                             <td className="p-2 sticky left-0 bg-background font-medium">
                               <div>
                                 <p className="text-sm">{emp.name}</p>
-                                <p className="text-[10px] text-muted-foreground">{emp.department}</p>
+                                <p className="text-xs text-muted-foreground">{emp.department}</p>
                               </div>
                             </td>
                             {matrixSkills.map((s) => {
                               const level = getEmployeeSkillLevel(emp.id, s.id)
                               return (
                                 <td key={s.id} className="p-2 text-center">
-                                  <Badge variant="outline" className={`text-[10px] ${getLevelColor(level)}`}>
+                                  <Badge variant="outline" className={`text-xs ${getLevelColor(level)}`}>
                                     {level > 0 ? level : '-'}
                                   </Badge>
                                 </td>
@@ -721,7 +721,7 @@ export function Skills() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold">{avgLevel.toFixed(1)}</p>
-                        <p className="text-[10px] text-muted-foreground">prosek</p>
+                        <p className="text-xs text-muted-foreground">prosek</p>
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -732,7 +732,7 @@ export function Skills() {
                             <div className="w-12 bg-muted rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-primary" style={{ width: `${(es.level / 5) * 100}%` }} />
                             </div>
-                            <span className="text-[10px] font-medium">{es.level}</span>
+                            <span className="text-xs font-medium">{es.level}</span>
                           </div>
                         </div>
                       ))}
@@ -786,10 +786,10 @@ export function Skills() {
                           </div>
                           <div>
                             <h3 className="text-sm font-medium">{skill.name}</h3>
-                            <p className="text-[10px] text-muted-foreground">{catInfo?.name}</p>
+                            <p className="text-xs text-muted-foreground">{catInfo?.name}</p>
                           </div>
                         </div>
-                        <Badge variant={skill.isActive ? 'default' : 'secondary'} className="text-[10px]">
+                        <Badge variant={skill.isActive ? 'default' : 'secondary'} className="text-xs">
                           {skill.isActive ? 'Aktivna' : 'Neaktivna'}
                         </Badge>
                       </div>
@@ -847,7 +847,7 @@ export function Skills() {
                         <td className="p-3">
                           <div>
                             <p className="font-medium text-sm">{cert.name}</p>
-                            {cert.certificateNumber && <p className="text-[10px] text-muted-foreground">#{cert.certificateNumber}</p>}
+                            {cert.certificateNumber && <p className="text-xs text-muted-foreground">#{cert.certificateNumber}</p>}
                           </div>
                         </td>
                         <td className="p-3 text-sm">{cert.employeeName}</td>
@@ -858,7 +858,7 @@ export function Skills() {
                           {cert.expiryDate && <span className="text-muted-foreground"> → {new Date(cert.expiryDate).toLocaleDateString('sr-RS')}</span>}
                         </td>
                         <td className="p-3">
-                          <Badge variant="outline" className={`text-[10px] ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
                         </td>
                       </tr>
                     )
@@ -893,7 +893,7 @@ export function Skills() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
                           <p className="text-sm font-medium">{gap.skillName}</p>
-                          <Badge variant="outline" className={`text-[10px] ${pCfg?.color}`}>{pCfg?.label}</Badge>
+                          <Badge variant="outline" className={`text-xs ${pCfg?.color}`}>{pCfg?.label}</Badge>
                           <span className="text-xs text-muted-foreground">{gap.employeeCount} zaposlenih</span>
                         </div>
                         <span className="text-sm font-bold text-red-600">-{gap.gap.toFixed(1)} nivoa</span>
@@ -901,18 +901,18 @@ export function Skills() {
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] text-muted-foreground w-12">Zahtevano:</span>
+                            <span className="text-xs text-muted-foreground w-12">Zahtevano:</span>
                             <div className="flex-1 bg-muted rounded-full h-2">
                               <div className="h-2 rounded-full bg-blue-400" style={{ width: `${(gap.requiredLevel / 5) * 100}%` }} />
                             </div>
-                            <span className="text-[10px] font-medium w-4">{gap.requiredLevel}</span>
+                            <span className="text-xs font-medium w-4">{gap.requiredLevel}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-muted-foreground w-12">Trenutno:</span>
+                            <span className="text-xs text-muted-foreground w-12">Trenutno:</span>
                             <div className="flex-1 bg-muted rounded-full h-2">
                               <div className="h-2 rounded-full bg-orange-400" style={{ width: `${(gap.currentLevel / 5) * 100}%` }} />
                             </div>
-                            <span className="text-[10px] font-medium w-4">{gap.currentLevel.toFixed(1)}</span>
+                            <span className="text-xs font-medium w-4">{gap.currentLevel.toFixed(1)}</span>
                           </div>
                         </div>
                       </div>
@@ -945,8 +945,8 @@ export function Skills() {
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">{a.notes}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] text-muted-foreground">Procenio: {a.assessedBy}</span>
-                            <Badge variant={improved ? 'default' : 'secondary'} className="text-[10px]">
+                            <span className="text-xs text-muted-foreground">Procenio: {a.assessedBy}</span>
+                            <Badge variant={improved ? 'default' : 'secondary'} className="text-xs">
                               {improved ? '🟢 Napredak' : '🟡 Na istom nivou'}
                             </Badge>
                           </div>
@@ -1143,7 +1143,7 @@ export function Skills() {
               <Separator />
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div><span className="text-muted-foreground">Zaposleni sa veštinom:</span> <span className="font-bold">{selected.employeeCount}</span></div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant={selected.isActive ? 'default' : 'secondary'} className="text-[10px]">{selected.isActive ? 'Aktivna' : 'Neaktivna'}</Badge></div>
+                <div><span className="text-muted-foreground">Status:</span> <Badge variant={selected.isActive ? 'default' : 'secondary'} className="text-xs">{selected.isActive ? 'Aktivna' : 'Neaktivna'}</Badge></div>
               </div>
               <Separator />
               <div>
@@ -1153,11 +1153,11 @@ export function Skills() {
                     <div key={es.id} className="flex items-center justify-between p-2 border rounded-lg">
                       <div>
                         <p className="text-sm font-medium">{es.employeeName}</p>
-                        <p className="text-[10px] text-muted-foreground">{es.employeeDepartment}</p>
+                        <p className="text-xs text-muted-foreground">{es.employeeDepartment}</p>
                       </div>
                       <div className="text-right">
-                        <Badge variant="outline" className={`text-[10px] ${getLevelColor(es.level)}`}>{getLevelLabel(es.level)} ({es.level})</Badge>
-                        <p className="text-[10px] text-muted-foreground mt-1">{es.yearsExperience} god. iskustva</p>
+                        <Badge variant="outline" className={`text-xs ${getLevelColor(es.level)}`}>{getLevelLabel(es.level)} ({es.level})</Badge>
+                        <p className="text-xs text-muted-foreground mt-1">{es.yearsExperience} god. iskustva</p>
                       </div>
                     </div>
                   ))}

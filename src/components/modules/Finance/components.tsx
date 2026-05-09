@@ -253,7 +253,7 @@ function TransakcijeTab() {
                     <TableRow key={t.id}>
                       <TableCell className="text-xs">{formatDate(t.date)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(t.type)}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(t.type)}`}>
                           <span className="flex items-center gap-1">
                             {t.type === 'prihod' ? <ArrowUpCircle className="h-3 w-3" /> : <ArrowDownCircle className="h-3 w-3" />}
                             {getStatusLabel(t.type)}
@@ -487,7 +487,7 @@ function KasaTab() {
                       <TableRow key={entry.id}>
                         <TableCell className="text-xs">{formatDateTime(entry.date)}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(entry.type)}`}>
+                          <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(entry.type)}`}>
                             {getStatusLabel(entry.type)}
                           </Badge>
                         </TableCell>
@@ -624,7 +624,7 @@ function DnevnikTab() {
                       <TableRow key={entry.id}>
                         <TableCell className="text-xs">{formatDate(entry.date)}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(entry.type)}`}>
+                          <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(entry.type)}`}>
                             {getStatusLabel(entry.type)}
                           </Badge>
                         </TableCell>

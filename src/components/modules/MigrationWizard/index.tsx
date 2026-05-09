@@ -486,10 +486,10 @@ function MigrationFlow() {
                     <ArrowRight className="h-4 w-4 text-muted-foreground mt-1" />
                   </div>
                   <div className="flex items-center gap-2 mt-3">
-                    <Badge variant="secondary" className="text-[10px]">
+                    <Badge variant="secondary" className="text-xs">
                       {t('migration3Clicks')}
                     </Badge>
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="text-xs">
                       .FDB + CSV
                     </Badge>
                   </div>
@@ -517,10 +517,10 @@ function MigrationFlow() {
                     <ArrowRight className="h-4 w-4 text-muted-foreground mt-1" />
                   </div>
                   <div className="flex items-center gap-2 mt-3">
-                    <Badge variant="secondary" className="text-[10px]">
+                    <Badge variant="secondary" className="text-xs">
                       CSV
                     </Badge>
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="text-xs">
                       Manual mapping
                     </Badge>
                   </div>
@@ -573,7 +573,7 @@ function MigrationFlow() {
                         {t('migrationTestConnection')}
                       </Button>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {t('migrationUploadFDBDesc')}
                     </p>
                   </div>
@@ -614,8 +614,8 @@ function MigrationFlow() {
                             <p className="text-sm font-medium">{t('migrationDropFiles')}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{t('migrationOrClick')}</p>
                           </div>
-                          <p className="text-[10px] text-muted-foreground">{t('migrationSupportedFiles')}</p>
-                          <p className="text-[10px] text-muted-foreground">{t('migrationMultipleFiles')}</p>
+                          <p className="text-xs text-muted-foreground">{t('migrationSupportedFiles')}</p>
+                          <p className="text-xs text-muted-foreground">{t('migrationMultipleFiles')}</p>
                         </div>
                       )}
                     </div>
@@ -656,7 +656,7 @@ function MigrationFlow() {
                           <p className="text-sm font-medium">{t('migrationDropFiles')}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">{t('migrationOrClick')}</p>
                         </div>
-                        <p className="text-[10px] text-muted-foreground">{t('migrationSupportedFiles')}</p>
+                        <p className="text-xs text-muted-foreground">{t('migrationSupportedFiles')}</p>
                       </div>
                     )}
                   </div>
@@ -681,11 +681,11 @@ function MigrationFlow() {
                         <FileSpreadsheet className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{file.fileName}</p>
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>{file.totalRows} {t('integrations.rowsFound')}</span>
                             <span>{file.headers.length} {t('integrations.columnsFound')}</span>
                             {file.detectedLabel && (
-                              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/10 text-primary">
+                              <Badge variant="secondary" className="text-xs h-4 px-1.5 bg-primary/10 text-primary">
                                 {t('migrationTableDetected')}: {file.detectedLabel}
                               </Badge>
                             )}
@@ -774,12 +774,12 @@ function MigrationFlow() {
                                     {file.detectedLabel || target || file.fileName}
                                   </p>
                                   {isAutoDetected && (
-                                    <Badge variant="secondary" className="text-[9px] h-4 px-1 bg-emerald-50 text-emerald-700">
+                                    <Badge variant="secondary" className="text-xs h-4 px-1 bg-emerald-50 text-emerald-700">
                                       auto
                                     </Badge>
                                   )}
                                 </div>
-                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                <p className="text-xs text-muted-foreground mt-0.5">
                                   {file.totalRows} {t('migrationRecordsToImport')}
                                 </p>
                               </div>
@@ -792,14 +792,14 @@ function MigrationFlow() {
                                 animate={{ opacity: 1, height: 'auto' }}
                                 className="mt-3 pt-3 border-t"
                               >
-                                <p className="text-[10px] font-medium text-muted-foreground mb-1.5">
+                                <p className="text-xs font-medium text-muted-foreground mb-1.5">
                                   {t('migrationFieldMapping')}
                                 </p>
                                 <div className="flex flex-wrap gap-1">
                                   {Object.entries(file.autoMapping).map(([bn, our]) => (
                                     <span
                                       key={`${bn}-${our}`}
-                                      className="inline-flex items-center gap-0.5 text-[10px] bg-muted rounded px-1.5 py-0.5"
+                                      className="inline-flex items-center gap-0.5 text-xs bg-muted rounded px-1.5 py-0.5"
                                     >
                                       <span className="text-muted-foreground">{bn}</span>
                                       <span className="text-primary">→</span>
@@ -849,10 +849,10 @@ function MigrationFlow() {
                       <TableHeader>
                         <TableRow>
                           {scannedFiles[0].headers.slice(0, 6).map(h => (
-                            <TableHead key={h} className="text-[10px] h-8">{h}</TableHead>
+                            <TableHead key={h} className="text-xs h-8">{h}</TableHead>
                           ))}
                           {scannedFiles[0].headers.length > 6 && (
-                            <TableHead className="text-[10px] h-8">...</TableHead>
+                            <TableHead className="text-xs h-8">...</TableHead>
                           )}
                         </TableRow>
                       </TableHeader>
@@ -860,12 +860,12 @@ function MigrationFlow() {
                         {scannedFiles[0].previewRows.slice(0, 3).map((row, rowIdx) => (
                           <TableRow key={rowIdx}>
                             {scannedFiles[0].headers.slice(0, 6).map(h => (
-                              <TableCell key={h} className="text-[10px] py-1.5 max-w-[120px] truncate">
+                              <TableCell key={h} className="text-xs py-1.5 max-w-[120px] truncate">
                                 {row[h] || '—'}
                               </TableCell>
                             ))}
                             {scannedFiles[0].headers.length > 6 && (
-                              <TableCell className="text-[10px] py-1.5 text-muted-foreground">...</TableCell>
+                              <TableCell className="text-xs py-1.5 text-muted-foreground">...</TableCell>
                             )}
                           </TableRow>
                         ))}
@@ -930,7 +930,7 @@ function MigrationFlow() {
                   {progress && progress.logs.length > 0 && (
                     <div className="rounded-lg border bg-black/5 dark:bg-black/20 p-3 max-h-48 overflow-y-auto font-mono">
                       {progress.logs.map((log, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-[10px] leading-relaxed">
+                        <div key={idx} className="flex items-start gap-2 text-xs leading-relaxed">
                           <span className="text-muted-foreground flex-shrink-0">[{log.time}]</span>
                           <span className={`flex-shrink-0 ${
                             log.status === 'success' ? 'text-emerald-600' :
@@ -1011,7 +1011,7 @@ function MigrationFlow() {
                     ].map(item => (
                       <div key={item.label} className={`rounded-lg p-3 text-center ${item.bg}`}>
                         <p className={`text-lg font-bold ${item.color}`}>{item.count}</p>
-                        <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                        <p className="text-xs text-muted-foreground">{item.label}</p>
                       </div>
                     ))}
                   </div>
@@ -1078,12 +1078,12 @@ function MigrationGuide() {
                 transition={{ delay: idx * 0.05 }}
                 className="flex items-start gap-3 pl-0.5"
               >
-                <div className="relative z-10 flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-sm">
+                <div className="relative z-10 flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm">
                   {gs.step}
                 </div>
                 <div className="pt-0.5">
                   <p className="text-xs font-medium">{gs.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{gs.desc}</p>
+                  <p className="text-xs text-muted-foreground">{gs.desc}</p>
                 </div>
               </motion.div>
             ))}

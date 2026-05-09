@@ -580,14 +580,14 @@ export function Edukacija() {
                             {course.category && (
                               <Badge
                                 variant="outline"
-                                className="text-[10px] bg-slate-50 text-slate-600 border-slate-200"
+                                className="text-xs bg-slate-50 text-slate-600 border-slate-200"
                               >
                                 {tc(course.category)}
                               </Badge>
                             )}
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${STATUS_BADGES[course.status] || ""}`}
+                              className={`text-xs ${STATUS_BADGES[course.status] || ""}`}
                             >
                               {STATUS_LABELS[course.status] || course.status}
                             </Badge>
@@ -768,7 +768,7 @@ export function Edukacija() {
                                         className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs hover:bg-accent/50 transition-colors"
                                       >
                                         <div className="flex items-center gap-2 min-w-0">
-                                          <span className="flex items-center justify-center h-5 w-5 rounded bg-muted text-muted-foreground text-[10px] font-medium shrink-0">
+                                          <span className="flex items-center justify-center h-5 w-5 rounded bg-muted text-muted-foreground text-xs font-medium shrink-0">
                                             {lesson.orderNum + 1}
                                           </span>
                                           <span className="flex items-center gap-1 shrink-0 text-muted-foreground">
@@ -782,7 +782,7 @@ export function Edukacija() {
                                         </div>
                                         <div className="flex items-center gap-1 shrink-0">
                                           <span
-                                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${LESSON_TYPE_COLORS[lesson.type] || ""}`}
+                                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${LESSON_TYPE_COLORS[lesson.type] || ""}`}
                                           >
                                             {LESSON_TYPE_LABELS[lesson.type] ||
                                               lesson.type}

@@ -360,7 +360,7 @@ function ConflictAlert({ employees, slots, t }: { employees: Employee[]; slots: 
             <div key={i} className="flex items-center justify-between text-xs">
               <span className="font-medium">{c.name}</span>
               <span className="text-muted-foreground">{new Date(c.date).toLocaleDateString('sr-RS')}</span>
-              <Badge variant="outline" className="bg-red-100 text-red-700 text-[10px]">{c.count} {t('planner.conflicts')}</Badge>
+              <Badge variant="outline" className="bg-red-100 text-red-700 text-xs">{c.count} {t('planner.conflicts')}</Badge>
             </div>
           ))}
         </div>
@@ -817,7 +817,7 @@ export function Scheduler() {
                         <div className={`text-xs ${isToday ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
                           {new Date(date).toLocaleDateString('sr-RS', { day: 'numeric', month: 'short' })}
                         </div>
-                        <div className="text-[10px] text-muted-foreground mt-1">{dayHours.toFixed(1)}h</div>
+                        <div className="text-xs text-muted-foreground mt-1">{dayHours.toFixed(1)}h</div>
                       </div>
                     )
                   })}
@@ -826,7 +826,7 @@ export function Scheduler() {
                 <div className="max-h-[500px] overflow-y-auto">
                   {TIME_SLOTS.map((hour) => (
                     <div key={hour} className="grid grid-cols-8 border-b last:border-0">
-                      <div className="p-1 text-[10px] text-muted-foreground text-center border-r flex items-center justify-center">{hour}</div>
+                      <div className="p-1 text-xs text-muted-foreground text-center border-r flex items-center justify-center">{hour}</div>
                       {weekDates.map((date) => {
                         const isToday = date === todayStr
                         const hourSlots = calendarSlots.filter((s) => s.date === date && s.startTime <= hour && s.endTime > hour)
@@ -843,7 +843,7 @@ export function Scheduler() {
                               return (
                                 <div
                                   key={s.id}
-                                  className="text-[10px] px-1 py-0.5 rounded truncate text-white font-medium"
+                                  className="text-xs px-1 py-0.5 rounded truncate text-white font-medium"
                                   style={{ backgroundColor: bgColor }}
                                   onClick={(e) => { e.stopPropagation(); setSelected(s); setDetailOpen(true) }}
                                 >
@@ -961,8 +961,8 @@ export function Scheduler() {
                           <td className="p-3 text-xs">{new Date(s.date).toLocaleDateString('sr-RS')}</td>
                           <td className="p-3 text-xs">{s.startTime}-{s.endTime}</td>
                           <td className="p-3 text-xs font-medium">{s.hours}h</td>
-                          <td className="p-3"><Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || s.status}</Badge></td>
-                          <td className="p-3"><Badge variant="outline" className={`text-[10px] ${priCfg?.color || ''}`}>{priCfg?.label || s.priority}</Badge></td>
+                          <td className="p-3"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || s.status}</Badge></td>
+                          <td className="p-3"><Badge variant="outline" className={`text-xs ${priCfg?.color || ''}`}>{priCfg?.label || s.priority}</Badge></td>
                           <td className="p-3">
                             <div className="flex gap-1">
                               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(s); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
@@ -1040,7 +1040,7 @@ export function Scheduler() {
                           />
                         ) : (
                           <div
-                            className="absolute top-1 h-6 rounded flex items-center px-2 text-[10px] text-white font-medium"
+                            className="absolute top-1 h-6 rounded flex items-center px-2 text-xs text-white font-medium"
                             style={{ left: `${leftPct}%`, width: `${widthPct}%`, backgroundColor: item.color }}
                           >
                             <span className="truncate">{item.progress}%</span>
@@ -1076,7 +1076,7 @@ export function Scheduler() {
                       {weekDates.map((date, i) => (
                         <th key={date} className={`p-2 text-center text-xs font-medium ${date === todayStr ? 'text-primary bg-primary/5 rounded' : 'text-muted-foreground'}`}>
                           <div>{DAY_NAMES_SR[i]}</div>
-                          <div className="text-[10px]">{new Date(date).toLocaleDateString('sr-RS', { day: 'numeric', month: 'short' })}</div>
+                          <div className="text-xs">{new Date(date).toLocaleDateString('sr-RS', { day: 'numeric', month: 'short' })}</div>
                         </th>
                       ))}
                       <th className="p-2 text-center text-xs font-medium text-muted-foreground">{t('planner.weekTotal')}</th>
@@ -1099,7 +1099,7 @@ export function Scheduler() {
                             else if (status === 'partial') bgClass = 'bg-amber-100 text-amber-700'
                             return (
                               <td key={date} className={`p-1 text-center ${date === todayStr ? 'bg-primary/5' : ''}`}>
-                                <div className={`rounded px-2 py-1 text-[10px] ${bgClass}`}>
+                                <div className={`rounded px-2 py-1 text-xs ${bgClass}`}>
                                   {hours > 0 ? `${hours}h` : (day?.reason || '-')}
                                 </div>
                               </td>
@@ -1138,7 +1138,7 @@ export function Scheduler() {
                     <div key={emp.id} className="text-center">
                       <div className="text-xs font-medium mb-2">{emp.name.split(' ')[0]}</div>
                       <Progress value={pct} className="h-2 mb-1" />
-                      <div className="text-[10px] text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {available} {t('planner.fullDays')}, {partial} {t('planner.partialDays')}, {unavailable} {t('planner.offDays')}
                       </div>
                     </div>

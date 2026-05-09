@@ -454,7 +454,7 @@ function PregledTab({ posts, categories, comments, tags }: { posts: BlogPost[]; 
                       <p className="text-xs text-muted-foreground truncate">{c.content}</p>
                       <p className="text-xs text-muted-foreground mt-1">{c.postTitle} · {new Date(c.createdAt).toLocaleDateString('sr-RS')}</p>
                     </div>
-                    <Badge variant="outline" className={`text-[10px] shrink-0 ${cfg?.color}`}>{cfg?.label}</Badge>
+                    <Badge variant="outline" className={`text-xs shrink-0 ${cfg?.color}`}>{cfg?.label}</Badge>
                   </div>
                 )
               })}
@@ -623,7 +623,7 @@ function ClanciTab({ posts, setPosts, categories, tags }: {
                     <TableCell className="text-xs text-right font-medium">{p.views.toLocaleString()}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Badge variant="outline" className={`text-[10px] ${cfg?.color}`}>{cfg?.label}</Badge>
+                        <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
                         {statusIdx < statusWorkflow.length - 1 && (
                           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => advanceStatus(p)} title={postStatusConfig[statusWorkflow[statusIdx + 1]]?.label}>
                             <ArrowRight className="h-3 w-3" />
@@ -798,17 +798,17 @@ function KategorijeTab({ categories, setCategories, posts }: {
                   </div>
                   <div className="flex gap-1">
                     {posts.filter((p) => p.categoryId === cat.id && p.status === 'published').length > 0 && (
-                      <Badge variant="outline" className="text-[10px] text-green-600">
+                      <Badge variant="outline" className="text-xs text-green-600">
                         {posts.filter((p) => p.categoryId === cat.id && p.status === 'published').length} objavljeno
                       </Badge>
                     )}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-[10px] text-muted-foreground">{t('blog.postsBreakdown') || 'Pretplate'}</div>
+                  <div className="text-xs text-muted-foreground">{t('blog.postsBreakdown') || 'Pretplate'}</div>
                   <div className="flex gap-1 flex-wrap">
                     {posts.filter((p) => p.categoryId === cat.id).slice(0, 3).map((p) => (
-                      <Badge key={p.id} variant="secondary" className="text-[10px]">{p.title.substring(0, 20)}...</Badge>
+                      <Badge key={p.id} variant="secondary" className="text-xs">{p.title.substring(0, 20)}...</Badge>
                     ))}
                   </div>
                 </div>
@@ -997,7 +997,7 @@ function KomentariTab({ comments, setComments, posts }: {
                       <span className="text-sm font-medium">{c.authorName}</span>
                       <span className="text-xs text-muted-foreground">{t('blog.on') || 'na'} </span>
                       <span className="text-xs font-medium text-primary">{c.postTitle}</span>
-                      <Badge variant="outline" className={`text-[10px] ${cfg?.color}`}>{cfg?.label}</Badge>
+                      <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">{c.content}</p>
                     <div className="flex items-center gap-3 mt-2">
@@ -1189,7 +1189,7 @@ function TagoviTab({ tags, setTags, posts }: {
                         <span className="text-sm font-medium">{p.title}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={`text-[10px] ${cfg?.color}`}>{cfg?.label}</Badge>
+                        <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
                         <span className="text-xs text-muted-foreground">{p.views} {t('blog.views') || 'pregleda'}</span>
                       </div>
                     </div>
@@ -1348,7 +1348,7 @@ function SeoAnalitikaTab({ posts, categories }: { posts: BlogPost[]; categories:
                     <TableCell className="text-xs text-right font-medium text-green-600">{kw.clicks.toLocaleString()}</TableCell>
                     <TableCell className="text-xs text-right">{kw.ctr}</TableCell>
                     <TableCell className="text-xs text-right">
-                      <Badge variant={kw.position <= 4 ? 'default' : 'secondary'} className="text-[10px]">#{kw.position}</Badge>
+                      <Badge variant={kw.position <= 4 ? 'default' : 'secondary'} className="text-xs">#{kw.position}</Badge>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1415,7 +1415,7 @@ function SeoAnalitikaTab({ posts, categories }: { posts: BlogPost[]; categories:
                   <div key={row.day} className="grid grid-cols-8 gap-1 mb-1">
                     <div className="text-xs text-muted-foreground flex items-center justify-center">{row.day}</div>
                     {[row.mon, row.tue, row.wed, row.thu, row.fri, row.sat, row.sun].map((val, i) => (
-                      <div key={i} className={`aspect-square rounded-sm flex items-center justify-center text-[10px] font-medium ${getHeatColor(val)}`}>
+                      <div key={i} className={`aspect-square rounded-sm flex items-center justify-center text-xs font-medium ${getHeatColor(val)}`}>
                         {val > 0 ? val : ''}
                       </div>
                     ))}

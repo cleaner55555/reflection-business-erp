@@ -248,7 +248,7 @@ export function AppLauncher() {
                 Svi moduli
               </h2>
               <div className="flex items-center gap-3">
-                <Badge variant="outline" className="text-[10px] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+                <Badge variant="outline" className="text-xs border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400">
                   {filtered.length} od {allModules.length}
                 </Badge>
                 <span className="text-xs text-gray-400 dark:text-gray-600">
@@ -316,10 +316,10 @@ export function AppLauncher() {
         {/* Footer */}
         <div className="shrink-0 border-t border-gray-200 dark:border-gray-800">
           <div className="mx-auto max-w-4xl px-4 py-2 flex items-center justify-between">
-            <p className="text-[10px] text-gray-400 dark:text-gray-600">
+            <p className="text-xs text-gray-400 dark:text-gray-600">
               Klik na modul · ESC za zatvaranje
             </p>
-            <div className="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-gray-600">
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-600">
               <Command className="h-3 w-3" />
               <span>K</span>
             </div>

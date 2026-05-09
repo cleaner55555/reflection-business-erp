@@ -322,7 +322,7 @@ export function Assets() {
                         <div className="w-28 flex items-center gap-1.5">{catInfo && <catInfo.icon className="h-3 w-3" />}<span className="text-xs truncate">{cat}</span></div>
                         <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${Math.round((data.value / max) * 100)}%` }} /></div>
                         <span className="text-xs font-mono w-20 text-right">{formatCurrency(data.value)}</span>
-                        <Badge variant="outline" className="text-[10px]">{data.count}</Badge>
+                        <Badge variant="outline" className="text-xs">{data.count}</Badge>
                       </div>
                     )
                   })}
@@ -337,7 +337,7 @@ export function Assets() {
                 <div className="space-y-2">
                   {Object.entries(stats.byStatus).sort(([, a], [, b]) => b - a).map(([status, count]) => (
                     <div key={status} className="flex items-center gap-3">
-                      <Badge variant="outline" className={`text-[10px] w-32 justify-center ${STATUS_COLORS[status] || ''}`}>{STATUS_LABELS[status] || status}</Badge>
+                      <Badge variant="outline" className={`text-xs w-32 justify-center ${STATUS_COLORS[status] || ''}`}>{STATUS_LABELS[status] || status}</Badge>
                       <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${Math.round((count / Math.max(stats.total, 1)) * 100)}%` }} /></div>
                       <span className="text-xs font-mono w-6 text-right">{count}</span>
                     </div>
@@ -354,7 +354,7 @@ export function Assets() {
                   {stats.recentAssets.map(a => (
                     <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedAsset(a); setAssetDetailOpen(true) }}>
                       <div className="flex items-center gap-2"><Package className="h-4 w-4 text-muted-foreground" /><span className="text-sm">{a.name}</span></div>
-                      <div className="text-right"><p className="text-xs font-medium">{formatCurrency(a.purchasePrice)}</p><p className="text-[10px] text-muted-foreground">{formatDate(a.createdAt)}</p></div>
+                      <div className="text-right"><p className="text-xs font-medium">{formatCurrency(a.purchasePrice)}</p><p className="text-xs text-muted-foreground">{formatDate(a.createdAt)}</p></div>
                     </div>
                   ))}
                 </div>
@@ -406,13 +406,13 @@ export function Assets() {
                   <tbody>{filteredAssets.map(a => (
                     <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedAsset(a); setAssetDetailOpen(true) }}>
                       <td className="p-3"><p className="text-xs font-medium">{a.name}</p></td>
-                      <td className="p-3 hidden md:table-cell"><Badge variant="secondary" className="text-[10px]">{a.category || '-'}</Badge></td>
+                      <td className="p-3 hidden md:table-cell"><Badge variant="secondary" className="text-xs">{a.category || '-'}</Badge></td>
                       <td className="p-3 hidden lg:table-cell text-xs font-mono">{a.serialNumber || '-'}</td>
                       <td className="p-3 hidden md:table-cell text-xs">{a.location || '-'}</td>
                       <td className="p-3 text-right text-xs">{formatCurrency(a.purchasePrice)}</td>
                       <td className="p-3 text-right text-xs font-medium">{formatCurrency(a.currentValue)}</td>
                       <td className="p-3 text-right text-xs text-red-500">{formatCurrency(a.depreciation)}</td>
-                      <td className="p-3"><Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[a.status] || ''}`}>{STATUS_LABELS[a.status] || a.status}</Badge></td>
+                      <td className="p-3"><Badge variant="outline" className={`text-xs ${STATUS_COLORS[a.status] || ''}`}>{STATUS_LABELS[a.status] || a.status}</Badge></td>
                       <td className="p-3"><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditAsset(a) }}><Edit3 className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedAsset(a); setDeleteConfirmOpen(true) }}><Trash2 className="h-3.5 w-3.5" /></Button></div></td>
                     </tr>
                   ))}</tbody>
@@ -429,10 +429,10 @@ export function Assets() {
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg"><p className="text-[10px] text-muted-foreground">Ukupna nabavna</p><p className="text-lg font-bold">{formatCurrency(stats.totalPurchase)}</p></div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg"><p className="text-[10px] text-muted-foreground">Trenutna vrednost</p><p className="text-lg font-bold">{formatCurrency(stats.totalValue)}</p></div>
-                  <div className="text-center p-3 bg-red-50 rounded-lg"><p className="text-[10px] text-muted-foreground">Ukupna amortizacija</p><p className="text-lg font-bold">{formatCurrency(stats.totalDepreciation)}</p></div>
-                  <div className="text-center p-3 bg-purple-50 rounded-lg"><p className="text-[10px] text-muted-foreground">Neto vrednost</p><p className="text-lg font-bold">{formatCurrency(stats.netValue)}</p></div>
+                  <div className="text-center p-3 bg-blue-50 rounded-lg"><p className="text-xs text-muted-foreground">Ukupna nabavna</p><p className="text-lg font-bold">{formatCurrency(stats.totalPurchase)}</p></div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg"><p className="text-xs text-muted-foreground">Trenutna vrednost</p><p className="text-lg font-bold">{formatCurrency(stats.totalValue)}</p></div>
+                  <div className="text-center p-3 bg-red-50 rounded-lg"><p className="text-xs text-muted-foreground">Ukupna amortizacija</p><p className="text-lg font-bold">{formatCurrency(stats.totalDepreciation)}</p></div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg"><p className="text-xs text-muted-foreground">Neto vrednost</p><p className="text-lg font-bold">{formatCurrency(stats.netValue)}</p></div>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Mesečna amortizacija:</span><span className="font-medium">{formatCurrency(stats.monthlyDepreciation)}</span></div>
@@ -452,7 +452,7 @@ export function Assets() {
                     <Card key={cat} className="p-4">
                       <div className="flex items-center gap-3 mb-3">
                         {catInfo && <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${catInfo.color}`}><catInfo.icon className="h-5 w-5" /></div>}
-                        <div><p className="text-sm font-medium">{cat}</p><p className="text-[11px] text-muted-foreground">{data.count} sredstava</p></div>
+                        <div><p className="text-sm font-medium">{cat}</p><p className="text-xs text-muted-foreground">{data.count} sredstava</p></div>
                       </div>
                       <div className="grid grid-cols-3 gap-3 text-xs">
                         <div><span className="text-muted-foreground">Knjigovska:</span><p className="font-medium">{formatCurrency(data.value + data.depreciation)}</p></div>
@@ -460,7 +460,7 @@ export function Assets() {
                         <div><span className="text-muted-foreground">Godišnja amort.:</span><p className="font-medium">{formatCurrency(annualDep)}</p></div>
                       </div>
                       <Progress value={Math.max(0, Math.min(100, ((data.value - data.depreciation) / Math.max(data.value, 1)) * 100))} className="mt-2 h-2" />
-                      <p className="text-[10px] text-muted-foreground mt-1">Preostatak vrednosti: {formatCurrency(Math.max(0, data.value - data.depreciation))} ({Math.round(((data.value - data.depreciation) / Math.max(data.value, 1)) * 100)}%)</p>
+                      <p className="text-xs text-muted-foreground mt-1">Preostatak vrednosti: {formatCurrency(Math.max(0, data.value - data.depreciation))} ({Math.round(((data.value - data.depreciation) / Math.max(data.value, 1)) * 100)}%)</p>
                     </Card>
                   )
                 })}
@@ -538,9 +538,9 @@ export function Assets() {
               </div>
               <Separator />
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="p-3 bg-blue-50 rounded-lg"><p className="text-[10px] text-muted-foreground">Nabavna</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.purchasePrice)}</p></div>
-                <div className="p-3 bg-green-50 rounded-lg"><p className="text-[10px] text-muted-foreground">Trenutna</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.currentValue)}</p></div>
-                <div className="p-3 bg-red-50 rounded-lg"><p className="text-[10px] text-muted-foreground">Amortizacija</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.depreciation)}</p></div>
+                <div className="p-3 bg-blue-50 rounded-lg"><p className="text-xs text-muted-foreground">Nabavna</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.purchasePrice)}</p></div>
+                <div className="p-3 bg-green-50 rounded-lg"><p className="text-xs text-muted-foreground">Trenutna</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.currentValue)}</p></div>
+                <div className="p-3 bg-red-50 rounded-lg"><p className="text-xs text-muted-foreground">Amortizacija</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.depreciation)}</p></div>
               </div>
               {selectedAsset.usefulLife > 0 && selectedAsset.purchaseDate && (
                 <div className="space-y-1 text-xs"><span className="text-muted-foreground">Starost / Vek trajanja:</span>

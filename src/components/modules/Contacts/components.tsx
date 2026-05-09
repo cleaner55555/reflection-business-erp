@@ -62,7 +62,7 @@ function PregledTab() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Ukupno partnera</p>
               <p className="text-2xl font-bold mt-1">{stats.total}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.newThisMonth} novih ovog meseca</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.newThisMonth} novih ovog meseca</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
               <Users className="h-5 w-5 text-blue-600" />
@@ -74,7 +74,7 @@ function PregledTab() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Kupci</p>
               <p className="text-2xl font-bold mt-1 text-emerald-600">{stats.byType.kupci}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.active} aktivnih</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.active} aktivnih</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-emerald-50 flex items-center justify-center">
               <UserCheck className="h-5 w-5 text-emerald-600" />
@@ -86,7 +86,7 @@ function PregledTab() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Dobavljači</p>
               <p className="text-2xl font-bold mt-1 text-blue-600">{stats.byType.dobavljaci}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.byType.partneri} generalnih</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.byType.partneri} generalnih</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
               <Briefcase className="h-5 w-5 text-blue-600" />
@@ -98,7 +98,7 @@ function PregledTab() {
             <div>
               <p className="text-xs text-muted-foreground font-medium">Neaktivni</p>
               <p className="text-2xl font-bold mt-1 text-red-500">{stats.inactive}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.partnersWithCredit.length} sa limitom</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stats.partnersWithCredit.length} sa limitom</p>
             </div>
             <div className="h-10 w-10 rounded-lg bg-red-50 flex items-center justify-center">
               <UserX className="h-5 w-5 text-red-500" />
@@ -122,7 +122,7 @@ function PregledTab() {
             ) : (
               <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
                 {stats.allTags.map((tag) => (
-                  <Badge key={tag.name} variant="outline" className={`text-[10px] px-2 py-0 ${getTagColor(stats.allTags.indexOf(tag))}`}>
+                  <Badge key={tag.name} variant="outline" className={`text-xs px-2 py-0 ${getTagColor(stats.allTags.indexOf(tag))}`}>
                     {tag.name} <span className="ml-1 opacity-60">({tag.count})</span>
                   </Badge>
                 ))}
@@ -148,7 +148,7 @@ function PregledTab() {
                     <span className="font-medium truncate max-w-[180px]">{tc(p.name)}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">{p._count.invoices} fak.</span>
-                      <Badge variant="outline" className="text-[10px] px-2 py-0">{formatRSD(p.creditLimit)}</Badge>
+                      <Badge variant="outline" className="text-xs px-2 py-0">{formatRSD(p.creditLimit)}</Badge>
                     </div>
                   </div>
                 ))}
@@ -184,7 +184,7 @@ function PregledTab() {
                     <TableRow key={p.id}>
                       <TableCell className="text-xs font-medium truncate max-w-[160px]">{tc(p.name)}</TableCell>
                       <TableCell className="text-xs text-center">
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${TYPE_COLORS[p.type] || ''}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${TYPE_COLORS[p.type] || ''}`}>
                           {TYPE_LABELS[p.type] || p.type}
                         </Badge>
                       </TableCell>
@@ -564,7 +564,7 @@ function PartneriListTab() {
                           const trimmed = tag.trim()
                           if (!trimmed) return null
                           return (
-                            <Badge key={i} variant="outline" className={`text-[10px] px-2 py-0 ${getTagColor(i)}`}>
+                            <Badge key={i} variant="outline" className={`text-xs px-2 py-0 ${getTagColor(i)}`}>
                               {trimmed}
                               <button type="button" className="ml-1 hover:text-red-500" onClick={() => {
                                 const parts = tagInput.split(',').filter((_, j) => j !== i)
@@ -634,7 +634,7 @@ function PartneriListTab() {
                           <TableCell className="text-xs font-medium truncate max-w-[160px]">{tc(p.name)}</TableCell>
                           <TableCell className="text-xs font-mono">{p.pib || '-'}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={`text-[10px] px-2 py-0 ${TYPE_COLORS[p.type] || ''}`}>
+                            <Badge variant="outline" className={`text-xs px-2 py-0 ${TYPE_COLORS[p.type] || ''}`}>
                               {TYPE_LABELS[p.type] || p.type}
                             </Badge>
                           </TableCell>
@@ -643,21 +643,21 @@ function PartneriListTab() {
                             {tags.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {tags.slice(0, 3).map((tag, i) => (
-                                  <Badge key={tag} variant="outline" className={`text-[9px] px-1.5 py-0 ${getTagColor(i)}`}>
+                                  <Badge key={tag} variant="outline" className={`text-xs px-1.5 py-0 ${getTagColor(i)}`}>
                                     {tag}
                                   </Badge>
                                 ))}
                                 {tags.length > 3 && (
-                                  <Badge variant="secondary" className="text-[9px] px-1.5 py-0">+{tags.length - 3}</Badge>
+                                  <Badge variant="secondary" className="text-xs px-1.5 py-0">+{tags.length - 3}</Badge>
                                 )}
                               </div>
                             ) : '-'}
                           </TableCell>
                           <TableCell className="text-xs text-center">
-                            <Badge variant="secondary" className="text-[10px] px-2 py-0">{p._count.invoices}</Badge>
+                            <Badge variant="secondary" className="text-xs px-2 py-0">{p._count.invoices}</Badge>
                           </TableCell>
                           <TableCell className="text-xs text-center hidden md:table-cell">
-                            <Badge variant="secondary" className="text-[10px] px-2 py-0">{p._count.contacts}</Badge>
+                            <Badge variant="secondary" className="text-xs px-2 py-0">{p._count.contacts}</Badge>
                           </TableCell>
                           <TableCell className="text-xs text-center">
                             <button
@@ -806,7 +806,7 @@ function AnalitikaTab() {
                     <Building2 className="h-5 w-5 text-muted-foreground" />
                     <span className="text-lg font-semibold">{tc(partnerDetail.name)}</span>
                     {!partnerDetail.isActive && (
-                      <Badge variant="outline" className="text-[10px] px-2 py-0 bg-red-50 text-red-600 border-red-200">Neaktivan</Badge>
+                      <Badge variant="outline" className="text-xs px-2 py-0 bg-red-50 text-red-600 border-red-200">Neaktivan</Badge>
                     )}
                   </div>
                   <div className="flex items-center gap-3 mt-1">
@@ -816,7 +816,7 @@ function AnalitikaTab() {
                     {partnerDetail.maticniBr && (
                       <span className="text-sm font-mono text-muted-foreground">MB: {partnerDetail.maticniBr}</span>
                     )}
-                    <Badge variant="outline" className={`text-[10px] px-2 py-0 ${TYPE_COLORS[partnerDetail.type] || ''}`}>
+                    <Badge variant="outline" className={`text-xs px-2 py-0 ${TYPE_COLORS[partnerDetail.type] || ''}`}>
                       {TYPE_LABELS[partnerDetail.type] || partnerDetail.type}
                     </Badge>
                     {partnerDetail.parent && (
@@ -846,7 +846,7 @@ function AnalitikaTab() {
                   {partnerDetail.tags && parseTags(partnerDetail.tags).length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {parseTags(partnerDetail.tags).map((tag, i) => (
-                        <Badge key={tag} variant="outline" className={`text-[10px] px-2 py-0 ${getTagColor(i)}`}>{tag}</Badge>
+                        <Badge key={tag} variant="outline" className={`text-xs px-2 py-0 ${getTagColor(i)}`}>{tag}</Badge>
                       ))}
                     </div>
                   )}
@@ -869,26 +869,26 @@ function AnalitikaTab() {
             <Card className="p-4">
               <p className="text-xs text-muted-foreground font-medium">{t('partners.totalInvoices')}</p>
               <p className="text-lg font-semibold mt-1">{formatRSD(analytics.summary.totalInvoiceAmount)}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{analytics.summary.invoiceCount} {t('partners.invoicesCount')}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{analytics.summary.invoiceCount} {t('partners.invoicesCount')}</p>
             </Card>
             <Card className="p-4">
               <p className="text-xs text-emerald-600 font-medium">{t('partners.paidInvoices')}</p>
               <p className="text-lg font-semibold mt-1 text-emerald-600">{formatRSD(analytics.summary.paidInvoiceAmount)}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {analytics.summary.invoiceCount > 0 ? `${Math.round((analytics.summary.paidInvoiceAmount / analytics.summary.totalInvoiceAmount) * 100)}%` : '0%'} {t('partners.ofTotal')}
               </p>
             </Card>
             <Card className="p-4 border-red-200 bg-red-50/50">
               <p className="text-xs text-red-600 font-medium">{t('partners.unpaidInvoices')}</p>
               <p className="text-lg font-semibold mt-1 text-red-600">{formatRSD(analytics.summary.unpaidInvoiceAmount)}</p>
-              <p className="text-[10px] text-red-500 mt-0.5">
+              <p className="text-xs text-red-500 mt-0.5">
                 {analytics.summary.invoiceCount > 0 ? `${Math.round((analytics.summary.unpaidInvoiceAmount / analytics.summary.totalInvoiceAmount) * 100)}%` : '0%'} {t('partners.ofTotal')}
               </p>
             </Card>
             <Card className="p-4">
               <p className="text-xs text-muted-foreground font-medium">{t('partners.totalProcurement')}</p>
               <p className="text-lg font-semibold mt-1">{formatRSD(analytics.summary.totalPurchaseAmount)}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{analytics.summary.purchaseOrderCount} {t('partners.ordersCount')}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{analytics.summary.purchaseOrderCount} {t('partners.ordersCount')}</p>
             </Card>
           </div>
 
@@ -909,9 +909,9 @@ function AnalitikaTab() {
                       <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                         <div>
                           <p className="text-xs font-medium">{c.firstName} {c.lastName}</p>
-                          {c.position && <p className="text-[10px] text-muted-foreground">{c.position}</p>}
+                          {c.position && <p className="text-xs text-muted-foreground">{c.position}</p>}
                         </div>
-                        <div className="text-right text-[10px] text-muted-foreground">
+                        <div className="text-right text-xs text-muted-foreground">
                           {c.phone && <p>{c.phone}</p>}
                           {c.email && <p>{c.email}</p>}
                         </div>
@@ -937,9 +937,9 @@ function AnalitikaTab() {
                       <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                         <div>
                           <p className="text-xs font-medium">{tc(c.name)}</p>
-                          {c.city && <p className="text-[10px] text-muted-foreground">{tc(c.city)}</p>}
+                          {c.city && <p className="text-xs text-muted-foreground">{tc(c.city)}</p>}
                         </div>
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0 ${TYPE_COLORS[c.type] || ''}`}>
+                        <Badge variant="outline" className={`text-xs px-2 py-0 ${TYPE_COLORS[c.type] || ''}`}>
                           {TYPE_LABELS[c.type] || c.type}
                         </Badge>
                       </div>
@@ -977,14 +977,14 @@ function AnalitikaTab() {
                         <TableRow key={inv.id}>
                           <TableCell className="text-xs font-mono">{inv.number}</TableCell>
                           <TableCell className="text-xs">
-                            <Badge variant="outline" className="text-[10px] px-2 py-0">
+                            <Badge variant="outline" className="text-xs px-2 py-0">
                               {inv.type === 'izlazna' ? 'Izlazna' : inv.type === 'ulazna' ? 'Ulazna' : 'Predračun'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs">{formatDate(inv.date)}</TableCell>
                           <TableCell className="text-xs text-right font-medium">{formatRSD(inv.totalAmount)}</TableCell>
                           <TableCell className="text-xs text-center">
-                            <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(inv.status)}`}>
+                            <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(inv.status)}`}>
                               {getStatusLabel(inv.status)}
                             </Badge>
                           </TableCell>
@@ -1025,7 +1025,7 @@ function AnalitikaTab() {
                           <TableCell className="text-xs">{formatDate(po.date)}</TableCell>
                           <TableCell className="text-xs text-right font-medium">{formatRSD(po.totalAmount)}</TableCell>
                           <TableCell className="text-xs text-center">
-                            <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(po.status)}`}>
+                            <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(po.status)}`}>
                               {getStatusLabel(po.status)}
                             </Badge>
                           </TableCell>
@@ -1066,7 +1066,7 @@ function AnalitikaTab() {
                           <TableCell className="text-xs text-center">{dn.itemCount}</TableCell>
                           <TableCell className="text-xs text-right font-medium">{formatRSD(dn.total)}</TableCell>
                           <TableCell className="text-xs text-center">
-                            <Badge variant="outline" className={`text-[10px] px-2 py-0 ${getStatusColor(dn.status)}`}>
+                            <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(dn.status)}`}>
                               {getStatusLabel(dn.status)}
                             </Badge>
                           </TableCell>

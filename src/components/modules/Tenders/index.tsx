@@ -465,10 +465,10 @@ export function Tenders() {
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Aktivni</span><Gavel className="h-4 w-4 text-blue-500" /></div><p className="text-2xl font-bold text-blue-600">{stats.open + stats.inEvaluation}</p><p className="text-[10px] text-muted-foreground">{stats.upcomingDeadlines.length} uskoro rok</p></Card>
-                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Dodeljeni</span><Trophy className="h-4 w-4 text-green-500" /></div><p className="text-2xl font-bold text-green-600">{stats.awarded}</p><p className="text-[10px] text-muted-foreground">prosek {stats.avgBidders} ponuđača</p></Card>
+                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Aktivni</span><Gavel className="h-4 w-4 text-blue-500" /></div><p className="text-2xl font-bold text-blue-600">{stats.open + stats.inEvaluation}</p><p className="text-xs text-muted-foreground">{stats.upcomingDeadlines.length} uskoro rok</p></Card>
+                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Dodeljeni</span><Trophy className="h-4 w-4 text-green-500" /></div><p className="text-2xl font-bold text-green-600">{stats.awarded}</p><p className="text-xs text-muted-foreground">prosek {stats.avgBidders} ponuđača</p></Card>
                 <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Ukupna vrednost</span><Banknote className="h-4 w-4 text-primary" /></div><p className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</p></Card>
-                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Otkazani</span><XCircle className="h-4 w-4 text-red-500" /></div><p className="text-2xl font-bold text-red-600">{stats.cancelled}</p><p className="text-[10px] text-muted-foreground">{stats.total > 0 ? Math.round((stats.cancelled / stats.total) * 100) : 0}%</p></Card>
+                <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">Otkazani</span><XCircle className="h-4 w-4 text-red-500" /></div><p className="text-2xl font-bold text-red-600">{stats.cancelled}</p><p className="text-xs text-muted-foreground">{stats.total > 0 ? Math.round((stats.cancelled / stats.total) * 100) : 0}%</p></Card>
               </div>
 
               {/* Upcoming Deadlines */}
@@ -511,7 +511,7 @@ export function Tenders() {
                 <CardContent>
                   <div className="flex items-end gap-3 h-36">
                     {stats.monthlyTrend.map((m) => { const max = Math.max(...stats.monthlyTrend.map((x) => Math.max(x.opened, x.awarded))); return (
-                      <div key={m.month} className="flex-1 flex flex-col items-center gap-1"><div className="w-full flex gap-0.5 items-end justify-center" style={{ height: '110px' }}><div className="w-3 bg-blue-400 rounded-t" style={{ height: `${max > 0 ? (m.opened / max) * 100 : 0}%` }} title={`Otvoreni: ${m.opened}`} /><div className="w-3 bg-green-400 rounded-t" style={{ height: `${max > 0 ? (m.awarded / max) * 100 : 0}%` }} title={`Dodeljeni: ${m.awarded}`} /></div><span className="text-[10px] text-muted-foreground">{m.month}</span></div>
+                      <div key={m.month} className="flex-1 flex flex-col items-center gap-1"><div className="w-full flex gap-0.5 items-end justify-center" style={{ height: '110px' }}><div className="w-3 bg-blue-400 rounded-t" style={{ height: `${max > 0 ? (m.opened / max) * 100 : 0}%` }} title={`Otvoreni: ${m.opened}`} /><div className="w-3 bg-green-400 rounded-t" style={{ height: `${max > 0 ? (m.awarded / max) * 100 : 0}%` }} title={`Dodeljeni: ${m.awarded}`} /></div><span className="text-xs text-muted-foreground">{m.month}</span></div>
                     ) })}
                   </div>
                   <div className="flex gap-4 mt-3 text-xs text-muted-foreground"><span className="flex items-center gap-1"><div className="w-2.5 h-2.5 bg-blue-400 rounded" /> Otvoreni</span><span className="flex items-center gap-1"><div className="w-2.5 h-2.5 bg-green-400 rounded" /> Dodeljeni</span></div>
@@ -523,7 +523,7 @@ export function Tenders() {
                 <CardHeader className="pb-3"><CardTitle className="text-sm">Najveći naručioci</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                   {stats.topBuyers.map((b, i) => (
-                    <div key={b.buyer} className="flex items-center gap-3"><span className="text-xs font-bold w-5 text-muted-foreground">{i + 1}.</span><span className="text-xs flex-1 truncate">{b.buyer}</span><Badge variant="outline" className="text-[10px]">{b.count}</Badge><span className="text-[10px] text-muted-foreground w-24 text-right">{formatCurrency(b.value)}</span></div>
+                    <div key={b.buyer} className="flex items-center gap-3"><span className="text-xs font-bold w-5 text-muted-foreground">{i + 1}.</span><span className="text-xs flex-1 truncate">{b.buyer}</span><Badge variant="outline" className="text-xs">{b.count}</Badge><span className="text-xs text-muted-foreground w-24 text-right">{formatCurrency(b.value)}</span></div>
                   ))}
                 </CardContent>
               </Card>
@@ -555,9 +555,9 @@ export function Tenders() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-xs font-mono text-muted-foreground">{tn.number}</span>
-                              <Badge variant="outline" className={`text-[10px] ${sCfg?.color}`}>{sCfg?.label}</Badge>
-                              <span className="text-[10px]">{tCfg?.icon} {tCfg?.label}</span>
-                              <span className="text-[10px]">{sCfg2?.icon} {sCfg2?.label}</span>
+                              <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                              <span className="text-xs">{tCfg?.icon} {tCfg?.label}</span>
+                              <span className="text-xs">{sCfg2?.icon} {sCfg2?.label}</span>
                             </div>
                             <h3 className="text-sm font-medium">{tn.title}</h3>
                             <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{tn.description}</p>
@@ -594,9 +594,9 @@ export function Tenders() {
                 </DialogHeader>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Naručilac</p><p className="text-xs font-medium">{selected.buyerName}</p><p className="text-[10px] text-muted-foreground">PIB: {selected.buyerPib}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Procenjena vrednost</p><p className="text-sm font-bold">{formatCurrency(selected.estimatedValue, selected.currency)}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">CPV kod</p><p className="text-xs font-medium">{selected.cpvCode}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Naručilac</p><p className="text-xs font-medium">{selected.buyerName}</p><p className="text-xs text-muted-foreground">PIB: {selected.buyerPib}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Procenjena vrednost</p><p className="text-sm font-bold">{formatCurrency(selected.estimatedValue, selected.currency)}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">CPV kod</p><p className="text-xs font-medium">{selected.cpvCode}</p></div>
                 </div>
 
                 {selected.description && <div><h4 className="text-sm font-medium mb-2">Opis</h4><div className="p-3 rounded-lg bg-muted/50 text-sm whitespace-pre-wrap">{selected.description}</div></div>}
@@ -605,10 +605,10 @@ export function Tenders() {
                 <div>
                   <h4 className="text-sm font-medium mb-2">Ključni datumi</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {selected.deadlineSubmission && <div className="p-2 rounded border"><p className="text-[10px] text-muted-foreground">Rok za ponude</p><p className="text-xs font-medium">{formatDate(selected.deadlineSubmission)}</p></div>}
-                    {selected.openingDate && <div className="p-2 rounded border"><p className="text-[10px] text-muted-foreground">Otvaranje</p><p className="text-xs font-medium">{formatDate(selected.openingDate)}</p></div>}
-                    {selected.awardDate && <div className="p-2 rounded border"><p className="text-[10px] text-muted-foreground">Dodela</p><p className="text-xs font-medium">{formatDate(selected.awardDate)}</p></div>}
-                    {selected.contractSigningDate && <div className="p-2 rounded border"><p className="text-[10px] text-muted-foreground">Potpis ugovora</p><p className="text-xs font-medium">{formatDate(selected.contractSigningDate)}</p></div>}
+                    {selected.deadlineSubmission && <div className="p-2 rounded border"><p className="text-xs text-muted-foreground">Rok za ponude</p><p className="text-xs font-medium">{formatDate(selected.deadlineSubmission)}</p></div>}
+                    {selected.openingDate && <div className="p-2 rounded border"><p className="text-xs text-muted-foreground">Otvaranje</p><p className="text-xs font-medium">{formatDate(selected.openingDate)}</p></div>}
+                    {selected.awardDate && <div className="p-2 rounded border"><p className="text-xs text-muted-foreground">Dodela</p><p className="text-xs font-medium">{formatDate(selected.awardDate)}</p></div>}
+                    {selected.contractSigningDate && <div className="p-2 rounded border"><p className="text-xs text-muted-foreground">Potpis ugovora</p><p className="text-xs font-medium">{formatDate(selected.contractSigningDate)}</p></div>}
                   </div>
                 </div>
 
@@ -659,13 +659,13 @@ export function Tenders() {
                               {b.status === 'winner' && <Trophy className="h-4 w-4 text-amber-500" />}
                               <span className="text-sm font-medium">{b.name}</span>
                               <span className="text-xs text-muted-foreground">PIB: {b.pib}</span>
-                              <Badge variant="outline" className={`text-[10px] ${BIDDER_STATUS[b.status]?.color}`}>{BIDDER_STATUS[b.status]?.label}</Badge>
+                              <Badge variant="outline" className={`text-xs ${BIDDER_STATUS[b.status]?.color}`}>{BIDDER_STATUS[b.status]?.label}</Badge>
                             </div>
                             <div className="flex items-center gap-3">
                               <span className="text-sm font-medium">{formatCurrency(b.price, selected.currency)}</span>
-                              {b.score > 0 && <Badge variant="secondary" className="text-[10px]">{b.score} poena</Badge>}
+                              {b.score > 0 && <Badge variant="secondary" className="text-xs">{b.score} poena</Badge>}
                               {(selected.status === 'evaluation' || selected.status === 'submission_closed') && !b.disqualified && b.status !== 'winner' && (
-                                <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => handleAward(selected, b.id)}><Trophy className="h-3 w-3 mr-1" /> Dodeli</Button>
+                                <Button size="sm" variant="outline" className="h-6 text-xs" onClick={() => handleAward(selected, b.id)}><Trophy className="h-3 w-3 mr-1" /> Dodeli</Button>
                               )}
                             </div>
                           </div>
@@ -686,7 +686,7 @@ export function Tenders() {
                     {selected.timeline.map((ev) => (
                       <div key={ev.id} className="flex gap-3">
                         <div className="flex flex-col items-center"><div className="w-2.5 h-2.5 rounded-full bg-primary" /><div className="w-px flex-1 bg-border" /></div>
-                        <div className="pb-3"><p className="text-xs font-medium">{ev.action}</p><p className="text-[10px] text-muted-foreground">{ev.description} · {ev.performedBy} · {new Date(ev.timestamp).toLocaleString('sr-RS')}</p></div>
+                        <div className="pb-3"><p className="text-xs font-medium">{ev.action}</p><p className="text-xs text-muted-foreground">{ev.description} · {ev.performedBy} · {new Date(ev.timestamp).toLocaleString('sr-RS')}</p></div>
                       </div>
                     ))}
                   </div>

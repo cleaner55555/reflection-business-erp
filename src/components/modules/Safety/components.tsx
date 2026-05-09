@@ -14,12 +14,12 @@ import { STATUSES, SEVERITIES, TYPES } from './data'
 
 export function getStatusBadge(s: string) {
   const r = STATUSES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 
 export function getSeverityBadge(s: string) {
   const r = SEVERITIES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 
 interface Stats {
@@ -36,14 +36,14 @@ interface Stats {
 export function KpiCards({ stats }: { stats: Stats }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-      <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
-      <Card className="p-4"><div className="text-[10px] text-slate-600 mb-1">Prijavljeni</div><p className="text-xl font-bold text-slate-700">{stats.reported}</p></Card>
-      <Card className="p-4"><div className="text-[10px] text-amber-600 mb-1">Ispitivanje</div><p className="text-xl font-bold text-amber-700">{stats.investigating}</p></Card>
-      <Card className="p-4"><div className="text-[10px] text-emerald-600 mb-1">Rešeni</div><p className="text-xl font-bold text-emerald-700">{stats.resolved}</p></Card>
-      <Card className="p-4"><div className="text-[10px] text-red-600 mb-1">Povrede</div><p className="text-xl font-bold text-red-700">{stats.injuries}</p></Card>
-      <Card className="p-4"><div className="text-[10px] text-red-600 mb-1">Kritični</div><p className="text-xl font-bold text-red-700">{stats.critical}</p></Card>
-      <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Izgubljeni dani</div><p className="text-xl font-bold">{stats.totalLostDays}</p></Card>
-      <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Zatvoreno</div><p className="text-xl font-bold">{stats.closed}</p></Card>
+      <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
+      <Card className="p-4"><div className="text-xs text-slate-600 mb-1">Prijavljeni</div><p className="text-xl font-bold text-slate-700">{stats.reported}</p></Card>
+      <Card className="p-4"><div className="text-xs text-amber-600 mb-1">Ispitivanje</div><p className="text-xl font-bold text-amber-700">{stats.investigating}</p></Card>
+      <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Rešeni</div><p className="text-xl font-bold text-emerald-700">{stats.resolved}</p></Card>
+      <Card className="p-4"><div className="text-xs text-red-600 mb-1">Povrede</div><p className="text-xl font-bold text-red-700">{stats.injuries}</p></Card>
+      <Card className="p-4"><div className="text-xs text-red-600 mb-1">Kritični</div><p className="text-xl font-bold text-red-700">{stats.critical}</p></Card>
+      <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Izgubljeni dani</div><p className="text-xl font-bold">{stats.totalLostDays}</p></Card>
+      <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Zatvoreno</div><p className="text-xl font-bold">{stats.closed}</p></Card>
     </div>
   )
 }
@@ -89,7 +89,7 @@ export function IncidentsTable({
                 <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => onView(item.id)}>
                   <TableCell className="text-xs font-mono">{item.number}</TableCell>
                   <TableCell className="text-xs">{TYPES[item.type]?.label}</TableCell>
-                  <TableCell className="text-xs hidden sm:table-cell"><div>{item.location}</div><div className="text-[10px] text-muted-foreground">{item.department}</div></TableCell>
+                  <TableCell className="text-xs hidden sm:table-cell"><div>{item.location}</div><div className="text-xs text-muted-foreground">{item.department}</div></TableCell>
                   <TableCell className="text-xs text-muted-foreground hidden md:table-cell max-w-[200px] truncate">{item.description}</TableCell>
                   <TableCell>{getSeverityBadge(item.severity)}</TableCell>
                   <TableCell>{getStatusBadge(item.status)}</TableCell>
@@ -124,14 +124,14 @@ export function DetailDialog({
         {detailItem && (
           <div className="space-y-4">
             <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.number}</p><p className="text-xs text-muted-foreground">{TYPES[detailItem.type]?.label} · {detailItem.department}</p></div><div className="flex gap-2">{getSeverityBadge(detailItem.severity)}{getStatusBadge(detailItem.status)}</div></div>
-            <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs font-medium">{detailItem.description}</p><p className="text-[10px] text-muted-foreground mt-1">{detailItem.location} · {formatDate(detailItem.date)} {detailItem.time}</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs font-medium">{detailItem.description}</p><p className="text-xs text-muted-foreground mt-1">{detailItem.location} · {formatDate(detailItem.date)} {detailItem.time}</p></div>
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Prijavio</div><p className="text-xs font-medium">{detailItem.reporterName}</p><p className="text-[10px] text-muted-foreground">{detailItem.reporterRole}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Povrede</div><p className="text-xs font-bold">{detailItem.injuredWorkers}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Izgubljeni dani</div><p className="text-xs font-bold">{detailItem.lostDays}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Prijavio</div><p className="text-xs font-medium">{detailItem.reporterName}</p><p className="text-xs text-muted-foreground">{detailItem.reporterRole}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Povrede</div><p className="text-xs font-bold">{detailItem.injuredWorkers}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Izgubljeni dani</div><p className="text-xs font-bold">{detailItem.lostDays}</p></div>
             </div>
-            {detailItem.rootCause && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Koreni uzrok</p><p className="text-xs">{detailItem.rootCause}</p></div>}
-            {detailItem.correctiveAction && <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-[10px] text-emerald-600 mb-1">Korektivna mera</p><p className="text-xs">{detailItem.correctiveAction}</p><p className="text-[10px] text-muted-foreground mt-1">Odgovoran: {detailItem.responsible} · Rok: {detailItem.deadline ? formatDate(detailItem.deadline) : 'N/A'}</p></div>}
+            {detailItem.rootCause && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Koreni uzrok</p><p className="text-xs">{detailItem.rootCause}</p></div>}
+            {detailItem.correctiveAction && <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-xs text-emerald-600 mb-1">Korektivna mera</p><p className="text-xs">{detailItem.correctiveAction}</p><p className="text-xs text-muted-foreground mt-1">Odgovoran: {detailItem.responsible} · Rok: {detailItem.deadline ? formatDate(detailItem.deadline) : 'N/A'}</p></div>}
           </div>
         )}
       </DialogContent>

@@ -148,7 +148,7 @@ function BarkodiTab() {
                   <p className="text-sm font-medium truncate">{p.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">{p.sku}</p>
                 </div>
-                <Badge variant={p.currentStock <= 0 ? 'destructive' : p.currentStock <= 5 ? 'secondary' : 'outline'} className="text-[10px]">
+                <Badge variant={p.currentStock <= 0 ? 'destructive' : p.currentStock <= 5 ? 'secondary' : 'outline'} className="text-xs">
                   {p.currentStock}
                 </Badge>
               </div>
@@ -160,7 +160,7 @@ function BarkodiTab() {
                 />
               </div>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-[10px] text-muted-foreground">{p.barcode || 'Nema barkoda'}</span>
+                <span className="text-xs text-muted-foreground">{p.barcode || 'Nema barkoda'}</span>
                 <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={e => { e.stopPropagation(); handlePrintLabels(p) }}>
                   <Printer className="h-3 w-3" />
                 </Button>
@@ -228,12 +228,12 @@ function ZoneMapTab() {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
         <Card className={`p-2 text-center cursor-pointer ${selectedZone === 'all' ? 'ring-2 ring-primary' : ''}`} onClick={() => setSelectedZone('all')}>
           <p className="text-lg font-bold">{locations.length}</p>
-          <p className="text-[10px] text-muted-foreground">Ukupno</p>
+          <p className="text-xs text-muted-foreground">Ukupno</p>
         </Card>
         {zoneCounts.map(z => (
           <Card key={z.value} className={`p-2 text-center cursor-pointer ${selectedZone === z.value ? 'ring-2 ring-primary' : ''}`} onClick={() => setSelectedZone(selectedZone === z.value ? 'all' : z.value)}>
             <p className="text-lg font-bold">{z.count}</p>
-            <p className="text-[10px] text-muted-foreground">{z.label}</p>
+            <p className="text-xs text-muted-foreground">{z.label}</p>
           </Card>
         ))}
       </div>
@@ -263,10 +263,10 @@ function ZoneMapTab() {
                   <div key={loc.id} className={`rounded-lg p-2 border text-center transition-all hover:shadow-md cursor-pointer ${getZoneLight(loc.zone)}`}>
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <div className={`w-2 h-2 rounded-full ${getZoneColor(loc.zone)}`} />
-                      <span className="text-[10px] font-mono font-medium">{loc.code}</span>
+                      <span className="text-xs font-mono font-medium">{loc.code}</span>
                     </div>
-                    <p className="text-[10px] truncate">{loc.name}</p>
-                    <p className="text-[9px] opacity-70">{loc._count?.lots || 0} lotova</p>
+                    <p className="text-xs truncate">{loc.name}</p>
+                    <p className="text-xs opacity-70">{loc._count?.lots || 0} lotova</p>
                   </div>
                 )
               })}
@@ -296,8 +296,8 @@ function ZoneMapTab() {
                   <TableRow key={loc.id}>
                     <TableCell className="text-xs font-mono">{loc.code}</TableCell>
                     <TableCell className="text-xs">{loc.name}</TableCell>
-                    <TableCell className="text-xs"><Badge variant="outline" className="text-[10px]">{loc.type}</Badge></TableCell>
-                    <TableCell className="text-xs"><Badge variant="outline" className={`text-[10px] ${getZoneLight(loc.zone)}`}>{ZONE_CONFIG.find(z => z.value === loc.zone)?.label || loc.zone}</Badge></TableCell>
+                    <TableCell className="text-xs"><Badge variant="outline" className="text-xs">{loc.type}</Badge></TableCell>
+                    <TableCell className="text-xs"><Badge variant="outline" className={`text-xs ${getZoneLight(loc.zone)}`}>{ZONE_CONFIG.find(z => z.value === loc.zone)?.label || loc.zone}</Badge></TableCell>
                     <TableCell className="text-xs font-mono">{loc.row},{loc.col}</TableCell>
                     <TableCell className="text-xs text-center">{loc._count?.lots || 0}</TableCell>
                   </TableRow>
@@ -429,7 +429,7 @@ function PickingTab() {
               <div className="flex items-center gap-2">
                 <CardTitle className="text-sm font-semibold">{activeWave.name}</CardTitle>
                 {statusBadge(activeWave.status)}
-                <Badge variant="outline" className="text-[10px]">{activeWave.progress}%</Badge>
+                <Badge variant="outline" className="text-xs">{activeWave.progress}%</Badge>
               </div>
               <Button size="sm" variant="ghost" onClick={() => setActiveWaveId(null)}>Zatvori</Button>
             </div>
@@ -448,7 +448,7 @@ function PickingTab() {
                     )}
                     <div>
                       <p className="text-xs font-medium">{line.productName}</p>
-                      <p className="text-[10px] text-muted-foreground">Lokacija: {line.locationCode || 'Nije dodeljena'} | Lot: {line.lotNumber || '-'}</p>
+                      <p className="text-xs text-muted-foreground">Lokacija: {line.locationCode || 'Nije dodeljena'} | Lot: {line.lotNumber || '-'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -483,7 +483,7 @@ function PickingTab() {
                   {statusBadge(wave.status)}
                   <div>
                     <p className="text-sm font-medium">{wave.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {wave.totalLines} stavki | {wave.completedLines}/{wave.totalLines} pokupljeno
                       {wave.priority !== 'srednji' && ` | Prioritet: ${wave.priority}`}
                     </p>
@@ -494,7 +494,7 @@ function PickingTab() {
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div className="h-full bg-emerald-500 transition-all" style={{ width: `${wave.progress}%` }} />
                     </div>
-                    <p className="text-[9px] text-muted-foreground text-center mt-0.5">{wave.progress}%</p>
+                    <p className="text-xs text-muted-foreground text-center mt-0.5">{wave.progress}%</p>
                   </div>
                   {wave.status === 'nacrt' && (
                     <Button size="sm" className="h-7 gap-1" onClick={e => { e.stopPropagation(); handleStartWave(wave.id) }}>
@@ -718,7 +718,7 @@ function PrijemTab() {
                   {statusBadge(order.status)}
                   <div>
                     <p className="text-sm font-medium">{order.number}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {order.lines?.length || 0} stavki | {order.partner?.name || 'Nema partnera'} | {order.documentRef || ''}
                     </p>
                   </div>

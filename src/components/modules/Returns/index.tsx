@@ -110,7 +110,7 @@ const REFUND_METHODS: Record<string, { label: string }> = {
   replacement: { label: 'Zamena' },
 }
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 function formatCurrency(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 0 }).format(n) }
 
@@ -161,14 +161,14 @@ export function Returns() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-slate-600 mb-1">Zahtevi</div><p className="text-xl font-bold text-slate-700">{stats.requested}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-blue-600 mb-1">U procesu</div><p className="text-xl font-bold text-blue-700">{stats.inProcess}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-emerald-600 mb-1">Refundirano</div><p className="text-xl font-bold text-emerald-700">{stats.refunded}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-violet-600 mb-1">Zamene</div><p className="text-xl font-bold text-violet-700">{stats.exchanged}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-red-600 mb-1">Odbijeni</div><p className="text-xl font-bold text-red-700">{stats.rejected}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Ukupno refund.</div><p className="text-xl font-bold">{formatCurrency(stats.totalRefunds)}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Prosek dana</div><p className="text-xl font-bold">{stats.avgDays}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
+        <Card className="p-4"><div className="text-xs text-slate-600 mb-1">Zahtevi</div><p className="text-xl font-bold text-slate-700">{stats.requested}</p></Card>
+        <Card className="p-4"><div className="text-xs text-blue-600 mb-1">U procesu</div><p className="text-xl font-bold text-blue-700">{stats.inProcess}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Refundirano</div><p className="text-xl font-bold text-emerald-700">{stats.refunded}</p></Card>
+        <Card className="p-4"><div className="text-xs text-violet-600 mb-1">Zamene</div><p className="text-xl font-bold text-violet-700">{stats.exchanged}</p></Card>
+        <Card className="p-4"><div className="text-xs text-red-600 mb-1">Odbijeni</div><p className="text-xl font-bold text-red-700">{stats.rejected}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno refund.</div><p className="text-xl font-bold">{formatCurrency(stats.totalRefunds)}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Prosek dana</div><p className="text-xl font-bold">{stats.avgDays}</p></Card>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -204,7 +204,7 @@ export function Returns() {
                       <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
                         <TableCell className="text-xs font-mono">{item.returnNumber}</TableCell>
                         <TableCell className="text-xs font-mono">{item.orderNumber}</TableCell>
-                        <TableCell><div className="text-xs font-medium">{item.customerName}</div><div className="text-[10px] text-muted-foreground">{item.customerEmail}</div></TableCell>
+                        <TableCell><div className="text-xs font-medium">{item.customerName}</div><div className="text-xs text-muted-foreground">{item.customerEmail}</div></TableCell>
                         <TableCell className="text-xs hidden sm:table-cell">{REASONS[item.returnReason]?.label}</TableCell>
                         <TableCell>{getStatusBadge(item.status)}</TableCell>
                         <TableCell className="text-xs hidden md:table-cell">{item.netRefund > 0 ? formatCurrency(item.netRefund) : '-'}</TableCell>
@@ -230,7 +230,7 @@ export function Returns() {
                 {Object.entries(REASONS).map(([k, v]) => {
                   const count = data.filter(d => d.returnReason === k).length
                   const amount = data.filter(d => d.returnReason === k).reduce((s, d) => s + d.netRefund, 0)
-                  return <div key={k} className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><div><p className="text-xs font-medium">{v.label}</p><p className="text-[10px] text-muted-foreground">{count} povrata</p></div><p className="text-xs font-bold">{formatCurrency(amount)}</p></div>
+                  return <div key={k} className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><div><p className="text-xs font-medium">{v.label}</p><p className="text-xs text-muted-foreground">{count} povrata</p></div><p className="text-xs font-bold">{formatCurrency(amount)}</p></div>
                 })}
               </CardContent>
             </Card>
@@ -256,26 +256,26 @@ export function Returns() {
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.returnNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderNumber}</p></div><div>{getStatusBadge(detailItem.status)}</div></div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Kupac</div><p className="text-xs font-medium">{detailItem.customerName}</p><p className="text-[10px] text-muted-foreground">{detailItem.customerEmail}</p><p className="text-[10px] text-muted-foreground">{detailItem.customerPhone}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Razlog</div><p className="text-xs font-medium">{REASONS[detailItem.returnReason]?.label}</p><p className="text-[10px] text-muted-foreground">Nacin: {REFUND_METHODS[detailItem.refundMethod]?.label}</p><p className="text-[10px] text-muted-foreground">{detailItem.requestedDate && `Datum: ${formatDate(detailItem.requestedDate)}`}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Kupac</div><p className="text-xs font-medium">{detailItem.customerName}</p><p className="text-xs text-muted-foreground">{detailItem.customerEmail}</p><p className="text-xs text-muted-foreground">{detailItem.customerPhone}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Razlog</div><p className="text-xs font-medium">{REASONS[detailItem.returnReason]?.label}</p><p className="text-xs text-muted-foreground">Nacin: {REFUND_METHODS[detailItem.refundMethod]?.label}</p><p className="text-xs text-muted-foreground">{detailItem.requestedDate && `Datum: ${formatDate(detailItem.requestedDate)}`}</p></div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Refund</div><p className="text-xs font-bold">{formatCurrency(detailItem.refundAmount)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Transport</div><p className="text-xs font-bold">{formatCurrency(detailItem.shippingCost)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Restocking</div><p className="text-xs font-bold">{formatCurrency(detailItem.restockingFee)}</p></div>
-                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-[10px] text-emerald-600 mb-1">Neto refund</div><p className="text-xs font-bold text-emerald-700">{formatCurrency(detailItem.netRefund)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Refund</div><p className="text-xs font-bold">{formatCurrency(detailItem.refundAmount)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Transport</div><p className="text-xs font-bold">{formatCurrency(detailItem.shippingCost)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Restocking</div><p className="text-xs font-bold">{formatCurrency(detailItem.restockingFee)}</p></div>
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Neto refund</div><p className="text-xs font-bold text-emerald-700">{formatCurrency(detailItem.netRefund)}</p></div>
               </div>
 
               <div className="space-y-2">
                 <p className="text-xs font-medium">Stavke:</p>
-                <Table><TableHeader><TableRow><TableHead className="text-[10px]">Proizvod</TableHead><TableHead className="text-[10px]">SKU</TableHead><TableHead className="text-[10px]">Kol.</TableHead><TableHead className="text-[10px]">Cena</TableHead><TableHead className="text-[10px]">Stanje</TableHead></TableRow></TableHeader>
+                <Table><TableHeader><TableRow><TableHead className="text-xs">Proizvod</TableHead><TableHead className="text-xs">SKU</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Cena</TableHead><TableHead className="text-xs">Stanje</TableHead></TableRow></TableHeader>
                 <TableBody>{detailItem.items.map((item, idx) => (
-                  <TableRow key={idx}><TableCell className="text-[10px]">{item.productName}</TableCell><TableCell className="text-[10px] font-mono">{item.sku}</TableCell><TableCell className="text-[10px]">{item.quantity}</TableCell><TableCell className="text-[10px]">{formatCurrency(item.unitPrice)}</TableCell><TableCell className="text-[10px]"><Badge variant="outline" className="text-[9px]">{item.condition}</Badge></TableCell></TableRow>
+                  <TableRow key={idx}><TableCell className="text-xs">{item.productName}</TableCell><TableCell className="text-xs font-mono">{item.sku}</TableCell><TableCell className="text-xs">{item.quantity}</TableCell><TableCell className="text-xs">{formatCurrency(item.unitPrice)}</TableCell><TableCell className="text-xs"><Badge variant="outline" className="text-xs">{item.condition}</Badge></TableCell></TableRow>
                 ))}</TableBody></Table>
               </div>
 
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Napomena kupca</p><p className="text-xs">{detailItem.notes}</p></div>}
-              {detailItem.internalNotes && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-[10px] text-blue-600 mb-1">Interna beleška</p><p className="text-xs">{detailItem.internalNotes}</p></div>}
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Napomena kupca</p><p className="text-xs">{detailItem.notes}</p></div>}
+              {detailItem.internalNotes && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-600 mb-1">Interna beleška</p><p className="text-xs">{detailItem.internalNotes}</p></div>}
 
               <div className="flex items-center gap-3">
                 <Label className="text-xs">Promeni status:</Label>

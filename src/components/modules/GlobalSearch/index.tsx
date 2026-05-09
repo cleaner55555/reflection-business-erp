@@ -422,7 +422,7 @@ export function GlobalSearch() {
                 {loading && (
                   <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
                 )}
-                <kbd className="hidden rounded-md border border-border/60 bg-muted/60 px-2 py-0.5 font-mono text-[11px] text-muted-foreground sm:inline-flex">
+                <kbd className="hidden rounded-md border border-border/60 bg-muted/60 px-2 py-0.5 font-mono text-xs text-muted-foreground sm:inline-flex">
                   ESC
                 </kbd>
               </div>
@@ -464,7 +464,7 @@ export function GlobalSearch() {
                       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         {group.label}
                       </span>
-                      <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                         {group.results.length}
                       </span>
                     </div>
@@ -509,7 +509,7 @@ export function GlobalSearch() {
                                 </span>
                               )}
                               {result.meta?.status && (
-                                <span className="shrink-0 rounded-md border border-border/60 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                <span className="shrink-0 rounded-md border border-border/60 bg-muted/50 px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                                   {t(`common.${result.meta.status}`) || result.meta.status}
                                 </span>
                               )}
@@ -580,7 +580,7 @@ export function GlobalSearch() {
 
               {/* Footer */}
               <div className="flex items-center justify-between border-t border-border/30 bg-muted/20 px-5 py-2.5">
-                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <kbd className="rounded border border-border/60 bg-muted/60 px-1 py-0.5 font-mono">
                       ↑↓
@@ -600,7 +600,7 @@ export function GlobalSearch() {
                     <span>{t('common.close') || 'Zatvori'}</span>
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Search className="h-3 w-3" />
                   <span>Reflection Business</span>
                 </div>
@@ -617,7 +617,7 @@ export function GlobalSearch() {
       >
         <Search className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">{t('search.placeholder') || 'Pretraži...'}</span>
-        <kbd className="hidden ml-1 rounded border border-border/60 bg-muted/60 px-1 py-0.5 font-mono text-[10px] sm:inline-flex">
+        <kbd className="hidden ml-1 rounded border border-border/60 bg-muted/60 px-1 py-0.5 font-mono text-xs sm:inline-flex">
           ⌘K
         </kbd>
       </button>

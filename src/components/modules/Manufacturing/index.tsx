@@ -558,7 +558,7 @@ export function Manufacturing() {
                           />
                         </div>
                       </div>
-                      <Badge variant="outline" className={`text-[10px] shrink-0 ${ORDER_STATUS_CONFIG[order.status]?.color || ''}`}>
+                      <Badge variant="outline" className={`text-xs shrink-0 ${ORDER_STATUS_CONFIG[order.status]?.color || ''}`}>
                         {ORDER_STATUS_CONFIG[order.status]?.label || order.status}
                       </Badge>
                     </div>
@@ -649,7 +649,7 @@ export function Manufacturing() {
                         <TableCell className="text-xs">{order.startDate}</TableCell>
                         <TableCell className="text-xs">{order.endDate}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[10px] ${ORDER_STATUS_CONFIG[order.status]?.color || ''}`}>
+                          <Badge variant="outline" className={`text-xs ${ORDER_STATUS_CONFIG[order.status]?.color || ''}`}>
                             {ORDER_STATUS_CONFIG[order.status]?.label || order.status}
                           </Badge>
                         </TableCell>
@@ -721,7 +721,7 @@ export function Manufacturing() {
                           <TableCell className="font-mono text-xs">{bom.version}</TableCell>
                           <TableCell>{bom.components.length}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={`text-[10px] ${BOM_STATUS_CONFIG[bom.status]?.color || ''}`}>
+                            <Badge variant="outline" className={`text-xs ${BOM_STATUS_CONFIG[bom.status]?.color || ''}`}>
                               {BOM_STATUS_CONFIG[bom.status]?.label || bom.status}
                             </Badge>
                           </TableCell>
@@ -767,7 +767,7 @@ export function Manufacturing() {
                       <Cpu className="h-5 w-5 text-muted-foreground" />
                       <span className="font-semibold text-sm">{machine.name}</span>
                     </div>
-                    <Badge variant="outline" className={`text-[10px] ${MACHINE_STATUS_CONFIG[machine.status]?.color || ''}`}>
+                    <Badge variant="outline" className={`text-xs ${MACHINE_STATUS_CONFIG[machine.status]?.color || ''}`}>
                       {MACHINE_STATUS_CONFIG[machine.status]?.label || machine.status}
                     </Badge>
                   </div>
@@ -845,7 +845,7 @@ export function Manufacturing() {
                   <div key={item.id} className="grid gap-0" style={{ gridTemplateColumns: '160px 1fr' }}>
                     <div className="text-xs font-medium p-2 border-b flex items-center gap-1">
                       <span className="truncate">{item.productName}</span>
-                      <Badge variant="outline" className="text-[9px] shrink-0">{item.quantity}</Badge>
+                      <Badge variant="outline" className="text-xs shrink-0">{item.quantity}</Badge>
                     </div>
                     <div className="relative border-b grid grid-cols-7" style={{ gridTemplateColumns: `repeat(${scheduleDays}, 1fr)` }}>
                       {Array.from({ length: scheduleDays }, (_, i) => (
@@ -853,7 +853,7 @@ export function Manufacturing() {
                       ))}
                       {/* Schedule bar */}
                       <div
-                        className={`absolute top-1 h-8 rounded ${SCHEDULE_COLORS[item.status]} opacity-80 flex items-center justify-center text-[10px] text-white font-medium cursor-pointer hover:opacity-100 transition-opacity`}
+                        className={`absolute top-1 h-8 rounded ${SCHEDULE_COLORS[item.status]} opacity-80 flex items-center justify-center text-xs text-white font-medium cursor-pointer hover:opacity-100 transition-opacity`}
                         style={{
                           left: `${(item.startDay / scheduleDays) * 100}%`,
                           width: `${(item.duration / scheduleDays) * 100}%`,
@@ -896,7 +896,7 @@ export function Manufacturing() {
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-muted-foreground">{plannedHours}/{availableHours}h</span>
+                      <span className="text-xs text-muted-foreground">{plannedHours}/{availableHours}h</span>
                     </div>
                   )
                 })}

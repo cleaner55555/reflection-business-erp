@@ -921,7 +921,7 @@ export function Natečaji() {
                   <p className="text-2xl font-bold text-blue-600">
                     {stats.open + stats.inEvaluation}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.upcomingDeadlines.length} uskoro rok
                   </p>
                 </Card>
@@ -935,7 +935,7 @@ export function Natečaji() {
                   <p className="text-2xl font-bold text-green-600">
                     {stats.awarded}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     prosek {stats.avgBidders} ponuđača
                   </p>
                 </Card>
@@ -960,7 +960,7 @@ export function Natečaji() {
                   <p className="text-2xl font-bold text-red-600">
                     {stats.cancelled}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {stats.total > 0
                       ? Math.round((stats.cancelled / stats.total) * 100)
                       : 0}
@@ -1097,7 +1097,7 @@ export function Natečaji() {
                               title={`Dodeljeni: ${m.awarded}`}
                             />
                           </div>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {m.month}
                           </span>
                         </div>
@@ -1129,10 +1129,10 @@ export function Natečaji() {
                         {i + 1}.
                       </span>
                       <span className="text-xs flex-1 truncate">{b.buyer}</span>
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-xs">
                         {b.count}
                       </Badge>
-                      <span className="text-[10px] text-muted-foreground w-24 text-right">
+                      <span className="text-xs text-muted-foreground w-24 text-right">
                         {formatCurrency(b.value)}
                       </span>
                     </div>
@@ -1217,14 +1217,14 @@ export function Natečaji() {
                               </span>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] ${sCfg?.color}`}
+                                className={`text-xs ${sCfg?.color}`}
                               >
                                 {sCfg?.label}
                               </Badge>
-                              <span className="text-[10px]">
+                              <span className="text-xs">
                                 {tCfg?.icon} {tCfg?.label}
                               </span>
-                              <span className="text-[10px]">
+                              <span className="text-xs">
                                 {sCfg2?.icon} {sCfg2?.label}
                               </span>
                             </div>
@@ -1298,16 +1298,16 @@ export function Natečaji() {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Naručilac
                     </p>
                     <p className="text-xs font-medium">{selected.buyerName}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       PIB: {selected.buyerPib}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Procenjena vrednost
                     </p>
                     <p className="text-sm font-bold">
@@ -1318,7 +1318,7 @@ export function Natečaji() {
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">CPV kod</p>
+                    <p className="text-xs text-muted-foreground">CPV kod</p>
                     <p className="text-xs font-medium">{selected.cpvCode}</p>
                   </div>
                 </div>
@@ -1338,7 +1338,7 @@ export function Natečaji() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {selected.deadlineSubmission && (
                       <div className="p-2 rounded border">
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Rok za ponude
                         </p>
                         <p className="text-xs font-medium">
@@ -1348,7 +1348,7 @@ export function Natečaji() {
                     )}
                     {selected.openingDate && (
                       <div className="p-2 rounded border">
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Otvaranje
                         </p>
                         <p className="text-xs font-medium">
@@ -1358,7 +1358,7 @@ export function Natečaji() {
                     )}
                     {selected.awardDate && (
                       <div className="p-2 rounded border">
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Dodela
                         </p>
                         <p className="text-xs font-medium">
@@ -1368,7 +1368,7 @@ export function Natečaji() {
                     )}
                     {selected.contractSigningDate && (
                       <div className="p-2 rounded border">
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           Potpis ugovora
                         </p>
                         <p className="text-xs font-medium">
@@ -1470,7 +1470,7 @@ export function Natečaji() {
                               </span>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] ${BIDDER_STATUS[b.status]?.color}`}
+                                className={`text-xs ${BIDDER_STATUS[b.status]?.color}`}
                               >
                                 {BIDDER_STATUS[b.status]?.label}
                               </Badge>
@@ -1482,7 +1482,7 @@ export function Natečaji() {
                               {b.score > 0 && (
                                 <Badge
                                   variant="secondary"
-                                  className="text-[10px]"
+                                  className="text-xs"
                                 >
                                   {b.score} poena
                                 </Badge>
@@ -1494,7 +1494,7 @@ export function Natečaji() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-6 text-[10px]"
+                                    className="h-6 text-xs"
                                     onClick={() => handleAward(selected, b.id)}
                                   >
                                     <Trophy className="h-3 w-3 mr-1" /> Dodeli
@@ -1535,7 +1535,7 @@ export function Natečaji() {
                         </div>
                         <div className="pb-3">
                           <p className="text-xs font-medium">{ev.action}</p>
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {ev.description} · {ev.performedBy} ·{" "}
                             {new Date(ev.timestamp).toLocaleString("sr-RS")}
                           </p>

@@ -596,19 +596,19 @@ function GlavnaKnjigaTab({ fiscalYear }: { fiscalYear: number }) {
             {/* Statement summary */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-lg bg-muted/50 p-3">
-                <p className="text-[10px] text-muted-foreground uppercase font-medium">Početno stanje</p>
+                <p className="text-xs text-muted-foreground uppercase font-medium">Početno stanje</p>
                 <p className="text-sm font-bold">{formatRSD(statement.openingBalance)}</p>
               </div>
               <div className="rounded-lg bg-emerald-50 p-3">
-                <p className="text-[10px] text-emerald-700 uppercase font-medium">Ukupno duguje</p>
+                <p className="text-xs text-emerald-700 uppercase font-medium">Ukupno duguje</p>
                 <p className="text-sm font-bold text-emerald-700">{formatRSD(statement.totalDebit)}</p>
               </div>
               <div className="rounded-lg bg-red-50 p-3">
-                <p className="text-[10px] text-red-600 uppercase font-medium">Ukupno potražuje</p>
+                <p className="text-xs text-red-600 uppercase font-medium">Ukupno potražuje</p>
                 <p className="text-sm font-bold text-red-600">{formatRSD(statement.totalCredit)}</p>
               </div>
               <div className="rounded-lg bg-blue-50 p-3">
-                <p className="text-[10px] text-blue-700 uppercase font-medium">Završno stanje</p>
+                <p className="text-xs text-blue-700 uppercase font-medium">Završno stanje</p>
                 <p className={`text-sm font-bold ${statement.closingBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
                   {formatRSD(statement.closingBalance)}
                 </p>
@@ -911,19 +911,19 @@ function KontniPlanTab() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-[10px] text-muted-foreground uppercase font-medium">Početno stanje</p>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">Početno stanje</p>
                   <p className="text-sm font-bold">{formatRSD(statement.openingBalance)}</p>
                 </div>
                 <div className="rounded-lg bg-emerald-50 p-3">
-                  <p className="text-[10px] text-emerald-700 uppercase font-medium">Ukupno duguje</p>
+                  <p className="text-xs text-emerald-700 uppercase font-medium">Ukupno duguje</p>
                   <p className="text-sm font-bold text-emerald-700">{formatRSD(statement.totalDebit)}</p>
                 </div>
                 <div className="rounded-lg bg-red-50 p-3">
-                  <p className="text-[10px] text-red-600 uppercase font-medium">Ukupno potražuje</p>
+                  <p className="text-xs text-red-600 uppercase font-medium">Ukupno potražuje</p>
                   <p className="text-sm font-bold text-red-600">{formatRSD(statement.totalCredit)}</p>
                 </div>
                 <div className="rounded-lg bg-blue-50 p-3">
-                  <p className="text-[10px] text-blue-700 uppercase font-medium">Završno stanje</p>
+                  <p className="text-xs text-blue-700 uppercase font-medium">Završno stanje</p>
                   <p className={`text-sm font-bold ${statement.closingBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{formatRSD(statement.closingBalance)}</p>
                 </div>
               </div>
@@ -967,7 +967,7 @@ function KontniPlanTab() {
                 return (
                   <div key={type}>
                     <div className="flex items-center gap-2 mb-2 px-1">
-                      <Badge variant="outline" className={`text-[10px] px-2 py-0 ${typeBadge.color}`}>{typeBadge.label}</Badge>
+                      <Badge variant="outline" className={`text-xs px-2 py-0 ${typeBadge.color}`}>{typeBadge.label}</Badge>
                       <span className="text-xs text-muted-foreground">({accs.length})</span>
                     </div>
                     <Table>
@@ -988,7 +988,7 @@ function KontniPlanTab() {
                               {acc.parentCode && <span className="text-muted-foreground ml-1.5">→ {acc.parentCode}</span>}
                             </TableCell>
                             <TableCell className="text-xs text-center">
-                              <Badge variant="secondary" className="text-[10px] px-2 py-0">{acc._count?.entries || 0}</Badge>
+                              <Badge variant="secondary" className="text-xs px-2 py-0">{acc._count?.entries || 0}</Badge>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
@@ -1429,7 +1429,7 @@ function BudzetiTab({ fiscalYear }: { fiscalYear: number }) {
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
               {MONTH_KEYS.map((month, idx) => (
                 <div key={month} className="space-y-1">
-                  <Label className="text-[10px] text-muted-foreground">{MONTH_LABELS[idx]}</Label>
+                  <Label className="text-xs text-muted-foreground">{MONTH_LABELS[idx]}</Label>
                   <Input name={month} type="number" step="0.01" min="0" className="h-8 text-xs text-right"
                     defaultValue={editingBudget ? (editingBudget as Record<string, unknown>)[month] || '' : ''} />
                 </div>
@@ -1558,21 +1558,21 @@ function BrutoBilansTab({ fiscalYear }: { fiscalYear: number }) {
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           <div className="rounded-lg bg-muted/50 p-3">
-            <p className="text-[10px] text-muted-foreground uppercase">Ukupno duguje</p>
+            <p className="text-xs text-muted-foreground uppercase">Ukupno duguje</p>
             <p className="text-sm font-bold text-emerald-700">{formatRSD(data.summary.totalDebit)}</p>
           </div>
           <div className="rounded-lg bg-muted/50 p-3">
-            <p className="text-[10px] text-muted-foreground uppercase">Ukupno potražuje</p>
+            <p className="text-xs text-muted-foreground uppercase">Ukupno potražuje</p>
             <p className="text-sm font-bold text-red-600">{formatRSD(data.summary.totalCredit)}</p>
           </div>
           <div className="rounded-lg bg-muted/50 p-3">
-            <p className="text-[10px] text-muted-foreground uppercase">Razlika</p>
+            <p className="text-xs text-muted-foreground uppercase">Razlika</p>
             <p className={`text-sm font-bold ${Math.abs(data.summary.difference) < 0.01 ? 'text-emerald-700' : 'text-red-600'}`}>
               {formatRSD(Math.abs(data.summary.difference))}
             </p>
           </div>
           <div className="rounded-lg bg-muted/50 p-3">
-            <p className="text-[10px] text-muted-foreground uppercase">Konta</p>
+            <p className="text-xs text-muted-foreground uppercase">Konta</p>
             <p className="text-sm font-bold">{data.summary.accountCount}</p>
           </div>
         </div>
@@ -1597,7 +1597,7 @@ function BrutoBilansTab({ fiscalYear }: { fiscalYear: number }) {
                     <TableCell className="text-xs font-mono font-medium">{acc.code}</TableCell>
                     <TableCell className="text-xs">{acc.name}</TableCell>
                     <TableCell className="text-xs text-center">
-                      <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${typeBadge.color}`}>{typeBadge.label}</Badge>
+                      <Badge variant="outline" className={`text-xs px-1.5 py-0 ${typeBadge.color}`}>{typeBadge.label}</Badge>
                     </TableCell>
                     <TableCell className="text-xs text-center">{acc.entryCount}</TableCell>
                     <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{acc.totalDebit > 0 ? formatRSD(acc.totalDebit) : '-'}</TableCell>
@@ -1680,16 +1680,16 @@ function PdvTab({ fiscalYear }: { fiscalYear: number }) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="bg-emerald-50 border-emerald-200">
           <CardContent className="p-3">
-            <p className="text-[10px] text-emerald-600 uppercase font-medium">PDV na promet (izlazni)</p>
+            <p className="text-xs text-emerald-600 uppercase font-medium">PDV na promet (izlazni)</p>
             <p className="text-lg font-bold text-emerald-700">{formatRSD(output.total)}</p>
-            <p className="text-[10px] text-emerald-600 mt-1">Osnovica: {formatRSD(output.osnovica)}</p>
+            <p className="text-xs text-emerald-600 mt-1">Osnovica: {formatRSD(output.osnovica)}</p>
           </CardContent>
         </Card>
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-3">
-            <p className="text-[10px] text-blue-600 uppercase font-medium">PDV na nabavku (ulazni)</p>
+            <p className="text-xs text-blue-600 uppercase font-medium">PDV na nabavku (ulazni)</p>
             <p className="text-lg font-bold text-blue-700">{formatRSD(input.total)}</p>
-            <p className="text-[10px] text-blue-600 mt-1">Osnovica: {formatRSD(input.osnovica)}</p>
+            <p className="text-xs text-blue-600 mt-1">Osnovica: {formatRSD(input.osnovica)}</p>
           </CardContent>
         </Card>
         <Card className={saldoPositive ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}>
@@ -1704,9 +1704,9 @@ function PdvTab({ fiscalYear }: { fiscalYear: number }) {
         </Card>
         <Card className="bg-violet-50 border-violet-200">
           <CardContent className="p-3">
-            <p className="text-[10px] text-violet-600 uppercase font-medium">Broj partnera</p>
+            <p className="text-xs text-violet-600 uppercase font-medium">Broj partnera</p>
             <p className="text-lg font-bold text-violet-700">{partners.length}</p>
-            <p className="text-[10px] text-violet-600 mt-1">Sa PDV stavkama</p>
+            <p className="text-xs text-violet-600 mt-1">Sa PDV stavkama</p>
           </CardContent>
         </Card>
       </div>
@@ -1908,19 +1908,19 @@ function AnalitikaTab({ fiscalYear }: { fiscalYear: number }) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase">Ukupno duguje</p>
+            <p className="text-xs text-muted-foreground uppercase">Ukupno duguje</p>
             <p className="text-lg font-bold">{formatRSD(data.totalDebit as number || 0)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase">Ukupno potražuje</p>
+            <p className="text-xs text-muted-foreground uppercase">Ukupno potražuje</p>
             <p className="text-lg font-bold">{formatRSD(data.totalCredit as number || 0)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase">Saldo</p>
+            <p className="text-xs text-muted-foreground uppercase">Saldo</p>
             <p className={`text-lg font-bold ${(data.totalSaldo as number || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               {formatRSD(data.totalSaldo as number || 0)}
             </p>
@@ -1928,7 +1928,7 @@ function AnalitikaTab({ fiscalYear }: { fiscalYear: number }) {
         </Card>
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase">Stavki ukupno</p>
+            <p className="text-xs text-muted-foreground uppercase">Stavki ukupno</p>
             <p className="text-lg font-bold">{data.groupCount as number}</p>
           </CardContent>
         </Card>
@@ -2087,13 +2087,13 @@ function GodZatvaranjeTab({ fiscalYear }: { fiscalYear: number }) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase font-medium">Ukupni prihodi</p>
+            <p className="text-xs text-muted-foreground uppercase font-medium">Ukupni prihodi</p>
             <p className="text-lg font-bold text-teal-600">{formatRSD(totalRevenue)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase font-medium">Ukupni rashodi</p>
+            <p className="text-xs text-muted-foreground uppercase font-medium">Ukupni rashodi</p>
             <p className="text-lg font-bold text-orange-600">{formatRSD(totalExpenses)}</p>
           </CardContent>
         </Card>
@@ -2109,7 +2109,7 @@ function GodZatvaranjeTab({ fiscalYear }: { fiscalYear: number }) {
         </Card>
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase font-medium">Marža</p>
+            <p className="text-xs text-muted-foreground uppercase font-medium">Marža</p>
             <p className={`text-lg font-bold ${profit >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
               {totalRevenue > 0 ? `${((profit / totalRevenue) * 100).toFixed(1)}%` : '0%'}
             </p>

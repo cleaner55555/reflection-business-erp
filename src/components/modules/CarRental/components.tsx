@@ -963,14 +963,14 @@ export function RentACarContent() {
                       <div className="flex flex-wrap items-center gap-2 mb-3">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${VEHICLE_STATUS_BADGES[vehicle.status] || ""}`}
+                          className={`text-xs ${VEHICLE_STATUS_BADGES[vehicle.status] || ""}`}
                         >
                           {VEHICLE_STATUS_LABELS[vehicle.status] ||
                             vehicle.status}
                         </Badge>
                         <Badge
                           variant="outline"
-                          className={`text-[10px] ${FUEL_TYPE_BADGES[vehicle.fuelType] || ""}`}
+                          className={`text-xs ${FUEL_TYPE_BADGES[vehicle.fuelType] || ""}`}
                         >
                           <Fuel className="h-2.5 w-2.5 mr-0.5" />
                           {FUEL_TYPE_LABELS[vehicle.fuelType] ||
@@ -978,7 +978,7 @@ export function RentACarContent() {
                         </Badge>
                         <Badge
                           variant="outline"
-                          className="text-[10px] bg-slate-50 text-slate-600 border-slate-200"
+                          className="text-xs bg-slate-50 text-slate-600 border-slate-200"
                         >
                           {TRANSMISSION_LABELS[vehicle.transmission] ||
                             vehicle.transmission}
@@ -1026,7 +1026,7 @@ export function RentACarContent() {
                       {(vehicle.weeklyRate || vehicle.monthlyRate) && (
                         <>
                           <Separator className="my-2" />
-                          <div className="flex gap-3 text-[10px] text-muted-foreground">
+                          <div className="flex gap-3 text-xs text-muted-foreground">
                             {vehicle.weeklyRate && (
                               <span>
                                 {t("rentACar.weekly")}:{" "}
@@ -1381,7 +1381,7 @@ export function RentACarContent() {
                             </h3>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${RENTAL_STATUS_BADGES[rental.status] || ""}`}
+                              className={`text-xs ${RENTAL_STATUS_BADGES[rental.status] || ""}`}
                             >
                               {RENTAL_STATUS_LABELS[rental.status] ||
                                 rental.status}
@@ -1417,7 +1417,7 @@ export function RentACarContent() {
                                   t("rentACar.unknownVehicle")}
                               </span>
                               {rental.vehicle?.registration && (
-                                <span className="font-mono text-[10px]">
+                                <span className="font-mono text-xs">
                                   ({rental.vehicle.registration})
                                 </span>
                               )}

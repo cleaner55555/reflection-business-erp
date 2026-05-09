@@ -245,7 +245,7 @@ export function EmployeeChip({
   return (
     <div className="flex items-center gap-1.5">
       <Avatar className="h-5 w-5">
-        <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+        <AvatarFallback className="text-xs bg-primary/10 text-primary">
           {initials}
         </AvatarFallback>
       </Avatar>
@@ -524,7 +524,7 @@ export function KanbanBoard({
                   {cfg.label}
                 </span>
               </div>
-              <Badge variant="secondary" className="h-5 text-[10px] px-1.5">
+              <Badge variant="secondary" className="h-5 text-xs px-1.5">
                 {columnOrders.length}
               </Badge>
             </div>
@@ -566,7 +566,7 @@ function KanbanCard({
       onClick={onView}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <span className="font-mono text-xs text-muted-foreground">
           {order.orderNumber}
         </span>
         <PriorityBadge priority={order.priority} />
@@ -584,7 +584,7 @@ function KanbanCard({
             }
             className="h-1.5"
           />
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {order.tasks.filter((t) => t.status === "zavrsen").length}/
             {order.tasks.length} задатака
           </span>
@@ -598,7 +598,7 @@ function KanbanCard({
           )}
           <Calendar className="h-3 w-3" />
           <span
-            className={`text-[10px] ${isOverdue(order) ? "text-rose-500 font-medium" : ""}`}
+            className={`text-xs ${isOverdue(order) ? "text-rose-500 font-medium" : ""}`}
           >
             {formatDate(order.dueDate)}
           </span>

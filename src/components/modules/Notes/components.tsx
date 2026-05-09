@@ -20,7 +20,7 @@ function NoteCard({ note, getCategoryName, getCategoryColor, onEdit, onTogglePin
           <CardTitle className="text-sm font-medium line-clamp-1 flex-1">{note.title}</CardTitle>
           <div className="flex items-center gap-1 ml-2">
             {note.isPinned && <Pin className="h-3.5 w-3.5 text-amber-500" />}
-            <Badge variant="outline" className={`text-[10px] ${priCfg.color}`}>
+            <Badge variant="outline" className={`text-xs ${priCfg.color}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${priCfg.dotColor} mr-1`} />
               {priCfg.label}
             </Badge>
@@ -31,13 +31,13 @@ function NoteCard({ note, getCategoryName, getCategoryColor, onEdit, onTogglePin
         <p className="text-xs text-muted-foreground line-clamp-3 whitespace-pre-line">{note.content}</p>
         <div className="flex flex-wrap gap-1">
           {note.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-[10px]">#{tag}</Badge>
+            <Badge key={tag} variant="secondary" className="text-xs">#{tag}</Badge>
           ))}
-          {note.tags.length > 3 && <Badge variant="secondary" className="text-[10px]">+{note.tags.length - 3}</Badge>}
+          {note.tags.length > 3 && <Badge variant="secondary" className="text-xs">+{note.tags.length - 3}</Badge>}
         </div>
         <Separator />
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-muted-foreground">{getCategoryName(note.categoryId)}</span>
+          <span className="text-xs text-muted-foreground">{getCategoryName(note.categoryId)}</span>
           <div className="flex gap-0.5">
             <button className="p-1 rounded hover:bg-black/5" onClick={() => onToggleFavorite(note)}>
               <Star className={`h-3.5 w-3.5 ${note.isFavorite ? 'text-amber-500 fill-amber-500' : 'text-gray-400'}`} />
@@ -95,7 +95,7 @@ function NoteList({ notes, getCategoryName, getCategoryColor, onEdit, onTogglePi
                   </div>
                 </td>
                 <td className="p-3 hidden md:table-cell">
-                  <Badge variant="outline" className={`text-[10px] ${priCfg.color}`}>
+                  <Badge variant="outline" className={`text-xs ${priCfg.color}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${priCfg.dotColor} mr-1`} />
                     {priCfg.label}
                   </Badge>
@@ -103,9 +103,9 @@ function NoteList({ notes, getCategoryName, getCategoryColor, onEdit, onTogglePi
                 <td className="p-3 hidden lg:table-cell">
                   <div className="flex flex-wrap gap-1">
                     {note.tags.slice(0, 2).map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-[10px]">#{tag}</Badge>
+                      <Badge key={tag} variant="secondary" className="text-xs">#{tag}</Badge>
                     ))}
-                    {note.tags.length > 2 && <span className="text-[10px] text-muted-foreground">+{note.tags.length - 2}</span>}
+                    {note.tags.length > 2 && <span className="text-xs text-muted-foreground">+{note.tags.length - 2}</span>}
                   </div>
                 </td>
                 <td className="p-3">

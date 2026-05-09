@@ -444,7 +444,7 @@ export function Documents() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {filteredDocs.length} dokumenta
-              {selectedFolder && <Badge variant="outline" className="ml-2 text-[10px]">{folders.find(f => f.id === selectedFolder)?.name}</Badge>}
+              {selectedFolder && <Badge variant="outline" className="ml-2 text-xs">{folders.find(f => f.id === selectedFolder)?.name}</Badge>}
             </p>
             {selectedFolder && (
               <Button variant="ghost" size="sm" onClick={() => setSelectedFolder(null)}>
@@ -488,11 +488,11 @@ export function Documents() {
                               <FileIcon className={`h-4 w-4 shrink-0 ${getFileTypeColor(doc.fileName)}`} />
                               <div className="min-w-0">
                                 <p className="text-sm font-medium truncate max-w-[200px]">{doc.title}</p>
-                                {doc.fileName && <p className="text-[10px] text-muted-foreground">{doc.fileName} · {formatFileSize(doc.fileSize || 0)}</p>}
+                                {doc.fileName && <p className="text-xs text-muted-foreground">{doc.fileName} · {formatFileSize(doc.fileSize || 0)}</p>}
                               </div>
                             </div>
                           </td>
-                          <td className="p-3 hidden md:table-cell"><Badge variant="secondary" className="text-[10px]">{TYPE_LABELS[doc.type || ''] || doc.type || '-'}</Badge></td>
+                          <td className="p-3 hidden md:table-cell"><Badge variant="secondary" className="text-xs">{TYPE_LABELS[doc.type || ''] || doc.type || '-'}</Badge></td>
                           <td className="p-3 hidden lg:table-cell text-xs">{doc.category || '-'}</td>
                           <td className="p-3 hidden md:table-cell text-xs text-muted-foreground">{formatDate(doc.createdAt)}</td>
                           <td className="p-3 hidden lg:table-cell">
@@ -503,7 +503,7 @@ export function Documents() {
                             ) : '-'}
                           </td>
                           <td className="p-3">
-                            <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[doc.status] || ''}`}>{STATUS_LABELS[doc.status] || doc.status}</Badge>
+                            <Badge variant="outline" className={`text-xs ${STATUS_COLORS[doc.status] || ''}`}>{STATUS_LABELS[doc.status] || doc.status}</Badge>
                           </td>
                           <td className="p-3">
                             <div className="flex gap-1">
@@ -532,17 +532,17 @@ export function Documents() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium truncate">{doc.title}</p>
-                          <Badge variant="secondary" className="text-[9px] mt-1">{TYPE_LABELS[doc.type || ''] || doc.type || '-'}</Badge>
+                          <Badge variant="secondary" className="text-xs mt-1">{TYPE_LABELS[doc.type || ''] || doc.type || '-'}</Badge>
                         </div>
                       </div>
-                      {doc.category && <p className="text-[11px] text-muted-foreground mb-1"><TagIcon className="h-3 w-3 inline mr-1" />{doc.category}</p>}
-                      {doc.fileName && <p className="text-[11px] text-muted-foreground mb-1"><File className="h-3 w-3 inline mr-1" />{doc.fileName} · {formatFileSize(doc.fileSize || 0)}</p>}
+                      {doc.category && <p className="text-xs text-muted-foreground mb-1"><TagIcon className="h-3 w-3 inline mr-1" />{doc.category}</p>}
+                      {doc.fileName && <p className="text-xs text-muted-foreground mb-1"><File className="h-3 w-3 inline mr-1" />{doc.fileName} · {formatFileSize(doc.fileSize || 0)}</p>}
                       <div className="flex items-center justify-between mt-2">
-                        <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[doc.status] || ''}`}>{STATUS_LABELS[doc.status] || doc.status}</Badge>
-                        <span className="text-[10px] text-muted-foreground">{formatDate(doc.createdAt)}</span>
+                        <Badge variant="outline" className={`text-xs ${STATUS_COLORS[doc.status] || ''}`}>{STATUS_LABELS[doc.status] || doc.status}</Badge>
+                        <span className="text-xs text-muted-foreground">{formatDate(doc.createdAt)}</span>
                       </div>
                       {doc.expiresAt && days !== null && days <= 30 && (
-                        <div className={`mt-2 text-[10px] px-2 py-1 rounded ${days <= 7 ? 'bg-red-50 text-red-600 dark:bg-red-900/20' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20'}`}>
+                        <div className={`mt-2 text-xs px-2 py-1 rounded ${days <= 7 ? 'bg-red-50 text-red-600 dark:bg-red-900/20' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20'}`}>
                           <AlertTriangle className="h-3 w-3 inline mr-1" /> Ističe za {days} dana
                         </div>
                       )}
@@ -572,7 +572,7 @@ export function Documents() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">{folder.name}</p>
-                        <p className="text-[11px] text-muted-foreground mt-1">{folderDocs.length} dokumenta</p>
+                        <p className="text-xs text-muted-foreground mt-1">{folderDocs.length} dokumenta</p>
                       </div>
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </div>
@@ -614,7 +614,7 @@ export function Documents() {
                             <span className="text-sm">{d.title}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-[10px] text-amber-600">
+                            <Badge variant="outline" className="text-xs text-amber-600">
                               <Clock className="h-3 w-3 mr-1" /> {d.daysLeft} dana
                             </Badge>
                             <span className="text-xs text-muted-foreground">{formatDate(d.expiresAt!)}</span>
@@ -654,7 +654,7 @@ export function Documents() {
                       {Object.entries(stats.typeMap).sort(([, a], [, b]) => b - a).map(([type, count]) => (
                         <div key={type} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-[10px]">{TYPE_LABELS[type] || type}</Badge>
+                            <Badge variant="secondary" className="text-xs">{TYPE_LABELS[type] || type}</Badge>
                           </div>
                           <span className="text-sm font-medium">{count}</span>
                         </div>
@@ -673,7 +673,7 @@ export function Documents() {
                         if (count === 0) return null
                         return (
                           <div key={status} className="flex items-center gap-3">
-                            <Badge variant="outline" className={`text-[10px] w-32 justify-center ${STATUS_COLORS[status] || ''}`}>{label}</Badge>
+                            <Badge variant="outline" className={`text-xs w-32 justify-center ${STATUS_COLORS[status] || ''}`}>{label}</Badge>
                             <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${Math.round((count / Math.max(stats.total, 1)) * 100)}%` }} /></div>
                             <span className="text-xs font-mono w-6 text-right">{count}</span>
                           </div>
@@ -832,8 +832,8 @@ export function Documents() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><span className="text-xs text-muted-foreground">Tip:</span><br /><Badge variant="secondary" className="text-[10px]">{TYPE_LABELS[selectedDoc.type || ''] || selectedDoc.type || '-'}</Badge></div>
-                  <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[selectedDoc.status] || ''}`}>{STATUS_LABELS[selectedDoc.status] || selectedDoc.status}</Badge></div>
+                  <div><span className="text-xs text-muted-foreground">Tip:</span><br /><Badge variant="secondary" className="text-xs">{TYPE_LABELS[selectedDoc.type || ''] || selectedDoc.type || '-'}</Badge></div>
+                  <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-xs ${STATUS_COLORS[selectedDoc.status] || ''}`}>{STATUS_LABELS[selectedDoc.status] || selectedDoc.status}</Badge></div>
                   <div><span className="text-xs text-muted-foreground">Kategorija:</span><br /><span className="text-sm">{selectedDoc.category || '-'}</span></div>
                   <div><span className="text-xs text-muted-foreground">Datum kreiranja:</span><br /><span className="text-sm">{formatDate(selectedDoc.createdAt)}</span></div>
                   <div><span className="text-xs text-muted-foreground">Datum isteka:</span><br />
@@ -846,7 +846,7 @@ export function Documents() {
                   <div><span className="text-xs text-muted-foreground">Oznake:</span><br />
                     <div className="flex gap-1 flex-wrap mt-1">
                       {(selectedDoc.tags || '').split(',').filter(Boolean).map((tag, i) => (
-                        <Badge key={i} variant="outline" className="text-[10px]"><Tag className="h-2.5 w-2.5 mr-0.5" />{tag.trim()}</Badge>
+                        <Badge key={i} variant="outline" className="text-xs"><Tag className="h-2.5 w-2.5 mr-0.5" />{tag.trim()}</Badge>
                       ))}
                       {!(selectedDoc.tags || '').split(',').filter(Boolean).length && '-'}
                     </div>
@@ -945,19 +945,19 @@ export function Documents() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-red-500">{docs.filter(d => d.fileName?.endsWith('.pdf')).length}</p>
-              <p className="text-[11px] text-muted-foreground">PDF dokumenti</p>
+              <p className="text-xs text-muted-foreground">PDF dokumenti</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-500">{docs.filter(d => d.fileName?.match(/\.(xls|xlsx|csv)/)).length}</p>
-              <p className="text-[11px] text-muted-foreground">Tabele (Excel/CSV)</p>
+              <p className="text-xs text-muted-foreground">Tabele (Excel/CSV)</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-500">{docs.filter(d => d.fileName?.match(/\.(jpg|jpeg|png|gif)/)).length}</p>
-              <p className="text-[11px] text-muted-foreground">Slike i grafika</p>
+              <p className="text-xs text-muted-foreground">Slike i grafika</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-amber-500">{docs.filter(d => !d.fileName).length}</p>
-              <p className="text-[11px] text-muted-foreground">Bez datoteke</p>
+              <p className="text-xs text-muted-foreground">Bez datoteke</p>
             </div>
           </div>
           <Separator className="my-4" />
@@ -997,7 +997,7 @@ export function Documents() {
                 <span className="text-xl">{item.icon}</span>
                 <div>
                   <p className="text-sm font-medium">{TYPE_LABELS[item.type]}</p>
-                  <p className="text-[11px] text-muted-foreground">{item.desc}</p>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
                 </div>
               </div>
             ))}

@@ -652,7 +652,7 @@ export function WebsiteBuilder() {
                             <p className="text-xs text-muted-foreground">/{p.slug}</p>
                           </div>
                         </div>
-                        <Badge variant="outline" className={`text-[10px] shrink-0 ${pageStatusConfig[p.status]?.color}`}>
+                        <Badge variant="outline" className={`text-xs shrink-0 ${pageStatusConfig[p.status]?.color}`}>
                           {pageStatusConfig[p.status]?.label}
                         </Badge>
                       </div>
@@ -774,12 +774,12 @@ export function WebsiteBuilder() {
                       <TableCell className="font-medium text-sm">{p.title}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">/{p.slug}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${pageTypeConfig[p.type]?.color}`}>
+                        <Badge variant="outline" className={`text-xs ${pageTypeConfig[p.type]?.color}`}>
                           {pageTypeConfig[p.type]?.label}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${pageStatusConfig[p.status]?.color}`}>
+                        <Badge variant="outline" className={`text-xs ${pageStatusConfig[p.status]?.color}`}>
                           {pageStatusConfig[p.status]?.label}
                         </Badge>
                       </TableCell>
@@ -845,10 +845,10 @@ export function WebsiteBuilder() {
                       <p className="text-xs text-muted-foreground mb-3">{comp.description}</p>
                       <div className="flex flex-wrap gap-1">
                         {comp.sections.slice(0, 3).map((s) => (
-                          <Badge key={s} variant="secondary" className="text-[9px]">{s}</Badge>
+                          <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>
                         ))}
                         {comp.sections.length > 3 && (
-                          <Badge variant="secondary" className="text-[9px]">+{comp.sections.length - 3}</Badge>
+                          <Badge variant="secondary" className="text-xs">+{comp.sections.length - 3}</Badge>
                         )}
                       </div>
                     </div>
@@ -897,8 +897,8 @@ export function WebsiteBuilder() {
                         <Link2 className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium flex-1">{item.label}</span>
                         <span className="text-xs text-muted-foreground">{item.url}</span>
-                        {!item.visible && <Badge variant="outline" className="text-[10px] text-red-500">Sakriveno</Badge>}
-                        <Badge variant="outline" className="text-[10px]">{item.target === '_blank' ? 'Novi tab' : 'Isti tab'}</Badge>
+                        {!item.visible && <Badge variant="outline" className="text-xs text-red-500">Sakriveno</Badge>}
+                        <Badge variant="outline" className="text-xs">{item.target === '_blank' ? 'Novi tab' : 'Isti tab'}</Badge>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openMenuDialog(item)}><Edit3 className="h-3.5 w-3.5" /></Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteMenu(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
@@ -1126,7 +1126,7 @@ export function WebsiteBuilder() {
                       />
                       <div>
                         <p className="text-xs font-medium capitalize">{key === 'muted' ? 'Muted' : key.charAt(0).toUpperCase() + key.slice(1)}</p>
-                        <p className="text-[10px] text-muted-foreground font-mono">{value}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{value}</p>
                       </div>
                     </div>
                   </div>
@@ -1284,8 +1284,8 @@ export function WebsiteBuilder() {
                   <div className="p-2">
                     <p className="text-xs font-medium truncate">{file.name}</p>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-[10px] text-muted-foreground">{formatSize(file.size)}</span>
-                      <span className="text-[10px] text-muted-foreground">{file.usageCount}×</span>
+                      <span className="text-xs text-muted-foreground">{formatSize(file.size)}</span>
+                      <span className="text-xs text-muted-foreground">{file.usageCount}×</span>
                     </div>
                   </div>
                 </div>
@@ -1346,7 +1346,7 @@ export function WebsiteBuilder() {
               <div className="space-y-2">
                 <Label className="text-xs">Meta opis (SEO)</Label>
                 <Textarea value={pageForm.metaDescription} onChange={(e) => setPageForm({ ...pageForm, metaDescription: e.target.value })} placeholder="Opišite stranicu u 1-2 rečenice za pretraživače..." className="min-h-[60px]" />
-                <p className="text-[10px] text-muted-foreground text-right">{pageForm.metaDescription.length}/160 karaktera</p>
+                <p className="text-xs text-muted-foreground text-right">{pageForm.metaDescription.length}/160 karaktera</p>
               </div>
             </div>
 
@@ -1409,7 +1409,7 @@ export function WebsiteBuilder() {
                 <Button key={key} variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" onClick={() => { addSection(key); setSectionDialogOpen(false) }}>
                   <sec.icon className="h-6 w-6 text-muted-foreground" />
                   <span className="text-xs font-medium">{sec.label}</span>
-                  <span className="text-[10px] text-muted-foreground text-center">{sec.description}</span>
+                  <span className="text-xs text-muted-foreground text-center">{sec.description}</span>
                 </Button>
               ))}
             </div>
@@ -1428,7 +1428,7 @@ export function WebsiteBuilder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-xs">Meta title</Label>
-                <span className="text-[10px] text-muted-foreground">{seoForm.metaTitle.length}/60</span>
+                <span className="text-xs text-muted-foreground">{seoForm.metaTitle.length}/60</span>
               </div>
               <Input value={seoForm.metaTitle} onChange={(e) => setSeoForm({ ...seoForm, metaTitle: e.target.value })} placeholder="Meta title (do 60 karaktera)" />
             </div>
@@ -1436,8 +1436,8 @@ export function WebsiteBuilder() {
               <div className="flex items-center justify-between">
                 <Label className="text-xs">Meta opis</Label>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={generateMetaDescription}><Sparkles className="h-3 w-3 mr-1" /> Generiši</Button>
-                  <span className="text-[10px] text-muted-foreground">{seoForm.metaDescription.length}/160</span>
+                  <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={generateMetaDescription}><Sparkles className="h-3 w-3 mr-1" /> Generiši</Button>
+                  <span className="text-xs text-muted-foreground">{seoForm.metaDescription.length}/160</span>
                 </div>
               </div>
               <Textarea value={seoForm.metaDescription} onChange={(e) => setSeoForm({ ...seoForm, metaDescription: e.target.value })} placeholder="Meta opis (do 160 karaktera)" className="min-h-[60px]" />
@@ -1496,7 +1496,7 @@ export function WebsiteBuilder() {
                 ].map((c) => (
                   <div key={c.text} className="flex items-center gap-2">
                     {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <X className="h-3.5 w-3.5 text-red-400" />}
-                    <span className="text-[11px]">{c.text}</span>
+                    <span className="text-xs">{c.text}</span>
                   </div>
                 ))}
               </div>

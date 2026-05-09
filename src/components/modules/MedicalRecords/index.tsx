@@ -54,7 +54,7 @@ const TYPES: Record<string, { color: string; label: string }> = {
   discharge: { color: 'bg-gray-100 text-gray-800', label: 'Otpust' },
 }
 
-function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 export function MedicalRecords() {
   const [data, setData] = useState<MedicalRecord[]>(INITIAL)
@@ -214,11 +214,11 @@ export function MedicalRecords() {
                   ['Lab. rezultati', detailItem.labResults],
                   ['Sledeći korak', detailItem.nextAction],
                 ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val || '—'}</div></div>
+                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val || '—'}</div></div>
                 ))}
               </div>
-              {detailItem.prescribedMeds.length > 0 && <div className="p-2 rounded-lg bg-blue-50"><div className="text-[10px] text-blue-600 mb-1">Propisani lekovi</div><div className="flex flex-wrap gap-1">{detailItem.prescribedMeds.map(m => <Badge key={m} className="text-[10px] bg-blue-100 text-blue-700">{m}</Badge>)}</div></div>}
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+              {detailItem.prescribedMeds.length > 0 && <div className="p-2 rounded-lg bg-blue-50"><div className="text-xs text-blue-600 mb-1">Propisani lekovi</div><div className="flex flex-wrap gap-1">{detailItem.prescribedMeds.map(m => <Badge key={m} className="text-xs bg-blue-100 text-blue-700">{m}</Badge>)}</div></div>}
+              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           )}
         </DialogContent>

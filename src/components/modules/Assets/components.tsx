@@ -632,7 +632,7 @@ export function Sredstva() {
                           <span className="text-xs font-mono w-20 text-right">
                             {formatCurrency(data.value)}
                           </span>
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-xs">
                             {data.count}
                           </Badge>
                         </div>
@@ -655,7 +655,7 @@ export function Sredstva() {
                       <div key={status} className="flex items-center gap-3">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] w-32 justify-center ${STATUS_COLORS[status] || ""}`}
+                          className={`text-xs w-32 justify-center ${STATUS_COLORS[status] || ""}`}
                         >
                           {STATUS_LABELS[status] || status}
                         </Badge>
@@ -709,7 +709,7 @@ export function Sredstva() {
                         <p className="text-xs font-medium">
                           {formatCurrency(a.purchasePrice)}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {formatDate(a.createdAt)}
                         </p>
                       </div>
@@ -844,7 +844,7 @@ export function Sredstva() {
                           <p className="text-xs font-medium">{a.name}</p>
                         </td>
                         <td className="p-3 hidden md:table-cell">
-                          <Badge variant="secondary" className="text-[10px]">
+                          <Badge variant="secondary" className="text-xs">
                             {a.category || "-"}
                           </Badge>
                         </td>
@@ -866,7 +866,7 @@ export function Sredstva() {
                         <td className="p-3">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${STATUS_COLORS[a.status] || ""}`}
+                            className={`text-xs ${STATUS_COLORS[a.status] || ""}`}
                           >
                             {STATUS_LABELS[a.status] || a.status}
                           </Badge>
@@ -917,7 +917,7 @@ export function Sredstva() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Ukupna nabavna
                     </p>
                     <p className="text-lg font-bold">
@@ -925,7 +925,7 @@ export function Sredstva() {
                     </p>
                   </div>
                   <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Trenutna vrednost
                     </p>
                     <p className="text-lg font-bold">
@@ -933,7 +933,7 @@ export function Sredstva() {
                     </p>
                   </div>
                   <div className="text-center p-3 bg-red-50 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Ukupna amortizacija
                     </p>
                     <p className="text-lg font-bold">
@@ -941,7 +941,7 @@ export function Sredstva() {
                     </p>
                   </div>
                   <div className="text-center p-3 bg-purple-50 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Neto vrednost
                     </p>
                     <p className="text-lg font-bold">
@@ -996,7 +996,7 @@ export function Sredstva() {
                           )}
                           <div>
                             <p className="text-sm font-medium">{cat}</p>
-                            <p className="text-[11px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {data.count} sredstava
                             </p>
                           </div>
@@ -1039,7 +1039,7 @@ export function Sredstva() {
                           )}
                           className="mt-2 h-2"
                         />
-                        <p className="text-[10px] text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Preostatak vrednosti:{" "}
                           {formatCurrency(
                             Math.max(0, data.value - data.depreciation),
@@ -1386,13 +1386,13 @@ export function Sredstva() {
                 <Separator />
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="p-3 bg-blue-50 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">Nabavna</p>
+                    <p className="text-xs text-muted-foreground">Nabavna</p>
                     <p className="text-lg font-bold">
                       {formatCurrency(selectedAsset.purchasePrice)}
                     </p>
                   </div>
                   <div className="p-3 bg-green-50 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Trenutna
                     </p>
                     <p className="text-lg font-bold">
@@ -1400,7 +1400,7 @@ export function Sredstva() {
                     </p>
                   </div>
                   <div className="p-3 bg-red-50 rounded-lg">
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Amortizacija
                     </p>
                     <p className="text-lg font-bold">

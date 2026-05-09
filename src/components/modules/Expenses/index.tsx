@@ -814,13 +814,13 @@ function ExpensesTab() {
                       <TableCell className="text-xs">{e.date}</TableCell>
                       <TableCell className="text-xs font-medium">{e.employee}</TableCell>
                       <TableCell className="text-xs">
-                        <Badge variant="secondary" className="text-[10px]">{CATEGORY_LABELS[e.category] || e.category}</Badge>
+                        <Badge variant="secondary" className="text-xs">{CATEGORY_LABELS[e.category] || e.category}</Badge>
                       </TableCell>
                       <TableCell className="text-xs max-w-[200px] truncate">{e.description}</TableCell>
                       <TableCell className="text-xs text-right font-semibold">{formatRSD(e.amount)}</TableCell>
                       <TableCell className="text-xs">{PAYMENT_METHODS[e.paymentMethod] || e.paymentMethod}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || e.status}</Badge>
+                        <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || e.status}</Badge>
                       </TableCell>
                       <TableCell className="text-center">
                         {e.hasReceipt ? (
@@ -1093,7 +1093,7 @@ function ReportsTab() {
                     <h3 className="text-sm font-semibold">{report.title}</h3>
                     <p className="text-xs text-muted-foreground">{report.employee}</p>
                   </div>
-                  <Badge variant="outline" className={`text-[10px] ${cfg?.color || ''}`}>{cfg?.label || report.status}</Badge>
+                  <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || report.status}</Badge>
                 </div>
                 <Separator className="my-3" />
                 <div className="space-y-2 text-xs">
@@ -1350,11 +1350,11 @@ function BudgetsTab() {
                   <p className="text-xs text-muted-foreground">{CATEGORY_LABELS[budget.category] || budget.category}</p>
                 </div>
                 {pct >= 100 ? (
-                  <Badge className="bg-red-100 text-red-700 text-[10px]">{t('expenses.overBudget')}</Badge>
+                  <Badge className="bg-red-100 text-red-700 text-xs">{t('expenses.overBudget')}</Badge>
                 ) : pct >= 80 ? (
-                  <Badge className="bg-amber-100 text-amber-700 text-[10px]">{t('expenses.warning')}</Badge>
+                  <Badge className="bg-amber-100 text-amber-700 text-xs">{t('expenses.warning')}</Badge>
                 ) : (
-                  <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">{t('expenses.onTrack')}</Badge>
+                  <Badge className="bg-emerald-100 text-emerald-700 text-xs">{t('expenses.onTrack')}</Badge>
                 )}
               </div>
               <Separator className="my-3" />
@@ -1560,7 +1560,7 @@ function PoliciesTab() {
                   <span className="font-medium">{v.expense}</span>
                   <span className="text-muted-foreground ml-2">({v.date})</span>
                 </div>
-                <Badge className="bg-red-100 text-red-700 text-[10px]">{v.policy}</Badge>
+                <Badge className="bg-red-100 text-red-700 text-xs">{v.policy}</Badge>
               </div>
             ))}
           </div>
@@ -1594,7 +1594,7 @@ function PoliciesTab() {
                   <TableRow key={policy.id} className={!policy.isActive ? 'opacity-50' : ''}>
                     <TableCell className="text-xs font-medium">{policy.name}</TableCell>
                     <TableCell className="text-xs">
-                      <Badge variant="secondary" className="text-[10px]">{CATEGORY_LABELS[policy.category] || policy.category}</Badge>
+                      <Badge variant="secondary" className="text-xs">{CATEGORY_LABELS[policy.category] || policy.category}</Badge>
                     </TableCell>
                     <TableCell className="text-xs text-right">{formatRSD(policy.maxAmount)}</TableCell>
                     <TableCell className="text-xs">
@@ -1885,7 +1885,7 @@ function AnalyticsTab() {
                     <TableCell className="text-xs text-right">{formatRSD(s.potential)}</TableCell>
                     <TableCell className="text-xs text-right font-semibold text-emerald-600">{formatRSD(s.saving)}</TableCell>
                     <TableCell className="text-xs text-right">
-                      <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">{pct}%</Badge>
+                      <Badge className="bg-emerald-100 text-emerald-700 text-xs">{pct}%</Badge>
                     </TableCell>
                   </TableRow>
                 )

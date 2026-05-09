@@ -297,7 +297,7 @@ export function AuditLogViewer() {
                   <History className="h-3.5 w-3.5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Ukupno</p>
+                  <p className="text-xs text-muted-foreground">Ukupno</p>
                   <p className="text-base font-bold">{stats.total.toLocaleString()}</p>
                 </div>
               </div>
@@ -310,7 +310,7 @@ export function AuditLogViewer() {
                   <Activity className="h-3.5 w-3.5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Danas</p>
+                  <p className="text-xs text-muted-foreground">Danas</p>
                   <p className="text-base font-bold">{stats.today.toLocaleString()}</p>
                 </div>
               </div>
@@ -323,7 +323,7 @@ export function AuditLogViewer() {
                   <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Poslednjih sat</p>
+                  <p className="text-xs text-muted-foreground">Poslednjih sat</p>
                   <p className="text-base font-bold">{stats.recentHour.toLocaleString()}</p>
                 </div>
               </div>
@@ -336,7 +336,7 @@ export function AuditLogViewer() {
                   <Filter className="h-3.5 w-3.5 text-violet-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Filtrirano</p>
+                  <p className="text-xs text-muted-foreground">Filtrirano</p>
                   <p className="text-base font-bold">{filteredLogs.length.toLocaleString()}</p>
                 </div>
               </div>
@@ -442,30 +442,30 @@ export function AuditLogViewer() {
                         </TableCell>
                         <TableCell className="text-xs whitespace-nowrap">
                           <div className="font-medium">{formatTime(log.createdAt)}</div>
-                          <div className="text-[10px] text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             {new Date(log.createdAt).toLocaleTimeString('sr-Latn', { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </TableCell>
                         <TableCell className="text-xs">
                           <div className="font-medium">{log.userName}</div>
-                          <div className="text-[10px] text-muted-foreground font-mono">
+                          <div className="text-xs text-muted-foreground font-mono">
                             {log.userId ? log.userId.slice(0, 8) + '...' : 'Sistem'}
                           </div>
                         </TableCell>
                         <TableCell className="text-xs">
-                          <Badge variant="outline" className="text-[10px] font-normal">
+                          <Badge variant="outline" className="text-xs font-normal">
                             {ENTITY_LABELS[log.entity] || log.entity}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-xs">
-                          <Badge variant="secondary" className={`text-[10px] ${getActionColor(log.action)}`}>
+                          <Badge variant="secondary" className={`text-xs ${getActionColor(log.action)}`}>
                             {ACTION_LABELS[log.action] || log.action}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-xs max-w-[250px] truncate text-muted-foreground">
                           {log.details || '—'}
                         </TableCell>
-                        <TableCell className="text-[10px] text-muted-foreground font-mono">
+                        <TableCell className="text-xs text-muted-foreground font-mono">
                           {log.ipAddress || '—'}
                         </TableCell>
                       </TableRow>
@@ -538,7 +538,7 @@ export function AuditLogViewer() {
                     const maxCount = stats.byEntity[0]?._count || 1
                     return (
                       <div key={item.entity} className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground w-4">{i + 1}</span>
+                        <span className="text-xs text-muted-foreground w-4">{i + 1}</span>
                         <span className="text-xs flex-1">{ENTITY_LABELS[item.entity] || item.entity}</span>
                         <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
                           <div
@@ -546,7 +546,7 @@ export function AuditLogViewer() {
                             style={{ width: `${(item._count / maxCount) * 100}%` }}
                           />
                         </div>
-                        <span className="text-[10px] font-mono text-muted-foreground w-10 text-right">{item._count}</span>
+                        <span className="text-xs font-mono text-muted-foreground w-10 text-right">{item._count}</span>
                       </div>
                     )
                   })}
@@ -567,7 +567,7 @@ export function AuditLogViewer() {
                     const maxCount = stats.byAction[0]?._count || 1
                     return (
                       <div key={item.action} className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground w-4">{i + 1}</span>
+                        <span className="text-xs text-muted-foreground w-4">{i + 1}</span>
                         <span className="text-xs flex-1">{ACTION_LABELS[item.action] || item.action}</span>
                         <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
                           <div
@@ -575,7 +575,7 @@ export function AuditLogViewer() {
                             style={{ width: `${(item._count / maxCount) * 100}%` }}
                           />
                         </div>
-                        <span className="text-[10px] font-mono text-muted-foreground w-10 text-right">{item._count}</span>
+                        <span className="text-xs font-mono text-muted-foreground w-10 text-right">{item._count}</span>
                       </div>
                     )
                   })}

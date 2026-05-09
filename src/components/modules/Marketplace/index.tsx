@@ -527,7 +527,7 @@ export function Marketplace() {
                               <td className="py-2 pr-4 font-mono text-xs">{o.number}</td>
                               <td className="py-2 pr-4">{o.retailerName}</td>
                               <td className="py-2 pr-4 font-medium">{formatCurrency(o.totalAmount)}</td>
-                              <td className="py-2"><Badge variant="outline" className={`text-[10px] ${statusColor(o.status)}`}>{statusLabel(o.status)}</Badge></td>
+                              <td className="py-2"><Badge variant="outline" className={`text-xs ${statusColor(o.status)}`}>{statusLabel(o.status)}</Badge></td>
                             </tr>
                           ))}
                         </tbody>
@@ -600,7 +600,7 @@ export function Marketplace() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {products.map((p: any) => (
                   <Card key={p.id} className="relative group">
-                    {p.isFeatured && <Badge className="absolute top-2 right-2 bg-amber-100 text-amber-700 text-[9px]"><Zap className="h-2.5 w-2.5 mr-0.5" /> ISTAKNUTO</Badge>}
+                    {p.isFeatured && <Badge className="absolute top-2 right-2 bg-amber-100 text-amber-700 text-xs"><Zap className="h-2.5 w-2.5 mr-0.5" /> ISTAKNUTO</Badge>}
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3 mb-2">
                         <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary font-bold text-sm shrink-0">
@@ -608,7 +608,7 @@ export function Marketplace() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{p.name}</p>
-                          <p className="text-[11px] text-muted-foreground">{p.vendor?.slug}</p>
+                          <p className="text-xs text-muted-foreground">{p.vendor?.slug}</p>
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{p.description || 'Nema opisa'}</p>
@@ -624,12 +624,12 @@ export function Marketplace() {
                           )}
                         </div>
                         <div className="flex items-center gap-1">
-                          {p.avgRating > 0 && <><Stars rating={Math.round(p.avgRating)} size="xs" /><span className="text-[10px] text-muted-foreground">({p.reviewCount})</span></>}
+                          {p.avgRating > 0 && <><Stars rating={Math.round(p.avgRating)} size="xs" /><span className="text-xs text-muted-foreground">({p.reviewCount})</span></>}
                         </div>
                       </div>
-                      <div className="flex items-center justify-between mt-2 text-[11px] text-muted-foreground">
+                      <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
                         <span><Package className="h-3 w-3 inline mr-0.5" />Zaliha: {p.stock} kom</span>
-                        {p.category && <Badge variant="secondary" className="text-[10px] ml-2">{p.category}</Badge>}
+                        {p.category && <Badge variant="secondary" className="text-xs ml-2">{p.category}</Badge>}
                       </div>
                       <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleToggleProductFeatured(p.id, p.isFeatured)}>
@@ -681,9 +681,9 @@ export function Marketplace() {
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="text-base">{v.slug}</CardTitle>
-                        <Badge variant="outline" className={`mt-1 text-[10px] ${statusColor(v.status)}`}>{statusLabel(v.status)}</Badge>
+                        <Badge variant="outline" className={`mt-1 text-xs ${statusColor(v.status)}`}>{statusLabel(v.status)}</Badge>
                       </div>
-                      {v.shippingFree && <Badge variant="outline" className="text-[10px] bg-green-50 text-green-600"><Truck className="h-3 w-3 inline mr-0.5" /> Besplatna dostava</Badge>}
+                      {v.shippingFree && <Badge variant="outline" className="text-xs bg-green-50 text-green-600"><Truck className="h-3 w-3 inline mr-0.5" /> Besplatna dostava</Badge>}
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -756,7 +756,7 @@ export function Marketplace() {
                         <td className="p-3 text-xs">{o.vendorName}</td>
                         <td className="p-3 text-right font-medium">{formatCurrency(o.totalAmount)}</td>
                         <td className="p-3 text-right text-xs text-muted-foreground">{formatCurrency(o.commissionAmount)}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-[10px] ${statusColor(o.status)}`}>{statusLabel(o.status)}</Badge></td>
+                        <td className="p-3"><Badge variant="outline" className={`text-xs ${statusColor(o.status)}`}>{statusLabel(o.status)}</Badge></td>
                         <td className="p-3 text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString('sr-RS')}</td>
                       </tr>
                     ))}
@@ -805,7 +805,7 @@ export function Marketplace() {
                               <Stars rating={r.rating} />
                             </div>
                           </div>
-                          <span className="text-[10px] text-muted-foreground">{new Date(r.createdAt).toLocaleDateString('sr-RS')}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleDateString('sr-RS')}</span>
                         </div>
                         {r.title && <p className="text-sm font-medium mb-1">{r.title}</p>}
                         {r.comment && <p className="text-xs text-muted-foreground">{r.comment}</p>}
@@ -834,13 +834,13 @@ export function Marketplace() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className={`text-[10px] ${statusColor(d.status)}`}>{statusLabel(d.status)}</Badge>
-                        <Badge variant="outline" className="text-[10px]">{disputeTypeLabel(d.type)}</Badge>
-                        <Badge variant="outline" className="text-[10px]">{priorityLabel(d.priority)}</Badge>
+                        <Badge variant="outline" className={`text-xs ${statusColor(d.status)}`}>{statusLabel(d.status)}</Badge>
+                        <Badge variant="outline" className="text-xs">{disputeTypeLabel(d.type)}</Badge>
+                        <Badge variant="outline" className="text-xs">{priorityLabel(d.priority)}</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">Narudžba: {d.orderNumber} · Maloprodaja: {d.orderRetailer}</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{new Date(d.createdAt).toLocaleDateString('sr-RS')}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(d.createdAt).toLocaleDateString('sr-RS')}</span>
                   </div>
                   {d.description && <p className="text-sm mb-2">{d.description}</p>}
                   {d.resolution && <p className="text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-2 rounded mt-1">Rešenje: {d.resolution}</p>}
@@ -887,7 +887,7 @@ export function Marketplace() {
                         <tr key={c.id} className={`border-t hover:bg-muted/30 ${expiresSoon ? 'bg-amber-50 dark:bg-amber-900/10' : ''}`}>
                           <td className="p-3"><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">{c.code}</code></td>
                           <td className="p-3 text-xs">{c.description || '-'}</td>
-                          <td className="p-3"><Badge variant="outline" className="text-[10px]">{c.discountType === 'procenat' ? `${c.discountValue}%` : formatCurrency(c.discountValue)}</Badge></td>
+                          <td className="p-3"><Badge variant="outline" className="text-xs">{c.discountType === 'procenat' ? `${c.discountValue}%` : formatCurrency(c.discountValue)}</Badge></td>
                           <td className="p-3 text-xs">{c.minOrderAmount > 0 ? `min. ${formatCurrency(c.minOrderAmount)}` : '-'}</td>
                           <td className="p-3 text-xs">{c.usedCount}{c.maxUses > 0 ? `/${c.maxUses}` : ''}</td>
                           <td className="p-3 text-xs">{c.validTo ? new Date(c.validTo).toLocaleDateString('sr-RS') : 'Bez roka'}</td>
@@ -953,7 +953,7 @@ export function Marketplace() {
                                 </div>
                                 <div className="text-right">
                                   <p className="text-sm font-semibold text-emerald-600">{formatCurrency(estimatedComm)}</p>
-                                  <p className="text-[10px] text-muted-foreground">od {formatCurrency(v.totalSales)}</p>
+                                  <p className="text-xs text-muted-foreground">od {formatCurrency(v.totalSales)}</p>
                                 </div>
                               </div>
                               <div className="w-full bg-muted rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${barPct}%` }} /></div>
@@ -1202,17 +1202,17 @@ export function Marketplace() {
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">{selectedItem.slug?.[0]?.toUpperCase()}</div>
                   <div>
                     <DialogTitle>{selectedItem.slug}</DialogTitle>
-                    <DialogDescription>Status: <Badge variant="outline" className={`ml-2 text-[10px] ${statusColor(selectedItem.status)}`}>{statusLabel(selectedItem.status)}</Badge></DialogDescription>
+                    <DialogDescription>Status: <Badge variant="outline" className={`ml-2 text-xs ${statusColor(selectedItem.status)}`}>{statusLabel(selectedItem.status)}</Badge></DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
               <div className="space-y-6 mt-4">
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Ukupno narudžbi</p><p className="text-lg font-bold">{selectedItem.orderCount}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Ukupna prodaja</p><p className="text-lg font-bold text-emerald-600">{formatCurrency(selectedItem.totalSales)}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Prosečna ocena</p><p className="text-lg font-bold">{selectedItem.rating > 0 ? selectedItem.rating.toFixed(1) : 'N/A'}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-[10px] text-muted-foreground">Recenzija</p><p className="text-lg font-bold">{selectedItem.reviewCount}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Ukupno narudžbi</p><p className="text-lg font-bold">{selectedItem.orderCount}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Ukupna prodaja</p><p className="text-lg font-bold text-emerald-600">{formatCurrency(selectedItem.totalSales)}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Prosečna ocena</p><p className="text-lg font-bold">{selectedItem.rating > 0 ? selectedItem.rating.toFixed(1) : 'N/A'}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Recenzija</p><p className="text-lg font-bold">{selectedItem.reviewCount}</p></div>
                 </div>
 
                 {selectedItem.description && (
@@ -1256,7 +1256,7 @@ export function Marketplace() {
             <>
               <DialogHeader>
                 <DialogTitle>Narudžba #{selectedItem.number}</DialogTitle>
-                <DialogDescription>Status: <Badge variant="outline" className={`ml-2 text-[10px] ${statusColor(selectedItem.status)}`}>{statusLabel(selectedItem.status)}</Badge></DialogDescription>
+                <DialogDescription>Status: <Badge variant="outline" className={`ml-2 text-xs ${statusColor(selectedItem.status)}`}>{statusLabel(selectedItem.status)}</Badge></DialogDescription>
               </DialogHeader>
               <div className="space-y-6 mt-4">
                 {/* Order Info */}

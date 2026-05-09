@@ -62,8 +62,8 @@ const TYPES: Record<string, { color: string; label: string }> = {
   exam: { color: 'bg-red-50 text-red-700', label: 'Ispit' },
 }
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
-function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
+function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 export function Raspored() {
   const [data, setData] = useState<ScheduleEntry[]>(INITIAL)
@@ -178,7 +178,7 @@ export function Raspored() {
                                   <div className="font-medium">{e.subject}</div>
                                   <div className="text-muted-foreground">{e.timeStart}-{e.timeEnd}</div>
                                   <div className="text-muted-foreground">{e.room}</div>
-                                  {e.status === 'cancelled' && <Badge className="text-[9px] bg-red-100 text-red-700">OTK</Badge>}
+                                  {e.status === 'cancelled' && <Badge className="text-xs bg-red-100 text-red-700">OTK</Badge>}
                                 </div>
                               )) : <div className="h-12" />}
                             </td>
@@ -276,11 +276,11 @@ export function Raspored() {
                   ['Tip', TYPES[detailItem.type]?.label],
                   ['Semestar', detailItem.semester],
                 ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
                 ))}
               </div>
-              <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+              <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
+              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           )}
         </DialogContent>

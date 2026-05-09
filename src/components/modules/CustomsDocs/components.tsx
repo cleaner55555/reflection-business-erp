@@ -100,8 +100,8 @@ const DOC_TYPES: Record<string, { color: string; label: string }> = {
   transit: { color: 'bg-purple-100 text-purple-700', label: 'Tranzit' },
 }
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
-function getDocTypeBadge(t: string) { const r = DOC_TYPES[t]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{t}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
+function getDocTypeBadge(t: string) { const r = DOC_TYPES[t]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{t}</Badge> }
 function formatCurrency(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(n) }
 
 export function CarinskaDokumentacija() {
@@ -156,15 +156,15 @@ export function CarinskaDokumentacija() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-3">
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-slate-600 mb-1">Priprema</div><p className="text-xl font-bold text-slate-700">{stats.draft}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-sky-600 mb-1">Podneti</div><p className="text-xl font-bold text-sky-700">{stats.submitted}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-blue-600 mb-1">U obradi</div><p className="text-xl font-bold text-blue-700">{stats.processing}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-emerald-600 mb-1">Očišćeni</div><p className="text-xl font-bold text-emerald-700">{stats.cleared}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-amber-600 mb-1">Zadržani</div><p className="text-xl font-bold text-amber-700">{stats.held}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-red-600 mb-1">Odbijeni</div><p className="text-xl font-bold text-red-700">{stats.rejected}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Vrednost</div><p className="text-xl font-bold">{formatCurrency(stats.totalValue)}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Carine</div><p className="text-xl font-bold">{formatCurrency(stats.totalDues)}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
+        <Card className="p-4"><div className="text-xs text-slate-600 mb-1">Priprema</div><p className="text-xl font-bold text-slate-700">{stats.draft}</p></Card>
+        <Card className="p-4"><div className="text-xs text-sky-600 mb-1">Podneti</div><p className="text-xl font-bold text-sky-700">{stats.submitted}</p></Card>
+        <Card className="p-4"><div className="text-xs text-blue-600 mb-1">U obradi</div><p className="text-xl font-bold text-blue-700">{stats.processing}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Očišćeni</div><p className="text-xl font-bold text-emerald-700">{stats.cleared}</p></Card>
+        <Card className="p-4"><div className="text-xs text-amber-600 mb-1">Zadržani</div><p className="text-xl font-bold text-amber-700">{stats.held}</p></Card>
+        <Card className="p-4"><div className="text-xs text-red-600 mb-1">Odbijeni</div><p className="text-xl font-bold text-red-700">{stats.rejected}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Vrednost</div><p className="text-xl font-bold">{formatCurrency(stats.totalValue)}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Carine</div><p className="text-xl font-bold">{formatCurrency(stats.totalDues)}</p></Card>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -201,7 +201,7 @@ export function CarinskaDokumentacija() {
                       <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
                         <TableCell className="text-xs font-mono">{item.declarationNumber}</TableCell>
                         <TableCell>{getDocTypeBadge(item.docType)}</TableCell>
-                        <TableCell><div className="text-xs font-medium">{item.declarantName}</div><div className="text-[10px] text-muted-foreground">PIB: {item.declarantPIB}</div></TableCell>
+                        <TableCell><div className="text-xs font-medium">{item.declarantName}</div><div className="text-xs text-muted-foreground">PIB: {item.declarantPIB}</div></TableCell>
                         <TableCell className="text-xs hidden sm:table-cell">{item.country}</TableCell>
                         <TableCell className="text-xs text-muted-foreground hidden md:table-cell max-w-[120px] truncate">{item.goodsDescription}</TableCell>
                         <TableCell>{getStatusBadge(item.status)}</TableCell>
@@ -228,7 +228,7 @@ export function CarinskaDokumentacija() {
               <CardContent className="space-y-2">
                 {Object.entries(DOC_TYPES).map(([k, v]) => {
                   const items = data.filter(d => d.docType === k)
-                  return <div key={k} className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><div className="flex items-center gap-2">{getDocTypeBadge(k)}<span className="text-xs">{v.label}</span></div><div className="text-right"><p className="text-xs font-bold">{items.length}</p><p className="text-[10px] text-muted-foreground">{formatCurrency(items.reduce((s, d) => s + d.totalValue, 0))}</p></div></div>
+                  return <div key={k} className="flex items-center justify-between p-2 rounded-lg bg-muted/50"><div className="flex items-center gap-2">{getDocTypeBadge(k)}<span className="text-xs">{v.label}</span></div><div className="text-right"><p className="text-xs font-bold">{items.length}</p><p className="text-xs text-muted-foreground">{formatCurrency(items.reduce((s, d) => s + d.totalValue, 0))}</p></div></div>
                 })}
               </CardContent>
             </Card>
@@ -239,7 +239,7 @@ export function CarinskaDokumentacija() {
                   <div key={d.id} className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 space-y-1">
                     <div className="flex justify-between"><span className="text-xs font-mono">{d.declarationNumber}</span>{getStatusBadge(d.status)}</div>
                     <p className="text-xs">{d.declarantName} - {d.goodsDescription}</p>
-                    <p className="text-[10px] text-muted-foreground">{d.notes}</p>
+                    <p className="text-xs text-muted-foreground">{d.notes}</p>
                   </div>
                 ))}
               </CardContent>
@@ -256,29 +256,29 @@ export function CarinskaDokumentacija() {
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.declarationNumber}</p><p className="text-xs text-muted-foreground">Ref: {detailItem.referenceNumber || 'N/A'}</p></div><div className="flex gap-2">{getDocTypeBadge(detailItem.docType)}{getStatusBadge(detailItem.status)}</div></div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Deklarant</div><p className="text-xs font-medium">{detailItem.declarantName}</p><p className="text-[10px] text-muted-foreground">PIB: {detailItem.declarantPIB}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Država / Granica</div><p className="text-xs font-medium">{detailItem.country}</p><p className="text-[10px] text-muted-foreground">{detailItem.borderCrossing}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Deklarant</div><p className="text-xs font-medium">{detailItem.declarantName}</p><p className="text-xs text-muted-foreground">PIB: {detailItem.declarantPIB}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Država / Granica</div><p className="text-xs font-medium">{detailItem.country}</p><p className="text-xs text-muted-foreground">{detailItem.borderCrossing}</p></div>
               </div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Opis robe</div><p className="text-xs font-medium">{detailItem.goodsDescription}</p><p className="text-[10px] text-muted-foreground">HS kod: {detailItem.hsCode} · Vozilo: {detailItem.vehiclePlate}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Opis robe</div><p className="text-xs font-medium">{detailItem.goodsDescription}</p><p className="text-xs text-muted-foreground">HS kod: {detailItem.hsCode} · Vozilo: {detailItem.vehiclePlate}</p></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Vrednost</div><p className="text-xs font-bold">{formatCurrency(detailItem.totalValue)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Carinska vred.</div><p className="text-xs font-bold">{formatCurrency(detailItem.customsValue)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Carine</div><p className="text-xs font-bold">{formatCurrency(detailItem.dutiesAmount)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">PDV</div><p className="text-xs font-bold">{formatCurrency(detailItem.vatAmount)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vrednost</div><p className="text-xs font-bold">{formatCurrency(detailItem.totalValue)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Carinska vred.</div><p className="text-xs font-bold">{formatCurrency(detailItem.customsValue)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Carine</div><p className="text-xs font-bold">{formatCurrency(detailItem.dutiesAmount)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">PDV</div><p className="text-xs font-bold">{formatCurrency(detailItem.vatAmount)}</p></div>
               </div>
-              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-[10px] text-emerald-600 mb-1">Ukupne carinske obaveze</div><p className="text-sm font-bold text-emerald-700">{formatCurrency(detailItem.totalDues)}</p></div>
+              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Ukupne carinske obaveze</div><p className="text-sm font-bold text-emerald-700">{formatCurrency(detailItem.totalDues)}</p></div>
               {detailItem.items.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs font-medium">Stavke robe:</p>
-                  <Table><TableHeader><TableRow><TableHead className="text-[10px]">HS</TableHead><TableHead className="text-[10px]">Opis</TableHead><TableHead className="text-[10px]">Kol.</TableHead><TableHead className="text-[10px]">Vrednost</TableHead><TableHead className="text-[10px]">Carina%</TableHead></TableRow></TableHeader>
-                  <TableBody>{detailItem.items.map((item, idx) => <TableRow key={idx}><TableCell className="text-[10px] font-mono">{item.hsCode}</TableCell><TableCell className="text-[10px]">{item.description}</TableCell><TableCell className="text-[10px]">{item.quantity} {item.unit}</TableCell><TableCell className="text-[10px]">{formatCurrency(item.totalValue)}</TableCell><TableCell className="text-[10px]">{item.dutyRate}%</TableCell></TableRow>)}</TableBody></Table>
+                  <Table><TableHeader><TableRow><TableHead className="text-xs">HS</TableHead><TableHead className="text-xs">Opis</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Vrednost</TableHead><TableHead className="text-xs">Carina%</TableHead></TableRow></TableHeader>
+                  <TableBody>{detailItem.items.map((item, idx) => <TableRow key={idx}><TableCell className="text-xs font-mono">{item.hsCode}</TableCell><TableCell className="text-xs">{item.description}</TableCell><TableCell className="text-xs">{item.quantity} {item.unit}</TableCell><TableCell className="text-xs">{formatCurrency(item.totalValue)}</TableCell><TableCell className="text-xs">{item.dutyRate}%</TableCell></TableRow>)}</TableBody></Table>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div><span className="text-muted-foreground">Datum podnošenja:</span> {detailItem.submissionDate ? formatDate(detailItem.submissionDate) : 'N/A'}</div>
                 <div><span className="text-muted-foreground">Datum oslobađanja:</span> {detailItem.clearanceDate ? formatDate(detailItem.clearanceDate) : 'N/A'}</div>
               </div>
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
             </div>
           )}
         </DialogContent>

@@ -180,7 +180,7 @@ export function Ankete() {
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base">{s.name}</CardTitle>
-                        <Badge variant="outline" className={`text-[10px] ${cfg?.color}`}>{cfg?.label}</Badge>
+                        <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
@@ -237,8 +237,8 @@ export function Ankete() {
                     <div>
                       <p className="text-sm font-medium">{i + 1}. {q.question}</p>
                       <div className="flex gap-2 mt-1">
-                        <Badge variant="outline" className="text-[10px]">{questionTypeConfig[q.type]?.label}</Badge>
-                        {q.required && <Badge variant="outline" className="text-[10px] bg-red-50 text-red-600">Obavezno</Badge>}
+                        <Badge variant="outline" className="text-xs">{questionTypeConfig[q.type]?.label}</Badge>
+                        {q.required && <Badge variant="outline" className="text-xs bg-red-50 text-red-600">Obavezno</Badge>}
                       </div>
                     </div>
                     <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeQuestion(i)}><Trash2 className="h-3.5 w-3.5" /></Button>

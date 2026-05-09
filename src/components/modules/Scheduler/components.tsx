@@ -147,7 +147,7 @@ function ConflictAlert({ employees, slots, t }: { employees: Employee[]; slots: 
             <div key={i} className="flex items-center justify-between text-xs">
               <span className="font-medium">{c.name}</span>
               <span className="text-muted-foreground">{new Date(c.date).toLocaleDateString('sr-RS')}</span>
-              <Badge variant="outline" className="bg-red-100 text-red-700 text-[10px]">{c.count} {t('planner.conflicts')}</Badge>
+              <Badge variant="outline" className="bg-red-100 text-red-700 text-xs">{c.count} {t('planner.conflicts')}</Badge>
             </div>
           ))}
         </div>

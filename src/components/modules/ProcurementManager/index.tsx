@@ -395,7 +395,7 @@ export function ProcurementManager() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview"><BarChart3 className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
-          <TabsTrigger value="requisitions"><FileText className="h-3.5 w-3.5 mr-1" /> Zahtevi <Badge variant="secondary" className="ml-1 text-[9px] px-1.5 py-0">{stats.pending}</Badge></TabsTrigger>
+          <TabsTrigger value="requisitions"><FileText className="h-3.5 w-3.5 mr-1" /> Zahtevi <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0">{stats.pending}</Badge></TabsTrigger>
           <TabsTrigger value="suppliers"><Building2 className="h-3.5 w-3.5 mr-1" /> Dobavljači</TabsTrigger>
           <TabsTrigger value="analytics"><TrendingUp className="h-3.5 w-3.5 mr-1" /> Analitika</TabsTrigger>
         </TabsList>
@@ -419,7 +419,7 @@ export function ProcurementManager() {
                   {prs.filter(p => p.status === 'submitted').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5).map(pr => (
                     <div key={pr.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
-                        <Badge className={`text-[10px] px-1.5 py-0 ${PR_PRIORITY_CONFIG[pr.priority].color}`}>{PR_PRIORITY_CONFIG[pr.priority].label}</Badge>
+                        <Badge className={`text-xs px-1.5 py-0 ${PR_PRIORITY_CONFIG[pr.priority].color}`}>{PR_PRIORITY_CONFIG[pr.priority].label}</Badge>
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{pr.prNumber} - {pr.title}</p>
                           <p className="text-xs text-muted-foreground">{pr.requestedBy} · {pr.department} · {formatCurrency(pr.totalAmount)}</p>
@@ -454,7 +454,7 @@ export function ProcurementManager() {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <span className={`text-sm font-bold ${getPerformanceColor(sup.performanceScore)}`}>{sup.performanceScore}</span>
-                      <p className="text-[10px] text-muted-foreground">{sup.onTimeRate}% na vreme</p>
+                      <p className="text-xs text-muted-foreground">{sup.onTimeRate}% na vreme</p>
                     </div>
                   </div>
                 ))}
@@ -474,7 +474,7 @@ export function ProcurementManager() {
                       <span className="text-xs w-16 text-muted-foreground">{month}</span>
                       <div className="flex-1 bg-muted rounded-full h-4">
                         <div className="bg-primary h-4 rounded-full transition-all flex items-center" style={{ width: `${(amount / maxAmount) * 100}%`, minWidth: '40px' }}>
-                          <span className="text-[10px] font-medium text-primary-foreground px-2">{formatCurrency(amount)}</span>
+                          <span className="text-xs font-medium text-primary-foreground px-2">{formatCurrency(amount)}</span>
                         </div>
                       </div>
                     </div>
@@ -530,8 +530,8 @@ export function ProcurementManager() {
                   <div key={pr.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="flex flex-col gap-1">
-                        <Badge className={`text-[10px] px-1.5 py-0 w-fit ${PR_STATUS_CONFIG[pr.status].color}`}>{PR_STATUS_CONFIG[pr.status].label}</Badge>
-                        <Badge className={`text-[10px] px-1.5 py-0 w-fit ${PR_PRIORITY_CONFIG[pr.priority].color}`}>{PR_PRIORITY_CONFIG[pr.priority].label}</Badge>
+                        <Badge className={`text-xs px-1.5 py-0 w-fit ${PR_STATUS_CONFIG[pr.status].color}`}>{PR_STATUS_CONFIG[pr.status].label}</Badge>
+                        <Badge className={`text-xs px-1.5 py-0 w-fit ${PR_PRIORITY_CONFIG[pr.priority].color}`}>{PR_PRIORITY_CONFIG[pr.priority].label}</Badge>
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{pr.prNumber} - {pr.title}</p>
@@ -542,7 +542,7 @@ export function ProcurementManager() {
                     <div className="flex items-center gap-4 flex-shrink-0">
                       <div className="text-right hidden md:block">
                         <p className="text-sm font-semibold">{formatCurrency(pr.totalAmount)}</p>
-                        <p className="text-[10px] text-muted-foreground">{formatDate(pr.requestedDate)}{pr.requiredByDate ? ` → ${formatDate(pr.requiredByDate)}` : ''}</p>
+                        <p className="text-xs text-muted-foreground">{formatDate(pr.requestedDate)}{pr.requiredByDate ? ` → ${formatDate(pr.requiredByDate)}` : ''}</p>
                       </div>
                       <div className="flex items-center gap-1">
                         {['draft', 'submitted', 'approved', 'ordered'].includes(pr.status) && (
@@ -601,7 +601,7 @@ export function ProcurementManager() {
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm">{sup.name}</CardTitle>
-                    <Badge className={`text-[10px] px-1.5 py-0 ${SUPPLIER_STATUS_CONFIG[sup.status].color}`}>{SUPPLIER_STATUS_CONFIG[sup.status].label}</Badge>
+                    <Badge className={`text-xs px-1.5 py-0 ${SUPPLIER_STATUS_CONFIG[sup.status].color}`}>{SUPPLIER_STATUS_CONFIG[sup.status].label}</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">{sup.code} · {sup.category}</p>
                 </CardHeader>
@@ -657,7 +657,7 @@ export function ProcurementManager() {
                         <span className="text-xs w-32 truncate">{category}</span>
                         <div className="flex-1 bg-muted rounded-full h-4">
                           <div className="bg-primary h-4 rounded-full transition-all flex items-center" style={{ width: `${(amount / maxAmount) * 100}%`, minWidth: amount > 0 ? '50px' : '0' }}>
-                            <span className="text-[10px] font-medium text-primary-foreground px-2">{formatCurrency(amount)}</span>
+                            <span className="text-xs font-medium text-primary-foreground px-2">{formatCurrency(amount)}</span>
                           </div>
                         </div>
                       </div>
@@ -682,7 +682,7 @@ export function ProcurementManager() {
                         <span className="text-xs w-16 text-muted-foreground">{month}</span>
                         <div className="flex-1 bg-muted rounded-full h-5">
                           <div className="bg-primary h-5 rounded-full transition-all flex items-center justify-end" style={{ width: `${(amount / maxAmount) * 100}%`, minWidth: '40px' }}>
-                            <span className="text-[10px] font-medium text-primary-foreground px-2">{formatCurrency(amount)}</span>
+                            <span className="text-xs font-medium text-primary-foreground px-2">{formatCurrency(amount)}</span>
                           </div>
                         </div>
                         {change !== 0 && (

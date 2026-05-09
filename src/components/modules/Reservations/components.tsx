@@ -14,7 +14,7 @@ import { formatDate } from '@/lib/helpers'
 import type { Reservation } from './types'
 import { STATUSES, AREAS } from './data'
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 export function KpiCards({ data }: { data: Reservation[] }) {
   const todayReservations = data.filter(i => i.date === new Date().toISOString().split('T')[0] && i.status !== 'cancelled').length
@@ -156,11 +156,11 @@ export function DetailDialog({ detailItem, onClose }: { detailItem: Reservation 
                 ['Izvor', detailItem.source],
                 ['Depozit', detailItem.deposit > 0 ? new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(detailItem.deposit) : 'Nema'],
               ] as [string, string][]).map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
               ))}
             </div>
-            {detailItem.specialRequests && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Specijalni zahtevi</div><div className="text-xs">{detailItem.specialRequests}</div></div>}
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+            {detailItem.specialRequests && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Specijalni zahtevi</div><div className="text-xs">{detailItem.specialRequests}</div></div>}
+            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
           </div>
         )}
       </DialogContent>

@@ -180,7 +180,7 @@ export function Chat() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">{c.memberCount}</span>
-                      {c.unreadCount > 0 && <Badge className="h-5 w-5 flex items-center justify-center p-0 text-[10px]">{c.unreadCount}</Badge>}
+                      {c.unreadCount > 0 && <Badge className="h-5 w-5 flex items-center justify-center p-0 text-xs">{c.unreadCount}</Badge>}
                     </div>
                   </button>
                 )
@@ -205,9 +205,9 @@ export function Chat() {
                       <span className="text-base">{cfg?.icon}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{c.name}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{c.lastMessage || ''}</p>
+                        <p className="text-xs text-muted-foreground truncate">{c.lastMessage || ''}</p>
                       </div>
-                      {c.unreadCount > 0 && <Badge className="h-4 min-w-4 flex items-center justify-center p-0 text-[9px]">{c.unreadCount}</Badge>}
+                      {c.unreadCount > 0 && <Badge className="h-4 min-w-4 flex items-center justify-center p-0 text-xs">{c.unreadCount}</Badge>}
                     </button>
                   )
                 })}
@@ -222,7 +222,7 @@ export function Chat() {
                     <div className="flex items-center gap-2">
                       <span className="text-base">{channelTypeConfig[selectedChannel.type]?.icon}</span>
                       <span className="text-sm font-medium">{selectedChannel.name}</span>
-                      <Badge variant="outline" className="text-[10px]">{channelTypeConfig[selectedChannel.type]?.label}</Badge>
+                      <Badge variant="outline" className="text-xs">{channelTypeConfig[selectedChannel.type]?.label}</Badge>
                     </div>
                     <span className="text-xs text-muted-foreground">{selectedChannel.memberCount} članova</span>
                   </div>
@@ -235,7 +235,7 @@ export function Chat() {
                           <div className={`max-w-[70%] ${m.isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'} rounded-lg px-3 py-2`}>
                             {!m.isOwn && <p className="text-xs font-medium mb-0.5">{m.senderName}</p>}
                             <p className="text-sm">{m.content}</p>
-                            <p className={`text-[10px] mt-1 ${m.isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{new Date(m.timestamp).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p className={`text-xs mt-1 ${m.isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{new Date(m.timestamp).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</p>
                           </div>
                         </div>
                       ))}

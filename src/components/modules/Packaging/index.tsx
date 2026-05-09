@@ -125,9 +125,9 @@ const PACK_TYPES: Record<string, { color: string; label: string }> = {
 
 const WORKERS = ['Sana Marković', 'Mladen Jovanović', 'Goran Stanković', 'Ivana Petrović', 'Nenad Đorđević']
 
-function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
-function getPriorityBadge(p: string) { const r = PRIORITIES[p]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{p}</Badge> }
-function getPackTypeBadge(t: string) { const r = PACK_TYPES[t]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{t}</Badge> }
+function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
+function getPriorityBadge(p: string) { const r = PRIORITIES[p]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{p}</Badge> }
+function getPackTypeBadge(t: string) { const r = PACK_TYPES[t]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{t}</Badge> }
 
 function formatCurrency(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 0 }).format(n) }
 
@@ -185,13 +185,13 @@ export function Packaging() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-slate-600 mb-1">Čeka</div><p className="text-xl font-bold text-slate-700">{stats.pending}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-blue-600 mb-1">U toku</div><p className="text-xl font-bold text-blue-700">{stats.inProgress}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-amber-600 mb-1">QC</div><p className="text-xl font-bold text-amber-700">{stats.qc}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-emerald-600 mb-1">Završeno</div><p className="text-xl font-bold text-emerald-700">{stats.completed}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Stavki</div><p className="text-xl font-bold">{stats.totalItems}</p></Card>
-        <Card className="p-4"><div className="text-[10px] text-muted-foreground mb-1">Troškovi</div><p className="text-xl font-bold">{formatCurrency(stats.totalCost)}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
+        <Card className="p-4"><div className="text-xs text-slate-600 mb-1">Čeka</div><p className="text-xl font-bold text-slate-700">{stats.pending}</p></Card>
+        <Card className="p-4"><div className="text-xs text-blue-600 mb-1">U toku</div><p className="text-xl font-bold text-blue-700">{stats.inProgress}</p></Card>
+        <Card className="p-4"><div className="text-xs text-amber-600 mb-1">QC</div><p className="text-xl font-bold text-amber-700">{stats.qc}</p></Card>
+        <Card className="p-4"><div className="text-xs text-emerald-600 mb-1">Završeno</div><p className="text-xl font-bold text-emerald-700">{stats.completed}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Stavki</div><p className="text-xl font-bold">{stats.totalItems}</p></Card>
+        <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Troškovi</div><p className="text-xl font-bold">{formatCurrency(stats.totalCost)}</p></Card>
       </div>
 
       <Card>
@@ -224,7 +224,7 @@ export function Packaging() {
                   <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
                     <TableCell className="text-xs font-mono font-bold">{item.orderNumber}</TableCell>
                     <TableCell className="text-xs font-mono hidden sm:table-cell">{item.orderId}</TableCell>
-                    <TableCell><div className="text-xs font-medium">{item.customerName}</div><div className="text-[10px] text-muted-foreground">{item.assignedTo || 'Nije dodeljen'}</div></TableCell>
+                    <TableCell><div className="text-xs font-medium">{item.customerName}</div><div className="text-xs text-muted-foreground">{item.assignedTo || 'Nije dodeljen'}</div></TableCell>
                     <TableCell>{getPackTypeBadge(item.packagingType)}</TableCell>
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                     <TableCell className="text-xs hidden md:table-cell">{item.items.length} proizvoda</TableCell>
@@ -250,40 +250,40 @@ export function Packaging() {
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.orderNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderId} · {detailItem.customerName}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}{getPackTypeBadge(detailItem.packagingType)}</div></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Ukupno kutija</div><p className="text-xs font-bold">{detailItem.boxCount}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Težina</div><p className="text-xs font-bold">{detailItem.totalWeight >= 1000 ? `${(detailItem.totalWeight / 1000).toFixed(1)}t` : `${detailItem.totalWeight}kg`}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Zapremina</div><p className="text-xs font-bold">{detailItem.totalVolume} m³</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Troškovi</div><p className="text-xs font-bold">{formatCurrency(detailItem.packagingCost)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Ukupno kutija</div><p className="text-xs font-bold">{detailItem.boxCount}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-bold">{detailItem.totalWeight >= 1000 ? `${(detailItem.totalWeight / 1000).toFixed(1)}t` : `${detailItem.totalWeight}kg`}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Zapremina</div><p className="text-xs font-bold">{detailItem.totalVolume} m³</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Troškovi</div><p className="text-xs font-bold">{formatCurrency(detailItem.packagingCost)}</p></div>
               </div>
-              {detailItem.assignedTo && <div className="p-3 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Zaduzeni</div><p className="text-xs font-medium">{detailItem.assignedTo}</p></div>}
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-[10px] text-amber-600 mb-1">Instrukcije</p><p className="text-xs">{detailItem.notes}</p></div>}
+              {detailItem.assignedTo && <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Zaduzeni</div><p className="text-xs font-medium">{detailItem.assignedTo}</p></div>}
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Instrukcije</p><p className="text-xs">{detailItem.notes}</p></div>}
 
               <div className="space-y-2">
                 <p className="text-xs font-medium">Stavke:</p>
                 <Table>
                   <TableHeader><TableRow>
-                    <TableHead className="text-[10px]">Proizvod</TableHead>
-                    <TableHead className="text-[10px]">SKU</TableHead>
-                    <TableHead className="text-[10px]">Količina</TableHead>
-                    <TableHead className="text-[10px]">Kutija</TableHead>
-                    <TableHead className="text-[10px]">Dimenzije</TableHead>
-                    <TableHead className="text-[10px]">Labela</TableHead>
-                    <TableHead className="text-[10px]">QC</TableHead>
+                    <TableHead className="text-xs">Proizvod</TableHead>
+                    <TableHead className="text-xs">SKU</TableHead>
+                    <TableHead className="text-xs">Količina</TableHead>
+                    <TableHead className="text-xs">Kutija</TableHead>
+                    <TableHead className="text-xs">Dimenzije</TableHead>
+                    <TableHead className="text-xs">Labela</TableHead>
+                    <TableHead className="text-xs">QC</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {detailItem.items.map(item => (
                       <TableRow key={item.id}>
-                        <TableCell className="text-[10px] font-medium">{item.productName}</TableCell>
-                        <TableCell className="text-[10px] font-mono">{item.sku}</TableCell>
-                        <TableCell className="text-[10px]">{item.quantity}</TableCell>
-                        <TableCell className="text-[10px]">{item.boxType}</TableCell>
-                        <TableCell className="text-[10px]">{item.boxDimensions}</TableCell>
-                        <TableCell><Button variant={item.labelPrinted ? 'outline' : 'ghost'} size="sm" className="h-6 text-[10px] gap-1" onClick={() => handleToggleLabel(detailItem.id, item.id)}>{item.labelPrinted ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" />Štamp.</> : <><ScanBarcode className="h-3 w-3" />Nije</>}</Button></TableCell>
+                        <TableCell className="text-xs font-medium">{item.productName}</TableCell>
+                        <TableCell className="text-xs font-mono">{item.sku}</TableCell>
+                        <TableCell className="text-xs">{item.quantity}</TableCell>
+                        <TableCell className="text-xs">{item.boxType}</TableCell>
+                        <TableCell className="text-xs">{item.boxDimensions}</TableCell>
+                        <TableCell><Button variant={item.labelPrinted ? 'outline' : 'ghost'} size="sm" className="h-6 text-xs gap-1" onClick={() => handleToggleLabel(detailItem.id, item.id)}>{item.labelPrinted ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" />Štamp.</> : <><ScanBarcode className="h-3 w-3" />Nije</>}</Button></TableCell>
                         <TableCell><div className="flex gap-1">
                           <Button variant="ghost" size="sm" className="h-6 w-6 text-emerald-600" onClick={() => handleToggleQC(detailItem.id, item.id, true)}><CheckCircle2 className="h-3 w-3" /></Button>
                           <Button variant="ghost" size="sm" className="h-6 w-6 text-red-600" onClick={() => handleToggleQC(detailItem.id, item.id, false)}><AlertTriangle className="h-3 w-3" /></Button>
-                          {item.qcPassed === true && <Badge className="bg-emerald-100 text-emerald-700 text-[9px]">OK</Badge>}
-                          {item.qcPassed === false && <Badge className="bg-red-100 text-red-700 text-[9px]">FAIL</Badge>}
+                          {item.qcPassed === true && <Badge className="bg-emerald-100 text-emerald-700 text-xs">OK</Badge>}
+                          {item.qcPassed === false && <Badge className="bg-red-100 text-red-700 text-xs">FAIL</Badge>}
                         </div></TableCell>
                       </TableRow>
                     ))}

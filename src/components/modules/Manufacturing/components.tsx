@@ -1068,7 +1068,7 @@ export function ProizvodnjaContent() {
                       </div>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] shrink-0 ${ORDER_STATUS_CONFIG[order.status]?.color || ""}`}
+                        className={`text-xs shrink-0 ${ORDER_STATUS_CONFIG[order.status]?.color || ""}`}
                       >
                         {ORDER_STATUS_CONFIG[order.status]?.label ||
                           order.status}
@@ -1221,7 +1221,7 @@ export function ProizvodnjaContent() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${ORDER_STATUS_CONFIG[order.status]?.color || ""}`}
+                            className={`text-xs ${ORDER_STATUS_CONFIG[order.status]?.color || ""}`}
                           >
                             {ORDER_STATUS_CONFIG[order.status]?.label ||
                               order.status}
@@ -1347,7 +1347,7 @@ export function ProizvodnjaContent() {
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className={`text-[10px] ${BOM_STATUS_CONFIG[bom.status]?.color || ""}`}
+                              className={`text-xs ${BOM_STATUS_CONFIG[bom.status]?.color || ""}`}
                             >
                               {BOM_STATUS_CONFIG[bom.status]?.label ||
                                 bom.status}
@@ -1432,7 +1432,7 @@ export function ProizvodnjaContent() {
                     </div>
                     <Badge
                       variant="outline"
-                      className={`text-[10px] ${MACHINE_STATUS_CONFIG[machine.status]?.color || ""}`}
+                      className={`text-xs ${MACHINE_STATUS_CONFIG[machine.status]?.color || ""}`}
                     >
                       {MACHINE_STATUS_CONFIG[machine.status]?.label ||
                         machine.status}
@@ -1595,7 +1595,7 @@ export function ProizvodnjaContent() {
                   >
                     <div className="text-xs font-medium p-2 border-b flex items-center gap-1">
                       <span className="truncate">{item.productName}</span>
-                      <Badge variant="outline" className="text-[9px] shrink-0">
+                      <Badge variant="outline" className="text-xs shrink-0">
                         {item.quantity}
                       </Badge>
                     </div>
@@ -1610,7 +1610,7 @@ export function ProizvodnjaContent() {
                       ))}
                       {/* Schedule bar */}
                       <div
-                        className={`absolute top-1 h-8 rounded ${SCHEDULE_COLORS[item.status]} opacity-80 flex items-center justify-center text-[10px] text-white font-medium cursor-pointer hover:opacity-100 transition-opacity`}
+                        className={`absolute top-1 h-8 rounded ${SCHEDULE_COLORS[item.status]} opacity-80 flex items-center justify-center text-xs text-white font-medium cursor-pointer hover:opacity-100 transition-opacity`}
                         style={{
                           left: `${(item.startDay / scheduleDays) * 100}%`,
                           width: `${(item.duration / scheduleDays) * 100}%`,
@@ -1665,7 +1665,7 @@ export function ProizvodnjaContent() {
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {plannedHours}/{availableHours}h
                       </span>
                     </div>

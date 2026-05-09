@@ -496,7 +496,7 @@ export function Trucks() {
             <span className="hidden sm:inline">Регистрација</span>
             <span className="sm:hidden">Рег</span>
             {(fleetStats.registrationDueCount + fleetStats.insuranceDueCount) > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold">
                 {fleetStats.registrationDueCount + fleetStats.insuranceDueCount}
               </span>
             )}
@@ -506,7 +506,7 @@ export function Trucks() {
             <span className="hidden sm:inline">Одржавање</span>
             <span className="sm:hidden">Одж</span>
             {fleetStats.maintenanceDueCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-500 text-white text-[9px] flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-bold">
                 {fleetStats.maintenanceDueCount}
               </span>
             )}
@@ -553,7 +553,7 @@ export function Trucks() {
                     </div>
                     <div className="text-right">
                       <span className="text-sm font-bold text-emerald-700">{fleetStats.activeTrucks}</span>
-                      <span className="text-[10px] text-muted-foreground ml-2">
+                      <span className="text-xs text-muted-foreground ml-2">
                         / {fleetStats.totalTrucks}
                       </span>
                     </div>
@@ -626,7 +626,7 @@ export function Trucks() {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-mono font-bold text-sm">{truck.plate}</span>
-                          <Badge className={`text-[10px] px-2 py-0 ${getStatusBadgeClass(truck.status)}`}>
+                          <Badge className={`text-xs px-2 py-0 ${getStatusBadgeClass(truck.status)}`}>
                             {getStatusLabel(truck.status)}
                           </Badge>
                         </div>
@@ -768,7 +768,7 @@ export function Trucks() {
               <p className="text-lg font-bold text-emerald-700">
                 {formatRSD(costs.filter((c) => c.type === 'gorivo').reduce((s, c) => s + c.amount, 0))}
               </p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {costs.filter((c) => c.type === 'gorivo').length} чланова
               </p>
             </Card>
@@ -826,7 +826,7 @@ export function Trucks() {
                           </div>
                           <div className="text-right">
                             <span className="font-bold">{formatRSD(total)}</span>
-                            <span className="text-[10px] text-muted-foreground ml-1">({count})</span>
+                            <span className="text-xs text-muted-foreground ml-1">({count})</span>
                           </div>
                         </div>
                         <div className="h-2 bg-muted rounded-full overflow-hidden flex">
@@ -900,7 +900,7 @@ function MiniStatusBadge({ label, days }: { label: string; days: number }) {
       : 'OK'
 
   return (
-    <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${color}`}>
+    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${color}`}>
       {label} {display}
     </span>
   )

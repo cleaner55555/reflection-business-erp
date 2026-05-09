@@ -72,13 +72,13 @@ function getStatusBadge(status: string) {
     error: { color: 'bg-red-100 text-red-800', label: 'Greška' },
   }
   const s = map[status] || map.pending
-  return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
+  return <Badge className={`${s.color} text-xs`}>{s.label}</Badge>
 }
 
 function getDiffBadge(d: string) {
   const map: Record<string, { color: string; label: string }> = { easy: { color: 'bg-emerald-100 text-emerald-800', label: 'Lako' }, medium: { color: 'bg-amber-100 text-amber-800', label: 'Srednje' }, hard: { color: 'bg-red-100 text-red-800', label: 'Teško' } }
   const s = map[d] || map.medium
-  return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
+  return <Badge className={`${s.color} text-xs`}>{s.label}</Badge>
 }
 
 export function SEO() {
@@ -128,7 +128,7 @@ export function SEO() {
                   <TableBody>
                     {filteredPages.map(page => (
                       <TableRow key={page.id}>
-                        <TableCell><div><p className="text-xs font-medium">{page.title}</p><p className="text-[10px] text-muted-foreground font-mono">{page.url}</p></div></TableCell>
+                        <TableCell><div><p className="text-xs font-medium">{page.title}</p><p className="text-xs text-muted-foreground font-mono">{page.url}</p></div></TableCell>
                         <TableCell className="hidden md:table-cell">{getStatusBadge(page.status)}</TableCell>
                         <TableCell className="hidden sm:table-cell"><span className={`text-xs font-bold ${getScoreColor(page.score)}`}>{page.score}/100</span></TableCell>
                         <TableCell className="hidden sm:table-cell text-xs font-medium">{page.clicks}</TableCell>
@@ -159,7 +159,7 @@ export function SEO() {
                         <TableCell className="hidden sm:table-cell"><span className={`text-xs font-medium ${kw.change > 0 ? 'text-emerald-600' : kw.change < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>{kw.change > 0 ? `↑${kw.change}` : kw.change < 0 ? `↓${Math.abs(kw.change)}` : '—'}</span></TableCell>
                         <TableCell className="hidden md:table-cell text-xs">{kw.volume}/mes</TableCell>
                         <TableCell className="hidden lg:table-cell">{getDiffBadge(kw.difficulty)}</TableCell>
-                        <TableCell className="hidden lg:table-cell text-[10px] font-mono text-muted-foreground">{kw.url}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-xs font-mono text-muted-foreground">{kw.url}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

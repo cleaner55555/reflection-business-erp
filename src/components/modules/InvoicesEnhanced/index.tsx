@@ -154,10 +154,10 @@ function RateOtplateTab() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-[10px]">Rata</TableHead>
-                          <TableHead className="text-[10px]">Iznos</TableHead>
-                          <TableHead className="text-[10px]">Rok plaćanja</TableHead>
-                          <TableHead className="text-[10px]">Status</TableHead>
+                          <TableHead className="text-xs">Rata</TableHead>
+                          <TableHead className="text-xs">Iznos</TableHead>
+                          <TableHead className="text-xs">Rok plaćanja</TableHead>
+                          <TableHead className="text-xs">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -275,25 +275,25 @@ function FiskalizacijaTab() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase font-medium">Izlazne fakture</p>
+            <p className="text-xs text-muted-foreground uppercase font-medium">Izlazne fakture</p>
             <p className="text-2xl font-bold">{outputInvoices.length}</p>
           </CardContent>
         </Card>
         <Card className="bg-emerald-50 border-emerald-200">
           <CardContent className="p-3">
-            <p className="text-[10px] text-emerald-600 uppercase font-medium">Fiskalizovane</p>
+            <p className="text-xs text-emerald-600 uppercase font-medium">Fiskalizovane</p>
             <p className="text-2xl font-bold text-emerald-700">{totalFiscalized}</p>
           </CardContent>
         </Card>
         <Card className={totalUnfiscalized > 0 ? 'bg-amber-50 border-amber-200' : 'bg-muted/50'}>
           <CardContent className="p-3">
-            <p className="text-[10px] text-amber-600 uppercase font-medium">Na fiskalizaciju</p>
+            <p className="text-xs text-amber-600 uppercase font-medium">Na fiskalizaciju</p>
             <p className="text-2xl font-bold text-amber-700">{totalUnfiscalized}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-3">
-            <p className="text-[10px] text-muted-foreground uppercase font-medium">eFakture poslate</p>
+            <p className="text-xs text-muted-foreground uppercase font-medium">eFakture poslate</p>
             <p className="text-2xl font-bold">{outputInvoices.filter(i => i.sefStatus === 'sent' || i.sefStatus === 'accepted').length}</p>
           </CardContent>
         </Card>

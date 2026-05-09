@@ -131,9 +131,9 @@ function ProjectDashboard() {
                       <span className={`text-xs ${task.priority === 'hitan' ? 'text-red-600 font-medium' : ''}`}>{task.title}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">{task.projectName}</span>
+                      <span className="text-xs text-muted-foreground">{task.projectName}</span>
                       {isOverdue && <AlertTriangle className="h-3 w-3 text-red-500" />}
-                      {task.dueDate && <span className="text-[10px] text-muted-foreground">{formatDate(task.dueDate)}</span>}
+                      {task.dueDate && <span className="text-xs text-muted-foreground">{formatDate(task.dueDate)}</span>}
                     </div>
                   </div>
                 )
@@ -155,9 +155,9 @@ function ProjectDashboard() {
                 <div key={task.id} className="flex items-center justify-between p-2 rounded bg-white border border-red-200">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xs font-medium truncate">{task.title}</span>
-                    <span className="text-[10px] text-muted-foreground">— {task.projectName}</span>
+                    <span className="text-xs text-muted-foreground">— {task.projectName}</span>
                   </div>
-                  <Badge variant="outline" className="text-[9px] bg-red-100 text-red-700 border-red-200 flex-shrink-0 ml-2">{formatDate(task.dueDate!)}</Badge>
+                  <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-200 flex-shrink-0 ml-2">{formatDate(task.dueDate!)}</Badge>
                 </div>
               ))}
             </div>
@@ -352,15 +352,15 @@ function ProjectsList() {
       {/* Summary stats */}
       {!viewMode.includes('form') && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <Card className="p-3"><p className="text-[10px] text-muted-foreground">Budžet</p><p className="text-sm font-bold">{formatRSD(stats.totalBudget)}</p></Card>
-          <Card className="p-3"><p className="text-[10px] text-muted-foreground">Potrošeno</p><p className="text-sm font-bold text-orange-600">{formatRSD(stats.totalSpent)}</p></Card>
-          <Card className="p-3"><p className="text-[10px] text-muted-foreground">Zadaci</p><p className="text-sm font-bold">{stats.completedTasks}/{stats.totalTasks} ({stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0}%)</p></Card>
-          <Card className="p-3"><p className="text-[10px] text-muted-foreground">Sati evidentirani</p><p className="text-sm font-bold text-teal-600">{stats.totalHours.toFixed(1)}h</p></Card>
+          <Card className="p-3"><p className="text-xs text-muted-foreground">Budžet</p><p className="text-sm font-bold">{formatRSD(stats.totalBudget)}</p></Card>
+          <Card className="p-3"><p className="text-xs text-muted-foreground">Potrošeno</p><p className="text-sm font-bold text-orange-600">{formatRSD(stats.totalSpent)}</p></Card>
+          <Card className="p-3"><p className="text-xs text-muted-foreground">Zadaci</p><p className="text-sm font-bold">{stats.completedTasks}/{stats.totalTasks} ({stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0}%)</p></Card>
+          <Card className="p-3"><p className="text-xs text-muted-foreground">Sati evidentirani</p><p className="text-sm font-bold text-teal-600">{stats.totalHours.toFixed(1)}h</p></Card>
           <div className="p-3 flex flex-col gap-1">
-            <p className="text-[10px] text-muted-foreground">Pregled</p>
+            <p className="text-xs text-muted-foreground">Pregled</p>
             <div className="flex gap-1">
-              <Button size="sm" variant={viewMode === 'list' ? 'default' : 'outline'} className="h-7 text-[10px] px-2" onClick={() => setViewMode('list')}><ListTodo className="h-3 w-3" /> Lista</Button>
-              <Button size="sm" variant={viewMode === 'kanban' ? 'default' : 'outline'} className="h-7 text-[10px] px-2" onClick={() => setViewMode('kanban')}><Target className="h-3 w-3" /> Kanban</Button>
+              <Button size="sm" variant={viewMode === 'list' ? 'default' : 'outline'} className="h-7 text-xs px-2" onClick={() => setViewMode('list')}><ListTodo className="h-3 w-3" /> Lista</Button>
+              <Button size="sm" variant={viewMode === 'kanban' ? 'default' : 'outline'} className="h-7 text-xs px-2" onClick={() => setViewMode('kanban')}><Target className="h-3 w-3" /> Kanban</Button>
             </div>
           </div>
         </div>
@@ -418,7 +418,7 @@ function ProjectsList() {
                 </div>
                 {projTags.length > 0 && (
                   <div className="flex gap-1.5 flex-wrap">{projTags.map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-[10px] gap-1 pr-1">{tag}<button onClick={() => removeTag(tag)} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button></Badge>
+                    <Badge key={tag} variant="secondary" className="text-xs gap-1 pr-1">{tag}<button onClick={() => removeTag(tag)} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button></Badge>
                   ))}</div>
                 )}
               </div>
@@ -459,9 +459,9 @@ function ProjectsList() {
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             {proj.color && <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: proj.color }} />}
                             <h3 className="text-sm font-semibold">{tc(proj.name)}</h3>
-                            <Badge variant="outline" className={`text-[10px] px-2 py-0 ${statusInfo.color}`}>{statusInfo.label}</Badge>
-                            <span className={`text-[10px] font-medium ${prioInfo.color}`}>{prioInfo.label}</span>
-                            {proj.partner && <Badge variant="outline" className="text-[10px] px-2 py-0 bg-violet-50 text-violet-700 border-violet-200">{proj.partner.name}</Badge>}
+                            <Badge variant="outline" className={`text-xs px-2 py-0 ${statusInfo.color}`}>{statusInfo.label}</Badge>
+                            <span className={`text-xs font-medium ${prioInfo.color}`}>{prioInfo.label}</span>
+                            {proj.partner && <Badge variant="outline" className="text-xs px-2 py-0 bg-violet-50 text-violet-700 border-violet-200">{proj.partner.name}</Badge>}
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                             {proj.budget > 0 && <span>Budžet: <span className="font-medium text-foreground">{formatRSD(proj.budget)}</span></span>}
@@ -474,21 +474,21 @@ function ProjectsList() {
                           <div className="mt-2 flex items-center gap-3 flex-wrap">
                             {tasks.length > 0 && (
                               <div className="flex-1 max-w-[200px]">
-                                <div className="flex justify-between text-[10px] text-muted-foreground mb-0.5"><span>Napredak</span><span>{proj.progress}%</span></div>
+                                <div className="flex justify-between text-xs text-muted-foreground mb-0.5"><span>Napredak</span><span>{proj.progress}%</span></div>
                                 <div className="w-full bg-muted rounded-full h-1.5"><div className="h-1.5 rounded-full bg-blue-500 transition-all" style={{ width: `${proj.progress}%` }} /></div>
                               </div>
                             )}
                             {proj.budget > 0 && (
                               <div className="flex-1 max-w-[200px]">
-                                <div className="flex justify-between text-[10px] text-muted-foreground mb-0.5"><span>Budžet</span><span>{Math.round((proj.spent / proj.budget) * 100)}%</span></div>
+                                <div className="flex justify-between text-xs text-muted-foreground mb-0.5"><span>Budžet</span><span>{Math.round((proj.spent / proj.budget) * 100)}%</span></div>
                                 <div className="w-full bg-muted rounded-full h-1.5"><div className={`h-1.5 rounded-full transition-all ${isOverBudget ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min((proj.spent / proj.budget) * 100, 100)}%` }} /></div>
                               </div>
                             )}
                           </div>
                           {(proj.startDate || proj.endDate) && (
-                            <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground"><CalendarDays className="h-3 w-3" /><span>{formatDate(proj.startDate)}{proj.endDate ? ` — ${formatDate(proj.endDate)}` : ''}</span></div>
+                            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="h-3 w-3" /><span>{formatDate(proj.startDate)}{proj.endDate ? ` — ${formatDate(proj.endDate)}` : ''}</span></div>
                           )}
-                          {tags.length > 0 && <div className="mt-1.5 flex gap-1 flex-wrap">{tags.map(tag => <Badge key={tag} variant="secondary" className="text-[9px] px-1.5 py-0">{tag}</Badge>)}</div>}
+                          {tags.length > 0 && <div className="mt-1.5 flex gap-1 flex-wrap">{tags.map(tag => <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0">{tag}</Badge>)}</div>}
                         </div>
                         <div className="flex gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDetailProject(proj) }}><Eye className="h-3.5 w-3.5" /></Button>
@@ -501,23 +501,23 @@ function ProjectsList() {
                         <div className="mt-3 border-t pt-3 space-y-2">
                           <div className="flex items-center justify-between">
                             <h4 className="text-xs font-semibold">Zadaci ({tasks.length})</h4>
-                            <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => openAddTask(proj.id)}><Plus className="h-3 w-3" /> Dodaj</Button>
+                            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => openAddTask(proj.id)}><Plus className="h-3 w-3" /> Dodaj</Button>
                           </div>
                           {(addingTaskFor === proj.id) && (
                             <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
                               <div className="flex items-center justify-between"><h4 className="text-xs font-semibold">{editingTask ? 'Izmeni zadatak' : 'Novi zadatak'}</h4><Button variant="ghost" size="icon" className="h-5 w-5" onClick={cancelTaskForm}><X className="h-3 w-3" /></Button></div>
                               <div className="grid grid-cols-2 gap-2">
-                                <div className="space-y-1"><Label className="text-[10px]">Naziv *</Label><Input value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} className="h-8 text-xs" placeholder="Naziv zadatka" /></div>
-                                <div className="space-y-1"><Label className="text-[10px]">Prioritet</Label>
+                                <div className="space-y-1"><Label className="text-xs">Naziv *</Label><Input value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} className="h-8 text-xs" placeholder="Naziv zadatka" /></div>
+                                <div className="space-y-1"><Label className="text-xs">Prioritet</Label>
                                   <Select value={taskForm.priority} onValueChange={(v) => setTaskForm({ ...taskForm, priority: v })}><SelectTrigger className="h-8"><SelectValue /></SelectTrigger><SelectContent>{PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent></Select>
                                 </div>
                               </div>
                               <div className="grid grid-cols-3 gap-2">
-                                <div className="space-y-1"><Label className="text-[10px]">Rok</Label><Input type="date" value={taskForm.dueDate} onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })} className="h-8 text-xs" /></div>
-                                <div className="space-y-1"><Label className="text-[10px]">Zaduženi</Label><Input value={taskForm.assignedTo} onChange={(e) => setTaskForm({ ...taskForm, assignedTo: e.target.value })} className="h-8 text-xs" placeholder="Ime" /></div>
-                                <div className="space-y-1"><Label className="text-[10px]">Procena (h)</Label><Input type="number" step="0.5" value={taskForm.estimatedHours} onChange={(e) => setTaskForm({ ...taskForm, estimatedHours: e.target.value })} className="h-8 text-xs" placeholder="0" /></div>
+                                <div className="space-y-1"><Label className="text-xs">Rok</Label><Input type="date" value={taskForm.dueDate} onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })} className="h-8 text-xs" /></div>
+                                <div className="space-y-1"><Label className="text-xs">Zaduženi</Label><Input value={taskForm.assignedTo} onChange={(e) => setTaskForm({ ...taskForm, assignedTo: e.target.value })} className="h-8 text-xs" placeholder="Ime" /></div>
+                                <div className="space-y-1"><Label className="text-xs">Procena (h)</Label><Input type="number" step="0.5" value={taskForm.estimatedHours} onChange={(e) => setTaskForm({ ...taskForm, estimatedHours: e.target.value })} className="h-8 text-xs" placeholder="0" /></div>
                               </div>
-                              <div className="space-y-1"><Label className="text-[10px]">Opis</Label><Textarea value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} className="h-16 text-xs" placeholder="Detaljan opis..." /></div>
+                              <div className="space-y-1"><Label className="text-xs">Opis</Label><Textarea value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} className="h-16 text-xs" placeholder="Detaljan opis..." /></div>
                               <div className="flex gap-2"><Button size="sm" className="h-7 text-xs" onClick={saveTask}>Sačuvaj</Button><Button size="sm" variant="outline" className="h-7 text-xs" onClick={cancelTaskForm}>Otkaži</Button></div>
                             </div>
                           )}
@@ -532,16 +532,16 @@ function ProjectsList() {
                                 <div className="flex-1 min-w-0 cursor-pointer" onClick={() => openEditTask(task)}>
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <span className={`text-xs ${task.status === 'zavrseno' ? 'line-through text-muted-foreground' : ''}`}>{tc(task.title)}</span>
-                                    {task.priority !== 'srednji' && <span className={`text-[10px] ${getPriorityInfo(task.priority).color}`}>{getPriorityInfo(task.priority).label}</span>}
+                                    {task.priority !== 'srednji' && <span className={`text-xs ${getPriorityInfo(task.priority).color}`}>{getPriorityInfo(task.priority).label}</span>}
                                     {isOverdue && <AlertTriangle className="h-3 w-3 text-red-500 flex-shrink-0" />}
-                                    {task.dueDate && <span className="text-[10px] text-muted-foreground">{formatDate(task.dueDate)}</span>}
-                                    {task.estimatedHours > 0 && <span className="text-[10px] text-muted-foreground"><Timer className="h-2.5 w-2.5 inline" /> {task.loggedHours.toFixed(1)}/{task.estimatedHours}h</span>}
-                                    {task.assignedTo && <span className="text-[10px] text-muted-foreground"><Users className="h-2.5 w-2.5 inline" /> {task.assignedTo}</span>}
+                                    {task.dueDate && <span className="text-xs text-muted-foreground">{formatDate(task.dueDate)}</span>}
+                                    {task.estimatedHours > 0 && <span className="text-xs text-muted-foreground"><Timer className="h-2.5 w-2.5 inline" /> {task.loggedHours.toFixed(1)}/{task.estimatedHours}h</span>}
+                                    {task.assignedTo && <span className="text-xs text-muted-foreground"><Users className="h-2.5 w-2.5 inline" /> {task.assignedTo}</span>}
                                   </div>
-                                  {task.description && <p className="text-[10px] text-muted-foreground truncate">{tc(task.description)}</p>}
+                                  {task.description && <p className="text-xs text-muted-foreground truncate">{tc(task.description)}</p>}
                                 </div>
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                                  <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${taskInfo.color}`}>{taskInfo.label}</Badge>
+                                  <Badge variant="outline" className={`text-xs px-1.5 py-0 ${taskInfo.color}`}>{taskInfo.label}</Badge>
                                   <Button variant="ghost" size="icon" className="h-5 w-5 text-red-400 hover:text-red-600" onClick={() => deleteTask(task.id)}><Trash2 className="h-2.5 w-2.5" /></Button>
                                 </div>
                               </div>
@@ -576,7 +576,7 @@ function ProjectsList() {
                         <h4 className="text-xs font-semibold">{status.label} ({fProjects.length})</h4>
                       </div>
                       <div className="space-y-2 min-h-[200px] max-h-[500px] overflow-y-auto bg-muted/20 rounded-lg p-2">
-                        {fProjects.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-4">Nema projekata</p>}
+                        {fProjects.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">Nema projekata</p>}
                         {fProjects.map(proj => {
                           const tasks = proj.tasks || []
                           const doneTasks = tasks.filter(t => t.status === 'zavrseno').length
@@ -587,12 +587,12 @@ function ProjectsList() {
                                 <h4 className="text-xs font-semibold truncate flex-1">{tc(proj.name)}</h4>
                               </div>
                               <div className="space-y-2">
-                                <div className="flex justify-between text-[10px] text-muted-foreground">
+                                <div className="flex justify-between text-xs text-muted-foreground">
                                   <span>{doneTasks}/{tasks.length} taskova</span>
                                   <span>{proj.progress}%</span>
                                 </div>
                                 <div className="w-full bg-muted rounded-full h-1"><div className="h-1 rounded-full bg-blue-500" style={{ width: `${proj.progress}%` }} /></div>
-                                {proj.budget > 0 && <p className="text-[10px] text-muted-foreground">{formatRSD(proj.budget)}</p>}
+                                {proj.budget > 0 && <p className="text-xs text-muted-foreground">{formatRSD(proj.budget)}</p>}
                               </div>
                             </div>
                           )
@@ -642,7 +642,7 @@ function ProjectDetailView({ project, onClose, onEdit }: { project: Project; onC
         <Badge variant="outline" className={statusInfo.color}>{statusInfo.label}</Badge>
         <Badge variant="outline" className={`text-xs ${prioInfo.color}`}>{prioInfo.label}</Badge>
         {project.partner && <Badge variant="outline" className="bg-violet-50 text-violet-700 border-violet-200">{project.partner.name}</Badge>}
-        {tags.map(tag => <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>)}
+        {tags.map(tag => <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>)}
       </div>
 
       {project.description && <p className="text-sm text-muted-foreground">{tc(project.description)}</p>}
@@ -674,8 +674,8 @@ function ProjectDetailView({ project, onClose, onEdit }: { project: Project; onC
                 <CheckCircle2 className={`h-3.5 w-3.5 flex-shrink-0 ${task.status === 'zavrseno' ? 'text-emerald-500' : 'text-muted-foreground'}`} />
                 <span className={`text-xs flex-1 ${task.status === 'zavrseno' ? 'line-through text-muted-foreground' : ''}`}>{tc(task.title)}</span>
                 {isOverdue && <AlertTriangle className="h-3 w-3 text-red-500" />}
-                {task.dueDate && <span className="text-[10px] text-muted-foreground">{formatDate(task.dueDate)}</span>}
-                {task.loggedHours > 0 && <span className="text-[10px] text-muted-foreground">{task.loggedHours.toFixed(1)}h</span>}
+                {task.dueDate && <span className="text-xs text-muted-foreground">{formatDate(task.dueDate)}</span>}
+                {task.loggedHours > 0 && <span className="text-xs text-muted-foreground">{task.loggedHours.toFixed(1)}h</span>}
               </div>
             )
           })}
@@ -691,7 +691,7 @@ function ProjectDetailView({ project, onClose, onEdit }: { project: Project; onC
 }
 
 function MiniStat({ label, value }: { label: string; value: string }) {
-  return <div className="text-center p-2 rounded bg-muted/50"><p className="text-[10px] text-muted-foreground">{label}</p><p className="text-sm font-bold">{value}</p></div>
+  return <div className="text-center p-2 rounded bg-muted/50"><p className="text-xs text-muted-foreground">{label}</p><p className="text-sm font-bold">{value}</p></div>
 }
 
 function TaskKanban() {
@@ -763,7 +763,7 @@ function TaskKanban() {
                 <div className="flex items-center gap-2">
                   <status.icon className="h-4 w-4" />
                   <h4 className="text-xs font-semibold">{status.label}</h4>
-                  <Badge variant="secondary" className="text-[10px] px-1.5">{tasks.length}</Badge>
+                  <Badge variant="secondary" className="text-xs px-1.5">{tasks.length}</Badge>
                 </div>
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setAddingTo(status.value); setTaskForm({ title: '', description: '', priority: 'srednji', dueDate: '', assignedTo: '', estimatedHours: '' }) }}><Plus className="h-3.5 w-3.5" /></Button>
               </div>
@@ -777,8 +777,8 @@ function TaskKanban() {
                     <Input type="number" step="0.5" value={taskForm.estimatedHours} onChange={(e) => setTaskForm({ ...taskForm, estimatedHours: e.target.value })} className="h-7 text-xs" placeholder="Sati" />
                   </div>
                   <div className="flex gap-1">
-                    <Button size="sm" className="h-6 text-[10px] px-2" onClick={() => addTask(status.value)}>Dodaj</Button>
-                    <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2" onClick={() => setAddingTo(null)}>Otkaži</Button>
+                    <Button size="sm" className="h-6 text-xs px-2" onClick={() => addTask(status.value)}>Dodaj</Button>
+                    <Button size="sm" variant="ghost" className="h-6 text-xs px-2" onClick={() => setAddingTo(null)}>Otkaži</Button>
                   </div>
                 </div>
               )}
@@ -791,8 +791,8 @@ function TaskKanban() {
                       <div className="flex items-start gap-1.5">
                         <div className="flex-1 min-w-0">
                           <p className={`text-xs font-medium ${task.status === 'zavrseno' ? 'line-through text-muted-foreground' : ''}`}>{tc(task.title)}</p>
-                          {task.projectName && <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">{task.projectColor && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: task.projectColor }} />}{task.projectName}</p>}
-                          <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+                          {task.projectName && <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">{task.projectColor && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: task.projectColor }} />}{task.projectName}</p>}
+                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                             {isOverdue && <span className="text-red-600 flex items-center gap-0.5"><AlertTriangle className="h-2.5 w-2.5" />Prekoračen</span>}
                             {task.dueDate && <span>{formatDate(task.dueDate)}</span>}
                             {task.loggedHours > 0 && <span><Timer className="h-2.5 w-2.5 inline" />{task.loggedHours.toFixed(1)}h</span>}
@@ -891,15 +891,15 @@ function TimesheetView() {
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between"><h4 className="text-xs font-semibold">Novi unos vremena</h4><Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setAdding(false)}><X className="h-3.5 w-3.5" /></Button></div>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              <div className="space-y-1"><Label className="text-[10px]">Projekat *</Label>
+              <div className="space-y-1"><Label className="text-xs">Projekat *</Label>
                 <Select value={form.projectId} onValueChange={(v) => setForm({ ...form, projectId: v, taskId: '' })}><SelectTrigger className="h-8"><SelectValue placeholder="Izaberi" /></SelectTrigger><SelectContent>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
               </div>
-              <div className="space-y-1"><Label className="text-[10px]">Zadatak *</Label>
+              <div className="space-y-1"><Label className="text-xs">Zadatak *</Label>
                 <Select value={form.taskId} onValueChange={(v) => setForm({ ...form, taskId: v })}><SelectTrigger className="h-8"><SelectValue placeholder="Izaberi" /></SelectTrigger><SelectContent>{allTasks.map(t => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}</SelectContent></Select>
               </div>
-              <div className="space-y-1"><Label className="text-[10px]">Datum</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="h-8 text-xs" /></div>
-              <div className="space-y-1"><Label className="text-[10px]">Sati *</Label><Input type="number" step="0.25" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} className="h-8 text-xs" placeholder="npr. 2.5" /></div>
-              <div className="space-y-1"><Label className="text-[10px]">Opis</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="h-8 text-xs" placeholder="Opcionalno" /></div>
+              <div className="space-y-1"><Label className="text-xs">Datum</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="h-8 text-xs" /></div>
+              <div className="space-y-1"><Label className="text-xs">Sati *</Label><Input type="number" step="0.25" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} className="h-8 text-xs" placeholder="npr. 2.5" /></div>
+              <div className="space-y-1"><Label className="text-xs">Opis</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="h-8 text-xs" placeholder="Opcionalno" /></div>
             </div>
             <div className="flex gap-2"><Button size="sm" className="h-7 text-xs" onClick={saveEntry}>Sačuvaj</Button><Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAdding(false)}>Otkaži</Button></div>
           </CardContent>
@@ -911,9 +911,9 @@ function TimesheetView() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {Object.values(tsData.byProject).map(bp => (
             <Card key={bp.name} className="p-3">
-              <p className="text-[10px] text-muted-foreground">{bp.name}</p>
+              <p className="text-xs text-muted-foreground">{bp.name}</p>
               <p className="text-sm font-bold">{bp.hours.toFixed(1)}h</p>
-              <p className="text-[10px] text-muted-foreground">{bp.entries} unosa</p>
+              <p className="text-xs text-muted-foreground">{bp.entries} unosa</p>
             </Card>
           ))}
         </div>
@@ -931,12 +931,12 @@ function TimesheetView() {
             <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead className="text-[10px] h-8">Datum</TableHead>
-                  <TableHead className="text-[10px] h-8">Projekat</TableHead>
-                  <TableHead className="text-[10px] h-8">Zadatak</TableHead>
-                  <TableHead className="text-[10px] h-8">Sati</TableHead>
-                  <TableHead className="text-[10px] h-8">Opis</TableHead>
-                  <TableHead className="text-[10px] h-8 w-10"></TableHead>
+                  <TableHead className="text-xs h-8">Datum</TableHead>
+                  <TableHead className="text-xs h-8">Projekat</TableHead>
+                  <TableHead className="text-xs h-8">Zadatak</TableHead>
+                  <TableHead className="text-xs h-8">Sati</TableHead>
+                  <TableHead className="text-xs h-8">Opis</TableHead>
+                  <TableHead className="text-xs h-8 w-10"></TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {tsData.entries.map(entry => (
@@ -1036,7 +1036,7 @@ function TimelineView() {
                     {Array.from({ length: Math.ceil(totalDays / 30) }).map((_, i) => {
                       const date = new Date(minDate.getTime() + i * 30 * 86400000)
                       return (
-                        <div key={i} className="absolute text-[9px] text-muted-foreground" style={{ left: `${getPosition(date)}%` }}>
+                        <div key={i} className="absolute text-xs text-muted-foreground" style={{ left: `${getPosition(date)}%` }}>
                           {date.toLocaleDateString('sr-Latn', { month: 'short', day: 'numeric' })}
                           <div className="absolute top-3 w-px h-2 bg-muted-foreground/30" />
                         </div>
@@ -1053,7 +1053,7 @@ function TimelineView() {
                       <div className="w-[180px] flex-shrink-0 pr-3">
                         <div className="flex items-center gap-1.5">
                           {g.project.color && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: g.project.color }} />}
-                          <span className="text-[11px] font-semibold truncate">{g.project.name}</span>
+                          <span className="text-xs font-semibold truncate">{g.project.name}</span>
                         </div>
                       </div>
                       <div className="flex-1 relative h-6">
@@ -1068,7 +1068,7 @@ function TimelineView() {
                     {g.tasks.map(task => (
                       <div key={task.id} className="flex items-center ml-4">
                         <div className="w-[172px] flex-shrink-0 pr-3">
-                          <span className="text-[10px] text-muted-foreground truncate block">{task.title}</span>
+                          <span className="text-xs text-muted-foreground truncate block">{task.title}</span>
                         </div>
                         <div className="flex-1 relative h-4">
                           <div className={`absolute top-0 h-3 rounded ${task.status === 'zavrseno' ? 'bg-emerald-300' : task.status === 'blokirano' ? 'bg-red-300' : task.status === 'u_toku' ? 'bg-blue-300' : 'bg-slate-200'}`} style={{ left: `${getPosition(task.taskStart)}%`, width: `${getWidth(task.taskStart, task.taskEnd)}%` }} title={`${task.title} (${task.taskDays}d)`} />
@@ -1081,7 +1081,7 @@ function TimelineView() {
             </div>
 
             {/* Legend */}
-            <div className="flex items-center gap-4 mt-4 pt-3 border-t text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-4 mt-4 pt-3 border-t text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5"><div className="w-3 h-2 rounded bg-primary/30 border border-primary/30" />Projekat</div>
               <div className="flex items-center gap-1.5"><div className="w-3 h-2 rounded bg-slate-200" />Za uraditi</div>
               <div className="flex items-center gap-1.5"><div className="w-3 h-2 rounded bg-blue-300" />U toku</div>

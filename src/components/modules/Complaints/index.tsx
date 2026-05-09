@@ -610,7 +610,7 @@ export function Complaints() {
                     <AlertTriangle className="h-4 w-4 text-blue-500" />
                   </div>
                   <p className="text-2xl font-bold text-blue-600">{stats.new}</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.overdueCount} prekoračenih</p>
+                  <p className="text-xs text-muted-foreground">{stats.overdueCount} prekoračenih</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -618,7 +618,7 @@ export function Complaints() {
                     <Clock className="h-4 w-4 text-amber-500" />
                   </div>
                   <p className="text-2xl font-bold text-amber-600">{stats.inProgress}</p>
-                  <p className="text-[10px] text-muted-foreground">prosek {stats.avgResolutionDays} dana</p>
+                  <p className="text-xs text-muted-foreground">prosek {stats.avgResolutionDays} dana</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -626,7 +626,7 @@ export function Complaints() {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <p className="text-2xl font-bold text-green-600">{stats.resolved}</p>
-                  <p className="text-[10px] text-muted-foreground">prosecna ocena {stats.avgSatisfaction}/5</p>
+                  <p className="text-xs text-muted-foreground">prosecna ocena {stats.avgSatisfaction}/5</p>
                 </Card>
                 <Card className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -634,7 +634,7 @@ export function Complaints() {
                     <XCircle className="h-4 w-4 text-red-500" />
                   </div>
                   <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
-                  <p className="text-[10px] text-muted-foreground">{stats.total > 0 ? Math.round((stats.rejected / stats.total) * 100) : 0}% ukupno</p>
+                  <p className="text-xs text-muted-foreground">{stats.total > 0 ? Math.round((stats.rejected / stats.total) * 100) : 0}% ukupno</p>
                 </Card>
               </div>
 
@@ -691,7 +691,7 @@ export function Complaints() {
                           <div className="h-2 rounded-full bg-primary" style={{ width: `${(cat.count / maxCount) * 100}%` }} />
                         </div>
                         <span className="text-xs font-medium w-8 text-right">{cat.count}</span>
-                        <span className="text-[10px] text-muted-foreground w-24 text-right">{formatCurrency(cat.amountRequested)}</span>
+                        <span className="text-xs text-muted-foreground w-24 text-right">{formatCurrency(cat.amountRequested)}</span>
                       </div>
                     )
                   })}
@@ -732,7 +732,7 @@ export function Complaints() {
                               <div className="w-3 bg-green-400 rounded-t" style={{ height: `${maxVal > 0 ? (m.resolved / maxVal) * 100 : 0}%` }} title={`Rešene: ${m.resolved}`} />
                               <div className="w-2 bg-red-400 rounded-t" style={{ height: `${maxVal > 0 ? (m.rejected / maxVal) * 100 : 0}%` }} title={`Odbijene: ${m.rejected}`} />
                             </div>
-                            <span className="text-[10px] text-muted-foreground">{m.month}</span>
+                            <span className="text-xs text-muted-foreground">{m.month}</span>
                           </div>
                         )
                       })}
@@ -755,8 +755,8 @@ export function Complaints() {
                       <div key={p.product} className="flex items-center gap-3">
                         <span className="text-xs font-bold w-5 text-muted-foreground">{i + 1}.</span>
                         <span className="text-xs flex-1 truncate">{p.product}</span>
-                        <Badge variant="outline" className="text-[10px]">{p.count}</Badge>
-                        <span className="text-[10px] text-muted-foreground w-12 text-right">{p.percentage}%</span>
+                        <Badge variant="outline" className="text-xs">{p.count}</Badge>
+                        <span className="text-xs text-muted-foreground w-12 text-right">{p.percentage}%</span>
                       </div>
                     ))}
                   </CardContent>
@@ -768,8 +768,8 @@ export function Complaints() {
                       <div key={p.partner} className="flex items-center gap-3">
                         <span className="text-xs font-bold w-5 text-muted-foreground">{i + 1}.</span>
                         <span className="text-xs flex-1 truncate">{p.partner}</span>
-                        <Badge variant="outline" className="text-[10px]">{p.count}</Badge>
-                        <span className="text-[10px] text-muted-foreground w-24 text-right">{formatCurrency(p.amount)}</span>
+                        <Badge variant="outline" className="text-xs">{p.count}</Badge>
+                        <span className="text-xs text-muted-foreground w-24 text-right">{formatCurrency(p.amount)}</span>
                       </div>
                     ))}
                   </CardContent>
@@ -840,13 +840,13 @@ export function Complaints() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-xs font-mono text-muted-foreground">{c.number}</span>
-                              <Badge variant="outline" className={`text-[10px] shrink-0 ${sCfg?.color}`}>{sCfg?.icon} {sCfg?.label}</Badge>
-                              <Badge variant="outline" className={`text-[10px] shrink-0 ${pCfg?.color}`}>
+                              <Badge variant="outline" className={`text-xs shrink-0 ${sCfg?.color}`}>{sCfg?.icon} {sCfg?.label}</Badge>
+                              <Badge variant="outline" className={`text-xs shrink-0 ${pCfg?.color}`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${pCfg?.dot} mr-1`} />
                                 {pCfg?.label}
                               </Badge>
-                              {overdue && <Badge variant="destructive" className="text-[10px]">Prekoračeno!</Badge>}
-                              {c.attachments.length > 0 && <Badge variant="secondary" className="text-[10px]"><Paperclip className="h-3 w-3 mr-1" />{c.attachments.length}</Badge>}
+                              {overdue && <Badge variant="destructive" className="text-xs">Prekoračeno!</Badge>}
+                              {c.attachments.length > 0 && <Badge variant="secondary" className="text-xs"><Paperclip className="h-3 w-3 mr-1" />{c.attachments.length}</Badge>}
                             </div>
                             <h3 className="text-sm font-medium truncate">{c.subject}</h3>
                             <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{cCfg?.icon} {cCfg?.label} — {c.productName}</p>
@@ -897,7 +897,7 @@ export function Complaints() {
                     const isPast = STATUS_FLOW.indexOf(selected.status) > i || selected.status === 'resolved' || selected.status === 'rejected'
                     return (
                       <div key={s} className="flex items-center gap-1 shrink-0">
-                        <div className={`px-2 py-1 rounded text-[10px] font-medium ${isCurrent ? 'bg-primary text-primary-foreground' : isPast ? 'bg-muted text-muted-foreground' : 'bg-muted/50 text-muted-foreground/50'}`}>
+                        <div className={`px-2 py-1 rounded text-xs font-medium ${isCurrent ? 'bg-primary text-primary-foreground' : isPast ? 'bg-muted text-muted-foreground' : 'bg-muted/50 text-muted-foreground/50'}`}>
                           {STATUS_CONFIG[s]?.label}
                         </div>
                         {i < STATUS_FLOW.length - 1 && <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />}
@@ -909,20 +909,20 @@ export function Complaints() {
                 {/* Info Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">Kategorija</p>
+                    <p className="text-xs text-muted-foreground">Kategorija</p>
                     <p className="text-xs font-medium">{CATEGORY_CONFIG[selected.category]?.icon} {CATEGORY_CONFIG[selected.category]?.label}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">Prioritet</p>
+                    <p className="text-xs text-muted-foreground">Prioritet</p>
                     <p className="text-xs font-medium"><span className={`w-2 h-2 rounded-full ${PRIORITY_CONFIG[selected.priority]?.dot} inline-block mr-1`} />{PRIORITY_CONFIG[selected.priority]?.label}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">Proizvod</p>
+                    <p className="text-xs text-muted-foreground">Proizvod</p>
                     <p className="text-xs font-medium">{selected.productName}</p>
-                    <p className="text-[10px] text-muted-foreground">{selected.productCode} · {selected.batchNumber}</p>
+                    <p className="text-xs text-muted-foreground">{selected.productCode} · {selected.batchNumber}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">Zahtevana resolvacija</p>
+                    <p className="text-xs text-muted-foreground">Zahtevana resolvacija</p>
                     <p className="text-xs font-medium">{REQUESTED_RESOLUTION_CONFIG[selected.requestedResolution] || selected.requestedResolution}</p>
                     {selected.amountRequested > 0 && <p className="text-xs font-medium text-green-600">{formatCurrency(selected.amountRequested)}</p>}
                   </div>
@@ -956,7 +956,7 @@ export function Complaints() {
                           <Paperclip className="h-4 w-4 text-muted-foreground" />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium truncate">{a.fileName}</p>
-                            <p className="text-[10px] text-muted-foreground">{(a.fileSize / 1024).toFixed(0)} KB · {formatDate(a.uploadedAt)}</p>
+                            <p className="text-xs text-muted-foreground">{(a.fileSize / 1024).toFixed(0)} KB · {formatDate(a.uploadedAt)}</p>
                           </div>
                           <Button size="sm" variant="ghost" className="h-7"><Eye className="h-3 w-3" /></Button>
                         </div>
@@ -988,7 +988,7 @@ export function Complaints() {
                         </div>
                         <div className="pb-3">
                           <p className="text-xs font-medium">{ev.description}</p>
-                          <p className="text-[10px] text-muted-foreground">{ev.performedBy} · {new Date(ev.timestamp).toLocaleString('sr-RS')}</p>
+                          <p className="text-xs text-muted-foreground">{ev.performedBy} · {new Date(ev.timestamp).toLocaleString('sr-RS')}</p>
                         </div>
                       </div>
                     ))}

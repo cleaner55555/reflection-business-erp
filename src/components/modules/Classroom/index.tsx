@@ -63,7 +63,7 @@ const TYPES: Record<string, { label: string }> = {
 
 function getStatusBadge(s: string) {
   const r = STATUSES[s]
-  return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
+  return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge>
 }
 
 export function Classroom() {
@@ -166,7 +166,7 @@ export function Classroom() {
                         <TableCell className="text-xs hidden md:table-cell">{TYPES[item.type]?.label || item.type}</TableCell>
                         <TableCell className="text-xs hidden md:table-cell">{item.capacity} mesta</TableCell>
                         <TableCell className="text-xs hidden lg:table-cell">
-                          <div className="flex items-center gap-2"><div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden"><div className={`h-full rounded-full ${item.currentOccupancy / item.capacity > 0.8 ? 'bg-red-500' : item.currentOccupancy / item.capacity > 0.5 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min((item.currentOccupancy / item.capacity) * 100, 100)}%` }} /></div><span className="text-[10px]">{item.currentOccupancy}/{item.capacity}</span></div>
+                          <div className="flex items-center gap-2"><div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden"><div className={`h-full rounded-full ${item.currentOccupancy / item.capacity > 0.8 ? 'bg-red-500' : item.currentOccupancy / item.capacity > 0.5 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min((item.currentOccupancy / item.capacity) * 100, 100)}%` }} /></div><span className="text-xs">{item.currentOccupancy}/{item.capacity}</span></div>
                         </TableCell>
                         <TableCell>{getStatusBadge(item.status)}</TableCell>
                         <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{item.responsible}</TableCell>
@@ -219,7 +219,7 @@ export function Classroom() {
                 {data.map(item => (
                   <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span>{getStatusBadge(item.status)}<Badge className="text-[10px] bg-muted">{TYPES[item.type]?.label}</Badge></div>
+                      <div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span>{getStatusBadge(item.status)}<Badge className="text-xs bg-muted">{TYPES[item.type]?.label}</Badge></div>
                       <p className="text-xs text-muted-foreground truncate">{item.building} — {item.capacity} mesta — {item.responsible}</p>
                     </div>
                     <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -248,20 +248,20 @@ export function Classroom() {
                   ['Odgovorna osoba', detailItem.responsible],
                   ['Poslednja inspekcija', formatDate(detailItem.lastInspection)],
                 ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
                 ))}
               </div>
-              <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
+              <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
               <div className="p-2 rounded-lg bg-muted/50">
-                <div className="text-[10px] text-muted-foreground mb-2">Oprema</div>
-                <div className="flex flex-wrap gap-1">{detailItem.equipment.map(e => <Badge key={e} className="text-[10px] bg-muted">{e}</Badge>)}</div>
+                <div className="text-xs text-muted-foreground mb-2">Oprema</div>
+                <div className="flex flex-wrap gap-1">{detailItem.equipment.map(e => <Badge key={e} className="text-xs bg-muted">{e}</Badge>)}</div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {detailItem.hasProjector && <Badge className="text-[10px] bg-emerald-100 text-emerald-800">Projektor</Badge>}
-                {detailItem.hasAC && <Badge className="text-[10px] bg-emerald-100 text-emerald-800">Klima uređaj</Badge>}
-                {detailItem.hasWhiteboard && <Badge className="text-[10px] bg-emerald-100 text-emerald-800">Tabla</Badge>}
+                {detailItem.hasProjector && <Badge className="text-xs bg-emerald-100 text-emerald-800">Projektor</Badge>}
+                {detailItem.hasAC && <Badge className="text-xs bg-emerald-100 text-emerald-800">Klima uređaj</Badge>}
+                {detailItem.hasWhiteboard && <Badge className="text-xs bg-emerald-100 text-emerald-800">Tabla</Badge>}
               </div>
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-[10px] text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           )}
         </DialogContent>
