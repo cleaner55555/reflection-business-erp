@@ -27,25 +27,25 @@ export function KPICard({
   return (
     <Card className="relative overflow-hidden border-border/60 hover:shadow-sm transition-shadow">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-1.5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">
               {title}
             </p>
-            <p className="text-xl font-bold tabular-nums truncate">{value}</p>
+            <p className="text-lg font-bold tabular-nums truncate leading-tight">{value}</p>
             {change !== null && change !== undefined && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 min-w-0">
                 <span className={cn(
-                  'text-[11px] font-semibold tabular-nums',
+                  'text-[11px] font-semibold tabular-nums shrink-0',
                   change >= 0 ? 'text-emerald-600' : 'text-red-600'
                 )}>
                   {change >= 0 ? '↑' : '↓'} {Math.abs(change).toFixed(1)}%
                 </span>
-                <span className="text-[10px] text-muted-foreground">vs prošli mesec</span>
+                <span className="text-[10px] text-muted-foreground truncate">vs prošli mesec</span>
               </div>
             )}
             {subtitle && (
-              <p className="text-[11px] text-muted-foreground">{subtitle}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
             )}
           </div>
           <div className="flex flex-col items-end gap-2">
@@ -84,14 +84,14 @@ export function AlertCard({
   }
   const c = colorMap[color]
   return (
-    <Card className={cn('border-l-4', c.border)}>
-      <CardContent className="p-3 flex items-center gap-3">
-        <div className={cn('rounded-full p-2', c.bg)}>
+    <Card className={cn('border-l-4 overflow-hidden', c.border)}>
+      <CardContent className="p-3 flex items-center gap-2.5 min-w-0">
+        <div className={cn('rounded-full p-2 shrink-0', c.bg)}>
           {icon}
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-[10px] text-muted-foreground truncate">{label}</p>
-          <p className={cn('text-base font-bold tabular-nums truncate', c.text)}>{value}</p>
+          <p className={cn('text-sm font-bold tabular-nums truncate', c.text)}>{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -115,12 +115,12 @@ export function SectionCard({
   className?: string
 }) {
   return (
-    <Card className={cn('border-border/60', className)}>
+    <Card className={cn('border-border/60 overflow-hidden', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {icon}
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <CardTitle className="text-sm font-semibold truncate">{title}</CardTitle>
               {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{subtitle}</p>}
             </div>
@@ -128,7 +128,7 @@ export function SectionCard({
           {action}
         </div>
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className="min-w-0">{children}</CardContent>
     </Card>
   )
 }
@@ -219,9 +219,9 @@ export function HealthScoreCard({
   const offset = circumference - (score / 100) * circumference
 
   return (
-    <Card className="border-border/60 hover:shadow-sm transition-shadow">
+    <Card className="border-border/60 hover:shadow-sm transition-shadow overflow-hidden">
       <CardContent className="p-4">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 min-w-0">
           {/* Circular gauge */}
           <div className="relative shrink-0">
             <svg width={96} height={96} viewBox="0 0 96 96" className="-rotate-90">
@@ -243,11 +243,11 @@ export function HealthScoreCard({
 
           {/* Details */}
           <div className="flex-1 min-w-0 space-y-2">
-            <div>
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Zdravlje biznisa</p>
-              <p className={cn('text-sm font-semibold', scoreColor)}>{scoreLabel}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">Zdravlje biznisa</p>
+              <p className={cn('text-sm font-semibold truncate', scoreColor)}>{scoreLabel}</p>
             </div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
               <MetricItem label="Marža" value={`${profitMargin}%`} color={profitMargin >= 10 ? 'text-emerald-600' : 'text-red-600'} />
               <MetricItem label="Zalihe" value={`${stockHealth}%`} color={stockHealth >= 80 ? 'text-emerald-600' : 'text-amber-600'} />
               <MetricItem label="Naplata" value={`${collectionRate}%`} color={collectionRate >= 80 ? 'text-emerald-600' : 'text-red-600'} />
@@ -312,16 +312,16 @@ export function GoalTrackerCard({
   ]
 
   return (
-    <Card className="border-border/60 hover:shadow-sm transition-shadow">
+    <Card className="border-border/60 hover:shadow-sm transition-shadow overflow-hidden">
       <CardContent className="p-4 space-y-3">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Ciljevi meseca</p>
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">Ciljevi meseca</p>
         <div className="space-y-2.5">
           {goalItems.map(item => (
             <div key={item.label} className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium">{item.label}</span>
+              <div className="flex items-center justify-between gap-1 min-w-0">
+                <span className="text-[11px] font-medium truncate">{item.label}</span>
                 <span className={cn(
-                  'text-[10px] font-semibold tabular-nums',
+                  'text-[10px] font-semibold tabular-nums shrink-0',
                   item.progress >= 100 ? 'text-emerald-600' : item.progress >= 60 ? 'text-amber-600' : 'text-muted-foreground'
                 )}>
                   {item.format(item.current)} / {item.format(item.goal)}
@@ -368,11 +368,11 @@ export function ReceivablesCard({
   ]
 
   return (
-    <Card className="border-border/60 hover:shadow-sm transition-shadow">
+    <Card className="border-border/60 hover:shadow-sm transition-shadow overflow-hidden">
       <CardContent className="p-4 space-y-3">
-        <div>
-          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Naplate po dospeću</p>
-          <p className="text-base font-bold tabular-nums">{formatCompactRSD(total)}</p>
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">Naplate po dospeću</p>
+          <p className="text-base font-bold tabular-nums truncate">{formatCompactRSD(total)}</p>
         </div>
         {/* Stacked bar */}
         <div className="flex h-3 rounded-full overflow-hidden gap-0.5">

@@ -236,22 +236,22 @@ export function Dashboard() {
           </div>
         </div>
         {/* Mini stats row */}
-        <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-white/15">
-          <div>
-            <p className="text-[10px] text-slate-400 uppercase">Mesečni prihod</p>
-            <p className="text-sm font-bold text-emerald-400 tabular-nums">{formatRSDShort(kpis.thisMonthRevenue)}</p>
+        <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 pt-4 border-t border-white/15">
+          <div className="min-w-0 overflow-hidden">
+            <p className="text-[10px] text-slate-400 uppercase truncate">Mesečni prihod</p>
+            <p className="text-sm font-bold text-emerald-400 tabular-nums truncate">{formatRSDShort(kpis.thisMonthRevenue)}</p>
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 uppercase">Faktura ovog meseca</p>
-            <p className="text-sm font-bold tabular-nums">{kpis.thisMonthInvoiceCount}</p>
+          <div className="min-w-0 overflow-hidden">
+            <p className="text-[10px] text-slate-400 uppercase truncate">Faktura ovog meseca</p>
+            <p className="text-sm font-bold tabular-nums truncate">{kpis.thisMonthInvoiceCount}</p>
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 uppercase">Novi partneri</p>
-            <p className="text-sm font-bold tabular-nums">{data.newPartnersThisMonth}</p>
+          <div className="min-w-0 overflow-hidden">
+            <p className="text-[10px] text-slate-400 uppercase truncate">Novi partneri</p>
+            <p className="text-sm font-bold tabular-nums truncate">{data.newPartnersThisMonth}</p>
           </div>
-          <div>
-            <p className="text-[10px] text-slate-400 uppercase">CRM pobede</p>
-            <p className="text-sm font-bold tabular-nums">{data.wonDealsThisMonth.count} ({formatRSDShort(data.wonDealsThisMonth.revenue)})</p>
+          <div className="min-w-0 overflow-hidden">
+            <p className="text-[10px] text-slate-400 uppercase truncate">CRM pobede</p>
+            <p className="text-sm font-bold tabular-nums truncate">{data.wonDealsThisMonth.count} ({formatRSDShort(data.wonDealsThisMonth.revenue)})</p>
           </div>
         </div>
       </motion.div>
@@ -359,40 +359,40 @@ export function Dashboard() {
         <ReceivablesCard aging={data.receivablesAging} />
 
         {/* Secondary KPIs stacked */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <Card className="border-border/60">
-            <CardContent className="p-2.5 flex items-center gap-2">
-              <div className="rounded-lg bg-violet-100 p-1.5"><Users className="h-3.5 w-3.5 text-violet-600" /></div>
-              <div className="min-w-0">
-                <p className="text-[9px] text-muted-foreground uppercase leading-tight">{t('dashboard.totalPartners')}</p>
-                <p className="text-sm font-bold">{kpis.partnerCount}</p>
+        <div className="grid grid-cols-2 gap-2">
+          <Card className="border-border/60 overflow-hidden">
+            <CardContent className="p-2.5 flex items-center gap-2 min-w-0">
+              <div className="rounded-lg bg-violet-100 p-1.5 shrink-0"><Users className="h-3.5 w-3.5 text-violet-600" /></div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] text-muted-foreground uppercase leading-tight truncate">{t('dashboard.totalPartners')}</p>
+                <p className="text-sm font-bold truncate">{kpis.partnerCount}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/60">
-            <CardContent className="p-2.5 flex items-center gap-2">
-              <div className="rounded-lg bg-slate-100 p-1.5"><BoxIcon className="h-3.5 w-3.5 text-slate-600" /></div>
-              <div className="min-w-0">
-                <p className="text-[9px] text-muted-foreground uppercase leading-tight">{t('dashboard.totalProducts')}</p>
-                <p className="text-sm font-bold">{kpis.productCount}</p>
+          <Card className="border-border/60 overflow-hidden">
+            <CardContent className="p-2.5 flex items-center gap-2 min-w-0">
+              <div className="rounded-lg bg-slate-100 p-1.5 shrink-0"><BoxIcon className="h-3.5 w-3.5 text-slate-600" /></div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] text-muted-foreground uppercase leading-tight truncate">{t('dashboard.totalProducts')}</p>
+                <p className="text-sm font-bold truncate">{kpis.productCount}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/60">
-            <CardContent className="p-2.5 flex items-center gap-2">
-              <div className="rounded-lg bg-emerald-100 p-1.5"><FolderKanban className="h-3.5 w-3.5 text-emerald-600" /></div>
-              <div className="min-w-0">
-                <p className="text-[9px] text-muted-foreground uppercase leading-tight">Aktivni projekti</p>
-                <p className="text-sm font-bold">{data.activeProjects.count}</p>
+          <Card className="border-border/60 overflow-hidden">
+            <CardContent className="p-2.5 flex items-center gap-2 min-w-0">
+              <div className="rounded-lg bg-emerald-100 p-1.5 shrink-0"><FolderKanban className="h-3.5 w-3.5 text-emerald-600" /></div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] text-muted-foreground uppercase leading-tight truncate">Aktivni projekti</p>
+                <p className="text-sm font-bold truncate">{data.activeProjects.count}</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/60">
-            <CardContent className="p-2.5 flex items-center gap-2">
-              <div className="rounded-lg bg-sky-100 p-1.5"><Heart className="h-3.5 w-3.5 text-sky-600" /></div>
-              <div className="min-w-0">
-                <p className="text-[9px] text-muted-foreground uppercase leading-tight">CRM Pipeline</p>
-                <p className="text-sm font-bold">{formatRSDShort(dealStages.reduce((s, d) => s + d.value, 0))}</p>
+          <Card className="border-border/60 overflow-hidden">
+            <CardContent className="p-2.5 flex items-center gap-2 min-w-0">
+              <div className="rounded-lg bg-sky-100 p-1.5 shrink-0"><Heart className="h-3.5 w-3.5 text-sky-600" /></div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] text-muted-foreground uppercase leading-tight truncate">CRM Pipeline</p>
+                <p className="text-sm font-bold truncate">{formatRSDShort(dealStages.reduce((s, d) => s + d.value, 0))}</p>
               </div>
             </CardContent>
           </Card>
@@ -550,8 +550,8 @@ export function Dashboard() {
               <p className="text-sm text-muted-foreground text-center py-8">{t('common.noData')}</p>
             ) : (
               data.topProducts.map((p, i) => (
-                <div key={p.productId} className="flex items-center justify-between gap-3 rounded-lg border p-2.5 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-2.5 min-w-0">
+                <div key={p.productId} className="flex items-center justify-between gap-2 rounded-lg border p-2.5 hover:bg-muted/50 transition-colors min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <span className={cn2(
                       'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white',
                       i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-slate-400' : i === 2 ? 'bg-amber-700' : 'bg-muted text-muted-foreground'
@@ -561,7 +561,7 @@ export function Dashboard() {
                       <p className="text-[10px] text-muted-foreground">{p.quantity} kom</p>
                     </div>
                   </div>
-                  <p className="text-xs font-bold tabular-nums text-emerald-600">{formatRSDShort(p.amount)}</p>
+                  <p className="text-xs font-bold tabular-nums text-emerald-600 shrink-0">{formatRSDShort(p.amount)}</p>
                 </div>
               ))
             )}
@@ -671,15 +671,15 @@ export function Dashboard() {
                 <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
               ) : (
                 data.topPartners.map((p, i) => (
-                  <div key={p.partnerId} className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
+                  <div key={p.partnerId} className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold">{i + 1}</span>
                       <div className="min-w-0">
                         <p className="text-xs font-medium truncate">{tc(p.partnerName)}</p>
                         <p className="text-[10px] text-muted-foreground">{p.invoiceCount} faktura</p>
                       </div>
                     </div>
-                    <p className="text-xs font-bold tabular-nums text-emerald-600">{formatRSDShort(p.totalAmount)}</p>
+                    <p className="text-xs font-bold tabular-nums text-emerald-600 shrink-0">{formatRSDShort(p.totalAmount)}</p>
                   </div>
                 ))
               )}
@@ -701,12 +701,12 @@ export function Dashboard() {
                 <p className="text-sm text-muted-foreground text-center py-4">{t('dashboard.stockOk')}</p>
               ) : (
                 lowStock.slice(0, 6).map(p => (
-                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50/50 px-3 py-2">
-                    <div className="min-w-0">
+                  <div key={p.id} className="flex items-center justify-between gap-2 rounded-lg border border-red-100 bg-red-50/50 px-3 py-2 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium truncate">{tc(p.name)}</p>
-                      <p className="text-[10px] text-muted-foreground">{p.sku}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{p.sku}</p>
                     </div>
-                    <div className="text-right shrink-0 ml-2">
+                    <div className="text-right shrink-0">
                       <p className="text-xs font-bold text-red-600 tabular-nums">{p.currentStock}</p>
                       <p className="text-[10px] text-muted-foreground">min: {p.minStock}</p>
                     </div>
@@ -737,12 +737,12 @@ export function Dashboard() {
               ) : (
                 <div className="space-y-1.5">
                   {data.overdueInvoices.slice(0, 4).map(inv => (
-                    <div key={inv.id} className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50/50 px-3 py-2">
+                    <div key={inv.id} className="flex items-center justify-between gap-2 rounded-lg border border-red-100 bg-red-50/50 px-3 py-2 min-w-0">
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-medium truncate">{inv.number}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{tc(inv.partner?.name || '-')} · {formatDate(inv.dueDate)}</p>
                       </div>
-                      <p className="text-xs font-bold text-red-600 ml-2">{formatRSD(inv.totalAmount)}</p>
+                      <p className="text-xs font-bold text-red-600 shrink-0">{formatRSD(inv.totalAmount)}</p>
                     </div>
                   ))}
                 </div>
@@ -758,12 +758,12 @@ export function Dashboard() {
               ) : (
                 <div className="space-y-1.5">
                   {data.todayDueInvoices.map(inv => (
-                    <div key={inv.id} className="flex items-center justify-between rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2">
+                    <div key={inv.id} className="flex items-center justify-between gap-2 rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2 min-w-0">
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-medium truncate">{inv.number}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{tc(inv.partner?.name || '-')}</p>
                       </div>
-                      <p className="text-xs font-bold text-amber-600 ml-2">{formatRSD(inv.totalAmount)}</p>
+                      <p className="text-xs font-bold text-amber-600 shrink-0">{formatRSD(inv.totalAmount)}</p>
                     </div>
                   ))}
                 </div>
@@ -772,9 +772,9 @@ export function Dashboard() {
             {overdueAndDueToday > 0 && (
               <>
                 <Separator />
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-xs text-muted-foreground">{t('dashboard.unpaidTotal')}</p>
-                  <p className="text-sm font-bold text-red-600 tabular-nums">
+                <div className="flex items-center justify-between gap-2 px-1">
+                  <p className="text-xs text-muted-foreground truncate">{t('dashboard.unpaidTotal')}</p>
+                  <p className="text-sm font-bold text-red-600 tabular-nums shrink-0">
                     {formatRSD(data.overdueTotal + data.todayDueInvoices.reduce((s, i) => s + i.totalAmount, 0))}
                   </p>
                 </div>
@@ -799,7 +799,7 @@ export function Dashboard() {
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{group.label}</p>
                     <div className="space-y-1.5">
                       {group.items.slice(0, 5).map(a => (
-                        <div key={a.id} className="flex items-start gap-2.5 rounded-lg border p-2.5 hover:bg-muted/50 transition-colors">
+                        <div key={a.id} className="flex items-start gap-2.5 rounded-lg border p-2.5 hover:bg-muted/50 transition-colors min-w-0">
                           <div className={cn2(
                             'rounded-lg p-1.5 mt-0.5 shrink-0',
                             a.icon === 'invoice' ? 'bg-emerald-100' : a.icon === 'partner' ? 'bg-violet-100' : 'bg-amber-100'
