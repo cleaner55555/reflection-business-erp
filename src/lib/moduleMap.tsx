@@ -1,54 +1,54 @@
 import React from 'react'
 import { Dashboard } from '@/components/modules/Dashboard'
-import { Finansije } from '@/components/modules/Finance'
-import { Fakture } from '@/components/modules/Invoices'
-import { Magacin } from '@/components/modules/Inventory'
-import { Partneri } from '@/components/modules/Contacts'
-import { Nabavka } from '@/components/modules/Procurement'
-import { Izvestaji } from '@/components/modules/Reports'
+import { Finance } from '@/components/modules/Finance'
+import { Invoices } from '@/components/modules/Invoices'
+import { Inventory } from '@/components/modules/Inventory'
+import { Contacts } from '@/components/modules/Contacts'
+import { Procurement } from '@/components/modules/Procurement'
+import { Reports } from '@/components/modules/Reports'
 import { CRM } from '@/components/modules/CRM'
-import { Kalendar } from '@/components/modules/Calendar'
-import { Zaposleni } from '@/components/modules/Employees'
-import { Projekti } from '@/components/modules/Projects'
-import { Sredstva } from '@/components/modules/Assets'
-import { Dokumenta } from '@/components/modules/Documents'
-import { Knjigovodstvo } from '@/components/modules/Accounting'
-import { Protokol } from '@/components/modules/Protocol'
-import { Edukacija } from '@/components/modules/Education'
-import { VozniPark } from '@/components/modules/Fleet'
+import { Calendar } from '@/components/modules/Calendar'
+import { Employees } from '@/components/modules/Employees'
+import { Projects } from '@/components/modules/Projects'
+import { Assets } from '@/components/modules/Assets'
+import { Documents } from '@/components/modules/Documents'
+import { Accounting } from '@/components/modules/Accounting'
+import { Protocol } from '@/components/modules/Protocol'
+import { Education } from '@/components/modules/Education'
+import { Fleet } from '@/components/modules/Fleet'
 import { MailerLite } from '@/components/modules/EmailMarketing'
 import { RentACar } from '@/components/modules/CarRental'
-import { Podesavanja } from '@/components/modules/Settings'
-import { Integracije } from '@/components/modules/Integracije'
+import { Settings } from '@/components/modules/Settings'
+import { Integrations } from '@/components/modules/Integracije'
 import { BankSync } from '@/components/modules/BankSync'
 import { AIAssistant } from '@/components/modules/AIAssistant'
 import { Laws } from '@/components/modules/Laws'
-import { Maloprodaja } from '@/components/modules/Retail'
+import { Retail } from '@/components/modules/Retail'
 import { Shipping } from '@/components/modules/Shipping'
 import { Marketplace } from '@/components/modules/Marketplace'
-import { Ponude } from '@/components/modules/Offers'
-import { Pretplate } from '@/components/modules/Subscriptions'
-import { Troškovi } from '@/components/modules/Expenses'
-import { Potpisi } from '@/components/modules/Signatures'
-import { Proizvodnja } from '@/components/modules/Manufacturing'
-import { Kvalitet } from '@/components/modules/Quality'
-import { Održavanje } from '@/components/modules/Maintenance'
-import { Regrutacija } from '@/components/modules/Recruitment'
-import { Odsustva } from '@/components/modules/Leave'
-import { Preporuke } from '@/components/modules/Referrals'
-import { Podrška } from '@/components/modules/Support'
-import { TerenskiServis } from '@/components/modules/FieldService'
-import { Zakazivanja } from '@/components/modules/Appointments'
-import { Planer } from '@/components/modules/Scheduler'
-import { DruštveneMreže } from '@/components/modules/SocialMedia'
+import { Offers } from '@/components/modules/Offers'
+import { Subscriptions } from '@/components/modules/Subscriptions'
+import { Expenses } from '@/components/modules/Expenses'
+import { Signatures } from '@/components/modules/Signatures'
+import { Manufacturing } from '@/components/modules/Manufacturing'
+import { Quality } from '@/components/modules/Quality'
+import { Maintenance } from '@/components/modules/Maintenance'
+import { Recruitment } from '@/components/modules/Recruitment'
+import { Leave } from '@/components/modules/Leave'
+import { Referrals } from '@/components/modules/Referrals'
+import { Support } from '@/components/modules/Support'
+import { FieldService } from '@/components/modules/FieldService'
+import { Appointments } from '@/components/modules/Appointments'
+import { Scheduler } from '@/components/modules/Scheduler'
+import { SocialMedia } from '@/components/modules/SocialMedia'
 import { SmsMarketing } from '@/components/modules/SmsMarketing'
-import { Događaji } from '@/components/modules/Events'
-import { MktAutomatizacija } from '@/components/modules/MarketingAutomation'
-import { Ankete } from '@/components/modules/Surveys'
-import { Čet } from '@/components/modules/Chat'
-import { BazaZnanja } from '@/components/modules/KnowledgeBase'
+import { Events } from '@/components/modules/Events'
+import { MarketingAutomation } from '@/components/modules/MarketingAutomation'
+import { Surveys } from '@/components/modules/Surveys'
+import { Chat } from '@/components/modules/Chat'
+import { KnowledgeBase } from '@/components/modules/KnowledgeBase'
 import { WebsiteBuilder } from '@/components/modules/WebsiteBuilder'
-import { BlogModul } from '@/components/modules/Blog'
+import { Blog } from '@/components/modules/Blog'
 import { VoIP } from '@/components/modules/VoIP'
 import { IoT } from '@/components/modules/IoT'
 import { Messaging } from '@/components/modules/Messaging'
@@ -56,126 +56,126 @@ import { Forum } from '@/components/modules/Forum'
 import { PLM } from '@/components/modules/PLM'
 import { ECommerce } from '@/components/modules/ECommerce'
 import { Spreadsheet } from '@/components/modules/Spreadsheet'
-import { Beleške } from '@/components/modules/Notes'
-import { Odobrenja } from '@/components/modules/Approvals'
-import { Veštine } from '@/components/modules/Skills'
-import { Ugovori } from '@/components/modules/Contracts'
-import { Ocene } from '@/components/modules/Ratings'
-import { Gamifikacija } from '@/components/modules/Gamification'
-import { Reklamacije } from '@/components/modules/Complaints'
-import { Natečaji } from '@/components/modules/Tenders'
-import { Garancije } from '@/components/modules/Warranty'
-import { Servis } from '@/components/modules/ServiceCenter'
-import { Usklađenost } from '@/components/modules/Compliance'
-import { ProgramLojalnosti } from '@/components/modules/Loyalty'
-import { PlanerRadneSile } from '@/components/modules/WorkforcePlanner'
-import { Posetioci } from '@/components/modules/Visitors'
-import { Predlozi } from '@/components/modules/Suggestions'
-import { Taksacija } from '@/components/modules/Valuation'
-import { FondZdravlja } from '@/components/modules/HealthFund'
-import { Geolokacija } from '@/components/modules/Geolocation'
-import { Kamere } from '@/components/modules/Cameras'
-import { MenadzerNabavke } from '@/components/modules/ProcurementManager'
+import { Notes } from '@/components/modules/Notes'
+import { Approvals } from '@/components/modules/Approvals'
+import { Skills } from '@/components/modules/Skills'
+import { Contracts } from '@/components/modules/Contracts'
+import { Ratings } from '@/components/modules/Ratings'
+import { Gamification } from '@/components/modules/Gamification'
+import { Complaints } from '@/components/modules/Complaints'
+import { Tenders } from '@/components/modules/Tenders'
+import { Warranty } from '@/components/modules/Warranty'
+import { ServiceCenter } from '@/components/modules/ServiceCenter'
+import { Compliance } from '@/components/modules/Compliance'
+import { Loyalty } from '@/components/modules/Loyalty'
+import { WorkforcePlanner } from '@/components/modules/WorkforcePlanner'
+import { Visitors } from '@/components/modules/Visitors'
+import { Suggestions } from '@/components/modules/Suggestions'
+import { Valuation } from '@/components/modules/Valuation'
+import { HealthFund } from '@/components/modules/HealthFund'
+import { Geolocation } from '@/components/modules/Geolocation'
+import { Cameras } from '@/components/modules/Cameras'
+import { ProcurementManager } from '@/components/modules/ProcurementManager'
 import { CMS } from '@/components/modules/CMS'
-import { Obaveze } from '@/components/modules/Homework'
-import { Prijave } from '@/components/modules/Enrollment'
-import { Raspored } from '@/components/modules/Timetable'
-import { Biblioteka } from '@/components/modules/Library'
-import { Ucionica } from '@/components/modules/Classroom'
-import { Skolarina } from '@/components/modules/Tuition'
-import { Pacijenti } from '@/components/modules/Patients'
-import { Kartoni } from '@/components/modules/MedicalRecords'
-import { Recepti } from '@/components/modules/Prescriptions'
-import { Laboratorija } from '@/components/modules/Lab'
-import { Rezervacije } from '@/components/modules/Reservations'
-import { Jelovnik } from '@/components/modules/Menu'
-import { Kuhinja } from '@/components/modules/Kitchen'
-import { Narudzbe } from '@/components/modules/Orders'
-import { Dostava } from '@/components/modules/Delivery'
-import { Gradiliste } from '@/components/modules/ConstructionSite'
-import { Projektovanje } from '@/components/modules/Blueprints'
-import { Subodradaci } from '@/components/modules/Subcontractors'
-import { Merenja } from '@/components/modules/Measurements'
-import { ZastitaNaRadu } from '@/components/modules/Safety'
-import { Rute } from '@/components/modules/Routes'
-import { RampaUtovar } from '@/components/modules/LoadingDock'
-import { CarinskaDokumentacija } from '@/components/modules/CustomsDocs'
-import { Kamioni } from '@/components/modules/Trucks'
-import { Pakovanje } from '@/components/modules/Packaging'
-import { Nekretnine } from '@/components/modules/Property'
-import { Iznajmljivanje } from '@/components/modules/Rentals'
-import { PreglediNekretnine } from '@/components/modules/PropertyViewings'
-import { Komunalije } from '@/components/modules/Utilities'
-import { RadniNalozi } from '@/components/modules/WorkOrders'
-import { StandardiKvaliteta } from '@/components/modules/Standards'
-import { Etikete } from '@/components/modules/Labels'
-import { Barkod } from '@/components/modules/Barcode'
-import { Cenovnici } from '@/components/modules/PriceLists'
-import { Kuponik } from '@/components/modules/Coupons'
-import { Recenzije } from '@/components/modules/Reviews'
-import { SeoModul } from '@/components/modules/SEO'
-import { Naplate } from '@/components/modules/Payments'
-import { PovratRobe } from '@/components/modules/Returns'
-import { Blagajna } from '@/components/modules/CashRegister'
-import { VremenskiTrag } from '@/components/modules/TimeTracking'
-import { FakturisanjeVremena } from '@/components/modules/TimeBilling'
-import { KlijentskiPortal } from '@/components/modules/ClientPortal'
-import { Automatizacija } from '@/components/modules/Automation'
-import { Poslovnice } from '@/components/modules/Stores'
-import { BackupModul } from '@/components/modules/Backup'
-import { KafeRestoran } from '@/components/modules/Restaurant'
+import { Homework } from '@/components/modules/Homework'
+import { Enrollment } from '@/components/modules/Enrollment'
+import { Timetable } from '@/components/modules/Timetable'
+import { Library } from '@/components/modules/Library'
+import { Classroom } from '@/components/modules/Classroom'
+import { Tuition } from '@/components/modules/Tuition'
+import { Patients } from '@/components/modules/Patients'
+import { MedicalRecords } from '@/components/modules/MedicalRecords'
+import { Prescriptions } from '@/components/modules/Prescriptions'
+import { Lab } from '@/components/modules/Lab'
+import { Reservations } from '@/components/modules/Reservations'
+import { Menu } from '@/components/modules/Menu'
+import { Kitchen } from '@/components/modules/Kitchen'
+import { Orders } from '@/components/modules/Orders'
+import { Delivery } from '@/components/modules/Delivery'
+import { ConstructionSite } from '@/components/modules/ConstructionSite'
+import { Blueprints } from '@/components/modules/Blueprints'
+import { Subcontractors } from '@/components/modules/Subcontractors'
+import { Measurements } from '@/components/modules/Measurements'
+import { Safety } from '@/components/modules/Safety'
+import { Routes } from '@/components/modules/Routes'
+import { LoadingDock } from '@/components/modules/LoadingDock'
+import { CustomsDocs } from '@/components/modules/CustomsDocs'
+import { Trucks } from '@/components/modules/Trucks'
+import { Packaging } from '@/components/modules/Packaging'
+import { Property } from '@/components/modules/Property'
+import { Rentals } from '@/components/modules/Rentals'
+import { PropertyViewings } from '@/components/modules/PropertyViewings'
+import { Utilities } from '@/components/modules/Utilities'
+import { WorkOrders } from '@/components/modules/WorkOrders'
+import { Standards } from '@/components/modules/Standards'
+import { Labels } from '@/components/modules/Labels'
+import { Barcode } from '@/components/modules/Barcode'
+import { PriceLists } from '@/components/modules/PriceLists'
+import { Coupons } from '@/components/modules/Coupons'
+import { Reviews } from '@/components/modules/Reviews'
+import { SEO } from '@/components/modules/SEO'
+import { Payments } from '@/components/modules/Payments'
+import { Returns } from '@/components/modules/Returns'
+import { CashRegister } from '@/components/modules/CashRegister'
+import { TimeTracking } from '@/components/modules/TimeTracking'
+import { TimeBilling } from '@/components/modules/TimeBilling'
+import { ClientPortal } from '@/components/modules/ClientPortal'
+import { Automation } from '@/components/modules/Automation'
+import { Stores } from '@/components/modules/Stores'
+import { Backup } from '@/components/modules/Backup'
+import { Restaurant } from '@/components/modules/Restaurant'
 
 export const moduleComponents: Record<string, React.ComponentType> = {
   dashboard: Dashboard,
-  finance: Finansije,
-  invoices: Fakture,
-  inventory: Magacin,
-  contacts: Partneri,
-  procurement: Nabavka,
+  finance: Finance,
+  invoices: Invoices,
+  inventory: Inventory,
+  contacts: Contacts,
+  procurement: Procurement,
   crm: CRM,
-  calendar: Kalendar,
-  employees: Zaposleni,
-  projects: Projekti,
-  assets: Sredstva,
-  documents: Dokumenta,
-  accounting: Knjigovodstvo,
-  protocol: Protokol,
-  education: Edukacija,
-  'fleet': VozniPark,
-  'restaurant': KafeRestoran,
+  calendar: Calendar,
+  employees: Employees,
+  projects: Projects,
+  assets: Assets,
+  documents: Documents,
+  accounting: Accounting,
+  protocol: Protocol,
+  education: Education,
+  'fleet': Fleet,
+  'restaurant': Restaurant,
   'email-marketing': MailerLite,
   'rent-a-car': RentACar,
-  reports: Izvestaji,
-  settings: Podesavanja,
-  integrations: Integracije,
+  reports: Reports,
+  settings: Settings,
+  integrations: Integrations,
   'bank-sync': BankSync,
   laws: Laws,
-  pos: Maloprodaja,
+  pos: Retail,
   shipping: Shipping,
   marketplace: Marketplace,
-  offers: Ponude,
-  subscriptions: Pretplate,
-  expenses: Troškovi,
-  signatures: Potpisi,
-  manufacturing: Proizvodnja,
-  quality: Kvalitet,
-  maintenance: Održavanje,
-  recruitment: Regrutacija,
-  leave: Odsustva,
-  referrals: Preporuke,
-  support: Podrška,
-  'field-service': TerenskiServis,
-  appointments: Zakazivanja,
-  scheduler: Planer,
-  'social-media': DruštveneMreže,
+  offers: Offers,
+  subscriptions: Subscriptions,
+  expenses: Expenses,
+  signatures: Signatures,
+  manufacturing: Manufacturing,
+  quality: Quality,
+  maintenance: Maintenance,
+  recruitment: Recruitment,
+  leave: Leave,
+  referrals: Referrals,
+  support: Support,
+  'field-service': FieldService,
+  appointments: Appointments,
+  scheduler: Scheduler,
+  'social-media': SocialMedia,
   'sms-marketing': SmsMarketing,
-  events: Događaji,
-  'marketing-automation': MktAutomatizacija,
-  surveys: Ankete,
-  chat: Čet,
-  'knowledge-base': BazaZnanja,
+  events: Events,
+  'marketing-automation': MarketingAutomation,
+  surveys: Surveys,
+  chat: Chat,
+  'knowledge-base': KnowledgeBase,
   website: WebsiteBuilder,
-  blog: BlogModul,
+  blog: Blog,
   voip: VoIP,
   iot: IoT,
   messaging: Messaging,
@@ -183,71 +183,71 @@ export const moduleComponents: Record<string, React.ComponentType> = {
   plm: PLM,
   ecommerce: ECommerce,
   spreadsheet: Spreadsheet,
-  notes: Beleške,
-  approvals: Odobrenja,
-  skills: Veštine,
-  contracts: Ugovori,
-  ratings: Ocene,
-  gamification: Gamifikacija,
-  complaints: Reklamacije,
-  'tenders': Natečaji,
-  warranty: Garancije,
-  'service-center': Servis,
-  compliance: Usklađenost,
-  'loyalty': ProgramLojalnosti,
-  'workforce-planner': PlanerRadneSile,
-  visitors: Posetioci,
-  suggestions: Predlozi,
-  valuation: Taksacija,
-  'health-fund': FondZdravlja,
-  geolocation: Geolokacija,
-  cameras: Kamere,
-  'procurement-manager': MenadzerNabavke,
+  notes: Notes,
+  approvals: Approvals,
+  skills: Skills,
+  contracts: Contracts,
+  ratings: Ratings,
+  gamification: Gamification,
+  complaints: Complaints,
+  'tenders': Tenders,
+  warranty: Warranty,
+  'service-center': ServiceCenter,
+  compliance: Compliance,
+  'loyalty': Loyalty,
+  'workforce-planner': WorkforcePlanner,
+  visitors: Visitors,
+  suggestions: Suggestions,
+  valuation: Valuation,
+  'health-fund': HealthFund,
+  geolocation: Geolocation,
+  cameras: Cameras,
+  'procurement-manager': ProcurementManager,
   cms: CMS,
-  homework: Obaveze,
-  enrollment: Prijave,
-  timetable: Raspored,
-  library: Biblioteka,
-  classroom: Ucionica,
-  tuition: Skolarina,
-  patients: Pacijenti,
-  'medical-records': Kartoni,
-  prescriptions: Recepti,
-  lab: Laboratorija,
-  reservations: Rezervacije,
-  menu: Jelovnik,
-  kitchen: Kuhinja,
-  orders: Narudzbe,
-  delivery: Dostava,
-  'construction-site': Gradiliste,
-  blueprints: Projektovanje,
-  subcontractors: Subodradaci,
-  measurements: Merenja,
-  safety: ZastitaNaRadu,
-  routes: Rute,
-  'loading-dock': RampaUtovar,
-  'customs-docs': CarinskaDokumentacija,
-  trucks: Kamioni,
-  packaging: Pakovanje,
-  property: Nekretnine,
-  rentals: Iznajmljivanje,
-  'property-viewings': PreglediNekretnine,
-  utilities: Komunalije,
-  'work-orders': RadniNalozi,
-  standards: StandardiKvaliteta,
-  labels: Etikete,
-  barcode: Barkod,
-  'price-lists': Cenovnici,
-  coupons: Kuponik,
-  reviews: Recenzije,
-  seo: SeoModul,
-  payments: Naplate,
-  returns: PovratRobe,
-  'cash-register': Blagajna,
-  'time-tracking': VremenskiTrag,
-  'time-billing': FakturisanjeVremena,
-  'client-portal': KlijentskiPortal,
-  automation: Automatizacija,
-  stores: Poslovnice,
-  backup: BackupModul,
+  homework: Homework,
+  enrollment: Enrollment,
+  timetable: Timetable,
+  library: Library,
+  classroom: Classroom,
+  tuition: Tuition,
+  patients: Patients,
+  'medical-records': MedicalRecords,
+  prescriptions: Prescriptions,
+  lab: Lab,
+  reservations: Reservations,
+  menu: Menu,
+  kitchen: Kitchen,
+  orders: Orders,
+  delivery: Delivery,
+  'construction-site': ConstructionSite,
+  blueprints: Blueprints,
+  subcontractors: Subcontractors,
+  measurements: Measurements,
+  safety: Safety,
+  routes: Routes,
+  'loading-dock': LoadingDock,
+  'customs-docs': CustomsDocs,
+  trucks: Trucks,
+  packaging: Packaging,
+  property: Property,
+  rentals: Rentals,
+  'property-viewings': PropertyViewings,
+  utilities: Utilities,
+  'work-orders': WorkOrders,
+  standards: Standards,
+  labels: Labels,
+  barcode: Barcode,
+  'price-lists': PriceLists,
+  coupons: Coupons,
+  reviews: Reviews,
+  seo: SEO,
+  payments: Payments,
+  returns: Returns,
+  'cash-register': CashRegister,
+  'time-tracking': TimeTracking,
+  'time-billing': TimeBilling,
+  'client-portal': ClientPortal,
+  automation: Automation,
+  stores: Stores,
+  backup: Backup,
 }

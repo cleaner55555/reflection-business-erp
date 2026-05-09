@@ -56,7 +56,7 @@ const TYPES: Record<string, { color: string; label: string }> = {
 
 function getTypeBadge(s: string) { const r = TYPES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
-export function Kartoni() {
+export function MedicalRecords() {
   const [data, setData] = useState<MedicalRecord[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

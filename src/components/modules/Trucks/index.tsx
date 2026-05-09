@@ -62,7 +62,7 @@ import {
 // MAIN COMPONENT
 // ============================================================
 
-export function Kamioni() {
+export function Trucks() {
   // ─── TAB STATE ─────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<TruckTab>('vozni_park')
 

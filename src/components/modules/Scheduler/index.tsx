@@ -371,7 +371,7 @@ function ConflictAlert({ employees, slots, t }: { employees: Employee[]; slots: 
 
 // ====================== MAIN COMPONENT ======================
 
-export function Planer() {
+export function Scheduler() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 

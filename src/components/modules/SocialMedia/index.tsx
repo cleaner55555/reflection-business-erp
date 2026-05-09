@@ -58,7 +58,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   failed: { label: 'Greška', color: 'bg-red-100 text-red-700' },
 }
 
-export function DruštveneMreže() {
+export function SocialMedia() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

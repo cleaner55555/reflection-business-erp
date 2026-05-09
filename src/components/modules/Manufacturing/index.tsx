@@ -295,7 +295,7 @@ const MOCK_SHIFT_PRODUCTIVITY = [
 
 // ======================== COMPONENT ========================
 
-export function Proizvodnja() {
+export function Manufacturing() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

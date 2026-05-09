@@ -133,7 +133,7 @@ const Kpi = ({ label, value, icon: Icon, sub, color }: { label: string; value: s
 
 // ============ MAIN COMPONENT ============
 
-export function Dokumenta() {
+export function Documents() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 

@@ -65,7 +65,7 @@ const categoryLabels: Record<string, string> = {
   bug: 'Greška',
 }
 
-export function Podrška() {
+export function Support() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

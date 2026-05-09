@@ -121,7 +121,7 @@ function getActionLabel(val: string) {
 
 // ==================== MAIN COMPONENT ====================
 
-export function Automatizacija() {
+export function Automation() {
   const [rules, setRules] = useState<AutomationRule[]>([])
   const [logs, setLogs] = useState<AutomationLog[]>([])
   const [loading, setLoading] = useState(true)

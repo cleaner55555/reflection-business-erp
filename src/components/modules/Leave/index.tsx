@@ -57,7 +57,7 @@ const typeLabels: Record<string, string> = {
   education: 'Edukacija',
 }
 
-export function Odsustva() {
+export function Leave() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

@@ -49,7 +49,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   error: { label: 'Greška', color: 'bg-red-100 text-red-700' },
 }
 
-export function MktAutomatizacija() {
+export function MarketingAutomation() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

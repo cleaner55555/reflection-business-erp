@@ -147,7 +147,7 @@ import {
 // Main Export
 // ==========================================
 
-export function RadniNalozi() {
+export function WorkOrders() {
   // ---- Core state ----
   const [orders, setOrders] = useState<WorkOrder[]>(MOCK_WORK_ORDERS)
   const [allTasks, setAllTasks] = useState<WorkOrderTask[]>(

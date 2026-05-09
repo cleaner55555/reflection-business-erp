@@ -435,7 +435,7 @@ function EmptyState({ message }: { message: string }) {
 }
 
 // ── Main Component ─────────────────────────────────────────────────
-export function Izvestaji() {
+export function Reports() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [partners, setPartners] = useState<Partner[]>([])
   const [products, setProducts] = useState<Product[]>([])

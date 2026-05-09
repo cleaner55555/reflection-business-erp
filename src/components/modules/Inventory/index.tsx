@@ -157,7 +157,7 @@ const COMPANY = {
 
 // ==================== MAIN COMPONENT ====================
 
-export function Magacin() {
+export function Inventory() {
   const { t } = useTranslation()
   return (
     <div className="space-y-6">

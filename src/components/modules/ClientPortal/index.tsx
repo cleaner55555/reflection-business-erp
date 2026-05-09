@@ -61,7 +61,7 @@ function getTicketStatus(s: string) {
   const r = map[s] || map.open; return <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge>
 }
 
-export function KlijentskiPortal() {
+export function ClientPortal() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => { setTimeout(() => setLoading(false), 200) }, [])

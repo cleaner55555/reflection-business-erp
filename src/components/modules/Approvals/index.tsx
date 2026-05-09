@@ -248,7 +248,7 @@ const formatCurrency = (val: number, currency: string = 'RSD') => {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Odobrenja() {
+export function Approvals() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

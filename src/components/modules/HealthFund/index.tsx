@@ -164,7 +164,7 @@ const mockStats: FundStats = {
 
 // ============ COMPONENT ============
 
-export function FondZdravlja() {
+export function HealthFund() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

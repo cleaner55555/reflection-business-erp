@@ -198,7 +198,7 @@ const formatRelativeTime = (dateStr: string) => {
 
 // ============ MAIN COMPONENT ============
 
-export function Geolokacija() {
+export function Geolocation() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 

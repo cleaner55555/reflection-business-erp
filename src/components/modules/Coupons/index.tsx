@@ -69,7 +69,7 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function getTypeLabel(t: string) { return TYPES[t]?.label || t }
 function formatCurrency(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 0 }).format(n) }
 
-export function Kuponik() {
+export function Coupons() {
   const [data, setData] = useState<Coupon[]>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

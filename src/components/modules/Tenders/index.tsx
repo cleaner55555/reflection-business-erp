@@ -319,7 +319,7 @@ const mockStats: TenderStats = {
 
 // ============ COMPONENT ============
 
-export function Natečaji() {
+export function Tenders() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

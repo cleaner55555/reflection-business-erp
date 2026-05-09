@@ -88,7 +88,7 @@ interface POSOrder {
 
 // ============ MAIN COMPONENT ============
 
-export function Maloprodaja() {
+export function Retail() {
   const { activeCompanyId } = useAppStore()
   const [activeTab, setActiveTab] = useState('pos')
 

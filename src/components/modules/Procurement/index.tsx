@@ -109,7 +109,7 @@ const COMPANY = {
 
 // ==================== MAIN COMPONENT ====================
 
-export function Nabavka() {
+export function Procurement() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [orders, setOrders] = useState<PurchaseOrder[]>([])

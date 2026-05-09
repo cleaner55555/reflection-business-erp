@@ -105,7 +105,7 @@ interface SettingsResponse {
 // MAIN COMPONENT
 // ============================================================
 
-export function FakturisanjeVremena() {
+export function TimeBilling() {
   const [activeTab, setActiveTab] = useState('satnice')
 
   // Data state

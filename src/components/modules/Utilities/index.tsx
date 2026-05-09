@@ -36,7 +36,7 @@ const STATUSES: Record<string, { color: string; label: string }> = { active: { c
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
-export function Komunalije() {
+export function Utilities() {
   const [data, setData] = useState<Utility[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(''); const [typeFilter, setTypeFilter] = useState(''); const [statusFilter, setStatusFilter] = useState('')

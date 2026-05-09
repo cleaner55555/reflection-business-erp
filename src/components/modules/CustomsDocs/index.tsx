@@ -129,7 +129,7 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function getDocTypeBadge(t: string) { const r = DOC_TYPES[t]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{t}</Badge> }
 function formatCurrency(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(n) }
 
-export function CarinskaDokumentacija() {
+export function CustomsDocs() {
   const [data, setData] = useState<CustomsDocument[]>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

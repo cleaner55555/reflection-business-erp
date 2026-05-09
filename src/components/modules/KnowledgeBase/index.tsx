@@ -292,7 +292,7 @@ const DEFAULT_SETTINGS: KbSettings = {
 
 // ==================== MAIN COMPONENT ====================
 
-export function BazaZnanja() {
+export function KnowledgeBase() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 

@@ -217,7 +217,7 @@ function getStatusColor(status: string): string {
 
 // ==================== MAIN COMPONENT ====================
 
-export function Ponude() {
+export function Offers() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

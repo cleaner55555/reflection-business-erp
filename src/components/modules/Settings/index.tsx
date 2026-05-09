@@ -205,7 +205,7 @@ function ActiveLanguagesPicker({ activeCodes, onToggle }: { activeCodes: string[
 
 // ============ MAIN COMPONENT ============
 
-export function Podesavanja() {
+export function Settings() {
   const { t, locale, setLocale } = useTranslation()
 
   // Theme store

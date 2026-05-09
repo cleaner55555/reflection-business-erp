@@ -226,7 +226,7 @@ const mockStats: SuggestionStats = {
 
 // ============ COMPONENT ============
 
-export function Predlozi() {
+export function Suggestions() {
   const { activeCompanyId, currentUser } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

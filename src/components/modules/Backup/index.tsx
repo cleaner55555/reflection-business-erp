@@ -89,7 +89,7 @@ function getFreqLabel(f: string) {
 
 // ==================== MAIN ====================
 
-export function BackupModul() {
+export function Backup() {
   const [backups, setBackups] = useState<BackupRecord[]>([])
   const [schedules, setSchedules] = useState<BackupSchedule[]>([])
   const [loading, setLoading] = useState(true)

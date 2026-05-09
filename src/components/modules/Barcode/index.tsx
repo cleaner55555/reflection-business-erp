@@ -48,7 +48,7 @@ function getTypeBadge(type: string) {
   return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
 }
 
-export function Barkod() {
+export function Barcode() {
   const [items, setItems] = useState<BarcodeItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

@@ -60,7 +60,7 @@ const AREAS: Record<string, { label: string }> = { indoor: { label: 'Sala' }, ou
 
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
-export function Rezervacije() {
+export function Reservations() {
   const [data, setData] = useState<Reservation[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

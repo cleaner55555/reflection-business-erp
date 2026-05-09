@@ -63,7 +63,7 @@ function StarRating({ rating, size = 'sm' }: { rating: number; size?: string }) 
   return <div className="flex gap-0.5">{[1, 2, 3, 4, 5].map(i => <Star key={i} className={`${size === 'sm' ? 'h-3.5 w-3.5' : 'h-5 w-5'} ${i <= rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200 dark:text-slate-700'}`} />)}</div>
 }
 
-export function Recenzije() {
+export function Reviews() {
   const [data, setData] = useState<Review[]>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

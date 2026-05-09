@@ -19,7 +19,7 @@ const INITIAL: PriceListItem[] = [
 const STATUSES: Record<string, { color: string; label: string }> = { active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivan' }, draft: { color: 'bg-amber-100 text-amber-800', label: 'Nacrt' }, archived: { color: 'bg-gray-100 text-gray-800', label: 'Arhiviran' } }
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
-export function Cenovnici() {
+export function PriceLists() {
   const [data, setData] = useState<PriceListItem[]>(INITIAL); const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(''); const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<PriceListItem | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null); const [form, setForm] = useState<Partial<PriceListItem>>({}); const [activeTab, setActiveTab] = useState('pregled')

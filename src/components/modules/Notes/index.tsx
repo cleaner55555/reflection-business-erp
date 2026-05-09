@@ -213,7 +213,7 @@ const mockDashboard: DashboardData = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Beleške() {
+export function Notes() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

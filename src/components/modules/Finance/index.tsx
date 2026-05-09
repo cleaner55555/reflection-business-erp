@@ -74,7 +74,7 @@ const JOURNAL_TYPE_OPTIONS = [
   { value: 'otpremnica', label: 'finance.deliveryNote' },
 ] as const
 
-export function Finansije() {
+export function Finance() {
   const { t } = useTranslation()
   return (
     <div className="space-y-6">

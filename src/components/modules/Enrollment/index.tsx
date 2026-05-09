@@ -64,7 +64,7 @@ const LEVELS: Record<string, { label: string }> = {
 
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
-export function Prijave() {
+export function Enrollment() {
   const [data, setData] = useState<Enrollment[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

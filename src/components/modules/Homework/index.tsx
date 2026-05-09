@@ -67,7 +67,7 @@ function getStatusBadge(s: string) {
   return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
 }
 
-export function Obaveze() {
+export function Homework() {
   const [data, setData] = useState<Homework[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

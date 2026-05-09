@@ -259,7 +259,7 @@ const mockStats: ServiceStats = {
 
 // ============ COMPONENT ============
 
-export function Servis() {
+export function ServiceCenter() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

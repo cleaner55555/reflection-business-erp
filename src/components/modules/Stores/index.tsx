@@ -22,7 +22,7 @@ const TYPES: Record<string, string> = { retail: 'Prodavnica', warehouse: 'Magaci
 const STATUSES: Record<string, { color: string; label: string }> = { active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivna' }, closed: { color: 'bg-red-100 text-red-800', label: 'Zatvorena' }, renovation: { color: 'bg-amber-100 text-amber-800', label: 'Renoviranje' } }
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
-export function Poslovnice() {
+export function Stores() {
   const [data, setData] = useState<StoreItem[]>(INITIAL); const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(''); const [statusFilter, setStatusFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<StoreItem | null>(null)

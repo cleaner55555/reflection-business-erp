@@ -131,7 +131,7 @@ function getPackTypeBadge(t: string) { const r = PACK_TYPES[t]; return r ? <Badg
 
 function formatCurrency(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', minimumFractionDigits: 0 }).format(n) }
 
-export function Pakovanje() {
+export function Packaging() {
   const [data, setData] = useState<PackagingOrder[]>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

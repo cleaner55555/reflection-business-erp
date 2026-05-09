@@ -63,7 +63,7 @@ function getStatusBadge(s: string) {
 
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
-export function Skolarina() {
+export function Tuition() {
   const [data, setData] = useState<Tuition[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

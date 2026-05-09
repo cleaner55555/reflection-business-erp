@@ -91,7 +91,7 @@ const EMPTY_FORM: FormData = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Protokol() {
+export function Protocol() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   // Data state

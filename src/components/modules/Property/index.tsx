@@ -62,7 +62,7 @@ const TYPES: Record<string, string> = { apartment: 'Stan', house: 'Kuća', comme
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 function formatPrice(p: number, perSqm?: boolean) { const suffix = perSqm ? '/m²' : ''; return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(p) + suffix }
 
-export function Nekretnine() {
+export function Property() {
   const [data, setData] = useState<Property[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

@@ -54,7 +54,7 @@ const CATEGORIES: Record<string, { label: string }> = {
 
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
-export function Jelovnik() {
+export function Menu() {
   const [data, setData] = useState<MenuItem[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

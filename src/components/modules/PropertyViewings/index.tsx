@@ -46,7 +46,7 @@ const INTERESTS: Record<string, { color: string; label: string }> = { high: { co
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 function getInterestBadge(s: string) { const r = INTERESTS[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
-export function PreglediNekretnine() {
+export function PropertyViewings() {
   const [data, setData] = useState<Viewing[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

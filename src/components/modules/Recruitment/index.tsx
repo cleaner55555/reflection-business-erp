@@ -59,7 +59,7 @@ const typeLabels: Record<string, string> = {
   remote: 'Remote',
 }
 
-export function Regrutacija() {
+export function Recruitment() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

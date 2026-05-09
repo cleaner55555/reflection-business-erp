@@ -310,7 +310,7 @@ const formatCurrency = (val: number) => `${val.toLocaleString('sr-RS', { minimum
 
 // ============ COMPONENT ============
 
-export function Usklađenost() {
+export function Compliance() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

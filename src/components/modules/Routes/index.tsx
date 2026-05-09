@@ -171,7 +171,7 @@ function formatCurrency(n: number) {
 }
 
 // ─── Component ───────────────────────────────────────────
-export function Rute() {
+export function Routes() {
   const [data, setData] = useState<RouteItem[]>(INITIAL_ROUTES)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

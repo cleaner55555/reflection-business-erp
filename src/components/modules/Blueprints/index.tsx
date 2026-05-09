@@ -117,7 +117,7 @@ const AUTHORS = ['Branko Kovačević', 'Nenad Stojanović', 'Ivana Petrović', '
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 function getCategoryBadge(c: string) { const r = CATEGORIES[c]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{c}</Badge> }
 
-export function Projektovanje() {
+export function Blueprints() {
   const [data, setData] = useState<Blueprint[]>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

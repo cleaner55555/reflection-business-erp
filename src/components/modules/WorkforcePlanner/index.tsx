@@ -166,7 +166,7 @@ const mockStats: WorkforceStats = {
 
 // ============ COMPONENT ============
 
-export function PlanerRadneSile() {
+export function WorkforcePlanner() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

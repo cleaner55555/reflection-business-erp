@@ -23,7 +23,7 @@ const CATEGORIES: Record<string, string> = { invoice: 'Faktura', salary: 'Plata'
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 function formatAmount(a: number, c: string) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(a) }
 
-export function Naplate() {
+export function Payments() {
   const [data, setData] = useState<Payment[]>(INITIAL); const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(''); const [statusFilter, setStatusFilter] = useState(''); const [catFilter, setCatFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<Payment | null>(null)

@@ -67,7 +67,7 @@ const typeLabels: Record<string, string> = {
   delivery: 'Dostava',
 }
 
-export function TerenskiServis() {
+export function FieldService() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

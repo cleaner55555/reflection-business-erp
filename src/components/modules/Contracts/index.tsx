@@ -224,7 +224,7 @@ const mockDashboard: ContractDashboard = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Ugovori() {
+export function Contracts() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

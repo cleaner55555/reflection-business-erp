@@ -70,7 +70,7 @@ const ATTENDANCE_TYPES = [
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function Zaposleni() {
+export function Employees() {
   const { t } = useTranslation()
   return (
     <div className="space-y-6">

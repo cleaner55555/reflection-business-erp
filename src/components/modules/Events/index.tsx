@@ -311,7 +311,7 @@ function StatusBadge({ statusKey, colorMap }: {
 
 // ============ MAIN COMPONENT ============
 
-export function Događaji() {
+export function Events() {
   const { t } = useTranslation()
   const { activeCompanyId } = useAppStore()
   const [activeTab, setActiveTab] = useState('overview')

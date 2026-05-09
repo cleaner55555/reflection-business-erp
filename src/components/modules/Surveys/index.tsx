@@ -56,7 +56,7 @@ const questionTypeConfig: Record<string, { label: string }> = {
   email: { label: 'Email' },
 }
 
-export function Ankete() {
+export function Surveys() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

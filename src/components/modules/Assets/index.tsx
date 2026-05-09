@@ -66,7 +66,7 @@ const formatCurrency = (val: number) => formatRSD(val)
 
 // ============ MAIN COMPONENT ============
 
-export function Sredstva() {
+export function Assets() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 

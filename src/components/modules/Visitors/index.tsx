@@ -221,7 +221,7 @@ function getNextBadgeNumber(): string {
 
 // ============ COMPONENT ============
 
-export function Posetioci() {
+export function Visitors() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

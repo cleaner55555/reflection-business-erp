@@ -81,7 +81,7 @@ function getDiffBadge(d: string) {
   return <Badge className={`${s.color} text-[10px]`}>{s.label}</Badge>
 }
 
-export function SeoModul() {
+export function SEO() {
   const [pages, setPages] = useState<SeoPage[]>([])
   const [keywords, setKeywords] = useState<Keyword[]>([])
   const [loading, setLoading] = useState(true)

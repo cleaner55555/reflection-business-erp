@@ -61,7 +61,7 @@ function getStatusBadge(s: string) {
   return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
 }
 
-export function Merenja() {
+export function Measurements() {
   const [data, setData] = useState<Measurement[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

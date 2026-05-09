@@ -155,7 +155,7 @@ const LOCATION_LABELS: Record<string, string> = {
 
 // ==================== COMPONENT ====================
 
-export function KafeRestoran() {
+export function Restaurant() {
   // Data states
   const [categories, setCategories] = useState<RestoCategory[]>([])
   const [menuItems, setMenuItems] = useState<RestoMenuItem[]>([])

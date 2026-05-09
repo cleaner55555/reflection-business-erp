@@ -195,7 +195,7 @@ const ENTITY_FIELDS: Record<EntityType, EntityField[]> = {
 
 // ==================== MAIN COMPONENT ====================
 
-export function Integracije() {
+export function Integrations() {
   const { t } = useTranslation()
 
   return (

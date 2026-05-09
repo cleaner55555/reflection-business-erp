@@ -253,7 +253,7 @@ const mockStats: WarrantyStats = {
 
 // ============ COMPONENT ============
 
-export function Garancije() {
+export function Warranty() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

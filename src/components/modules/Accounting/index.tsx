@@ -159,7 +159,7 @@ function getAccountTypeBadge(type: string) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function Knjigovodstvo() {
+export function Accounting() {
   const { t } = useTranslation()
   const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear())
 

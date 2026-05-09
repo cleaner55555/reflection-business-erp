@@ -262,7 +262,7 @@ function ReminderBadge({ status }: { status?: string }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function Zakazivanja() {
+export function Appointments() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

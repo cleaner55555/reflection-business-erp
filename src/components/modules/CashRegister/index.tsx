@@ -102,7 +102,7 @@ import { StatsCards, ReceiptPreview, EmptyState, ShiftSummaryCard } from './comp
 // MAIN EXPORTED COMPONENT
 // ================================================================
 
-export function Blagajna() {
+export function CashRegister() {
   // ---- Data State ----
   const [products, setProducts] = useState<PosProduct[]>(INITIAL_PRODUCTS)
   const [transactions, setTransactions] = useState<CashTransaction[]>([])

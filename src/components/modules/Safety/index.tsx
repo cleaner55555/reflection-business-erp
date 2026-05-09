@@ -63,7 +63,7 @@ const TYPES: Record<string, { label: string }> = { injury: { label: 'Povreda' },
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 function getSeverityBadge(s: string) { const r = SEVERITIES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
-export function ZastitaNaRadu() {
+export function Safety() {
   const [data, setData] = useState<Incident[]>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

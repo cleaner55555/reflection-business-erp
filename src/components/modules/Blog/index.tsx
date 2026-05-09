@@ -209,7 +209,7 @@ function generateReadingTimeTrend(): { month: string; avgTime: number }[] {
 
 // ============ MAIN COMPONENT ============
 
-export function BlogModul() {
+export function Blog() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

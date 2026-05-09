@@ -40,7 +40,7 @@ import {
 
 // ============ MAIN EXPORT ============
 
-export function VremenskiTrag() {
+export function TimeTracking() {
   // ============ STATE ============
 
   const [activeTab, setActiveTab] = useState('pracenje')

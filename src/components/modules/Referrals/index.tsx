@@ -59,7 +59,7 @@ const sourceLabels: Record<string, string> = {
 
 const formatCurrency = (val: number) => `${val.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD`
 
-export function Preporuke() {
+export function Referrals() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

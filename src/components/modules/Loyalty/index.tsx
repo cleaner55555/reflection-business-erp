@@ -242,7 +242,7 @@ const mockStats: LoyaltyStats = {
 
 // ============ COMPONENT ============
 
-export function ProgramLojalnosti() {
+export function Loyalty() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

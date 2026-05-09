@@ -67,7 +67,7 @@ function getTypeBadge(t: string) { const r = TYPES[t]; return r ? <Badge classNa
 function formatCurrency(n: number) { return n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : `${(n / 1000).toFixed(0)}K` }
 function formatCurrencyFull(n: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(n) }
 
-export function Gradiliste() {
+export function ConstructionSite() {
   const [data, setData] = useState<ConstructionSite[]>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

@@ -242,7 +242,7 @@ function getRatingBg(value: number): string {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Ocene() {
+export function Ratings() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

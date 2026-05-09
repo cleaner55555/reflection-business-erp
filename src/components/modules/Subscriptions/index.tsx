@@ -250,7 +250,7 @@ const EMPTY_COUPON_FORM = {
 
 // ==================== MAIN COMPONENT ====================
 
-export function Pretplate() {
+export function Subscriptions() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('pregled')
 

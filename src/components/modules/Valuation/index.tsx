@@ -294,7 +294,7 @@ function calcOverall(scores: CompetencyScore[], criteria: Criterion[]): number {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Taksacija() {
+export function Valuation() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('pregled')

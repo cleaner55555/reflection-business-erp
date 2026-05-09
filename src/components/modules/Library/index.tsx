@@ -72,7 +72,7 @@ function getStatusBadge(s: string) {
   return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
 }
 
-export function Biblioteka() {
+export function Library() {
   const [data, setData] = useState<Book[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

@@ -131,7 +131,7 @@ function getTagColor(index: number) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function Partneri() {
+export function Contacts() {
   const { t } = useTranslation()
   return (
     <div className="space-y-6">

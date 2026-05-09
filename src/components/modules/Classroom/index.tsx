@@ -66,7 +66,7 @@ function getStatusBadge(s: string) {
   return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge>
 }
 
-export function Ucionica() {
+export function Classroom() {
   const [data, setData] = useState<Classroom[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

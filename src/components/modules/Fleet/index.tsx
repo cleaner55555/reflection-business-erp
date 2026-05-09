@@ -102,7 +102,7 @@ const EXPENSE_TYPE_LABELS: Record<string, string> = {
   ostalo: 'Ostalo',
 }
 
-export function VozniPark() {
+export function Fleet() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])

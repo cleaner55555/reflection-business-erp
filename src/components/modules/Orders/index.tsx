@@ -24,7 +24,7 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function getPriorityBadge(s: string) { const r = PRIORITIES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
-export function Narudzbe() {
+export function Orders() {
   const [data, setData] = useState<Order[]>(INITIAL); const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(''); const [statusFilter, setStatusFilter] = useState(''); const [typeFilter, setTypeFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<Order | null>(null)

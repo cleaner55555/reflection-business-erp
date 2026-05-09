@@ -57,7 +57,7 @@ const CATEGORIES: Record<string, string> = { ingredient: 'Sirovine', spice: 'ZaÄ
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
-export function Kuhinja() {
+export function Kitchen() {
   const [data, setData] = useState<KitchenItem[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

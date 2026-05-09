@@ -238,7 +238,7 @@ const topRepairs = [
 
 // ==================== COMPONENT ====================
 
-export function Održavanje() {
+export function Maintenance() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 

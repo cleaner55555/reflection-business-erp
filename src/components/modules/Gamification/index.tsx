@@ -254,7 +254,7 @@ const mockDashboard: GamificationDashboard = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Gamifikacija() {
+export function Gamification() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

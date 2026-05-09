@@ -22,7 +22,7 @@ const CATEGORIES: Record<string, string> = { product: 'Proizvod', shipping: 'Tra
 const STATUSES: Record<string, { color: string; label: string }> = { active: { color: 'bg-emerald-100 text-emerald-800', label: 'Aktivna' }, inactive: { color: 'bg-gray-100 text-gray-800', label: 'Neaktivna' } }
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{s}</Badge> }
 
-export function Etikete() {
+export function Labels() {
   const [data, setData] = useState<LabelItem[]>(INITIAL); const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(''); const [catFilter, setCatFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<LabelItem | null>(null)

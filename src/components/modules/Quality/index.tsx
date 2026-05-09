@@ -58,7 +58,7 @@ const typeLabels: Record<string, string> = {
   audit: 'Audit',
 }
 
-export function Kvalitet() {
+export function Quality() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

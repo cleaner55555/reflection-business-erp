@@ -358,7 +358,7 @@ const formatCurrency = (val: number) => `${val.toLocaleString('sr-RS', { minimum
 
 // ============ COMPONENT ============
 
-export function Reklamacije() {
+export function Complaints() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

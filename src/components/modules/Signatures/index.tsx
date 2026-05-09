@@ -64,7 +64,7 @@ const typeLabels: Record<string, string> = {
   other: 'Ostalo',
 }
 
-export function Potpisi() {
+export function Signatures() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

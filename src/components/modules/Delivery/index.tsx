@@ -164,7 +164,7 @@ function getStatusIcon(s: string) {
 }
 
 // ─── Component ───────────────────────────────────────────
-export function Dostava() {
+export function Delivery() {
   const [data, setData] = useState<DeliveryItem[]>(INITIAL_DELIVERIES)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

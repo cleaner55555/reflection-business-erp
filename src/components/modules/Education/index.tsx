@@ -74,7 +74,7 @@ const LESSON_TYPE_COLORS: Record<string, string> = {
   dokument: 'bg-cyan-50 text-cyan-600',
 }
 
-export function Edukacija() {
+export function Education() {
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const [courses, setCourses] = useState<Course[]>([])

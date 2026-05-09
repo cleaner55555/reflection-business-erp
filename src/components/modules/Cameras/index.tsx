@@ -192,7 +192,7 @@ const KpiCard = ({ label, value, icon: Icon, sub, color, bg }: { label: string; 
 
 // ============ MAIN COMPONENT ============
 
-export function Kamere() {
+export function Cameras() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 

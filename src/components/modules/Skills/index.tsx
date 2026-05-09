@@ -237,7 +237,7 @@ const mockDashboard: SkillsDashboard = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Veštine() {
+export function Skills() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

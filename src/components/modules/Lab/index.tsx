@@ -77,7 +77,7 @@ function getStatusBadge(s: string) {
 
 function formatPrice(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
-export function Laboratorija() {
+export function Lab() {
   const [data, setData] = useState<LabEquipment[]>(INITIAL)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

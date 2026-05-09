@@ -79,7 +79,7 @@ function getPriorityBadge(p: string) {
   return r ? <Badge className={`${r.color} text-[10px]`}>{r.label}</Badge> : <Badge className="text-[10px]">{p}</Badge>
 }
 
-export function RampaUtovar() {
+export function LoadingDock() {
   const [data, setData] = useState<DockAppointment[]>(INITIAL_DATA)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

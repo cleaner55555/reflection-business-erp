@@ -278,7 +278,7 @@ function getBudgetAlertClass(pct: number): string {
 
 // ==================== MAIN COMPONENT ====================
 
-export function Troškovi() {
+export function Expenses() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
 

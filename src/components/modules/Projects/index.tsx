@@ -112,7 +112,7 @@ function parseTags(tags: string | null): string[] { if (!tags) return []; try { 
 
 // ─── Main Component ──────────────────────────────────────────────────────
 
-export function Projekti() {
+export function Projects() {
   const { t } = useTranslation()
   return (
     <div className="space-y-6">

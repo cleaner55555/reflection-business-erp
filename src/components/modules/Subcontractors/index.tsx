@@ -365,7 +365,7 @@ function usePayments() {
 // Main Exported Component
 // ============================================================
 
-export function Subodradaci() {
+export function Subcontractors() {
   const [activeTab, setActiveTab] = useState('podizvodjaci')
 
   const subcontractors = useSubcontractors()

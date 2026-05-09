@@ -177,7 +177,7 @@ function getSefStatusColor(status: string | null): string {
 
 // ==================== MAIN COMPONENT ====================
 
-export function Fakture() {
+export function Invoices() {
   const { t } = useTranslation()
   return (
     <div className="space-y-6">

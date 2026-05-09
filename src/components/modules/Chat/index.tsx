@@ -50,7 +50,7 @@ const channelTypeConfig: Record<string, { label: string; color: string; icon: st
 }
 
 /* eslint-disable react-hooks/rules-of-hooks */
-export function Čet() {
+export function Chat() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')

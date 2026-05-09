@@ -139,7 +139,7 @@ const isEventPast = (end: string | null, start: string): boolean => {
 
 // ============ MAIN COMPONENT ============
 
-export function Kalendar() {
+export function Calendar() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
 
