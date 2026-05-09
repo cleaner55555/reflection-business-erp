@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Settings, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook, Sparkles } from 'lucide-react'
+import { Settings as SettingsIcon, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/helpers'
 import { useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
@@ -536,7 +536,7 @@ export function Settings() {
       {/* Header */}
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Settings className="h-6 w-6" />
+          <SettingsIcon className="h-6 w-6" />
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('settings.title')}</h1>
