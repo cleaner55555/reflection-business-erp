@@ -20,7 +20,7 @@ import {
   Plus, ChevronLeft, ChevronRight, CalendarDays, ArrowLeft,
   RefreshCw, Search, Eye, Trash2, Edit3, Clock, MapPin,
   Users, Bell, BellOff, CheckCircle2, AlertTriangle, X,
-  Calendar, List, Grid3X3, LayoutGrid, Copy, Star, Filter,
+  Calendar as CalendarIcon, List, Grid3X3, LayoutGrid, Copy, Star, Filter,
   MoreVertical, ChevronDown, Tag, Circle, Timer, Repeat,
   Cake, Briefcase, GraduationCap, Plane, Heart, Music,
   Coffee, Dumbbell, ShoppingBag, Utensils, Car, Stethoscope,
@@ -68,7 +68,7 @@ const EVENT_TYPES = [
   { value: 'putovanje', label: 'Putovanje', icon: Plane },
   { value: 'obuka', label: 'Obuka / Edukacija', icon: GraduationCap },
   { value: 'licni', label: 'Lično', icon: Heart },
-  { value: 'ostalo', label: 'Ostalo', icon: Calendar },
+  { value: 'ostalo', label: 'Ostalo', icon: CalendarIcon },
 ]
 
 const REMINDER_OPTIONS = [
@@ -411,7 +411,7 @@ export function Calendar() {
                       <div className="space-y-0.5">
                         {dayEvents.slice(0, 3).map(ev => {
                           const typeInfo = EVENT_TYPES.find(t => t.value === ev.type)
-                          const Icon = typeInfo?.icon || Calendar
+                          const Icon = typeInfo?.icon || CalendarIcon
                           return (
                             <button key={ev.id} className={`w-full text-left text-[10px] px-1 py-0.5 rounded border truncate flex items-center gap-0.5 ${COLORS[ev.color] || COLORS.primary}`}
                               onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setEventDetailOpen(true) }}>
@@ -526,7 +526,7 @@ export function Calendar() {
             <div className="space-y-2">
               {filteredEvents.map(ev => {
                 const typeInfo = EVENT_TYPES.find(t => t.value === ev.type)
-                const Icon = typeInfo?.icon || Calendar
+                const Icon = typeInfo?.icon || CalendarIcon
                 const past = isEventPast(ev.endTime, ev.startTime)
                 const upcoming = isEventUpcoming(ev.startTime)
                 return (
@@ -544,7 +544,7 @@ export function Calendar() {
                           {ev.priority === 'urgent' && <Badge variant="outline" className="text-[9px] text-red-600 bg-red-50"><AlertTriangle className="h-2.5 w-2.5 mr-0.5" />Hitno</Badge>}
                         </div>
                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
-                          <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDateShort(ev.startTime)}</span>
+                          <span className="flex items-center gap-1"><CalendarIcon className="h-3 w-3" />{formatDateShort(ev.startTime)}</span>
                           {!ev.allDay && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatTime(ev.startTime)}{ev.endTime ? ` — ${formatTime(ev.endTime)}` : ''}</span>}
                           {getEventDuration(ev.startTime, ev.endTime) && <span className="flex items-center gap-1"><Timer className="h-3 w-3" />{getEventDuration(ev.startTime, ev.endTime)}</span>}
                           {ev.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ev.location}</span>}
@@ -641,7 +641,7 @@ export function Calendar() {
                   {Object.entries(stats.byType).sort(([, a], [, b]) => b - a).map(([type, count]) => {
                     const info = EVENT_TYPES.find(t => t.value === type)
                     const max = Math.max(...Object.values(stats.byType), 1)
-                    const TypeIcon = info ? info.icon : Calendar
+                    const TypeIcon = info ? info.icon : CalendarIcon
                     return (
                       <div key={type} className="flex items-center gap-3">
                         <div className="w-20 flex items-center gap-1.5"><TypeIcon className="h-3 w-3 text-muted-foreground" /><span className="text-xs truncate">{info ? info.label : type}</span></div>
@@ -816,7 +816,7 @@ export function Calendar() {
             ].map(h => (
               <div key={h.date} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-xs font-medium">{h.name}</span>
                 </div>
                 <Badge variant="outline" className="text-[9px]">{h.date}</Badge>
