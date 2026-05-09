@@ -51,7 +51,7 @@ export function DesktopSettingsPanel() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-foreground">Podešavanja desktopa</h2>
-                <p className="text-[10px] text-muted-foreground">Prilagodi radno okruženje</p>
+                <p className="text-xs text-muted-foreground">Prilagodi radno okruženje</p>
               </div>
             </div>
             <button
@@ -82,7 +82,7 @@ export function DesktopSettingsPanel() {
                     }`}
                   >
                     <div className={`w-full h-10 rounded-lg ${wp.preview}`} />
-                    <span className="text-[10px] text-foreground/70">{wp.label}</span>
+                    <span className="text-xs text-foreground/70">{wp.label}</span>
                   </button>
                 ))}
               </div>
@@ -109,7 +109,7 @@ export function DesktopSettingsPanel() {
                       className="w-6 h-6 rounded-lg bg-foreground/10"
                       style={{ width: is.size / 5, height: is.size / 5 }}
                     />
-                    <span className="text-[10px] text-foreground/70">{is.label}</span>
+                    <span className="text-xs text-foreground/70">{is.label}</span>
                   </button>
                 ))}
               </div>
@@ -133,7 +133,7 @@ export function DesktopSettingsPanel() {
                     }`}
                   >
                     <span className="text-xs font-medium text-foreground block">{ds.label}</span>
-                    <span className="text-[10px] text-muted-foreground">{ds.desc}</span>
+                    <span className="text-xs text-muted-foreground">{ds.desc}</span>
                   </button>
                 ))}
               </div>

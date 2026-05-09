@@ -144,7 +144,7 @@ function KeyboardShortcutsHelp({
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <kbd className="inline-flex h-6 items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
+            <kbd className="inline-flex h-6 items-center rounded border bg-muted px-1.5 font-mono text-xs font-medium">
               ?
             </kbd>
             Prečice na tastaturi
@@ -169,8 +169,8 @@ function KeyboardShortcutsHelp({
                       <div className="flex items-center gap-1">
                         {shortcut.keys.map((key, kIdx) => (
                           <span key={kIdx} className="flex items-center gap-1">
-                            {kIdx > 0 && <span className="text-[10px] text-muted-foreground">+</span>}
-                            <kbd className="inline-flex h-6 min-w-[24px] items-center justify-center rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-foreground">
+                            {kIdx > 0 && <span className="text-xs text-muted-foreground">+</span>}
+                            <kbd className="inline-flex h-6 min-w-[24px] items-center justify-center rounded border border-border bg-muted px-1.5 font-mono text-xs font-medium text-foreground">
                               {key}
                             </kbd>
                           </span>
@@ -184,7 +184,7 @@ function KeyboardShortcutsHelp({
           })}
           <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-3 text-center">
             <p className="text-xs text-muted-foreground">
-              Pritisnite <kbd className="inline-flex h-5 items-center rounded border bg-background px-1 font-mono text-[10px] mx-0.5">?</kbd> da otvorite ovu pomoć u bilo kom trenutku
+              Pritisnite <kbd className="inline-flex h-5 items-center rounded border bg-background px-1 font-mono text-xs mx-0.5">?</kbd> da otvorite ovu pomoć u bilo kom trenutku
             </p>
           </div>
         </div>
@@ -195,7 +195,7 @@ function KeyboardShortcutsHelp({
 
 export function ShortcutHint({ shortcut }: { shortcut: string }) {
   return (
-    <kbd className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted/50 px-1 font-mono text-[10px] font-medium text-muted-foreground">
+    <kbd className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted/50 px-1 font-mono text-xs font-medium text-muted-foreground">
       {shortcut}
     </kbd>
   )

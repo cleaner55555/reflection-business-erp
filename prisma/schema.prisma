@@ -142,6 +142,11 @@ model Company {
   homeworks          Homework[]
   standards          QualityStandard[]
   measurements       Measurement[]
+  reservations        Reservation[]
+  reviews             Review[]
+  coupons             Coupon[]
+  kitchenItems        KitchenItem[]
+  seoPages            SeoPage[]
 }
 
 // ============ NARUDŽBE (GENERALNE) ============
@@ -334,6 +339,141 @@ model Measurement {
   company Company @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, code])
+}
+
+// ============ REZERVACIJE (Ugostiteljstvo) ============
+
+model Reservation {
+  id              String   @id @default(cuid())
+  companyId       String
+  reservationNo   String
+  guestName       String
+  phone           String   @default("")
+  email           String   @default("")
+  date            String
+  time            String   @default("19:00")
+  partySize       Int      @default(2)
+  tableNo         String   @default("")
+  area            String   @default("indoor") // indoor, outdoor, terrace, vip, bar
+  status          String   @default("pending") // pending, confirmed, checked_in, completed, cancelled, no_show
+  occasion        String   @default("")
+  specialRequests String   @default("")
+  source          String   @default("phone") // phone, website, walk_in, app, email
+  duration        Int      @default(90)
+  deposit         Float    @default(0)
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, reservationNo])
+}
+
+// ============ RECENZIJE ============
+
+model Review {
+  id            String   @id @default(cuid())
+  companyId     String
+  customerName  String
+  customerEmail String   @default("")
+  productName   String   @default("")
+  productSku    String   @default("")
+  category      String   @default("")
+  rating        Int      @default(5)
+  title         String
+  content       String   @default("")
+  status        String   @default("pending") // pending, approved, rejected, flagged, responded
+  source        String   @default("website") // website, email, google, social
+  verified      Boolean  @default(false)
+  helpful       Int      @default(0)
+  notHelpful    Int      @default(0)
+  responseText  String   @default("")
+  respondedAt   String   @default("")
+  respondedBy   String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ KUPONI ============
+
+model Coupon {
+  id                   String   @id @default(cuid())
+  companyId            String
+  code                 String
+  name                 String
+  description          String   @default("")
+  type                 String   @default("percentage") // percentage, fixed, free_shipping, bogo, gift_card
+  discountValue        Float    @default(0)
+  minOrder             Float    @default(0)
+  maxDiscount          Float    @default(0)
+  usageLimit           Int      @default(0)
+  usageCount           Int      @default(0)
+  perUserLimit         Int      @default(0)
+  status               String   @default("active") // active, scheduled, expired, paused, disabled
+  startDate            String   @default("")
+  endDate              String   @default("")
+  applicableCategories String   @default("[]") // JSON array
+  applicableProducts   String   @default("[]") // JSON array
+  customerGroups       String   @default("[]") // JSON array
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
+}
+
+// ============ KUHINJA (Inventar) ============
+
+model KitchenItem {
+  id           String   @id @default(cuid())
+  companyId    String
+  name         String
+  category     String   @default("ingredient") // ingredient, spice, dairy, meat, vegetable, fruit, grain, beverage, condiment, frozen, packaging
+  unit         String   @default("kom")
+  quantity     Float    @default(0)
+  minQuantity  Float    @default(5)
+  maxQuantity  Float    @default(50)
+  unitPrice    Float    @default(0)
+  supplier     String   @default("")
+  storageArea  String   @default("")
+  expiryDate   String   @default("")
+  receivedDate String   @default("")
+  status       String   @default("in_stock") // in_stock, low_stock, out_of_stock, expired
+  allergens    String   @default("[]") // JSON array
+  notes        String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ SEO ============
+
+model SeoPage {
+  id              String   @id @default(cuid())
+  companyId       String
+  url             String
+  title           String
+  metaDescription  String   @default("")
+  keywords        String   @default("")
+  status          String   @default("pending") // indexed, not_indexed, pending, error
+  score           Int      @default(0)
+  lastCrawled     String   @default("")
+  clicks          Int      @default(0)
+  impressions     Int      @default(0)
+  ctr             Float    @default(0)
+  position        Float    @default(0)
+  wordCount       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, url])
 }
 
 // ============ USER ACCOUNTS & ROLES ============

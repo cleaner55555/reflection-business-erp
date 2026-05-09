@@ -145,7 +145,7 @@ export function DesktopMode() {
               <LayoutGrid className="h-2.5 w-2.5" />
             </div>
           )}
-          <span className="text-[11px] font-semibold text-foreground/80 truncate max-w-[140px]">
+          <span className="text-xs font-semibold text-foreground/80 truncate max-w-[140px]">
             {companyName || 'Reflection Business'}
           </span>
         </div>
@@ -159,7 +159,7 @@ export function DesktopMode() {
           <NotificationBell />
           {headerLanguages.length > 1 ? (
             <Select value={locale} onValueChange={setLocale}>
-              <SelectTrigger className="h-6 w-auto min-w-[28px] sm:min-w-[90px] text-[10px] border-0 bg-transparent">
+              <SelectTrigger className="h-6 w-auto min-w-[28px] sm:min-w-[90px] text-xs border-0 bg-transparent">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -171,7 +171,7 @@ export function DesktopMode() {
               </SelectContent>
             </Select>
           ) : (
-            <button onClick={() => setLocale(headerLanguages[0]?.code || 'sr')} className="flex h-6 items-center gap-1 text-[10px] text-foreground/60 hover:text-foreground">
+            <button onClick={() => setLocale(headerLanguages[0]?.code || 'sr')} className="flex h-6 items-center gap-1 text-xs text-foreground/60 hover:text-foreground">
               <span>{headerLanguages[0]?.flag || '🌐'}</span>
             </button>
           )}
@@ -414,7 +414,7 @@ function DesktopIcon({
   const sizeMap = { small: 'w-14 h-14', medium: 'w-[72px] h-[72px]', large: 'w-20 h-20' }
   const iconBoxMap = { small: 'w-8 h-8', medium: 'w-10 h-10', large: 'w-12 h-12' }
   const iconWMap = { small: 'w-4 h-4', medium: 'w-5 h-5', large: 'w-6 h-6' }
-  const labelSizeMap = { small: 'text-[10px]', medium: 'text-xs', large: 'text-xs' }
+  const labelSizeMap = { small: 'text-xs', medium: 'text-xs', large: 'text-xs' }
 
   return (
     <div

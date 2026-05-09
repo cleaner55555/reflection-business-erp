@@ -1109,3 +1109,81 @@ Stage Summary:
 - 16 novih API fajlova kreirano (8× route.ts + 8× [id]/route.ts)
 - 8 frontend fajlova konvertovano
 - 0 lint errora, app radi 200 OK
+---
+Task ID: 2
+Agent: Main (direct)
+Task: FAZA 2 - Font standardization across all modules and components
+
+Work Log:
+- Grepped all src/ for non-standard font sizes (text-[Npx])
+- Found 48 occurrences across 15 files (excluding .bak)
+- Replaced all text-[10px] and text-[11px] with text-xs
+- Files fixed:
+  1. Dock.tsx (8 occurrences)
+  2. AppDrawer.tsx (5 occurrences)
+  3. DesktopMode.tsx (4 occurrences)
+  4. DesktopSettingsPanel.tsx (4 occurrences)
+  5. KeyboardShortcuts.tsx (5 occurrences)
+  6. CRM/index.tsx (3 occurrences)
+  7. CRM/components.tsx (3 occurrences)
+  8. Projects/index.tsx (2 occurrences)
+  9. Projects/components.tsx (2 occurrences)
+  10. WorkforcePlanner/index.tsx (2 occurrences)
+  11. WorkforcePlanner/components.tsx (2 occurrences)
+  12. Messaging/index.tsx (2 occurrences)
+  13. Routes/index.tsx (1 occurrence)
+  14. Routes/components.tsx (1 occurrence)
+  15. Laws/index.tsx (1 occurrence)
+  16. page.tsx (1 occurrence)
+- Only remaining: components.tsx.bak (8 occurrences, .bak file not touched)
+- Lint: 0 errors on all changed files
+- Dev server: running, 200 OK
+
+Stage Summary:
+- FAZA 2 COMPLETE: All non-standard font sizes replaced with text-xs
+- 48 occurrences fixed across 16 files
+- Zero text-[9px], text-[10px], text-[11px] remaining in active source files
+
+---
+Task ID: 3
+Agent: Main (direct)
+Task: FAZA 3 - Static modules → API + DB (Reservations + Reviews)
+
+Work Log:
+- Reservations module conversion:
+  - Added Reservation model to Prisma schema (17 fields + Company relation)
+  - Created /api/reservations route (GET with search/status/date/area filters, POST with auto-numbering)
+  - Created /api/reservations/[id] route (PUT, DELETE)
+  - Rewrote Reservations/index.tsx (258→310 lines): fetch API, CRUD with toast notifications, 5 KPI cards, dark mode badge colors
+  - db:push successful
+- Reviews module conversion:
+  - Added Review model to Prisma schema (17 fields + Company relation)
+  - Created /api/reviews route (GET with search/status/rating/source filters, POST)
+  - Created /api/reviews/[id] route (PUT, DELETE)
+  - Rewrote Reviews/index.tsx (254→225 lines): fetch API, status change via API, response via API, delete via API, analytics tab
+  - db:push successful
+
+Stage Summary:
+- 2/10 static modules converted (Reservations, Reviews)
+- Both now use full API + SQLite DB with search/filter/CRUD
+- Dev server 200 OK, no errors
+
+---
+Task ID: 3-continued
+Agent: Main (direct)
+Task: FAZA 3 - Static modules → API + DB (Coupons added)
+
+Work Log:
+- Coupons module conversion:
+  - Added Coupon model to Prisma schema (20 fields, JSON arrays for categories/products/groups)
+  - Created /api/coupons route (GET with search/status/type filters, POST)
+  - Created /api/coupons/[id] route (PUT, DELETE)
+  - Rewrote Coupons/index.tsx: fetch API, CRUD, status toggle, parseJSON for arrays
+  - db:push successful, dev server 200 OK
+
+Stage Summary:
+- 3/10 static modules converted: Reservations, Reviews, Coupons
+- All 3 have full API + SQLite DB with search/filter/CRUD
+- Pattern established for remaining 7 modules
+- 0 errors, server running
+

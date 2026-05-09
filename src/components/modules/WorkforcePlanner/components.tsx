@@ -948,11 +948,11 @@ export function PlanerRadneSile() {
                                     <div className="font-medium">
                                       {s.startTime}-{s.endTime}
                                     </div>
-                                    <div className="text-[10px] opacity-70">
+                                    <div className="text-xs opacity-70">
                                       {s.location}
                                     </div>
                                     {s.overtimeMinutes > 0 && (
-                                      <div className="text-[10px] text-red-500 font-medium">
+                                      <div className="text-xs text-red-500 font-medium">
                                         +{s.overtimeMinutes}min
                                       </div>
                                     )}

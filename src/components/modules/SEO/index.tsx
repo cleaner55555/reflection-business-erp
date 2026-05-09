@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useAppStore } from '@/lib/store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -82,13 +83,24 @@ function getDiffBadge(d: string) {
 }
 
 export function SEO() {
+  const { activeCompanyId } = useAppStore()
   const [pages, setPages] = useState<SeoPage[]>([])
   const [keywords, setKeywords] = useState<Keyword[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('pages')
 
-  useEffect(() => { setLoading(true); setTimeout(() => { setPages(INITIAL_PAGES); setKeywords(INITIAL_KEYWORDS); setLoading(false) }, 200) }, [])
+  const loadData = useCallback(async () => {
+    if (!activeCompanyId) return
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/seo-pages?companyId=${activeCompanyId}`)
+      if (res.ok) { const json = await res.json(); setPages(json.items || []) }
+    } catch (err) { console.error('Failed to load SEO pages:', err) }
+    setLoading(false)
+  }, [activeCompanyId])
+
+  useEffect(() => { loadData() }, [loadData])
 
   const totalClicks = pages.reduce((s, p) => s + p.clicks, 0)
   const totalImpressions = pages.reduce((s, p) => s + p.impressions, 0)

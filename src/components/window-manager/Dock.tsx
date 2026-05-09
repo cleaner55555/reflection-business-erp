@@ -167,18 +167,18 @@ export function Dock() {
                 })()}
 
                 {/* Module title */}
-                <span className="text-[11px] font-medium text-foreground/80 truncate max-w-[180px] text-center leading-tight">
+                <span className="text-xs font-medium text-foreground/80 truncate max-w-[180px] text-center leading-tight">
                   {hoveredWindow.title}
                 </span>
 
                 {/* Window dimensions */}
-                <span className="text-[10px] text-muted-foreground/60 font-mono">
+                <span className="text-xs text-muted-foreground/60 font-mono">
                   {t('dock.dimensions', { width: hoveredWindow.width, height: hoveredWindow.height })}
                 </span>
 
                 {/* Minimized label */}
                 {hoveredWindow.isMinimized && (
-                  <span className="text-[10px] text-amber-500 font-medium mt-0.5">
+                  <span className="text-xs text-amber-500 font-medium mt-0.5">
                     {t('dock.clickToRestore')}
                   </span>
                 )}
@@ -217,7 +217,7 @@ export function Dock() {
         >
           <Grid3X3 className={`text-muted-foreground ${isCompact ? 'w-4 h-4' : 'w-5 h-5'}`} />
           {windows.length > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-0.5">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground px-0.5">
               {windows.length}
             </span>
           )}
@@ -264,7 +264,7 @@ export function Dock() {
                     <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-3.5 h-[3px] rounded-full bg-primary shadow-[0_0_6px_rgba(var(--primary),0.5)]" />
                   )}
                   {!isCompact && (
-                    <span className="text-[10px] font-medium text-foreground/60 truncate max-w-[44px] mt-px">
+                    <span className="text-xs font-medium text-foreground/60 truncate max-w-[44px] mt-px">
                       {win.title}
                     </span>
                   )}
@@ -290,7 +290,7 @@ export function Dock() {
           })}
 
           {windows.length === 0 && (
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground/40 px-2">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground/40 px-2">
               <ChevronUp className="w-3 h-3" />
               <span>{t('dock.noWindows')}</span>
             </div>
@@ -347,9 +347,9 @@ export function Dock() {
           </button>
 
           <div className={`flex flex-col items-end justify-center ml-1 ${isCompact ? 'px-1' : 'px-2'}`}>
-            <span className="text-[10px] font-medium text-foreground/60 leading-tight">{time}</span>
+            <span className="text-xs font-medium text-foreground/60 leading-tight">{time}</span>
             {!isCompact && (
-              <span className="text-[10px] text-muted-foreground/40 leading-tight">{date}</span>
+              <span className="text-xs text-muted-foreground/40 leading-tight">{date}</span>
             )}
           </div>
         </div>

@@ -1,5 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useAppStore } from '@/lib/store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,7 +51,8 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function formatEUR(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(p) }
 
 export function Rentals() {
-  const [data, setData] = useState<Rental[]>(INITIAL)
+  const { activeCompanyId } = useAppStore()
+  const [data, setData] = useState<Rental[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -60,16 +62,39 @@ export function Rentals() {
   const [form, setForm] = useState<Partial<Rental>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = useCallback(async () => {
+    if (!activeCompanyId) return
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/rentals?companyId=${activeCompanyId}`)
+      if (res.ok) { const json = await res.json(); setData(json.items || []) }
+    } catch (err) { console.error('Failed to load rentals:', err) }
+    setLoading(false)
+  }, [activeCompanyId])
+  useEffect(() => { loadData() }, [loadData])
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.tenantName, item.propertyTitle, item.contractNo].some(v => v.toLowerCase().includes(search.toLowerCase()))
     const matchStatus = !statusFilter || item.status === statusFilter
     return matchSearch && matchStatus
   })
-  const handleDelete = (id: string) => { if (!confirm('Obrisati ugovor?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
+  const handleDelete = async (id: string) => { if (!confirm('Obrisati ugovor?')) return
+    try { const res = await fetch(`/api/rentals/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Obrisano'); loadData() } } catch { toast.error('Greška') }
+  }
   const openCreate = () => { setEditItem(null); setForm({ contractNo: `IZN-2024-${String(data.length + 1).padStart(3, '0')}`, tenantName: '', phone: '', email: '', propertyTitle: '', propertyAddress: '', monthlyRent: 0, deposit: 0, startDate: new Date().toISOString().split('T')[0], endDate: '', paymentDay: 1, status: 'pending', lastPayment: '', nextPayment: '', paymentMethod: 'bank_transfer', securityDeposit: 0, notes: '' }); setDialogOpen(true) }
   const openEdit = (item: Rental) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
-  const handleSave = () => { if (!form.tenantName || !form.propertyTitle) { toast.error('Popunite obavezna polja'); return }; if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Rental : i)); toast.success('Ažurirano') } else { setData(prev => [{ id: Date.now().toString(), ...form } as Rental, ...prev]); toast.success('Kreirano') }; setDialogOpen(false) }
+  const handleSave = async () => { if (!form.tenantName || !form.propertyTitle) { toast.error('Popunite obavezna polja'); return }
+    try {
+      const payload = { ...form, companyId: activeCompanyId }
+      if (editItem) {
+        const res = await fetch(`/api/rentals/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (res.ok) { toast.success('Ažurirano'); loadData() }
+      } else {
+        const res = await fetch('/api/rentals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (res.ok) { toast.success('Kreirano'); loadData() }
+      }
+    } catch { toast.error('Greška') }
+    setDialogOpen(false)
+  }
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
   const detailItem = detailId ? data.find(i => i.id === detailId) : null
   const activeCount = data.filter(i => i.status === 'active').length

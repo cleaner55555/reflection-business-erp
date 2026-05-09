@@ -668,8 +668,8 @@ export function Messaging() {
                       </div>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{c.lastMessage}</p>
                       <div className="flex items-center gap-1 mt-1">
-                        <Badge variant="outline" className={`text-[10px] px-1 py-0 ${CONV_STATUS[c.status]?.color}`}>{CONV_STATUS[c.status]?.label}</Badge>
-                        {c.tags.slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="text-[10px] px-1 py-0">#{tag}</Badge>)}
+                        <Badge variant="outline" className={`text-xs px-1 py-0 ${CONV_STATUS[c.status]?.color}`}>{CONV_STATUS[c.status]?.label}</Badge>
+                        {c.tags.slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="text-xs px-1 py-0">#{tag}</Badge>)}
                         {c.assignedTo && <span className="text-xs text-muted-foreground ml-auto">{c.assignedTo}</span>}
                       </div>
                     </div>

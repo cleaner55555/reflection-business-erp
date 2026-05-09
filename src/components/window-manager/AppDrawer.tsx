@@ -100,7 +100,7 @@ export function AppDrawer() {
           <div className="flex gap-1 px-4 pb-2 overflow-x-auto scrollbar-none">
             <button
               onClick={() => setActiveTab(null)}
-              className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+              className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 !activeTab ? 'bg-primary text-primary-foreground' : 'bg-foreground/5 text-foreground/70 hover:bg-foreground/10'
               }`}
             >
@@ -110,7 +110,7 @@ export function AppDrawer() {
               <button
                 key={g.labelKey}
                 onClick={() => setActiveTab(activeTab === g.labelKey ? null : g.labelKey)}
-                className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   activeTab === g.labelKey ? 'bg-primary text-primary-foreground' : 'bg-foreground/5 text-foreground/70 hover:bg-foreground/10'
                 }`}
               >
@@ -132,7 +132,7 @@ export function AppDrawer() {
                 <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-foreground/5 group-hover:bg-foreground/10 transition-colors">
                   <item.icon className="w-5 h-5 text-foreground/70" />
                 </div>
-                <span className="text-[10px] font-medium text-foreground/70 leading-tight text-center line-clamp-2 px-1">
+                <span className="text-xs font-medium text-foreground/70 leading-tight text-center line-clamp-2 px-1">
                   {t(item.labelKey)}
                 </span>
                 {/* Desktop indicator */}
@@ -162,12 +162,12 @@ export function AppDrawer() {
 
         {/* Footer */}
         <div className="flex items-center justify-between px-4 py-2 border-t border-border/20">
-          <span className="text-[10px] text-muted-foreground/60">
+          <span className="text-xs text-muted-foreground/60">
             {allFiltered.length} modula
           </span>
           <button
             onClick={() => { setDrawerOpen(false); toggleSettings() }}
-            className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
           >
             <Settings className="w-3 h-3" />
             Podešavanja desktopa

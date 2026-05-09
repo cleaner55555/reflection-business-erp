@@ -310,7 +310,7 @@ function AppContent() {
 
               {/* AI Translation loading indicator */}
               {isTranslating && (
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin text-primary" />
                   <span className="hidden sm:inline">Prevodi se...</span>
                 </div>

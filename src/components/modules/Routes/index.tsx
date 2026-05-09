@@ -440,7 +440,7 @@ export function Routes() {
                     <div key={stop.id} className="flex items-center gap-3 ml-2">
                       <div className="w-px h-4 bg-border" />
                       <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.status === 'completed' ? 'bg-emerald-100' : stop.status === 'in_transit' ? 'bg-blue-100' : 'bg-slate-100'}`}>
-                        {stop.status === 'completed' ? <CheckCircle2 className="h-3 w-3 text-emerald-600" /> : stop.status === 'in_transit' ? <Navigation className="h-3 w-3 text-blue-600" /> : <span className="text-[10px] font-bold text-slate-500">{idx + 1}</span>}
+                        {stop.status === 'completed' ? <CheckCircle2 className="h-3 w-3 text-emerald-600" /> : stop.status === 'in_transit' ? <Navigation className="h-3 w-3 text-blue-600" /> : <span className="text-xs font-bold text-slate-500">{idx + 1}</span>}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2"><p className="text-xs font-medium">{stop.location}</p>{getStopStatusBadge(stop.status)}</div>

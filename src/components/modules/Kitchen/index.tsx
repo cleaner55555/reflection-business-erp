@@ -1,5 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useAppStore } from '@/lib/store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,6 +33,8 @@ type KitchenItem = {
   notes: string
 }
 
+function parseAllergens(v: string): string[] { try { return JSON.parse(v || '[]') } catch { return [] } }
+
 const INITIAL: KitchenItem[] = [
   { id: '1', name: 'Pšenično brašno tip 500', category: 'grain', unit: 'kg', quantity: 50, minQuantity: 20, maxQuantity: 100, unitPrice: 85, supplier: 'Mlin "Pećarac"', storageArea: 'Skladište S1 — Regal A', expiryDate: '2024-12-15', receivedDate: '2024-06-10', status: 'in_stock', allergens: ['Gluten'], notes: '' },
   { id: '2', name: 'Svinjsko meso — but', category: 'meat', unit: 'kg', quantity: 15, minQuantity: 10, maxQuantity: 50, unitPrice: 1200, supplier: 'Mesara "Zlatiborsko"', storageArea: 'Hladnjača H1', expiryDate: '2024-06-20', receivedDate: '2024-06-14', status: 'in_stock', allergens: [], notes: 'Kontroliši svakodnevno — lako se kvare' },
@@ -58,7 +61,8 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
 export function Kitchen() {
-  const [data, setData] = useState<KitchenItem[]>(INITIAL)
+  const { activeCompanyId } = useAppStore()
+  const [data, setData] = useState<KitchenItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -69,7 +73,17 @@ export function Kitchen() {
   const [form, setForm] = useState<Partial<KitchenItem>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = useCallback(async () => {
+    if (!activeCompanyId) return
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ companyId: activeCompanyId, limit: '200' })
+      const res = await fetch(`/api/kitchen-items?${params}`)
+      if (res.ok) { const json = await res.json(); setData((json.items || []).map((i: any) => ({ ...i, allergens: parseAllergens(i.allergens) }))) }
+    } catch (err) { console.error('Failed to load kitchen items:', err) }
+    setLoading(false)
+  }, [activeCompanyId])
+  useEffect(() => { loadData() }, [loadData])
 
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.name, item.supplier, item.storageArea].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -78,7 +92,9 @@ export function Kitchen() {
     return matchSearch && matchStatus && matchCategory
   })
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati artikal?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Artikal obrisan') }
+  const handleDelete = async (id: string) => { if (!confirm('Obrisati artikal?')) return
+    try { const res = await fetch(`/api/kitchen-items/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Artikal obrisan'); loadData() } } catch { toast.error('Greška') }
+  }
 
   const openCreate = () => {
     setEditItem(null)
@@ -88,10 +104,18 @@ export function Kitchen() {
 
   const openEdit = (item: KitchenItem) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name) { toast.error('Unesite naziv'); return }
-    if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as KitchenItem : i)); toast.success('Artikal ažuriran') }
-    else { setData(prev => [{ id: Date.now().toString(), ...form } as KitchenItem, ...prev]); toast.success('Artikal kreiran') }
+    try {
+      const payload = { ...form, companyId: activeCompanyId, allergens: JSON.stringify(form.allergens || []) }
+      if (editItem) {
+        const res = await fetch(`/api/kitchen-items/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (res.ok) { toast.success('Artikal ažuriran'); loadData() }
+      } else {
+        const res = await fetch('/api/kitchen-items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        if (res.ok) { toast.success('Artikal kreiran'); loadData() }
+      }
+    } catch { toast.error('Greška pri čuvanju') }
     setDialogOpen(false)
   }
 
