@@ -134,6 +134,7 @@ model Company {
   mpProducts          MpProduct[]
   mpCoupons           MpCoupon[]
   complaints          Complaint[]
+  safetyIncidents    SafetyIncident[]
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -2604,6 +2605,36 @@ model Complaint {
   updatedAt         DateTime @updatedAt
 
   company           Company  @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, number])
+}
+
+// ============ SAFETY INCIDENTS ============
+
+model SafetyIncident {
+  id              String   @id @default(cuid())
+  companyId       String
+  number          String
+  type            String   @default("injury") // injury, near_miss, property_damage, fire, chemical, environmental
+  severity        String   @default("moderate") // minor, moderate, serious, critical
+  status          String   @default("reported") // reported, investigating, resolved, closed
+  location        String
+  department      String
+  reporterName     String
+  reporterRole     String
+  description      String
+  incidentDate    DateTime @default(now())
+  incidentTime    String
+  injuredWorkers  Int      @default(0)
+  lostDays        Int      @default(0)
+  rootCause       String?
+  correctiveAction String?
+  responsible     String?
+  deadline        DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, number])
 }
