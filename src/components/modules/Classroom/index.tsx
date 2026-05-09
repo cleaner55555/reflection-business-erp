@@ -67,7 +67,7 @@ function getStatusBadge(s: string) {
 }
 
 export function Classroom() {
-  const [data, setData] = useState<Classroom[]>(INITIAL)
+  const [data, setData] = useState<Classroom[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -78,7 +78,22 @@ export function Classroom() {
   const [form, setForm] = useState<Partial<Classroom>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/classrooms')
+      const items = await res.json()
+      setData(items.map((i: Record<string, unknown>) => ({
+        ...i,
+        equipment: typeof i.equipment === 'string' ? JSON.parse(i.equipment) : (i.equipment || []),
+        lastInspection: i.lastInspection ? new Date(i.lastInspection as string).toISOString().split('T')[0] : '',
+        notes: i.notes || '',
+      })))
+    } catch { toast.error('Greška pri učitavanju') }
+    setLoading(false)
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.name, item.building, item.responsible, item.type].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -87,10 +102,10 @@ export function Classroom() {
     return matchSearch && matchStatus && matchType
   })
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Obrisati učionicu?')) return
-    setData(prev => prev.filter(i => i.id !== id))
-    toast.success('Učionica obrisana')
+    try { await fetch(`/api/classrooms/${id}`, { method: 'DELETE' }); setData(prev => prev.filter(i => i.id !== id)); toast.success('Učionica obrisana') }
+    catch { toast.error('Greška') }
   }
 
   const openCreate = () => {
@@ -105,17 +120,22 @@ export function Classroom() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.building) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) {
-      setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Classroom : i))
-      toast.success('Učionica ažurirana')
-    } else {
-      const newItem: Classroom = { id: Date.now().toString(), ...form } as Classroom
-      setData(prev => [newItem, ...prev])
-      toast.success('Učionica kreirana')
-    }
-    setDialogOpen(false)
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/classrooms/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...updated, equipment: typeof updated.equipment === 'string' ? JSON.parse(updated.equipment) : updated.equipment, lastInspection: updated.lastInspection ? new Date(updated.lastInspection).toISOString().split('T')[0] : '', notes: updated.notes || '' } : i))
+        toast.success('Učionica ažurirana')
+      } else {
+        const res = await fetch('/api/classrooms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const created = await res.json()
+        setData(prev => [{ ...created, equipment: typeof created.equipment === 'string' ? JSON.parse(created.equipment) : created.equipment, lastInspection: created.lastInspection ? new Date(created.lastInspection).toISOString().split('T')[0] : '', notes: created.notes || '' }, ...prev])
+        toast.success('Učionica kreirana')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>

@@ -69,13 +69,30 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function getCategoryBadge(c: string) { const r = CATEGORIES[c]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{c}</Badge> }
 
 export function Standards() {
-  const [data, setData] = useState<Standard[]>(INITIAL_DATA)
+  const [data, setData] = useState<Standard[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [detailId, setDetailId] = useState<string | null>(null)
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/standards')
+      const items = await res.json()
+      setData(items.map((s: Record<string, unknown>) => ({
+        ...s,
+        validFrom: s.validFrom ? new Date(s.validFrom as string).toISOString().split('T')[0] : '',
+        validUntil: s.validUntil ? new Date(s.validUntil as string).toISOString().split('T')[0] : '',
+        lastAudit: s.lastAudit ? new Date(s.lastAudit as string).toISOString().split('T')[0] : null,
+        nextAudit: s.nextAudit ? new Date(s.nextAudit as string).toISOString().split('T')[0] : null,
+        findings: typeof s.findings === 'string' ? JSON.parse(s.findings) : (s.findings || []),
+      })) as Standard[])
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const filtered = useMemo(() => data.filter(item => {
     const matchSearch = !search || item.code.toLowerCase().includes(search.toLowerCase()) || item.name.toLowerCase().includes(search.toLowerCase())
@@ -89,7 +106,14 @@ export function Standards() {
     openFindings: data.reduce((s, d) => s + d.findings.filter(f => f.status !== 'closed').length, 0), majorFindings: data.reduce((s, d) => s + d.findings.filter(f => f.type === 'major' && f.status !== 'closed').length, 0),
   }), [data])
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati?')) return
+    try {
+      await fetch(`/api/standards/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Obrisano')
+    } catch { toast.error('Greška pri brisanju') }
+  }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
   const detailItem = detailId ? data.find(i => i.id === detailId) : null

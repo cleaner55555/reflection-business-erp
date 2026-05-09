@@ -414,7 +414,7 @@ function DesktopIcon({
   const sizeMap = { small: 'w-14 h-14', medium: 'w-[72px] h-[72px]', large: 'w-20 h-20' }
   const iconBoxMap = { small: 'w-8 h-8', medium: 'w-10 h-10', large: 'w-12 h-12' }
   const iconWMap = { small: 'w-4 h-4', medium: 'w-5 h-5', large: 'w-6 h-6' }
-  const labelSizeMap = { small: 'text-[8px]', medium: 'text-[9px]', large: 'text-[10px]' }
+  const labelSizeMap = { small: 'text-[10px]', medium: 'text-xs', large: 'text-xs' }
 
   return (
     <div

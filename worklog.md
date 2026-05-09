@@ -1024,3 +1024,88 @@ Stage Summary:
 - All overflow issues fixed with responsive patterns
 - Server confirmed running with no compilation errors
 
+---
+Task ID: API-MIGRATE-4
+Agent: Main (direct)
+Task: Convert 4 remaining modules from static INITIAL data to API-backed CRUD
+
+Work Log:
+- Converted 4 frontend modules from hardcoded INITIAL/INITIAL_DATA to API calls:
+  - Library (src/components/modules/Library/index.tsx)
+  - Homework (src/components/modules/Homework/index.tsx)
+  - Standards (src/components/modules/Standards/index.tsx)
+  - Measurements (src/components/modules/Measurements/index.tsx)
+
+- For each module:
+  - Changed `useState(INITIAL)` → `useState([])`
+  - Added `loadData` async function that fetches from respective API endpoint
+  - Replaced `useEffect(() => { setLoading(true); setTimeout(...) }, [])` → `useEffect(() => { loadData() }, [])`
+  - Made `handleDelete` async with `fetch('/api/xxx/${id}', { method: 'DELETE' })`
+  - Made `handleSave` async with fetch POST (create) / PUT (update)
+  - Mapped DateTime fields from ISO format to YYYY-MM-DD for display:
+    - Library: `createdAt` → `addedDate`
+    - Homework: `dueDate`, `assignedDate`
+    - Standards: `validFrom`, `validUntil`, `lastAudit`, `nextAudit` (nullable → null)
+    - Measurements: `date`
+  - Parsed JSON string fields back to arrays:
+    - Standards: `findings` (JSON.parse on load)
+  - Added error handling with toast notifications on all API operations
+  - No JSX/HTML template changes — only state management functions modified
+  - All existing imports, types, constants, UI code preserved exactly
+
+- API endpoints used (already existed, no changes needed):
+  - /api/library (GET, POST), /api/library/[id] (PUT, DELETE)
+  - /api/homework (GET, POST), /api/homework/[id] (PUT, DELETE)
+  - /api/standards (GET, POST), /api/standards/[id] (PUT, DELETE)
+  - /api/measurements (GET, POST), /api/measurements/[id] (PUT, DELETE)
+
+- Lint: 0 new errors on all 4 modified files
+
+Stage Summary:
+- 4 modules converted from static to API-backed data
+- All CRUD operations (Create, Read, Update, Delete) now persist to database via Prisma
+- Date/DateTime mapping handled correctly for all modules
+- JSON array parsing for Standards findings field
+- Zero template/UI changes — purely state management migration
+
+
+---
+Task ID: 2
+Agent: Main
+Task: FAZA 2 — Font standardizacija preko svih modula
+
+Work Log:
+- Pronađeno 11 modula + 3 non-module fajla sa text-[8px] ili text-[9px]
+- Menjano text-[8px] → text-[10px] u: Routes, Projects, Messaging, Laws, CRM, WebhookManager, WorkforcePlanner
+- CRM avatar circle povećan sa w-4 h-4 na w-5 h-5
+- Dock.tsx, KeyboardShortcuts.tsx, DesktopMode.tsx — text-[8px]/[9px] → text-[10px]
+- Bonus: popravljena Safety greška (dupli </Select>, fali Separator import, API where bug)
+- Finalno: 0 text-[8px] ili text-[9px] u src/
+
+Stage Summary:
+- 13 fajlova popravljeno
+- 3 bugfixa (Safety modul)
+- 0 lint errora nakon izmena
+
+---
+Task ID: 3
+Agent: Main
+Task: FAZA 3 — Top 8 static modules → API + DB
+
+Work Log:
+- Menu: Proširen RestoMenuItem model (categoryKey, preparationTime, calories, dietary flags, allergens, ingredients, rating, orderCount), update API rute, konvertovan frontend na fetch
+- Orders: Nov BizOrder model u Prisma, kreiran /api/orders rute, konvertovan frontend
+- Classroom: Nov Classroom model, kreiran /api/classrooms rute, konvertovan frontend
+- Patients: Nov Patient model, kreiran /api/patients rute, konvertovan frontend
+- Library: Nov LibraryBook model, kreiran /api/library rute, konvertovan frontend (sub-agent)
+- Homework: Nov Homework model, kreiran /api/homework rute, konvertovan frontend (sub-agent)
+- Standards: Nov QualityStandard model, kreiran /api/standards rute, konvertovan frontend (sub-agent)
+- Measurements: Nov Measurement model, kreiran /api/measurements rute, konvertovan frontend (sub-agent)
+
+Stage Summary:
+- 8 modula konvertovano iz static na API+DB
+- 6 novih Prisma modela dodato (BizOrder, Classroom, Patient, LibraryBook, Homework, QualityStandard, Measurement)
+- 1 model proširen (RestoMenuItem sa 12 novih polja)
+- 16 novih API fajlova kreirano (8× route.ts + 8× [id]/route.ts)
+- 8 frontend fajlova konvertovano
+- 0 lint errora, app radi 200 OK

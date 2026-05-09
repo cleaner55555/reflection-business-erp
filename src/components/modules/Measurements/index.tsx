@@ -62,7 +62,7 @@ function getStatusBadge(s: string) {
 }
 
 export function Measurements() {
-  const [data, setData] = useState<Measurement[]>(INITIAL)
+  const [data, setData] = useState<Measurement[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -72,7 +72,20 @@ export function Measurements() {
   const [form, setForm] = useState<Partial<Measurement>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/measurements')
+      const items = await res.json()
+      setData(items.map((m: Record<string, unknown>) => ({
+        ...m,
+        date: m.date ? new Date(m.date as string).toISOString().split('T')[0] : '',
+      })) as Measurement[])
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.code, item.product, item.parameter, item.operator, item.batch, item.station].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -80,10 +93,13 @@ export function Measurements() {
     return matchSearch && matchStatus
   })
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Obrisati merenje?')) return
-    setData(prev => prev.filter(i => i.id !== id))
-    toast.success('Merenje obrisano')
+    try {
+      await fetch(`/api/measurements/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Merenje obrisano')
+    } catch { toast.error('Greška pri brisanju') }
   }
 
   const openCreate = () => {
@@ -98,17 +114,22 @@ export function Measurements() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.product || !form.parameter) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) {
-      setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Measurement : i))
-      toast.success('Merenje ažurirano')
-    } else {
-      const newItem: Measurement = { id: Date.now().toString(), ...form } as Measurement
-      setData(prev => [newItem, ...prev])
-      toast.success('Merenje kreirano')
-    }
-    setDialogOpen(false)
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/measurements/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? ({ ...i, ...updated, date: updated.date ? new Date(updated.date).toISOString().split('T')[0] : i.date }) as Measurement : i))
+        toast.success('Merenje ažurirano')
+      } else {
+        const res = await fetch('/api/measurements', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const created = await res.json()
+        setData(prev => [{ ...created, date: created.date ? new Date(created.date).toISOString().split('T')[0] : '' } as Measurement, ...prev])
+        toast.success('Merenje kreirano')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>

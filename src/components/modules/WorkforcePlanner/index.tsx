@@ -366,8 +366,8 @@ export function WorkforcePlanner() {
                             return (
                               <div key={s.id} className={`rounded p-1 mb-1 text-xs cursor-pointer hover:opacity-80 ${st?.color}`}>
                                 <div className="font-medium">{s.startTime}-{s.endTime}</div>
-                                <div className="text-[8px] opacity-70">{s.location}</div>
-                                {s.overtimeMinutes > 0 && <div className="text-[8px] text-red-500 font-medium">+{s.overtimeMinutes}min</div>}
+                                <div className="text-[10px] opacity-70">{s.location}</div>
+                                {s.overtimeMinutes > 0 && <div className="text-[10px] text-red-500 font-medium">+{s.overtimeMinutes}min</div>}
                               </div>
                             )
                           }) : <div className="h-full flex items-center justify-center text-muted-foreground/30 text-lg">—</div>}

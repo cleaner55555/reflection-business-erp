@@ -73,7 +73,7 @@ function getStatusBadge(s: string) {
 }
 
 export function Library() {
-  const [data, setData] = useState<Book[]>(INITIAL)
+  const [data, setData] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -84,7 +84,20 @@ export function Library() {
   const [form, setForm] = useState<Partial<Book>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/library')
+      const items = await res.json()
+      setData(items.map((b: Record<string, unknown>) => ({
+        ...b,
+        addedDate: b.createdAt ? new Date(b.createdAt as string).toISOString().split('T')[0] : '',
+      })) as Book[])
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.title, item.author, item.isbn, item.publisher].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -93,10 +106,13 @@ export function Library() {
     return matchSearch && matchStatus && matchCategory
   })
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Obrisati knjigu?')) return
-    setData(prev => prev.filter(i => i.id !== id))
-    toast.success('Knjiga obrisana')
+    try {
+      await fetch(`/api/library/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Knjiga obrisana')
+    } catch { toast.error('Greška pri brisanju') }
   }
 
   const openCreate = () => {
@@ -111,17 +127,22 @@ export function Library() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.author) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) {
-      setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Book : i))
-      toast.success('Knjiga ažurirana')
-    } else {
-      const newItem: Book = { id: Date.now().toString(), ...form } as Book
-      setData(prev => [newItem, ...prev])
-      toast.success('Knjiga kreirana')
-    }
-    setDialogOpen(false)
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/library/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? ({ ...i, ...updated, addedDate: updated.createdAt ? new Date(updated.createdAt).toISOString().split('T')[0] : i.addedDate }) as Book : i))
+        toast.success('Knjiga ažurirana')
+      } else {
+        const res = await fetch('/api/library', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const created = await res.json()
+        setData(prev => [{ ...created, addedDate: created.createdAt ? new Date(created.createdAt).toISOString().split('T')[0] : '' } as Book, ...prev])
+        toast.success('Knjiga kreirana')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>

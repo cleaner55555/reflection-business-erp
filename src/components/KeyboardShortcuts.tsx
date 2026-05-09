@@ -184,7 +184,7 @@ function KeyboardShortcutsHelp({
           })}
           <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-3 text-center">
             <p className="text-xs text-muted-foreground">
-              Pritisnite <kbd className="inline-flex h-5 items-center rounded border bg-background px-1 font-mono text-[9px] mx-0.5">?</kbd> da otvorite ovu pomoć u bilo kom trenutku
+              Pritisnite <kbd className="inline-flex h-5 items-center rounded border bg-background px-1 font-mono text-[10px] mx-0.5">?</kbd> da otvorite ovu pomoć u bilo kom trenutku
             </p>
           </div>
         </div>

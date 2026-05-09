@@ -643,7 +643,7 @@ export function WebhookManager() {
                         >
                           {allSelected && <Check className="h-3 w-3" />}
                           {someSelected && !allSelected && (
-                            <span className="text-[8px]">–</span>
+                            <span className="text-xs">–</span>
                           )}
                         </div>
                         <span className="text-xs font-semibold">

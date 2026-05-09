@@ -70,7 +70,7 @@ function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge cl
 function getInsuranceBadge(s: string) { const r = INSURANCE[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
 
 export function Patients() {
-  const [data, setData] = useState<Patient[]>(INITIAL)
+  const [data, setData] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -80,7 +80,24 @@ export function Patients() {
   const [form, setForm] = useState<Partial<Patient>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/patients')
+      const items = await res.json()
+      setData(items.map((i: Record<string, unknown>) => ({
+        ...i,
+        dateOfBirth: i.dateOfBirth ? new Date(i.dateOfBirth as string).toISOString().split('T')[0] : '',
+        lastVisit: i.lastVisit ? new Date(i.lastVisit as string).toISOString().split('T')[0] : '',
+        nextAppointment: i.nextAppointment ? new Date(i.nextAppointment as string).toISOString().split('T')[0] : '',
+        allergies: typeof i.allergies === 'string' ? JSON.parse(i.allergies) : (i.allergies || []),
+        chronicConditions: typeof i.chronicConditions === 'string' ? JSON.parse(i.chronicConditions) : (i.chronicConditions || []),
+        notes: i.notes || '',
+      })))
+    } catch { toast.error('Greška pri učitavanju') }
+    setLoading(false)
+  }
+  useEffect(() => { loadData() }, [])
 
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.patientNo, `${item.firstName} ${item.lastName}`, item.jmbg, item.city, item.primaryDoctor].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -88,10 +105,10 @@ export function Patients() {
     return matchSearch && matchStatus
   })
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Obrisati pacijenta?')) return
-    setData(prev => prev.filter(i => i.id !== id))
-    toast.success('Pacijent obrisan')
+    try { await fetch(`/api/patients/${id}`, { method: 'DELETE' }); setData(prev => prev.filter(i => i.id !== id)); toast.success('Pacijent obrisan') }
+    catch { toast.error('Greška') }
   }
 
   const openCreate = () => {
@@ -106,17 +123,22 @@ export function Patients() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.firstName || !form.lastName) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) {
-      setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Patient : i))
-      toast.success('Pacijent ažuriran')
-    } else {
-      const newItem: Patient = { id: Date.now().toString(), ...form } as Patient
-      setData(prev => [newItem, ...prev])
-      toast.success('Pacijent kreiran')
-    }
-    setDialogOpen(false)
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/patients/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...updated, dateOfBirth: updated.dateOfBirth ? new Date(updated.dateOfBirth).toISOString().split('T')[0] : '', lastVisit: updated.lastVisit ? new Date(updated.lastVisit).toISOString().split('T')[0] : '', nextAppointment: updated.nextAppointment ? new Date(updated.nextAppointment).toISOString().split('T')[0] : '', allergies: typeof updated.allergies === 'string' ? JSON.parse(updated.allergies) : updated.allergies, chronicConditions: typeof updated.chronicConditions === 'string' ? JSON.parse(updated.chronicConditions) : updated.chronicConditions, notes: updated.notes || '' } : i))
+        toast.success('Pacijent ažuriran')
+      } else {
+        const res = await fetch('/api/patients', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const created = await res.json()
+        setData(prev => [{ ...created, dateOfBirth: created.dateOfBirth ? new Date(created.dateOfBirth).toISOString().split('T')[0] : '', lastVisit: created.lastVisit ? new Date(created.lastVisit).toISOString().split('T')[0] : '', nextAppointment: created.nextAppointment ? new Date(created.nextAppointment).toISOString().split('T')[0] : '', allergies: typeof created.allergies === 'string' ? JSON.parse(created.allergies) : created.allergies, chronicConditions: typeof created.chronicConditions === 'string' ? JSON.parse(created.chronicConditions) : created.chronicConditions, notes: created.notes || '' }, ...prev])
+        toast.success('Pacijent kreiran')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>

@@ -1,0 +1,25 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+type RouteContext = { params: Promise<{ id: string }> };
+export async function PUT(request: NextRequest, context: RouteContext) {
+  try {
+    const { id } = await context.params; const body = await request.json();
+    const existing = await db.libraryBook.findUnique({ where: { id } });
+    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    const item = await db.libraryBook.update({ where: { id }, data: {
+      isbn: body.isbn, title: body.title, author: body.author, publisher: body.publisher,
+      year: body.year, category: body.category, totalCopies: body.totalCopies, availableCopies: body.availableCopies,
+      borrowedCount: body.borrowedCount, location: body.location, status: body.status, language: body.language,
+      pages: body.pages, notes: body.notes,
+    }});
+    return NextResponse.json(item);
+  } catch (error) { console.error(error); return NextResponse.json({ error: 'Failed' }, { status: 500 }); }
+}
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  try {
+    const { id } = await context.params;
+    const existing = await db.libraryBook.findUnique({ where: { id } });
+    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    await db.libraryBook.delete({ where: { id } }); return NextResponse.json({ message: 'Deleted' });
+  } catch (error) { console.error(error); return NextResponse.json({ error: 'Failed' }, { status: 500 }); }
+}

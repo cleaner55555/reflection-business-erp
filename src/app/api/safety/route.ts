@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     // Generate number if not provided
     const year = new Date().getFullYear()
     const count = await db.safetyIncident.count({
-      where: { companyId: session.user.companyId, number: { startsWith: `SFT-${year}` },
+      where: { companyId: session.user.companyId, number: { startsWith: `SFT-${year}` } },
     })
     const autoNumber = `SFT-${year}-${String(count + 1).padStart(3, '0')}`
 

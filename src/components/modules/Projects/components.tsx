@@ -802,7 +802,7 @@ function TaskKanban() {
                         <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100">
                           {/* Move buttons */}
                           {TASK_STATUS_OPTIONS.filter(s => s.value !== task.status).map(s => (
-                            <button key={s.value} className="text-[8px] px-1 py-0 rounded hover:bg-muted" onClick={() => moveTask(task, s.value)}>{s.label.split(' ')[0]}</button>
+                            <button key={s.value} className="text-[10px] px-1 py-0 rounded hover:bg-muted" onClick={() => moveTask(task, s.value)}>{s.label.split(' ')[0]}</button>
                           ))}
                           <button className="text-red-500 hover:text-red-700" onClick={() => deleteTask(task.id)}><Trash2 className="h-2.5 w-2.5" /></button>
                         </div>
@@ -1060,7 +1060,7 @@ function TimelineView() {
                         <div className="absolute top-1 h-4 rounded bg-primary/20 border border-primary/30" style={{ left: `${getPosition(g.projStart)}%`, width: `${getWidth(g.projStart, g.projEnd)}%` }}>
                           <div className="h-full rounded bg-primary/30" style={{ width: `${g.project.progress}%` }} />
                         </div>
-                        <span className="absolute top-0 text-[8px] text-muted-foreground" style={{ left: `${getPosition(g.projStart)}%`, top: '-14px' }}>{g.project.progress}%</span>
+                        <span className="absolute top-0 text-[10px] text-muted-foreground" style={{ left: `${getPosition(g.projStart)}%`, top: '-14px' }}>{g.project.progress}%</span>
                       </div>
                     </div>
 

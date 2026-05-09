@@ -548,7 +548,7 @@ export function Laws() {
                     ) : status === 'pending' ? (
                       <Clock className="h-3 w-3 text-muted-foreground" />
                     ) : status === 'updated' ? (
-                      <Badge variant="destructive" className="text-[8px] px-1 h-3.5">{changes.length}</Badge>
+                      <Badge variant="destructive" className="text-[10px] px-1 h-3.5">{changes.length}</Badge>
                     ) : status === 'error' ? (
                       <AlertCircle className="h-3 w-3 text-red-500" />
                     ) : (

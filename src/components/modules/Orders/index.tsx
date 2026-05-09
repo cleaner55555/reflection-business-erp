@@ -8,16 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Search, Trash2, Pencil, Eye, ShoppingCart, Truck, Clock, AlertTriangle } from 'lucide-react'; import { toast } from 'sonner'; import { formatDate } from '@/lib/helpers'
 
 type Order = { id: string; orderNo: string; client: string; date: string; deliveryDate: string; type: 'purchase' | 'sale' | 'internal'; status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'; items: number; totalAmount: number; warehouse: string; supplier: string; priority: 'low' | 'medium' | 'high' | 'urgent'; notes: string }
-const INITIAL: Order[] = [
-  { id: '1', orderNo: 'NAR-2024-001', client: 'Fabrika "Zvezda"', date: '2024-06-14', deliveryDate: '2024-06-20', type: 'sale', status: 'shipped', items: 12, totalAmount: 185000, warehouse: 'Magacin Beograd', supplier: '', priority: 'high', notes: '12 paleta čeličnih cevi — poslato 18.06.' },
-  { id: '2', orderNo: 'NAR-2024-002', client: 'SBB DOO', date: '2024-06-15', deliveryDate: '2024-06-25', type: 'purchase', status: 'processing', items: 8, totalAmount: 45000, warehouse: '', supplier: 'Papirnica "Matroz"', priority: 'medium', notes: 'A4 papir 80g — 5000 komada' },
-  { id: '3', orderNo: 'NAR-2024-003', client: 'Poslovnica Niš', date: '2024-06-10', deliveryDate: '2024-06-13', type: 'internal', status: 'delivered', items: 25, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'high', notes: 'Restock robe i nameštaja — dostavljeno na vreme' },
-  { id: '4', orderNo: 'NAR-2024-004', client: 'Restoran "Kafana"', date: '2024-06-15', deliveryDate: '2024-06-18', type: 'purchase', status: 'confirmed', items: 6, totalAmount: 32000, warehouse: '', supplier: 'Mlekara "Zlatiborac"', priority: 'medium', notes: 'Mlečni proizvodi — nedeljna isporuka' },
-  { id: '5', orderNo: 'NAR-2024-005', client: 'Poslovnica Kragujevac', date: '2024-06-12', deliveryDate: '2024-06-20', type: 'internal', status: 'pending', items: 15, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'low', notes: 'Restock za ponovno otvaranje' },
-  { id: '6', orderNo: 'NAR-2024-006', client: 'IT Solutions DOO', date: '2024-06-16', deliveryDate: '2024-06-22', type: 'sale', status: 'confirmed', items: 3, totalAmount: 285000, warehouse: 'Magacin Beograd', supplier: '', priority: 'urgent', notes: 'Server oprema — HP ProLiant serveri' },
-  { id: '7', orderNo: 'NAR-2024-007', client: 'Grad Beograd — Čistoća', date: '2024-06-08', deliveryDate: '2024-06-09', type: 'purchase', status: 'cancelled', items: 2, totalAmount: 15000, warehouse: '', supplier: 'Čistoća Plus', priority: 'low', notes: 'Otkazano — našli jeftinijeg dobavljača' },
-  { id: '8', orderNo: 'NAR-2024-008', client: 'Poslovnice Novi Sad', date: '2024-06-16', deliveryDate: '2024-06-19', type: 'internal', status: 'confirmed', items: 30, totalAmount: 0, warehouse: 'Magacin Beograd', supplier: '', priority: 'medium', notes: 'Kancelarijski materijal + obnova asortimana' },
-]
+
 const STATUSES: Record<string, { color: string; label: string }> = { pending: { color: 'bg-gray-100 text-gray-800', label: 'Na čekanju' }, confirmed: { color: 'bg-blue-100 text-blue-800', label: 'Potvrđen' }, processing: { color: 'bg-amber-100 text-amber-800', label: 'U obradi' }, shipped: { color: 'bg-purple-100 text-purple-800', label: 'Poslat' }, delivered: { color: 'bg-emerald-100 text-emerald-800', label: 'Isporučen' }, cancelled: { color: 'bg-red-100 text-red-800', label: 'Otkazan' } }
 const PRIORITIES: Record<string, { color: string; label: string }> = { low: { color: 'bg-gray-100 text-gray-800', label: 'Nizak' }, medium: { color: 'bg-blue-100 text-blue-800', label: 'Srednji' }, high: { color: 'bg-amber-100 text-amber-800', label: 'Visok' }, urgent: { color: 'bg-red-100 text-red-800', label: 'Hitno' } }
 function getStatusBadge(s: string) { const r = STATUSES[s]; return r ? <Badge className={`${r.color} text-xs`}>{r.label}</Badge> : <Badge className="text-xs">{s}</Badge> }
@@ -25,22 +16,70 @@ function getPriorityBadge(s: string) { const r = PRIORITIES[s]; return r ? <Badg
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
 export function Orders() {
-  const [data, setData] = useState<Order[]>(INITIAL); const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<Order[]>([]); const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState(''); const [statusFilter, setStatusFilter] = useState(''); const [typeFilter, setTypeFilter] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false); const [editItem, setEditItem] = useState<Order | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null); const [form, setForm] = useState<Partial<Order>>({}); const [activeTab, setActiveTab] = useState('pregled')
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/orders')
+      const items = await res.json()
+      setData(items.map((i: Record<string, unknown>) => ({
+        ...i,
+        date: i.date ? new Date(i.date as string).toISOString().split('T')[0] : '',
+        deliveryDate: i.deliveryDate ? new Date(i.deliveryDate as string).toISOString().split('T')[0] : '',
+      })))
+    } catch { toast.error('Greška pri učitavanju') }
+    setLoading(false)
+  }
+
+  useEffect(() => { loadData() }, [])
+
   const filtered = data.filter(i => { const ms = !search || [i.orderNo, i.client, i.warehouse, i.supplier].some(v => v.toLowerCase().includes(search.toLowerCase())); const ms2 = !statusFilter || i.status === statusFilter; const mt = !typeFilter || i.type === typeFilter; return ms && ms2 && mt })
-  const handleDelete = (id: string) => { if (!confirm('Obrisati?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Obrisano') }
-  const openCreate = () => { setEditItem(null); setForm({ orderNo: `NAR-2024-${String(data.length + 1).padStart(3, '0')}`, client: '', date: new Date().toISOString().split('T')[0], deliveryDate: '', type: 'sale', status: 'pending', items: 1, totalAmount: 0, warehouse: '', supplier: '', priority: 'medium', notes: '' }); setDialogOpen(true) }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati?')) return
+    try {
+      await fetch(`/api/orders/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Obrisano')
+    } catch { toast.error('Greška') }
+  }
+
+  const openCreate = () => {
+    setEditItem(null)
+    setForm({ orderNo: '', client: '', date: new Date().toISOString().split('T')[0], deliveryDate: '', type: 'sale', status: 'pending', items: 1, totalAmount: 0, warehouse: '', supplier: '', priority: 'medium', notes: '' })
+    setDialogOpen(true)
+  }
+
   const openEdit = (item: Order) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
-  const handleSave = () => { if (!form.client) { toast.error('Unesite klijenta'); return }; if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Order : i)); toast.success('Ažurirano') } else { setData(prev => [{ id: Date.now().toString(), ...form } as Order, ...prev]); toast.success('Kreirano') }; setDialogOpen(false) }
+
+  const handleSave = async () => {
+    if (!form.client) { toast.error('Unesite klijenta'); return }
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/orders/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...updated, date: updated.date ? new Date(updated.date).toISOString().split('T')[0] : '', deliveryDate: updated.deliveryDate ? new Date(updated.deliveryDate).toISOString().split('T')[0] : '' } : i))
+        toast.success('Ažurirano')
+      } else {
+        const res = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const created = await res.json()
+        setData(prev => [{ ...created, date: created.date ? new Date(created.date).toISOString().split('T')[0] : '', deliveryDate: created.deliveryDate ? new Date(created.deliveryDate).toISOString().split('T')[0] : '' }, ...prev])
+        toast.success('Kreirano')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
+  }
+
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
   const detailItem = detailId ? data.find(i => i.id === detailId) : null
   const totalValue = data.filter(i => i.type === 'sale').reduce((s, i) => s + i.totalAmount, 0)
 
   return (<div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div><h1 className="text-2xl font-bold tracking-tight">Narudžbe</h1><p className="text-sm text-muted-foreground">Nabavke, isporuke i interni transferi</p></div><Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Nova narudžba</Button></div>
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3"><Card className="p-4"><div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><ShoppingCart className="h-3 w-3" />Ukupno</div><p className="text-2xl font-bold">{data.length}</p></Card><Card className="p-4"><div className="text-xs text-amber-600 mb-1 flex items-center gap-1"><Clock className="h-3 w-3" />U obradi</div><p className="text-2xl font-bold text-amber-700">{data.filter(i => i.status === 'confirmed' || i.status === 'processing').length}</p></Card><Card className="p-4"><div className="text-xs text-purple-100 text-purple-800 mb-1">Poslate</div><p className="text-2xl font-bold text-purple-700">{data.filter(i => i.status === 'shipped').length}</p></Card><Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Vrednost prodaje</div><p className="text-lg font-bold">{formatRSD(totalValue)}</p></Card></div>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3"><Card className="p-4"><div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><ShoppingCart className="h-3 w-3" />Ukupno</div><p className="text-2xl font-bold">{data.length}</p></Card><Card className="p-4"><div className="text-xs text-amber-600 mb-1 flex items-center gap-1"><Clock className="h-3 w-3" />U obradi</div><p className="text-2xl font-bold text-amber-700">{data.filter(i => i.status === 'confirmed' || i.status === 'processing').length}</p></Card><Card className="p-4"><div className="text-xs text-purple-800 mb-1">Poslate</div><p className="text-2xl font-bold text-purple-700">{data.filter(i => i.status === 'shipped').length}</p></Card><Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Vrednost prodaje</div><p className="text-lg font-bold">{formatRSD(totalValue)}</p></Card></div>
     <Tabs value={activeTab} onValueChange={setActiveTab}><TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
       <TabsContent value="pregled" className="mt-4"><Card><CardHeader className="pb-3"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><CardTitle className="text-base">Lista narudžbina</CardTitle><div className="flex gap-2 items-center"><div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-44 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div><Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Sve</SelectItem><SelectItem value="pending">Na čekanju</SelectItem><SelectItem value="confirmed">Potvrđen</SelectItem><SelectItem value="shipped">Poslat</SelectItem><SelectItem value="delivered">Isporučen</SelectItem><SelectItem value="cancelled">Otkazan</SelectItem></SelectContent></Select><Select value={typeFilter || 'all'} onValueChange={v => setTypeFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem><SelectItem value="purchase">Nabavka</SelectItem><SelectItem value="sale">Prodaja</SelectItem><SelectItem value="internal">Interni</SelectItem></SelectContent></Select></div></div></CardHeader><CardContent><div className="max-h-[480px] overflow-y-auto"><Table><TableHeader><TableRow><TableHead className="text-xs">Br.</TableHead><TableHead className="text-xs">Klijent</TableHead><TableHead className="text-xs hidden sm:table-cell">Tip</TableHead><TableHead className="text-xs hidden md:table-cell">Datum isporuke</TableHead><TableHead className="text-xs hidden lg:table-cell">Prioritet</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader><TableBody>{filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema</TableCell></TableRow> : filtered.map(item => (<TableRow key={item.id}><TableCell className="text-xs font-mono">{item.orderNo}</TableCell><TableCell className="text-xs font-medium">{item.client}</TableCell><TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{item.type === 'purchase' ? 'Nabavka' : item.type === 'sale' ? 'Prodaja' : 'Interni'}</TableCell><TableCell className="text-xs text-muted-foreground hidden md:table-cell">{formatDate(item.deliveryDate)}</TableCell><TableCell className="hidden lg:table-cell">{getPriorityBadge(item.priority)}</TableCell><TableCell>{getStatusBadge(item.status)}</TableCell><TableCell className="text-right"><div className="flex items-center justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell></TableRow>))}</TableBody></Table></div></CardContent></Card></TabsContent>
       <TabsContent value="dodaj" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Nova narudžba</CardTitle></CardHeader><CardContent><div className="grid gap-4"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Klijent *</Label><Input className="text-xs" value={form.client || ''} onChange={e => setForm({ ...form, client: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'sale'} onValueChange={v => setForm({ ...form, type: v as Order['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="sale">Prodaja</SelectItem><SelectItem value="purchase">Nabavka</SelectItem><SelectItem value="internal">Interni</SelectItem></SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Datum isporuke</Label><Input className="text-xs" type="date" value={form.deliveryDate || ''} onChange={e => setForm({ ...form, deliveryDate: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Magacin</Label><Input className="text-xs" value={form.warehouse || ''} onChange={e => setForm({ ...form, warehouse: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Dobavljač</Label><Input className="text-xs" value={form.supplier || ''} onChange={e => setForm({ ...form, supplier: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Iznos (RSD)</Label><Input className="text-xs" type="number" value={form.totalAmount || ''} onChange={e => setForm({ ...form, totalAmount: Number(e.target.value) })} /></div><div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={form.priority || 'medium'} onValueChange={v => setForm({ ...form, priority: v as Order['priority'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="low">Nizak</SelectItem><SelectItem value="medium">Srednji</SelectItem><SelectItem value="high">Visok</SelectItem><SelectItem value="urgent">Hitno</SelectItem></SelectContent></Select></div></div><Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Kreiraj</Button></div></CardContent></Card></TabsContent>

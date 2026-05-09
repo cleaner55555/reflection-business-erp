@@ -68,7 +68,7 @@ function getStatusBadge(s: string) {
 }
 
 export function Homework() {
-  const [data, setData] = useState<Homework[]>(INITIAL)
+  const [data, setData] = useState<Homework[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -79,7 +79,21 @@ export function Homework() {
   const [form, setForm] = useState<Partial<Homework>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/homework')
+      const items = await res.json()
+      setData(items.map((h: Record<string, unknown>) => ({
+        ...h,
+        dueDate: h.dueDate ? new Date(h.dueDate as string).toISOString().split('T')[0] : '',
+        assignedDate: h.assignedDate ? new Date(h.assignedDate as string).toISOString().split('T')[0] : '',
+      })) as Homework[])
+    } catch { toast.error('Greška pri učitavanju') }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const subjects = [...new Set(data.map(i => i.subject))]
 
@@ -90,10 +104,13 @@ export function Homework() {
     return matchSearch && matchStatus && matchSubject
   })
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Obrisati obavezu?')) return
-    setData(prev => prev.filter(i => i.id !== id))
-    toast.success('Obaveza obrisana')
+    try {
+      await fetch(`/api/homework/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Obaveza obrisana')
+    } catch { toast.error('Greška pri brisanju') }
   }
 
   const openCreate = () => {
@@ -108,17 +125,22 @@ export function Homework() {
     setDialogOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.subject) { toast.error('Popunite obavezna polja'); return }
-    if (editItem) {
-      setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as Homework : i))
-      toast.success('Obaveza ažurirana')
-    } else {
-      const newItem: Homework = { id: Date.now().toString(), ...form } as Homework
-      setData(prev => [newItem, ...prev])
-      toast.success('Obaveza kreirana')
-    }
-    setDialogOpen(false)
+    try {
+      if (editItem) {
+        const res = await fetch(`/api/homework/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? ({ ...i, ...updated, dueDate: updated.dueDate ? new Date(updated.dueDate).toISOString().split('T')[0] : '', assignedDate: updated.assignedDate ? new Date(updated.assignedDate).toISOString().split('T')[0] : '' }) as Homework : i))
+        toast.success('Obaveza ažurirana')
+      } else {
+        const res = await fetch('/api/homework', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+        const created = await res.json()
+        setData(prev => [{ ...created, dueDate: created.dueDate ? new Date(created.dueDate).toISOString().split('T')[0] : '', assignedDate: created.assignedDate ? new Date(created.assignedDate).toISOString().split('T')[0] : '' } as Homework, ...prev])
+        toast.success('Obaveza kreirana')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>

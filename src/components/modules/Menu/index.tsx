@@ -55,7 +55,7 @@ const CATEGORIES: Record<string, { label: string }> = {
 function formatRSD(p: number) { return new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(p) }
 
 export function Menu() {
-  const [data, setData] = useState<MenuItem[]>(INITIAL)
+  const [data, setData] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -66,7 +66,23 @@ export function Menu() {
   const [form, setForm] = useState<Partial<MenuItem>>({})
   const [activeTab, setActiveTab] = useState('pregled')
 
-  useEffect(() => { setLoading(true); setTimeout(() => setLoading(false), 200) }, [])
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/resto-menu-items')
+      const items = await res.json()
+      setData(items.map((i: Record<string, unknown>) => ({
+        ...i,
+        category: i.categoryKey || 'main_course',
+        allergens: typeof i.allergens === 'string' ? JSON.parse(i.allergens) : (i.allergens || []),
+        ingredients: typeof i.ingredients === 'string' ? JSON.parse(i.ingredients) : (i.ingredients || []),
+        notes: '',
+      })))
+    } catch { toast.error('Greška pri učitavanju') }
+    setLoading(false)
+  }
+
+  useEffect(() => { loadData() }, [])
 
   const filtered = data.filter(item => {
     const matchSearch = !search || [item.name, item.description, item.ingredients.join(' ')].some(v => v.toLowerCase().includes(search.toLowerCase()))
@@ -75,7 +91,14 @@ export function Menu() {
     return matchSearch && matchCategory && matchAvailability
   })
 
-  const handleDelete = (id: string) => { if (!confirm('Obrisati artikal?')) return; setData(prev => prev.filter(i => i.id !== id)); toast.success('Artikal obrisan') }
+  const handleDelete = async (id: string) => {
+    if (!confirm('Obrisati artikal?')) return
+    try {
+      await fetch(`/api/resto-menu-items/${id}`, { method: 'DELETE' })
+      setData(prev => prev.filter(i => i.id !== id))
+      toast.success('Artikal obrisan')
+    } catch { toast.error('Greška pri brisanju') }
+  }
 
   const openCreate = () => {
     setEditItem(null)
@@ -85,11 +108,28 @@ export function Menu() {
 
   const openEdit = (item: MenuItem) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name) { toast.error('Unesite naziv'); return }
-    if (editItem) { setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form } as MenuItem : i)); toast.success('Artikal ažuriran') }
-    else { setData(prev => [{ id: Date.now().toString(), ...form } as MenuItem, ...prev]); toast.success('Artikal kreiran') }
-    setDialogOpen(false)
+    try {
+      const payload = {
+        ...form,
+        categoryKey: form.category || 'main_course',
+        allergens: form.allergens || [],
+        ingredients: form.ingredients || [],
+      }
+      if (editItem) {
+        const res = await fetch(`/api/resto-menu-items/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        const updated = await res.json()
+        setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...updated, category: updated.categoryKey || 'main_course', allergens: typeof updated.allergens === 'string' ? JSON.parse(updated.allergens) : updated.allergens, ingredients: typeof updated.ingredients === 'string' ? JSON.parse(updated.ingredients) : updated.ingredients, notes: '' } : i))
+        toast.success('Artikal ažuriran')
+      } else {
+        const res = await fetch('/api/resto-menu-items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        const created = await res.json()
+        setData(prev => [{ ...created, category: created.categoryKey || 'main_course', allergens: typeof created.allergens === 'string' ? JSON.parse(created.allergens) : created.allergens, ingredients: typeof created.ingredients === 'string' ? JSON.parse(created.ingredients) : created.ingredients, notes: '' }, ...prev])
+        toast.success('Artikal kreiran')
+      }
+      setDialogOpen(false)
+    } catch { toast.error('Greška pri čuvanju') }
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>

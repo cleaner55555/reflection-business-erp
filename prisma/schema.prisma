@@ -135,6 +135,205 @@ model Company {
   mpCoupons           MpCoupon[]
   complaints          Complaint[]
   safetyIncidents    SafetyIncident[]
+  bizOrders          BizOrder[]
+  classrooms         Classroom[]
+  patients           Patient[]
+  libraryBooks       LibraryBook[]
+  homeworks          Homework[]
+  standards          QualityStandard[]
+  measurements       Measurement[]
+}
+
+// ============ NARUDŽBE (GENERALNE) ============
+
+model BizOrder {
+  id            String   @id @default(cuid())
+  companyId     String
+  orderNo       String
+  client        String
+  date          DateTime @default(now())
+  deliveryDate  DateTime?
+  type          String   @default("sale")    // purchase, sale, internal
+  status        String   @default("pending")  // pending, confirmed, processing, shipped, delivered, cancelled
+  items         Int      @default(1)
+  totalAmount   Float    @default(0)
+  warehouse     String?
+  supplier      String?
+  priority      String   @default("medium")  // low, medium, high, urgent
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, orderNo])
+}
+
+// ============ UČIONICE ============
+
+model Classroom {
+  id               String   @id @default(cuid())
+  companyId        String
+  name             String
+  building         String
+  floor            String   @default("1")
+  capacity         Int      @default(30)
+  currentOccupancy Int      @default(0)
+  type             String   @default("lecture")     // lecture, lab, seminar, computer, workshop
+  status           String   @default("available")   // available, occupied, maintenance, reserved
+  equipment        String   @default("[]")
+  responsible      String?
+  area             Int      @default(0)
+  hasProjector     Boolean  @default(false)
+  hasAC            Boolean  @default(false)
+  hasWhiteboard    Boolean  @default(true)
+  lastInspection   DateTime?
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ PACIJENTI ============
+
+model Patient {
+  id               String   @id @default(cuid())
+  companyId        String
+  patientNo        String
+  firstName        String
+  lastName         String
+  jmbg             String?
+  dateOfBirth      DateTime?
+  age              Int      @default(0)
+  gender           String   @default("male")
+  phone            String?
+  email            String?
+  address          String?
+  city             String?
+  bloodType        String?
+  insuranceNo      String?
+  insuranceStatus  String   @default("active")
+  primaryDoctor    String?
+  status           String   @default("active")
+  allergies        String   @default("[]")
+  chronicConditions String   @default("[]")
+  lastVisit        DateTime?
+  nextAppointment  DateTime?
+  totalVisits      Int      @default(0)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, patientNo])
+}
+
+// ============ BIBLIOTEKA ============
+
+model LibraryBook {
+  id               String   @id @default(cuid())
+  companyId        String
+  isbn             String?
+  title            String
+  author           String
+  publisher        String?
+  year             Int      @default(0)
+  category         String   @default("fiction")
+  totalCopies      Int      @default(1)
+  availableCopies  Int      @default(1)
+  borrowedCount    Int      @default(0)
+  location         String?
+  status           String   @default("available")
+  language         String?
+  pages            Int      @default(0)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ DOMAĆI ZADACI ============
+
+model Homework {
+  id              String   @id @default(cuid())
+  companyId       String
+  title           String
+  subject         String
+  classGroup      String?
+  teacher         String?
+  type            String   @default("essay")
+  status          String   @default("assigned")
+  dueDate         DateTime?
+  assignedDate    DateTime @default(now())
+  maxPoints       Int      @default(100)
+  avgScore        Float    @default(0)
+  submittedCount  Int      @default(0)
+  totalStudents   Int      @default(0)
+  description     String?
+  instructions    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+// ============ STANDARDI KVALITETA ============
+
+model QualityStandard {
+  id            String   @id @default(cuid())
+  companyId     String
+  code          String
+  name          String
+  category      String   @default("iso")
+  status        String   @default("active")
+  version       String?
+  issuingBody   String?
+  scope         String?
+  validFrom     DateTime?
+  validUntil    DateTime?
+  auditor       String?
+  lastAudit     DateTime?
+  nextAudit     DateTime?
+  compliance    Int      @default(0)
+  findings      String   @default("[]")
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
+}
+
+// ============ MERENJA ============
+
+model Measurement {
+  id            String   @id @default(cuid())
+  companyId     String
+  code          String
+  product       String
+  parameter     String
+  nominalValue  String
+  unit          String
+  measuredValue String
+  tolerance     String
+  deviation     String
+  status        String   @default("pending")
+  instrument    String?
+  operator      String?
+  station       String?
+  batch         String?
+  date          DateTime @default(now())
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
 }
 
 // ============ USER ACCOUNTS & ROLES ============
@@ -1289,21 +1488,32 @@ model RestoCategory {
 }
 
 model RestoMenuItem {
-  id            String   @id @default(cuid())
-  companyId     String
-  categoryId    String
-  name          String
-  description   String?
-  price         Float
-  cost          Float    @default(0) // nabavna cena
-  image         String?
-  isAvailable   Boolean  @default(true)
-  sortOrder     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(cuid())
+  companyId       String
+  categoryId      String
+  categoryKey     String   @default("main_course")
+  name            String
+  description     String?
+  price           Float
+  cost            Float    @default(0)
+  image           String?
+  isAvailable     Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  preparationTime Int      @default(0)
+  calories        Int      @default(0)
+  isVegetarian    Boolean  @default(false)
+  isVegan         Boolean  @default(false)
+  isGlutenFree    Boolean  @default(false)
+  isSpicy         Boolean  @default(false)
+  allergens       String   @default("[]")
+  ingredients     String   @default("[]")
+  rating          Float    @default(0)
+  orderCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  company  Company        @relation(fields: [companyId], references: [id])
-  category RestoCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  company    Company        @relation(fields: [companyId], references: [id])
+  category   RestoCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   orderItems RestoOrderItem[]
 }
 
