@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-// Dialog removed - converted to inline Card
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,7 +21,7 @@ import {
 import {
   FileText, Plus, Search, Eye, Trash2, Edit3, RefreshCw, CheckCircle2, Clock,
   BarChart3, TrendingUp, Users, Calendar, Tag, MessageSquare, Globe,
-  Star, ArrowRight, Filter, Share2, AlertCircle, ArrowLeft
+  Star, ArrowRight, Share2, AlertCircle, ArrowLeft
 } from 'lucide-react'
 
 // ============ INTERFACES ============
@@ -212,12 +211,14 @@ function generateReadingTimeTrend(): { month: string; avgTime: number }[] {
 export function Blog() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('pregled')
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [categories, setCategories] = useState<BlogCategory[]>([])
   const [comments, setComments] = useState<BlogComment[]>([])
   const [tags, setTags] = useState<BlogTag[]>([])
   const [loading, setLoading] = useState(true)
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null)
+  const [form, setForm] = useState<PostForm>(emptyPostForm())
 
   const loadData = useCallback(async () => {
     if (!activeCompanyId) return
@@ -246,6 +247,62 @@ export function Blog() {
 
   useEffect(() => { loadData() }, [activeCompanyId, loadData])
 
+  const openCreate = () => {
+    setEditingPost(null)
+    setForm(emptyPostForm())
+    setActiveTab('dodaj')
+  }
+
+  const openEdit = (post: BlogPost) => {
+    setEditingPost(post)
+    setForm({
+      title: post.title, categoryId: post.categoryId, authorId: post.authorId,
+      content: post.content, status: post.status, tags: post.tags,
+      featured: post.featured, seoTitle: post.seoTitle, seoDescription: post.seoDescription,
+      publishedAt: post.publishedAt || '',
+    })
+    setActiveTab('uredi')
+  }
+
+  const handleSave = () => {
+    if (editingPost) {
+      setPosts((prev) => prev.map((p) => p.id === editingPost.id ? { ...p, ...form } : p))
+      setActiveTab('pregled')
+    } else {
+      const newPost: BlogPost = {
+        id: `post-${Date.now()}`, title: form.title, content: form.content,
+        categoryId: form.categoryId, authorId: form.authorId, status: form.status,
+        views: 0, commentCount: 0, tags: form.tags, featured: form.featured,
+        seoTitle: form.seoTitle, seoDescription: form.seoDescription,
+        publishedAt: form.publishedAt, createdAt: new Date().toISOString(), readingTime: Math.ceil(form.content.split(/\s+/).length / 200),
+      }
+      setPosts((prev) => [...prev, newPost])
+      setForm(emptyPostForm())
+      setActiveTab('pregled')
+    }
+  }
+
+  const handleCancel = () => {
+    setEditingPost(null)
+    setForm(emptyPostForm())
+    setActiveTab('pregled')
+  }
+
+  const toggleTag = (tagId: string) => {
+    setForm((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tagId) ? prev.tags.filter((tg) => tg !== tagId) : [...prev.tags, tagId],
+    }))
+  }
+
+  // KPI calculations
+  const totalPosts = posts.length
+  const publishedPosts = posts.filter((p) => p.status === 'published')
+  const draftPosts = posts.filter((p) => p.status === 'draft')
+  const totalViews = posts.reduce((sum, p) => sum + p.views, 0)
+  const totalComments = comments.length
+  const totalAuthors = new Set(posts.map((p) => p.authorId)).size
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -268,62 +325,7 @@ export function Blog() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
-          <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.overview') || 'Pregled'}</TabsTrigger>
-          <TabsTrigger value="posts"><FileText className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.posts') || 'Članci'}</TabsTrigger>
-          <TabsTrigger value="categories"><Tag className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.categories') || 'Kategorije'}</TabsTrigger>
-          <TabsTrigger value="comments"><MessageSquare className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.comments') || 'Komentari'}</TabsTrigger>
-          <TabsTrigger value="tags"><Star className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.tags') || 'Tagovi'}</TabsTrigger>
-          <TabsTrigger value="seo"><Globe className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.seo') || 'SEO Analitika'}</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview">
-          <PregledTab posts={posts} categories={categories} comments={comments} tags={tags} />
-        </TabsContent>
-        <TabsContent value="posts">
-          <ClanciTab posts={posts} setPosts={setPosts} categories={categories} tags={tags} />
-        </TabsContent>
-        <TabsContent value="categories">
-          <KategorijeTab categories={categories} setCategories={setCategories} posts={posts} />
-        </TabsContent>
-        <TabsContent value="comments">
-          <KomentariTab comments={comments} setComments={setComments} posts={posts} />
-        </TabsContent>
-        <TabsContent value="tags">
-          <TagoviTab tags={tags} setTags={setTags} posts={posts} />
-        </TabsContent>
-        <TabsContent value="seo">
-          <SeoAnalitikaTab posts={posts} categories={categories} />
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
-}
-
-// ============ TAB 1: PREGLED ============
-
-function PregledTab({ posts, categories, comments, tags }: { posts: BlogPost[]; categories: BlogCategory[]; comments: BlogComment[]; tags: BlogTag[] }) {
-  const { t } = useTranslation()
-
-  const totalPosts = posts.length
-  const publishedPosts = posts.filter((p) => p.status === 'published')
-  const draftPosts = posts.filter((p) => p.status === 'draft')
-  const totalViews = posts.reduce((sum, p) => sum + p.views, 0)
-  const totalComments = comments.length
-  const totalAuthors = new Set(posts.map((p) => p.authorId)).size
-
-  const categoryPieData = categories.map((c) => ({
-    name: c.name,
-    value: posts.filter((p) => p.categoryId === c.id).length,
-    color: c.color,
-  })).filter((d) => d.value > 0)
-
-  const topPosts = [...publishedPosts].sort((a, b) => b.views - a.views).slice(0, 5)
-  const recentComments = [...comments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)
-
-  return (
-    <div className="space-y-6">
+      {/* KPI cards outside Tabs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
@@ -369,6 +371,53 @@ function PregledTab({ posts, categories, comments, tags }: { posts: BlogPost[]; 
         </Card>
       </div>
 
+      {/* Tabs: Pregled / Dodaj / Uredi */}
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'uredi') setEditingPost(null) }}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="pregled"><BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.overview') || 'Pregled'}</TabsTrigger>
+          <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.addNew') || 'Dodaj'}</TabsTrigger>
+          <TabsTrigger value="uredi"><Edit3 className="h-4 w-4 mr-1 hidden sm:inline" /> {t('blog.edit') || 'Uredi'}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pregled" className="mt-4">
+          <PregledContent posts={posts} setPosts={setPosts} categories={categories} setCategories={setCategories} comments={comments} setComments={setComments} tags={tags} setTags={setTags} onEdit={openEdit} onCreate={openCreate} />
+        </TabsContent>
+
+        <TabsContent value="dodaj" className="mt-4">
+          <DodajTab form={form} setForm={setForm} categories={categories} tags={tags} onSave={handleSave} onCancel={handleCancel} toggleTag={toggleTag} />
+        </TabsContent>
+
+        <TabsContent value="uredi" className="mt-4">
+          <UrediTab editingPost={editingPost} setEditingPost={setEditingPost} posts={posts} setPosts={setPosts} form={form} setForm={setForm} categories={categories} tags={tags} onSave={handleSave} onCancel={handleCancel} toggleTag={toggleTag} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
+// ============ TAB: PREGLED (all content sections) ============
+
+function PregledContent({ posts, setPosts, categories, setCategories, comments, setComments, tags, setTags, onEdit, onCreate }: {
+  posts: BlogPost[]; setPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>
+  categories: BlogCategory[]; setCategories: React.Dispatch<React.SetStateAction<BlogCategory[]>>
+  comments: BlogComment[]; setComments: React.Dispatch<React.SetStateAction<BlogComment[]>>
+  tags: BlogTag[]; setTags: React.Dispatch<React.SetStateAction<BlogTag[]>>
+  onEdit: (post: BlogPost) => void; onCreate: () => void
+}) {
+  const { t } = useTranslation()
+
+  const categoryPieData = categories.map((c) => ({
+    name: c.name,
+    value: posts.filter((p) => p.categoryId === c.id).length,
+    color: c.color,
+  })).filter((d) => d.value > 0)
+
+  const topPosts = [...posts.filter((p) => p.status === 'published')].sort((a, b) => b.views - a.views).slice(0, 5)
+  const recentComments = [...comments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)
+
+  return (
+    <div className="space-y-6">
+      {/* Dashboard charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-3">
@@ -462,23 +511,36 @@ function PregledTab({ posts, categories, comments, tags }: { posts: BlogPost[]; 
           </CardContent>
         </Card>
       </div>
+
+      {/* Posts table */}
+      <ClanciTab posts={posts} setPosts={setPosts} categories={categories} tags={tags} onEdit={onEdit} onCreate={onCreate} />
+
+      {/* Categories grid */}
+      <KategorijeTab categories={categories} posts={posts} />
+
+      {/* Comments */}
+      <KomentariTab comments={comments} setComments={setComments} posts={posts} />
+
+      {/* Tags cloud */}
+      <TagoviTab tags={tags} posts={posts} />
+
+      {/* SEO Analytics */}
+      <SeoAnalitikaTab posts={posts} categories={categories} />
     </div>
   )
 }
 
-// ============ TAB 2: ČLANCI ============
+// ============ TAB: ČLANCI (list only, no dialog) ============
 
-function ClanciTab({ posts, setPosts, categories, tags }: {
+function ClanciTab({ posts, setPosts, categories, tags, onEdit, onCreate }: {
   posts: BlogPost[]; setPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>; categories: BlogCategory[]; tags: BlogTag[]
+  onEdit: (post: BlogPost) => void; onCreate: () => void
 }) {
   const { t } = useTranslation()
   const [search, setSearch] = useState('')
   const [catFilter, setCatFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [authorFilter, setAuthorFilter] = useState('all')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingPost, setEditingPost] = useState<BlogPost | null>(null)
-  const [form, setForm] = useState<PostForm>(emptyPostForm())
 
   const filtered = posts.filter((p) => {
     if (search && !p.title.toLowerCase().includes(search.toLowerCase())) return false
@@ -487,39 +549,6 @@ function ClanciTab({ posts, setPosts, categories, tags }: {
     if (authorFilter !== 'all' && p.authorId !== authorFilter) return false
     return true
   })
-
-  const openCreate = () => {
-    setEditingPost(null)
-    setForm(emptyPostForm())
-    setDialogOpen(true)
-  }
-
-  const openEdit = (post: BlogPost) => {
-    setEditingPost(post)
-    setForm({
-      title: post.title, categoryId: post.categoryId, authorId: post.authorId,
-      content: post.content, status: post.status, tags: post.tags,
-      featured: post.featured, seoTitle: post.seoTitle, seoDescription: post.seoDescription,
-      publishedAt: post.publishedAt || '',
-    })
-    setDialogOpen(true)
-  }
-
-  const handleSave = () => {
-    if (editingPost) {
-      setPosts((prev) => prev.map((p) => p.id === editingPost.id ? { ...p, ...form } : p))
-    } else {
-      const newPost: BlogPost = {
-        id: `post-${Date.now()}`, title: form.title, content: form.content,
-        categoryId: form.categoryId, authorId: form.authorId, status: form.status,
-        views: 0, commentCount: 0, tags: form.tags, featured: form.featured,
-        seoTitle: form.seoTitle, seoDescription: form.seoDescription,
-        publishedAt: form.publishedAt, createdAt: new Date().toISOString(), readingTime: Math.ceil(form.content.split(/\s+/).length / 200),
-      }
-      setPosts((prev) => [...prev, newPost])
-    }
-    setDialogOpen(false)
-  }
 
   const handleDuplicate = (post: BlogPost) => {
     const dup: BlogPost = { ...post, id: `post-${Date.now()}`, title: `${post.title} (kopija)`, views: 0, commentCount: 0, status: 'draft', createdAt: new Date().toISOString() }
@@ -537,301 +566,309 @@ function ClanciTab({ posts, setPosts, categories, tags }: {
     }
   }
 
-  const toggleTag = (tagId: string) => {
-    setForm((prev) => ({
-      ...prev,
-      tags: prev.tags.includes(tagId) ? prev.tags.filter((t) => t !== tagId) : [...prev.tags, tagId],
-    }))
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col lg:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t('blog.searchPosts') || 'Pretraži članke...'} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <CardTitle className="text-sm font-medium">{t('blog.posts') || 'Članci'}</CardTitle>
+          <div className="flex flex-col lg:flex-row gap-2">
+            <div className="relative flex-1 lg:w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input placeholder={t('blog.searchPosts') || 'Pretraži...'} className="pl-8 h-8 text-xs" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            <Select value={catFilter} onValueChange={setCatFilter}>
+              <SelectTrigger className="w-full lg:w-[130px] h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('blog.allCategories') || 'Sve'}</SelectItem>
+                {categories.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full lg:w-[120px] h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('blog.allStatuses') || 'Svi'}</SelectItem>
+                {Object.entries(postStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}
+              </SelectContent>
+            </Select>
+            <Button size="sm" onClick={onCreate}><Plus className="h-3.5 w-3.5 mr-1" /> {t('blog.newPost') || 'Novi članak'}</Button>
+          </div>
         </div>
-        <Select value={catFilter} onValueChange={setCatFilter}>
-          <SelectTrigger className="w-full lg:w-[160px]"><SelectValue placeholder={t('blog.category') || 'Kategorija'} /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('blog.allCategories') || 'Sve kategorije'}</SelectItem>
-            {categories.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full lg:w-[140px]"><SelectValue placeholder={t('blog.status') || 'Status'} /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('blog.allStatuses') || 'Svi statusi'}</SelectItem>
-            {Object.entries(postStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}
-          </SelectContent>
-        </Select>
-        <Select value={authorFilter} onValueChange={setAuthorFilter}>
-          <SelectTrigger className="w-full lg:w-[160px]"><SelectValue placeholder={t('blog.author') || 'Autor'} /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('blog.allAuthors') || 'Svi autori'}</SelectItem>
-            {mockAuthors.map((a) => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}
-          </SelectContent>
-        </Select>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> {t('blog.newPost') || 'Novi članak'}</Button>
-      </div>
-
-      <div className="text-sm text-muted-foreground">
-        {t('blog.showing') || 'Prikazano'} {filtered.length} {t('blog.of') || 'od'} {posts.length}
-      </div>
-
-      {filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-          <p className="text-muted-foreground font-medium">{t('blog.noPosts') || 'Nema članaka'}</p>
-          <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> {t('blog.createFirst') || 'Kreiraj članak'}</Button>
-        </Card>
-      ) : (
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-xs">{t('blog.postTitle') || 'Naslov'}</TableHead>
-                <TableHead className="text-xs hidden md:table-cell">{t('blog.category') || 'Kategorija'}</TableHead>
-                <TableHead className="text-xs hidden lg:table-cell">{t('blog.author') || 'Autor'}</TableHead>
-                <TableHead className="text-xs hidden md:table-cell">{t('blog.publishedDate') || 'Datum'}</TableHead>
-                <TableHead className="text-xs text-right">{t('blog.views') || 'Pregledi'}</TableHead>
-                <TableHead className="text-xs">{t('blog.status') || 'Status'}</TableHead>
-                <TableHead className="text-xs text-right">{t('blog.actions') || 'Akcije'}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((p) => {
-                const cfg = postStatusConfig[p.status]
-                const statusIdx = statusWorkflow.indexOf(p.status)
-                return (
-                  <TableRow key={p.id}>
-                    <TableCell className="text-xs font-medium max-w-[220px]">
-                      <div className="flex items-center gap-2">
-                        {p.featured && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500 shrink-0" />}
-                        <span className="truncate">{p.title}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs hidden md:table-cell">
-                      <Badge variant="outline" style={{ borderColor: getCategoryColor(p.categoryId), color: getCategoryColor(p.categoryId) }}>
-                        {getCategoryName(p.categoryId)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs hidden lg:table-cell">{getAuthorName(p.authorId)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
-                      {p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('sr-RS') : '—'}
-                    </TableCell>
-                    <TableCell className="text-xs text-right font-medium">{p.views.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
-                        {statusIdx < statusWorkflow.length - 1 && (
-                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => advanceStatus(p)} title={postStatusConfig[statusWorkflow[statusIdx + 1]]?.label}>
-                            <ArrowRight className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Edit3 className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDuplicate(p)} title="Duplikuj"><Share2 className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+      </CardHeader>
+      <CardContent>
+        <div className="text-xs text-muted-foreground mb-3">
+          {t('blog.showing') || 'Prikazano'} {filtered.length} {t('blog.of') || 'od'} {posts.length}
         </div>
-      )}
 
-      {dialogOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>{editingPost ? (t('blog.editPost') || 'Izmeni članak') : (t('blog.newPost') || 'Novi članak')}</CardTitle><CardDescription>{editingPost ? (t('blog.editPostDesc') || 'Izmenite podatke članka') : (t('blog.newPostDesc') || 'Popunite podatke za novi članak')}</CardDescription></div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label>{t('blog.form.title') || 'Naslov'}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-2"><Label>{t('blog.form.category') || 'Kategorija'}</Label><Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{categories.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}</SelectContent></Select></div>
-                <div className="space-y-2"><Label>{t('blog.form.author') || 'Autor'}</Label><Select value={form.authorId} onValueChange={(v) => setForm({ ...form, authorId: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map((a) => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}</SelectContent></Select></div>
-                <div className="space-y-2"><Label>{t('blog.form.status') || 'Status'}</Label><Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as BlogPost['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(postStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}</SelectContent></Select></div>
-              </div>
-              <div className="space-y-2"><Label>{t('blog.form.content') || 'Sadržaj'}</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder={t('blog.form.contentPlaceholder') || 'Sadržaj članka...'} /></div>
-              <div className="space-y-2"><Label>{t('blog.form.tags') || 'Tagovi'}</Label><div className="flex flex-wrap gap-2">{tags.map((tag) => (<Badge key={tag.id} variant={form.tags.includes(tag.id) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag.id)}>{tag.name}</Badge>))}</div></div>
-              <div className="flex items-center gap-3"><Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} /><Label className="text-sm">{t('blog.form.featured') || 'Istaknuti članak'}</Label></div>
-              <Separator />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>{t('blog.form.seoTitle') || 'SEO naslov'}</Label><Input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} /></div>
-                <div className="space-y-2"><Label>{t('blog.form.seoDescription') || 'SEO opis'}</Label><Input value={form.seoDescription} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} /></div>
-              </div>
-              {form.status === 'scheduled' && (<div className="space-y-2"><Label>{t('blog.form.publishDate') || 'Datum objave'}</Label><Input type="datetime-local" value={form.publishedAt} onChange={(e) => setForm({ ...form, publishedAt: e.target.value })} /></div>)}
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
-              <Button onClick={handleSave} disabled={!form.title}><Plus className="h-4 w-4 mr-1" /> {editingPost ? (t('blog.save') || 'Sačuvaj') : (t('blog.create') || 'Kreiraj')}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        {filtered.length === 0 ? (
+          <div className="text-center py-8">
+            <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground text-sm">{t('blog.noPosts') || 'Nema članaka'}</p>
+            <Button className="mt-3" size="sm" onClick={onCreate}><Plus className="h-3.5 w-3.5 mr-1" /> {t('blog.createFirst') || 'Kreiraj članak'}</Button>
+          </div>
+        ) : (
+          <div className="rounded-md border overflow-x-auto max-h-[400px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">{t('blog.postTitle') || 'Naslov'}</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">{t('blog.category') || 'Kategorija'}</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">{t('blog.author') || 'Autor'}</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">{t('blog.publishedDate') || 'Datum'}</TableHead>
+                  <TableHead className="text-xs text-right">{t('blog.views') || 'Pregledi'}</TableHead>
+                  <TableHead className="text-xs">{t('blog.status') || 'Status'}</TableHead>
+                  <TableHead className="text-xs text-right">{t('blog.actions') || 'Akcije'}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((p) => {
+                  const cfg = postStatusConfig[p.status]
+                  const statusIdx = statusWorkflow.indexOf(p.status)
+                  return (
+                    <TableRow key={p.id}>
+                      <TableCell className="text-xs font-medium max-w-[220px]">
+                        <div className="flex items-center gap-2">
+                          {p.featured && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500 shrink-0" />}
+                          <span className="truncate">{p.title}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs hidden md:table-cell">
+                        <Badge variant="outline" style={{ borderColor: getCategoryColor(p.categoryId), color: getCategoryColor(p.categoryId) }}>
+                          {getCategoryName(p.categoryId)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs hidden lg:table-cell">{getAuthorName(p.authorId)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
+                        {p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('sr-RS') : '—'}
+                      </TableCell>
+                      <TableCell className="text-xs text-right font-medium">{p.views.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
+                          {statusIdx < statusWorkflow.length - 1 && (
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => advanceStatus(p)} title={postStatusConfig[statusWorkflow[statusIdx + 1]]?.label}>
+                              <ArrowRight className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(p)}><Edit3 className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDuplicate(p)} title="Duplikuj"><Share2 className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
-// ============ TAB 3: KATEGORIJE ============
+// ============ TAB: DODAJ (create new post) ============
 
-function KategorijeTab({ categories, setCategories, posts }: {
-  categories: BlogCategory[]; setCategories: React.Dispatch<React.SetStateAction<BlogCategory[]>>; posts: BlogPost[]
+function DodajTab({ form, setForm, categories, tags, onSave, onCancel, toggleTag }: {
+  form: PostForm; setForm: React.Dispatch<React.SetStateAction<PostForm>>; categories: BlogCategory[]; tags: BlogTag[]
+  onSave: () => void; onCancel: () => void; toggleTag: (tagId: string) => void
 }) {
   const { t } = useTranslation()
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<BlogCategory | null>(null)
-  const [form, setForm] = useState({ name: '', slug: '', description: '', color: '#6b7280' })
-
-  const openCreate = () => {
-    setEditing(null)
-    setForm({ name: '', slug: '', description: '', color: '#6b7280' })
-    setDialogOpen(true)
-  }
-
-  const openEdit = (cat: BlogCategory) => {
-    setEditing(cat)
-    setForm({ name: cat.name, slug: cat.slug, description: cat.description, color: cat.color })
-    setDialogOpen(true)
-  }
-
-  const handleSave = () => {
-    const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-    if (editing) {
-      setCategories((prev) => prev.map((c) => c.id === editing.id ? { ...c, ...form, slug } : c))
-    } else {
-      setCategories((prev) => [...prev, { id: `cat-${Date.now()}`, ...form, slug, postCount: 0 }])
-    }
-    setDialogOpen(false)
-  }
-
-  const handleDelete = (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id))
-  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> {t('blog.newCategory') || 'Nova kategorija'}</Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categories.map((cat) => {
-          const postCount = posts.filter((p) => p.categoryId === cat.id).length
-          return (
-            <Card key={cat.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color }} />
-                    <CardTitle className="text-base">{cat.name}</CardTitle>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(cat)}><Edit3 className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(cat.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                  </div>
-                </div>
-                <CardDescription className="text-xs">/{cat.slug}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">{cat.description}</p>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <FileText className="h-4 w-4" />
-                    <span>{postCount} {t('blog.posts') || 'članaka'}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    {posts.filter((p) => p.categoryId === cat.id && p.status === 'published').length > 0 && (
-                      <Badge variant="outline" className="text-xs text-green-600">
-                        {posts.filter((p) => p.categoryId === cat.id && p.status === 'published').length} objavljeno
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">{t('blog.postsBreakdown') || 'Pretplate'}</div>
-                  <div className="flex gap-1 flex-wrap">
-                    {posts.filter((p) => p.categoryId === cat.id).slice(0, 3).map((p) => (
-                      <Badge key={p.id} variant="secondary" className="text-xs">{p.title.substring(0, 20)}...</Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">{t('blog.postsPerCategory') || 'Članaka po kategoriji'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={categories.map((c) => ({ name: c.name, count: posts.filter((p) => p.categoryId === c.id).length }))}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#22c55e" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {dialogOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>{editing ? (t('blog.editCategory') || 'Izmeni kategoriju') : (t('blog.newCategory') || 'Nova kategorija')}</CardTitle></div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t('blog.form.name') || 'Naziv'}</Label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Slug</Label>
-                <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('blog.form.description') || 'Opis'}</Label>
-                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('blog.form.color') || 'Boja'}</Label>
-                <div className="flex items-center gap-3">
-                  <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="h-10 w-10 rounded cursor-pointer border" />
-                  <Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="flex-1" />
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
-              <Button onClick={handleSave} disabled={!form.name}>{t('blog.save') || 'Sačuvaj'}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('blog.newPost') || 'Novi članak'}</CardTitle>
+        <CardDescription>{t('blog.newPostDesc') || 'Popunite podatke za novi članak'}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="space-y-2"><Label>{t('blog.form.title') || 'Naslov'}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2"><Label>{t('blog.form.category') || 'Kategorija'}</Label><Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{categories.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>{t('blog.form.author') || 'Autor'}</Label><Select value={form.authorId} onValueChange={(v) => setForm({ ...form, authorId: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map((a) => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>{t('blog.form.status') || 'Status'}</Label><Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as BlogPost['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(postStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}</SelectContent></Select></div>
+          </div>
+          <div className="space-y-2"><Label>{t('blog.form.content') || 'Sadržaj'}</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder={t('blog.form.contentPlaceholder') || 'Sadržaj članka...'} /></div>
+          <div className="space-y-2"><Label>{t('blog.form.tags') || 'Tagovi'}</Label><div className="flex flex-wrap gap-2">{tags.map((tag) => (<Badge key={tag.id} variant={form.tags.includes(tag.id) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag.id)}>{tag.name}</Badge>))}</div></div>
+          <div className="flex items-center gap-3"><Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} /><Label className="text-sm">{t('blog.form.featured') || 'Istaknuti članak'}</Label></div>
+          <Separator />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>{t('blog.form.seoTitle') || 'SEO naslov'}</Label><Input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{t('blog.form.seoDescription') || 'SEO opis'}</Label><Input value={form.seoDescription} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} /></div>
+          </div>
+          {form.status === 'scheduled' && (<div className="space-y-2"><Label>{t('blog.form.publishDate') || 'Datum objave'}</Label><Input type="datetime-local" value={form.publishedAt} onChange={(e) => setForm({ ...form, publishedAt: e.target.value })} /></div>)}
+        </div>
+        <div className="flex gap-2 mt-6">
+          <Button variant="outline" onClick={onCancel}><ArrowLeft className="h-4 w-4 mr-1" /> {t('blog.cancel') || 'Otkaži'}</Button>
+          <Button onClick={onSave} disabled={!form.title}><Plus className="h-4 w-4 mr-1" /> {t('blog.create') || 'Kreiraj'}</Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
-// ============ TAB 4: KOMENTARI ============
+// ============ TAB: UREDI (edit existing post) ============
+
+function UrediTab({ editingPost, setEditingPost, posts, setPosts, form, setForm, categories, tags, onSave, onCancel, toggleTag }: {
+  editingPost: BlogPost | null; setEditingPost: React.Dispatch<React.SetStateAction<BlogPost | null>>
+  posts: BlogPost[]; setPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>
+  form: PostForm; setForm: React.Dispatch<React.SetStateAction<PostForm>>; categories: BlogCategory[]; tags: BlogTag[]
+  onSave: () => void; onCancel: () => void; toggleTag: (tagId: string) => void
+}) {
+  const { t } = useTranslation()
+
+  if (!editingPost) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <Edit3 className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+          <p className="text-muted-foreground font-medium mb-4">{t('blog.selectPostToEdit') || 'Izaberite članak za uređivanje'}</p>
+          <div className="max-w-md mx-auto">
+            <Select value="" onValueChange={(v) => {
+              const post = posts.find((p) => p.id === v)
+              if (post) {
+                setEditingPost(post)
+                setForm({
+                  title: post.title, categoryId: post.categoryId, authorId: post.authorId,
+                  content: post.content, status: post.status, tags: post.tags,
+                  featured: post.featured, seoTitle: post.seoTitle, seoDescription: post.seoDescription,
+                  publishedAt: post.publishedAt || '',
+                })
+              }
+            }}>
+              <SelectTrigger><SelectValue placeholder={t('blog.selectPost') || 'Izaberite članak...'} /></SelectTrigger>
+              <SelectContent>
+                {posts.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const handleDuplicate = () => {
+    const dup: BlogPost = { ...editingPost, id: `post-${Date.now()}`, title: `${editingPost.title} (kopija)`, views: 0, commentCount: 0, status: 'draft', createdAt: new Date().toISOString() }
+    setPosts((prev) => [...prev, dup])
+  }
+
+  const handleDelete = () => {
+    setPosts((prev) => prev.filter((p) => p.id !== editingPost.id))
+    onCancel()
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={onCancel}><ArrowLeft className="h-4 w-4" /></Button>
+          <div className="flex-1">
+            <CardTitle>{t('blog.editPost') || 'Izmeni članak'}</CardTitle>
+            <CardDescription>{editingPost.title}</CardDescription>
+          </div>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="sm" onClick={handleDuplicate} title="Duplikuj"><Share2 className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="sm" className="text-destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="space-y-2"><Label>{t('blog.form.title') || 'Naslov'}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2"><Label>{t('blog.form.category') || 'Kategorija'}</Label><Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{categories.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>{t('blog.form.author') || 'Autor'}</Label><Select value={form.authorId} onValueChange={(v) => setForm({ ...form, authorId: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map((a) => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>{t('blog.form.status') || 'Status'}</Label><Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as BlogPost['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(postStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}</SelectContent></Select></div>
+          </div>
+          <div className="space-y-2"><Label>{t('blog.form.content') || 'Sadržaj'}</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder={t('blog.form.contentPlaceholder') || 'Sadržaj članka...'} /></div>
+          <div className="space-y-2"><Label>{t('blog.form.tags') || 'Tagovi'}</Label><div className="flex flex-wrap gap-2">{tags.map((tag) => (<Badge key={tag.id} variant={form.tags.includes(tag.id) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag.id)}>{tag.name}</Badge>))}</div></div>
+          <div className="flex items-center gap-3"><Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} /><Label className="text-sm">{t('blog.form.featured') || 'Istaknuti članak'}</Label></div>
+          <Separator />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>{t('blog.form.seoTitle') || 'SEO naslov'}</Label><Input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} /></div>
+            <div className="space-y-2"><Label>{t('blog.form.seoDescription') || 'SEO opis'}</Label><Input value={form.seoDescription} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} /></div>
+          </div>
+          {form.status === 'scheduled' && (<div className="space-y-2"><Label>{t('blog.form.publishDate') || 'Datum objave'}</Label><Input type="datetime-local" value={form.publishedAt} onChange={(e) => setForm({ ...form, publishedAt: e.target.value })} /></div>)}
+
+          {/* Post info */}
+          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2">
+            <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> {editingPost.views} {t('blog.views') || 'pregleda'}</span>
+            <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> {editingPost.commentCount} {t('blog.comments') || 'komentara'}</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {editingPost.readingTime} min</span>
+            {editingPost.publishedAt && <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(editingPost.publishedAt).toLocaleDateString('sr-RS')}</span>}
+          </div>
+        </div>
+        <div className="flex gap-2 mt-6">
+          <Button variant="outline" onClick={onCancel}><ArrowLeft className="h-4 w-4 mr-1" /> {t('blog.cancel') || 'Otkaži'}</Button>
+          <Button onClick={onSave} disabled={!form.title}><CheckCircle2 className="h-4 w-4 mr-1" /> {t('blog.save') || 'Sačuvaj'}</Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============ SECTION: KATEGORIJE (grid + chart, no dialog) ============
+
+function KategorijeTab({ categories, posts }: {
+  categories: BlogCategory[]; posts: BlogPost[]
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium">{t('blog.categories') || 'Kategorije'}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categories.map((cat) => {
+            const postCount = posts.filter((p) => p.categoryId === cat.id).length
+            return (
+              <div key={cat.id} className="p-4 rounded-lg border hover:shadow-sm transition-shadow">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color }} />
+                  <span className="font-medium text-sm">{cat.name}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-2">/{cat.slug}</p>
+                <p className="text-xs text-muted-foreground">{cat.description}</p>
+                <Separator className="my-2" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <FileText className="h-3.5 w-3.5" />
+                    <span>{postCount} {t('blog.posts') || 'članaka'}</span>
+                  </div>
+                  {posts.filter((p) => p.categoryId === cat.id && p.status === 'published').length > 0 && (
+                    <Badge variant="outline" className="text-xs text-green-600">
+                      {posts.filter((p) => p.categoryId === cat.id && p.status === 'published').length} objavljeno
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={categories.map((c) => ({ name: c.name, count: posts.filter((p) => p.categoryId === c.id).length }))}>
+            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Bar dataKey="count" fill="#22c55e" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============ SECTION: KOMENTARI (unchanged) ============
 
 function KomentariTab({ comments, setComments, posts }: {
   comments: BlogComment[]; setComments: React.Dispatch<React.SetStateAction<BlogComment[]>>; posts: BlogPost[]
@@ -890,259 +927,161 @@ function KomentariTab({ comments, setComments, posts }: {
   const pendingCount = comments.filter((c) => c.status === 'pending').length
 
   return (
-    <div className="space-y-4">
-      {pendingCount > 0 && (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-          <AlertCircle className="h-4 w-4 text-amber-600" />
-          <span className="text-sm text-amber-800 dark:text-amber-200">{pendingCount} {t('blog.pendingComments') || 'komentara čeka odobrenje'}</span>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <CardTitle className="text-sm font-medium">{t('blog.comments') || 'Komentari'}</CardTitle>
+          <div className="flex gap-2 flex-wrap">
+            {selectedComments.length > 0 && (
+              <>
+                <Button size="sm" variant="outline" className="text-green-600 border-green-300 text-xs" onClick={bulkApprove}>
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> {t('blog.approve') || 'Odobri'} ({selectedComments.length})
+                </Button>
+                <Button size="sm" variant="outline" className="text-red-600 border-red-300 text-xs" onClick={bulkReject}>
+                  <AlertCircle className="h-3.5 w-3.5 mr-1" /> {t('blog.reject') || 'Odbij'} ({selectedComments.length})
+                </Button>
+              </>
+            )}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('blog.allStatuses') || 'Svi'}</SelectItem>
+                {Object.entries(commentStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      )}
-
-      <div className="flex flex-col lg:flex-row gap-3">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full lg:w-[150px]"><SelectValue placeholder={t('blog.status') || 'Status'} /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('blog.allStatuses') || 'Svi statusi'}</SelectItem>
-            {Object.entries(commentStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}
-          </SelectContent>
-        </Select>
-        <Select value={postFilter} onValueChange={setPostFilter}>
-          <SelectTrigger className="w-full lg:w-[220px]"><SelectValue placeholder={t('blog.filterPost') || 'Filtriraj po članku'} /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('blog.allPosts') || 'Svi članci'}</SelectItem>
-            {posts.map((p) => (<SelectItem key={p.id} value={p.id}>{p.title.substring(0, 40)}...</SelectItem>))}
-          </SelectContent>
-        </Select>
-        <Select value={dateFilter} onValueChange={setDateFilter}>
-          <SelectTrigger className="w-full lg:w-[150px]"><SelectValue placeholder={t('blog.date') || 'Datum'} /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('blog.allTime') || 'Svo vreme'}</SelectItem>
-            <SelectItem value="7d">{t('blog.last7days') || 'Poslednjih 7 dana'}</SelectItem>
-            <SelectItem value="30d">{t('blog.last30days') || 'Poslednjih 30 dana'}</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex gap-2 ml-auto">
-          {selectedComments.length > 0 && (
-            <>
-              <Button size="sm" variant="outline" className="text-green-600 border-green-300" onClick={bulkApprove}>
-                <CheckCircle2 className="h-4 w-4 mr-1" /> {t('blog.approve') || 'Odobri'} ({selectedComments.length})
-              </Button>
-              <Button size="sm" variant="outline" className="text-red-600 border-red-300" onClick={bulkReject}>
-                <AlertCircle className="h-4 w-4 mr-1" /> {t('blog.reject') || 'Odbij'} ({selectedComments.length})
-              </Button>
-            </>
-          )}
+        {pendingCount > 0 && (
+          <div className="flex items-center gap-2 p-2 mt-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-xs">
+            <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+            <span className="text-amber-800 dark:text-amber-200">{pendingCount} {t('blog.pendingComments') || 'komentara čeka odobrenje'}</span>
+          </div>
+        )}
+      </CardHeader>
+      <CardContent>
+        <div className="text-xs text-muted-foreground mb-3">
+          {t('blog.showing') || 'Prikazano'} {filtered.length} {t('blog.of') || 'od'} {comments.length}
         </div>
-      </div>
 
-      <div className="text-sm text-muted-foreground">
-        {t('blog.showing') || 'Prikazano'} {filtered.length} {t('blog.of') || 'od'} {comments.length} {t('blog.comments') || 'komentara'}
-      </div>
-
-      {filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <MessageSquare className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-          <p className="text-muted-foreground font-medium">{t('blog.noComments') || 'Nema komentara'}</p>
-        </Card>
-      ) : (
-        <div className="space-y-3 max-h-[600px] overflow-y-auto">
-          {filtered.map((c) => {
-            const cfg = commentStatusConfig[c.status]
-            return (
-              <Card key={c.id} className="p-4">
-                <div className="flex items-start gap-3">
-                  <input type="checkbox" checked={selectedComments.includes(c.id)} onChange={() => toggleSelect(c.id)} className="mt-1" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-sm font-medium">{c.authorName}</span>
-                      <span className="text-xs text-muted-foreground">{t('blog.on') || 'na'} </span>
-                      <span className="text-xs font-medium text-primary">{c.postTitle}</span>
-                      <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
+        {filtered.length === 0 ? (
+          <div className="text-center py-8">
+            <MessageSquare className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground text-sm">{t('blog.noComments') || 'Nema komentara'}</p>
+          </div>
+        ) : (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {filtered.map((c) => {
+              const cfg = commentStatusConfig[c.status]
+              return (
+                <div key={c.id} className="p-3 rounded-lg border">
+                  <div className="flex items-start gap-3">
+                    <input type="checkbox" checked={selectedComments.includes(c.id)} onChange={() => toggleSelect(c.id)} className="mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-xs font-medium">{c.authorName}</span>
+                        <span className="text-xs text-muted-foreground">{t('blog.on') || 'na'} </span>
+                        <span className="text-xs font-medium text-primary">{c.postTitle}</span>
+                        <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{c.content}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3 inline mr-0.5" />{new Date(c.createdAt).toLocaleDateString('sr-RS')}
+                        </span>
+                        {c.parentId && <span className="text-xs text-muted-foreground">{t('blog.reply') || 'Odgovor'}</span>}
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">{c.content}</p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3 inline mr-0.5" />{new Date(c.createdAt).toLocaleDateString('sr-RS')}
-                      </span>
-                      {c.parentId && <span className="text-xs text-muted-foreground">{t('blog.reply') || 'Odgovor'}</span>}
+                    <div className="flex gap-1 shrink-0">
+                      {c.status !== 'approved' && (
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600" onClick={() => updateStatus(c.id, 'approved')} title="Odobri">
+                          <CheckCircle2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {c.status !== 'rejected' && (
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-600" onClick={() => updateStatus(c.id, 'rejected')} title="Odbij">
+                          <AlertCircle className="h-3 w-3" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setReplyDialog(c); setReplyText('') }} title={t('blog.reply') || 'Odgovori'}>
+                        <MessageSquare className="h-3 w-3" />
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-1 shrink-0">
-                    {c.status !== 'approved' && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600" onClick={() => updateStatus(c.id, 'approved')} title="Odobri">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                    {c.status !== 'rejected' && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600" onClick={() => updateStatus(c.id, 'rejected')} title="Odbij">
-                        <AlertCircle className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setReplyDialog(c); setReplyText('') }} title={t('blog.reply') || 'Odgovori'}>
-                      <MessageSquare className="h-3.5 w-3.5" />
-                    </Button>
                   </div>
                 </div>
-              </Card>
-            )
-          })}
-        </div>
-      )}
-
-      {replyDialog && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setReplyDialog(null)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>{t('blog.replyTo') || 'Odgovori na'} — {replyDialog?.authorName}</CardTitle></div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="text-xs text-muted-foreground mb-1">{replyDialog?.postTitle}</p>
-                <p className="text-sm">{replyDialog?.content}</p>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('blog.form.reply') || 'Vaš odgovor'}</Label>
-                <Textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={4} placeholder={t('blog.form.replyPlaceholder') || 'Napišite odgovor...'} />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setReplyDialog(null)}>{t('blog.cancel') || 'Otkaži'}</Button>
-              <Button onClick={handleReply} disabled={!replyText.trim()}>{t('blog.sendReply') || 'Pošalji odgovor'}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  )
-}
-
-// ============ TAB 5: TAGOVI ============
-
-function TagoviTab({ tags, setTags, posts }: {
-  tags: BlogTag[]; setTags: React.Dispatch<React.SetStateAction<BlogTag[]>>; posts: BlogPost[]
-}) {
-  const { t } = useTranslation()
-  const [viewMode, setViewMode] = useState<'cloud' | 'list'>('cloud')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<BlogTag | null>(null)
-  const [form, setForm] = useState({ name: '', slug: '' })
-  const [activeTag, setActiveTag] = useState<string | null>(null)
-
-  const filteredPosts = activeTag ? posts.filter((p) => p.tags.includes(activeTag)) : []
-
-  const openCreate = () => {
-    setEditing(null)
-    setForm({ name: '', slug: '' })
-    setDialogOpen(true)
-  }
-
-  const openEdit = (tag: BlogTag) => {
-    setEditing(tag)
-    setForm({ name: tag.name, slug: tag.slug })
-    setDialogOpen(true)
-  }
-
-  const handleSave = () => {
-    const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-    if (editing) {
-      setTags((prev) => prev.map((t) => t.id === editing.id ? { ...t, ...form, slug } : t))
-    } else {
-      setTags((prev) => [...prev, { id: `tag-${Date.now()}`, ...form, slug, postCount: 0 }])
-    }
-    setDialogOpen(false)
-  }
-
-  const handleDelete = (id: string) => {
-    setTags((prev) => prev.filter((t) => t.id !== id))
-    if (activeTag === id) setActiveTag(null)
-  }
-
-  const maxPostCount = Math.max(...tags.map((t) => t.postCount), 1)
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          <Button variant={viewMode === 'cloud' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('cloud')}>
-            <Filter className="h-4 w-4 mr-1" /> {t('blog.cloudView') || 'Oblak'}
-          </Button>
-          <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')}>
-            <BarChart3 className="h-4 w-4 mr-1" /> {t('blog.listView') || 'Lista'}
-          </Button>
-        </div>
-        <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> {t('blog.newTag') || 'Novi tag'}</Button>
-      </div>
-
-      {viewMode === 'cloud' ? (
-        <Card className="p-6">
-          <div className="flex flex-wrap gap-3 justify-center">
-            {tags.map((tag) => {
-              const scale = 0.75 + (tag.postCount / maxPostCount) * 0.75
-              return (
-                <Badge
-                  key={tag.id}
-                  variant={activeTag === tag.id ? 'default' : 'outline'}
-                  className="cursor-pointer px-4 py-2 text-sm transition-all hover:shadow-md"
-                  style={{ fontSize: `${scale}rem` }}
-                  onClick={() => setActiveTag(activeTag === tag.id ? null : tag.id)}
-                >
-                  <Tag className="h-3.5 w-3.5 mr-1" /> {tag.name} <span className="ml-1 opacity-60">({tag.postCount})</span>
-                </Badge>
               )
             })}
           </div>
-        </Card>
-      ) : (
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-xs">{t('blog.tagName') || 'Naziv'}</TableHead>
-                <TableHead className="text-xs">Slug</TableHead>
-                <TableHead className="text-xs text-right">{t('blog.posts') || 'Članaka'}</TableHead>
-                <TableHead className="text-xs text-right">{t('blog.actions') || 'Akcije'}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tags.map((tag) => (
-                <TableRow key={tag.id} className={activeTag === tag.id ? 'bg-primary/5' : ''}>
-                  <TableCell className="text-xs font-medium cursor-pointer" onClick={() => setActiveTag(activeTag === tag.id ? null : tag.id)}>
-                    <div className="flex items-center gap-2">
-                      <Tag className="h-3.5 w-3.5 text-muted-foreground" />
-                      {tag.name}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">/{tag.slug}</TableCell>
-                  <TableCell className="text-xs text-right font-medium">{tag.postCount}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(tag)}><Edit3 className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(tag.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+        )}
 
-      {activeTag && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">
-                {t('blog.postsForTag') || 'Članci za tag'}: <Badge variant="default" className="ml-2">{tags.find((t) => t.id === activeTag)?.name}</Badge>
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => setActiveTag(null)}>{t('blog.clearFilter') || 'Ukloni filter'}</Button>
+        {replyDialog && (
+          <div className="mt-4 p-4 border rounded-lg space-y-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => setReplyDialog(null)}><ArrowLeft className="h-3.5 w-3.5" /></Button>
+              <span className="text-sm font-medium">{t('blog.replyTo') || 'Odgovori na'} — {replyDialog?.authorName}</span>
             </div>
-          </CardHeader>
-          <CardContent>
+            <div className="p-2 bg-muted rounded-lg text-xs">
+              <p className="text-muted-foreground mb-1">{replyDialog?.postTitle}</p>
+              <p>{replyDialog?.content}</p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{t('blog.form.reply') || 'Vaš odgovor'}</Label>
+              <Textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={3} placeholder={t('blog.form.replyPlaceholder') || 'Napišite odgovor...'} className="text-xs" />
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setReplyDialog(null)}>{t('blog.cancel') || 'Otkaži'}</Button>
+              <Button size="sm" onClick={handleReply} disabled={!replyText.trim()}>{t('blog.sendReply') || 'Pošalji odgovor'}</Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============ SECTION: TAGOVI (cloud view, no dialog) ============
+
+function TagoviTab({ tags, posts }: {
+  tags: BlogTag[]; posts: BlogPost[]
+}) {
+  const { t } = useTranslation()
+  const [activeTag, setActiveTag] = useState<string | null>(null)
+  const maxPostCount = Math.max(...tags.map((tg) => tg.postCount), 1)
+
+  const filteredPosts = activeTag ? posts.filter((p) => p.tags.includes(activeTag)) : []
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium">{t('blog.tags') || 'Tagovi'}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-3 justify-center">
+          {tags.map((tag) => {
+            const scale = 0.75 + (tag.postCount / maxPostCount) * 0.75
+            return (
+              <Badge
+                key={tag.id}
+                variant={activeTag === tag.id ? 'default' : 'outline'}
+                className="cursor-pointer px-4 py-2 text-sm transition-all hover:shadow-md"
+                style={{ fontSize: `${scale}rem` }}
+                onClick={() => setActiveTag(activeTag === tag.id ? null : tag.id)}
+              >
+                <Tag className="h-3.5 w-3.5 mr-1" /> {tag.name} <span className="ml-1 opacity-60">({tag.postCount})</span>
+              </Badge>
+            )
+          })}
+        </div>
+
+        {activeTag && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium">
+                {t('blog.postsForTag') || 'Članci za tag'}: <Badge variant="default" className="ml-1">{tags.find((tg) => tg.id === activeTag)?.name}</Badge>
+              </span>
+              <Button variant="ghost" size="sm" className="text-xs" onClick={() => setActiveTag(null)}>{t('blog.clearFilter') || 'Ukloni filter'}</Button>
+            </div>
             {filteredPosts.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">{t('blog.noPosts') || 'Nema članaka'}</p>
+              <p className="text-xs text-muted-foreground text-center py-4">{t('blog.noPosts') || 'Nema članaka'}</p>
             ) : (
               <div className="space-y-2">
                 {filteredPosts.map((p) => {
@@ -1150,8 +1089,8 @@ function TagoviTab({ tags, setTags, posts }: {
                   return (
                     <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0">
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{p.title}</span>
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs font-medium">{p.title}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
@@ -1162,41 +1101,14 @@ function TagoviTab({ tags, setTags, posts }: {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>{editing ? (t('blog.editTag') || 'Izmeni tag') : (t('blog.newTag') || 'Novi tag')}</CardTitle></div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t('blog.form.name') || 'Naziv'}</Label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Slug</Label>
-                <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
-              <Button onClick={handleSave} disabled={!form.name}>{t('blog.save') || 'Sačuvaj'}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
-// ============ TAB 6: SEO ANALITIKA ============
+// ============ SECTION: SEO ANALITIKA ============
 
 function SeoAnalitikaTab({ posts, categories }: { posts: BlogPost[]; categories: BlogCategory[] }) {
   const { t } = useTranslation()
@@ -1252,158 +1164,139 @@ function SeoAnalitikaTab({ posts, categories }: { posts: BlogPost[]; categories:
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" /> {t('blog.seo.topPerforming') || 'Najbolji članci po pregledima'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topPerforming.map((p) => ({ name: p.title.substring(0, 25), views: p.views }))} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={130} />
-                <Tooltip />
-                <Bar dataKey="views" fill="#22c55e" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium">{t('blog.seo') || 'SEO Analitika'}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border">
+            <CardHeader className="pb-2"><CardTitle className="text-xs font-medium flex items-center gap-2"><BarChart3 className="h-3.5 w-3.5" /> {t('blog.seo.topPerforming') || 'Najbolji članci po pregledima'}</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={topPerforming.map((p) => ({ name: p.title.substring(0, 25), views: p.views }))} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis type="number" tick={{ fontSize: 10 }} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={120} />
+                  <Tooltip />
+                  <Bar dataKey="views" fill="#22c55e" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Globe className="h-4 w-4" /> {t('blog.seo.trafficSources') || 'Izvori saobraćaja'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie data={trafficSources} cx="50%" cy="50%" innerRadius={50} outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                  {trafficSources.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          <Card className="border">
+            <CardHeader className="pb-2"><CardTitle className="text-xs font-medium">{t('blog.seo.trafficSources') || 'Izvori saobraćaja'}</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie data={trafficSources} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                    {trafficSources.map((entry, index) => (
+                      <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Star className="h-4 w-4" /> {t('blog.seo.keywords') || 'Performanse ključnih reči'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{t('blog.seo.keyword') || 'Ključna reč'}</TableHead>
-                  <TableHead className="text-xs text-right">{t('blog.seo.impressions') || 'Impresije'}</TableHead>
-                  <TableHead className="text-xs text-right">{t('blog.seo.clicks') || 'Klikovi'}</TableHead>
-                  <TableHead className="text-xs text-right">CTR</TableHead>
-                  <TableHead className="text-xs text-right">{t('blog.seo.position') || 'Pozicija'}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {keywords.map((kw, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="text-xs font-medium">{kw.keyword}</TableCell>
-                    <TableCell className="text-xs text-right">{kw.impressions.toLocaleString()}</TableCell>
-                    <TableCell className="text-xs text-right font-medium text-green-600">{kw.clicks.toLocaleString()}</TableCell>
-                    <TableCell className="text-xs text-right">{kw.ctr}</TableCell>
-                    <TableCell className="text-xs text-right">
-                      <Badge variant={kw.position <= 4 ? 'default' : 'secondary'} className="text-xs">#{kw.position}</Badge>
-                    </TableCell>
+          <Card className="border">
+            <CardHeader className="pb-2"><CardTitle className="text-xs font-medium">{t('blog.seo.keywords') || 'Ključne reči'}</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">{t('blog.seo.keyword') || 'Reč'}</TableHead>
+                    <TableHead className="text-xs text-right">{t('blog.seo.impressions') || 'Impresije'}</TableHead>
+                    <TableHead className="text-xs text-right">{t('blog.seo.clicks') || 'Klikovi'}</TableHead>
+                    <TableHead className="text-xs text-right">CTR</TableHead>
+                    <TableHead className="text-xs text-right">Poz.</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                  {keywords.map((kw) => (
+                    <TableRow key={kw.keyword}>
+                      <TableCell className="text-xs font-medium">{kw.keyword}</TableCell>
+                      <TableCell className="text-xs text-right">{kw.impressions.toLocaleString()}</TableCell>
+                      <TableCell className="text-xs text-right">{kw.clicks.toLocaleString()}</TableCell>
+                      <TableCell className="text-xs text-right text-green-600">{kw.ctr}</TableCell>
+                      <TableCell className="text-xs text-right">{kw.position}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4" /> {t('blog.seo.avgReadingTime') || 'Prosečno vreme čitanja'}
-            </CardTitle>
-          </CardHeader>
+          <Card className="border">
+            <CardHeader className="pb-2"><CardTitle className="text-xs font-medium">{t('blog.seo.authorStats') || 'Statistika autora'}</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">{t('blog.author') || 'Autor'}</TableHead>
+                    <TableHead className="text-xs text-right">{t('blog.posts') || 'Članaka'}</TableHead>
+                    <TableHead className="text-xs text-right">{t('blog.views') || 'Pregleda'}</TableHead>
+                    <TableHead className="text-xs text-right">Avg</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {authorStats.map((a) => (
+                    <TableRow key={a.name}>
+                      <TableCell className="text-xs font-medium">{a.name}</TableCell>
+                      <TableCell className="text-xs text-right">{a.posts}</TableCell>
+                      <TableCell className="text-xs text-right font-bold">{a.views.toLocaleString()}</TableCell>
+                      <TableCell className="text-xs text-right">{a.avgViews.toLocaleString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Reading time trend */}
+        <Card className="border">
+          <CardHeader className="pb-2"><CardTitle className="text-xs font-medium">{t('blog.seo.readingTime') || 'Prosečno vreme čitanja'}</CardTitle></CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={180}>
               <LineChart data={readingTimeTrend}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} unit=" min" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="avgTime" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: '#8b5cf6' }} />
+                <Line type="monotone" dataKey="avgTime" stroke="#f59e0b" strokeWidth={2} dot={{ fill: '#f59e0b' }} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4" /> {t('blog.seo.authorComparison') || 'Poređenje po autorima'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={authorStats}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Bar dataKey="views" fill="#3b82f6" name={t('blog.seo.totalViews') || 'Ukupno pregleda'} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="posts" fill="#22c55e" name={t('blog.seo.postCount') || 'Broj članaka'} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Calendar className="h-4 w-4" /> {t('blog.seo.contentCalendar') || 'Kalendar sadržaja (objave po danu)'}
-            </CardTitle>
-          </CardHeader>
+        {/* Publishing heatmap */}
+        <Card className="border">
+          <CardHeader className="pb-2"><CardTitle className="text-xs font-medium">{t('blog.seo.publishingHeatmap') || 'Heatmap objavljivanja'}</CardTitle></CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <div className="min-w-[400px]">
-                <div className="grid grid-cols-8 gap-1 mb-1">
-                  <div className="text-xs text-muted-foreground text-center font-medium">{t('blog.seo.week') || 'Sedmica'}</div>
+                <div className="grid grid-cols-8 gap-1 text-center mb-1">
+                  <div className="text-xs text-muted-foreground" />
                   {['Pon', 'Uto', 'Sre', 'Čet', 'Pet', 'Sub', 'Ned'].map((d) => (
-                    <div key={d} className="text-xs text-muted-foreground text-center">{d}</div>
+                    <div key={d} className="text-xs text-muted-foreground">{d}</div>
                   ))}
                 </div>
                 {heatmapData.map((row) => (
                   <div key={row.day} className="grid grid-cols-8 gap-1 mb-1">
-                    <div className="text-xs text-muted-foreground flex items-center justify-center">{row.day}</div>
+                    <div className="flex items-center justify-center text-xs text-muted-foreground">{row.day}</div>
                     {[row.mon, row.tue, row.wed, row.thu, row.fri, row.sat, row.sun].map((val, i) => (
-                      <div key={i} className={`aspect-square rounded-sm flex items-center justify-center text-xs font-medium ${getHeatColor(val)}`}>
-                        {val > 0 ? val : ''}
-                      </div>
+                      <div key={i} className={`h-8 rounded ${getHeatColor(val)} flex items-center justify-center text-xs font-medium`} />
                     ))}
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mt-4 justify-center">
-                <span className="text-xs text-muted-foreground">{t('blog.seo.less') || 'Manje'}</span>
-                <div className="w-4 h-4 rounded-sm bg-muted" />
-                <div className="w-4 h-4 rounded-sm bg-green-200 dark:bg-green-900/40" />
-                <div className="w-4 h-4 rounded-sm bg-green-400 dark:bg-green-700/60" />
-                <div className="w-4 h-4 rounded-sm bg-green-600 dark:bg-green-500" />
-                <span className="text-xs text-muted-foreground">{t('blog.seo.more') || 'Više'}</span>
-              </div>
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

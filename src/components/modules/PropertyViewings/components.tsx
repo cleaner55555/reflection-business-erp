@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Search, Trash2, Pencil, Eye, Calendar } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
@@ -64,14 +63,3 @@ export function EditList({ data, onEdit, onDelete }: { data: Viewing[]; onEdit: 
   )
 }
 
-export function DetailDialog({ detailItem, open, onClose }: { detailItem: Viewing | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={() => onClose()}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>Detalji pregleda</DialogTitle></DialogHeader>{detailItem && (<div className="space-y-3"><h3 className="text-sm font-semibold">{detailItem.propertyTitle}</h3><div className="grid grid-cols-2 gap-3">{[['Klijent', detailItem.clientName],['Telefon', detailItem.phone],['Agent', detailItem.agent],['Datum', formatDate(detailItem.date)],['Vreme', detailItem.time],['Trajanje', `${detailItem.duration} min`]].map(([l, v]) => (<div key={l} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{l}</div><div className="text-xs font-medium">{v}</div></div>))}</div><div className="flex gap-3"><div className="p-2 rounded-lg bg-muted/50 flex-1"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div><div className="p-2 rounded-lg bg-muted/50 flex-1"><div className="text-xs text-muted-foreground mb-1">Interes</div>{getInterestBadge(detailItem.clientInterest)}</div></div>{detailItem.feedback && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Fidbek</div><div className="text-xs">{detailItem.feedback}</div></div>}{detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}</div>)}</DialogContent></Dialog>
-  )
-}
-
-export function EditDialog({ editItem, form, onFormChange, open, onClose, onSave }: { editItem: Viewing | null; form: Partial<Viewing>; onFormChange: (f: Partial<Viewing>) => void; open: boolean; onClose: () => void; onSave: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Novi pregled'}</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="grid grid-cols-2 gap-3"><div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'scheduled'} onValueChange={v => onFormChange({ ...form, status: v as Viewing['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="scheduled">Zakazano</SelectItem><SelectItem value="completed">Obavljeno</SelectItem><SelectItem value="cancelled">Otkazano</SelectItem><SelectItem value="no_show">Nije došao</SelectItem></SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Interes</Label><Select value={form.clientInterest || 'medium'} onValueChange={v => onFormChange({ ...form, clientInterest: v as Viewing['clientInterest'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high">Visoko</SelectItem><SelectItem value="medium">Srednje</SelectItem><SelectItem value="low">Nisko</SelectItem><SelectItem value="none">Nema</SelectItem></SelectContent></Select></div></div><div className="grid gap-2"><Label className="text-xs">Fidbek</Label><Input className="text-xs" value={form.feedback || ''} onChange={e => onFormChange({ ...form, feedback: e.target.value })} /></div></div><DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
-  )
-}

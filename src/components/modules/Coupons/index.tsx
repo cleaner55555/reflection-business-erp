@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, Search, Trash2, Pencil, Eye, Tag, Percent, DollarSign, Gift, Ticket, Clock, CheckCircle2, RefreshCw, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
@@ -65,7 +66,7 @@ export function Coupons() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('pregled')
   const [detailId, setDetailId] = useState<string | null>(null)
   const [editItem, setEditItem] = useState<Coupon | null>(null)
   const [formData, setFormData] = useState({ code: '', name: '', description: '', type: 'percentage', discountValue: 0, minOrder: 0, maxDiscount: 0, usageLimit: 100, perUserLimit: 1, startDate: '', endDate: '' })
@@ -126,14 +127,15 @@ export function Coupons() {
     } catch { toast.error('Greška') }
   }
 
+  const emptyForm = { code: '', name: '', description: '', type: 'percentage', discountValue: 0, minOrder: 0, maxDiscount: 0, usageLimit: 100, perUserLimit: 1, startDate: '', endDate: '' }
   const handleOpenCreate = () => {
-    setFormData({ code: '', name: '', description: '', type: 'percentage', discountValue: 0, minOrder: 0, maxDiscount: 0, usageLimit: 100, perUserLimit: 1, startDate: '', endDate: '' })
-    setEditItem(null); setDialogOpen(true)
+    setFormData(emptyForm)
+    setEditItem(null); setActiveTab('dodaj')
   }
 
   const handleOpenEdit = (item: Coupon) => {
     setFormData({ code: item.code, name: item.name, description: item.description, type: item.type, discountValue: item.discountValue, minOrder: item.minOrder, maxDiscount: item.maxDiscount, usageLimit: item.usageLimit, perUserLimit: item.perUserLimit, startDate: item.startDate, endDate: item.endDate })
-    setEditItem(item); setDialogOpen(true)
+    setEditItem(item); setActiveTab('uredi')
   }
 
   const handleSave = async () => {
@@ -148,7 +150,7 @@ export function Coupons() {
         if (res.ok) { toast.success('Novi kupon kreiran'); loadData() }
       }
     } catch { toast.error('Greška pri čuvanju') }
-    setDialogOpen(false); setEditItem(null)
+    setEditItem(null); setActiveTab('pregled')
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
@@ -177,7 +179,8 @@ export function Coupons() {
         <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupan popust</div><p className="text-xl font-bold">{formatCurrency(stats.totalDiscount)}</p></Card>
       </div>
 
-      <Card>
+      <Tabs value={activeTab} onValueChange={v => { setActiveTab(v); if (v !== 'uredi') setEditItem(null) }}><TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
+      <TabsContent value="pregled" className="mt-4"><Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <CardTitle className="text-base">Svi kuponi</CardTitle>
@@ -229,9 +232,7 @@ export function Coupons() {
             )}
           </div>
         </CardContent>
-      </Card>
-
-      {/* Detail Card */}
+      </Card></TabsContent>
       {!!detailId && (<Card className="sm:max-w-[550px]">
         <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">Detalji kupona<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>
@@ -257,34 +258,11 @@ export function Coupons() {
         </CardContent>
       </Card>)}
 
-      {/* Create/Edit Card */}
-      {dialogOpen && (<Card className="sm:max-w-[500px]">
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editItem ? 'Uredi kupon' : 'Novi kupon'}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-        <CardContent className="max-h-[85vh] overflow-y-auto">
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Kod *</Label><Input placeholder="SUMMER24" className="text-sm font-mono uppercase" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value.toUpperCase() }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.type} onValueChange={v => setFormData(p => ({ ...p, type: v }))}><SelectTrigger className="text-sm"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input placeholder="Naziv kupona" className="text-sm" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Opis</Label><Textarea placeholder="Opis akcije..." className="text-sm" value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} /></div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Vrednost</Label><Input type="number" className="text-sm" value={formData.discountValue || ''} onChange={e => setFormData(p => ({ ...p, discountValue: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Min. narudžba</Label><Input type="number" className="text-sm" value={formData.minOrder || ''} onChange={e => setFormData(p => ({ ...p, minOrder: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Max. popust</Label><Input type="number" className="text-sm" value={formData.maxDiscount || ''} onChange={e => setFormData(p => ({ ...p, maxDiscount: Number(e.target.value) }))} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Limit (ukupno)</Label><Input type="number" className="text-sm" value={formData.usageLimit || ''} onChange={e => setFormData(p => ({ ...p, usageLimit: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Po korisniku</Label><Input type="number" className="text-sm" value={formData.perUserLimit || ''} onChange={e => setFormData(p => ({ ...p, perUserLimit: Number(e.target.value) }))} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Od</Label><Input type="date" className="text-sm" value={formData.startDate} onChange={e => setFormData(p => ({ ...p, startDate: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Do</Label><Input type="date" className="text-sm" value={formData.endDate} onChange={e => setFormData(p => ({ ...p, endDate: e.target.value }))} /></div>
-            </div>
-          </div>
-          <div className="flex gap-2 pt-4"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
-        </CardContent>
-      </Card>)}
+      <TabsContent value="dodaj" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Novi kupon</CardTitle></CardHeader><CardContent><div className="grid gap-4"><div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Kod *</Label><Input placeholder="SUMMER24" className="text-sm font-mono uppercase" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value.toUpperCase() }))} /></div><div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.type} onValueChange={v => setFormData(p => ({ ...p, type: v }))}><SelectTrigger className="text-sm"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div></div><div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input placeholder="Naziv kupona" className="text-sm" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div><div className="grid gap-2"><Label className="text-xs">Opis</Label><Textarea placeholder="Opis akcije..." className="text-sm" value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} /></div><div className="grid grid-cols-3 gap-4"><div className="grid gap-2"><Label className="text-xs">Vrednost</Label><Input type="number" className="text-sm" value={formData.discountValue || ''} onChange={e => setFormData(p => ({ ...p, discountValue: Number(e.target.value) }))} /></div><div className="grid gap-2"><Label className="text-xs">Min. narudžba</Label><Input type="number" className="text-sm" value={formData.minOrder || ''} onChange={e => setFormData(p => ({ ...p, minOrder: Number(e.target.value) }))} /></div><div className="grid gap-2"><Label className="text-xs">Max. popust</Label><Input type="number" className="text-sm" value={formData.maxDiscount || ''} onChange={e => setFormData(p => ({ ...p, maxDiscount: Number(e.target.value) }))} /></div></div><div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Limit (ukupno)</Label><Input type="number" className="text-sm" value={formData.usageLimit || ''} onChange={e => setFormData(p => ({ ...p, usageLimit: Number(e.target.value) }))} /></div><div className="grid gap-2"><Label className="text-xs">Po korisniku</Label><Input type="number" className="text-sm" value={formData.perUserLimit || ''} onChange={e => setFormData(p => ({ ...p, perUserLimit: Number(e.target.value) }))} /></div></div><div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Od</Label><Input type="date" className="text-sm" value={formData.startDate} onChange={e => setFormData(p => ({ ...p, startDate: e.target.value }))} /></div><div className="grid gap-2"><Label className="text-xs">Do</Label><Input type="date" className="text-sm" value={formData.endDate} onChange={e => setFormData(p => ({ ...p, endDate: e.target.value }))} /></div></div></div><div className="flex gap-2 pt-4"><Button onClick={handleSave}><Plus className="h-4 w-4 mr-1" />Kreiraj</Button><Button variant="outline" onClick={() => setFormData(emptyForm)}>Poništi</Button></div></CardContent></Card></TabsContent>
+      <TabsContent value="uredi" className="mt-4">
+        {editItem ? (<Card><CardHeader><CardTitle className="text-base flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditItem(null); setActiveTab('pregled') }}><ArrowLeft className="h-4 w-4" /></Button>Uredi: {editItem.code}</CardTitle></CardHeader><CardContent><div className="grid gap-4"><div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Kod *</Label><Input className="text-sm font-mono uppercase" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value.toUpperCase() }))} /></div><div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.type} onValueChange={v => setFormData(p => ({ ...p, type: v }))}><SelectTrigger className="text-sm"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div></div><div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div><div className="grid gap-2"><Label className="text-xs">Opis</Label><Textarea value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} /></div><div className="grid grid-cols-3 gap-4"><div className="grid gap-2"><Label className="text-xs">Vrednost</Label><Input type="number" value={formData.discountValue || ''} onChange={e => setFormData(p => ({ ...p, discountValue: Number(e.target.value) }))} /></div><div className="grid gap-2"><Label className="text-xs">Min. narudžba</Label><Input type="number" value={formData.minOrder || ''} onChange={e => setFormData(p => ({ ...p, minOrder: Number(e.target.value) }))} /></div><div className="grid gap-2"><Label className="text-xs">Max. popust</Label><Input type="number" value={formData.maxDiscount || ''} onChange={e => setFormData(p => ({ ...p, maxDiscount: Number(e.target.value) }))} /></div></div><div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Limit</Label><Input type="number" value={formData.usageLimit || ''} onChange={e => setFormData(p => ({ ...p, usageLimit: Number(e.target.value) }))} /></div><div className="grid gap-2"><Label className="text-xs">Po korisniku</Label><Input type="number" value={formData.perUserLimit || ''} onChange={e => setFormData(p => ({ ...p, perUserLimit: Number(e.target.value) }))} /></div></div><div className="grid grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Od</Label><Input type="date" value={formData.startDate} onChange={e => setFormData(p => ({ ...p, startDate: e.target.value }))} /></div><div className="grid gap-2"><Label className="text-xs">Do</Label><Input type="date" value={formData.endDate} onChange={e => setFormData(p => ({ ...p, endDate: e.target.value }))} /></div></div></div><div className="flex gap-2 pt-4"><Button onClick={handleSave}>Sačuvaj</Button><Button variant="outline" onClick={() => { setEditItem(null); setActiveTab('pregled') }}>Otkaži</Button></div></CardContent></Card>) : (<Card><CardHeader><CardTitle className="text-base">Lista za uređivanje</CardTitle></CardHeader><CardContent><div className="max-h-[500px] overflow-y-auto space-y-3">{data.map(item => (<div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg"><div className="flex-1 min-w-0"><div className="flex items-center gap-2"><span className="text-xs font-mono font-bold text-emerald-700">{item.code}</span><span className="text-xs font-medium">{item.name}</span>{getStatusBadge(item.status)}</div><p className="text-xs text-muted-foreground truncate">{item.description}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => handleOpenEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div>))}</div></CardContent></Card>)}
+      </TabsContent>
+    </Tabs>
     </div>
   )
 }

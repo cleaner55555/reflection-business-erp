@@ -1748,9 +1748,3 @@ export function Forum() {
     </TooltipProvider>
   )
 }
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setCatDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreateCategory} disabled={!catForm.label.trim()}>
-                {editingCategory ? 'Sačuvaj izmene' : 'Kreiraj'}
-              </Button>
-            </div>

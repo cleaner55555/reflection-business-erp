@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -211,90 +210,3 @@ export function OverviewTab({ data }: OverviewTabProps) {
   )
 }
 
-interface DetailDialogProps { detailItem: RouteItem | null; onClose: () => void }
-
-export function DetailDialog({ detailItem, onClose }: DetailDialogProps) {
-  if (!detailItem) return null
-  return (
-    <Dialog open={!!detailItem} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Detalji rute</DialogTitle></DialogHeader>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between"><div><p className="text-lg font-bold">{detailItem.name}</p><p className="text-xs text-muted-foreground">{detailItem.code}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div></div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.driver}</p></div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-medium">{detailItem.vehicle}</p></div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Udaljenost</div><p className="text-xs font-medium">{detailItem.totalDistance} km</p></div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vreme</div><p className="text-xs font-medium">{detailItem.estimatedTime}</p></div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Gorivo</div><p className="text-xs font-medium">{formatCurrency(detailItem.fuelCost)}</p></div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Putarine</div><p className="text-xs font-medium">{formatCurrency(detailItem.tollCost)}</p></div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xs font-bold">{formatCurrency(detailItem.fuelCost + detailItem.tollCost)}</p></div>
-          </div>
-          <div className="p-4 rounded-lg border">
-            <p className="text-xs font-medium mb-3 flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />Trasa: {detailItem.origin} → {detailItem.destination}</p>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3"><div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /></div><div><p className="text-xs font-medium">{detailItem.origin}</p><p className="text-xs text-muted-foreground">Polazak: {formatDate(detailItem.startDate)}</p></div></div>
-              {detailItem.stops.map((stop, idx) => (
-                <div key={stop.id} className="flex items-center gap-3 ml-2">
-                  <div className="w-px h-4 bg-border" />
-                  <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.status === 'completed' ? 'bg-emerald-100' : stop.status === 'in_transit' ? 'bg-blue-100' : 'bg-slate-100'}`}>
-                    {stop.status === 'completed' ? <CheckCircle2 className="h-3 w-3 text-emerald-600" /> : stop.status === 'in_transit' ? <Navigation className="h-3 w-3 text-blue-600" /> : <span className="text-xs font-bold text-slate-500">{idx + 1}</span>}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2"><p className="text-xs font-medium">{stop.location}</p>{getStopStatusBadge(stop.status)}</div>
-                    <p className="text-xs text-muted-foreground">{stop.address}</p>
-                    <div className="flex gap-3 text-xs text-muted-foreground mt-0.5"><span>{stop.cargo} · {stop.weight}kg</span><span>{stop.estimatedArrival} - {stop.estimatedDeparture}</span></div>
-                  </div>
-                </div>
-              ))}
-              <div className="flex items-center gap-3"><div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center"><MapPin className="h-3.5 w-3.5 text-blue-600" /></div><div><p className="text-xs font-medium">{detailItem.destination}</p><p className="text-xs text-muted-foreground">{detailItem.endDate ? `Dolazak: ${formatDate(detailItem.endDate)}` : 'Predviđeni dolazak'}</p></div></div>
-            </div>
-          </div>
-          <Progress value={calcRouteProgress(detailItem.stops)} className="h-2" />
-          <p className="text-xs text-muted-foreground text-center">Napredak: {calcRouteProgress(detailItem.stops)}% · {detailItem.stops.filter(s => s.status === 'completed').length}/{detailItem.stops.length} stanica</p>
-          {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-interface FormProps {
-  open: boolean; editItem: RouteItem | null; formData: Record<string, unknown>
-  onOpenChange: (open: boolean) => void; onFieldChange: (f: string, v: unknown) => void; onSave: () => void; onEditItemChange: (item: RouteItem | null) => void
-}
-
-export function RouteFormDialog({ open, editItem, formData, onOpenChange, onFieldChange, onSave, onEditItemChange }: RouteFormProps) {
-  return (
-    <Dialog open={open} onOpenChange={o => { onOpenChange(o); if (!o) onEditItemChange(null) }}>
-      <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi rutu' : 'Nova ruta'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Kod rute</Label><Input placeholder="RT-2024-001" className="text-xs" value={formData.code as string} onChange={e => onFieldChange('code', e.target.value)} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority as string} onValueChange={v => onFieldChange('priority', v)}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Naziv rute *</Label><Input placeholder="Beograd - Novi Sad" className="text-xs" value={formData.name as string} onChange={e => onFieldChange('name', e.target.value)} /></div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Polazište *</Label><Input placeholder="Beograd" className="text-xs" value={formData.origin as string} onChange={e => onFieldChange('origin', e.target.value)} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Odredište *</Label><Input placeholder="Novi Sad" className="text-xs" value={formData.destination as string} onChange={e => onFieldChange('destination', e.target.value)} /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Vozač *</Label><Select value={formData.driver as string} onValueChange={v => onFieldChange('driver', v)}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozača" /></SelectTrigger><SelectContent>{DRIVERS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Vozilo</Label><Select value={formData.vehicle as string} onValueChange={v => onFieldChange('vehicle', v)}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozilo" /></SelectTrigger><SelectContent>{VEHICLES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Udaljenost (km)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.totalDistance as number || ''} onChange={e => onFieldChange('totalDistance', Number(e.target.value))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Procenjeno vreme</Label><Input placeholder="2h 30m" className="text-xs" value={formData.estimatedTime as string} onChange={e => onFieldChange('estimatedTime', e.target.value)} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Trošak goriva (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.fuelCost as number || ''} onChange={e => onFieldChange('fuelCost', Number(e.target.value))} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Putarine (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.tollCost as number || ''} onChange={e => onFieldChange('tollCost', Number(e.target.value))} /></div>
-          <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Dodatne informacije..." className="text-xs" value={formData.notes as string} onChange={e => onFieldChange('notes', e.target.value)} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" onClick={() => { onOpenChange(false); onEditItemChange(null) }}>Otkaži</Button><Button onClick={onSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

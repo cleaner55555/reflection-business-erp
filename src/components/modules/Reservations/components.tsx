@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -133,57 +132,3 @@ export function EditTab({ data, onEdit, onDelete }: { data: Reservation[]; onEdi
   )
 }
 
-export function DetailDialog({ detailItem, onClose }: { detailItem: Reservation | null; onClose: () => void }) {
-  return (
-    <Dialog open={!!detailItem} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Detalji rezervacije</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.guestName}</h3>{getStatusBadge(detailItem.status)}</div>
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                ['Br. rezervacije', detailItem.reservationNo],
-                ['Telefon', detailItem.phone],
-                ['Email', detailItem.email || '—'],
-                ['Datum', formatDate(detailItem.date)],
-                ['Vreme', detailItem.time],
-                ['Trajanje', `${detailItem.duration} min`],
-                ['Osoba', String(detailItem.partySize)],
-                ['Sto', detailItem.tableNo || 'Nije dodeljen'],
-                ['Zona', AREAS[detailItem.area]?.label],
-                ['Povod', detailItem.occasion || '—'],
-                ['Izvor', detailItem.source],
-                ['Depozit', detailItem.deposit > 0 ? new Intl.NumberFormat('sr-RS', { style: 'currency', currency: 'RSD', maximumFractionDigits: 0 }).format(detailItem.deposit) : 'Nema'],
-              ] as [string, string][]).map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            {detailItem.specialRequests && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Specijalni zahtevi</div><div className="text-xs">{detailItem.specialRequests}</div></div>}
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function EditDialog({ editItem, form, onFormChange, onSave, onClose }: { editItem: Reservation | null; form: Partial<Reservation>; onFormChange: (f: Partial<Reservation>) => void; onSave: () => void; onClose: (open: boolean) => void }) {
-  return (
-    <Dialog open={!!editItem || false} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Nova rezervacija'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-xs" value={form.guestName || ''} onChange={e => onFormChange({ ...form, guestName: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => onFormChange({ ...form, status: v as Reservation['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="confirmed">Potvrđena</SelectItem><SelectItem value="pending">Na čekanju</SelectItem><SelectItem value="checked_in">Prijavljena</SelectItem><SelectItem value="completed">Završena</SelectItem><SelectItem value="cancelled">Otkazana</SelectItem><SelectItem value="no_show">Nije došao</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input className="text-xs" type="date" value={form.date || ''} onChange={e => onFormChange({ ...form, date: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Vreme</Label><Input className="text-xs" type="time" value={form.time || ''} onChange={e => onFormChange({ ...form, time: e.target.value })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => onFormChange({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={() => onClose(false)}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

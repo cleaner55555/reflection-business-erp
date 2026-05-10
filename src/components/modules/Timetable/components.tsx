@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -259,48 +258,6 @@ export function Raspored() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Detalji rasporeda</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold">{detailItem.subject}</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ['Dan', DAY_LABELS[detailItem.dayOfWeek]],
-                  ['Vreme', `${detailItem.timeStart} - ${detailItem.timeEnd}`],
-                  ['Nastavnik', detailItem.teacher],
-                  ['Sala', detailItem.room],
-                  ['Odjeljenje', detailItem.classGroup],
-                  ['Tip', TYPES[detailItem.type]?.label],
-                  ['Semestar', detailItem.semester],
-                ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-                ))}
-              </div>
-              <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi unos' : 'Novi unos'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Predmet *</Label><Input className="text-xs" value={form.subject || ''} onChange={e => setForm({ ...form, subject: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as ScheduleEntry['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivno</SelectItem><SelectItem value="cancelled">Otkazano</SelectItem><SelectItem value="rescheduled">Pomeren</SelectItem><SelectItem value="completed">Završeno</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Dan</Label><Select value={form.dayOfWeek || 'ponedeljak'} onValueChange={v => setForm({ ...form, dayOfWeek: v as ScheduleEntry['dayOfWeek'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{DAYS.map(d => <SelectItem key={d} value={d}>{DAY_LABELS[d]}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Vreme</Label><div className="flex gap-1"><Input className="text-xs" type="time" value={form.timeStart || ''} onChange={e => setForm({ ...form, timeStart: e.target.value })} /><Input className="text-xs" type="time" value={form.timeEnd || ''} onChange={e => setForm({ ...form, timeEnd: e.target.value })} /></div></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

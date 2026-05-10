@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -137,61 +136,3 @@ export function HomeworkEditTab({ data, onEdit, onDelete }: {
   )
 }
 
-/* ─── Detail Dialog ─── */
-export function HomeworkDetailDialog({ item, open, onClose }: {
-  item: Homework | null; open: boolean; onClose: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Detalji obaveze</DialogTitle></DialogHeader>
-        {item && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">{item.title}</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Predmet', item.subject],
-                ['Odjeljenje', item.classGroup],
-                ['Nastavnik', item.teacher],
-                ['Tip', TYPES[item.type]?.label],
-                ['Rok', formatDate(item.dueDate)],
-                ['Dodeljena', formatDate(item.assignedDate)],
-                ['Max bodova', String(item.maxPoints)],
-                ['Prosek', item.avgScore > 0 ? String(item.avgScore) : '—'],
-                ['Predano', `${item.submittedCount}/${item.totalStudents}`],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(item.status)}</div>
-            {item.description && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Opis</div><div className="text-xs">{item.description}</div></div>}
-            {item.instructions && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Uputstva</div><div className="text-xs">{item.instructions}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-/* ─── Edit Dialog ─── */
-export function HomeworkEditDialog({ editItem, form, setForm, open, onClose, onSave }: {
-  editItem: Homework | null; form: Partial<Homework>; setForm: (f: Partial<Homework>) => void; open: boolean; onClose: () => void; onSave: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi obavezu' : 'Nova obavezu'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Naslov *</Label><Input className="text-xs" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'assigned'} onValueChange={v => setForm({ ...form, status: v as Homework['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="assigned">Dodeljena</SelectItem><SelectItem value="submitted">Predana</SelectItem><SelectItem value="graded">Ocenjena</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="returned">Vraćena</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Max bodova</Label><Input className="text-xs" type="number" value={form.maxPoints || ''} onChange={e => setForm({ ...form, maxPoints: Number(e.target.value) })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Rok</Label><Input className="text-xs" type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Opis</Label><Input className="text-xs" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

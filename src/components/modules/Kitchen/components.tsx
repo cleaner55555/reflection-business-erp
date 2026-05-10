@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -131,55 +130,3 @@ export function EditTab({ data, onEdit, onDelete }: { data: KitchenItem[]; onEdi
   )
 }
 
-export function DetailDialog({ detailItem, onClose }: { detailItem: KitchenItem | null; onClose: () => void }) {
-  return (
-    <Dialog open={!!detailItem} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Detalji artikla</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">{detailItem.name}</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                ['Kategorija', CATEGORIES[detailItem.category]],
-                ['Količina', `${detailItem.quantity} ${detailItem.unit}`],
-                ['Min. količina', `${detailItem.minQuantity} ${detailItem.unit}`],
-                ['Cena/jed', formatRSD(detailItem.unitPrice)],
-                ['Ukupna vrednost', formatRSD(detailItem.quantity * detailItem.unitPrice)],
-                ['Dobavljač', detailItem.supplier],
-                ['Lokacija', detailItem.storageArea],
-                ['Datum prijema', formatDate(detailItem.receivedDate)],
-                ['Rok trajanja', formatDate(detailItem.expiryDate)],
-              ] as [string, string][]).map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-            {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-xs bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function EditDialog({ editItem, form, onFormChange, onSave, onClose }: { editItem: KitchenItem | null; form: Partial<KitchenItem>; onFormChange: (f: Partial<KitchenItem>) => void; onSave: () => void; onClose: (open: boolean) => void }) {
-  return (
-    <Dialog open={!!editItem || false} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi artikal' : 'Novi artikal'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => onFormChange({ ...form, name: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'in_stock'} onValueChange={v => onFormChange({ ...form, status: v as KitchenItem['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="in_stock">Na stanju</SelectItem><SelectItem value="low_stock">Nisko</SelectItem><SelectItem value="out_of_stock">Nema</SelectItem><SelectItem value="expired">Istekao</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Količina</Label><Input className="text-xs" type="number" value={form.quantity || ''} onChange={e => onFormChange({ ...form, quantity: Number(e.target.value) })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Cena/jed</Label><Input className="text-xs" type="number" value={form.unitPrice || ''} onChange={e => onFormChange({ ...form, unitPrice: Number(e.target.value) })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => onFormChange({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={() => onClose(false)}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

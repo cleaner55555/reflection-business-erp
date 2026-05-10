@@ -389,7 +389,7 @@ function GlavnaKnjigaTab({ fiscalYear }: { fiscalYear: number }) {
   const [accountFilter, setAccountFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'form' | 'statement'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null)
   const [accounts, setAccounts] = useState<Account[]>([])
@@ -426,13 +426,12 @@ function GlavnaKnjigaTab({ fiscalYear }: { fiscalYear: number }) {
   const totalDebit = entries.reduce((acc, e) => acc + (e.debit || 0), 0)
   const totalCredit = entries.reduce((acc, e) => acc + (e.credit || 0), 0)
 
-  const handleNew = () => { setEditingEntry(null); setViewMode('form') }
-  const handleEdit = (entry: JournalEntry) => { setEditingEntry(entry); setViewMode('form') }
-  const handleCancel = () => { setViewMode('list'); setEditingEntry(null); setStatement(null) }
+  const handleNew = () => { setEditingEntry(null); setActiveTab('dodaj') }
+  const handleEdit = (entry: JournalEntry) => { setEditingEntry(entry); setActiveTab('uredi') }
+  const handleCancel = () => { setActiveTab('pregled'); setEditingEntry(null); setStatement(null) }
 
   const handleViewStatement = async (code: string) => {
     setStatementCode(code)
-    setViewMode('statement')
     const from = `${fiscalYear}-01-01`
     const to = `${fiscalYear}-12-31`
     const res = await fetch(`/api/accounts/statement?accountCode=${code}&from=${from}&to=${to}`)
@@ -478,7 +477,7 @@ function GlavnaKnjigaTab({ fiscalYear }: { fiscalYear: number }) {
       })
       if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
       toast.success(isEditing ? t('accounting.entryUpdated') : t('accounting.entryCreated'))
-      setViewMode('list'); setEditingEntry(null); fetchEntries()
+      setActiveTab('pregled'); setEditingEntry(null); fetchEntries()
     } catch { toast.error(t('common.saveError')) } finally { setSubmitting(false) }
   }
 
@@ -487,231 +486,295 @@ function GlavnaKnjigaTab({ fiscalYear }: { fiscalYear: number }) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        {viewMode === 'form' ? (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base font-semibold">
-              {editingEntry ? t('common.edit') : t('accounting.newEntry')}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              {t('accounting.generalLedger')}
             </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t('accounting.ledgerSubtitle')}
+            </p>
           </div>
-        ) : viewMode === 'statement' ? (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle className="text-base font-semibold">
-                Konto kartica: {statementCode}
-              </CardTitle>
-              {statement && (
-                <p className="text-xs text-muted-foreground">{statement.account.name} — {statement.account.type}</p>
-              )}
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  {t('accounting.generalLedger')}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {t('accounting.ledgerSubtitle')}
-                </p>
-              </div>
-              <Button size="sm" className="gap-2" onClick={handleNew}>
-                <Plus className="h-4 w-4" /> {t('common.new')} {t('accounting.entry')}
-              </Button>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4 flex-wrap">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder={t('accounting.searchPlaceholder')} className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-              </div>
-              <Select value={accountFilter || 'all'} onValueChange={(v) => setAccountFilter(v === 'all' ? '' : v)}>
-                <SelectTrigger className="w-[200px] h-9">
-                  <SelectValue placeholder={t('accounting.allAccounts')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('accounting.allAccounts')}</SelectItem>
-                  {accounts.map((acc) => (
-                    <SelectItem key={acc.code} value={acc.code}>{acc.code} — {acc.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input type="date" className="w-[140px] h-9" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-              <Input type="date" className="w-[140px] h-9" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-            </div>
-          </>
-        )}
+        </div>
       </CardHeader>
       <CardContent>
-        {viewMode === 'form' ? (
-          <form onSubmit={handleSubmit} key={editingEntry?.id || 'new'} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.date')}</Label>
-                <Input name="date" type="date" required defaultValue={editingEntry ? editingEntry.date.split('T')[0] : today} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('accounting.account')}</Label>
-                <Select name="accountCode" defaultValue={editingEntry?.accountCode || ''}>
-                  <SelectTrigger><SelectValue placeholder={t('accounting.selectAccount')} /></SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((acc) => (
-                      <SelectItem key={acc.code} value={acc.code}>{acc.code} — {acc.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('accounting.debit')} (RSD)</Label>
-                <Input name="debit" type="number" step="0.01" min="0" placeholder="0.00" defaultValue={editingEntry?.debit || ''} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('accounting.credit')} (RSD)</Label>
-                <Input name="credit" type="number" step="0.01" min="0" placeholder="0.00" defaultValue={editingEntry?.credit || ''} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('common.description')}</Label>
-              <Input name="description" placeholder={t('accounting.entryDescription')} required defaultValue={editingEntry?.description || ''} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('accounting.document')} ({t('common.optional').toLowerCase()})</Label>
-              <Input name="documentRef" placeholder={t('accounting.documentNumber')} defaultValue={editingEntry?.documentRef || ''} />
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
-              <Button type="submit" className="flex-1" disabled={submitting}>
-                {submitting ? t('common.saving') : editingEntry ? t('common.saveChanges') : t('accounting.createEntry')}
-              </Button>
-            </div>
-          </form>
-        ) : viewMode === 'statement' && statement ? (
-          <div className="space-y-4">
-            {/* Statement summary */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="rounded-lg bg-muted/50 p-3">
-                <p className="text-xs text-muted-foreground uppercase font-medium">Početno stanje</p>
-                <p className="text-sm font-bold">{formatRSD(statement.openingBalance)}</p>
-              </div>
-              <div className="rounded-lg bg-emerald-50 p-3">
-                <p className="text-xs text-emerald-700 uppercase font-medium">Ukupno duguje</p>
-                <p className="text-sm font-bold text-emerald-700">{formatRSD(statement.totalDebit)}</p>
-              </div>
-              <div className="rounded-lg bg-red-50 p-3">
-                <p className="text-xs text-red-600 uppercase font-medium">Ukupno potražuje</p>
-                <p className="text-sm font-bold text-red-600">{formatRSD(statement.totalCredit)}</p>
-              </div>
-              <div className="rounded-lg bg-blue-50 p-3">
-                <p className="text-xs text-blue-700 uppercase font-medium">Završno stanje</p>
-                <p className={`text-sm font-bold ${statement.closingBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
-                  {formatRSD(statement.closingBalance)}
-                </p>
-              </div>
-            </div>
-            {/* Statement entries */}
-            <div className="max-h-[400px] overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs w-[90px]">Datum</TableHead>
-                    <TableHead className="text-xs w-[100px]">Nalog</TableHead>
-                    <TableHead className="text-xs text-right w-[110px]">Duguje</TableHead>
-                    <TableHead className="text-xs text-right w-[110px]">Potražuje</TableHead>
-                    <TableHead className="text-xs">Opis</TableHead>
-                    <TableHead className="text-xs text-right w-[120px]">Saldo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {statement.entries.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-sm">Nema stavki</TableCell>
-                    </TableRow>
-                  ) : (
-                    statement.entries.map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
-                        <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
-                        <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
-                        <TableCell className="text-xs text-right text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
-                        <TableCell className="text-xs max-w-[200px] truncate">{entry.description}</TableCell>
-                        <TableCell className={`text-xs text-right font-semibold whitespace-nowrap ${entry.runningBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
-                          {formatRSD(entry.runningBalance)}
-                        </TableCell>
+        <Tabs value={activeTab} onValueChange={(v) => {
+          setActiveTab(v as 'pregled' | 'dodaj' | 'uredi')
+          if (v === 'dodaj') setEditingEntry(null)
+          if (v === 'pregled') { setEditingEntry(null); setStatement(null) }
+        }}>
+          <TabsList>
+            <TabsTrigger value="pregled" className="gap-1.5">
+              <Eye className="h-3.5 w-3.5" />
+              Pregled
+            </TabsTrigger>
+            <TabsTrigger value="dodaj" className="gap-1.5">
+              <Plus className="h-3.5 w-3.5" />
+              Dodaj
+            </TabsTrigger>
+            <TabsTrigger value="uredi" className="gap-1.5">
+              <Pencil className="h-3.5 w-3.5" />
+              Uredi
+            </TabsTrigger>
+          </TabsList>
+
+          {/* ── Pregled Tab ── */}
+          <TabsContent value="pregled" className="mt-4">
+            {statement ? (
+              <div className="space-y-4">
+                <Button variant="ghost" size="sm" className="gap-2" onClick={() => setStatement(null)}>
+                  <ArrowLeft className="h-4 w-4" /> Nazad na listu
+                </Button>
+                <div>
+                  <p className="text-sm font-semibold">Konto kartica: {statementCode}</p>
+                  {statement && <p className="text-xs text-muted-foreground">{statement.account.name} — {statement.account.type}</p>}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <p className="text-xs text-muted-foreground uppercase font-medium">Početno stanje</p>
+                    <p className="text-sm font-bold">{formatRSD(statement.openingBalance)}</p>
+                  </div>
+                  <div className="rounded-lg bg-emerald-50 p-3">
+                    <p className="text-xs text-emerald-700 uppercase font-medium">Ukupno duguje</p>
+                    <p className="text-sm font-bold text-emerald-700">{formatRSD(statement.totalDebit)}</p>
+                  </div>
+                  <div className="rounded-lg bg-red-50 p-3">
+                    <p className="text-xs text-red-600 uppercase font-medium">Ukupno potražuje</p>
+                    <p className="text-sm font-bold text-red-600">{formatRSD(statement.totalCredit)}</p>
+                  </div>
+                  <div className="rounded-lg bg-blue-50 p-3">
+                    <p className="text-xs text-blue-700 uppercase font-medium">Završno stanje</p>
+                    <p className={`text-sm font-bold ${statement.closingBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                      {formatRSD(statement.closingBalance)}
+                    </p>
+                  </div>
+                </div>
+                <div className="max-h-[400px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs w-[90px]">Datum</TableHead>
+                        <TableHead className="text-xs w-[100px]">Nalog</TableHead>
+                        <TableHead className="text-xs text-right w-[110px]">Duguje</TableHead>
+                        <TableHead className="text-xs text-right w-[110px]">Potražuje</TableHead>
+                        <TableHead className="text-xs">Opis</TableHead>
+                        <TableHead className="text-xs text-right w-[120px]">Saldo</TableHead>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        ) : loading ? (
-          <div className="space-y-3">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-        ) : (
-          <div className="max-h-[520px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs w-[90px]">{t('common.date')}</TableHead>
-                  <TableHead className="text-xs w-[100px]">Nalog</TableHead>
-                  <TableHead className="text-xs w-[80px]">{t('accounting.account')}</TableHead>
-                  <TableHead className="text-xs text-right w-[120px]">{t('accounting.debit')}</TableHead>
-                  <TableHead className="text-xs text-right w-[120px]">{t('accounting.credit')}</TableHead>
-                  <TableHead className="text-xs">{t('common.description')}</TableHead>
-                  <TableHead className="text-xs w-[100px]">{t('accounting.document')}</TableHead>
-                  <TableHead className="text-xs w-[100px]">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entries.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema stavki za prikaz</TableCell>
-                  </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {statement.entries.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-sm">Nema stavki</TableCell>
+                        </TableRow>
+                      ) : (
+                        statement.entries.map((entry) => (
+                          <TableRow key={entry.id}>
+                            <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
+                            <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
+                            <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
+                            <TableCell className="text-xs text-right text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
+                            <TableCell className="text-xs max-w-[200px] truncate">{entry.description}</TableCell>
+                            <TableCell className={`text-xs text-right font-semibold whitespace-nowrap ${entry.runningBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                              {formatRSD(entry.runningBalance)}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Filters */}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center mb-4 flex-wrap">
+                  <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder={t('accounting.searchPlaceholder')} className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                  </div>
+                  <Select value={accountFilter || 'all'} onValueChange={(v) => setAccountFilter(v === 'all' ? '' : v)}>
+                    <SelectTrigger className="w-[200px] h-9">
+                      <SelectValue placeholder={t('accounting.allAccounts')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('accounting.allAccounts')}</SelectItem>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.code} value={acc.code}>{acc.code} — {acc.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input type="date" className="w-[140px] h-9" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                  <Input type="date" className="w-[140px] h-9" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                </div>
+
+                {loading ? (
+                  <div className="space-y-3">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
                 ) : (
-                  <>
-                    {entries.map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
-                        <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
-                        <TableCell className="text-xs font-mono font-medium cursor-pointer hover:text-primary" onClick={() => handleViewStatement(entry.accountCode)}>
-                          {entry.accountCode}
-                        </TableCell>
-                        <TableCell className="text-xs text-right font-medium text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
-                        <TableCell className="text-xs text-right font-medium text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
-                        <TableCell className="text-xs max-w-[200px] truncate">{tc(entry.description)}</TableCell>
-                        <TableCell className="text-xs whitespace-nowrap">{entry.documentRef || '-'}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleViewStatement(entry.accountCode)} title="Konto kartica">
-                              <Eye className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(entry)}>
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDelete(entry.id)}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow className="bg-muted/50 font-semibold border-t-2">
-                      <TableCell colSpan={3} className="text-xs text-right font-bold">{t('common.total')}:</TableCell>
-                      <TableCell className="text-xs text-right font-bold text-emerald-700 whitespace-nowrap">{totalDebit > 0 ? formatRSD(totalDebit) : '-'}</TableCell>
-                      <TableCell className="text-xs text-right font-bold text-red-600 whitespace-nowrap">{totalCredit > 0 ? formatRSD(totalCredit) : '-'}</TableCell>
-                      <TableCell colSpan={3} />
-                    </TableRow>
-                  </>
+                  <div className="max-h-[520px] overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs w-[90px]">{t('common.date')}</TableHead>
+                          <TableHead className="text-xs w-[100px]">Nalog</TableHead>
+                          <TableHead className="text-xs w-[80px]">{t('accounting.account')}</TableHead>
+                          <TableHead className="text-xs text-right w-[120px]">{t('accounting.debit')}</TableHead>
+                          <TableHead className="text-xs text-right w-[120px]">{t('accounting.credit')}</TableHead>
+                          <TableHead className="text-xs">{t('common.description')}</TableHead>
+                          <TableHead className="text-xs w-[100px]">{t('accounting.document')}</TableHead>
+                          <TableHead className="text-xs w-[100px]">{t('common.actions')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {entries.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema stavki za prikaz</TableCell>
+                          </TableRow>
+                        ) : (
+                          <>
+                            {entries.map((entry) => (
+                              <TableRow key={entry.id}>
+                                <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
+                                <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
+                                <TableCell className="text-xs font-mono font-medium cursor-pointer hover:text-primary" onClick={() => handleViewStatement(entry.accountCode)}>
+                                  {entry.accountCode}
+                                </TableCell>
+                                <TableCell className="text-xs text-right font-medium text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
+                                <TableCell className="text-xs text-right font-medium text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
+                                <TableCell className="text-xs max-w-[200px] truncate">{tc(entry.description)}</TableCell>
+                                <TableCell className="text-xs whitespace-nowrap">{entry.documentRef || '-'}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleViewStatement(entry.accountCode)} title="Konto kartica">
+                                      <Eye className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(entry)}>
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDelete(entry.id)}>
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            <TableRow className="bg-muted/50 font-semibold border-t-2">
+                              <TableCell colSpan={3} className="text-xs text-right font-bold">{t('common.total')}:</TableCell>
+                              <TableCell className="text-xs text-right font-bold text-emerald-700 whitespace-nowrap">{totalDebit > 0 ? formatRSD(totalDebit) : '-'}</TableCell>
+                              <TableCell className="text-xs text-right font-bold text-red-600 whitespace-nowrap">{totalCredit > 0 ? formatRSD(totalCredit) : '-'}</TableCell>
+                              <TableCell colSpan={3} />
+                            </TableRow>
+                          </>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+              </>
+            )}
+          </TabsContent>
+
+          {/* ── Dodaj Tab ── */}
+          <TabsContent value="dodaj" className="mt-4">
+            <form onSubmit={handleSubmit} key="new-entry" className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('common.date')}</Label>
+                  <Input name="date" type="date" required defaultValue={today} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('accounting.account')}</Label>
+                  <Select name="accountCode" defaultValue="">
+                    <SelectTrigger><SelectValue placeholder={t('accounting.selectAccount')} /></SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.code} value={acc.code}>{acc.code} — {acc.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('accounting.debit')} (RSD)</Label>
+                  <Input name="debit" type="number" step="0.01" min="0" placeholder="0.00" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('accounting.credit')} (RSD)</Label>
+                  <Input name="credit" type="number" step="0.01" min="0" placeholder="0.00" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('common.description')}</Label>
+                <Input name="description" placeholder={t('accounting.entryDescription')} required />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('accounting.document')} ({t('common.optional').toLowerCase()})</Label>
+                <Input name="documentRef" placeholder={t('accounting.documentNumber')} />
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
+                <Button type="submit" className="flex-1" disabled={submitting}>
+                  {submitting ? t('common.saving') : t('accounting.createEntry')}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+
+          {/* ── Uredi Tab ── */}
+          <TabsContent value="uredi" className="mt-4">
+            {editingEntry ? (
+              <form onSubmit={handleSubmit} key={editingEntry.id} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('common.date')}</Label>
+                    <Input name="date" type="date" required defaultValue={editingEntry.date.split('T')[0]} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('accounting.account')}</Label>
+                    <Select name="accountCode" defaultValue={editingEntry.accountCode}>
+                      <SelectTrigger><SelectValue placeholder={t('accounting.selectAccount')} /></SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((acc) => (
+                          <SelectItem key={acc.code} value={acc.code}>{acc.code} — {acc.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('accounting.debit')} (RSD)</Label>
+                    <Input name="debit" type="number" step="0.01" min="0" placeholder="0.00" defaultValue={editingEntry.debit || ''} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('accounting.credit')} (RSD)</Label>
+                    <Input name="credit" type="number" step="0.01" min="0" placeholder="0.00" defaultValue={editingEntry.credit || ''} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('common.description')}</Label>
+                  <Input name="description" placeholder={t('accounting.entryDescription')} required defaultValue={editingEntry.description || ''} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('accounting.document')} ({t('common.optional').toLowerCase()})</Label>
+                  <Input name="documentRef" placeholder={t('accounting.documentNumber')} defaultValue={editingEntry.documentRef || ''} />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
+                  <Button type="submit" className="flex-1" disabled={submitting}>
+                    {submitting ? t('common.saving') : t('common.saveChanges')}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <Pencil className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">Izaberite stavku iz pregleda za uređivanje</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   )
@@ -726,7 +789,7 @@ function KontniPlanTab() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'form' | 'statement'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -760,13 +823,12 @@ function KontniPlanTab() {
     return acc
   }, {})
 
-  const handleNew = () => { setEditingAccount(null); setViewMode('form') }
-  const handleEdit = (acc: Account) => { setEditingAccount(acc); setViewMode('form') }
-  const handleCancel = () => { setViewMode('list'); setEditingAccount(null); setStatement(null) }
+  const handleNew = () => { setEditingAccount(null); setActiveTab('dodaj') }
+  const handleEdit = (acc: Account) => { setEditingAccount(acc); setActiveTab('uredi') }
+  const handleCancel = () => { setActiveTab('pregled'); setEditingAccount(null); setStatement(null) }
   const handleDeleteClick = (acc: Account) => { setDeleteTarget(acc); setDeleteDialogOpen(true) }
 
   const handleViewStatement = async (code: string) => {
-    setViewMode('statement')
     const year = new Date().getFullYear()
     const res = await fetch(`/api/accounts/statement?accountCode=${code}&from=${year}-01-01&to=${year}-12-31`)
     const data = await res.json()
@@ -801,7 +863,7 @@ function KontniPlanTab() {
       const res = await fetch(url, { method: isEditing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
       toast.success(isEditing ? `Konto ${body.code} ažuriran` : `Konto ${body.code} kreiran`)
-      setViewMode('list'); setEditingAccount(null); fetchAccounts()
+      setActiveTab('pregled'); setEditingAccount(null); fetchAccounts()
     } catch { toast.error(t('common.saveError')) } finally { setSubmitting(false) }
   }
 
@@ -823,194 +885,260 @@ function KontniPlanTab() {
     <>
       <Card>
         <CardHeader className="pb-3">
-          {viewMode === 'form' ? (
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="text-base font-semibold">{editingAccount ? 'Izmeni konto' : 'Novi konto'}</CardTitle>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Landmark className="h-4 w-4" /> {t('accounting.chartOfAccounts')}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('accounting.chartOfAccountsSubtitle')}</p>
             </div>
-          ) : viewMode === 'statement' ? (
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <div>
-                <CardTitle className="text-base font-semibold">Konto kartica: {statement?.account.code}</CardTitle>
-                {statement && <p className="text-xs text-muted-foreground">{statement.account.name}</p>}
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    <Landmark className="h-4 w-4" /> {t('accounting.chartOfAccounts')}
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t('accounting.chartOfAccountsSubtitle')}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" className="gap-2" onClick={handleImportSerbian} disabled={importing}>
-                    {importing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                    {importing ? 'Uvoz...' : 'Uvezi srpski plan'}
-                  </Button>
-                  <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi konto</Button>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
-                <div className="relative flex-1 max-w-sm">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Pretraži konta..." className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-                </div>
-                <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
-                  <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Svi tipovi" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Svi tipovi</SelectItem>
-                    {ACCOUNT_TYPES.map((at) => (<SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-                <Badge variant="outline" className="text-xs h-9 px-3 flex items-center">Ukupno: {filtered.length} konta</Badge>
-              </div>
-            </>
-          )}
+            <Button size="sm" variant="outline" className="gap-2" onClick={handleImportSerbian} disabled={importing}>
+              {importing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {importing ? 'Uvoz...' : 'Uvezi srpski plan'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          {viewMode === 'form' ? (
-            <form onSubmit={handleSubmit} key={editingAccount?.id || 'new'} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">Šifra konta</Label>
-                  <Input name="code" placeholder="npr. 020, 110, 200" required defaultValue={editingAccount?.code || ''} disabled={!!editingAccount} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Tip konta</Label>
-                  <Select name="type" defaultValue={editingAccount?.type || 'aktivna'}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{ACCOUNT_TYPES.map((at) => (<SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>))}</SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Naziv konta</Label>
-                <Input name="name" placeholder="Naziv konta" required defaultValue={editingAccount?.name || ''} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">Nadređeni konto (opciono)</Label>
-                  <Input name="parentCode" placeholder="npr. 200" defaultValue={editingAccount?.parentCode || ''} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Opis (opciono)</Label>
-                  <Input name="description" placeholder="Opis konta" defaultValue={editingAccount?.description || ''} />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
-                <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? t('common.saving') : editingAccount ? t('common.saveChanges') : 'Kreiraj konto'}
-                </Button>
-              </div>
-            </form>
-          ) : viewMode === 'statement' && statement ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-xs text-muted-foreground uppercase font-medium">Početno stanje</p>
-                  <p className="text-sm font-bold">{formatRSD(statement.openingBalance)}</p>
-                </div>
-                <div className="rounded-lg bg-emerald-50 p-3">
-                  <p className="text-xs text-emerald-700 uppercase font-medium">Ukupno duguje</p>
-                  <p className="text-sm font-bold text-emerald-700">{formatRSD(statement.totalDebit)}</p>
-                </div>
-                <div className="rounded-lg bg-red-50 p-3">
-                  <p className="text-xs text-red-600 uppercase font-medium">Ukupno potražuje</p>
-                  <p className="text-sm font-bold text-red-600">{formatRSD(statement.totalCredit)}</p>
-                </div>
-                <div className="rounded-lg bg-blue-50 p-3">
-                  <p className="text-xs text-blue-700 uppercase font-medium">Završno stanje</p>
-                  <p className={`text-sm font-bold ${statement.closingBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{formatRSD(statement.closingBalance)}</p>
-                </div>
-              </div>
-              <div className="max-h-[350px] overflow-y-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs w-[90px]">Datum</TableHead>
-                      <TableHead className="text-xs w-[100px]">Nalog</TableHead>
-                      <TableHead className="text-xs text-right w-[110px]">Duguje</TableHead>
-                      <TableHead className="text-xs text-right w-[110px]">Potražuje</TableHead>
-                      <TableHead className="text-xs">Opis</TableHead>
-                      <TableHead className="text-xs text-right w-[120px]">Saldo</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {statement.entries.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-sm">Nema stavki</TableCell></TableRow>
-                    ) : (
-                      statement.entries.map((entry) => (
-                        <TableRow key={entry.id}>
-                          <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
-                          <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
-                          <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
-                          <TableCell className="text-xs text-right text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
-                          <TableCell className="text-xs max-w-[200px] truncate">{entry.description}</TableCell>
-                          <TableCell className={`text-xs text-right font-semibold whitespace-nowrap ${entry.runningBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{formatRSD(entry.runningBalance)}</TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          ) : loading ? (
-            <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-          ) : (
-            <div className="max-h-[520px] overflow-y-auto space-y-4">
-              {Object.entries(grouped).map(([type, accs]) => {
-                const typeBadge = getAccountTypeBadge(type)
-                return (
-                  <div key={type}>
-                    <div className="flex items-center gap-2 mb-2 px-1">
-                      <Badge variant="outline" className={`text-xs px-2 py-0 ${typeBadge.color}`}>{typeBadge.label}</Badge>
-                      <span className="text-xs text-muted-foreground">({accs.length})</span>
+          <Tabs value={activeTab} onValueChange={(v) => {
+            setActiveTab(v as 'pregled' | 'dodaj' | 'uredi')
+            if (v === 'dodaj') setEditingAccount(null)
+            if (v === 'pregled') { setEditingAccount(null); setStatement(null) }
+          }}>
+            <TabsList>
+              <TabsTrigger value="pregled" className="gap-1.5">
+                <Eye className="h-3.5 w-3.5" />
+                Pregled
+              </TabsTrigger>
+              <TabsTrigger value="dodaj" className="gap-1.5">
+                <Plus className="h-3.5 w-3.5" />
+                Dodaj
+              </TabsTrigger>
+              <TabsTrigger value="uredi" className="gap-1.5">
+                <Pencil className="h-3.5 w-3.5" />
+                Uredi
+              </TabsTrigger>
+            </TabsList>
+
+            {/* ── Pregled Tab ── */}
+            <TabsContent value="pregled" className="mt-4">
+              {statement ? (
+                <div className="space-y-4">
+                  <Button variant="ghost" size="sm" className="gap-2" onClick={() => setStatement(null)}>
+                    <ArrowLeft className="h-4 w-4" /> Nazad na listu
+                  </Button>
+                  <div>
+                    <p className="text-sm font-semibold">Konto kartica: {statement.account.code}</p>
+                    {statement && <p className="text-xs text-muted-foreground">{statement.account.name}</p>}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="rounded-lg bg-muted/50 p-3">
+                      <p className="text-xs text-muted-foreground uppercase font-medium">Početno stanje</p>
+                      <p className="text-sm font-bold">{formatRSD(statement.openingBalance)}</p>
                     </div>
+                    <div className="rounded-lg bg-emerald-50 p-3">
+                      <p className="text-xs text-emerald-700 uppercase font-medium">Ukupno duguje</p>
+                      <p className="text-sm font-bold text-emerald-700">{formatRSD(statement.totalDebit)}</p>
+                    </div>
+                    <div className="rounded-lg bg-red-50 p-3">
+                      <p className="text-xs text-red-600 uppercase font-medium">Ukupno potražuje</p>
+                      <p className="text-sm font-bold text-red-600">{formatRSD(statement.totalCredit)}</p>
+                    </div>
+                    <div className="rounded-lg bg-blue-50 p-3">
+                      <p className="text-xs text-blue-700 uppercase font-medium">Završno stanje</p>
+                      <p className={`text-sm font-bold ${statement.closingBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{formatRSD(statement.closingBalance)}</p>
+                    </div>
+                  </div>
+                  <div className="max-h-[350px] overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-xs w-[80px]">Šifra</TableHead>
-                          <TableHead className="text-xs">Naziv</TableHead>
-                          <TableHead className="text-xs w-[60px] text-center">Stavke</TableHead>
-                          <TableHead className="text-xs w-[120px]">{t('common.actions')}</TableHead>
+                          <TableHead className="text-xs w-[90px]">Datum</TableHead>
+                          <TableHead className="text-xs w-[100px]">Nalog</TableHead>
+                          <TableHead className="text-xs text-right w-[110px]">Duguje</TableHead>
+                          <TableHead className="text-xs text-right w-[110px]">Potražuje</TableHead>
+                          <TableHead className="text-xs">Opis</TableHead>
+                          <TableHead className="text-xs text-right w-[120px]">Saldo</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {accs.map((acc) => (
-                          <TableRow key={acc.id}>
-                            <TableCell className="text-xs font-mono font-medium">{acc.code}</TableCell>
-                            <TableCell className="text-xs font-medium">
-                              {tc(acc.name)}
-                              {acc.parentCode && <span className="text-muted-foreground ml-1.5">→ {acc.parentCode}</span>}
-                            </TableCell>
-                            <TableCell className="text-xs text-center">
-                              <Badge variant="secondary" className="text-xs px-2 py-0">{acc._count?.entries || 0}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleViewStatement(acc.code)} title="Konto kartica"><Eye className="h-3.5 w-3.5" /></Button>
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(acc)}><Pencil className="h-3.5 w-3.5" /></Button>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDeleteClick(acc)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {statement.entries.length === 0 ? (
+                          <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-sm">Nema stavki</TableCell></TableRow>
+                        ) : (
+                          statement.entries.map((entry) => (
+                            <TableRow key={entry.id}>
+                              <TableCell className="text-xs whitespace-nowrap">{formatDate(entry.date)}</TableCell>
+                              <TableCell className="text-xs font-mono">{entry.voucherNumber || '-'}</TableCell>
+                              <TableCell className="text-xs text-right text-emerald-700 whitespace-nowrap">{entry.debit > 0 ? formatRSD(entry.debit) : '-'}</TableCell>
+                              <TableCell className="text-xs text-right text-red-600 whitespace-nowrap">{entry.credit > 0 ? formatRSD(entry.credit) : '-'}</TableCell>
+                              <TableCell className="text-xs max-w-[200px] truncate">{entry.description}</TableCell>
+                              <TableCell className={`text-xs text-right font-semibold whitespace-nowrap ${entry.runningBalance >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{formatRSD(entry.runningBalance)}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
                       </TableBody>
                     </Table>
                   </div>
-                )
-              })}
-              {filtered.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  Nema konta za prikaz. Kliknite &quot;Uvezi srpski plan&quot; da započnete.
+                </div>
+              ) : (
+                <>
+                  {/* Filters */}
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center mb-4">
+                    <div className="relative flex-1 max-w-sm">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="Pretraži konta..." className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                    </div>
+                    <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
+                      <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Svi tipovi" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Svi tipovi</SelectItem>
+                        {ACCOUNT_TYPES.map((at) => (<SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                    <Badge variant="outline" className="text-xs h-9 px-3 flex items-center">Ukupno: {filtered.length} konta</Badge>
+                  </div>
+
+                  {loading ? (
+                    <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+                  ) : (
+                    <div className="max-h-[520px] overflow-y-auto space-y-4">
+                      {Object.entries(grouped).map(([type, accs]) => {
+                        const typeBadge = getAccountTypeBadge(type)
+                        return (
+                          <div key={type}>
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                              <Badge variant="outline" className={`text-xs px-2 py-0 ${typeBadge.color}`}>{typeBadge.label}</Badge>
+                              <span className="text-xs text-muted-foreground">({accs.length})</span>
+                            </div>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="text-xs w-[80px]">Šifra</TableHead>
+                                  <TableHead className="text-xs">Naziv</TableHead>
+                                  <TableHead className="text-xs w-[60px] text-center">Stavke</TableHead>
+                                  <TableHead className="text-xs w-[120px]">{t('common.actions')}</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {accs.map((acc) => (
+                                  <TableRow key={acc.id}>
+                                    <TableCell className="text-xs font-mono font-medium">{acc.code}</TableCell>
+                                    <TableCell className="text-xs font-medium">
+                                      {tc(acc.name)}
+                                      {acc.parentCode && <span className="text-muted-foreground ml-1.5">→ {acc.parentCode}</span>}
+                                    </TableCell>
+                                    <TableCell className="text-xs text-center">
+                                      <Badge variant="secondary" className="text-xs px-2 py-0">{acc._count?.entries || 0}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-1">
+                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleViewStatement(acc.code)} title="Konto kartica"><Eye className="h-3.5 w-3.5" /></Button>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(acc)}><Pencil className="h-3.5 w-3.5" /></Button>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDeleteClick(acc)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )
+                      })}
+                      {filtered.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground text-sm">
+                          Nema konta za prikaz. Kliknite &quot;Uvezi srpski plan&quot; da započnete.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </TabsContent>
+
+            {/* ── Dodaj Tab ── */}
+            <TabsContent value="dodaj" className="mt-4">
+              <form onSubmit={handleSubmit} key="new-account" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Šifra konta</Label>
+                    <Input name="code" placeholder="npr. 020, 110, 200" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Tip konta</Label>
+                    <Select name="type" defaultValue="aktivna">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{ACCOUNT_TYPES.map((at) => (<SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>))}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Naziv konta</Label>
+                  <Input name="name" placeholder="Naziv konta" required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Nadređeni konto (opciono)</Label>
+                    <Input name="parentCode" placeholder="npr. 200" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Opis (opciono)</Label>
+                    <Input name="description" placeholder="Opis konta" />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
+                  <Button type="submit" className="flex-1" disabled={submitting}>
+                    {submitting ? t('common.saving') : 'Kreiraj konto'}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+
+            {/* ── Uredi Tab ── */}
+            <TabsContent value="uredi" className="mt-4">
+              {editingAccount ? (
+                <form onSubmit={handleSubmit} key={editingAccount.id} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Šifra konta</Label>
+                      <Input name="code" placeholder="npr. 020, 110, 200" required defaultValue={editingAccount.code} disabled />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Tip konta</Label>
+                      <Select name="type" defaultValue={editingAccount.type}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{ACCOUNT_TYPES.map((at) => (<SelectItem key={at.value} value={at.value}>{at.label}</SelectItem>))}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Naziv konta</Label>
+                    <Input name="name" placeholder="Naziv konta" required defaultValue={editingAccount.name} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Nadređeni konto (opciono)</Label>
+                      <Input name="parentCode" placeholder="npr. 200" defaultValue={editingAccount.parentCode || ''} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Opis (opciono)</Label>
+                      <Input name="description" placeholder="Opis konta" defaultValue={editingAccount.description || ''} />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
+                    <Button type="submit" className="flex-1" disabled={submitting}>
+                      {submitting ? t('common.saving') : t('common.saveChanges')}
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Pencil className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">Izaberite konto iz pregleda za uređivanje</p>
                 </div>
               )}
-            </div>
-          )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -1308,7 +1436,7 @@ function BudzetiTab({ fiscalYear }: { fiscalYear: number }) {
   const [budgets, setBudgets] = useState<BudgetItem[]>([])
   const [loading, setLoading] = useState(true)
   const [accounts, setAccounts] = useState<Account[]>([])
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editingBudget, setEditingBudget] = useState<BudgetItem | null>(null)
 
@@ -1328,9 +1456,9 @@ function BudzetiTab({ fiscalYear }: { fiscalYear: number }) {
 
   useEffect(() => { fetchBudgets(); fetchAccounts() }, [fetchBudgets, fetchAccounts])
 
-  const handleNew = () => { setEditingBudget(null); setViewMode('form') }
-  const handleEdit = (b: BudgetItem) => { setEditingBudget(b); setViewMode('form') }
-  const handleCancel = () => { setViewMode('list'); setEditingBudget(null) }
+  const handleNew = () => { setEditingBudget(null); setActiveTab('dodaj') }
+  const handleEdit = (b: BudgetItem) => { setEditingBudget(b); setActiveTab('uredi') }
+  const handleCancel = () => { setActiveTab('pregled'); setEditingBudget(null) }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Obrisati budžet?')) return
@@ -1380,7 +1508,7 @@ function BudzetiTab({ fiscalYear }: { fiscalYear: number }) {
         if (res.ok) toast.success('Budžet kreiran')
         else { const err = await res.json(); toast.error(err.error || 'Greška'); return }
       }
-      setViewMode('list'); setEditingBudget(null); fetchBudgets()
+      setActiveTab('pregled'); setEditingBudget(null); fetchBudgets()
     } catch { toast.error('Greška pri čuvanju') } finally { setSubmitting(false) }
   }
 
@@ -1389,116 +1517,179 @@ function BudzetiTab({ fiscalYear }: { fiscalYear: number }) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        {viewMode === 'form' ? (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base font-semibold">{editingBudget ? 'Izmeni budžet' : 'Novi budžet'}</CardTitle>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <PiggyBank className="h-4 w-4" /> Budžeti za {fiscalYear}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {budgets.length} budžeta — Ukupno: {formatRSD(totalAnnual)}
+            </p>
           </div>
-        ) : (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <PiggyBank className="h-4 w-4" /> Budžeti za {fiscalYear}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {budgets.length} budžeta — Ukupno: {formatRSD(totalAnnual)}
-              </p>
-            </div>
-            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi budžet</Button>
-          </div>
-        )}
+        </div>
       </CardHeader>
       <CardContent>
-        {viewMode === 'form' ? (
-          <form onSubmit={handleSubmit} key={editingBudget?.id || 'new'} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Konto *</Label>
-                <Select name="accountCode" defaultValue={editingBudget?.accountCode || ''}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite konto" /></SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((a) => (<SelectItem key={a.code} value={a.code}>{a.code} — {a.name}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Naziv (opciono)</Label>
-                <Input name="name" placeholder="npr. Budžet za nabavku" defaultValue={editingBudget?.name || ''} />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-              {MONTH_KEYS.map((month, idx) => (
-                <div key={month} className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">{MONTH_LABELS[idx]}</Label>
-                  <Input name={month} type="number" step="0.01" min="0" className="h-8 text-xs text-right"
-                    defaultValue={editingBudget ? (editingBudget as Record<string, unknown>)[month] || '' : ''} />
-                </div>
-              ))}
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Napomene (opciono)</Label>
-              <Input name="notes" placeholder="Napomene" defaultValue={editingBudget?.notes || ''} />
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
-              <Button type="submit" className="flex-1" disabled={submitting}>{submitting ? t('common.saving') : 'Sačuvaj'}</Button>
-            </div>
-          </form>
-        ) : loading ? (
-          <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-        ) : budgets.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">Nema budžeta za {fiscalYear}. godinu</div>
-        ) : (
-          <div className="max-h-[520px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs w-[80px]">Konto</TableHead>
-                  <TableHead className="text-xs">Naziv</TableHead>
-                  {MONTH_LABELS.map(m => (
-                    <TableHead key={m} className="text-xs text-right w-[80px]">{m}</TableHead>
-                  ))}
-                  <TableHead className="text-xs text-right w-[100px]">Ukupno</TableHead>
-                  <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {budgets.map((b) => (
-                  <TableRow key={b.id}>
-                    <TableCell className="text-xs font-mono font-medium">{b.accountCode}</TableCell>
-                    <TableCell className="text-xs max-w-[120px] truncate">{b.name}</TableCell>
-                    {MONTH_KEYS.map(month => {
-                      const val = (b as Record<string, unknown>)[month] as number || 0
-                      return (
-                        <TableCell key={month} className={`text-xs text-right whitespace-nowrap ${val > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
-                          {val > 0 ? formatRSD(val) : '-'}
+        <Tabs value={activeTab} onValueChange={(v) => {
+          setActiveTab(v as 'pregled' | 'dodaj' | 'uredi')
+          if (v === 'dodaj') setEditingBudget(null)
+          if (v === 'pregled') setEditingBudget(null)
+        }}>
+          <TabsList>
+            <TabsTrigger value="pregled" className="gap-1.5">
+              <Eye className="h-3.5 w-3.5" />
+              Pregled
+            </TabsTrigger>
+            <TabsTrigger value="dodaj" className="gap-1.5">
+              <Plus className="h-3.5 w-3.5" />
+              Dodaj
+            </TabsTrigger>
+            <TabsTrigger value="uredi" className="gap-1.5">
+              <Pencil className="h-3.5 w-3.5" />
+              Uredi
+            </TabsTrigger>
+          </TabsList>
+
+          {/* ── Pregled Tab ── */}
+          <TabsContent value="pregled" className="mt-4">
+            {loading ? (
+              <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+            ) : budgets.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">Nema budžeta za {fiscalYear}. godinu</div>
+            ) : (
+              <div className="max-h-[520px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs w-[80px]">Konto</TableHead>
+                      <TableHead className="text-xs">Naziv</TableHead>
+                      {MONTH_LABELS.map(m => (
+                        <TableHead key={m} className="text-xs text-right w-[80px]">{m}</TableHead>
+                      ))}
+                      <TableHead className="text-xs text-right w-[100px]">Ukupno</TableHead>
+                      <TableHead className="text-xs w-[80px]">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {budgets.map((b) => (
+                      <TableRow key={b.id}>
+                        <TableCell className="text-xs font-mono font-medium">{b.accountCode}</TableCell>
+                        <TableCell className="text-xs max-w-[120px] truncate">{b.name}</TableCell>
+                        {MONTH_KEYS.map(month => {
+                          const val = (b as Record<string, unknown>)[month] as number || 0
+                          return (
+                            <TableCell key={month} className={`text-xs text-right whitespace-nowrap ${val > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                              {val > 0 ? formatRSD(val) : '-'}
+                            </TableCell>
+                          )
+                        })}
+                        <TableCell className="text-xs text-right font-bold whitespace-nowrap">{formatRSD(b.totalAnnual)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(b)}><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDelete(b.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                          </div>
                         </TableCell>
-                      )
-                    })}
-                    <TableCell className="text-xs text-right font-bold whitespace-nowrap">{formatRSD(b.totalAnnual)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(b)}><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDelete(b.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                      </TableRow>
+                    ))}
+                    <TableRow className="bg-muted/50 font-semibold border-t-2">
+                      <TableCell colSpan={2} className="text-xs font-bold">{t('common.total')}:</TableCell>
+                      {MONTH_KEYS.map(month => {
+                        const monthTotal = budgets.reduce((s, b) => s + ((b as Record<string, unknown>)[month] as number || 0), 0)
+                        return (
+                          <TableCell key={month} className="text-xs text-right font-bold">{monthTotal > 0 ? formatRSD(monthTotal) : '-'}</TableCell>
+                        )
+                      })}
+                      <TableCell className="text-xs text-right font-bold">{formatRSD(totalAnnual)}</TableCell>
+                      <TableCell />
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ── Dodaj Tab ── */}
+          <TabsContent value="dodaj" className="mt-4">
+            <form onSubmit={handleSubmit} key="new-budget" className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Konto *</Label>
+                  <Select name="accountCode" defaultValue="">
+                    <SelectTrigger><SelectValue placeholder="Izaberite konto" /></SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((a) => (<SelectItem key={a.code} value={a.code}>{a.code} — {a.name}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Naziv (opciono)</Label>
+                  <Input name="name" placeholder="npr. Budžet za nabavku" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                {MONTH_KEYS.map((month, idx) => (
+                  <div key={month} className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">{MONTH_LABELS[idx]}</Label>
+                    <Input name={month} type="number" step="0.01" min="0" className="h-8 text-xs text-right" />
+                  </div>
                 ))}
-                <TableRow className="bg-muted/50 font-semibold border-t-2">
-                  <TableCell colSpan={2} className="text-xs font-bold">{t('common.total')}:</TableCell>
-                  {MONTH_KEYS.map(month => {
-                    const monthTotal = budgets.reduce((s, b) => s + ((b as Record<string, unknown>)[month] as number || 0), 0)
-                    return (
-                      <TableCell key={month} className="text-xs text-right font-bold">{monthTotal > 0 ? formatRSD(monthTotal) : '-'}</TableCell>
-                    )
-                  })}
-                  <TableCell className="text-xs text-right font-bold">{formatRSD(totalAnnual)}</TableCell>
-                  <TableCell />
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Napomene (opciono)</Label>
+                <Input name="notes" placeholder="Napomene" />
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
+                <Button type="submit" className="flex-1" disabled={submitting}>{submitting ? t('common.saving') : 'Sačuvaj'}</Button>
+              </div>
+            </form>
+          </TabsContent>
+
+          {/* ── Uredi Tab ── */}
+          <TabsContent value="uredi" className="mt-4">
+            {editingBudget ? (
+              <form onSubmit={handleSubmit} key={editingBudget.id} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Konto *</Label>
+                    <Select name="accountCode" defaultValue={editingBudget.accountCode}>
+                      <SelectTrigger><SelectValue placeholder="Izaberite konto" /></SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((a) => (<SelectItem key={a.code} value={a.code}>{a.code} — {a.name}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Naziv (opciono)</Label>
+                    <Input name="name" placeholder="npr. Budžet za nabavku" defaultValue={editingBudget.name || ''} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                  {MONTH_KEYS.map((month, idx) => (
+                    <div key={month} className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">{MONTH_LABELS[idx]}</Label>
+                      <Input name={month} type="number" step="0.01" min="0" className="h-8 text-xs text-right"
+                        defaultValue={(editingBudget as Record<string, unknown>)[month] || ''} />
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Napomene (opciono)</Label>
+                  <Input name="notes" placeholder="Napomene" defaultValue={editingBudget.notes || ''} />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>{t('common.cancel')}</Button>
+                  <Button type="submit" className="flex-1" disabled={submitting}>{submitting ? t('common.saving') : t('common.saveChanges')}</Button>
+                </div>
+              </form>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <Pencil className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">Izaberite budžet iz pregleda za uređivanje</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   )

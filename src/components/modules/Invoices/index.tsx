@@ -318,7 +318,8 @@ function FaktureTab() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'form' | 'print'>('list')
+  const [activeTab, setActiveTab] = useState('pregled')
+  const [showPrint, setShowPrint] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null)
   const [printInvoice, setPrintInvoice] = useState<FullInvoice | null>(null)
@@ -367,7 +368,7 @@ function FaktureTab() {
   const handleNew = () => {
     setEditingInvoice(null)
     setLineItems([{ productId: '', productName: '', quantity: 1, unitPrice: 0, discountPct: 0, taxRate: 20 }])
-    setViewMode('form')
+    setActiveTab('dodaj')
   }
 
   const handleEdit = (inv: Invoice) => {
@@ -380,19 +381,20 @@ function FaktureTab() {
       discountPct: i.discountPct,
       taxRate: i.taxRate,
     })))
-    setViewMode('form')
+    setActiveTab('uredi')
   }
 
   const handleCancel = () => {
-    setViewMode('list')
+    setActiveTab('pregled')
     setEditingInvoice(null)
     setPrintInvoice(null)
+    setShowPrint(false)
     setLineItems([{ productId: '', productName: '', quantity: 1, unitPrice: 0, discountPct: 0, taxRate: 20 }])
   }
 
   const handlePrint = async (inv: Invoice) => {
     setPrintLoading(true)
-    setViewMode('print')
+    setShowPrint(true)
     try {
       const res = await fetch(`/api/invoices/${inv.id}`)
       if (!res.ok) { toast.error(t('invoices.loadError')); return }
@@ -578,7 +580,7 @@ function FaktureTab() {
         return
       }
       toast.success(isEditing ? t('invoices.updatedSuccess') : t('invoices.createdSuccess'))
-      setViewMode('list')
+      setActiveTab('pregled')
       setEditingInvoice(null)
       setLineItems([{ productId: '', productName: '', quantity: 1, unitPrice: 0, discountPct: 0, taxRate: 20 }])
       fetchInvoices()
@@ -607,494 +609,582 @@ function FaktureTab() {
 
   // ==================== RENDER ====================
 
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        {viewMode === 'form' ? (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCancel}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle className="text-base font-semibold">
-                {editingInvoice ? t('invoices.editInvoice') : t('invoices.newInvoice')}
-              </CardTitle>
+  // Invoice form (reused in Dodaj and Uredi tabs)
+  const invoiceForm = (
+    <form key={editingInvoice?.id || 'new'} onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs">{t('invoices.invoiceType')} *</Label>
+          <Select name="type" defaultValue={editingInvoice?.type || 'izlazna'}>
+            <SelectTrigger><SelectValue placeholder={t('invoices.selectType')} /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="predracun">{t('invoices.preinvoice')}</SelectItem>
+              <SelectItem value="izlazna">{t('invoices.outgoing')}</SelectItem>
+              <SelectItem value="ulazna">{t('invoices.incoming')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('common.status')}</Label>
+          <Select name="status" defaultValue={editingInvoice?.status || 'nacrt'}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nacrt">{t('common.nacrt')}</SelectItem>
+              <SelectItem value="poslata">{t('common.poslata')}</SelectItem>
+              <SelectItem value="placena">{t('common.placena')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs">{t('common.partner')} *</Label>
+          <Select name="partnerId" defaultValue={editingInvoice?.partnerId || ''} required>
+            <SelectTrigger><SelectValue placeholder={t('invoices.selectPartner')} /></SelectTrigger>
+            <SelectContent>
+              {partners.map((p) => (
+                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('invoices.dueDate')} *</Label>
+          <Input name="dueDate" type="date" required defaultValue={editingInvoice?.dueDate?.split('T')[0] || ''} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs">{t('finance.paymentMethod')}</Label>
+          <Select name="paymentMethod" defaultValue={editingInvoice?.paymentMethod || 'racun'}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="racun">{t('invoices.bankTransfer')}</SelectItem>
+              <SelectItem value="gotovina">{t('finance.cash')}</SelectItem>
+              <SelectItem value="kartica">{t('finance.card')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Line Items */}
+      <div className="space-y-3">
+        <Label className="text-xs font-semibold">{t('invoices.invoiceItems')}</Label>
+        {lineItems.map((item, idx) => (
+          <div key={idx} className="grid grid-cols-12 gap-2 items-end">
+            <div className="col-span-4">
+              {idx === 0 && <Label className="text-xs text-muted-foreground">{t('invoices.product')}</Label>}
+              <Select
+                value={item.productId}
+                onValueChange={(v) => updateLineItem(idx, 'productId', v)}
+              >
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder={t('invoices.select')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-        ) : viewMode === 'print' ? (
-          <div className="flex items-center gap-3 no-print">
-            <Button variant="ghost" size="icon" onClick={handleCancel}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle className="text-base font-semibold">
-                {t('invoices.previewInvoice')} {printInvoice?.number || ''}
-              </CardTitle>
+            <div className="col-span-2">
+              {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.quantity')}</Label>}
+              <Input
+                type="number"
+                className="h-9 text-xs"
+                value={item.quantity}
+                onChange={(e) => updateLineItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                min="1"
+              />
             </div>
-            <div className="ml-auto">
-              <Button size="sm" className="gap-2" onClick={doPrint}>
-                <Printer className="h-4 w-4" /> {t('common.print')}
+            <div className="col-span-2">
+              {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>}
+              <Input
+                type="number"
+                className="h-9 text-xs"
+                value={item.unitPrice}
+                onChange={(e) => updateLineItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            <div className="col-span-2">
+              {idx === 0 && <Label className="text-xs text-muted-foreground">{t('invoices.discountPct')}</Label>}
+              <Input
+                type="number"
+                className="h-9 text-xs"
+                value={item.discountPct}
+                onChange={(e) => updateLineItem(idx, 'discountPct', parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            <div className="col-span-1 flex items-center justify-center">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                onClick={() => removeLineItem(idx)}
+                disabled={lineItems.length <= 1}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
-        ) : (
-          <>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        ))}
+        <Button type="button" variant="outline" size="sm" onClick={addLineItem} className="w-full gap-1">
+          <Plus className="h-3 w-3" /> {t('invoices.addItem')}
+        </Button>
+      </div>
+
+      <div className="rounded-lg bg-muted/50 p-3 text-right">
+        <span className="text-sm font-medium">{t('common.total')}: </span>
+        <span className="text-lg font-bold text-primary">{formatRSD(grandTotal)}</span>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs">{t('invoices.notesOptional')}</Label>
+        <Input name="notes" placeholder={t('invoices.notesPlaceholder')} defaultValue={editingInvoice?.notes || ''} />
+      </div>
+
+      <div className="flex gap-2">
+        <Button type="submit" disabled={submitting}>
+          {submitting ? t('common.saving') : editingInvoice ? t('common.saveChanges') : t('invoices.createInvoice')}
+        </Button>
+        <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
+      </div>
+    </form>
+  )
+
+  // Invoice table (reused in Pregled and Uredi tabs)
+  const invoiceTableBody = (
+    <div className="max-h-[500px] overflow-y-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-xs">{t('common.number')}</TableHead>
+            <TableHead className="text-xs">{t('common.type')}</TableHead>
+            <TableHead className="text-xs">{t('common.partner')}</TableHead>
+            <TableHead className="text-xs">{t('common.date')}</TableHead>
+            <TableHead className="text-xs">{t('invoices.dueDate')}</TableHead>
+            <TableHead className="text-xs">{t('common.status')}</TableHead>
+            <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+            <TableHead className="text-xs text-right">{t('common.actions')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {invoices.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
+                {t('invoices.noInvoices')}
+              </TableCell>
+            </TableRow>
+          ) : (
+            invoices.map((inv) => (
+              <TableRow key={inv.id}>
+                <TableCell className="text-xs font-medium">{inv.number}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(inv.type || 'izlazna')}`}>
+                    {getStatusLabel(inv.type || 'izlazna')}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-xs">{tc(inv.partner?.name || '-')}</TableCell>
+                <TableCell className="text-xs">{formatDate(inv.date)}</TableCell>
+                <TableCell className="text-xs">{formatDate(inv.dueDate)}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(inv.status)}`}>
+                      {getStatusLabel(inv.status)}
+                    </Badge>
+                    {inv.postedToJournal && (
+                      <Badge className="bg-emerald-100 text-emerald-700 text-xs px-1.5 py-0 gap-0.5">
+                        <BookOpen className="h-2.5 w-2.5" /> Knjiženo
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="text-xs text-right font-medium">
+                  {formatRSD(inv.totalAmount)}
+                </TableCell>
+                <TableCell className="text-xs text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => handleDownloadPDF(inv)}
+                      title={t('reports.invoicePDF')}
+                      disabled={pdfDownloading === inv.id}
+                    >
+                      {pdfDownloading === inv.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <FileText className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(inv)} title={t('common.print')}>
+                      <Printer className="h-3.5 w-3.5" />
+                    </Button>
+                    {inv.type === 'predracun' && inv.status === 'nacrt' && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => handleConvertToInvoice(inv)} title="Konvertuj u fakturu">
+                        <ArrowRightLeft className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    {inv.status === 'poslata' && !inv.postedToJournal && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" onClick={() => handlePostToAccounting(inv)} title="Knjiži u nalog">
+                        <BookOpen className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(inv)} title={t('common.edit')}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(inv.id)} title={t('common.delete')}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+      {/* KPI Stats Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+            <FileText className="h-3.5 w-3.5" />Ukupno faktura
+          </div>
+          <p className="text-2xl font-bold">{invoices.length}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+            <DollarSign className="h-3.5 w-3.5" />Ukupan iznos
+          </div>
+          <p className="text-lg font-bold">{formatRSD(invoices.reduce((s, i) => s + i.totalAmount, 0))}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-xs text-emerald-600 mb-1">
+            <CheckCircle2 className="h-3.5 w-3.5" />Plaćene
+          </div>
+          <p className="text-2xl font-bold text-emerald-700">{invoices.filter(i => i.status === 'placena').length}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-xs text-red-600 mb-1">
+            <AlertTriangle className="h-3.5 w-3.5" />Prekoračene
+          </div>
+          <p className="text-2xl font-bold text-red-600">
+            {invoices.filter(i => new Date(i.dueDate) < new Date() && i.status === 'poslata').length}
+          </p>
+        </Card>
+      </div>
+
+      {/* Print Preview (conditional overlay) */}
+      {showPrint && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3 no-print">
+              <Button variant="ghost" size="icon" onClick={() => { setShowPrint(false); setPrintInvoice(null) }}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
               <div>
-                <CardTitle className="text-base font-semibold">{t('invoices.title')}</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">{t('invoices.subtitle') || 'Управљање излазним и улазним фатурама'}</p>
+                <CardTitle className="text-base font-semibold">
+                  {t('invoices.previewInvoice')} {printInvoice?.number || ''}
+                </CardTitle>
               </div>
-              <div className="flex items-center gap-2">
-                <ReportDownloadButton type="invoice" />
-                <Button size="sm" className="gap-2" onClick={handleNew}>
-                  <Plus className="h-4 w-4" /> {t('invoices.newInvoice')}
+              <div className="ml-auto">
+                <Button size="sm" className="gap-2" onClick={doPrint}>
+                  <Printer className="h-4 w-4" /> {t('common.print')}
                 </Button>
               </div>
             </div>
-
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('invoices.searchInvoices')}
-                  className="pl-8 h-9"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+          </CardHeader>
+          <CardContent>
+            {printLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Skeleton className="h-[600px] w-full max-w-4xl" />
               </div>
-              <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
-                <SelectTrigger className="w-[150px] h-9">
-                  <SelectValue placeholder={t('invoices.allTypes')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('common.all')}</SelectItem>
-                  <SelectItem value="predracun">{t('invoices.preinvoice')}</SelectItem>
-                  <SelectItem value="izlazna">{t('invoices.outgoing')}</SelectItem>
-                  <SelectItem value="ulazna">{t('invoices.incoming')}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
-                <SelectTrigger className="w-[150px] h-9">
-                  <SelectValue placeholder={t('invoices.allStatuses')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('invoices.allStatuses')}</SelectItem>
-                  <SelectItem value="nacrt">{t('common.nacrt')}</SelectItem>
-                  <SelectItem value="poslata">{t('common.poslata')}</SelectItem>
-                  <SelectItem value="placena">{t('common.placena')}</SelectItem>
-                  <SelectItem value="otkazana">{t('common.otkazana')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
-      </CardHeader>
-      <CardContent>
-        {/* ============ PRINT PREVIEW ============ */}
-        {viewMode === 'print' && (
-          printLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Skeleton className="h-[600px] w-full max-w-4xl" />
-            </div>
-          ) : printInvoice ? (
-            <div ref={printRef} className="invoice-print-area bg-white rounded-lg border p-6 max-w-4xl mx-auto text-sm">
-              {/* Company Header */}
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <h1 className="text-xl font-bold tracking-tight">{COMPANY.name}</h1>
-                  <p className="text-xs text-gray-500 mt-1">{COMPANY.address}</p>
-                  <p className="text-xs text-gray-500">{COMPANY.city}</p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    <span className="text-xs text-gray-500">PIB: {COMPANY.pib}</span>
-                    <span className="text-xs text-gray-500">MB: {COMPANY.maticniBr}</span>
-                    <span className="text-xs text-gray-500">{COMPANY.account}</span>
-                    <span className="text-xs text-gray-500">{COMPANY.bank}</span>
+            ) : printInvoice ? (
+              <div ref={printRef} className="invoice-print-area bg-white rounded-lg border p-6 max-w-4xl mx-auto text-sm">
+                {/* Company Header */}
+                <div className="flex justify-between items-start mb-8">
+                  <div>
+                    <h1 className="text-xl font-bold tracking-tight">{COMPANY.name}</h1>
+                    <p className="text-xs text-gray-500 mt-1">{COMPANY.address}</p>
+                    <p className="text-xs text-gray-500">{COMPANY.city}</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                      <span className="text-xs text-gray-500">PIB: {COMPANY.pib}</span>
+                      <span className="text-xs text-gray-500">MB: {COMPANY.maticniBr}</span>
+                      <span className="text-xs text-gray-500">{COMPANY.account}</span>
+                      <span className="text-xs text-gray-500">{COMPANY.bank}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold uppercase tracking-wide">
+                      {getStatusLabel(printInvoice.type)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">{t('invoices.numberLabel')}: <span className="font-mono font-medium text-gray-800">{printInvoice.number}</span></p>
+                    <p className="text-xs text-gray-500">{t('common.date')}: {formatDate(printInvoice.date)}</p>
+                    <p className="text-xs text-gray-500">{t('invoices.place')}: Beograd</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold uppercase tracking-wide">
-                    {getStatusLabel(printInvoice.type)}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">{t('invoices.numberLabel')}: <span className="font-mono font-medium text-gray-800">{printInvoice.number}</span></p>
-                  <p className="text-xs text-gray-500">{t('common.date')}: {formatDate(printInvoice.date)}</p>
-                  <p className="text-xs text-gray-500">{t('invoices.place')}: Beograd</p>
-                </div>
-              </div>
 
-              {/* Partner Info */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('invoices.buyer')}</p>
-                <p className="text-sm font-semibold">{tc(printInvoice.partner?.name || '-')}</p>
-                {printInvoice.partner && (
-                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    {printInvoice.partner.address && (
-                      <span className="text-xs text-gray-500">{printInvoice.partner.address}{printInvoice.partner.city ? `, ${printInvoice.partner.city}` : ''}</span>
-                    )}
-                    {printInvoice.partner.pib && (
-                      <span className="text-xs text-gray-500">PIB: {printInvoice.partner.pib}</span>
-                    )}
-                    {printInvoice.partner.maticniBr && (
-                      <span className="text-xs text-gray-500">MB: {printInvoice.partner.maticniBr}</span>
-                    )}
-                    {printInvoice.partner.account && (
-                      <span className="text-xs text-gray-500">{printInvoice.partner.account}</span>
-                    )}
-                    {printInvoice.partner.bank && (
-                      <span className="text-xs text-gray-500">{printInvoice.partner.bank}</span>
-                    )}
+                {/* Partner Info */}
+                <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('invoices.buyer')}</p>
+                  <p className="text-sm font-semibold">{tc(printInvoice.partner?.name || '-')}</p>
+                  {printInvoice.partner && (
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                      {printInvoice.partner.address && (
+                        <span className="text-xs text-gray-500">{printInvoice.partner.address}{printInvoice.partner.city ? `, ${printInvoice.partner.city}` : ''}</span>
+                      )}
+                      {printInvoice.partner.pib && (
+                        <span className="text-xs text-gray-500">PIB: {printInvoice.partner.pib}</span>
+                      )}
+                      {printInvoice.partner.maticniBr && (
+                        <span className="text-xs text-gray-500">MB: {printInvoice.partner.maticniBr}</span>
+                      )}
+                      {printInvoice.partner.account && (
+                        <span className="text-xs text-gray-500">{printInvoice.partner.account}</span>
+                      )}
+                      {printInvoice.partner.bank && (
+                        <span className="text-xs text-gray-500">{printInvoice.partner.bank}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Items Table */}
+                <table className="w-full text-xs mb-6">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 px-2 py-2 text-center w-10">{t('invoices.rowNum')}</th>
+                      <th className="border border-gray-300 px-2 py-2">{t('invoices.itemName')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-12">{t('invoices.qty')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-12">{t('invoices.unit')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.price')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-14">{t('invoices.discountPct')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-center w-14">{t('invoices.taxPct')}</th>
+                      <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.amount')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {printInvoice.items.map((item, idx) => (
+                      <tr key={item.id}>
+                        <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
+                        <td className="border border-gray-300 px-2 py-1.5">{tc(item.productName)}</td>
+                        <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
+                        <td className="border border-gray-300 px-2 py-1.5 text-center">{t('invoices.unitPiece')}</td>
+                        <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
+                        <td className="border border-gray-300 px-2 py-1.5 text-center">{item.discountPct || 0}</td>
+                        <td className="border border-gray-300 px-2 py-1.5 text-center">{item.taxRate || 20}</td>
+                        <td className="border border-gray-300 px-2 py-1.5 text-right font-medium">{formatRSD(calcItemTotal(item))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Totals */}
+                <div className="flex justify-end mb-6">
+                  <div className="w-72 space-y-1">
+                    <div className="flex justify-between text-xs py-1 px-2">
+                      <span className="text-gray-500">{t('invoices.baseAmount')}:</span>
+                      <span className="font-medium">
+                        {formatRSD(printInvoice.items.reduce((s, i) => s + calcItemBase(i), 0))}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs py-1 px-2">
+                      <span className="text-gray-500">{t('invoices.totalTax')}:</span>
+                      <span className="font-medium">
+                        {formatRSD(printInvoice.items.reduce((s, i) => s + calcItemTax(i), 0))}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm py-2 px-2 bg-gray-100 rounded font-bold border">
+                      <span>{t('common.total').toUpperCase()}:</span>
+                      <span>{formatRSD(printInvoice.totalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs py-1 px-2">
+                      <span className="text-gray-500">{t('invoices.inWords')}:</span>
+                      <span className="font-medium italic text-gray-600">
+                        {numberToSerbian(printInvoice.totalAmount)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Info */}
+                <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('finance.payment')}</p>
+                    <p><span className="text-gray-500">{t('finance.methodLabel')}: </span>{getStatusLabel(printInvoice.paymentMethod)}</p>
+                    <p><span className="text-gray-500">{t('invoices.dueDate')}: </span>{formatDate(printInvoice.dueDate)}</p>
+                    <p><span className="text-gray-500">{t('invoices.accountLabel')}: </span>{COMPANY.account}</p>
+                    <p><span className="text-gray-500">{t('invoices.bankLabel')}: </span>{COMPANY.bank}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.status')}</p>
+                    <p>
+                      <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(printInvoice.status)}`}>
+                        {getStatusLabel(printInvoice.status)}
+                      </Badge>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {printInvoice.notes && (
+                  <div className="mb-6 text-xs">
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.note')}</p>
+                    <p className="text-gray-600">{tc(printInvoice.notes)}</p>
                   </div>
                 )}
-              </div>
 
-              {/* Items Table */}
-              <table className="w-full text-xs mb-6">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 px-2 py-2 text-center w-10">{t('invoices.rowNum')}</th>
-                    <th className="border border-gray-300 px-2 py-2">{t('invoices.itemName')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-center w-12">{t('invoices.qty')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-center w-12">{t('invoices.unit')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.price')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-center w-14">{t('invoices.discountPct')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-center w-14">{t('invoices.taxPct')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.amount')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {printInvoice.items.map((item, idx) => (
-                    <tr key={item.id}>
-                      <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1.5">{tc(item.productName)}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-center">{t('invoices.unitPiece')}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-center">{item.discountPct || 0}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-center">{item.taxRate || 20}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-right font-medium">{formatRSD(calcItemTotal(item))}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Totals */}
-              <div className="flex justify-end mb-6">
-                <div className="w-72 space-y-1">
-                  <div className="flex justify-between text-xs py-1 px-2">
-                    <span className="text-gray-500">{t('invoices.baseAmount')}:</span>
-                    <span className="font-medium">
-                      {formatRSD(printInvoice.items.reduce((s, i) => s + calcItemBase(i), 0))}
-                    </span>
+                {/* Signatures */}
+                <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
+                  <div className="text-center">
+                    <div className="border-b border-gray-300 mb-1 pb-8"></div>
+                    <p className="text-xs text-gray-400">{t('invoices.signatureIssuer')}</p>
                   </div>
-                  <div className="flex justify-between text-xs py-1 px-2">
-                    <span className="text-gray-500">{t('invoices.totalTax')}:</span>
-                    <span className="font-medium">
-                      {formatRSD(printInvoice.items.reduce((s, i) => s + calcItemTax(i), 0))}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm py-2 px-2 bg-gray-100 rounded font-bold border">
-                    <span>{t('common.total').toUpperCase()}:</span>
-                    <span>{formatRSD(printInvoice.totalAmount)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs py-1 px-2">
-                    <span className="text-gray-500">{t('invoices.inWords')}:</span>
-                    <span className="font-medium italic text-gray-600">
-                      {numberToSerbian(printInvoice.totalAmount)}
-                    </span>
+                  <div className="text-center">
+                    <div className="border-b border-gray-300 mb-1 pb-8"></div>
+                    <p className="text-xs text-gray-400">{t('invoices.signatureReceiver')}</p>
                   </div>
                 </div>
               </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      )}
 
-              {/* Payment Info */}
-              <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
+      {/* Inner Tabs: Pregled / Dodaj / Uredi */}
+      <Tabs value={activeTab} onValueChange={v => { setActiveTab(v); if (v !== 'uredi') setEditingInvoice(null) }}>
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="pregled" className="gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Pregled</span>
+          </TabsTrigger>
+          <TabsTrigger value="dodaj" className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline">Dodaj</span>
+          </TabsTrigger>
+          <TabsTrigger value="uredi" className="gap-1.5">
+            <Pencil className="h-3.5 w-3.5" /><span className="hidden sm:inline">Uredi</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ===== Pregled Tab ===== */}
+        <TabsContent value="pregled">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('finance.payment')}</p>
-                  <p><span className="text-gray-500">{t('finance.methodLabel')}: </span>{getStatusLabel(printInvoice.paymentMethod)}</p>
-                  <p><span className="text-gray-500">{t('invoices.dueDate')}: </span>{formatDate(printInvoice.dueDate)}</p>
-                  <p><span className="text-gray-500">{t('invoices.accountLabel')}: </span>{COMPANY.account}</p>
-                  <p><span className="text-gray-500">{t('invoices.bankLabel')}: </span>{COMPANY.bank}</p>
+                  <CardTitle className="text-base font-semibold">{t('invoices.title')}</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t('invoices.subtitle') || 'Управљање излазним и улазним фатурама'}</p>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.status')}</p>
-                  <p>
-                    <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(printInvoice.status)}`}>
-                      {getStatusLabel(printInvoice.status)}
-                    </Badge>
-                  </p>
+                <div className="flex items-center gap-2">
+                  <ReportDownloadButton type="invoice" />
+                  <Button size="sm" className="gap-2" onClick={handleNew}>
+                    <Plus className="h-4 w-4" /> {t('invoices.newInvoice')}
+                  </Button>
                 </div>
               </div>
 
-              {/* Notes */}
-              {printInvoice.notes && (
-                <div className="mb-6 text-xs">
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.note')}</p>
-                  <p className="text-gray-600">{tc(printInvoice.notes)}</p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={t('invoices.searchInvoices')}
+                    className="pl-8 h-9"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                 </div>
-              )}
-
-              {/* Signatures */}
-              <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
-                <div className="text-center">
-                  <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-xs text-gray-400">{t('invoices.signatureIssuer')}</p>
-                </div>
-                <div className="text-center">
-                  <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-xs text-gray-400">{t('invoices.signatureReceiver')}</p>
-                </div>
-              </div>
-            </div>
-          ) : null
-        )}
-
-        {/* ============ FORM ============ */}
-        {viewMode === 'form' && (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('invoices.invoiceType')} *</Label>
-                <Select name="type" defaultValue={editingInvoice?.type || 'izlazna'}>
-                  <SelectTrigger><SelectValue placeholder={t('invoices.selectType')} /></SelectTrigger>
+                <Select value={typeFilter || 'all'} onValueChange={(v) => setTypeFilter(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="w-[150px] h-9">
+                    <SelectValue placeholder={t('invoices.allTypes')} />
+                  </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">{t('common.all')}</SelectItem>
                     <SelectItem value="predracun">{t('invoices.preinvoice')}</SelectItem>
                     <SelectItem value="izlazna">{t('invoices.outgoing')}</SelectItem>
                     <SelectItem value="ulazna">{t('invoices.incoming')}</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.status')}</Label>
-                <Select name="status" defaultValue={editingInvoice?.status || 'nacrt'}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+                  <SelectTrigger className="w-[150px] h-9">
+                    <SelectValue placeholder={t('invoices.allStatuses')} />
+                  </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">{t('invoices.allStatuses')}</SelectItem>
                     <SelectItem value="nacrt">{t('common.nacrt')}</SelectItem>
                     <SelectItem value="poslata">{t('common.poslata')}</SelectItem>
                     <SelectItem value="placena">{t('common.placena')}</SelectItem>
+                    <SelectItem value="otkazana">{t('common.otkazana')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.partner')} *</Label>
-                <Select name="partnerId" defaultValue={editingInvoice?.partnerId || ''} required>
-                  <SelectTrigger><SelectValue placeholder={t('invoices.selectPartner')} /></SelectTrigger>
-                  <SelectContent>
-                    {partners.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('invoices.dueDate')} *</Label>
-                <Input name="dueDate" type="date" required defaultValue={editingInvoice?.dueDate?.split('T')[0] || ''} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('finance.paymentMethod')}</Label>
-                <Select name="paymentMethod" defaultValue={editingInvoice?.paymentMethod || 'racun'}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="racun">{t('invoices.bankTransfer')}</SelectItem>
-                    <SelectItem value="gotovina">{t('finance.cash')}</SelectItem>
-                    <SelectItem value="kartica">{t('finance.card')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Line Items */}
-            <div className="space-y-3">
-              <Label className="text-xs font-semibold">{t('invoices.invoiceItems')}</Label>
-              {lineItems.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-4">
-                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('invoices.product')}</Label>}
-                    <Select
-                      value={item.productId}
-                      onValueChange={(v) => updateLineItem(idx, 'productId', v)}
-                    >
-                      <SelectTrigger className="h-9 text-xs">
-                        <SelectValue placeholder={t('invoices.select')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-2">
-                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.quantity')}</Label>}
-                    <Input
-                      type="number"
-                      className="h-9 text-xs"
-                      value={item.quantity}
-                      onChange={(e) => updateLineItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                      min="1"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>}
-                    <Input
-                      type="number"
-                      className="h-9 text-xs"
-                      value={item.unitPrice}
-                      onChange={(e) => updateLineItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    {idx === 0 && <Label className="text-xs text-muted-foreground">{t('invoices.discountPct')}</Label>}
-                    <Input
-                      type="number"
-                      className="h-9 text-xs"
-                      value={item.discountPct}
-                      onChange={(e) => updateLineItem(idx, 'discountPct', parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="col-span-1 flex items-center justify-center">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                      onClick={() => removeLineItem(idx)}
-                      disabled={lineItems.length <= 1}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
                 </div>
-              ))}
-              <Button type="button" variant="outline" size="sm" onClick={addLineItem} className="w-full gap-1">
-                <Plus className="h-3 w-3" /> {t('invoices.addItem')}
-              </Button>
-            </div>
+              ) : (
+                invoiceTableBody
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <div className="rounded-lg bg-muted/50 p-3 text-right">
-              <span className="text-sm font-medium">{t('common.total')}: </span>
-              <span className="text-lg font-bold text-primary">{formatRSD(grandTotal)}</span>
-            </div>
+        {/* ===== Dodaj Tab ===== */}
+        <TabsContent value="dodaj">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">{t('invoices.newInvoice')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {invoiceForm}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <div className="space-y-2">
-              <Label className="text-xs">{t('invoices.notesOptional')}</Label>
-              <Input name="notes" placeholder={t('invoices.notesPlaceholder')} defaultValue={editingInvoice?.notes || ''} />
-            </div>
-
-            <div className="flex gap-2">
-              <Button type="submit" disabled={submitting}>
-                {submitting ? t('common.saving') : editingInvoice ? t('common.saveChanges') : t('invoices.createInvoice')}
-              </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
-            </div>
-          </form>
-        )}
-
-        {/* ============ LIST ============ */}
-        {viewMode === 'list' && loading && (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        )}
-
-        {viewMode === 'list' && !loading && (
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{t('common.number')}</TableHead>
-                  <TableHead className="text-xs">{t('common.type')}</TableHead>
-                  <TableHead className="text-xs">{t('common.partner')}</TableHead>
-                  <TableHead className="text-xs">{t('common.date')}</TableHead>
-                  <TableHead className="text-xs">{t('invoices.dueDate')}</TableHead>
-                  <TableHead className="text-xs">{t('common.status')}</TableHead>
-                  <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
-                  <TableHead className="text-xs text-right">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoices.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
-                      {t('invoices.noInvoices')}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  invoices.map((inv) => (
-                    <TableRow key={inv.id}>
-                      <TableCell className="text-xs font-medium">{inv.number}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(inv.type || 'izlazna')}`}>
-                          {getStatusLabel(inv.type || 'izlazna')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs">{tc(inv.partner?.name || '-')}</TableCell>
-                      <TableCell className="text-xs">{formatDate(inv.date)}</TableCell>
-                      <TableCell className="text-xs">{formatDate(inv.dueDate)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(inv.status)}`}>
-                            {getStatusLabel(inv.status)}
-                          </Badge>
-                          {inv.postedToJournal && (
-                            <Badge className="bg-emerald-100 text-emerald-700 text-xs px-1.5 py-0 gap-0.5">
-                              <BookOpen className="h-2.5 w-2.5" /> Knjiženo
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-right font-medium">
-                        {formatRSD(inv.totalAmount)}
-                      </TableCell>
-                      <TableCell className="text-xs text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => handleDownloadPDF(inv)}
-                            title={t('reports.invoicePDF')}
-                            disabled={pdfDownloading === inv.id}
-                          >
-                            {pdfDownloading === inv.id ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <FileText className="h-3.5 w-3.5" />
-                            )}
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(inv)} title={t('common.print')}>
-                            <Printer className="h-3.5 w-3.5" />
-                          </Button>
-                          {inv.type === 'predracun' && inv.status === 'nacrt' && (
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => handleConvertToInvoice(inv)} title="Konvertuj u fakturu">
-                              <ArrowRightLeft className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          {inv.status === 'poslata' && !inv.postedToJournal && (
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" onClick={() => handlePostToAccounting(inv)} title="Knjiži u nalog">
-                              <BookOpen className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(inv)} title={t('common.edit')}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(inv.id)} title={t('common.delete')}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        {/* ===== Uredi Tab ===== */}
+        <TabsContent value="uredi">
+          <Card>
+            <CardHeader className="pb-3">
+              {editingInvoice ? (
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => {
+                    setEditingInvoice(null)
+                    setLineItems([{ productId: '', productName: '', quantity: 1, unitPrice: 0, discountPct: 0, taxRate: 20 }])
+                  }}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-base font-semibold">{t('invoices.editInvoice')} — {editingInvoice.number}</CardTitle>
+                </div>
+              ) : (
+                <CardTitle className="text-base font-semibold">Uredi fakture</CardTitle>
+              )}
+            </CardHeader>
+            <CardContent>
+              {editingInvoice ? (
+                invoiceForm
+              ) : loading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
+                </div>
+              ) : (
+                invoiceTableBody
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }
 

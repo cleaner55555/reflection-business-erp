@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Search, Trash2, Eye, Award, CheckCircle2 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import type { Standard, Finding } from './types'
@@ -104,51 +103,6 @@ export function StandardsTableSection({ filtered, search, statusFilter, setSearc
   )
 }
 
-// ==================== DETAIL DIALOG ====================
-
-interface StandardDetailDialogProps {
-  open: boolean
-  onOpenChange: (v: boolean) => void
-  item: Standard | null
-}
-
-export function StandardDetailDialog({ open, onOpenChange, item }: StandardDetailDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Detalji standarda</DialogTitle></DialogHeader>
-        {item && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between"><div><p className="text-lg font-bold">{item.code}</p><p className="text-xs text-muted-foreground">{item.name}</p></div><div className="flex gap-2">{getCategoryBadge(item.category)}{getStatusBadge(item.status)}</div></div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Verzija</div><p className="text-xs font-medium">{item.version}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Izdavalac</div><p className="text-xs font-medium">{item.issuingBody}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Važi od</div><p className="text-xs">{item.validFrom ? formatDate(item.validFrom) : '-'}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Važi do</div><p className="text-xs">{item.validUntil ? formatDate(item.validUntil) : '-'}</p></div>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Opseg</div><p className="text-xs">{item.scope}</p><p className="text-xs text-muted-foreground mt-1">Auditor: {item.auditor || 'Nije dodeljen'} · Zadnji: {item.lastAudit ? formatDate(item.lastAudit) : 'N/A'} · Sledeći: {item.nextAudit ? formatDate(item.nextAudit) : 'N/A'}</p></div>
-            <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="flex justify-between items-center"><span className="text-xs text-emerald-600">Nivo usklađenosti</span><span className="text-lg font-bold text-emerald-700">{item.compliance}%</span></div></div>
-            {item.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{item.notes}</p></div>}
-            {item.findings.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-medium">Nalazi audita:</p>
-                {item.findings.map(f => (
-                  <div key={f.id} className="p-2 rounded-lg border space-y-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2"><Badge className={`${f.type === 'major' ? 'bg-red-100 text-red-700' : f.type === 'minor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'} text-xs`}>{f.type}</Badge><Badge className={`${f.status === 'open' ? 'bg-red-100 text-red-600' : f.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'} text-xs`}>{f.status === 'open' ? 'Otvoren' : f.status === 'in_progress' ? 'U toku' : 'Zatvoren'}</Badge></div>
-                      <span className="text-xs text-muted-foreground">{f.deadline ? formatDate(f.deadline) : ''}</span>
-                    </div>
-                    <p className="text-xs">{f.description}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 // ==================== HEADER ====================
 

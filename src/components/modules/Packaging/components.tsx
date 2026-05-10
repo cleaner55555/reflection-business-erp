@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Search, Eye, Trash2, CheckCircle2, ScanBarcode, AlertTriangle } from 'lucide-react'
@@ -106,65 +105,3 @@ export function OrdersTableSection({
   )
 }
 
-export function OrderDetailDialog({
-  detailItem, onClose, onToggleLabel, onToggleQC,
-}: {
-  detailItem: PackagingOrder | null
-  onClose: () => void
-  onToggleLabel: (orderId: string, itemId: string) => void
-  onToggleQC: (orderId: string, itemId: string, passed: boolean) => void
-}) {
-  return (
-    <Dialog open={!!detailItem} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[750px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Detalji naloga za pakovanje</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.orderNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderId} · {detailItem.customerName}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}{getPackTypeBadge(detailItem.packagingType)}</div></div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Ukupno kutija</div><p className="text-xs font-bold">{detailItem.boxCount}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-bold">{detailItem.totalWeight >= 1000 ? `${(detailItem.totalWeight / 1000).toFixed(1)}t` : `${detailItem.totalWeight}kg`}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Zapremina</div><p className="text-xs font-bold">{detailItem.totalVolume} m³</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Troškovi</div><p className="text-xs font-bold">{formatCurrency(detailItem.packagingCost)}</p></div>
-            </div>
-            {detailItem.assignedTo && <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Zaduzeni</div><p className="text-xs font-medium">{detailItem.assignedTo}</p></div>}
-            {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Instrukcije</p><p className="text-xs">{detailItem.notes}</p></div>}
-
-            <div className="space-y-2">
-              <p className="text-xs font-medium">Stavke:</p>
-              <Table>
-                <TableHeader><TableRow>
-                  <TableHead className="text-xs">Proizvod</TableHead>
-                  <TableHead className="text-xs">SKU</TableHead>
-                  <TableHead className="text-xs">Količina</TableHead>
-                  <TableHead className="text-xs">Kutija</TableHead>
-                  <TableHead className="text-xs">Dimenzije</TableHead>
-                  <TableHead className="text-xs">Labela</TableHead>
-                  <TableHead className="text-xs">QC</TableHead>
-                </TableRow></TableHeader>
-                <TableBody>
-                  {detailItem.items.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="text-xs font-medium">{item.productName}</TableCell>
-                      <TableCell className="text-xs font-mono">{item.sku}</TableCell>
-                      <TableCell className="text-xs">{item.quantity}</TableCell>
-                      <TableCell className="text-xs">{item.boxType}</TableCell>
-                      <TableCell className="text-xs">{item.boxDimensions}</TableCell>
-                      <TableCell><Button variant={item.labelPrinted ? 'outline' : 'ghost'} size="sm" className="h-6 text-xs gap-1" onClick={() => onToggleLabel(detailItem.id, item.id)}>{item.labelPrinted ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" />Štamp.</> : <><ScanBarcode className="h-3 w-3" />Nije</>}</Button></TableCell>
-                      <TableCell><div className="flex gap-1">
-                        <Button variant="ghost" size="sm" className="h-6 w-6 text-emerald-600" onClick={() => onToggleQC(detailItem.id, item.id, true)}><CheckCircle2 className="h-3 w-3" /></Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 text-red-600" onClick={() => onToggleQC(detailItem.id, item.id, false)}><AlertTriangle className="h-3 w-3" /></Button>
-                        {item.qcPassed === true && <Badge className="bg-emerald-100 text-emerald-700 text-xs">OK</Badge>}
-                        {item.qcPassed === false && <Badge className="bg-red-100 text-red-700 text-xs">FAIL</Badge>}
-                      </div></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}

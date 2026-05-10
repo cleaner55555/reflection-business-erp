@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -174,27 +173,4 @@ export function ChatTabContent({ channels, filtered, selectedChannel, messages, 
   )
 }
 
-export function CreateChannelDialog({ open, onClose, form, setForm, onCreate }: {
-  open: boolean
-  onClose: () => void
-  form: { name: string; description: string; type: string }
-  setForm: (v: { name: string; description: string; type: string }) => void
-  onCreate: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Novi kanal</DialogTitle></DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2"><Label>Naziv</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="naziv-kanala" /></div>
-          <div className="space-y-2"><Label>Tip</Label><Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(channelTypeConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>))}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Opis</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} /></div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Otkaži</Button>
-          <Button onClick={onCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
+

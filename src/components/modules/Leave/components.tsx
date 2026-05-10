@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -122,39 +121,3 @@ export function RequestsList({ items, loading, search, filter, onSearch, onFilte
   )
 }
 
-export function CreateDialog({ open, onOpenChange, form, onFormChange, onSubmit }: { open: boolean; onOpenChange: (v: boolean) => void; form: Record<string, unknown>; onFormChange: (f: string, v: unknown) => void; onSubmit: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Novi zahtev za odsustvo</DialogTitle></DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2"><Label>Zaposleni</Label><Input value={form.employeeName as string} onChange={e => onFormChange('employeeName', e.target.value)} placeholder="Ime i prezime zaposlenog" /></div>
-          <div className="space-y-2"><Label>Tip odsustva</Label><Select value={form.type as string} onValueChange={v => onFormChange('type', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}</SelectContent></Select></div>
-          <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Datum početka</Label><Input type="date" value={form.startDate as string} onChange={e => onFormChange('startDate', e.target.value)} /></div><div className="space-y-2"><Label>Datum završetka</Label><Input type="date" value={form.endDate as string} onChange={e => onFormChange('endDate', e.target.value)} /></div></div>
-          <div className="space-y-2"><Label>Razlog</Label><Textarea value={form.reason as string} onChange={e => onFormChange('reason', e.target.value)} placeholder="Razlog odsustva..." /></div>
-        </div>
-        <DialogFooter><Button variant="outline" onClick={() => onOpenChange(false)}>Otkaži</Button><Button onClick={onSubmit}><Plus className="h-4 w-4 mr-1" /> Podnesi</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function DetailDialog({ open, onOpenChange, selected }: { open: boolean; onOpenChange: (v: boolean) => void; selected: LeaveRequest | null }) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Detalji zahteva</DialogTitle></DialogHeader>
-        {selected && (<div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><span className="text-muted-foreground">Zaposleni:</span> <span className="font-medium">{selected.employeeName}</span></div>
-            <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-            <div><span className="text-muted-foreground">Tip:</span> {typeLabels[selected.type] || selected.type}</div>
-            <div><span className="text-muted-foreground">Dani:</span> <span className="font-bold">{selected.daysCount}</span></div>
-            <div><span className="text-muted-foreground">Od:</span> {new Date(selected.startDate).toLocaleDateString('sr-RS')}</div>
-            <div><span className="text-muted-foreground">Do:</span> {new Date(selected.endDate).toLocaleDateString('sr-RS')}</div>
-            {selected.approvedBy && <div><span className="text-muted-foreground">Odobrio:</span> {selected.approvedBy}</div>}
-          </div>
-          {selected.reason && <div className="text-sm"><span className="text-muted-foreground">Razlog:</span> {selected.reason}</div>}
-        </div>)}
-      </DialogContent>
-    </Dialog>
-  )
-}

@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Search, Trash2, Pencil, Eye, Key, AlertTriangle } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
@@ -64,14 +63,3 @@ export function EditList({ data, onEdit, onDelete }: { data: Rental[]; onEdit: (
   )
 }
 
-export function DetailDialog({ detailItem, open, onClose }: { detailItem: Rental | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={() => onClose()}><DialogContent className="sm:max-w-[550px]"><DialogHeader><DialogTitle>Detalji ugovora</DialogTitle></DialogHeader>{detailItem && (<div className="space-y-3"><div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.contractNo}</h3>{getStatusBadge(detailItem.status)}</div><div className="grid grid-cols-2 gap-3">{[['Zakupec', detailItem.tenantName],['Telefon', detailItem.phone],['Email', detailItem.email || '—'],['Nekretnina', detailItem.propertyTitle],['Adresa', detailItem.propertyAddress],['Mesečna kirija', formatEUR(detailItem.monthlyRent)],['Depozit', formatEUR(detailItem.deposit)],['Sigurnosni depozit', formatEUR(detailItem.securityDeposit)],['Početak', formatDate(detailItem.startDate)],['Kraj', formatDate(detailItem.endDate)],['Dan plaćanja', `${detailItem.paymentDay}. u mesecu`],['Način plaćanja', detailItem.paymentMethod === 'bank_transfer' ? 'Bankovni prenos' : detailItem.paymentMethod === 'standing_order' ? 'Stalni nalog' : 'Gotovina'],['Poslednja uplata', detailItem.lastPayment ? formatDate(detailItem.lastPayment) : '—'],['Sledeća uplata', detailItem.nextPayment ? formatDate(detailItem.nextPayment) : '—']].map(([l, v]) => (<div key={l} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{l}</div><div className="text-xs font-medium">{v}</div></div>))}</div>{detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}</div>)}</DialogContent></Dialog>
-  )
-}
-
-export function EditDialog({ editItem, form, onFormChange, open, onClose, onSave }: { editItem: Rental | null; form: Partial<Rental>; onFormChange: (f: Partial<Rental>) => void; open: boolean; onClose: () => void; onSave: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Novi ugovor'}</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="grid grid-cols-2 gap-3"><div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => onFormChange({ ...form, status: v as Rental['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="expiring">Ističe</SelectItem><SelectItem value="expired">Istekao</SelectItem><SelectItem value="terminated">Prekinut</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Kirija (€)</Label><Input className="text-xs" type="number" value={form.monthlyRent || ''} onChange={e => onFormChange({ ...form, monthlyRent: Number(e.target.value) })} /></div></div><div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => onFormChange({ ...form, notes: e.target.value })} /></div></div><DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
-  )
-}

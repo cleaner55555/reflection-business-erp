@@ -48,13 +48,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+
 import type {
   TimerState,
   TimeEntry,
@@ -526,7 +520,7 @@ export function TimeEntriesTable({
   );
 }
 
-// ============ ENTRY FORM DIALOG ============
+// ============ ENTRY FORM (INLINE) ============
 
 interface EntryFormDialogProps {
   open: boolean;
@@ -555,177 +549,172 @@ export function EntryFormDialog({
   employees,
   onSubmit,
 }: EntryFormDialogProps) {
-  const [form, setForm] = useState({
-    employeeId: "",
-    projectId: "",
-    taskId: "",
-    description: "",
-    date: "",
-    startTime: "",
-    endTime: "",
-  });
-
-  // Reset form when dialog opens
-  const handleOpen = (isOpen: boolean) => {
-    if (isOpen && editingEntry) {
-      setForm({
-        employeeId: editingEntry.employeeId,
-        projectId: editingEntry.projectId,
-        taskId: "",
-        description: editingEntry.description,
-        date: editingEntry.date,
-        startTime: editingEntry.startTime,
-        endTime: editingEntry.endTime,
-      });
-    } else if (isOpen) {
-      setForm({
-        employeeId: "",
-        projectId: "",
-        taskId: "",
-        description: "",
-        date: new Date().toISOString().split("T")[0],
-        startTime: "08:00",
-        endTime: "09:00",
-      });
-    }
-    onOpenChange(isOpen);
-  };
+  const [form, setForm] = useState(() =>
+    editingEntry
+      ? {
+          employeeId: editingEntry.employeeId,
+          projectId: editingEntry.projectId,
+          taskId: "",
+          description: editingEntry.description,
+          date: editingEntry.date,
+          startTime: editingEntry.startTime,
+          endTime: editingEntry.endTime,
+        }
+      : {
+          employeeId: "",
+          projectId: "",
+          taskId: "",
+          description: "",
+          date: new Date().toISOString().split("T")[0],
+          startTime: "08:00",
+          endTime: "09:00",
+        },
+  );
 
   const filteredTasks = tasks.filter((t) => t.projectId === form.projectId);
+
+  const handleClose = () => {
+    onOpenChange(false);
+  };
 
   const handleSubmit = () => {
     if (!form.employeeId || !form.projectId || !form.taskId || !form.date)
       return;
     onSubmit(form);
-    handleOpen(false);
+    onOpenChange(false);
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={handleOpen}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>
             {editingEntry ? "Ажурирај унос" : "Нови унос времена"}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label>Запослени *</Label>
-            <Select
-              value={form.employeeId}
-              onValueChange={(v) => setForm({ ...form, employeeId: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Изаберите запосленог..." />
-              </SelectTrigger>
-              <SelectContent>
-                {employees.map((emp) => (
-                  <SelectItem key={emp.id} value={emp.id}>
-                    {emp.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          </CardTitle>
+          <Button variant="ghost" size="sm" onClick={handleClose}>
+            <XCircle className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-2">
+          <Label>Запослени *</Label>
+          <Select
+            value={form.employeeId}
+            onValueChange={(v) => setForm({ ...form, employeeId: v })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Изаберите запосленог..." />
+            </SelectTrigger>
+            <SelectContent>
+              {employees.map((emp) => (
+                <SelectItem key={emp.id} value={emp.id}>
+                  {emp.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-          <div className="grid gap-2">
-            <Label>Пројекат *</Label>
-            <Select
-              value={form.projectId}
-              onValueChange={(v) =>
-                setForm({ ...form, projectId: v, taskId: "" })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Изаберите пројекат..." />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map((proj) => (
-                  <SelectItem key={proj.id} value={proj.id}>
-                    <span className="flex items-center gap-2">
-                      <span
-                        className="inline-block h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: proj.color }}
-                      />
-                      {proj.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="grid gap-2">
+          <Label>Пројекат *</Label>
+          <Select
+            value={form.projectId}
+            onValueChange={(v) =>
+              setForm({ ...form, projectId: v, taskId: "" })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Изаберите пројекат..." />
+            </SelectTrigger>
+            <SelectContent>
+              {projects.map((proj) => (
+                <SelectItem key={proj.id} value={proj.id}>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: proj.color }}
+                    />
+                    {proj.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-          <div className="grid gap-2">
-            <Label>Задатак *</Label>
-            <Select
-              value={form.taskId}
-              onValueChange={(v) => setForm({ ...form, taskId: v })}
-              disabled={!form.projectId}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    form.projectId
-                      ? "Изаберите задатак..."
-                      : "Прво изаберите пројекат"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredTasks.map((task) => (
-                  <SelectItem key={task.id} value={task.id}>
-                    {task.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-2">
-            <Label>Датум *</Label>
-            <Input
-              type="date"
-              value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label>Почетак *</Label>
-              <Input
-                type="time"
-                value={form.startTime}
-                onChange={(e) =>
-                  setForm({ ...form, startTime: e.target.value })
+        <div className="grid gap-2">
+          <Label>Задатак *</Label>
+          <Select
+            value={form.taskId}
+            onValueChange={(v) => setForm({ ...form, taskId: v })}
+            disabled={!form.projectId}
+          >
+            <SelectTrigger>
+              <SelectValue
+                placeholder={
+                  form.projectId
+                    ? "Изаберите задатак..."
+                    : "Прво изаберите пројекат"
                 }
               />
-            </div>
-            <div className="grid gap-2">
-              <Label>Крај *</Label>
-              <Input
-                type="time"
-                value={form.endTime}
-                onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-              />
-            </div>
-          </div>
+            </SelectTrigger>
+            <SelectContent>
+              {filteredTasks.map((task) => (
+                <SelectItem key={task.id} value={task.id}>
+                  {task.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
+        <div className="grid gap-2">
+          <Label>Датум *</Label>
+          <Input
+            type="date"
+            value={form.date}
+            onChange={(e) => setForm({ ...form, date: e.target.value })}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label>Опис</Label>
-            <Textarea
-              placeholder="Опишите шта сте радили..."
-              value={form.description}
+            <Label>Почетак *</Label>
+            <Input
+              type="time"
+              value={form.startTime}
               onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
+                setForm({ ...form, startTime: e.target.value })
               }
-              rows={3}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label>Крај *</Label>
+            <Input
+              type="time"
+              value={form.endTime}
+              onChange={(e) => setForm({ ...form, endTime: e.target.value })}
             />
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpen(false)}>
+        <div className="grid gap-2">
+          <Label>Опис</Label>
+          <Textarea
+            placeholder="Опишите шта сте радили..."
+            value={form.description}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
+            rows={3}
+          />
+        </div>
+
+        <div className="flex items-center justify-end gap-2 pt-2">
+          <Button variant="outline" onClick={handleClose}>
             Откажи
           </Button>
           <Button
@@ -734,9 +723,9 @@ export function EntryFormDialog({
           >
             {editingEntry ? "Ажурирај" : "Сачувај"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

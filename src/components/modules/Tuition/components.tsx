@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -177,84 +176,4 @@ export function TuitionEditTab({
   )
 }
 
-/* ── Detail dialog ── */
 
-export function TuitionDetailDialog({
-  detailId,
-  onClose,
-  data,
-}: {
-  detailId: string | null
-  onClose: () => void
-  data: Tuition[]
-}) {
-  const detailItem = detailId ? data.find(i => i.id === detailId) : null
-
-  return (
-    <Dialog open={!!detailId} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Detalji školarine</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Student', detailItem.student],
-                ['Broj indeksa', detailItem.indexNo],
-                ['Program', detailItem.program],
-                ['Godina/Semestar', `${detailItem.year}/${detailItem.semester}`],
-                ['Iznos', formatRSD(detailItem.amount)],
-                ['Uplaćeno', formatRSD(detailItem.paidAmount)],
-                ['Preostalo', formatRSD(detailItem.amount - detailItem.paidAmount)],
-                ['Popust', `${detailItem.discount}%`],
-                ['Rok', formatDate(detailItem.dueDate)],
-                ['Datum uplate', detailItem.paidDate ? formatDate(detailItem.paidDate) : '—'],
-                ['Broj računa', detailItem.receiptNo || '—'],
-                ['Rate', `${detailItem.currentInstallment}/${detailItem.installments}`],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-/* ── Edit dialog ── */
-
-export function TuitionEditDialog({
-  open,
-  onClose,
-  editItem,
-  form,
-  setForm,
-  onSave,
-}: {
-  open: boolean
-  onClose: () => void
-  editItem: Tuition | null
-  form: Partial<Tuition>
-  setForm: (f: Partial<Tuition>) => void
-  onSave: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi zapis' : 'Novi zapis'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Student *</Label><Input className="text-xs" value={form.student || ''} onChange={e => setForm({ ...form, student: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'unpaid'} onValueChange={v => setForm({ ...form, status: v as Tuition['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="paid">Plaćena</SelectItem><SelectItem value="partial">Delimično</SelectItem><SelectItem value="unpaid">Neplaćena</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="scholarship">Stipendija</SelectItem><SelectItem value="exempt">Otpust</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input className="text-xs" type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: Number(e.target.value) })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Uplaćeno</Label><Input className="text-xs" type="number" value={form.paidAmount || ''} onChange={e => setForm({ ...form, paidAmount: Number(e.target.value) })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

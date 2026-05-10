@@ -286,7 +286,9 @@ function PregledTab() {
   )
 }
 
-// ─── Tab 2: Zaposleni List + CRUD ─────────────────────────────────────────────
+// ─── Tab 2: Zaposleni (Pregled / Dodaj / Uredi) ────────────────────────────
+
+type EmployeeSubTab = 'pregled' | 'dodaj' | 'uredi'
 
 function ZaposleniListTab() {
   const { t } = useTranslation()
@@ -296,9 +298,10 @@ function ZaposleniListTab() {
   const [search, setSearch] = useState('')
   const [deptFilter, setDeptFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [activeTab, setActiveTab] = useState<EmployeeSubTab>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<Employee | null>(null)
+  const [editSelectId, setEditSelectId] = useState('')
   const [detailEmployee, setDetailEmployee] = useState<Employee | null>(null)
   const [detailPayrolls, setDetailPayrolls] = useState<Payroll[]>([])
   const [detailAttendances, setDetailAttendances] = useState<Attendance[]>([])
@@ -330,9 +333,8 @@ function ZaposleniListTab() {
     }
   }, [employees, translateTexts])
 
-  const handleNew = () => { setEditing(null); setViewMode('form') }
-  const handleEdit = (emp: Employee) => { setEditing(emp); setViewMode('form') }
-  const handleCancel = () => { setViewMode('list'); setEditing(null) }
+  const handleNew = () => { setEditing(null); setActiveTab('dodaj') }
+  const handleEdit = (emp: Employee) => { setEditing(emp); setEditSelectId(emp.id); setActiveTab('uredi') }
 
   const handleDelete = async (id: string) => {
     if (!confirm(t('employees.confirmDelete'))) return
@@ -387,23 +389,88 @@ function ZaposleniListTab() {
       })
       if (!res.ok) { const err = await res.json(); toast.error(err.error || t('common.error')); return }
       toast.success(editing ? t('common.updated') : t('common.created'))
-      setViewMode('list'); setEditing(null); fetchEmployees()
+      setActiveTab('pregled'); setEditing(null); setEditSelectId(''); fetchEmployees()
     } catch { toast.error(t('common.error')) } finally { setSubmitting(false) }
   }
 
+  const handleEditSelectChange = (empId: string) => {
+    setEditSelectId(empId)
+    const emp = employees.find((e) => e.id === empId)
+    setEditing(emp || null)
+  }
+
+  // ── Employee Form (shared by Dodaj & Uredi) ──
+  const employeeForm = (mode: 'create' | 'edit') => (
+    <form onSubmit={handleSubmit} className="space-y-5" key={mode === 'edit' ? editing?.id || 'edit' : 'new'}>
+      {mode === 'edit' && (
+        <div className="space-y-2">
+          <Label className="text-xs">{t('employees.selectEmployee')} <span className="text-red-500">*</span></Label>
+          <Select value={editSelectId} onValueChange={handleEditSelectChange}>
+            <SelectTrigger><SelectValue placeholder="Izaberi zaposlenog..." /></SelectTrigger>
+            <SelectContent>
+              {employees.map((emp) => <SelectItem key={emp.id} value={emp.id}>{tc(emp.firstName)} {tc(emp.lastName)}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Lični podaci</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2"><Label className="text-xs">{t('employees.firstName')} <span className="text-red-500">*</span></Label><Input name="firstName" defaultValue={editing?.firstName || ''} required /></div>
+          <div className="space-y-2"><Label className="text-xs">{t('employees.lastName')} <span className="text-red-500">*</span></Label><Input name="lastName" defaultValue={editing?.lastName || ''} required /></div>
+          <div className="space-y-2"><Label className="text-xs">{t('employees.position')}</Label><Input name="position" defaultValue={editing?.position || ''} /></div>
+          <div className="space-y-2">
+            <Label className="text-xs">{t('employees.department')}</Label>
+            <Select name="department" defaultValue={editing?.department || ''}>
+              <SelectTrigger><SelectValue placeholder="Izaberi..." /></SelectTrigger>
+              <SelectContent>
+                {DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2"><Label className="text-xs">{t('common.email')}</Label><Input name="email" type="email" defaultValue={editing?.email || ''} /></div>
+          <div className="space-y-2"><Label className="text-xs">{t('employees.phone')}</Label><Input name="phone" defaultValue={editing?.phone || ''} /></div>
+        </div>
+      </div>
+      <Separator />
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Finansijski podaci</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2"><Label className="text-xs">{t('employees.baseSalary')} (RSD)</Label><Input name="baseSalary" type="number" step="0.01" defaultValue={editing?.baseSalary || ''} /></div>
+          <div className="space-y-2"><Label className="text-xs">{t('employees.bankAccount')}</Label><Input name="bankAccount" defaultValue={editing?.bankAccount || ''} /></div>
+        </div>
+      </div>
+      <div className="flex gap-2 pt-2">
+        <Button type="submit" className="flex-1" disabled={submitting || (mode === 'edit' && !editing)}>
+          {submitting ? t('common.saving') : mode === 'edit' ? t('common.saveChanges') : 'Kreiraj'}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => { setActiveTab('pregled'); setEditing(null); setEditSelectId('') }}>{t('common.cancel')}</Button>
+      </div>
+    </form>
+  )
+
   return (
     <>
-      <Card>
-        <CardHeader className="pb-3">
-          {viewMode === 'form' ? (
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="text-base font-semibold">
-                {editing ? 'Izmeni zaposlenog' : 'Novi zaposleni'}
-              </CardTitle>
-            </div>
-          ) : (
-            <>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as EmployeeSubTab); if (v !== 'uredi') { setEditing(null); setEditSelectId('') } }} className="space-y-4">
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="pregled" className="gap-1.5">
+            <Eye className="h-3.5 w-3.5" />
+            <span>Pregled</span>
+          </TabsTrigger>
+          <TabsTrigger value="dodaj" className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" />
+            <span>Dodaj</span>
+          </TabsTrigger>
+          <TabsTrigger value="uredi" className="gap-1.5">
+            <Pencil className="h-3.5 w-3.5" />
+            <span>Uredi</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ── Sub-tab: Pregled (employee list) ── */}
+        <TabsContent value="pregled">
+          <Card>
+            <CardHeader className="pb-3">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="text-base font-semibold">{t('employees.employeeList')}</CardTitle>
@@ -434,201 +501,185 @@ function ZaposleniListTab() {
                   </SelectContent>
                 </Select>
               </div>
-            </>
-          )}
-        </CardHeader>
-        <CardContent>
-          {viewMode === 'form' ? (
-            <form onSubmit={handleSubmit} className="space-y-5" key={editing?.id || 'new'}>
-              {/* Personal info */}
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Lični podaci</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-xs">{t('employees.firstName')} <span className="text-red-500">*</span></Label><Input name="firstName" defaultValue={editing?.firstName || ''} required /></div>
-                  <div className="space-y-2"><Label className="text-xs">{t('employees.lastName')} <span className="text-red-500">*</span></Label><Input name="lastName" defaultValue={editing?.lastName || ''} required /></div>
-                  <div className="space-y-2"><Label className="text-xs">{t('employees.position')}</Label><Input name="position" defaultValue={editing?.position || ''} /></div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">{t('employees.department')}</Label>
-                    <Select name="department" defaultValue={editing?.department || ''}>
-                      <SelectTrigger><SelectValue placeholder="Izaberi..." /></SelectTrigger>
-                      <SelectContent>
-                        {DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2"><Label className="text-xs">{t('common.email')}</Label><Input name="email" type="email" defaultValue={editing?.email || ''} /></div>
-                  <div className="space-y-2"><Label className="text-xs">{t('employees.phone')}</Label><Input name="phone" defaultValue={editing?.phone || ''} /></div>
-                </div>
-              </div>
-              <Separator />
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Finansijski podaci</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label className="text-xs">{t('employees.baseSalary')} (RSD)</Label><Input name="baseSalary" type="number" step="0.01" defaultValue={editing?.baseSalary || ''} /></div>
-                  <div className="space-y-2"><Label className="text-xs">{t('employees.bankAccount')}</Label><Input name="bankAccount" defaultValue={editing?.bankAccount || ''} /></div>
-                </div>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? t('common.saving') : editing ? t('common.saveChanges') : 'Kreiraj'}
-                </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
-              </div>
-            </form>
-          ) : loading ? (
-            <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-          ) : (
-            <div className="max-h-[520px] overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs">{t('common.name')}</TableHead>
-                    <TableHead className="text-xs">{t('employees.position')}</TableHead>
-                    <TableHead className="text-xs hidden md:table-cell">{t('employees.department')}</TableHead>
-                    <TableHead className="text-xs text-right">{t('employees.salary')}</TableHead>
-                    <TableHead className="text-xs hidden lg:table-cell">{t('employees.hireDate')}</TableHead>
-                    <TableHead className="text-xs text-center">Status</TableHead>
-                    <TableHead className="text-xs text-right">{t('common.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employees.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema zaposlenih</TableCell></TableRow>
-                  ) : (
-                    employees.map((emp) => (
-                      <TableRow key={emp.id} className={!emp.isActive ? 'opacity-50' : ''}>
-                        <TableCell className="text-xs font-medium">{tc(emp.firstName)} {tc(emp.lastName)}</TableCell>
-                        <TableCell className="text-xs">{tc(emp.position || '') || '-'}</TableCell>
-                        <TableCell className="text-xs hidden md:table-cell">
-                          {emp.department ? <Badge variant="outline" className="text-xs px-2 py-0">{emp.department}</Badge> : '-'}
-                        </TableCell>
-                        <TableCell className="text-xs text-right font-medium">{formatRSD(emp.baseSalary)}</TableCell>
-                        <TableCell className="text-xs hidden lg:table-cell text-muted-foreground">{formatDate(emp.hireDate)}</TableCell>
-                        <TableCell className="text-xs text-center">
-                          <button onClick={() => handleToggleActive(emp)} className="inline-flex" title={emp.isActive ? 'Deaktiviraj' : 'Aktiviraj'}>
-                            <div className={`w-5 h-3 rounded-full relative transition-colors ${emp.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                              <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-transform ${emp.isActive ? 'left-2.5' : 'left-0.5'}`} />
-                            </div>
-                          </button>
-                        </TableCell>
-                        <TableCell className="text-xs text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleViewDetail(emp)} title="Detalji">
-                              <Eye className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(emp)}>
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(emp.id)}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Employee Detail Card */}
-      {!!detailEmployee && (<Card className="max-w-2xl">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailEmployee(null)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-lg">{detailEmployee.firstName} {detailEmployee.lastName}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {detailLoading ? (
-            <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div>
-          ) : (
-            <div className="space-y-4">
-              {/* Info */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                <div><span className="text-muted-foreground">Pozicija:</span><p className="font-medium">{tc(detailEmployee.position || '-')}</p></div>
-                <div><span className="text-muted-foreground">Departman:</span><p className="font-medium">{detailEmployee.department || '-'}</p></div>
-                <div><span className="text-muted-foreground">Plata:</span><p className="font-medium">{formatRSD(detailEmployee.baseSalary)}</p></div>
-                <div><span className="text-muted-foreground">Email:</span><p className="font-medium">{detailEmployee.email || '-'}</p></div>
-                <div><span className="text-muted-foreground">Telefon:</span><p className="font-medium">{detailEmployee.phone || '-'}</p></div>
-                <div><span className="text-muted-foreground">Zaposlen od:</span><p className="font-medium">{formatDate(detailEmployee.hireDate)}</p></div>
-              </div>
-
-              <Separator />
-
-              {/* Recent payrolls */}
-              <div>
-                <h4 className="text-sm font-semibold mb-2">Plate ({detailPayrolls.length})</h4>
-                {detailPayrolls.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Nema obračunatih plata.</p>
-                ) : (
-                  <div className="max-h-40 overflow-y-auto">
-                    <Table>
-                      <TableHeader><TableRow>
-                        <TableHead className="text-xs">Mesec</TableHead>
-                        <TableHead className="text-xs text-right">Neto</TableHead>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+              ) : (
+                <div className="max-h-[520px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">{t('common.name')}</TableHead>
+                        <TableHead className="text-xs">{t('employees.position')}</TableHead>
+                        <TableHead className="text-xs hidden md:table-cell">{t('employees.department')}</TableHead>
+                        <TableHead className="text-xs text-right">{t('employees.salary')}</TableHead>
+                        <TableHead className="text-xs hidden lg:table-cell">{t('employees.hireDate')}</TableHead>
                         <TableHead className="text-xs text-center">Status</TableHead>
-                      </TableRow></TableHeader>
-                      <TableBody>
-                        {detailPayrolls.slice(0, 6).map((p) => (
-                          <TableRow key={p.id}>
-                            <TableCell className="text-xs">{MONTHS[p.month - 1]} {p.year}</TableCell>
-                            <TableCell className="text-xs text-right font-medium">{formatRSD(p.netSalary)}</TableCell>
+                        <TableHead className="text-xs text-right">{t('common.actions')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {employees.length === 0 ? (
+                        <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">Nema zaposlenih</TableCell></TableRow>
+                      ) : (
+                        employees.map((emp) => (
+                          <TableRow key={emp.id} className={!emp.isActive ? 'opacity-50' : ''}>
+                            <TableCell className="text-xs font-medium">{tc(emp.firstName)} {tc(emp.lastName)}</TableCell>
+                            <TableCell className="text-xs">{tc(emp.position || '') || '-'}</TableCell>
+                            <TableCell className="text-xs hidden md:table-cell">
+                              {emp.department ? <Badge variant="outline" className="text-xs px-2 py-0">{emp.department}</Badge> : '-'}
+                            </TableCell>
+                            <TableCell className="text-xs text-right font-medium">{formatRSD(emp.baseSalary)}</TableCell>
+                            <TableCell className="text-xs hidden lg:table-cell text-muted-foreground">{formatDate(emp.hireDate)}</TableCell>
                             <TableCell className="text-xs text-center">
-                              <Badge variant={p.status === 'isplaceno' ? 'default' : 'outline'} className="text-xs">
-                                {p.status === 'nacrt' ? 'Nacrt' : p.status === 'odobreno' ? 'Odobreno' : 'Isplaćeno'}
-                              </Badge>
+                              <button onClick={() => handleToggleActive(emp)} className="inline-flex" title={emp.isActive ? 'Deaktiviraj' : 'Aktiviraj'}>
+                                <div className={`w-5 h-3 rounded-full relative transition-colors ${emp.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                                  <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-transform ${emp.isActive ? 'left-2.5' : 'left-0.5'}`} />
+                                </div>
+                              </button>
+                            </TableCell>
+                            <TableCell className="text-xs text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleViewDetail(emp)} title="Detalji">
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(emp)}>
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(emp.id)}>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-              <Separator />
-
-              {/* Recent attendance */}
-              <div>
-                <h4 className="text-sm font-semibold mb-2">Prisustvo ({detailAttendances.length})</h4>
-                {detailAttendances.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">Nema evidentiranog prisustva.</p>
-                ) : (
-                  <div className="max-h-40 overflow-y-auto">
-                    <Table>
-                      <TableHeader><TableRow>
-                        <TableHead className="text-xs">Datum</TableHead>
-                        <TableHead className="text-xs text-center">Sati</TableHead>
-                        <TableHead className="text-xs">Tip</TableHead>
-                      </TableRow></TableHeader>
-                      <TableBody>
-                        {detailAttendances.slice(0, 8).map((a) => {
-                          const typeInfo = ATTENDANCE_TYPES.find((at) => at.value === a.type)
-                          return (
-                            <TableRow key={a.id}>
-                              <TableCell className="text-xs">{formatDate(a.date)}</TableCell>
-                              <TableCell className="text-xs text-center">{a.hoursWorked}h</TableCell>
-                              <TableCell className="text-xs">
-                                <Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo?.color || ''}`}>
-                                  {typeInfo?.label || a.type}
-                                </Badge>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+          {/* Employee Detail Card */}
+          {!!detailEmployee && (<Card className="max-w-2xl">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailEmployee(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle className="text-lg">{detailEmployee.firstName} {detailEmployee.lastName}</CardTitle>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>)}
+            </CardHeader>
+            <CardContent>
+              {detailLoading ? (
+                <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                    <div><span className="text-muted-foreground">Pozicija:</span><p className="font-medium">{tc(detailEmployee.position || '-')}</p></div>
+                    <div><span className="text-muted-foreground">Departman:</span><p className="font-medium">{detailEmployee.department || '-'}</p></div>
+                    <div><span className="text-muted-foreground">Plata:</span><p className="font-medium">{formatRSD(detailEmployee.baseSalary)}</p></div>
+                    <div><span className="text-muted-foreground">Email:</span><p className="font-medium">{detailEmployee.email || '-'}</p></div>
+                    <div><span className="text-muted-foreground">Telefon:</span><p className="font-medium">{detailEmployee.phone || '-'}</p></div>
+                    <div><span className="text-muted-foreground">Zaposlen od:</span><p className="font-medium">{formatDate(detailEmployee.hireDate)}</p></div>
+                  </div>
+                  <Separator />
+                  <div>
+                    <h4 className="text-sm font-semibold mb-2">Plate ({detailPayrolls.length})</h4>
+                    {detailPayrolls.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Nema obračunatih plata.</p>
+                    ) : (
+                      <div className="max-h-40 overflow-y-auto">
+                        <Table>
+                          <TableHeader><TableRow>
+                            <TableHead className="text-xs">Mesec</TableHead>
+                            <TableHead className="text-xs text-right">Neto</TableHead>
+                            <TableHead className="text-xs text-center">Status</TableHead>
+                          </TableRow></TableHeader>
+                          <TableBody>
+                            {detailPayrolls.slice(0, 6).map((p) => (
+                              <TableRow key={p.id}>
+                                <TableCell className="text-xs">{MONTHS[p.month - 1]} {p.year}</TableCell>
+                                <TableCell className="text-xs text-right font-medium">{formatRSD(p.netSalary)}</TableCell>
+                                <TableCell className="text-xs text-center">
+                                  <Badge variant={p.status === 'isplaceno' ? 'default' : 'outline'} className="text-xs">
+                                    {p.status === 'nacrt' ? 'Nacrt' : p.status === 'odobreno' ? 'Odobreno' : 'Isplaćeno'}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+                  <Separator />
+                  <div>
+                    <h4 className="text-sm font-semibold mb-2">Prisustvo ({detailAttendances.length})</h4>
+                    {detailAttendances.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Nema evidentiranog prisustva.</p>
+                    ) : (
+                      <div className="max-h-40 overflow-y-auto">
+                        <Table>
+                          <TableHeader><TableRow>
+                            <TableHead className="text-xs">Datum</TableHead>
+                            <TableHead className="text-xs text-center">Sati</TableHead>
+                            <TableHead className="text-xs">Tip</TableHead>
+                          </TableRow></TableHeader>
+                          <TableBody>
+                            {detailAttendances.slice(0, 8).map((a) => {
+                              const typeInfo = ATTENDANCE_TYPES.find((at) => at.value === a.type)
+                              return (
+                                <TableRow key={a.id}>
+                                  <TableCell className="text-xs">{formatDate(a.date)}</TableCell>
+                                  <TableCell className="text-xs text-center">{a.hoursWorked}h</TableCell>
+                                  <TableCell className="text-xs">
+                                    <Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo?.color || ''}`}>
+                                      {typeInfo?.label || a.type}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>)}
+        </TabsContent>
+
+        {/* ── Sub-tab: Dodaj (create form) ── */}
+        <TabsContent value="dodaj">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Plus className="h-4 w-4" /> Novi zaposleni
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {employeeForm('create')}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Sub-tab: Uredi (edit form) ── */}
+        <TabsContent value="uredi">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Pencil className="h-4 w-4" /> Izmeni zaposlenog
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {employeeForm('edit')}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </>
   )
 }

@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -211,94 +210,7 @@ export function Ankete() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Nova anketa</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Naziv</Label><Input value={surveyForm.name} onChange={(e) => setSurveyForm({ ...surveyForm, name: e.target.value })} placeholder="Naziv ankete" /></div>
-              <div className="space-y-2"><Label>Status</Label><Select value={surveyForm.status} onValueChange={(v) => setSurveyForm({ ...surveyForm, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Nacrt</SelectItem><SelectItem value="active">Aktivna</SelectItem></SelectContent></Select></div>
-            </div>
-            <div className="space-y-2"><Label>Opis</Label><Textarea value={surveyForm.description} onChange={(e) => setSurveyForm({ ...surveyForm, description: e.target.value })} rows={2} /></div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Pitanja ({questions.length})</Label>
-              <Button size="sm" variant="outline" onClick={() => setQuestionDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj pitanje</Button>
-            </div>
-            {questions.length === 0 ? (
-              <div className="p-6 border border-dashed rounded-lg text-center">
-                <ListChecks className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Niste dodali nijedno pitanje</p>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {questions.map((q, i) => (
-                  <div key={q.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium">{i + 1}. {q.question}</p>
-                      <div className="flex gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">{questionTypeConfig[q.type]?.label}</Badge>
-                        {q.required && <Badge variant="outline" className="text-xs bg-red-50 text-red-600">Obavezno</Badge>}
-                      </div>
-                    </div>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeQuestion(i)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateSurvey}><Plus className="h-4 w-4 mr-1" /> Kreiraj anketu</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      <Dialog open={questionDialogOpen} onOpenChange={setQuestionDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novo pitanje</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Pitanje</Label><Input value={questionForm.question} onChange={(e) => setQuestionForm({ ...questionForm, question: e.target.value })} placeholder="Vaše pitanje..." /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Tip</Label><Select value={questionForm.type} onValueChange={(v) => setQuestionForm({ ...questionForm, type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(questionTypeConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}</SelectContent></Select></div>
-              <div className="flex items-center gap-2 pt-6"><input type="checkbox" checked={questionForm.required} onChange={(e) => setQuestionForm({ ...questionForm, required: e.target.checked })} className="rounded" /><Label>Obavezno</Label></div>
-            </div>
-            {questionForm.type.includes('choice') && (
-              <div className="space-y-2">
-                <Label>Opcije</Label>
-                {questionForm.options.map((opt, i) => (
-                  <div key={i} className="flex gap-2">
-                    <Input value={opt} onChange={(e) => { const opts = [...questionForm.options]; opts[i] = e.target.value; setQuestionForm({ ...questionForm, options: opts }) }} placeholder={`Opcija ${i + 1}`} />
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setQuestionForm({ ...questionForm, options: questionForm.options.filter((_, j) => j !== i) })}><Trash2 className="h-3.5 w-3.5" /></Button>
-                  </div>
-                ))}
-                <Button size="sm" variant="outline" onClick={() => setQuestionForm({ ...questionForm, options: [...questionForm.options, ''] })}><Plus className="h-3 w-3 mr-1" /> Dodaj opciju</Button>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setQuestionDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={addQuestion}>Dodaj pitanje</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji ankete</DialogTitle></DialogHeader>
-          {selected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Naziv:</span> <span className="font-medium">{selected.name}</span></div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">Pitanja:</span> {selected.questionCount}</div>
-                <div><span className="text-muted-foreground">Odgovori:</span> {selected.responseCount}</div>
-              </div>
-              {selected.description && <p className="text-sm text-muted-foreground">{selected.description}</p>}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

@@ -12,13 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+
 import {
   Select,
   SelectContent,
@@ -643,15 +637,22 @@ export function TruckFormDialog({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Truck className="h-5 w-5" />
             {truck ? "Уреди камион" : "Нови камион"}
-          </DialogTitle>
-        </DialogHeader>
+          </CardTitle>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onOpenChange(false)}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Row 1: Plate + VIN */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -837,7 +838,7 @@ export function TruckFormDialog({
             />
           </div>
 
-          <DialogFooter>
+          <div className="flex items-center justify-end gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -852,10 +853,10 @@ export function TruckFormDialog({
                   ? "Сачувај измене"
                   : "Додај камион"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1240,15 +1241,22 @@ export function MaintenanceFormDialog({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Wrench className="h-5 w-5" />
             Нови сервисни запис
-          </DialogTitle>
-        </DialogHeader>
+          </CardTitle>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onOpenChange(false)}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Камион *</Label>
@@ -1389,7 +1397,7 @@ export function MaintenanceFormDialog({
             </div>
           </div>
 
-          <DialogFooter>
+          <div className="flex items-center justify-end gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -1400,10 +1408,10 @@ export function MaintenanceFormDialog({
             <Button type="submit" disabled={submitting}>
               {submitting ? "Чување..." : "Сачувај"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1619,15 +1627,22 @@ export function CostFormDialog({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
             Нови трошак
-          </DialogTitle>
-        </DialogHeader>
+          </CardTitle>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onOpenChange(false)}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs">Камион *</Label>
@@ -1736,7 +1751,7 @@ export function CostFormDialog({
             </div>
           </div>
 
-          <DialogFooter>
+          <div className="flex items-center justify-end gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -1747,9 +1762,9 @@ export function CostFormDialog({
             <Button type="submit" disabled={submitting}>
               {submitting ? "Чување..." : "Сачувај"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   );
 }

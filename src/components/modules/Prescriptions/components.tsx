@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -133,59 +132,3 @@ export function EditTab({ data, onEdit, onDelete }: { data: Prescription[]; onEd
   )
 }
 
-/* ---- Detail Dialog ---- */
-export function DetailDialog({ detailItem, open, onClose }: { detailItem: Prescription | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader><DialogTitle>Recept — {detailItem?.prescriptionNo}</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.patientName}</h3>{getTypeBadge(detailItem.type)}{getStatusBadge(detailItem.status)}</div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Lekar', detailItem.doctor],
-                ['Datum', formatDate(detailItem.date)],
-                ['Dijagnoza', detailItem.diagnosis],
-                ['Vredi do', formatDate(detailItem.validUntil)],
-                ['Apoteka', detailItem.pharmacy || '—'],
-                ['Ukupna vrednost', formatRSD(detailItem.totalCost)],
-                ['Učešće pacijenta', formatRSD(detailItem.patientShare)],
-                ['Pokriće osiguranja', formatRSD(detailItem.insuranceCoverage)],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            <div className="p-2 rounded-lg bg-blue-50"><div className="text-xs text-blue-600 mb-2">Propisani lekovi</div>
-              {detailItem.medications.map((m, i) => (
-                <div key={i} className="text-xs mb-1"><span className="font-medium">{m.name}</span> — {m.dosage} — {m.frequency} — {m.duration} ({m.quantity})</div>
-              ))}
-            </div>
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-/* ---- Edit Dialog ---- */
-export function EditDialog({ form, editItem, open, onClose, onFormChange, onSave }: { form: Partial<Prescription>; editItem: Prescription | null; open: boolean; onClose: () => void; onFormChange: (f: Partial<Prescription>) => void; onSave: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi recept' : 'Novi recept'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Pacijent *</Label><Input className="text-xs" value={form.patientName || ''} onChange={e => onFormChange({ ...form, patientName: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => onFormChange({ ...form, status: v as Prescription['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="completed">Realizovan</SelectItem><SelectItem value="expired">Istekao</SelectItem><SelectItem value="cancelled">Otkazan</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'reimbursable'} onValueChange={v => onFormChange({ ...form, type: v as Prescription['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="reimbursable">Reemburzibilni</SelectItem><SelectItem value="private">Privatni</SelectItem><SelectItem value="narcotic">Narkotik</SelectItem><SelectItem value="special">Specijalni</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Vrednost</Label><Input className="text-xs" type="number" value={form.totalCost || ''} onChange={e => onFormChange({ ...form, totalCost: Number(e.target.value) })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => onFormChange({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

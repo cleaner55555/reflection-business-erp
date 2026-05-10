@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -397,23 +396,8 @@ function PipelineTab() {
           )}
 
           {/* Deal Detail Dialog */}
-          <Dialog open={!!selectedDeal} onOpenChange={() => setSelectedDeal(null)}>
-            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-              {selectedDeal && <DealDetail deal={selectedDeal} contacts={contacts} partners={partners} onClose={() => setSelectedDeal(null)} onEdit={() => { const d = selectedDeal; setSelectedDeal(null); handleEdit(d) }} onDelete={() => { setSelectedDeal(null); handleDelete(selectedDeal.id) }} onMove={(stage) => { setSelectedDeal(null); moveDeal(selectedDeal.id, stage) }} onRefresh={fetchDeals} />}
-            </DialogContent>
-          </Dialog>
 
           {/* Lost Reason Dialog */}
-          <Dialog open={!!lostDialog} onOpenChange={() => setLostDialog(null)}>
-            <DialogContent className="max-w-sm">
-              <DialogHeader><DialogTitle>{t('crm.lostReason')}</DialogTitle></DialogHeader>
-              <Input placeholder={t('crm.lostReasonPlaceholder')} value={lostDialog?.reason || ''} onChange={(e) => setLostDialog({ dealId: lostDialog?.dealId || '', reason: e.target.value })} />
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setLostDialog(null)}>{t('common.cancel')}</Button>
-                <Button variant="destructive" onClick={confirmLost}>{t('crm.lost')}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </>
       )}
     </div>
@@ -951,39 +935,6 @@ function KontaktiTab() {
       )}
 
       {/* Contact Detail Dialog */}
-      <Dialog open={!!selectedContact} onOpenChange={() => setSelectedContact(null)}>
-        <DialogContent className="max-w-md">
-          {selectedContact && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold ${avatarColor(selectedContact.firstName + selectedContact.lastName)}`}>{initials(selectedContact.firstName, selectedContact.lastName)}</div>
-                <div>
-                  <h3 className="font-bold">{tc(`${selectedContact.firstName} ${selectedContact.lastName}`)}</h3>
-                  {selectedContact.position && <p className="text-xs text-muted-foreground">{selectedContact.position}</p>}
-                </div>
-              </div>
-              <Separator />
-              <div className="space-y-2 text-xs">
-                {selectedContact.email && <div className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-muted-foreground" /><span>{selectedContact.email}</span></div>}
-                {selectedContact.phone && <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-muted-foreground" /><span>{selectedContact.phone}</span></div>}
-                {(selectedContact.company || selectedContact.partner?.name) && <div className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5 text-muted-foreground" /><span>{selectedContact.company || selectedContact.partner?.name}</span></div>}
-                <div className="flex gap-2 mt-2">
-                  {selectedContact.isLead && <Badge variant="outline" className="text-xs">Lead</Badge>}
-                  {selectedContact.isClient && <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700">Klijent</Badge>}
-                  {selectedContact.isSupplier && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700">Dobavljač</Badge>}
-                </div>
-                {selectedContact._count && (
-                  <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                    <span>{t('crm.deals')}: {selectedContact._count.deals || 0}</span>
-                    <span>{t('crm.activities')}: {selectedContact._count.activities || 0}</span>
-                  </div>
-                )}
-                {selectedContact.notes && <div className="mt-2 p-2 rounded bg-muted/50"><p className="text-muted-foreground">{selectedContact.notes}</p></div>}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

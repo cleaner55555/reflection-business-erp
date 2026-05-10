@@ -228,7 +228,8 @@ const MOCK_SHIFT_PRODUCTIVITY = [
 export function Manufacturing() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('pregled')
+  const [subTab, setSubTab] = useState('overview')
   const [orders, setOrders] = useState<ProductionOrder[]>([])
   const [boms, setBoms] = useState<Bom[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
@@ -279,18 +280,16 @@ export function Manufacturing() {
   const [orderSearch, setOrderSearch] = useState('')
   const [orderStatusFilter, setOrderStatusFilter] = useState('all')
   const [orderProductFilter, setOrderProductFilter] = useState('all')
-  const [orderDialogOpen, setOrderDialogOpen] = useState(false)
-  const [orderDetailOpen, setOrderDetailOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<ProductionOrder | null>(null)
 
   // BOM tab state
-  const [bomDialogOpen, setBomDialogOpen] = useState(false)
-  const [bomDetailOpen, setBomDetailOpen] = useState(false)
   const [selectedBom, setSelectedBom] = useState<Bom | null>(null)
 
   // Machine tab state
-  const [machineDialogOpen, setMachineDialogOpen] = useState(false)
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null)
+
+  // Dodaj sub-tab
+  const [dodajSubTab, setDodajSubTab] = useState<'order' | 'bom' | 'machine'>('order')
 
   // Schedule tab state
   const [scheduleView, setScheduleView] = useState<'weekly' | 'monthly'>('weekly')
@@ -361,7 +360,8 @@ export function Manufacturing() {
         toast({ title: t('production.newOrder'), description: t('common.created') })
       }
     } catch { toast({ title: 'Error', description: t('common.error'), variant: 'destructive' }) }
-    setOrderDialogOpen(false)
+    setActiveTab('pregled')
+    setSubTab('orders')
     setOrderForm({ productName: '', quantity: 100, startDate: '', endDate: '', priority: 'normal', notes: '' })
   }
 
@@ -387,7 +387,8 @@ export function Manufacturing() {
         toast({ title: t('production.addMachine'), description: t('common.created') })
  }
     } catch { toast({ title: 'Error', description: t('common.error'), variant: 'destructive' }) }
-    setMachineDialogOpen(false)
+    setActiveTab('pregled')
+    setSubTab('machines')
     setMachineForm({ name: '', type: 'CNC', location: '', capacityPerHour: 50 })
   }
 
@@ -415,85 +416,94 @@ export function Manufacturing() {
           <Button variant="outline" size="sm" onClick={() => {}}>
             <RefreshCw className="h-4 w-4 mr-1" /> {t('common.refresh')}
           </Button>
-          {activeTab === 'orders' && (
-            <Button size="sm" onClick={() => setOrderDialogOpen(true)}>
+          {activeTab === 'pregled' && (
+            <Button size="sm" onClick={() => { setDodajSubTab('order'); setActiveTab('dodaj') }}>
               <Plus className="h-4 w-4 mr-1" /> {t('production.newOrder')}
             </Button>
           )}
-          {activeTab === 'bom' && (
-            <Button size="sm" onClick={() => setBomDialogOpen(true)}>
+          {activeTab === 'pregled' && (
+            <Button size="sm" onClick={() => { setDodajSubTab('bom'); setActiveTab('dodaj') }}>
               <Plus className="h-4 w-4 mr-1" /> {t('production.newBom')}
             </Button>
           )}
-          {activeTab === 'machines' && (
-            <Button size="sm" onClick={() => setMachineDialogOpen(true)}>
+          {activeTab === 'pregled' && (
+            <Button size="sm" onClick={() => { setDodajSubTab('machine'); setActiveTab('dodaj') }}>
               <Plus className="h-4 w-4 mr-1" /> {t('production.addMachine')}
             </Button>
           )}
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* KPI Cards — always visible */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground">{t('production.activeOrders')}</span>
+            <Play className="h-4 w-4 text-emerald-500" />
+          </div>
+          <p className="text-2xl font-bold">{kpi.activeOrders}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground">{t('production.inQueue')}</span>
+            <Clock className="h-4 w-4 text-blue-500" />
+          </div>
+          <p className="text-2xl font-bold">{kpi.inQueue}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground">{t('production.completedToday')}</span>
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          </div>
+          <p className="text-2xl font-bold">{kpi.completedToday}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground">{t('production.totalOutput')}</span>
+            <Package className="h-4 w-4 text-violet-500" />
+          </div>
+          <p className="text-2xl font-bold">{kpi.totalOutput.toLocaleString('sr-RS')}</p>
+          <p className="text-xs text-muted-foreground">{t('production.units')}</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground">{t('production.efficiencyRate')}</span>
+            <TrendingUp className="h-4 w-4 text-emerald-500" />
+          </div>
+          <p className="text-2xl font-bold">{kpi.efficiencyRate}%</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground">{t('production.defectRate')}</span>
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+          </div>
+          <p className="text-2xl font-bold">{kpi.defectRate}%</p>
+        </Card>
+      </div>
+
+      {/* Main Tabs: Pregled / Dodaj / Uredi */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
-          <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.overview')}</TabsTrigger>
-          <TabsTrigger value="orders"><Factory className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.orders')}</TabsTrigger>
-          <TabsTrigger value="bom"><Layers className="h-4 w-4 mr-1 hidden sm:inline" /> BOM</TabsTrigger>
-          <TabsTrigger value="machines"><Cog className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.machines')}</TabsTrigger>
-          <TabsTrigger value="schedule"><Calendar className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.schedule')}</TabsTrigger>
-          <TabsTrigger value="analytics"><Target className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.analytics')}</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="pregled"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1" /> Dodaj</TabsTrigger>
+          <TabsTrigger value="uredi"><Edit3 className="h-4 w-4 mr-1" /> Uredi</TabsTrigger>
         </TabsList>
 
-        {/* ====== TAB 1: OVERVIEW ====== */}
-        <TabsContent value="overview" className="space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{t('production.activeOrders')}</span>
-                <Play className="h-4 w-4 text-emerald-500" />
-              </div>
-              <p className="text-2xl font-bold">{kpi.activeOrders}</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{t('production.inQueue')}</span>
-                <Clock className="h-4 w-4 text-blue-500" />
-              </div>
-              <p className="text-2xl font-bold">{kpi.inQueue}</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{t('production.completedToday')}</span>
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-              </div>
-              <p className="text-2xl font-bold">{kpi.completedToday}</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{t('production.totalOutput')}</span>
-                <Package className="h-4 w-4 text-violet-500" />
-              </div>
-              <p className="text-2xl font-bold">{kpi.totalOutput.toLocaleString('sr-RS')}</p>
-              <p className="text-xs text-muted-foreground">{t('production.units')}</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{t('production.efficiencyRate')}</span>
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
-              </div>
-              <p className="text-2xl font-bold">{kpi.efficiencyRate}%</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-muted-foreground">{t('production.defectRate')}</span>
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
-              </div>
-              <p className="text-2xl font-bold">{kpi.defectRate}%</p>
-            </Card>
-          </div>
+        {/* ====== TAB: PREGLED ====== */}
+        <TabsContent value="pregled">
+          <Tabs value={subTab} onValueChange={setSubTab}>
+            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+              <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.overview')}</TabsTrigger>
+              <TabsTrigger value="orders"><Factory className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.orders')}</TabsTrigger>
+              <TabsTrigger value="bom"><Layers className="h-4 w-4 mr-1 hidden sm:inline" /> BOM</TabsTrigger>
+              <TabsTrigger value="machines"><Cog className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.machines')}</TabsTrigger>
+              <TabsTrigger value="schedule"><Calendar className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.schedule')}</TabsTrigger>
+              <TabsTrigger value="analytics"><Target className="h-4 w-4 mr-1 hidden sm:inline" /> {t('production.analytics')}</TabsTrigger>
+            </TabsList>
 
-          {/* Charts Row */}
+            {/* Sub-tab: Overview (charts only, KPIs already above) */}
+            <TabsContent value="overview" className="space-y-6">
+              {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Daily Production Trend */}
             <Card>
@@ -618,7 +628,7 @@ export function Manufacturing() {
             <Card className="p-8 text-center">
               <Factory className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground">{t('production.noOrders')}</p>
-              <Button variant="outline" className="mt-3" onClick={() => setOrderDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> {t('production.createFirst')}</Button>
+              <Button variant="outline" className="mt-3" onClick={() => { setDodajSubTab('order'); setActiveTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> {t('production.createFirst')}</Button>
             </Card>
           ) : (
             <div className="rounded-lg border overflow-hidden">
@@ -659,7 +669,7 @@ export function Manufacturing() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedOrder(order); setOrderDetailOpen(true) }}>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedOrder(order); setSelectedBom(null); setSelectedMachine(null); setActiveTab('uredi') }}>
                               <Eye className="h-3.5 w-3.5" />
                             </Button>
                             {order.status === 'planned' && (
@@ -694,7 +704,7 @@ export function Manufacturing() {
             <Card className="p-8 text-center">
               <Layers className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground">{t('production.noBoms')}</p>
-              <Button variant="outline" className="mt-3" onClick={() => setBomDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> {t('production.newBom')}</Button>
+              <Button variant="outline" className="mt-3" onClick={() => { setDodajSubTab('bom'); setActiveTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> {t('production.newBom')}</Button>
             </Card>
           ) : (
             <div className="rounded-lg border overflow-hidden">
@@ -726,10 +736,10 @@ export function Manufacturing() {
                           <TableCell className="text-xs">{bom.createdDate}</TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedBom(bom); setBomDetailOpen(true) }}>
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedBom(bom); setSelectedOrder(null); setSelectedMachine(null); setActiveTab('uredi') }}>
                                 <Eye className="h-3.5 w-3.5" />
                               </Button>
-                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedBom(bom); setBomDialogOpen(true) }}>
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedBom(bom); setSelectedOrder(null); setSelectedMachine(null); setDodajSubTab('bom'); setActiveTab('dodaj') }}>
                                 <Edit3 className="h-3.5 w-3.5" />
                               </Button>
                               <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => {}}>
@@ -754,7 +764,7 @@ export function Manufacturing() {
             <Card className="p-8 text-center">
               <Cog className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground">{t('production.noMachines')}</p>
-              <Button variant="outline" className="mt-3" onClick={() => setMachineDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> {t('production.addMachine')}</Button>
+              <Button variant="outline" className="mt-3" onClick={() => { setDodajSubTab('machine'); setActiveTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> {t('production.addMachine')}</Button>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -791,7 +801,7 @@ export function Manufacturing() {
                     <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => cycleMachineStatus(machine)}>
                       <RefreshCw className="h-3 w-3 mr-1" /> {t('production.toggleStatus')}
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setSelectedMachine(machine) }}>
+                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setSelectedMachine(machine); setSelectedOrder(null); setSelectedBom(null); setActiveTab('uredi') }}>
                       <Eye className="h-3 w-3" />
                     </Button>
                     <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={() => setMachines(prev => prev.filter(m => m.id !== machine.id))}>
@@ -1058,116 +1068,331 @@ export function Manufacturing() {
               </CardContent>
             </Card>
           </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
-      </Tabs>
 
-      {/* ====== CREATE ORDER DIALOG ====== */}
-      {orderDialogOpen && (
-<Card className="max-w-lg">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setOrderDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('production.newOrder')}</CardTitle></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('production.product')}</Label>
-              <Select value={orderForm.productName} onValueChange={(v) => setOrderForm(f => ({ ...f, productName: v }))}>
-                <SelectTrigger><SelectValue placeholder={t('production.selectProduct')} /></SelectTrigger>
-                <SelectContent>
-                  {uniqueProducts.map(p => (<SelectItem key={p} value={p}>{p}</SelectItem>))}
-                  <SelectItem value="__new">{t('production.newProduct')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{t('common.quantity')}</Label>
-                <Input type="number" value={orderForm.quantity} onChange={(e) => setOrderForm(f => ({ ...f, quantity: parseInt(e.target.value) || 1 }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('production.startDate')}</Label>
-                <Input type="date" value={orderForm.startDate} onChange={(e) => setOrderForm(f => ({ ...f, startDate: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('production.endDate')}</Label>
-                <Input type="date" value={orderForm.endDate} onChange={(e) => setOrderForm(f => ({ ...f, endDate: e.target.value }))} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('production.priority')}</Label>
-              <Select value={orderForm.priority} onValueChange={(v) => setOrderForm(f => ({ ...f, priority: v as 'normal' | 'high' | 'urgent' }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('common.notes')}</Label>
-              <Textarea value={orderForm.notes} onChange={(e) => setOrderForm(f => ({ ...f, notes: e.target.value }))} />
-            </div>
+        {/* ====== TAB: DODAJ ====== */}
+        <TabsContent value="dodaj" className="space-y-4">
+          <div className="flex gap-2 mb-2">
+            <Button variant={dodajSubTab === 'order' ? 'default' : 'outline'} size="sm" onClick={() => setDodajSubTab('order')}>
+              <Factory className="h-4 w-4 mr-1" /> {t('production.orders')}
+            </Button>
+            <Button variant={dodajSubTab === 'bom' ? 'default' : 'outline'} size="sm" onClick={() => setDodajSubTab('bom')}>
+              <Layers className="h-4 w-4 mr-1" /> BOM
+            </Button>
+            <Button variant={dodajSubTab === 'machine' ? 'default' : 'outline'} size="sm" onClick={() => setDodajSubTab('machine')}>
+              <Cog className="h-4 w-4 mr-1" /> {t('production.machines')}
+            </Button>
           </div>
-          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => setOrderDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleCreateOrder}><Plus className="h-4 w-4 mr-1" /> {t('production.createOrder')}</Button>
-          </div>
-        </Card>
+
+          {/* Dodaj: New Order */}
+          {dodajSubTab === 'order' && (
+            <Card>
+              <CardHeader><CardTitle className="text-sm">{t('production.newOrder')}</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>{t('production.product')}</Label>
+                  <Select value={orderForm.productName} onValueChange={(v) => setOrderForm(f => ({ ...f, productName: v }))}>
+                    <SelectTrigger><SelectValue placeholder={t('production.selectProduct')} /></SelectTrigger>
+                    <SelectContent>
+                      {uniqueProducts.map(p => (<SelectItem key={p} value={p}>{p}</SelectItem>))}
+                      <SelectItem value="__new">{t('production.newProduct')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>{t('common.quantity')}</Label>
+                    <Input type="number" value={orderForm.quantity} onChange={(e) => setOrderForm(f => ({ ...f, quantity: parseInt(e.target.value) || 1 }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('production.startDate')}</Label>
+                    <Input type="date" value={orderForm.startDate} onChange={(e) => setOrderForm(f => ({ ...f, startDate: e.target.value }))} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('production.endDate')}</Label>
+                    <Input type="date" value={orderForm.endDate} onChange={(e) => setOrderForm(f => ({ ...f, endDate: e.target.value }))} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('production.priority')}</Label>
+                  <Select value={orderForm.priority} onValueChange={(v) => setOrderForm(f => ({ ...f, priority: v as 'normal' | 'high' | 'urgent' }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('common.notes')}</Label>
+                  <Textarea value={orderForm.notes} onChange={(e) => setOrderForm(f => ({ ...f, notes: e.target.value }))} />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setActiveTab('pregled')}>{t('common.cancel')}</Button>
+                  <Button onClick={handleCreateOrder}><Plus className="h-4 w-4 mr-1" /> {t('production.createOrder')}</Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
-      {/* ====== ORDER DETAIL DIALOG ====== */}
-      {orderDetailOpen && (
-<Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setOrderDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('production.orderDetails')}</CardTitle></CardHeader>
-          {selectedOrder && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                <div><span className="text-muted-foreground">{t('production.orderNumber')}:</span> <span className="font-mono font-bold">{selectedOrder.orderNumber}</span></div>
-                <div><span className="text-muted-foreground">{t('production.product')}:</span> {selectedOrder.productName}</div>
+          {/* Dodaj: New BOM */}
+          {dodajSubTab === 'bom' && (
+            <Card>
+              <CardHeader><CardTitle className="text-sm">{selectedBom ? t('production.editBom') : t('production.newBom')}</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>{t('production.product')}</Label>
+                  <Select defaultValue={selectedBom?.productName || ''}>
+                    <SelectTrigger><SelectValue placeholder={t('production.selectProduct')} /></SelectTrigger>
+                    <SelectContent>
+                      {uniqueProducts.map(p => (<SelectItem key={p} value={p}>{p}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('production.version')}</Label>
+                  <Input defaultValue={selectedBom?.version || 'v1.0'} />
+                </div>
+                <Separator />
                 <div>
-                  <span className="text-muted-foreground">{t('common.status')}:</span>{' '}
-                  <Badge variant="outline" className={ORDER_STATUS_CONFIG[selectedOrder.status]?.color}>{ORDER_STATUS_CONFIG[selectedOrder.status]?.label}</Badge>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>{t('production.components')}</Label>
+                    <Button size="sm" variant="outline"><Plus className="h-3 w-3 mr-1" /> {t('production.addComponent')}</Button>
+                  </div>
+                  {(selectedBom?.components || MOCK_BOM_COMPONENTS.slice(0, 2)).map((comp, idx) => (
+                    <div key={idx} className="grid grid-cols-4 gap-2 mb-2">
+                      <Input defaultValue={comp.name} placeholder={t('production.material')} className="col-span-2" />
+                      <Input type="number" defaultValue={comp.requiredQty} placeholder={t('common.quantity')} />
+                      <Select defaultValue={comp.unit}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="kom">kom</SelectItem>
+                          <SelectItem value="kg">kg</SelectItem>
+                          <SelectItem value="m">m</SelectItem>
+                          <SelectItem value="l">l</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
                 </div>
-                <div><span className="text-muted-foreground">{t('production.priority')}:</span>{' '}
-                  <Badge variant="outline" className={PRIORITY_CONFIG[selectedOrder.priority]?.color}>{PRIORITY_CONFIG[selectedOrder.priority]?.label}</Badge>
+                <div className="text-right text-sm font-semibold">
+                  {t('production.totalCost')}: {formatRSD((selectedBom?.components || MOCK_BOM_COMPONENTS.slice(0, 2)).reduce((s, c) => s + c.costPerUnit * c.requiredQty, 0))}
                 </div>
-                <div><span className="text-muted-foreground">{t('production.quantity')}:</span> {selectedOrder.quantityProduced}/{selectedOrder.quantityOrdered}</div>
-                <div><span className="text-muted-foreground">{t('production.progress')}:</span> {selectedOrder.progress}%</div>
-                <div><span className="text-muted-foreground">{t('production.startDate')}:</span> {selectedOrder.startDate}</div>
-                <div><span className="text-muted-foreground">{t('production.endDate')}:</span> {selectedOrder.endDate}</div>
-                <div><span className="text-muted-foreground">{t('production.timeTracking')}:</span> {selectedOrder.timeTracking}h</div>
-              </div>
-
-              {/* Progress bar */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">{t('production.progress')}</span>
-                  <span className="font-medium">{selectedOrder.progress}%</span>
+                <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+                  <Button variant="outline" onClick={() => { setActiveTab('pregled'); setSelectedBom(null) }}>{t('common.cancel')}</Button>
+                  <Button onClick={() => { setActiveTab('pregled'); setSelectedBom(null) }}>{t('common.save')}</Button>
                 </div>
-                <Progress value={selectedOrder.progress} className="h-3" />
-              </div>
+              </CardContent>
+            </Card>
+          )}
 
-              <Separator />
+          {/* Dodaj: New Machine */}
+          {dodajSubTab === 'machine' && (
+            <Card>
+              <CardHeader><CardTitle className="text-sm">{t('production.addMachine')}</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>{t('common.name')}</Label>
+                  <Input value={machineForm.name} onChange={(e) => setMachineForm(f => ({ ...f, name: e.target.value }))} placeholder={t('production.machineNamePlaceholder')} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{t('production.type')}</Label>
+                    <Select value={machineForm.type} onValueChange={(v) => setMachineForm(f => ({ ...f, type: v as Machine['type'] }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(MACHINE_TYPE_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('production.location')}</Label>
+                    <Input value={machineForm.location} onChange={(e) => setMachineForm(f => ({ ...f, location: e.target.value }))} placeholder="Hala A" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('production.capacity')} ({t('production.unitsPerHour')})</Label>
+                  <Input type="number" value={machineForm.capacityPerHour} onChange={(e) => setMachineForm(f => ({ ...f, capacityPerHour: parseInt(e.target.value) || 50 }))} />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setActiveTab('pregled')}>{t('common.cancel')}</Button>
+                  <Button onClick={handleAddMachine}><Plus className="h-4 w-4 mr-1" /> {t('production.addMachine')}</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-              {/* BOM Components Checklist */}
-              <div>
-                <h4 className="text-sm font-semibold mb-2">{t('production.bomComponents')}</h4>
+        {/* ====== TAB: UREDI ====== */}
+        <TabsContent value="uredi" className="space-y-4">
+          {!selectedOrder && !selectedBom && !selectedMachine && (
+            <Card className="p-8 text-center">
+              <Edit3 className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+              <p className="text-muted-foreground">{t('production.noSelection')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('production.selectItemHint')}</p>
+            </Card>
+          )}
+
+          {/* Uredi: Order Detail */}
+          {selectedOrder && (
+            <Card>
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => { setSelectedOrder(null); setActiveTab('pregled') }}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <CardTitle className="text-sm flex-1">{t('production.orderDetails')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                  <div><span className="text-muted-foreground">{t('production.orderNumber')}:</span> <span className="font-mono font-bold">{selectedOrder.orderNumber}</span></div>
+                  <div><span className="text-muted-foreground">{t('production.product')}:</span> {selectedOrder.productName}</div>
+                  <div>
+                    <span className="text-muted-foreground">{t('common.status')}:</span>{' '}
+                    <Badge variant="outline" className={ORDER_STATUS_CONFIG[selectedOrder.status]?.color}>{ORDER_STATUS_CONFIG[selectedOrder.status]?.label}</Badge>
+                  </div>
+                  <div><span className="text-muted-foreground">{t('production.priority')}:</span>{' '}
+                    <Badge variant="outline" className={PRIORITY_CONFIG[selectedOrder.priority]?.color}>{PRIORITY_CONFIG[selectedOrder.priority]?.label}</Badge>
+                  </div>
+                  <div><span className="text-muted-foreground">{t('production.quantity')}:</span> {selectedOrder.quantityProduced}/{selectedOrder.quantityOrdered}</div>
+                  <div><span className="text-muted-foreground">{t('production.progress')}:</span> {selectedOrder.progress}%</div>
+                  <div><span className="text-muted-foreground">{t('production.startDate')}:</span> {selectedOrder.startDate}</div>
+                  <div><span className="text-muted-foreground">{t('production.endDate')}:</span> {selectedOrder.endDate}</div>
+                  <div><span className="text-muted-foreground">{t('production.timeTracking')}:</span> {selectedOrder.timeTracking}h</div>
+                </div>
+
+                {/* Progress bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">{t('production.progress')}</span>
+                    <span className="font-medium">{selectedOrder.progress}%</span>
+                  </div>
+                  <Progress value={selectedOrder.progress} className="h-3" />
+                </div>
+
+                <Separator />
+
+                {/* BOM Components Checklist */}
+                <div>
+                  <h4 className="text-sm font-semibold mb-2">{t('production.bomComponents')}</h4>
+                  <div className="rounded-lg border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t('production.component')}</TableHead>
+                          <TableHead>{t('production.requiredQty')}</TableHead>
+                          <TableHead>{t('production.consumedQty')}</TableHead>
+                          <TableHead>{t('common.unit')}</TableHead>
+                          <TableHead>{t('production.costPerUnit')}</TableHead>
+                          <TableHead>{t('production.totalCost')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedOrder.bomComponents.map((comp, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-medium">{comp.name}</TableCell>
+                            <TableCell>{comp.requiredQty}</TableCell>
+                            <TableCell>
+                              <span className={comp.consumedQty >= comp.requiredQty ? 'text-green-600' : 'text-amber-600'}>{comp.consumedQty}</span>
+                            </TableCell>
+                            <TableCell>{comp.unit}</TableCell>
+                            <TableCell>{formatRSD(comp.costPerUnit)}</TableCell>
+                            <TableCell className="font-medium">{formatRSD(comp.costPerUnit * comp.requiredQty)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="text-sm font-semibold mt-2 text-right">
+                    {t('production.totalCost')}: {formatRSD(selectedOrder.bomComponents.reduce((s, c) => s + c.costPerUnit * c.requiredQty, 0))}
+                  </div>
+                </div>
+
+                {/* Quality Notes */}
+                {selectedOrder.qualityNotes && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className="text-sm font-semibold mb-1">{t('production.qualityNotes')}</h4>
+                      <p className="text-sm text-muted-foreground">{selectedOrder.qualityNotes}</p>
+                    </div>
+                  </>
+                )}
+
+                {/* Notes */}
+                {selectedOrder.notes && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className="text-sm font-semibold mb-1">{t('common.notes')}</h4>
+                      <p className="text-sm text-muted-foreground">{selectedOrder.notes}</p>
+                    </div>
+                  </>
+                )}
+
+                {/* Action buttons */}
+                <Separator />
+                <div className="flex gap-2">
+                  {selectedOrder.status === 'planned' && (
+                    <Button size="sm" onClick={() => handleOrderStatusChange(selectedOrder, 'in_progress')}>
+                      <Play className="h-4 w-4 mr-1" /> {t('production.start')}
+                    </Button>
+                  )}
+                  {selectedOrder.status === 'in_progress' && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => handleOrderStatusChange(selectedOrder, 'quality_check')}>
+                        <Pause className="h-4 w-4 mr-1" /> {t('production.pause')}
+                      </Button>
+                      <Button size="sm" onClick={() => handleOrderStatusChange(selectedOrder, 'completed')}>
+                        <CheckCircle2 className="h-4 w-4 mr-1" /> {t('production.finish')}
+                      </Button>
+                    </>
+                  )}
+                  {selectedOrder.status === 'quality_check' && (
+                    <Button size="sm" onClick={() => handleOrderStatusChange(selectedOrder, 'completed')}>
+                      <CheckCircle2 className="h-4 w-4 mr-1" /> {t('production.finish')}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Uredi: BOM Detail */}
+          {selectedBom && !selectedOrder && (
+            <Card>
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => { setSelectedBom(null); setActiveTab('pregled') }}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <CardTitle className="text-sm flex-1">{t('production.bomDetails')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><span className="text-muted-foreground">{t('production.product')}:</span> {selectedBom.productName}</div>
+                  <div><span className="text-muted-foreground">{t('production.version')}:</span> {selectedBom.version}</div>
+                  <div><span className="text-muted-foreground">{t('common.status')}:</span>{' '}
+                    <Badge variant="outline" className={BOM_STATUS_CONFIG[selectedBom.status]?.color}>{BOM_STATUS_CONFIG[selectedBom.status]?.label}</Badge>
+                  </div>
+                  <div><span className="text-muted-foreground">{t('production.createdDate')}:</span> {selectedBom.createdDate}</div>
+                </div>
+                <Separator />
                 <div className="rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>{t('production.component')}</TableHead>
                         <TableHead>{t('production.requiredQty')}</TableHead>
-                        <TableHead>{t('production.consumedQty')}</TableHead>
                         <TableHead>{t('common.unit')}</TableHead>
                         <TableHead>{t('production.costPerUnit')}</TableHead>
                         <TableHead>{t('production.totalCost')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {selectedOrder.bomComponents.map((comp, idx) => (
+                      {selectedBom.components.map((comp, idx) => (
                         <TableRow key={idx}>
                           <TableCell className="font-medium">{comp.name}</TableCell>
                           <TableCell>{comp.requiredQty}</TableCell>
-                          <TableCell>
-                            <span className={comp.consumedQty >= comp.requiredQty ? 'text-green-600' : 'text-amber-600'}>{comp.consumedQty}</span>
-                          </TableCell>
                           <TableCell>{comp.unit}</TableCell>
                           <TableCell>{formatRSD(comp.costPerUnit)}</TableCell>
                           <TableCell className="font-medium">{formatRSD(comp.costPerUnit * comp.requiredQty)}</TableCell>
@@ -1176,199 +1401,62 @@ export function Manufacturing() {
                     </TableBody>
                   </Table>
                 </div>
-                <div className="text-sm font-semibold mt-2 text-right">
-                  {t('production.totalCost')}: {formatRSD(selectedOrder.bomComponents.reduce((s, c) => s + c.costPerUnit * c.requiredQty, 0))}
+                <div className="text-right text-sm font-semibold">
+                  {t('production.totalCost')}: {formatRSD(selectedBom.components.reduce((s, c) => s + c.costPerUnit * c.requiredQty, 0))}
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          )}
 
-              {/* Quality Notes */}
-              {selectedOrder.qualityNotes && (
-                <>
-                  <Separator />
-                  <div>
-                    <h4 className="text-sm font-semibold mb-1">{t('production.qualityNotes')}</h4>
-                    <p className="text-sm text-muted-foreground">{selectedOrder.qualityNotes}</p>
+          {/* Uredi: Machine Detail */}
+          {selectedMachine && !selectedOrder && !selectedBom && (
+            <Card>
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => { setSelectedMachine(null); setActiveTab('pregled') }}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <CardTitle className="text-sm flex-1">{selectedMachine.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><span className="text-muted-foreground">{t('production.type')}:</span> {MACHINE_TYPE_CONFIG[selectedMachine.type]}</div>
+                  <div><span className="text-muted-foreground">{t('common.status')}:</span>{' '}
+                    <Badge variant="outline" className={MACHINE_STATUS_CONFIG[selectedMachine.status]?.color}>{MACHINE_STATUS_CONFIG[selectedMachine.status]?.label}</Badge>
                   </div>
-                </>
-              )}
-
-              {/* Notes */}
-              {selectedOrder.notes && (
-                <>
-                  <Separator />
-                  <div>
-                    <h4 className="text-sm font-semibold mb-1">{t('common.notes')}</h4>
-                    <p className="text-sm text-muted-foreground">{selectedOrder.notes}</p>
+                  <div><span className="text-muted-foreground">{t('production.location')}:</span> {selectedMachine.location}</div>
+                  <div><span className="text-muted-foreground">{t('production.capacity')}:</span> {selectedMachine.capacityPerHour} {t('production.unitsPerHour')}</div>
+                  <div><span className="text-muted-foreground">{t('production.totalHours')}:</span> {selectedMachine.totalHours.toLocaleString('sr-RS')}</div>
+                  <div><span className="text-muted-foreground">{t('production.currentLoad')}:</span> {selectedMachine.currentLoad}%</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{t('production.currentLoad')}</span>
+                    <span className={`text-xs font-medium ${selectedMachine.currentLoad < 70 ? 'text-emerald-600' : selectedMachine.currentLoad <= 90 ? 'text-amber-600' : 'text-red-600'}`}>
+                      {selectedMachine.currentLoad}%
+                    </span>
                   </div>
-                </>
-              )}
-
-              {/* Action buttons */}
-              <Separator />
-              <div className="flex gap-2">
-                {selectedOrder.status === 'planned' && (
-                  <Button size="sm" onClick={() => handleOrderStatusChange(selectedOrder, 'in_progress')}>
-                    <Play className="h-4 w-4 mr-1" /> {t('production.start')}
-                  </Button>
-                )}
-                {selectedOrder.status === 'in_progress' && (
-                  <>
-                    <Button size="sm" variant="outline" onClick={() => handleOrderStatusChange(selectedOrder, 'quality_check')}>
-                      <Pause className="h-4 w-4 mr-1" /> {t('production.pause')}
-                    </Button>
-                    <Button size="sm" onClick={() => handleOrderStatusChange(selectedOrder, 'completed')}>
-                      <CheckCircle2 className="h-4 w-4 mr-1" /> {t('production.finish')}
-                    </Button>
-                  </>
-                )}
-                {selectedOrder.status === 'quality_check' && (
-                  <Button size="sm" onClick={() => handleOrderStatusChange(selectedOrder, 'completed')}>
-                    <CheckCircle2 className="h-4 w-4 mr-1" /> {t('production.finish')}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-        </Card>
-          )}
-
-      {/* ====== BOM DIALOG ====== */}
-      {bomDialogOpen && (
-<Card className="max-w-lg">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setBomDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{selectedBom ? t('production.editBom') : t('production.newBom')}</CardTitle></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('production.product')}</Label>
-              <Select defaultValue={selectedBom?.productName || ''}>
-                <SelectTrigger><SelectValue placeholder={t('production.selectProduct')} /></SelectTrigger>
-                <SelectContent>
-                  {uniqueProducts.map(p => (<SelectItem key={p} value={p}>{p}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('production.version')}</Label>
-              <Input defaultValue={selectedBom?.version || 'v1.0'} />
-            </div>
-            <Separator />
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label>{t('production.components')}</Label>
-                <Button size="sm" variant="outline"><Plus className="h-3 w-3 mr-1" /> {t('production.addComponent')}</Button>
-              </div>
-              {(selectedBom?.components || MOCK_BOM_COMPONENTS.slice(0, 2)).map((comp, idx) => (
-                <div key={idx} className="grid grid-cols-4 gap-2 mb-2">
-                  <Input defaultValue={comp.name} placeholder={t('production.material')} className="col-span-2" />
-                  <Input type="number" defaultValue={comp.requiredQty} placeholder={t('common.quantity')} />
-                  <Select defaultValue={comp.unit}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="kom">kom</SelectItem>
-                      <SelectItem value="kg">kg</SelectItem>
-                      <SelectItem value="m">m</SelectItem>
-                      <SelectItem value="l">l</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="w-full bg-muted rounded-full h-3">
+                    <div className={`h-3 rounded-full transition-all ${getLoadColor(selectedMachine.currentLoad)}`} style={{ width: `${selectedMachine.currentLoad}%` }} />
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="text-right text-sm font-semibold">
-              {t('production.totalCost')}: {formatRSD((selectedBom?.components || MOCK_BOM_COMPONENTS.slice(0, 2)).reduce((s, c) => s + c.costPerUnit * c.requiredQty, 0))}
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => { setBomDialogOpen(false); setSelectedBom(null) }}>{t('common.cancel')}</Button>
-            <Button onClick={() => { setBomDialogOpen(false); setSelectedBom(null) }}>{t('common.save')}</Button>
-          </div>
-        </Card>
-          )}
-
-      {/* ====== BOM DETAIL DIALOG ====== */}
-      {bomDetailOpen && (
-<Card className="max-w-lg max-h-[80vh] overflow-y-auto">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setBomDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('production.bomDetails')}</CardTitle></CardHeader>
-          {selectedBom && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">{t('production.product')}:</span> {selectedBom.productName}</div>
-                <div><span className="text-muted-foreground">{t('production.version')}:</span> {selectedBom.version}</div>
-                <div><span className="text-muted-foreground">{t('common.status')}:</span>{' '}
-                  <Badge variant="outline" className={BOM_STATUS_CONFIG[selectedBom.status]?.color}>{BOM_STATUS_CONFIG[selectedBom.status]?.label}</Badge>
+                <Separator />
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => cycleMachineStatus(selectedMachine)}>
+                    <RefreshCw className="h-4 w-4 mr-1" /> {t('production.toggleStatus')}
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={() => { setMachines(prev => prev.filter(m => m.id !== selectedMachine.id)); setSelectedMachine(null); setActiveTab('pregled') }}>
+                    <Trash2 className="h-4 w-4 mr-1" /> {t('common.delete')}
+                  </Button>
                 </div>
-                <div><span className="text-muted-foreground">{t('production.createdDate')}:</span> {selectedBom.createdDate}</div>
-              </div>
-              <Separator />
-              <div className="rounded-lg border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t('production.component')}</TableHead>
-                      <TableHead>{t('production.requiredQty')}</TableHead>
-                      <TableHead>{t('common.unit')}</TableHead>
-                      <TableHead>{t('production.costPerUnit')}</TableHead>
-                      <TableHead>{t('production.totalCost')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedBom.components.map((comp, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{comp.name}</TableCell>
-                        <TableCell>{comp.requiredQty}</TableCell>
-                        <TableCell>{comp.unit}</TableCell>
-                        <TableCell>{formatRSD(comp.costPerUnit)}</TableCell>
-                        <TableCell className="font-medium">{formatRSD(comp.costPerUnit * comp.requiredQty)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="text-right text-sm font-semibold">
-                {t('production.totalCost')}: {formatRSD(selectedBom.components.reduce((s, c) => s + c.costPerUnit * c.requiredQty, 0))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )}
-        </Card>
-          )}
-
-      {/* ====== ADD MACHINE DIALOG ====== */}
-      {machineDialogOpen && (
-<Card className="max-w-lg">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setMachineDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('production.addMachine')}</CardTitle></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('common.name')}</Label>
-              <Input value={machineForm.name} onChange={(e) => setMachineForm(f => ({ ...f, name: e.target.value }))} placeholder={t('production.machineNamePlaceholder')} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('production.type')}</Label>
-                <Select value={machineForm.type} onValueChange={(v) => setMachineForm(f => ({ ...f, type: v as Machine['type'] }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(MACHINE_TYPE_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('production.location')}</Label>
-                <Input value={machineForm.location} onChange={(e) => setMachineForm(f => ({ ...f, location: e.target.value }))} placeholder="Hala A" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('production.capacity')} ({t('production.unitsPerHour')})</Label>
-              <Input type="number" value={machineForm.capacityPerHour} onChange={(e) => setMachineForm(f => ({ ...f, capacityPerHour: parseInt(e.target.value) || 50 }))} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => setMachineDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleAddMachine}><Plus className="h-4 w-4 mr-1" /> {t('production.addMachine')}</Button>
-          </div>
-        </Card>
-          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Hidden: suppress unused imports warnings for icons used conceptually */}
       <span className="hidden">
-        {DollarSign}{Users}{Filter}{Square}{Timer}{Zap}{ClipboardList}{Settings}{AlertCircle}{Edit3}
+        {DollarSign}{Users}{Filter}{Square}{Timer}{Zap}{ClipboardList}{Settings}{AlertCircle}
       </span>
     </div>
   )

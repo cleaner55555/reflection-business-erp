@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -145,41 +144,8 @@ function ContentTab({ content, setContent }: { content: ContentItem[]; setConten
       )}
 
       {/* Create Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Novi sadržaj</DialogTitle><DialogDescription>Popunite podatke za novi sadržaj</DialogDescription></DialogHeader><div className="space-y-4">
-        <div className="space-y-2"><Label>Naslov</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value, slug: generateSlug(e.target.value) }))} /></div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-2"><Label>Tip</Label><Select value={form.typeId} onValueChange={v => setForm(f => ({ ...f, typeId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockContentTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Status</Label><Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as ContentItem['status'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Autor</Label><Select value={form.authorId} onValueChange={v => setForm(f => ({ ...f, authorId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select></div>
-        </div>
-        <div className="space-y-2"><Label>Kategorija</Label><Select value={form.categoryId} onValueChange={v => setForm(f => ({ ...f, categoryId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Bez kategorije</SelectItem>{mockCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div>
-        <div className="space-y-2"><Label>Slug</Label><Input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
-        <div className="space-y-2"><Label>Tagovi</Label><div className="flex flex-wrap gap-2">{allTags.map(tag => <Badge key={tag} variant={form.tags.includes(tag) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag)}>{tag}</Badge>)}</div></div>
-        <div className="space-y-2"><Label>Kratki opis</Label><Textarea value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={2} /></div>
-      </div><DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button onClick={handleSave}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
 
       {/* Editor Dialog */}
-      <Dialog open={editorOpen} onOpenChange={setEditorOpen}><DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto"><DialogHeader><DialogTitle>{editing ? `Izmeni: ${editing.title}` : 'Novi sadržaj'}</DialogTitle><DialogDescription>WYSIWYG editor sa SEO podrškom</DialogDescription></DialogHeader><div className="space-y-4">
-        <div className="space-y-2"><Label>Naslov</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value, slug: generateSlug(e.target.value) }))} /></div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="space-y-2"><Label>Tip</Label><Select value={form.typeId} onValueChange={v => setForm(f => ({ ...f, typeId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockContentTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Status</Label><Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as ContentItem['status'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Autor</Label><Select value={form.authorId} onValueChange={v => setForm(f => ({ ...f, authorId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Jezik</Label><Select value={form.locale} onValueChange={v => setForm(f => ({ ...f, locale: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="sr">🇷🇸 Srpski</SelectItem><SelectItem value="en">🇬🇧 English</SelectItem><SelectItem value="de">🇩🇪 Deutsch</SelectItem><SelectItem value="fr">🇫🇷 Français</SelectItem><SelectItem value="es">🇪🇸 Español</SelectItem><SelectItem value="it">🇮🇹 Italiano</SelectItem><SelectItem value="hu">🇭🇺 Magyar</SelectItem><SelectItem value="ro">🇷🇴 Română</SelectItem><SelectItem value="bg">🇧🇬 Български</SelectItem><SelectItem value="hr">🇭🇷 Hrvatski</SelectItem><SelectItem value="sl">🇸🇮 Slovenščina</SelectItem></SelectContent></Select></div>
-        </div>
-        {/* WYSIWYG Toolbar */}
-        <div className="space-y-2"><Label>Sadržaj</Label><div className="border rounded-lg overflow-hidden">
-          <div className="flex flex-wrap items-center gap-1 p-2 bg-muted/50 border-b"><Undo2 className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" /><Redo2 className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" /><Separator orientation="vertical" className="h-6 mx-1" />{toolbarActions.map(a => <a.icon key={a.action} className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" title={a.label} />)}</div>
-          <Textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={12} className="border-0 rounded-none font-mono text-sm" placeholder="HTML sadržaj ili običan tekst..." />
-          <div className="flex items-center justify-between p-2 bg-muted/30 text-xs text-muted-foreground"><span>{form.content.replace(/<[^>]+>/g, '').split(/\s+/).filter(Boolean).length} reči · {Math.ceil(form.content.split(/\s+/).length / 200)} min čitanja</span></div>
-        </div></div>
-        <div className="space-y-2"><Label>Tagovi</Label><div className="flex flex-wrap gap-2">{allTags.map(tag => <Badge key={tag} variant={form.tags.includes(tag) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag)}>{tag}</Badge>)}</div></div>
-        <Separator />
-        <div className="space-y-2"><Label>SEO Naslov</Label><Input value={form.seoTitle} onChange={e => setForm(f => ({ ...f, seoTitle: e.target.value }))} placeholder={`${form.title} | Reflection`} /><p className="text-xs text-muted-foreground">{form.seoTitle.length}/60 karaktera</p></div>
-        <div className="space-y-2"><Label>SEO Opis</Label><Textarea value={form.seoDescription} onChange={e => setForm(f => ({ ...f, seoDescription: e.target.value }))} rows={2} /><p className="text-xs text-muted-foreground">{form.seoDescription.length}/160 karaktera</p></div>
-        {seoPreview && <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-sm font-medium">SEO Analiza</span><Badge variant={seoPreview.score >= 70 ? 'default' : seoPreview.score >= 40 ? 'secondary' : 'destructive'} className="text-xs">{seoPreview.score}/100</Badge></div><div className="space-y-1">{seoPreview.issues.map((iss, i) => <p key={i} className={`text-xs ${iss.type === 'error' ? 'text-red-500' : iss.type === 'warning' ? 'text-amber-500' : 'text-muted-foreground'}`}>{iss.type === 'error' ? '✕' : iss.type === 'warning' ? '⚠' : 'ℹ'} {iss.message}</p>)}</div></Card>}
-        <Button variant="outline" size="sm" onClick={runSeoAnalysis}><Sparkles className="h-4 w-4 mr-1" /> Analiziraj SEO</Button>
-      </div><DialogFooter><Button variant="outline" onClick={() => setEditorOpen(false)}>Otkaži</Button><Button onClick={handleSave}><Save className="h-4 w-4 mr-1" /> Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
     </div>
   )
 }
@@ -237,7 +203,6 @@ function TypesTab() {
           </Card>
         ))}
       </div>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent><DialogHeader><DialogTitle>Novi tip sadržaja</DialogTitle></DialogHeader><div className="space-y-4"><div className="space-y-2"><Label>Naziv</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div><div className="space-y-2"><Label>Opis</Label><Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div></div><DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreate}>Kreiraj</Button></DialogFooter></DialogContent></Dialog>
     </div>
   )
 }
@@ -278,7 +243,6 @@ function MediaTab() {
           <Card key={m.id} className="p-3 hover:shadow-md transition-shadow cursor-pointer group"><div className="flex items-center justify-center h-32 bg-muted/50 rounded-lg mb-3"><Icon className="h-12 w-12 text-muted-foreground/50" aria-label={m.type} /></div><p className="text-xs font-medium truncate" title={m.name}>{m.name}</p><div className="flex items-center justify-between mt-1"><p className="text-xs text-muted-foreground">{formatFileSize(m.size)}</p><Badge variant="outline" className={`text-xs ${color}`}>{m.type}</Badge></div><div className="flex items-center justify-between mt-2 opacity-0 group-hover:opacity-100 transition-opacity"><Button variant="ghost" size="icon" className="h-6 w-6"><Copy className="h-3 w-3" /></Button><Button variant="ghost" size="icon" className="h-6 w-6"><ExternalLink className="h-3 w-3" /></Button><Button variant="ghost" size="icon" className="h-6 w-6 text-destructive"><Trash2 className="h-3 w-3" /></Button></div>{m.usageCount > 0 && <p className="text-xs text-muted-foreground mt-1">Korišćeno: {m.usageCount}x</p>}</Card>
         ) })}
       </div>
-      <Dialog open={uploadOpen} onOpenChange={setUploadOpen}><DialogContent><DialogHeader><DialogTitle>Upload medija</DialogTitle><DialogDescription>Izaberite fajlove za upload</DialogDescription></DialogHeader><div className="space-y-4"><div className="border-2 border-dashed rounded-lg p-8 text-center"><Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" /><p className="text-sm text-muted-foreground">Prevucite fajlove ovde ili kliknite za biranje</p><p className="text-xs text-muted-foreground mt-1">Podržano: JPG, PNG, GIF, SVG, PDF, MP4, MP3 (max 50MB)</p></div><div className="space-y-2"><Label>Folder</Label><Select><SelectTrigger><SelectValue placeholder="Izaberite folder" /></SelectTrigger><SelectContent>{folders.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent></Select></div></div><DialogFooter><Button variant="outline" onClick={() => setUploadOpen(false)}>Otkaži</Button><Button>Upload</Button></DialogFooter></DialogContent></Dialog>
     </div>
   )
 }

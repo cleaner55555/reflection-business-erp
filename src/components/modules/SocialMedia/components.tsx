@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -193,67 +192,3 @@ export function SocialMediaTabs({
   )
 }
 
-export function CreatePostDialog({
-  open, onOpenChange, form, setForm, onCreate,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  form: PostFormData
-  setForm: (f: PostFormData) => void
-  onCreate: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Nova objava</DialogTitle></DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Platforma</Label>
-            <Select value={form.platform} onValueChange={(v) => setForm({ ...form, platform: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{Object.entries(platformConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>))}</SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2"><Label>Sadržaj</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={5} placeholder="Napišite sadržaj objave..." /></div>
-          <div className="space-y-2"><Label>Datum objave (opcionalno)</Label><Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} /></div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Otkaži</Button>
-          <Button onClick={onCreate}><Share2 className="h-4 w-4 mr-1" /> Kreiraj</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function PostDetailDialog({
-  open, onOpenChange, selected,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  selected: SocialPost | null
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Detalji objave</DialogTitle></DialogHeader>
-        {selected && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{platformConfig[selected.platform]?.icon}</span>
-              <Badge variant="outline" className={platformConfig[selected.platform]?.color}>{platformConfig[selected.platform]?.label}</Badge>
-              <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge>
-            </div>
-            <p className="text-sm">{selected.content}</p>
-            <Separator />
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div><p className="text-lg font-bold">{selected.likes || 0}</p><p className="text-xs text-muted-foreground">Lajkovi</p></div>
-              <div><p className="text-lg font-bold">{selected.comments || 0}</p><p className="text-xs text-muted-foreground">Komentari</p></div>
-              <div><p className="text-lg font-bold">{selected.shares || 0}</p><p className="text-xs text-muted-foreground">Deljenja</p></div>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}

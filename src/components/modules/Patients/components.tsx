@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Search, Trash2, Pencil, Eye, Users, AlertCircle } from 'lucide-react'
@@ -139,68 +138,3 @@ export function PatientEditTab({ data, onEdit, onDelete }: { data: Patient[]; on
   )
 }
 
-export function PatientDetailDialog({ detailItem, open, onClose }: { detailItem: Patient | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Karton pacijenta</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.firstName} {detailItem.lastName}</h3>{getStatusBadge(detailItem.status)}{getInsuranceBadge(detailItem.insuranceStatus)}</div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Broj pacijenta', detailItem.patientNo],
-                ['JMBG', detailItem.jmbg],
-                ['Datum rođenja', formatDate(detailItem.dateOfBirth)],
-                ['Starost', `${detailItem.age} god.`],
-                ['Pol', detailItem.gender === 'male' ? 'Muški' : 'Ženski'],
-                ['Krvna grupa', detailItem.bloodType],
-                ['Grad', detailItem.city],
-                ['Adresa', detailItem.address],
-                ['Telefon', detailItem.phone],
-                ['Email', detailItem.email || '—'],
-                ['Lekar', detailItem.primaryDoctor],
-                ['Br. osiguranja', detailItem.insuranceNo],
-                ['Poslednja poseta', detailItem.lastVisit ? formatDate(detailItem.lastVisit) : '—'],
-                ['Sledeći termin', detailItem.nextAppointment ? formatDate(detailItem.nextAppointment) : '—'],
-                ['Ukupno poseta', String(detailItem.totalVisits)],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            {detailItem.allergies.length > 0 && <div className="p-2 rounded-lg bg-red-50"><div className="text-xs text-red-600 mb-1">⚠ Alergije</div><div className="flex flex-wrap gap-1">{detailItem.allergies.map(a => <Badge key={a} className="text-xs bg-red-100 text-red-700">{a}</Badge>)}</div></div>}
-            {detailItem.chronicConditions.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">Hronične bolesti</div><div className="flex flex-wrap gap-1">{detailItem.chronicConditions.map(c => <Badge key={c} className="text-xs bg-amber-100 text-amber-700">{c}</Badge>)}</div></div>}
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function PatientEditDialog({ open, onClose, editItem, form, setForm, onSave }: {
-  open: boolean
-  onClose: () => void
-  editItem: Patient | null
-  form: Partial<Patient>
-  setForm: (v: Partial<Patient>) => void
-  onSave: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi pacijenta' : 'Novi pacijent'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-xs" value={form.firstName || ''} onChange={e => setForm({ ...form, firstName: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Prezime *</Label><Input className="text-xs" value={form.lastName || ''} onChange={e => setForm({ ...form, lastName: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as Patient['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="in_treatment">Na lečenju</SelectItem><SelectItem value="critical">Kritičan</SelectItem><SelectItem value="discharged">Otpušten</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Osigranje</Label><Select value={form.insuranceStatus || 'pending'} onValueChange={v => setForm({ ...form, insuranceStatus: v as Patient['insuranceStatus'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivno</SelectItem><SelectItem value="expired">Isteklo</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

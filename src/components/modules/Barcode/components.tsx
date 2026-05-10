@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { ScanBarcode, Plus, Search, Trash2, Pencil, Printer, Barcode, QrCode, Tag, Package } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import type { BarcodeItem } from './types'
@@ -120,45 +119,6 @@ export function BarcodeTableSection({ filtered, categories, search, typeFilter, 
         </div>
       </CardContent>
     </Card>
-  )
-}
-
-// ==================== FORM DIALOG ====================
-
-interface BarcodeFormData {
-  code: string
-  type: BarcodeItem['type']
-  productName: string
-  productId: string
-  category: string
-}
-
-interface BarcodeFormDialogProps {
-  open: boolean
-  onOpenChange: (v: boolean) => void
-  editing: BarcodeItem | null
-  formData: BarcodeFormData
-  setFormData: React.Dispatch<React.SetStateAction<BarcodeFormData>>
-  onSave: () => void
-  onGenerate: (type: BarcodeItem['type']) => void
-}
-
-export function BarcodeFormDialog({ open, onOpenChange, editing, formData, setFormData, onSave, onGenerate }: BarcodeFormDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px]">
-        <DialogHeader><DialogTitle>{editing ? 'Izmeni barkod' : 'Novi barkod'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2"><Label className="text-xs">Barkod *</Label><div className="flex gap-2"><Input placeholder="8601234567890" className="font-mono" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /><Select value={formData.type} onValueChange={v => { setFormData(p => ({ ...p, type: v as BarcodeItem['type'] })); onGenerate(v as BarcodeItem['type']) }}><SelectTrigger className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EAN13">EAN-13</SelectItem><SelectItem value="EAN8">EAN-8</SelectItem><SelectItem value="QR">QR</SelectItem><SelectItem value="CODE128">Code 128</SelectItem></SelectContent></Select></div></div>
-          <div className="grid gap-2"><Label className="text-xs">Naziv proizvoda *</Label><Input placeholder="Naziv..." value={formData.productName} onChange={e => setFormData(p => ({ ...p, productName: e.target.value }))} /></div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Šifra proizvoda</Label><Input placeholder="prod-xxx" value={formData.productId} onChange={e => setFormData(p => ({ ...p, productId: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Input placeholder="Kategorija" value={formData.category} onChange={e => setFormData(p => ({ ...p, category: e.target.value }))} /></div>
-          </div>
-        </div>
-        <DialogFooter><Button variant="outline" onClick={() => onOpenChange(false)}>Otkaži</Button><Button onClick={onSave}>{editing ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }
 

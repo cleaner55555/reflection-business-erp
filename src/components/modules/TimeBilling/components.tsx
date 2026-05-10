@@ -17,15 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import {
   Table,
   TableBody,
@@ -610,16 +602,23 @@ export function SatniceTab({
         </CardContent>
       </Card>
 
-      {/* Add Entry Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Нова временска ставка</DialogTitle>
-            <DialogDescription>
-              Унесите податке о утрошеном времену
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
+      {/* Add Entry Form */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Нова временска ставка</CardTitle>
+                <CardDescription>
+                  Унесите податке о утрошеном времену
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label className="text-sm">Запослени *</Label>
@@ -724,22 +723,22 @@ export function SatniceTab({
                 rows={2}
               />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Откажи
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={
-                !formEmployee || !formClient || !formProject || !formHours
-              }
-            >
-              Додај ставку
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Откажи
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={
+                  !formEmployee || !formClient || !formProject || !formHours
+                }
+              >
+                Додај ставку
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -1131,17 +1130,24 @@ export function FakturisanjeTab({
         </CardContent>
       </Card>
 
-      {/* Generate Invoice Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Генерисање фактуре</DialogTitle>
-            <DialogDescription>
-              {selectedEntries.length} ставки · Укупно:{" "}
-              {formatRSD(selectedTotal)}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
+      {/* Generate Invoice Form */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Генерисање фактуре</CardTitle>
+                <CardDescription>
+                  {selectedEntries.length} ставки · Укупно:{" "}
+                  {formatRSD(selectedTotal)}
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-4">
             <div className="border rounded-lg p-3 bg-muted/30 max-h-[160px] overflow-y-auto">
               {selectedEntries.map((e) => (
                 <div key={e.id} className="flex justify-between text-xs py-0.5">
@@ -1196,102 +1202,102 @@ export function FakturisanjeTab({
                 rows={2}
               />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Откажи
-            </Button>
-            <Button
-              onClick={handleGenerate}
-              disabled={selectedEntries.length === 0}
-            >
-              <FilePlus2 className="h-4 w-4 mr-1" /> Генериши фактуру
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Откажи
+              </Button>
+              <Button
+                onClick={handleGenerate}
+                disabled={selectedEntries.length === 0}
+              >
+                <FilePlus2 className="h-4 w-4 mr-1" /> Генериши фактуру
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Invoice Detail Dialog */}
-      <Dialog
-        open={!!detailInvoice}
-        onOpenChange={() => setDetailInvoice(null)}
-      >
-        <DialogContent className="max-w-xl">
-          {detailInvoice && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{detailInvoice.invoiceNumber}</DialogTitle>
-                <DialogDescription>
+      {/* Invoice Detail Card */}
+      {detailInvoice && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>{detailInvoice.invoiceNumber}</CardTitle>
+                <CardDescription>
                   {getClientName(detailInvoice.clientId)} ·{" "}
                   {formatDate(detailInvoice.issueDate)}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Рок плаћања:</span>
-                  <span>{formatDate(detailInvoice.dueDate)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Услов плаћања:</span>
-                  <span>
-                    {PAYMENT_TERMS_LABELS[detailInvoice.paymentTerms]}
-                  </span>
-                </div>
-                <Separator />
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Опис</TableHead>
-                      <TableHead className="text-right">Сати</TableHead>
-                      <TableHead className="text-right">Износ</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detailInvoice.items.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="text-sm">
-                          {item.description}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {formatHours(item.hours)}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {formatRSD(item.total)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <Separator />
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span>Укупно без ПДВ:</span>
-                    <span>{formatRSD(detailInvoice.subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>ПДВ ({detailInvoice.pdvRate}%):</span>
-                    <span>{formatRSD(detailInvoice.pdvAmount)}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between font-bold text-base">
-                    <span>Укупно:</span>
-                    <span>{formatRSD(detailInvoice.total)}</span>
-                  </div>
-                </div>
-                {detailInvoice.notes && (
-                  <>
-                    <Separator />
-                    <div className="text-sm">
-                      <span className="text-muted-foreground">Напомена: </span>
-                      {detailInvoice.notes}
-                    </div>
-                  </>
-                )}
+                </CardDescription>
               </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+              <Button variant="ghost" size="icon" onClick={() => setDetailInvoice(null)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Рок плаћања:</span>
+              <span>{formatDate(detailInvoice.dueDate)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Услов плаћања:</span>
+              <span>
+                {PAYMENT_TERMS_LABELS[detailInvoice.paymentTerms]}
+              </span>
+            </div>
+            <Separator />
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Опис</TableHead>
+                  <TableHead className="text-right">Сати</TableHead>
+                  <TableHead className="text-right">Износ</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {detailInvoice.items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="text-sm">
+                      {item.description}
+                    </TableCell>
+                    <TableCell className="text-right text-sm">
+                      {formatHours(item.hours)}
+                    </TableCell>
+                    <TableCell className="text-right text-sm">
+                      {formatRSD(item.total)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <Separator />
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span>Укупно без ПДВ:</span>
+                <span>{formatRSD(detailInvoice.subtotal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>ПДВ ({detailInvoice.pdvRate}%):</span>
+                <span>{formatRSD(detailInvoice.pdvAmount)}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between font-bold text-base">
+                <span>Укупно:</span>
+                <span>{formatRSD(detailInvoice.total)}</span>
+              </div>
+            </div>
+            {detailInvoice.notes && (
+              <>
+                <Separator />
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Напомена: </span>
+                  {detailInvoice.notes}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Search, Trash2, Pencil, Eye, Users, Monitor, School, MapPin } from 'lucide-react'
@@ -138,68 +137,4 @@ export function ClassroomEditTab({ data, onEdit, onDelete }: { data: Classroom[]
   )
 }
 
-export function ClassroomDetailDialog({ detailItem, open, onClose }: { detailItem: Classroom | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Detalji učionice</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Naziv', detailItem.name],
-                ['Zgrada', `${detailItem.building} — sprat ${detailItem.floor}`],
-                ['Tip', TYPES[detailItem.type]?.label],
-                ['Kapacitet', `${detailItem.capacity} mesta`],
-                ['Trenutna zauzetost', `${detailItem.currentOccupancy} mesta`],
-                ['Površina', `${detailItem.area} m²`],
-                ['Odgovorna osoba', detailItem.responsible],
-                ['Poslednja inspekcija', formatDate(detailItem.lastInspection)],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-            <div className="p-2 rounded-lg bg-muted/50">
-              <div className="text-xs text-muted-foreground mb-2">Oprema</div>
-              <div className="flex flex-wrap gap-1">{detailItem.equipment.map(e => <Badge key={e} className="text-xs bg-muted">{e}</Badge>)}</div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {detailItem.hasProjector && <Badge className="text-xs bg-emerald-100 text-emerald-800">Projektor</Badge>}
-              {detailItem.hasAC && <Badge className="text-xs bg-emerald-100 text-emerald-800">Klima uređaj</Badge>}
-              {detailItem.hasWhiteboard && <Badge className="text-xs bg-emerald-100 text-emerald-800">Tabla</Badge>}
-            </div>
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
 
-export function ClassroomEditDialog({ open, onClose, editItem, form, setForm, onSave }: {
-  open: boolean
-  onClose: () => void
-  editItem: Classroom | null
-  form: Partial<Classroom>
-  setForm: (v: Partial<Classroom>) => void
-  onSave: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi učionicu' : 'Nova učionica'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'available'} onValueChange={v => setForm({ ...form, status: v as Classroom['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">Slobodna</SelectItem><SelectItem value="occupied">Zauzeta</SelectItem><SelectItem value="maintenance">Održavanje</SelectItem><SelectItem value="reserved">Rezervisana</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Kapacitet</Label><Input className="text-xs" type="number" value={form.capacity || ''} onChange={e => setForm({ ...form, capacity: Number(e.target.value) })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Odgovoran</Label><Input className="text-xs" value={form.responsible || ''} onChange={e => setForm({ ...form, responsible: e.target.value })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

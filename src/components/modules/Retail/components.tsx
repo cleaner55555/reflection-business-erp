@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { AlertCircle, Banknote, BarChart3, CheckCircle2, ChevronLeft, Clock, CreditCard, LogIn, LogOut, Minus, Package, Plus, Printer, Receipt, Search, ShoppingCart, Trash2, TrendingUp, X } from 'lucide-react'
@@ -391,115 +390,6 @@ function POSTerminal({ companyId }: { companyId: string | null }) {
         </CardContent>
       </Card>
 
-      {/* Payment Dialog */}
-      <Dialog open={showPayment} onOpenChange={setShowPayment}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Naplata</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold">
-                {total.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
-              </div>
-              <div className="text-sm text-muted-foreground mt-1">{itemsCount} stavki</div>
-            </div>
-
-            {/* Payment method selection */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: 'gotovina', icon: Banknote, label: 'Gotovina' },
-                { id: 'kartica', icon: CreditCard, label: 'Kartica' },
-                { id: 'transakcioni_racun', icon: Receipt, label: 'Transakcija' },
-              ].map(pm => (
-                <button
-                  key={pm.id}
-                  onClick={() => setPaymentMethod(pm.id)}
-                  className={`p-3 rounded-lg border text-center transition-colors ${
-                    paymentMethod === pm.id
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'hover:bg-accent'
-                  }`}
-                >
-                  <pm.icon className="h-5 w-5 mx-auto mb-1" />
-                  <span className="text-xs font-medium">{pm.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Amount input for cash */}
-            {paymentMethod === 'gotovina' && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Unesite iznos:</label>
-                <Input
-                  type="number"
-                  value={paidAmount}
-                  onChange={e => setPaidAmount(e.target.value)}
-                  className="text-lg text-center font-mono"
-                  autoFocus
-                />
-                {/* Quick amount buttons */}
-                <div className="grid grid-cols-4 gap-1">
-                  {[total, Math.ceil(total / 100) * 100, Math.ceil(total / 500) * 500, Math.ceil(total / 1000) * 1000].map((amt, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setPaidAmount(amt.toFixed(2))}
-                      className="py-1.5 text-xs rounded bg-muted hover:bg-muted/80"
-                    >
-                      {Math.round(amt).toLocaleString('sr-RS')}
-                    </button>
-                  ))}
-                </div>
-                {change > 0 && (
-                  <div className="text-center p-2 rounded bg-green-100 dark:bg-green-900/20">
-                    <span className="text-sm text-muted-foreground">Kusur: </span>
-                    <span className="text-lg font-bold text-green-700 dark:text-green-400">
-                      {change.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPayment(false)}>
-              <ChevronLeft className="h-4 w-4 mr-1" /> Nazad
-            </Button>
-            <Button size="lg" onClick={processPayment}>
-              <CheckCircle2 className="h-4 w-4 mr-1.5" />
-              Potvrdi plaćanje
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Receipt Dialog */}
-      <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-center">Račun uspešno</DialogTitle>
-          </DialogHeader>
-          <div className="text-center space-y-4 py-4">
-            <div className="p-4 rounded-full bg-green-100 dark:bg-green-900/20 mx-auto w-fit">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
-            </div>
-            <div>
-              <div className="text-2xl font-mono font-bold">{receiptOrder?.orderNumber}</div>
-              <div className="text-sm text-muted-foreground mt-1">
-                {receiptOrder?.totalAmount?.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
-              </div>
-            </div>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" size="sm">
-                <Printer className="h-4 w-4 mr-1" /> Štampaj
-              </Button>
-              <Button size="sm" onClick={() => setShowReceipt(false)}>
-                Novi račun
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
@@ -642,79 +532,6 @@ function ShiftManager({ companyId }: { companyId: string | null }) {
         })}
       </div>
 
-      {/* Open shift dialog */}
-      <Dialog open={showOpen} onOpenChange={setShowOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Otvori novu smenu</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <label className="text-sm font-medium">Početni saldo (RSD)</label>
-              <Input
-                type="number"
-                value={openBalance}
-                onChange={e => setOpenBalance(e.target.value)}
-                placeholder="0.00"
-                className="mt-1.5"
-                autoFocus
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowOpen(false)}>Otkaži</Button>
-            <Button onClick={openShift}>
-              <LogIn className="h-4 w-4 mr-1.5" /> Otvori smenu
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Close shift dialog */}
-      <Dialog open={showClose} onOpenChange={setShowClose}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Zatvori smenu #{selectedShift?.number}</DialogTitle>
-          </DialogHeader>
-          {selectedShift && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="text-muted-foreground">Početni saldo:</div>
-                <div className="font-medium text-right">{selectedShift.openingBalance.toLocaleString('sr-RS')} RSD</div>
-                <div className="text-muted-foreground">Ukupno računa:</div>
-                <div className="font-medium text-right">{selectedShift._count?.orders || 0}</div>
-              </div>
-              <Separator />
-              <div>
-                <label className="text-sm font-medium">Stanje u kasi (RSD)</label>
-                <Input
-                  type="number"
-                  value={closeBalance}
-                  onChange={e => setCloseBalance(e.target.value)}
-                  placeholder="0.00"
-                  className="mt-1.5"
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Napomena</label>
-                <Input
-                  value={closeNote}
-                  onChange={e => setCloseNote(e.target.value)}
-                  placeholder="Opcionalno"
-                  className="mt-1.5"
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowClose(false)}>Otkaži</Button>
-            <Button variant="destructive" onClick={closeShift}>
-              <LogOut className="h-4 w-4 mr-1.5" /> Zatvori smenu
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

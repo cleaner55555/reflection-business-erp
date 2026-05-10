@@ -17,10 +17,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  Monitor, Plus, Search, Eye, Trash2, Edit3, RefreshCw, Calculator,
-  Package, Wrench, AlertTriangle, CheckCircle2, Download, Upload,
-  BarChart3, TrendingDown, ArrowUpRight, ArrowDownRight, X,
-  Tag, Clock, MapPin, Building, Car, Laptop, Cpu, Printer,
+  Plus, Search, Eye, Trash2, Edit3, RefreshCw, Calculator,
+  Package, Wrench, AlertTriangle, CheckCircle2,
+  BarChart3, TrendingDown, TrendingUp,
+  Clock, MapPin, Building, Car, Laptop, Cpu, Printer,
   Sofa, HardHat, Truck, ScanBarcode, QrCode, Settings, Info,
   FileText, Copy, Filter, Grid3X3, List, Zap, Shield, History, ChevronRight, ArrowLeft
 } from 'lucide-react'
@@ -72,7 +72,7 @@ export function Assets() {
 
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('pregled')
   const [searchQuery, setSearchQuery] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
@@ -168,7 +168,7 @@ export function Assets() {
 
   // ============ ACTIONS ============
 
-  const openNewAsset = () => { setEditingAsset(null); setAssetForm(emptyForm); setActiveTab('form') }
+  const openNewAsset = () => { setEditingAsset(null); setSelectedAsset(null); setAssetForm(emptyForm); setActiveTab('dodaj') }
 
   const openEditAsset = (asset: Asset) => {
     setEditingAsset(asset)
@@ -181,7 +181,7 @@ export function Assets() {
       insurance: asset.insurance || '', maintenanceDate: asset.maintenanceDate?.split('T')[0] || '',
       warrantyExpiry: asset.warrantyExpiry?.split('T')[0] || '',
     })
-    setActiveTab('form')
+    setActiveTab('uredi')
   }
 
   const handleSubmitAsset = async () => {
@@ -191,7 +191,7 @@ export function Assets() {
       const body = { ...assetForm, purchasePrice: Number(assetForm.purchasePrice) || 0, currentValue: Number(assetForm.currentValue) || 0, usefulLife: Number(assetForm.usefulLife) || 60 }
       const url = editingAsset ? `/api/assets/${editingAsset.id}` : '/api/assets'
       const res = await fetch(url, { method: editingAsset ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { setActiveTab('all'); loadAssets(); showToast(editingAsset ? 'Sredstvo ažurirano' : 'Sredstvo kreirano') }
+      if (res.ok) { setEditingAsset(null); setAssetForm(emptyForm); setActiveTab('pregled'); loadAssets(); showToast(editingAsset ? 'Sredstvo ažurirano' : 'Sredstvo kreirano') }
     } catch { showToast('Greška') }
     setSubmitting(false)
   }
@@ -207,7 +207,7 @@ export function Assets() {
     catch { showToast('Greška') }
   }
 
-  // ============ KPI ============
+  // ============ KPI (outside Tabs) ============
 
   const Kpi = ({ label, value, icon: Icon, sub, color }: { label: string; value: string | number; icon: React.ElementType; sub?: string; color?: string }) => (
     <Card className="p-4">
@@ -237,36 +237,77 @@ export function Assets() {
           <p className="text-sm text-muted-foreground">Upravljanje imovinom, amortizacija i održavanje</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button size="sm" onClick={openNewAsset}><Plus className="h-4 w-4 mr-1" /> Novo sredstvo</Button>
-          <Button variant="outline" size="sm" onClick={loadAssets}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
+          <Button size="sm" onClick={loadAssets}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
         </div>
       </div>
 
+      {/* KPI Cards — outside Tabs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Kpi label="Ukupna knjigovska vrednost" value={formatCurrency(stats.totalPurchase)} icon={Calculator} color="text-blue-500" />
+        <Kpi label="Trenutna vrednost" value={formatCurrency(stats.totalValue)} icon={TrendingUp} color="text-green-500" sub={`Neto: ${formatCurrency(stats.netValue)}`} />
+        <Kpi label="Ukupna amortizacija" value={formatCurrency(stats.totalDepreciation)} icon={TrendingDown} color="text-red-500" />
+        <Kpi label="Aktivna sredstva" value={stats.active} icon={CheckCircle2} color="text-emerald-500" sub={`${stats.repair} na popravci`} />
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" /> Pregled</TabsTrigger>
-          <TabsTrigger value="all"><List className="h-4 w-4 mr-1 hidden sm:inline" /> Sva sredstva</TabsTrigger>
-          <TabsTrigger value="depreciation"><TrendingDown className="h-4 w-4 mr-1 hidden sm:inline" /> Amortizacija</TabsTrigger>
-          <TabsTrigger value="form"><Plus className="h-4 w-4 mr-1 hidden sm:inline" /> {editingAsset ? 'Uredi' : 'Dodaj'}</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="pregled"><BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" /> Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1 hidden sm:inline" /> Dodaj</TabsTrigger>
+          <TabsTrigger value="uredi" disabled={!editingAsset}><Edit3 className="h-4 w-4 mr-1 hidden sm:inline" /> Uredi</TabsTrigger>
         </TabsList>
 
-        {/* ===== OVERVIEW ===== */}
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Kpi label="Ukupna knjigovska vrednost" value={formatCurrency(stats.totalPurchase)} icon={Calculator} color="text-blue-500" />
-            <Kpi label="Trenutna vrednost" value={formatCurrency(stats.totalValue)} icon={TrendingUp} color="text-green-500" sub={`Neto: ${formatCurrency(stats.netValue)}`} />
-            <Kpi label="Ukupna amortizacija" value={formatCurrency(stats.totalDepreciation)} icon={TrendingDown} color="text-red-500" />
-            <Kpi label="Aktivna sredstva" value={stats.active} icon={CheckCircle2} color="text-emerald-500" sub={`${stats.repair} na popravci`} />
-          </div>
+        {/* ===== PREGLED ===== */}
+        <TabsContent value="pregled" className="space-y-4">
+
+          {/* Detail view — replaces table when an asset is selected */}
+          {selectedAsset && (
+            <Card>
+              <CardHeader className="pb-3"><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelectedAsset(null)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base flex items-center gap-2"><Package className="h-5 w-5" /> {selectedAsset.name}</CardTitle></div></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><span className="text-xs text-muted-foreground">Kategorija:</span><br /><Badge variant="secondary">{selectedAsset.category || '-'}</Badge></div>
+                    <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-xs ${STATUS_COLORS[selectedAsset.status] || ''}`}>{STATUS_LABELS[selectedAsset.status] || selectedAsset.status}</Badge></div>
+                    <div><span className="text-xs text-muted-foreground">Serijski br.:</span><br /><span className="text-xs font-mono">{selectedAsset.serialNumber || '-'}</span></div>
+                    <div><span className="text-xs text-muted-foreground">Datum nabavke:</span><br /><span className="text-xs">{selectedAsset.purchaseDate ? formatDate(selectedAsset.purchaseDate) : '-'}</span></div>
+                    <div><span className="text-xs text-muted-foreground">Lokacija:</span><br /><span className="text-xs">{selectedAsset.location || '-'}</span></div>
+                    <div><span className="text-xs text-muted-foreground">Odgovorno:</span><br /><span className="text-xs">{selectedAsset.responsible || '-'}</span></div>
+                  </div>
+                  <Separator />
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="p-3 bg-blue-50 rounded-lg"><p className="text-xs text-muted-foreground">Nabavna</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.purchasePrice)}</p></div>
+                    <div className="p-3 bg-green-50 rounded-lg"><p className="text-xs text-muted-foreground">Trenutna</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.currentValue)}</p></div>
+                    <div className="p-3 bg-red-50 rounded-lg"><p className="text-xs text-muted-foreground">Amortizacija</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.depreciation)}</p></div>
+                  </div>
+                  {selectedAsset.usefulLife > 0 && selectedAsset.purchaseDate && (
+                    <div className="space-y-1 text-xs"><span className="text-muted-foreground">Starost / Vek trajanja:</span>
+                      <Progress value={Math.min(100, ((Date.now() - new Date(selectedAsset.purchaseDate).getTime()) / (selectedAsset.usefulLife * 365.25 * 24 * 60 * 60 * 1000)) * 100)} className="h-2" />
+                      <p className="text-muted-foreground">{Math.round((Date.now() - new Date(selectedAsset.purchaseDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} / {selectedAsset.usefulLife} godina ({Math.round(((Date.now() - new Date(selectedAsset.purchaseDate).getTime()) / (selectedAsset.usefulLife * 365.25 * 24 * 60 * 60 * 1000)) * 100)}%)</p>
+                    </div>
+                  )}
+                  {(selectedAsset.warrantyExpiry || selectedAsset.maintenanceDate) && <Separator />}
+                  {selectedAsset.warrantyExpiry && <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Garancija do:</span><span className={new Date(selectedAsset.warrantyExpiry).getTime() < Date.now() ? 'text-red-500' : ''}>{formatDate(selectedAsset.warrantyExpiry)}</span></div>}
+                  {selectedAsset.maintenanceDate && <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Servis zakazan:</span><span className={new Date(selectedAsset.maintenanceDate).getTime() < Date.now() ? 'text-red-500' : ''}>{formatDate(selectedAsset.maintenanceDate)}</span></div>}
+                  {selectedAsset.notes && <div><span className="text-xs text-muted-foreground">Napomene:</span><p className="text-sm mt-1 bg-muted/30 rounded p-2">{selectedAsset.notes}</p></div>}
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => openEditAsset(selectedAsset)}><Edit3 className="h-3.5 w-3.5 mr-1" /> Izmeni</Button>
+                    {selectedAsset.status !== 'otpisano' && <Button size="sm" variant="outline" onClick={() => handleStatusChange(selectedAsset, 'otpisano')}><Trash2 className="h-3.5 w-3.5 mr-1" /> Otpisi</Button>}
+                    {selectedAsset.status !== 'aktivno' && selectedAsset.status !== 'otpisano' && <Button size="sm" variant="outline" onClick={() => handleStatusChange(selectedAsset, 'aktivno')}><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Aktiviraj</Button>}
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => setDeleteConfirmOpen(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Alerts */}
-          {stats.expiringWarranty.length > 0 && (
+          {!selectedAsset && stats.expiringWarranty.length > 0 && (
             <Card className="border-amber-200 dark:border-amber-800">
               <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2 text-amber-600"><AlertTriangle className="h-4 w-4" /> Garancija uskoro ističe (90 dana)</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {stats.expiringWarranty.slice(0, 5).map(a => (
-                    <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-amber-50 dark:hover:bg-amber-900/10 cursor-pointer" onClick={() => { setSelectedAsset(a); setActiveTab('detail') }}>
+                    <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-amber-50 dark:hover:bg-amber-900/10 cursor-pointer" onClick={() => setSelectedAsset(a)}>
                       <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-amber-500" /><span className="text-sm">{a.name}</span></div>
                       <span className="text-xs text-muted-foreground">{formatDate(a.warrantyExpiry!)}</span>
                     </div>
@@ -276,13 +317,13 @@ export function Assets() {
             </Card>
           )}
 
-          {stats.maintenanceSoon.length > 0 && (
+          {!selectedAsset && stats.maintenanceSoon.length > 0 && (
             <Card className="border-orange-200 dark:border-orange-800">
               <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2 text-orange-600"><Wrench className="h-4 w-4" /> Servis uskoro (30 dana)</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {stats.maintenanceSoon.slice(0, 5).map(a => (
-                    <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-orange-50 dark:hover:bg-orange-900/10 cursor-pointer" onClick={() => { setSelectedAsset(a); setActiveTab('detail') }}>
+                    <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-orange-50 dark:hover:bg-orange-900/10 cursor-pointer" onClick={() => setSelectedAsset(a)}>
                       <div className="flex items-center gap-2"><Wrench className="h-4 w-4 text-orange-500" /><span className="text-sm">{a.name}</span></div>
                       <span className="text-xs text-muted-foreground">{formatDate(a.maintenanceDate!)}</span>
                     </div>
@@ -292,13 +333,13 @@ export function Assets() {
             </Card>
           )}
 
-          {stats.oldAssets.length > 0 && (
+          {!selectedAsset && stats.oldAssets.length > 0 && (
             <Card className="border-red-200 dark:border-red-800">
               <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2 text-red-600"><History className="h-4 w-4" /> Predmeti dugovečeka (≥80% veka trajanja)</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {stats.oldAssets.map(a => (
-                    <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-red-50 dark:hover:bg-red-900/10 cursor-pointer" onClick={() => { setSelectedAsset(a); setActiveTab('detail') }}>
+                    <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-red-50 dark:hover:bg-red-900/10 cursor-pointer" onClick={() => setSelectedAsset(a)}>
                       <div className="flex items-center gap-2"><Clock className="h-4 w-4 text-red-500" /><span className="text-sm">{a.name}</span></div>
                       <span className="text-xs text-muted-foreground">{a.usefulLife} god. · {a.purchaseDate ? formatDate(a.purchaseDate) : ''}</span>
                     </div>
@@ -308,268 +349,230 @@ export function Assets() {
             </Card>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* By Category */}
-            <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-sm">Po kategorijama</CardTitle></CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {Object.entries(stats.byCategory).sort(([, a], [, b]) => b.value - a.value).map(([cat, data]) => {
-                    const catInfo = CATEGORIES.find(c => c.value === cat)
-                    const max = Math.max(...Object.values(stats.byCategory).map(d => d.value), 1)
-                    return (
-                      <div key={cat} className="flex items-center gap-3">
-                        <div className="w-28 flex items-center gap-1.5">{catInfo && <catInfo.icon className="h-3 w-3" />}<span className="text-xs truncate">{cat}</span></div>
-                        <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${Math.round((data.value / max) * 100)}%` }} /></div>
-                        <span className="text-xs font-mono w-20 text-right">{formatCurrency(data.value)}</span>
-                        <Badge variant="outline" className="text-xs">{data.count}</Badge>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* By Status */}
-            <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-sm">Po statusima</CardTitle></CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {Object.entries(stats.byStatus).sort(([, a], [, b]) => b - a).map(([status, count]) => (
-                    <div key={status} className="flex items-center gap-3">
-                      <Badge variant="outline" className={`text-xs w-32 justify-center ${STATUS_COLORS[status] || ''}`}>{STATUS_LABELS[status] || status}</Badge>
-                      <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${Math.round((count / Math.max(stats.total, 1)) * 100)}%` }} /></div>
-                      <span className="text-xs font-mono w-6 text-right">{count}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent */}
-            <Card>
-              <CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle className="text-sm">Nedavno dodata</CardTitle><Button variant="ghost" size="sm" onClick={() => setActiveTab('all')}>Sva <ChevronRight className="h-4 w-4 ml-1" /></Button></div></CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {stats.recentAssets.map(a => (
-                    <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedAsset(a); setActiveTab('detail') }}>
-                      <div className="flex items-center gap-2"><Package className="h-4 w-4 text-muted-foreground" /><span className="text-sm">{a.name}</span></div>
-                      <div className="text-right"><p className="text-xs font-medium">{formatCurrency(a.purchasePrice)}</p><p className="text-xs text-muted-foreground">{formatDate(a.createdAt)}</p></div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Monthly Depreciation */}
-            <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-sm">Amortizacija</CardTitle></CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Mesečna stopa amortizacije:</span><span className="font-medium">{formatCurrency(stats.monthlyDepreciation)}</span></div>
-                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Godišnja amortizacija:</span><span className="font-medium">{formatCurrency(stats.monthlyDepreciation * 12)}</span></div>
-                  <Separator />
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p>Formula: Nabavna vrednost / Korisni vek (godine)</p>
-                    <p>Linearna amortizacija po standardnim pravilima RS</p>
+          {/* Dashboard breakdowns */}
+          {!selectedAsset && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* By Category */}
+              <Card>
+                <CardHeader className="pb-3"><CardTitle className="text-sm">Po kategorijama</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {Object.entries(stats.byCategory).sort(([, a], [, b]) => b.value - a.value).map(([cat, data]) => {
+                      const catInfo = CATEGORIES.find(c => c.value === cat)
+                      const max = Math.max(...Object.values(stats.byCategory).map(d => d.value), 1)
+                      return (
+                        <div key={cat} className="flex items-center gap-3">
+                          <div className="w-28 flex items-center gap-1.5">{catInfo && <catInfo.icon className="h-3 w-3" />}<span className="text-xs truncate">{cat}</span></div>
+                          <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${Math.round((data.value / max) * 100)}%` }} /></div>
+                          <span className="text-xs font-mono w-20 text-right">{formatCurrency(data.value)}</span>
+                          <Badge variant="outline" className="text-xs">{data.count}</Badge>
+                        </div>
+                      )
+                    })}
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* By Status */}
+              <Card>
+                <CardHeader className="pb-3"><CardTitle className="text-sm">Po statusima</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {Object.entries(stats.byStatus).sort(([, a], [, b]) => b - a).map(([status, count]) => (
+                      <div key={status} className="flex items-center gap-3">
+                        <Badge variant="outline" className={`text-xs w-32 justify-center ${STATUS_COLORS[status] || ''}`}>{STATUS_LABELS[status] || status}</Badge>
+                        <div className="flex-1 bg-muted rounded-full h-3"><div className="bg-primary h-3 rounded-full" style={{ width: `${Math.round((count / Math.max(stats.total, 1)) * 100)}%` }} /></div>
+                        <span className="text-xs font-mono w-6 text-right">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent */}
+              <Card>
+                <CardHeader className="pb-3"><CardTitle className="text-sm">Nedavno dodata</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {stats.recentAssets.map(a => (
+                      <div key={a.id} className="flex items-center justify-between p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => setSelectedAsset(a)}>
+                        <div className="flex items-center gap-2"><Package className="h-4 w-4 text-muted-foreground" /><span className="text-sm">{a.name}</span></div>
+                        <div className="text-right"><p className="text-xs font-medium">{formatCurrency(a.purchasePrice)}</p><p className="text-xs text-muted-foreground">{formatDate(a.createdAt)}</p></div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Depreciation summary */}
+              <Card>
+                <CardHeader className="pb-3"><CardTitle className="text-sm">Amortizacija</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center p-3 bg-blue-50 rounded-lg"><p className="text-xs text-muted-foreground">Ukupna nabavna</p><p className="text-lg font-bold">{formatCurrency(stats.totalPurchase)}</p></div>
+                      <div className="text-center p-3 bg-green-50 rounded-lg"><p className="text-xs text-muted-foreground">Trenutna vrednost</p><p className="text-lg font-bold">{formatCurrency(stats.totalValue)}</p></div>
+                      <div className="text-center p-3 bg-red-50 rounded-lg"><p className="text-xs text-muted-foreground">Ukupna amortizacija</p><p className="text-lg font-bold">{formatCurrency(stats.totalDepreciation)}</p></div>
+                      <div className="text-center p-3 bg-purple-50 rounded-lg"><p className="text-xs text-muted-foreground">Neto vrednost</p><p className="text-lg font-bold">{formatCurrency(stats.netValue)}</p></div>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Mesečna amortizacija:</span><span className="font-medium">{formatCurrency(stats.monthlyDepreciation)}</span></div>
+                    <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Godišnja amortizacija:</span><span className="font-medium">{formatCurrency(stats.monthlyDepreciation * 12)}</span></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Assets table */}
+          {!selectedAsset && (
+            <>
+              <Card className="p-3">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Pretraži sredstva..." className="pl-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                  </div>
+                  <Select value={filterCategory} onValueChange={setFilterCategory}><SelectTrigger className="w-[150px]"><SelectValue placeholder="Kategorija" /></SelectTrigger><SelectContent><SelectItem value="all">Sve kategorije</SelectItem>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.value}</SelectItem>)}</SelectContent></Select>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">Svi statusi</SelectItem>{Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
+                </div>
+              </Card>
+
+              <p className="text-sm text-muted-foreground">{filteredAssets.length} sredstava</p>
+
+              {loading ? <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div> : filteredAssets.length === 0 ? (
+                <Card className="p-8 text-center"><Package className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema sredstava</p><Button className="mt-3" onClick={openNewAsset}><Plus className="h-4 w-4 mr-1" /> Dodaj sredstvo</Button></Card>
+              ) : (
+                <Card>
+                  <div className="max-h-[600px] overflow-y-auto">
+                    <table className="w-full">
+                      <thead className="sticky top-0 bg-muted/50"><tr className="text-left text-xs text-muted-foreground border-b">
+                        <th className="p-3">Naziv</th><th className="p-3 hidden md:table-cell">Kategorija</th><th className="p-3 hidden lg:table-cell">Serijski br.</th><th className="p-3 hidden md:table-cell">Lokacija</th><th className="p-3 text-right">Nabavna</th><th className="p-3 text-right">Trenutna</th><th className="p-3 text-right">Amort.</th><th className="p-3">Status</th><th className="p-3 w-[80px]">Akcije</th>
+                      </tr></thead>
+                      <tbody>{filteredAssets.map(a => (
+                        <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => setSelectedAsset(a)}>
+                          <td className="p-3"><p className="text-xs font-medium">{a.name}</p></td>
+                          <td className="p-3 hidden md:table-cell"><Badge variant="secondary" className="text-xs">{a.category || '-'}</Badge></td>
+                          <td className="p-3 hidden lg:table-cell text-xs font-mono">{a.serialNumber || '-'}</td>
+                          <td className="p-3 hidden md:table-cell text-xs">{a.location || '-'}</td>
+                          <td className="p-3 text-right text-xs">{formatCurrency(a.purchasePrice)}</td>
+                          <td className="p-3 text-right text-xs font-medium">{formatCurrency(a.currentValue)}</td>
+                          <td className="p-3 text-right text-xs text-red-500">{formatCurrency(a.depreciation)}</td>
+                          <td className="p-3"><Badge variant="outline" className={`text-xs ${STATUS_COLORS[a.status] || ''}`}>{STATUS_LABELS[a.status] || a.status}</Badge></td>
+                          <td className="p-3"><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditAsset(a) }}><Edit3 className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedAsset(a); setDeleteConfirmOpen(true) }}><Trash2 className="h-3.5 w-3.5" /></Button></div></td>
+                        </tr>
+                      ))}</tbody>
+                    </table>
+                  </div>
+                </Card>
+              )}
+            </>
+          )}
+
+          {/* Depreciation guide */}
+          {!selectedAsset && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-sm">Vodič kroz amortizaciju</CardTitle></CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium">Linearna amortizacija</p><p className="text-muted-foreground">Jednolična stopa svakog meseca. Jednostavna i standardna metoda za većinu sredstava.</p></div></div>
+                  <div className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium">Korisni vek</p><p className="text-muted-foreground">Razdobljeni period korišća - amortizuje se do nule, nakon se sredstvo otpisuje.</p></div></div>
+                  <div className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium">Preostatak vrednosti</p><p className="text-muted-foreground">Trenutna vrednost minus ukupna amortizacija. Koristi se za bilans stanja.</p></div></div>
+                  <div className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium">Fiskalni amortizacioni</p><p className="text-muted-foreground">Prema poreskoj zakonu o poretku dohotvora, amortizacija se knjiži u troškove.</p></div></div>
                 </div>
               </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* ===== ALL ASSETS ===== */}
-        <TabsContent value="all" className="space-y-4">
-          <Card className="p-3">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Pretraži sredstva..." className="pl-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-              </div>
-              <Select value={filterCategory} onValueChange={setFilterCategory}><SelectTrigger className="w-[150px]"><SelectValue placeholder="Kategorija" /></SelectTrigger><SelectContent><SelectItem value="all">Sve kategorije</SelectItem>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.value}</SelectItem>)}</SelectContent></Select>
-              <Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">Svi statusi</SelectItem>{Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
-            </div>
-          </Card>
-
-          <p className="text-sm text-muted-foreground">{filteredAssets.length} sredstava</p>
-
-          {loading ? <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div> : filteredAssets.length === 0 ? (
-            <Card className="p-8 text-center"><Package className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema sredstava</p><Button className="mt-3" onClick={openNewAsset}><Plus className="h-4 w-4 mr-1" /> Dodaj sredstvo</Button></Card>
-          ) : (
-            <Card>
-              <div className="max-h-[600px] overflow-y-auto">
-                <table className="w-full">
-                  <thead className="sticky top-0 bg-muted/50"><tr className="text-left text-xs text-muted-foreground border-b">
-                    <th className="p-3">Naziv</th><th className="p-3 hidden md:table-cell">Kategorija</th><th className="p-3 hidden lg:table-cell">Serijski br.</th><th className="p-3 hidden md:table-cell">Lokacija</th><th className="p-3 text-right">Nabavna</th><th className="p-3 text-right">Trenutna</th><th className="p-3 text-right">Amort.</th><th className="p-3">Status</th><th className="p-3 w-[80px]">Akcije</th>
-                  </tr></thead>
-                  <tbody>{filteredAssets.map(a => (
-                    <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedAsset(a); setActiveTab('detail') }}>
-                      <td className="p-3"><p className="text-xs font-medium">{a.name}</p></td>
-                      <td className="p-3 hidden md:table-cell"><Badge variant="secondary" className="text-xs">{a.category || '-'}</Badge></td>
-                      <td className="p-3 hidden lg:table-cell text-xs font-mono">{a.serialNumber || '-'}</td>
-                      <td className="p-3 hidden md:table-cell text-xs">{a.location || '-'}</td>
-                      <td className="p-3 text-right text-xs">{formatCurrency(a.purchasePrice)}</td>
-                      <td className="p-3 text-right text-xs font-medium">{formatCurrency(a.currentValue)}</td>
-                      <td className="p-3 text-right text-xs text-red-500">{formatCurrency(a.depreciation)}</td>
-                      <td className="p-3"><Badge variant="outline" className={`text-xs ${STATUS_COLORS[a.status] || ''}`}>{STATUS_LABELS[a.status] || a.status}</Badge></td>
-                      <td className="p-3"><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditAsset(a) }}><Edit3 className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedAsset(a); setDeleteConfirmOpen(true) }}><Trash2 className="h-3.5 w-3.5" /></Button></div></td>
-                    </tr>
-                  ))}</tbody>
-                </table>
-              </div>
             </Card>
           )}
         </TabsContent>
 
-        {/* ===== DEPRECIATION ===== */}
-        <TabsContent value="depreciation" className="space-y-4">
+        {/* ===== DODAJ ===== */}
+        <TabsContent value="dodaj" className="space-y-4">
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-sm">Amortizacioni plan</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-base">Novo sredstvo</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg"><p className="text-xs text-muted-foreground">Ukupna nabavna</p><p className="text-lg font-bold">{formatCurrency(stats.totalPurchase)}</p></div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg"><p className="text-xs text-muted-foreground">Trenutna vrednost</p><p className="text-lg font-bold">{formatCurrency(stats.totalValue)}</p></div>
-                  <div className="text-center p-3 bg-red-50 rounded-lg"><p className="text-xs text-muted-foreground">Ukupna amortizacija</p><p className="text-lg font-bold">{formatCurrency(stats.totalDepreciation)}</p></div>
-                  <div className="text-center p-3 bg-purple-50 rounded-lg"><p className="text-xs text-muted-foreground">Neto vrednost</p><p className="text-lg font-bold">{formatCurrency(stats.netValue)}</p></div>
+                <div className="space-y-2"><Label className="text-xs">Naziv sredstva *</Label><Input value={assetForm.name} onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })} placeholder="Naziv..." /></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Kategorija</Label>
+                    <Select value={assetForm.category} onValueChange={(v) => setAssetForm({ ...assetForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.value}</SelectItem>)}</SelectContent></Select>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Status</Label>
+                    <Select value={assetForm.status} onValueChange={(v) => setAssetForm({ ...assetForm, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
+                  </div>
                 </div>
-                <Separator />
-                <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Mesečna amortizacija:</span><span className="font-medium">{formatCurrency(stats.monthlyDepreciation)}</span></div>
-                <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Godišnja amortizacija:</span><span className="font-medium">{formatCurrency(stats.monthlyDepreciation * 12)}</span></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Serijski broj</Label><Input value={assetForm.serialNumber} onChange={(e) => setAssetForm({ ...assetForm, serialNumber: e.target.value })} placeholder="SN-12345..." /></div>
+                  <div className="space-y-2"><Label className="text-xs">Datum nabavke</Label><Input type="date" value={assetForm.purchaseDate} onChange={(e) => setAssetForm({ ...assetForm, purchaseDate: e.target.value })} /></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Nabavna vrednost (RSD)</Label><Input type="number" step="0.01" value={assetForm.purchasePrice} onChange={(e) => setAssetForm({ ...assetForm, purchasePrice: e.target.value })} /></div>
+                  <div className="space-y-2"><Label className="text-xs">Trenutna vrednost (RSD)</Label><Input type="number" step="0.01" value={assetForm.currentValue} onChange={(e) => setAssetForm({ ...assetForm, currentValue: e.target.value })} /></div>
+                  <div className="space-y-2"><Label className="text-xs">Korisni vek (godine)</Label><Input type="number" value={assetForm.usefulLife} onChange={(e) => setAssetForm({ ...assetForm, usefulLife: e.target.value })} /></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={assetForm.location} onChange={(e) => setAssetForm({ ...assetForm, location: e.target.value })} placeholder="Kancelarija, magacin..." /></div>
+                  <div className="space-y-2"><Label className="text-xs">Odgovorno lice</Label><Input value={assetForm.responsible} onChange={(e) => setAssetForm({ ...assetForm, responsible: e.target.value })} placeholder="Ime zaposlenog" /></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Datum servisa</Label><Input type="date" value={assetForm.maintenanceDate} onChange={(e) => setAssetForm({ ...assetForm, maintenanceDate: e.target.value })} /></div>
+                  <div className="space-y-2"><Label className="text-xs">Istek garancije</Label><Input type="date" value={assetForm.warrantyExpiry} onChange={(e) => setAssetForm({ ...assetForm, warrantyExpiry: e.target.value })} /></div>
+                </div>
+                <div className="space-y-2"><Label className="text-xs">Napomene</Label><Textarea value={assetForm.notes} onChange={(e) => setAssetForm({ ...assetForm, notes: e.target.value })} placeholder="Dodatne informacije..." rows={2} /></div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-sm">Po kategorijama</CardTitle></CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {Object.entries(stats.byCategory).sort(([, a], [, b]) => b.value - a.value).map(([cat, data]) => {
-                  const catInfo = CATEGORIES.find(c => c.value === cat)
-                  const annualDep = data.value > 0 && data.count > 0 ? data.depreciation / data.count : 0
-                  return (
-                    <Card key={cat} className="p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        {catInfo && <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${catInfo.color}`}><catInfo.icon className="h-5 w-5" /></div>}
-                        <div><p className="text-sm font-medium">{cat}</p><p className="text-xs text-muted-foreground">{data.count} sredstava</p></div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-3 text-xs">
-                        <div><span className="text-muted-foreground">Knjigovska:</span><p className="font-medium">{formatCurrency(data.value + data.depreciation)}</p></div>
-                        <div><span className="text-muted-foreground">Trenutna:</span><p className="font-medium">{formatCurrency(data.value)}</p></div>
-                        <div><span className="text-muted-foreground">Godišnja amort.:</span><p className="font-medium">{formatCurrency(annualDep)}</p></div>
-                      </div>
-                      <Progress value={Math.max(0, Math.min(100, ((data.value - data.depreciation) / Math.max(data.value, 1)) * 100))} className="mt-2 h-2" />
-                      <p className="text-xs text-muted-foreground mt-1">Preostatak vrednosti: {formatCurrency(Math.max(0, data.value - data.depreciation))} ({Math.round(((data.value - data.depreciation) / Math.max(data.value, 1)) * 100)}%)</p>
-                    </Card>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Depreciation Guide */}
-          <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-sm">Vodič kroz amortizaciju</CardTitle></CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                <div className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium">Linearna amortizacija</p><p className="text-muted-foreground">Jednolična stopa svakog meseca. Jednostavna i standardna metoda za većinu sredstava.</p></div></div>
-                <div className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium">Korisni vek</p><p className="text-muted-foreground">Razdobljeni period korišća - amnortizuje se do nule, nakon se sredstvo otpisuje.</p></div></div>
-                <div className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium">Preostatak vrednosti</p><p className="text-muted-foreground">Trenutna vrednost minus ukupna amortizacija. Koristi se za bilans stanja.</p></div></div>
-                <div className="flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /><div><p className="font-medium">Fiskalni amortizacioni</p><p className="text-muted-foreground">Prema poreskoj zakonu o poretku dohotvora, amortizacija se knjiži u troškove.</p></div></div>
+              <div className="flex gap-2 mt-4">
+                <Button size="sm" onClick={handleSubmitAsset} disabled={submitting || !assetForm.name.trim()}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
+                <Button variant="outline" size="sm" onClick={() => { setEditingAsset(null); setAssetForm(emptyForm); setActiveTab('pregled') }}>Otkaži</Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
 
-      {/* ===== DIALOGS ===== */}
-
-      {/* Form Tab */}
-      <TabsContent value="form" className="space-y-4">
-        <Card>
-          <CardHeader className="pb-3"><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingAsset(null); setAssetForm(emptyForm); setActiveTab('all') }}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editingAsset ? 'Izmeni sredstvo' : 'Novo sredstvo'}</CardTitle></div></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label className="text-xs">Naziv sredstva *</Label><Input value={assetForm.name} onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })} placeholder="Naziv..." /></div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Kategorija</Label>
-                  <Select value={assetForm.category} onValueChange={(v) => setAssetForm({ ...assetForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.value}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="space-y-2"><Label className="text-xs">Status</Label>
-                  <Select value={assetForm.status} onValueChange={(v) => setAssetForm({ ...assetForm, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Serijski broj</Label><Input value={assetForm.serialNumber} onChange={(e) => setAssetForm({ ...assetForm, serialNumber: e.target.value })} placeholder="SN-12345..." /></div>
-                <div className="space-y-2"><Label className="text-xs">Datum nabavke</Label><Input type="date" value={assetForm.purchaseDate} onChange={(e) => setAssetForm({ ...assetForm, purchaseDate: e.target.value })} /></div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Nabavna vrednost (RSD)</Label><Input type="number" step="0.01" value={assetForm.purchasePrice} onChange={(e) => setAssetForm({ ...assetForm, purchasePrice: e.target.value })} /></div>
-                <div className="space-y-2"><Label className="text-xs">Trenutna vrednost (RSD)</Label><Input type="number" step="0.01" value={assetForm.currentValue} onChange={(e) => setAssetForm({ ...assetForm, currentValue: e.target.value })} /></div>
-                <div className="space-y-2"><Label className="text-xs">Korisni vek (godine)</Label><Input type="number" value={assetForm.usefulLife} onChange={(e) => setAssetForm({ ...assetForm, usefulLife: e.target.value })} /></div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={assetForm.location} onChange={(e) => setAssetForm({ ...assetForm, location: e.target.value })} placeholder="Kancelarija, magacin..." /></div>
-                <div className="space-y-2"><Label className="text-xs">Odgovorno lice</Label><Input value={assetForm.responsible} onChange={(e) => setAssetForm({ ...assetForm, responsible: e.target.value })} placeholder="Ime zaposlenog" /></div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Datum servisa</Label><Input type="date" value={assetForm.maintenanceDate} onChange={(e) => setAssetForm({ ...assetForm, maintenanceDate: e.target.value })} /></div>
-                <div className="space-y-2"><Label className="text-xs">Istek garancije</Label><Input type="date" value={assetForm.warrantyExpiry} onChange={(e) => setAssetForm({ ...assetForm, warrantyExpiry: e.target.value })} /></div>
-              </div>
-              <div className="space-y-2"><Label className="text-xs">Napomene</Label><Textarea value={assetForm.notes} onChange={(e) => setAssetForm({ ...assetForm, notes: e.target.value })} placeholder="Dodatne informacije..." rows={2} /></div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button size="sm" onClick={handleSubmitAsset} disabled={submitting || !assetForm.name.trim()}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-              <Button variant="outline" size="sm" onClick={() => { setEditingAsset(null); setAssetForm(emptyForm); setActiveTab('all') }}>Otkaži</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-
-      {/* Detail Tab */}
-      <TabsContent value="detail" className="space-y-4">
-        {selectedAsset && (<>
-          <Card>
-            <CardHeader className="pb-3"><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setActiveTab('all')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base flex items-center gap-2"><Package className="h-5 w-5" /> {selectedAsset.name}</CardTitle></div></CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-xs text-muted-foreground">Kategorija:</span><br /><Badge variant="secondary">{selectedAsset.category || '-'}</Badge></div>
-                  <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-xs ${STATUS_COLORS[selectedAsset.status] || ''}`}>{STATUS_LABELS[selectedAsset.status] || selectedAsset.status}</Badge></div>
-                  <div><span className="text-xs text-muted-foreground">Serijski br.:</span><br /><span className="text-xs font-mono">{selectedAsset.serialNumber || '-'}</span></div>
-                  <div><span className="text-xs text-muted-foreground">Datum nabavke:</span><br /><span className="text-xs">{selectedAsset.purchaseDate ? formatDate(selectedAsset.purchaseDate) : '-'}</span></div>
-                  <div><span className="text-xs text-muted-foreground">Lokacija:</span><br /><span className="text-xs">{selectedAsset.location || '-'}</span></div>
-                  <div><span className="text-xs text-muted-foreground">Odgovorno:</span><br /><span className="text-xs">{selectedAsset.responsible || '-'}</span></div>
-                </div>
-                <Separator />
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="p-3 bg-blue-50 rounded-lg"><p className="text-xs text-muted-foreground">Nabavna</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.purchasePrice)}</p></div>
-                  <div className="p-3 bg-green-50 rounded-lg"><p className="text-xs text-muted-foreground">Trenutna</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.currentValue)}</p></div>
-                  <div className="p-3 bg-red-50 rounded-lg"><p className="text-xs text-muted-foreground">Amortizacija</p><p className="text-lg font-bold">{formatCurrency(selectedAsset.depreciation)}</p></div>
-                </div>
-                {selectedAsset.usefulLife > 0 && selectedAsset.purchaseDate && (
-                  <div className="space-y-1 text-xs"><span className="text-muted-foreground">Starost / Vek trajanja:</span>
-                    <Progress value={Math.min(100, ((Date.now() - new Date(selectedAsset.purchaseDate).getTime()) / (selectedAsset.usefulLife * 365.25 * 24 * 60 * 60 * 1000)) * 100)} className="h-2" />
-                    <p className="text-muted-foreground">{Math.round((Date.now() - new Date(selectedAsset.purchaseDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} / {selectedAsset.usefulLife} godina ({Math.round(((Date.now() - new Date(selectedAsset.purchaseDate).getTime()) / (selectedAsset.usefulLife * 365.25 * 24 * 60 * 60 * 1000)) * 100)}%)</p>
+        {/* ===== UREDI ===== */}
+        <TabsContent value="uredi" className="space-y-4">
+          {editingAsset ? (
+            <Card>
+              <CardHeader className="pb-3"><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingAsset(null); setAssetForm(emptyForm); setActiveTab('pregled') }}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Izmeni sredstvo: {editingAsset.name}</CardTitle></div></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2"><Label className="text-xs">Naziv sredstva *</Label><Input value={assetForm.name} onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })} placeholder="Naziv..." /></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Kategorija</Label>
+                      <Select value={assetForm.category} onValueChange={(v) => setAssetForm({ ...assetForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.value}</SelectItem>)}</SelectContent></Select>
+                    </div>
+                    <div className="space-y-2"><Label className="text-xs">Status</Label>
+                      <Select value={assetForm.status} onValueChange={(v) => setAssetForm({ ...assetForm, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
+                    </div>
                   </div>
-                )}
-                {(selectedAsset.warrantyExpiry || selectedAsset.maintenanceDate) && <Separator />}
-                {selectedAsset.warrantyExpiry && <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Garancija do:</span><span className={new Date(selectedAsset.warrantyExpiry).getTime() < Date.now() ? 'text-red-500' : ''}>{formatDate(selectedAsset.warrantyExpiry)}</span></div>}
-                {selectedAsset.maintenanceDate && <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Servis zakazan:</span><span className={new Date(selectedAsset.maintenanceDate).getTime() < Date.now() ? 'text-red-500' : ''}>{formatDate(selectedAsset.maintenanceDate)}</span></div>}
-                {selectedAsset.notes && <div><span className="text-xs text-muted-foreground">Napomene:</span><p className="text-sm mt-1 bg-muted/30 rounded p-2">{selectedAsset.notes}</p></div>}
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={() => openEditAsset(selectedAsset)}><Edit3 className="h-3.5 w-3.5 mr-1" /> Izmeni</Button>
-                  {selectedAsset.status !== 'otpisano' && <Button size="sm" variant="outline" onClick={() => handleStatusChange(selectedAsset, 'otpisano')}><Trash2 className="h-3.5 w-3.5 mr-1" /> Otpisi</Button>}
-                  {selectedAsset.status !== 'aktivno' && selectedAsset.status !== 'otpisano' && <Button size="sm" variant="outline" onClick={() => handleStatusChange(selectedAsset, 'aktivno')}><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Aktiviraj</Button>}
-                  <Button size="sm" variant="outline" className="text-destructive" onClick={() => setDeleteConfirmOpen(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši</Button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Serijski broj</Label><Input value={assetForm.serialNumber} onChange={(e) => setAssetForm({ ...assetForm, serialNumber: e.target.value })} placeholder="SN-12345..." /></div>
+                    <div className="space-y-2"><Label className="text-xs">Datum nabavke</Label><Input type="date" value={assetForm.purchaseDate} onChange={(e) => setAssetForm({ ...assetForm, purchaseDate: e.target.value })} /></div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Nabavna vrednost (RSD)</Label><Input type="number" step="0.01" value={assetForm.purchasePrice} onChange={(e) => setAssetForm({ ...assetForm, purchasePrice: e.target.value })} /></div>
+                    <div className="space-y-2"><Label className="text-xs">Trenutna vrednost (RSD)</Label><Input type="number" step="0.01" value={assetForm.currentValue} onChange={(e) => setAssetForm({ ...assetForm, currentValue: e.target.value })} /></div>
+                    <div className="space-y-2"><Label className="text-xs">Korisni vek (godine)</Label><Input type="number" value={assetForm.usefulLife} onChange={(e) => setAssetForm({ ...assetForm, usefulLife: e.target.value })} /></div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={assetForm.location} onChange={(e) => setAssetForm({ ...assetForm, location: e.target.value })} placeholder="Kancelarija, magacin..." /></div>
+                    <div className="space-y-2"><Label className="text-xs">Odgovorno lice</Label><Input value={assetForm.responsible} onChange={(e) => setAssetForm({ ...assetForm, responsible: e.target.value })} placeholder="Ime zaposlenog" /></div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Datum servisa</Label><Input type="date" value={assetForm.maintenanceDate} onChange={(e) => setAssetForm({ ...assetForm, maintenanceDate: e.target.value })} /></div>
+                    <div className="space-y-2"><Label className="text-xs">Istek garancije</Label><Input type="date" value={assetForm.warrantyExpiry} onChange={(e) => setAssetForm({ ...assetForm, warrantyExpiry: e.target.value })} /></div>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Napomene</Label><Textarea value={assetForm.notes} onChange={(e) => setAssetForm({ ...assetForm, notes: e.target.value })} placeholder="Dodatne informacije..." rows={2} /></div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>)}
-        {!selectedAsset && <Card className="p-8 text-center"><Package className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nije izabrano sredstvo</p><Button className="mt-3" variant="outline" onClick={() => setActiveTab('all')}>Nazad na listu</Button></Card>}
-      </TabsContent>
+                <div className="flex gap-2 mt-4">
+                  <Button size="sm" onClick={handleSubmitAsset} disabled={submitting || !assetForm.name.trim()}>{submitting ? 'Čuvanje...' : 'Sačuvaj izmene'}</Button>
+                  <Button variant="outline" size="sm" onClick={() => { setEditingAsset(null); setAssetForm(emptyForm); setActiveTab('pregled') }}>Otkaži</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="p-8 text-center"><Package className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nije izabrano sredstvo za uređivanje</p><p className="text-xs text-muted-foreground mt-1">Izaberite sredstvo iz tabele u Pregled tabu</p><Button className="mt-3" variant="outline" onClick={() => setActiveTab('pregled')}>Nazad na pregled</Button></Card>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Delete Confirmation */}
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
@@ -579,7 +582,7 @@ export function Assets() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Info */}
+      {/* Info footer */}
       <Card>
         <CardContent className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">

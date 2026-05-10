@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Search, Eye, Pencil, Trash2, Plus, FileText } from 'lucide-react'
@@ -140,64 +139,3 @@ export function EditTab({
   )
 }
 
-export function DetailDialog({ detailItem, open, onClose }: { detailItem: MedicalRecord | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader><DialogTitle>Medicinski karton — {detailItem?.recordNo}</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.patientName}</h3>{getTypeBadge(detailItem.type)}</div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Lekar', detailItem.doctor],
-                ['Datum', formatDate(detailItem.date)],
-                ['Dijagnoza', detailItem.diagnosis],
-                ['Šifra (ICD-10)', detailItem.diagnosisCode],
-                ['Simptomi', detailItem.symptoms],
-                ['Tretman', detailItem.treatment],
-                ['Vitalni znaci', detailItem.vitalSigns],
-                ['Lab. rezultati', detailItem.labResults],
-                ['Sledeći korak', detailItem.nextAction],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val || '—'}</div></div>
-              ))}
-            </div>
-            {detailItem.prescribedMeds.length > 0 && <div className="p-2 rounded-lg bg-blue-50"><div className="text-xs text-blue-600 mb-1">Propisani lekovi</div><div className="flex flex-wrap gap-1">{detailItem.prescribedMeds.map(m => <Badge key={m} className="text-xs bg-blue-100 text-blue-700">{m}</Badge>)}</div></div>}
-            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function EditDialog({
-  editItem, form, open, onClose,
-  onFormChange, onSave
-}: {
-  editItem: MedicalRecord | null
-  form: Partial<MedicalRecord>
-  open: boolean
-  onClose: () => void
-  onFormChange: (form: Partial<MedicalRecord>) => void
-  onSave: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={o => { if (!o) onClose() }}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi zapis' : 'Novi zapis'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Pacijent *</Label><Input className="text-xs" value={form.patientName || ''} onChange={e => onFormChange({ ...form, patientName: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'checkup'} onValueChange={v => onFormChange({ ...form, type: v as MedicalRecord['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="checkup">Pregled</SelectItem><SelectItem value="follow_up">Kontrola</SelectItem><SelectItem value="emergency">Hitno</SelectItem><SelectItem value="lab_result">Lab.</SelectItem><SelectItem value="surgery">Operacija</SelectItem><SelectItem value="referral">Uput</SelectItem><SelectItem value="discharge">Otpust</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Dijagnoza *</Label><Input className="text-xs" value={form.diagnosis || ''} onChange={e => onFormChange({ ...form, diagnosis: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input className="text-xs" type="date" value={form.date || ''} onChange={e => onFormChange({ ...form, date: e.target.value })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => onFormChange({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

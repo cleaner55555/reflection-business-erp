@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -224,61 +223,8 @@ export function Projektovanje() {
       </Card>
 
       {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji nacrta</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between"><div><p className="text-lg font-bold">{detailItem.name}</p><p className="text-xs text-muted-foreground font-mono">{detailItem.code} · {detailItem.version}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getCategoryBadge(detailItem.category)}</div></div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Projekat</div><p className="text-xs font-medium">{detailItem.project}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Autor</div><p className="text-xs font-medium">{detailItem.author}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Klijent</div><p className="text-xs font-medium">{detailItem.client}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Format</div><p className="text-xs font-medium">{detailItem.scale} · {detailItem.sheetSize} · {detailItem.fileSize}MB {detailItem.fileFormat}</p></div>
-              </div>
-              {detailItem.approvedBy && <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><p className="text-xs text-emerald-700">Odobrio: {detailItem.approvedBy} · {formatDate(detailItem.approvedDate!)}</p></div>}
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
-
-              <div className="space-y-2">
-                <p className="text-xs font-medium flex items-center gap-2"><Layers className="h-3.5 w-3.5" />Istorija revizija</p>
-                <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                  {[...detailItem.revisions].reverse().map((rev, idx) => (
-                    <div key={idx} className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
-                      <Badge variant="outline" className="text-xs font-mono shrink-0 mt-0.5">{rev.version}</Badge>
-                      <div className="flex-1"><p className="text-xs">{rev.description}</p><p className="text-xs text-muted-foreground">{rev.author} · {formatDate(rev.date)}</p></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={open => { setDialogOpen(open); if (!open) setEditItem(null) }}>
-        <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi nacrt' : 'Novi nacrt'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Kod</Label><Input placeholder="BP-2024-001" className="text-xs font-mono" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={formData.category} onValueChange={v => setFormData(p => ({ ...p, category: v as Blueprint['category'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input placeholder="Naziv nacrta" className="text-xs" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Projekat *</Label><Input placeholder="Naziv projekta" className="text-xs" value={formData.project} onChange={e => setFormData(p => ({ ...p, project: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Autor *</Label><Select value={formData.author} onValueChange={v => setFormData(p => ({ ...p, author: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi" /></SelectTrigger><SelectContent>{AUTHORS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Klijent</Label><Input placeholder="Ime klijenta" className="text-xs" value={formData.client} onChange={e => setFormData(p => ({ ...p, client: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Skala</Label><Input placeholder="1:100" className="text-xs" value={formData.scale} onChange={e => setFormData(p => ({ ...p, scale: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Format</Label><Select value={formData.sheetSize} onValueChange={v => setFormData(p => ({ ...p, sheetSize: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Format" /></SelectTrigger><SelectContent>{['A0', 'A1', 'A2', 'A3', 'A4'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Opis projekta..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

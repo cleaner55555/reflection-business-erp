@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -144,65 +143,3 @@ export function MeasurementEditTab({ data, onEdit, onDelete }: {
   )
 }
 
-/* ─── Detail Dialog ─── */
-export function MeasurementDetailDialog({ item, open, onClose }: {
-  item: Measurement | null; open: boolean; onClose: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Detalji merenja</DialogTitle></DialogHeader>
-        {item && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Šifra', item.code],
-                ['Proizvod', item.product],
-                ['Parametar', item.parameter],
-                ['Jedinica', item.unit],
-                ['Nominalna vrednost', `${item.nominalValue} ${item.unit}`],
-                ['Izmerena vrednost', `${item.measuredValue} ${item.unit}`],
-                ['Tolerancija', item.tolerance],
-                ['Odstupanje', item.deviation],
-                ['Instrument', item.instrument],
-                ['Operater', item.operator],
-                ['Stanica', item.station],
-                ['Paket', item.batch],
-                ['Datum', formatDate(item.date)],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(item.status)}</div>
-            {item.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{item.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-/* ─── Edit Dialog ─── */
-export function MeasurementEditDialog({ editItem, form, setForm, open, onClose, onSave }: {
-  editItem: Measurement | null; form: Partial<Measurement>; setForm: (f: Partial<Measurement>) => void; open: boolean; onClose: () => void; onSave: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi merenje' : 'Novo merenje'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Proizvod *</Label><Input className="text-xs" value={form.product || ''} onChange={e => setForm({ ...form, product: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Parametar</Label><Input className="text-xs" value={form.parameter || ''} onChange={e => setForm({ ...form, parameter: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Nominalna vrednost</Label><Input className="text-xs" value={form.nominalValue || ''} onChange={e => setForm({ ...form, nominalValue: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Izmerena vrednost</Label><Input className="text-xs" value={form.measuredValue || ''} onChange={e => setForm({ ...form, measuredValue: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v as Measurement['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="ok">OK</SelectItem><SelectItem value="warning">Upozorenje</SelectItem><SelectItem value="fail">Otkaz</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Operater</Label><Input className="text-xs" value={form.operator || ''} onChange={e => setForm({ ...form, operator: e.target.value })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

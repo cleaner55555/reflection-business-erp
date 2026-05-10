@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -137,62 +136,3 @@ export function LibraryEditTab({ data, onEdit, onDelete }: {
   )
 }
 
-/* ─── Detail Dialog ─── */
-export function LibraryDetailDialog({ item, open, onClose }: {
-  item: Book | null; open: boolean; onClose: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Detalji knjige</DialogTitle></DialogHeader>
-        {item && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">{item.title}</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Autor', item.author],
-                ['ISBN', item.isbn],
-                ['Izdavač', item.publisher],
-                ['Godina', String(item.year)],
-                ['Kategorija', CATEGORIES[item.category]?.label],
-                ['Jezik', item.language],
-                ['Strana', String(item.pages)],
-                ['Primeraka', `${item.availableCopies} / ${item.totalCopies}`],
-                ['Pozajmica', String(item.borrowedCount)],
-                ['Lokacija', item.location],
-                ['Dodana', formatDate(item.addedDate)],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(item.status)}</div>
-            {item.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{item.notes}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-/* ─── Edit Dialog ─── */
-export function LibraryEditDialog({ editItem, form, setForm, open, onClose, onSave }: {
-  editItem: Book | null; form: Partial<Book>; setForm: (f: Partial<Book>) => void; open: boolean; onClose: () => void; onSave: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi knjigu' : 'Nova knjiga'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Naslov *</Label><Input className="text-xs" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Autor *</Label><Input className="text-xs" value={form.author || ''} onChange={e => setForm({ ...form, author: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'available'} onValueChange={v => setForm({ ...form, status: v as Book['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">Dostupna</SelectItem><SelectItem value="limited">Ograničena</SelectItem><SelectItem value="reference_only">Samo čitanje</SelectItem><SelectItem value="lost">Izgubljena</SelectItem><SelectItem value="damaged">Oštećena</SelectItem></SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Primeraka</Label><Input className="text-xs" type="number" value={form.totalCopies || ''} onChange={e => setForm({ ...form, totalCopies: Number(e.target.value) })} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

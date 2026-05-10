@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-// Dialog removed - converted to inline Card
+// ContentTab uses inner Tabs (Pregled/Dodaj/Uredi) instead of dialogs
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -439,8 +439,7 @@ function ContentTab({ content, setContent }: { content: ContentItem[]; setConten
   const [typeFilter, setTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [catFilter, setCatFilter] = useState('all')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editorOpen, setEditorOpen] = useState(false)
+  const [contentActiveTab, setContentActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [editing, setEditing] = useState<ContentItem | null>(null)
   const [form, setForm] = useState<ContentForm>(emptyForm())
   const [seoPreview, setSeoPreview] = useState<SeoAnalysis | null>(null)
@@ -453,7 +452,7 @@ function ContentTab({ content, setContent }: { content: ContentItem[]; setConten
     return true
   })
 
-  const openCreate = () => { setEditing(null); setForm(emptyForm()); setDialogOpen(true) }
+  const openCreate = () => { setEditing(null); setForm(emptyForm()); setSeoPreview(null); setContentActiveTab('dodaj') }
   const openEditor = (item: ContentItem) => {
     setEditing(item)
     setForm({
@@ -463,7 +462,7 @@ function ContentTab({ content, setContent }: { content: ContentItem[]; setConten
       seoDescription: item.seoDescription, ogImage: item.ogImage, scheduledAt: item.scheduledAt || '', locale: item.locale,
     })
     setSeoPreview(null)
-    setEditorOpen(true)
+    setContentActiveTab('uredi')
   }
 
   const handleSave = () => {
@@ -481,8 +480,7 @@ function ContentTab({ content, setContent }: { content: ContentItem[]; setConten
       }
       setContent(prev => [...prev, newItem])
     }
-    setDialogOpen(false)
-    setEditorOpen(false)
+    setContentActiveTab('pregled')
   }
 
   const handleDelete = (id: string) => setContent(prev => prev.filter(c => c.id !== id))
@@ -506,90 +504,106 @@ function ContentTab({ content, setContent }: { content: ContentItem[]; setConten
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col lg:flex-row gap-3">
-        <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži sadržaj..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger className="w-full lg:w-[160px]"><SelectValue placeholder="Tip" /></SelectTrigger><SelectContent><SelectItem value="all">Svi tipovi</SelectItem>{mockContentTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-full lg:w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">Svi statusi</SelectItem>{Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-        <Select value={catFilter} onValueChange={setCatFilter}><SelectTrigger className="w-full lg:w-[160px]"><SelectValue placeholder="Kategorija" /></SelectTrigger><SelectContent><SelectItem value="all">Sve kategorije</SelectItem>{mockCategories.filter(c => !c.parentId).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Novi sadržaj</Button>
-      </div>
-      <div className="text-sm text-muted-foreground">{filtered.length} od {content.length}</div>
-      {filtered.length === 0 ? <Card className="p-12 text-center"><FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" /><p className="text-muted-foreground font-medium">Nema sadržaja</p><Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button></Card> : (
-        <div className="rounded-md border overflow-x-auto"><Table><TableHeader><TableRow><TableHead className="text-xs">Naslov</TableHead><TableHead className="text-xs hidden md:table-cell">Tip</TableHead><TableHead className="text-xs hidden lg:table-cell">Kategorija</TableHead><TableHead className="text-xs hidden md:table-cell">Autor</TableHead><TableHead className="text-xs text-right">Pregledi</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader><TableBody>
-          {filtered.map(c => { const sc = statusConfig[c.status]; const si = statusWorkflow.indexOf(c.status); return (
-            <TableRow key={c.id}><TableCell className="text-xs font-medium max-w-[220px]"><div className="flex items-center gap-2">{c.featuredImage && <Image className="h-3.5 w-3.5 text-muted-foreground shrink-0" alt="" />}<span className="truncate">{c.title}</span></div><p className="text-xs text-muted-foreground truncate max-w-[220px]">/{c.slug}</p></TableCell><TableCell className="text-xs hidden md:table-cell"><Badge variant="outline" className="text-xs">{getContentTypeName(c.typeId)}</Badge></TableCell><TableCell className="text-xs hidden lg:table-cell"><Badge variant="outline" style={{ borderColor: getCategoryColor(c.categoryId), color: getCategoryColor(c.categoryId) }}>{getCategoryName(c.categoryId)}</Badge></TableCell><TableCell className="text-xs hidden md:table-cell">{getAuthorName(c.authorId)}</TableCell><TableCell className="text-xs text-right font-medium">{c.views.toLocaleString()}</TableCell><TableCell><div className="flex items-center gap-1"><Badge variant="outline" className={`text-xs ${sc?.color}`}>{sc?.label}</Badge>{si < statusWorkflow.length - 1 && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => advanceStatus(c)}><ArrowRight className="h-3 w-3" /></Button>}</div></TableCell><TableCell><div className="flex justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditor(c)}><Edit3 className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {}}><Eye className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(c.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell></TableRow>
-          ) })}
-        </TableBody></Table></div>
-      )}
+      {/* ====== INNER TABS: Pregled / Dodaj / Uredi ====== */}
+      <Tabs value={contentActiveTab} onValueChange={v => setContentActiveTab(v as 'pregled' | 'dodaj' | 'uredi')}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="pregled"><FileText className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1" /> Dodaj</TabsTrigger>
+          <TabsTrigger value="uredi" disabled={!editing}><Edit3 className="h-4 w-4 mr-1" /> Uredi</TabsTrigger>
+        </TabsList>
 
-      {/* Create Dialog */}
-      {dialogOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>Novi sadržaj</CardTitle><CardDescription>Popunite podatke za novi sadržaj</CardDescription></div>
+        {/* ---- PREGLED TAB ---- */}
+        <TabsContent value="pregled">
+          <div className="space-y-4">
+            <div className="flex flex-col lg:flex-row gap-3">
+              <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži sadržaj..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div>
+              <Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger className="w-full lg:w-[160px]"><SelectValue placeholder="Tip" /></SelectTrigger><SelectContent><SelectItem value="all">Svi tipovi</SelectItem>{mockContentTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-full lg:w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">Svi statusi</SelectItem>{Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={catFilter} onValueChange={setCatFilter}><SelectTrigger className="w-full lg:w-[160px]"><SelectValue placeholder="Kategorija" /></SelectTrigger><SelectContent><SelectItem value="all">Sve kategorije</SelectItem>{mockCategories.filter(c => !c.parentId).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select>
+              <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Novi sadržaj</Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-        <div className="space-y-2"><Label>Naslov</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value, slug: generateSlug(e.target.value) }))} /></div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-2"><Label>Tip</Label><Select value={form.typeId} onValueChange={v => setForm(f => ({ ...f, typeId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockContentTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Status</Label><Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as ContentItem['status'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Autor</Label><Select value={form.authorId} onValueChange={v => setForm(f => ({ ...f, authorId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select></div>
-        </div>
-        <div className="space-y-2"><Label>Kategorija</Label><Select value={form.categoryId} onValueChange={v => setForm(f => ({ ...f, categoryId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Bez kategorije</SelectItem>{mockCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div>
-        <div className="space-y-2"><Label>Slug</Label><Input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
-        <div className="space-y-2"><Label>Tagovi</Label><div className="flex flex-wrap gap-2">{allTags.map(tag => <Badge key={tag} variant={form.tags.includes(tag) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag)}>{tag}</Badge>)}</div></div>
-        <div className="space-y-2"><Label>Kratki opis</Label><Textarea value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={2} /></div>
-      </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSave}>Sačuvaj</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="text-sm text-muted-foreground">{filtered.length} od {content.length}</div>
+            {filtered.length === 0 ? <Card className="p-12 text-center"><FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" /><p className="text-muted-foreground font-medium">Nema sadržaja</p><Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button></Card> : (
+              <div className="rounded-md border overflow-x-auto"><Table><TableHeader><TableRow><TableHead className="text-xs">Naslov</TableHead><TableHead className="text-xs hidden md:table-cell">Tip</TableHead><TableHead className="text-xs hidden lg:table-cell">Kategorija</TableHead><TableHead className="text-xs hidden md:table-cell">Autor</TableHead><TableHead className="text-xs text-right">Pregledi</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs text-right">Akcije</TableHead></TableRow></TableHeader><TableBody>
+                {filtered.map(c => { const sc = statusConfig[c.status]; const si = statusWorkflow.indexOf(c.status); return (
+                  <TableRow key={c.id}><TableCell className="text-xs font-medium max-w-[220px]"><div className="flex items-center gap-2">{c.featuredImage && <Image className="h-3.5 w-3.5 text-muted-foreground shrink-0" alt="" />}<span className="truncate">{c.title}</span></div><p className="text-xs text-muted-foreground truncate max-w-[220px]">/{c.slug}</p></TableCell><TableCell className="text-xs hidden md:table-cell"><Badge variant="outline" className="text-xs">{getContentTypeName(c.typeId)}</Badge></TableCell><TableCell className="text-xs hidden lg:table-cell"><Badge variant="outline" style={{ borderColor: getCategoryColor(c.categoryId), color: getCategoryColor(c.categoryId) }}>{getCategoryName(c.categoryId)}</Badge></TableCell><TableCell className="text-xs hidden md:table-cell">{getAuthorName(c.authorId)}</TableCell><TableCell className="text-xs text-right font-medium">{c.views.toLocaleString()}</TableCell><TableCell><div className="flex items-center gap-1"><Badge variant="outline" className={`text-xs ${sc?.color}`}>{sc?.label}</Badge>{si < statusWorkflow.length - 1 && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => advanceStatus(c)}><ArrowRight className="h-3 w-3" /></Button>}</div></TableCell><TableCell><div className="flex justify-end gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditor(c)}><Edit3 className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {}}><Eye className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(c.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell></TableRow>
+                ) })}
+              </TableBody></Table></div>
+            )}
+          </div>
+        </TabsContent>
 
-      {/* Editor Dialog */}
-      {editorOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setEditorOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>{editing ? `Izmeni: ${editing.title}` : 'Novi sadržaj'}</CardTitle><CardDescription>WYSIWYG editor sa SEO podrškom</CardDescription></div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-        <div className="space-y-2"><Label>Naslov</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value, slug: generateSlug(e.target.value) }))} /></div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="space-y-2"><Label>Tip</Label><Select value={form.typeId} onValueChange={v => setForm(f => ({ ...f, typeId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockContentTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Status</Label><Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as ContentItem['status'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Autor</Label><Select value={form.authorId} onValueChange={v => setForm(f => ({ ...f, authorId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select></div>
-          <div className="space-y-2"><Label>Jezik</Label><Select value={form.locale} onValueChange={v => setForm(f => ({ ...f, locale: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="sr">🇷🇸 Srpski</SelectItem><SelectItem value="en">🇬🇧 English</SelectItem><SelectItem value="de">🇩🇪 Deutsch</SelectItem><SelectItem value="fr">🇫🇷 Français</SelectItem><SelectItem value="es">🇪🇸 Español</SelectItem><SelectItem value="it">🇮🇹 Italiano</SelectItem><SelectItem value="hu">🇭🇺 Magyar</SelectItem><SelectItem value="ro">🇷🇴 Română</SelectItem><SelectItem value="bg">🇧🇬 Български</SelectItem><SelectItem value="hr">🇭🇷 Hrvatski</SelectItem><SelectItem value="sl">🇸🇮 Slovenščina</SelectItem></SelectContent></Select></div>
-        </div>
-        {/* WYSIWYG Toolbar */}
-        <div className="space-y-2"><Label>Sadržaj</Label><div className="border rounded-lg overflow-hidden">
-          <div className="flex flex-wrap items-center gap-1 p-2 bg-muted/50 border-b"><Undo2 className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" /><Redo2 className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" /><Separator orientation="vertical" className="h-6 mx-1" />{toolbarActions.map(a => <a.icon key={a.action} className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" title={a.label} />)}</div>
-          <Textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={12} className="border-0 rounded-none font-mono text-sm" placeholder="HTML sadržaj ili običan tekst..." />
-          <div className="flex items-center justify-between p-2 bg-muted/30 text-xs text-muted-foreground"><span>{form.content.replace(/<[^>]+>/g, '').split(/\s+/).filter(Boolean).length} reči · {Math.ceil(form.content.split(/\s+/).length / 200)} min čitanja</span></div>
-        </div></div>
-        <div className="space-y-2"><Label>Tagovi</Label><div className="flex flex-wrap gap-2">{allTags.map(tag => <Badge key={tag} variant={form.tags.includes(tag) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag)}>{tag}</Badge>)}</div></div>
-        <Separator />
-        <div className="space-y-2"><Label>SEO Naslov</Label><Input value={form.seoTitle} onChange={e => setForm(f => ({ ...f, seoTitle: e.target.value }))} placeholder={`${form.title} | Reflection`} /><p className="text-xs text-muted-foreground">{form.seoTitle.length}/60 karaktera</p></div>
-        <div className="space-y-2"><Label>SEO Opis</Label><Textarea value={form.seoDescription} onChange={e => setForm(f => ({ ...f, seoDescription: e.target.value }))} rows={2} /><p className="text-xs text-muted-foreground">{form.seoDescription.length}/160 karaktera</p></div>
-        {seoPreview && <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-sm font-medium">SEO Analiza</span><Badge variant={seoPreview.score >= 70 ? 'default' : seoPreview.score >= 40 ? 'secondary' : 'destructive'} className="text-xs">{seoPreview.score}/100</Badge></div><div className="space-y-1">{seoPreview.issues.map((iss, i) => <p key={i} className={`text-xs ${iss.type === 'error' ? 'text-red-500' : iss.type === 'warning' ? 'text-amber-500' : 'text-muted-foreground'}`}>{iss.type === 'error' ? '✕' : iss.type === 'warning' ? '⚠' : 'ℹ'} {iss.message}</p>)}</div></Card>}
-        <Button variant="outline" size="sm" onClick={runSeoAnalysis}><Sparkles className="h-4 w-4 mr-1" /> Analiziraj SEO</Button>
-      </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setEditorOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSave}><Save className="h-4 w-4 mr-1" /> Sačuvaj</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        {/* ---- DODAJ TAB ---- */}
+        <TabsContent value="dodaj">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={() => setContentActiveTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <div><CardTitle>Novi sadržaj</CardTitle><CardDescription>Popunite podatke za novi sadržaj</CardDescription></div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2"><Label>Naslov</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value, slug: generateSlug(e.target.value) }))} /></div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2"><Label>Tip</Label><Select value={form.typeId} onValueChange={v => setForm(f => ({ ...f, typeId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockContentTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-2"><Label>Status</Label><Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as ContentItem['status'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-2"><Label>Autor</Label><Select value={form.authorId} onValueChange={v => setForm(f => ({ ...f, authorId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select></div>
+                </div>
+                <div className="space-y-2"><Label>Kategorija</Label><Select value={form.categoryId} onValueChange={v => setForm(f => ({ ...f, categoryId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Bez kategorije</SelectItem>{mockCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div>
+                <div className="space-y-2"><Label>Slug</Label><Input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
+                <div className="space-y-2"><Label>Tagovi</Label><div className="flex flex-wrap gap-2">{allTags.map(tag => <Badge key={tag} variant={form.tags.includes(tag) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag)}>{tag}</Badge>)}</div></div>
+                <div className="space-y-2"><Label>Kratki opis</Label><Textarea value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={2} /></div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" onClick={() => setContentActiveTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleSave}>Sačuvaj</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ---- UREDI TAB ---- */}
+        <TabsContent value="uredi">
+          {editing && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => setContentActiveTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                  <div><CardTitle>{`Izmeni: ${editing.title}`}</CardTitle><CardDescription>WYSIWYG editor sa SEO podrškom</CardDescription></div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2"><Label>Naslov</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value, slug: generateSlug(e.target.value) }))} /></div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="space-y-2"><Label>Tip</Label><Select value={form.typeId} onValueChange={v => setForm(f => ({ ...f, typeId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockContentTypes.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="space-y-2"><Label>Status</Label><Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as ContentItem['status'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="space-y-2"><Label>Autor</Label><Select value={form.authorId} onValueChange={v => setForm(f => ({ ...f, authorId: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="space-y-2"><Label>Jezik</Label><Select value={form.locale} onValueChange={v => setForm(f => ({ ...f, locale: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="sr">🇷🇸 Srpski</SelectItem><SelectItem value="en">🇬🇧 English</SelectItem><SelectItem value="de">🇩🇪 Deutsch</SelectItem><SelectItem value="fr">🇫🇷 Français</SelectItem><SelectItem value="es">🇪🇸 Español</SelectItem><SelectItem value="it">🇮🇹 Italiano</SelectItem><SelectItem value="hu">🇭🇺 Magyar</SelectItem><SelectItem value="ro">🇷🇴 Română</SelectItem><SelectItem value="bg">🇧🇬 Български</SelectItem><SelectItem value="hr">🇭🇷 Hrvatski</SelectItem><SelectItem value="sl">🇸🇮 Slovenščina</SelectItem></SelectContent></Select></div>
+                  </div>
+                  {/* WYSIWYG Toolbar */}
+                  <div className="space-y-2"><Label>Sadržaj</Label><div className="border rounded-lg overflow-hidden">
+                    <div className="flex flex-wrap items-center gap-1 p-2 bg-muted/50 border-b"><Undo2 className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" /><Redo2 className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" /><Separator orientation="vertical" className="h-6 mx-1" />{toolbarActions.map(a => <a.icon key={a.action} className="h-4 w-4 p-1 cursor-pointer hover:bg-muted rounded" title={a.label} />)}</div>
+                    <Textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={12} className="border-0 rounded-none font-mono text-sm" placeholder="HTML sadržaj ili običan tekst..." />
+                    <div className="flex items-center justify-between p-2 bg-muted/30 text-xs text-muted-foreground"><span>{form.content.replace(/<[^>]+>/g, '').split(/\s+/).filter(Boolean).length} reči · {Math.ceil(form.content.split(/\s+/).length / 200)} min čitanja</span></div>
+                  </div></div>
+                  <div className="space-y-2"><Label>Tagovi</Label><div className="flex flex-wrap gap-2">{allTags.map(tag => <Badge key={tag} variant={form.tags.includes(tag) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag)}>{tag}</Badge>)}</div></div>
+                  <Separator />
+                  <div className="space-y-2"><Label>SEO Naslov</Label><Input value={form.seoTitle} onChange={e => setForm(f => ({ ...f, seoTitle: e.target.value }))} placeholder={`${form.title} | Reflection`} /><p className="text-xs text-muted-foreground">{form.seoTitle.length}/60 karaktera</p></div>
+                  <div className="space-y-2"><Label>SEO Opis</Label><Textarea value={form.seoDescription} onChange={e => setForm(f => ({ ...f, seoDescription: e.target.value }))} rows={2} /><p className="text-xs text-muted-foreground">{form.seoDescription.length}/160 karaktera</p></div>
+                  {seoPreview && <Card className="p-4"><div className="flex items-center justify-between mb-2"><span className="text-sm font-medium">SEO Analiza</span><Badge variant={seoPreview.score >= 70 ? 'default' : seoPreview.score >= 40 ? 'secondary' : 'destructive'} className="text-xs">{seoPreview.score}/100</Badge></div><div className="space-y-1">{seoPreview.issues.map((iss, i) => <p key={i} className={`text-xs ${iss.type === 'error' ? 'text-red-500' : iss.type === 'warning' ? 'text-amber-500' : 'text-muted-foreground'}`}>{iss.type === 'error' ? '✕' : iss.type === 'warning' ? '⚠' : 'ℹ'} {iss.message}</p>)}</div></Card>}
+                  <Button variant="outline" size="sm" onClick={runSeoAnalysis}><Sparkles className="h-4 w-4 mr-1" /> Analiziraj SEO</Button>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button variant="outline" onClick={() => setContentActiveTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleSave}><Save className="h-4 w-4 mr-1" /> Sačuvaj</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

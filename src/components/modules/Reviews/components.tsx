@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -120,50 +119,4 @@ export function AnalyticsTab({ stats, data }: { stats: { distribution: { rating:
   )
 }
 
-/* ---- Detail Dialog ---- */
-export function DetailDialog({ detailItem, open, onClose }: { detailItem: Review | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Detalji recenzije</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between"><div><p className="text-sm font-bold">{detailItem.customerName}</p><p className="text-xs text-muted-foreground">{detailItem.customerEmail}</p></div><div className="flex items-center gap-2">{getStatusBadge(detailItem.status)}<Badge variant="outline" className="text-xs">{SOURCES[detailItem.source]?.label}</Badge></div></div>
-            <div className="p-4 rounded-lg border space-y-2">
-              <div className="flex items-center gap-3"><StarRating rating={detailItem.rating} size="md" /><Badge variant="outline" className="text-xs">{detailItem.category}</Badge></div>
-              <p className="font-medium">{detailItem.title}</p>
-              <p className="text-sm text-muted-foreground">{detailItem.content}</p>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2">
-                <span>Proizvod: {detailItem.productName} ({detailItem.productSku})</span>
-                <span>Datum: {formatDate(detailItem.createdAt)}</span>
-              </div>
-              <div className="flex items-center gap-4 text-xs pt-1">
-                <span className="flex items-center gap-1"><ThumbsUp className="h-3.5 w-3.5 text-emerald-600" />{detailItem.helpful} korisno</span>
-                <span className="flex items-center gap-1"><ThumbsDown className="h-3.5 w-3.5 text-red-600" />{detailItem.notHelpful} nekorisno</span>
-              </div>
-            </div>
-            {detailItem.responseText && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-600 mb-1">Odgovor od {detailItem.respondedBy} ({formatDate(detailItem.respondedAt!)})</p><p className="text-xs">{detailItem.responseText}</p></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
 
-/* ---- Response Dialog ---- */
-export function ResponseDialog({ responseItem, responseText, open, onClose, onTextChange, onSend }: { responseItem: Review | null; responseText: string; open: boolean; onClose: () => void; onTextChange: (t: string) => void; onSend: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>Odgovor na recenziju</DialogTitle></DialogHeader>
-        {responseItem && (
-          <div className="space-y-4">
-            <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs font-medium">{responseItem.customerName} — {responseItem.productName}</p><p className="text-xs text-muted-foreground mt-1">"{responseItem.title}"</p></div>
-            <div className="grid gap-2"><Label className="text-xs">Vaš odgovor</Label><Textarea placeholder="Napišite odgovor na recenziju..." className="text-xs min-h-[100px]" value={responseText} onChange={e => onTextChange(e.target.value)} /></div>
-          </div>
-        )}
-        <DialogFooter><Button variant="outline" onClick={onClose}>Otkaži</Button><Button onClick={onSend}>Pošalji odgovor</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

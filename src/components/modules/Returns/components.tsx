@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -118,43 +117,3 @@ export function AnalyticsTab({ data, stats }: { data: ReturnItem[]; stats: { tot
   )
 }
 
-export function DetailDialog({ detailItem, onClose, onStatusChange }: { detailItem: ReturnItem | null; onClose: () => void; onStatusChange: (id: string, status: ReturnItem['status']) => void }) {
-  return (
-    <Dialog open={!!detailItem} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Detalji povrata</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.returnNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderNumber}</p></div><div>{getStatusBadge(detailItem.status)}</div></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Kupac</div><p className="text-xs font-medium">{detailItem.customerName}</p><p className="text-xs text-muted-foreground">{detailItem.customerEmail}</p><p className="text-xs text-muted-foreground">{detailItem.customerPhone}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Razlog</div><p className="text-xs font-medium">{REASONS[detailItem.returnReason]?.label}</p><p className="text-xs text-muted-foreground">Nacin: {REFUND_METHODS[detailItem.refundMethod]?.label}</p><p className="text-xs text-muted-foreground">{detailItem.requestedDate && `Datum: ${formatDate(detailItem.requestedDate)}`}</p></div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Refund</div><p className="text-xs font-bold">{formatCurrency(detailItem.refundAmount)}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Transport</div><p className="text-xs font-bold">{formatCurrency(detailItem.shippingCost)}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Restocking</div><p className="text-xs font-bold">{formatCurrency(detailItem.restockingFee)}</p></div>
-              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Neto refund</div><p className="text-xs font-bold text-emerald-700">{formatCurrency(detailItem.netRefund)}</p></div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs font-medium">Stavke:</p>
-              <Table><TableHeader><TableRow><TableHead className="text-xs">Proizvod</TableHead><TableHead className="text-xs">SKU</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Cena</TableHead><TableHead className="text-xs">Stanje</TableHead></TableRow></TableHeader>
-              <TableBody>{detailItem.items.map((item, idx) => (
-                <TableRow key={idx}><TableCell className="text-xs">{item.productName}</TableCell><TableCell className="text-xs font-mono">{item.sku}</TableCell><TableCell className="text-xs">{item.quantity}</TableCell><TableCell className="text-xs">{formatCurrency(item.unitPrice)}</TableCell><TableCell className="text-xs"><Badge variant="outline" className="text-xs">{item.condition}</Badge></TableCell></TableRow>
-              ))}</TableBody></Table>
-            </div>
-
-            {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Napomena kupca</p><p className="text-xs">{detailItem.notes}</p></div>}
-            {detailItem.internalNotes && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-600 mb-1">Interna beleška</p><p className="text-xs">{detailItem.internalNotes}</p></div>}
-
-            <div className="flex items-center gap-3">
-              <Label className="text-xs">Promeni status:</Label>
-              <Select value={detailItem.status} onValueChange={v => onStatusChange(detailItem.id, v as ReturnItem['status'])}><SelectTrigger className="h-8 text-xs w-40"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}

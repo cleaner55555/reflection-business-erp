@@ -579,7 +579,7 @@ function ExpensesTab() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('pregled')
   const [detailOpen, setDetailOpen] = useState(false)
   const [selected, setSelected] = useState<Expense | null>(null)
   const [form, setForm] = useState(EMPTY_EXPENSE_FORM)
@@ -618,7 +618,8 @@ function ExpensesTab() {
   const handleCreate = () => {
     setForm(EMPTY_EXPENSE_FORM)
     setIsEditing(false)
-    setDialogOpen(true)
+    setSelected(null)
+    setActiveTab('dodaj')
   }
 
   const handleEdit = (expense: Expense) => {
@@ -635,7 +636,7 @@ function ExpensesTab() {
     })
     setIsEditing(true)
     setSelected(expense)
-    setDialogOpen(true)
+    setActiveTab('uredi')
   }
 
   const handleSave = () => {
@@ -652,9 +653,10 @@ function ExpensesTab() {
       }
       setExpenses(prev => [newExpense, ...prev])
     }
-    setDialogOpen(false)
+    setActiveTab('pregled')
     setForm(EMPTY_EXPENSE_FORM)
     setIsEditing(false)
+    setSelected(null)
   }
 
   const handleDelete = (id: string) => {
@@ -713,215 +715,399 @@ function ExpensesTab() {
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t('expenses.searchPlaceholder')} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('expenses.allStatuses')} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('expenses.allStatuses')}</SelectItem>
-                {Object.entries(STATUS_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-            <Select value={catFilter} onValueChange={setCatFilter}>
-              <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('expenses.allCategories')} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('expenses.allCategories')}</SelectItem>
-                {Object.entries(CATEGORY_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select value={empFilter} onValueChange={setEmpFilter}>
-              <SelectTrigger className="w-[180px]"><SelectValue placeholder={t('expenses.allEmployees')} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('expenses.allEmployees')}</SelectItem>
-                {EMPLOYEES.map(e => (<SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>))}
-              </SelectContent>
-            </Select>
-            <Input type="date" className="w-[160px]" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder={t('expenses.dateFrom')} />
-            <Input type="date" className="w-[160px]" value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder={t('expenses.dateTo')} />
-          </div>
-        </div>
-      </Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="pregled" className="gap-1.5">
+            <Receipt className="h-3.5 w-3.5" />
+            <span>Pregled</span>
+          </TabsTrigger>
+          <TabsTrigger value="dodaj" className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" />
+            <span>Dodaj</span>
+          </TabsTrigger>
+          <TabsTrigger value="uredi" className="gap-1.5">
+            <Edit3 className="h-3.5 w-3.5" />
+            <span>Uredi</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-1" /> {t('expenses.newExpense')}
-        </Button>
-        {selectedIds.size > 0 && (
-          <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-300" onClick={handleBulkApprove}>
-            <CheckCircle2 className="h-4 w-4 mr-1" />
-            {t('expenses.bulkApprove')} ({selectedIds.size})
-          </Button>
-        )}
-        <Button size="sm" variant="outline" onClick={handleExportCSV}>
-          <Download className="h-4 w-4 mr-1" /> {t('expenses.exportCSV')}
-        </Button>
-        <div className="ml-auto text-sm text-muted-foreground self-center">
-          {filteredExpenses.length} {t('expenses.itemsFound')}
-        </div>
-      </div>
-
-      {/* Table */}
-      <Card>
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : filteredExpenses.length === 0 ? (
-          <div className="p-8 text-center">
-            <Receipt className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-            <p className="text-muted-foreground">{t('expenses.noExpenses')}</p>
-            <Button variant="outline" className="mt-3" onClick={handleCreate}>
-              <Plus className="h-4 w-4 mr-1" /> {t('expenses.createFirst')}
-            </Button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs w-10">
-                    <Checkbox checked={selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0} onCheckedChange={handleToggleAll} />
-                  </TableHead>
-                  <TableHead className="text-xs">{t('expenses.date')}</TableHead>
-                  <TableHead className="text-xs">{t('expenses.employee')}</TableHead>
-                  <TableHead className="text-xs">{t('expenses.category')}</TableHead>
-                  <TableHead className="text-xs">{t('expenses.description')}</TableHead>
-                  <TableHead className="text-xs text-right">{t('expenses.amount')}</TableHead>
-                  <TableHead className="text-xs">{t('expenses.paymentMethod')}</TableHead>
-                  <TableHead className="text-xs">{t('expenses.status')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('expenses.receipt')}</TableHead>
-                  <TableHead className="text-xs">{t('expenses.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredExpenses.map(e => {
-                  const cfg = STATUS_CONFIG[e.status]
-                  return (
-                    <TableRow key={e.id} className="hover:bg-muted/30">
-                      <TableCell>
-                        <Checkbox checked={selectedIds.has(e.id)} onCheckedChange={() => handleToggleSelect(e.id)} />
-                      </TableCell>
-                      <TableCell className="text-xs">{e.date}</TableCell>
-                      <TableCell className="text-xs font-medium">{e.employee}</TableCell>
-                      <TableCell className="text-xs">
-                        <Badge variant="secondary" className="text-xs">{CATEGORY_LABELS[e.category] || e.category}</Badge>
-                      </TableCell>
-                      <TableCell className="text-xs max-w-[200px] truncate">{e.description}</TableCell>
-                      <TableCell className="text-xs text-right font-semibold">{formatRSD(e.amount)}</TableCell>
-                      <TableCell className="text-xs">{PAYMENT_METHODS[e.paymentMethod] || e.paymentMethod}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || e.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {e.hasReceipt ? (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-500 mx-auto" />
-                        ) : (
-                          <X className="h-4 w-4 text-red-400 mx-auto" />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(e); setDetailOpen(true) }}>
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(e)}>
-                            <Edit3 className="h-3.5 w-3.5" />
-                          </Button>
-                          {e.status === 'submitted' && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-600" onClick={() => handleStatusChange(e.id, 'approved')}>
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(e.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </Card>
-
-      {/* Create/Edit Form */}
-      {dialogOpen && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{isEditing ? t('expenses.editExpense') : t('expenses.newExpense')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-        <CardContent className="max-h-[90vh] overflow-y-auto">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs">{t('expenses.description')} *</Label>
-              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t('expenses.descriptionPlaceholder')} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('expenses.category')}</Label>
-                <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+        {/* ==================== PREGLED TAB ==================== */}
+        <TabsContent value="pregled" className="space-y-4">
+          {/* Filters */}
+          <Card className="p-4">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder={t('expenses.searchPlaceholder')} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('expenses.allStatuses')} /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">{t('expenses.allStatuses')}</SelectItem>
+                    {Object.entries(STATUS_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+                <Select value={catFilter} onValueChange={setCatFilter}>
+                  <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('expenses.allCategories')} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('expenses.allCategories')}</SelectItem>
                     {Object.entries(CATEGORY_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('expenses.amount')} (RSD)</Label>
-                <Input type="number" value={form.amount || ''} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('expenses.employee')}</Label>
-                <Select value={form.employeeId} onValueChange={(v) => setForm({ ...form, employeeId: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Select value={empFilter} onValueChange={setEmpFilter}>
+                  <SelectTrigger className="w-[180px]"><SelectValue placeholder={t('expenses.allEmployees')} /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">{t('expenses.allEmployees')}</SelectItem>
                     {EMPLOYEES.map(e => (<SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('expenses.paymentMethod')}</Label>
-                <Select value={form.paymentMethod} onValueChange={(v) => setForm({ ...form, paymentMethod: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PAYMENT_METHODS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                  </SelectContent>
-                </Select>
+                <Input type="date" className="w-[160px]" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder={t('expenses.dateFrom')} />
+                <Input type="date" className="w-[160px]" value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder={t('expenses.dateTo')} />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('expenses.date')}</Label>
-              <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={form.hasReceipt} onCheckedChange={(v) => setForm({ ...form, hasReceipt: v })} />
-              <Label className="text-xs">{t('expenses.hasReceipt')}</Label>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('expenses.notes')}</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('expenses.cancel')}</Button>
-            <Button onClick={handleSave}>
-              <Plus className="h-4 w-4 mr-1" /> {isEditing ? t('expenses.save') : t('expenses.create')}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>)}
+          </Card>
 
-      {/* Detail View */}
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={handleCreate}>
+              <Plus className="h-4 w-4 mr-1" /> {t('expenses.newExpense')}
+            </Button>
+            {selectedIds.size > 0 && (
+              <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-300" onClick={handleBulkApprove}>
+                <CheckCircle2 className="h-4 w-4 mr-1" />
+                {t('expenses.bulkApprove')} ({selectedIds.size})
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={handleExportCSV}>
+              <Download className="h-4 w-4 mr-1" /> {t('expenses.exportCSV')}
+            </Button>
+            <div className="ml-auto text-sm text-muted-foreground self-center">
+              {filteredExpenses.length} {t('expenses.itemsFound')}
+            </div>
+          </div>
+
+          {/* Table */}
+          <Card>
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : filteredExpenses.length === 0 ? (
+              <div className="p-8 text-center">
+                <Receipt className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                <p className="text-muted-foreground">{t('expenses.noExpenses')}</p>
+                <Button variant="outline" className="mt-3" onClick={handleCreate}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('expenses.createFirst')}
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs w-10">
+                        <Checkbox checked={selectedIds.size === filteredExpenses.length && filteredExpenses.length > 0} onCheckedChange={handleToggleAll} />
+                      </TableHead>
+                      <TableHead className="text-xs">{t('expenses.date')}</TableHead>
+                      <TableHead className="text-xs">{t('expenses.employee')}</TableHead>
+                      <TableHead className="text-xs">{t('expenses.category')}</TableHead>
+                      <TableHead className="text-xs">{t('expenses.description')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('expenses.amount')}</TableHead>
+                      <TableHead className="text-xs">{t('expenses.paymentMethod')}</TableHead>
+                      <TableHead className="text-xs">{t('expenses.status')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('expenses.receipt')}</TableHead>
+                      <TableHead className="text-xs">{t('expenses.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredExpenses.map(e => {
+                      const cfg = STATUS_CONFIG[e.status]
+                      return (
+                        <TableRow key={e.id} className="hover:bg-muted/30">
+                          <TableCell>
+                            <Checkbox checked={selectedIds.has(e.id)} onCheckedChange={() => handleToggleSelect(e.id)} />
+                          </TableCell>
+                          <TableCell className="text-xs">{e.date}</TableCell>
+                          <TableCell className="text-xs font-medium">{e.employee}</TableCell>
+                          <TableCell className="text-xs">
+                            <Badge variant="secondary" className="text-xs">{CATEGORY_LABELS[e.category] || e.category}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs max-w-[200px] truncate">{e.description}</TableCell>
+                          <TableCell className="text-xs text-right font-semibold">{formatRSD(e.amount)}</TableCell>
+                          <TableCell className="text-xs">{PAYMENT_METHODS[e.paymentMethod] || e.paymentMethod}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || e.status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {e.hasReceipt ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-500 mx-auto" />
+                            ) : (
+                              <X className="h-4 w-4 text-red-400 mx-auto" />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(e); setDetailOpen(true) }}>
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(e)}>
+                                <Edit3 className="h-3.5 w-3.5" />
+                              </Button>
+                              {e.status === 'submitted' && (
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-600" onClick={() => handleStatusChange(e.id, 'approved')}>
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(e.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+
+        {/* ==================== DODAJ TAB ==================== */}
+        <TabsContent value="dodaj">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                {t('expenses.newExpense')}
+                <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setActiveTab('pregled')}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="max-h-[90vh] overflow-y-auto">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('expenses.description')} *</Label>
+                  <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t('expenses.descriptionPlaceholder')} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('expenses.category')}</Label>
+                    <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(CATEGORY_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('expenses.amount')} (RSD)</Label>
+                    <Input type="number" value={form.amount || ''} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('expenses.employee')}</Label>
+                    <Select value={form.employeeId} onValueChange={(v) => setForm({ ...form, employeeId: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {EMPLOYEES.map(e => (<SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('expenses.paymentMethod')}</Label>
+                    <Select value={form.paymentMethod} onValueChange={(v) => setForm({ ...form, paymentMethod: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(PAYMENT_METHODS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('expenses.date')}</Label>
+                  <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={form.hasReceipt} onCheckedChange={(v) => setForm({ ...form, hasReceipt: v })} />
+                  <Label className="text-xs">{t('expenses.hasReceipt')}</Label>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('expenses.notes')}</Label>
+                  <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setActiveTab('pregled')}>{t('expenses.cancel')}</Button>
+                <Button onClick={() => {
+                  const newExpense: Expense = {
+                    id: `exp-${Date.now()}`,
+                    ...form,
+                    employee: getEmployeeName(form.employeeId),
+                    createdAt: new Date().toISOString(),
+                  }
+                  setExpenses(prev => [newExpense, ...prev])
+                  setActiveTab('pregled')
+                  setForm(EMPTY_EXPENSE_FORM)
+                }}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('expenses.create')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ==================== UREDI TAB ==================== */}
+        <TabsContent value="uredi">
+          {selected ? (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  {t('expenses.editExpense')}
+                  <Badge variant="secondary" className="text-xs ml-2">{selected.description}</Badge>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => { setSelected(null); setIsEditing(false) }}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="max-h-[90vh] overflow-y-auto">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('expenses.description')} *</Label>
+                    <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t('expenses.descriptionPlaceholder')} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">{t('expenses.category')}</Label>
+                      <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(CATEGORY_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">{t('expenses.amount')} (RSD)</Label>
+                      <Input type="number" value={form.amount || ''} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">{t('expenses.employee')}</Label>
+                      <Select value={form.employeeId} onValueChange={(v) => setForm({ ...form, employeeId: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {EMPLOYEES.map(e => (<SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">{t('expenses.paymentMethod')}</Label>
+                      <Select value={form.paymentMethod} onValueChange={(v) => setForm({ ...form, paymentMethod: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(PAYMENT_METHODS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">{t('expenses.date')}</Label>
+                      <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">{t('expenses.status')}</Label>
+                      <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(STATUS_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={form.hasReceipt} onCheckedChange={(v) => setForm({ ...form, hasReceipt: v })} />
+                    <Label className="text-xs">{t('expenses.hasReceipt')}</Label>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">{t('expenses.notes')}</Label>
+                    <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => { setSelected(null); setIsEditing(false); setActiveTab('pregled') }}>{t('expenses.cancel')}</Button>
+                  <Button onClick={handleSave}>
+                    <Plus className="h-4 w-4 mr-1" /> {t('expenses.save')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-4">
+                {loading ? (
+                  <div className="flex justify-center py-20">
+                    <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <div className="max-h-[500px] overflow-y-auto">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm text-muted-foreground">{filteredExpenses.length} {t('expenses.itemsFound')}</p>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">{t('expenses.date')}</TableHead>
+                          <TableHead className="text-xs">{t('expenses.description')}</TableHead>
+                          <TableHead className="text-xs">{t('expenses.category')}</TableHead>
+                          <TableHead className="text-xs text-right">{t('expenses.amount')}</TableHead>
+                          <TableHead className="text-xs">{t('expenses.status')}</TableHead>
+                          <TableHead className="text-xs">{t('expenses.actions')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredExpenses.map(e => {
+                          const cfg = STATUS_CONFIG[e.status]
+                          return (
+                            <TableRow key={e.id} className="hover:bg-muted/30">
+                              <TableCell className="text-xs">{e.date}</TableCell>
+                              <TableCell className="text-xs max-w-[200px] truncate">{e.description}</TableCell>
+                              <TableCell className="text-xs">
+                                <Badge variant="secondary" className="text-xs">{CATEGORY_LABELS[e.category] || e.category}</Badge>
+                              </TableCell>
+                              <TableCell className="text-xs text-right font-semibold">{formatRSD(e.amount)}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || e.status}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-1">
+                                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(e)}>
+                                    <Edit3 className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(e.id)}>
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Detail View — stays outside tabs */}
       {detailOpen && selected && (<Card>
         <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.expenseDetails')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>

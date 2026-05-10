@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Search, Eye, Trash2, Users, HardHat, DollarSign, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
@@ -106,45 +105,3 @@ export function OverviewTab({ data }: { data: ConstructionSite[] }) {
   )
 }
 
-export function DetailDialog({ detailItem, open, onClose }: { detailItem: ConstructionSite | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Detalji gradilišta</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between"><div><p className="text-lg font-bold">{detailItem.name}</p><p className="text-xs text-muted-foreground font-mono">{detailItem.code}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getTypeBadge(detailItem.type)}</div></div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Investitor</div><p className="text-xs font-medium">{detailItem.investor}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Izvođač</div><p className="text-xs font-medium">{detailItem.contractor}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Rukovodilac</div><p className="text-xs font-medium">{detailItem.projectManager}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Lokacija</div><p className="text-xs">{detailItem.city}</p><p className="text-xs text-muted-foreground">{detailItem.address}</p></div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Radnika</div><p className="text-xs font-bold">{detailItem.workers}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Površina</div><p className="text-xs font-bold">{detailItem.area > 0 ? `${detailItem.area} m²` : '-'}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Spratova</div><p className="text-xs font-bold">{detailItem.floors || '-'}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Jedinica</div><p className="text-xs font-bold">{detailItem.units || '-'}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Početak</div><p className="text-xs">{formatDate(detailItem.startDate)}</p></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Budžet</div><p className="text-sm font-bold">{formatCurrencyFull(detailItem.budget)}</p><p className="text-xs text-muted-foreground">Potrošeno: {formatCurrencyFull(detailItem.spent)}</p></div>
-              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Napredak</div><p className="text-sm font-bold text-emerald-700">{detailItem.progress}%</p><Progress value={detailItem.progress} className="h-2 mt-1" /></div>
-            </div>
-            {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
-            {detailItem.tasks.length > 0 && (
-              <div className="space-y-2"><p className="text-xs font-medium">Aktivni zadaci:</p>
-                {detailItem.tasks.map((t, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">{t.status === 'completed' ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : t.status === 'in_progress' ? <Clock className="h-3.5 w-3.5 text-blue-600" /> : <div className="h-3.5 w-3.5 rounded-full border-2 border-slate-300" />}<span className="text-xs">{t.name}</span></div>
-                    <span className="text-xs text-muted-foreground">{formatDate(t.deadline)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}

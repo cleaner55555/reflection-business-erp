@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -247,74 +247,7 @@ export function MktAutomatizacija() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novi marketing workflow</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Naziv</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="npr. Dobrodošlica novom lead-u" /></div>
-            <div className="space-y-2">
-              <Label>Trigger</Label>
-              <Select value={form.trigger} onValueChange={(v) => setForm({ ...form, trigger: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{Object.entries(triggerConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}</SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Akcije</Label>
-              <div className="space-y-2">
-                {form.actions.map((action, i) => {
-                  const opt = actionOptions.find((o) => o.value === action)
-                  return (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="flex-1 p-2 border rounded-md text-sm">{opt?.label || action}</div>
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setForm({ ...form, actions: form.actions.filter((_, j) => j !== i) })}><Trash2 className="h-3.5 w-3.5" /></Button>
-                    </div>
-                  )
-                })}
-                <Select onValueChange={(v) => { if (!form.actions.includes(v)) setForm({ ...form, actions: [...form.actions, v] }) }}>
-                  <SelectTrigger><SelectValue placeholder="+ Dodaj akciju" /></SelectTrigger>
-                  <SelectContent>{actionOptions.filter((o) => !form.actions.includes(o.value)).map((o) => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji workflow-a</DialogTitle></DialogHeader>
-          {selected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Naziv:</span> <span className="font-medium">{selected.name}</span></div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">Trigger:</span> <Badge variant="outline" className={triggerConfig[selected.trigger]?.color}>{triggerConfig[selected.trigger]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">Izvršenja:</span> {selected.executionCount}</div>
-              </div>
-              <Separator />
-              <div className="space-y-2">
-                <span className="text-sm font-medium">Akcije:</span>
-                <div className="space-y-1">
-                  {selected.actions.map((a, i) => {
-                    const opt = actionOptions.find((o) => o.value === a)
-                    return (
-                      <div key={i} className="flex items-center gap-2 text-sm p-2 bg-muted/50 rounded">
-                        <ArrowRight className="h-3.5 w-3.5 text-primary" />
-                        {opt?.label || a}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

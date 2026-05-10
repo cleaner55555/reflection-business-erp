@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -145,51 +144,3 @@ export function InspectionsList({ items, loading, search, filter, onSearch, onFi
   )
 }
 
-interface CreateDialogProps { open: boolean; onOpenChange: (v: boolean) => void; form: Record<string, unknown>; onFormChange: (f: string, v: unknown) => void; onSubmit: () => void }
-
-export function CreateDialog({ open, onOpenChange, form, onFormChange, onSubmit }: CreateDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Nova inspekcija</DialogTitle></DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2"><Label>Naslov inspekcije</Label><Input value={form.title as string} onChange={e => onFormChange('title', e.target.value)} placeholder="Naslov inspekcije" /></div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Tip kontrole</Label><Select value={form.type as string} onValueChange={v => onFormChange('type', v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}</SelectContent></Select></div>
-            <div className="space-y-2"><Label>Inspektor</Label><Input value={form.inspectorName as string} onChange={e => onFormChange('inspectorName', e.target.value)} placeholder="Ime inspektora" /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Proizvod</Label><Input value={form.productName as string} onChange={e => onFormChange('productName', e.target.value)} placeholder="Naziv proizvoda" /></div>
-            <div className="space-y-2"><Label>Batch broj</Label><Input value={form.batchNumber as string} onChange={e => onFormChange('batchNumber', e.target.value)} placeholder="Broj serije" /></div>
-          </div>
-          <div className="space-y-2"><Label>Broj defekata</Label><Input type="number" value={form.defects as number || ''} onChange={e => onFormChange('defects', parseInt(e.target.value) || 0)} /></div>
-          <div className="space-y-2"><Label>Napomene</Label><Textarea value={form.notes as string} onChange={e => onFormChange('notes', e.target.value)} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" onClick={() => onOpenChange(false)}>Otkaži</Button><Button onClick={onSubmit}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-interface DetailDialogProps { open: boolean; onOpenChange: (v: boolean) => void; selected: Inspection | null }
-
-export function DetailDialog({ open, onOpenChange, selected }: DetailDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Detalji inspekcije</DialogTitle></DialogHeader>
-        {selected && (<div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><span className="text-muted-foreground">Naslov:</span> <span className="font-medium">{selected.title}</span></div>
-            <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-            <div><span className="text-muted-foreground">Tip:</span> {typeLabels[selected.type] || selected.type}</div>
-            <div><span className="text-muted-foreground">Inspektor:</span> {selected.inspectorName}</div>
-            <div><span className="text-muted-foreground">Proizvod:</span> {selected.productName || '-'}</div>
-            <div><span className="text-muted-foreground">Batch:</span> {selected.batchNumber || '-'}</div>
-            <div><span className="text-muted-foreground">Defekti:</span> {selected.defects || 0}</div>
-            <div><span className="text-muted-foreground">Datum:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
-          </div>
-          {selected.notes && <div className="text-sm"><span className="text-muted-foreground">Napomene:</span> {selected.notes}</div>}
-        </div>)}
-      </DialogContent>
-    </Dialog>
-  )
-}

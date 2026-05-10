@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -607,22 +606,6 @@ function ProjectsList() {
         </Card>
       )}
 
-      {/* Project Detail Dialog */}
-      <Dialog open={!!detailProject} onOpenChange={() => setDetailProject(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          {detailProject && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  {detailProject.color && <div className="w-3 h-3 rounded-full" style={{ backgroundColor: detailProject.color }} />}
-                  {tc(detailProject.name)}
-                </DialogTitle>
-              </DialogHeader>
-              <ProjectDetailView project={detailProject} onClose={() => setDetailProject(null)} onEdit={() => { setDetailProject(null); handleEdit(detailProject) }} />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

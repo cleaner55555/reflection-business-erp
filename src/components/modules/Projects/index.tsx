@@ -307,7 +307,8 @@ function ProjectsList() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'form' | 'kanban'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
+  const [listView, setListView] = useState<'list' | 'kanban'>('list')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -369,9 +370,9 @@ function ProjectsList() {
   }, [filtered])
 
   // ─── Project CRUD ──────────────────────────────────────────────
-  const handleNew = () => { setEditing(null); setProjTags([]); setViewMode('form') }
-  const handleEdit = (proj: Project) => { setEditing(proj); setProjTags(parseTags(proj.tags)); setViewMode('form') }
-  const handleCancel = () => { setViewMode('list'); setEditing(null); setExpandedId(null); setProjTags([]) }
+  const handleNew = () => { setEditing(null); setProjTags([]); setActiveTab('dodaj') }
+  const handleEdit = (proj: Project) => { setEditing(proj); setProjTags(parseTags(proj.tags)); setActiveTab('uredi') }
+  const handleCancel = () => { setActiveTab('pregled'); setEditing(null); setExpandedId(null); setProjTags([]) }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Obrisati projekat i sve zadatke?')) return
@@ -393,7 +394,7 @@ function ProjectsList() {
       const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { toast.error('Greška'); return }
       toast.success(editing ? 'Projekat ažuriran' : 'Projekat kreiran')
-      setViewMode('list'); setEditing(null); setProjTags([]); fetchProjects()
+      setActiveTab('pregled'); setEditing(null); setProjTags([]); fetchProjects()
     } catch { toast.error('Greška') } finally { setSubmitting(false) }
   }
 
@@ -446,121 +447,59 @@ function ProjectsList() {
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      {!viewMode.includes('form') && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Pretraži projekte..." className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
-              <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent><SelectItem value="all">Svi statusi</SelectItem>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-            </Select>
-            <Select value={priorityFilter || 'all'} onValueChange={(v) => setPriorityFilter(v === 'all' ? '' : v)}>
-              <SelectTrigger className="w-[130px] h-9"><SelectValue placeholder="Prioritet" /></SelectTrigger>
-              <SelectContent><SelectItem value="all">Svi</SelectItem>{PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">{filtered.length} projekata</Badge>
-            <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" /> Novi projekat</Button>
-          </div>
-        </div>
-      )}
+      {/* Summary stats - always visible before tabs */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-3"><p className="text-xs text-muted-foreground">Budžet</p><p className="text-sm font-bold">{formatRSD(stats.totalBudget)}</p></Card>
+        <Card className="p-3"><p className="text-xs text-muted-foreground">Potrošeno</p><p className="text-sm font-bold text-orange-600">{formatRSD(stats.totalSpent)}</p></Card>
+        <Card className="p-3"><p className="text-xs text-muted-foreground">Zadaci</p><p className="text-sm font-bold">{stats.completedTasks}/{stats.totalTasks} ({stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0}%)</p></Card>
+        <Card className="p-3"><p className="text-xs text-muted-foreground">Sati evidentirani</p><p className="text-sm font-bold text-teal-600">{stats.totalHours.toFixed(1)}h</p></Card>
+      </div>
 
-      {/* Summary stats */}
-      {!viewMode.includes('form') && (
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <Card className="p-3"><p className="text-xs text-muted-foreground">Budžet</p><p className="text-sm font-bold">{formatRSD(stats.totalBudget)}</p></Card>
-          <Card className="p-3"><p className="text-xs text-muted-foreground">Potrošeno</p><p className="text-sm font-bold text-orange-600">{formatRSD(stats.totalSpent)}</p></Card>
-          <Card className="p-3"><p className="text-xs text-muted-foreground">Zadaci</p><p className="text-sm font-bold">{stats.completedTasks}/{stats.totalTasks} ({stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0}%)</p></Card>
-          <Card className="p-3"><p className="text-xs text-muted-foreground">Sati evidentirani</p><p className="text-sm font-bold text-teal-600">{stats.totalHours.toFixed(1)}h</p></Card>
-          <div className="p-3 flex flex-col gap-1">
-            <p className="text-xs text-muted-foreground">Pregled</p>
-            <div className="flex gap-1">
-              <Button size="sm" variant={viewMode === 'list' ? 'default' : 'outline'} className="h-7 text-xs px-2" onClick={() => setViewMode('list')}><ListTodo className="h-3 w-3" /> Lista</Button>
-              <Button size="sm" variant={viewMode === 'kanban' ? 'default' : 'outline'} className="h-7 text-xs px-2" onClick={() => setViewMode('kanban')}><Target className="h-3 w-3" /> Kanban</Button>
+      {/* Inline Tabs: Pregled / Dodaj / Uredi */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'pregled' | 'dodaj' | 'uredi')} className="space-y-4">
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="pregled" className="gap-1.5"><ListTodo className="h-3.5 w-3.5" /><span className="hidden sm:inline">Pregled</span></TabsTrigger>
+          <TabsTrigger value="dodaj" className="gap-1.5"><Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline">Dodaj</span></TabsTrigger>
+          <TabsTrigger value="uredi" className="gap-1.5"><Pencil className="h-3.5 w-3.5" /><span className="hidden sm:inline">Uredi</span></TabsTrigger>
+        </TabsList>
+
+        {/* ── TAB: Pregled (List + Kanban) ── */}
+        <TabsContent value="pregled" className="space-y-4">
+          {/* Toolbar */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Pretraži projekte..." className="pl-8 h-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+              </div>
+              <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+                <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent><SelectItem value="all">Svi statusi</SelectItem>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select value={priorityFilter || 'all'} onValueChange={(v) => setPriorityFilter(v === 'all' ? '' : v)}>
+                <SelectTrigger className="w-[130px] h-9"><SelectValue placeholder="Prioritet" /></SelectTrigger>
+                <SelectContent><SelectItem value="all">Svi</SelectItem>{PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">{filtered.length} projekata</Badge>
+              <Button size="sm" variant="outline" className="h-7 text-xs px-2 gap-1" onClick={() => setActiveTab('dodaj')}><Plus className="h-3 w-3" /> Novi projekat</Button>
+              <div className="flex gap-1 ml-1">
+                <Button size="sm" variant={listView === 'list' ? 'default' : 'outline'} className="h-7 text-xs px-2" onClick={() => setListView('list')}><ListTodo className="h-3 w-3" /> Lista</Button>
+                <Button size="sm" variant={listView === 'kanban' ? 'default' : 'outline'} className="h-7 text-xs px-2" onClick={() => setListView('kanban')}><Target className="h-3 w-3" /> Kanban</Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Project Form */}
-      {viewMode === 'form' && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="text-base font-semibold">{editing ? 'Izmeni projekat' : 'Novi projekat'}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Naziv projekta *</Label><Input name="name" defaultValue={editing?.name || ''} required placeholder="npr. Redizajn web sajta" /></div>
-                <div className="space-y-2"><Label className="text-xs">Partner / Klijent</Label>
-                  <Select name="partnerId" defaultValue={editing?.partnerId || ''}>
-                    <SelectTrigger><SelectValue placeholder="Izaberi partnera" /></SelectTrigger>
-                    <SelectContent>{partners.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2"><Label className="text-xs">Opis</Label><Textarea name="description" defaultValue={editing?.description || ''} rows={3} placeholder="Opišite projekat..." /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Status</Label>
-                  <Select name="status" defaultValue={editing?.status || 'aktivan'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent></Select>
-                </div>
-                <div className="space-y-2"><Label className="text-xs">Prioritet</Label>
-                  <Select name="priority" defaultValue={editing?.priority || 'srednji'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent></Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Početak</Label><Input name="startDate" type="date" defaultValue={editing?.startDate?.split('T')[0] || today} /></div>
-                <div className="space-y-2"><Label className="text-xs">Kraj</Label><Input name="endDate" type="date" defaultValue={editing?.endDate?.split('T')[0] || ''} /></div>
-                <div className="space-y-2"><Label className="text-xs">Budžet (RSD)</Label><Input name="budget" type="number" step="0.01" defaultValue={editing?.budget || ''} /></div>
-                <div className="space-y-2"><Label className="text-xs">Boja</Label>
-                  <div className="flex gap-1.5 flex-wrap mt-1">
-                    {PROJECT_COLORS.map(c => (
-                      <button key={c} type="button" className={`w-6 h-6 rounded-full border-2 transition-all ${editing?.color === c ? 'border-foreground scale-110' : 'border-transparent hover:scale-110'}`} style={{ backgroundColor: c }} onClick={() => { const inp = document.querySelector('[name="color"]') as HTMLInputElement; if (inp) inp.value = c }} />
-                    ))}
-                    <input type="hidden" name="color" defaultValue={editing?.color || ''} />
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2"><Label className="text-xs">Odgovorna osoba</Label><Input name="assignedTo" defaultValue={editing?.assignedTo || ''} placeholder="Ime zaposlenog" /></div>
-              {/* Tags */}
-              <div className="space-y-2">
-                <Label className="text-xs">Tagovi</Label>
-                <div className="flex gap-2">
-                  <Input value={newTag} onChange={(e) => setNewTag(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} className="h-8 text-xs" placeholder="Dodaj tag..." />
-                  <Button type="button" variant="outline" size="sm" className="h-8" onClick={addTag}>Dodaj</Button>
-                </div>
-                {projTags.length > 0 && (
-                  <div className="flex gap-1.5 flex-wrap">{projTags.map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs gap-1 pr-1">{tag}<button onClick={() => removeTag(tag)} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button></Badge>
-                  ))}</div>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" disabled={submitting}>{submitting ? 'Čuva se...' : 'Sačuvaj'}</Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Projects - List View */}
-      {viewMode === 'list' && (
-        <Card>
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="space-y-3 p-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground text-sm">Nema projekata za prikaz</div>
-            ) : (
+          {/* List View */}
+          {listView === 'list' && (
+            <Card>
+              <CardContent className="p-0">
+                {loading ? (
+                  <div className="space-y-3 p-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
+                ) : filtered.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground text-sm">Nema projekata za prikaz</div>
+                ) : (
               <div className="divide-y">
                 {filtered.map((proj) => {
                   const tasks = proj.tasks || []
@@ -677,13 +616,13 @@ function ProjectsList() {
             )}
           </CardContent>
         </Card>
-      )}
+          )}
 
-      {/* Projects - Kanban View */}
-      {viewMode === 'kanban' && (
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" />Kanban tabla</CardTitle></CardHeader>
-          <CardContent className="p-0">
+          {/* Kanban View */}
+          {listView === 'kanban' && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Target className="h-4 w-4" />Kanban tabla</CardTitle></CardHeader>
+              <CardContent className="p-0">
             {loading ? (
               <div className="space-y-3 p-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}</div>
             ) : (
@@ -726,25 +665,197 @@ function ProjectsList() {
             )}
           </CardContent>
         </Card>
-      )}
+          )}
+        </TabsContent>
 
-      {/* Project Detail */}
-      {!!detailProject && (
-        <Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDetailProject(null)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="flex items-center gap-2">
-                {detailProject.color && <div className="w-3 h-3 rounded-full" style={{ backgroundColor: detailProject.color }} />}
-                {tc(detailProject.name)}
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ProjectDetailView project={detailProject} onClose={() => setDetailProject(null)} onEdit={() => { setDetailProject(null); handleEdit(detailProject) }} />
-          </CardContent>
-        </Card>
-      )}
+        {/* ── TAB: Dodaj (Create Form) ── */}
+        <TabsContent value="dodaj">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">Novi projekat</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Naziv projekta *</Label><Input name="name" required placeholder="npr. Redizajn web sajta" /></div>
+                  <div className="space-y-2"><Label className="text-xs">Partner / Klijent</Label>
+                    <Select name="partnerId" defaultValue="">
+                      <SelectTrigger><SelectValue placeholder="Izaberi partnera" /></SelectTrigger>
+                      <SelectContent>{partners.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2"><Label className="text-xs">Opis</Label><Textarea name="description" rows={3} placeholder="Opišite projekat..." /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Status</Label>
+                    <Select name="status" defaultValue="aktivan"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent></Select>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Prioritet</Label>
+                    <Select name="priority" defaultValue="srednji"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent></Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Početak</Label><Input name="startDate" type="date" defaultValue={today} /></div>
+                  <div className="space-y-2"><Label className="text-xs">Kraj</Label><Input name="endDate" type="date" defaultValue="" /></div>
+                  <div className="space-y-2"><Label className="text-xs">Budžet (RSD)</Label><Input name="budget" type="number" step="0.01" defaultValue="" /></div>
+                  <div className="space-y-2"><Label className="text-xs">Boja</Label>
+                    <div className="flex gap-1.5 flex-wrap mt-1">
+                      {PROJECT_COLORS.map(c => (
+                        <button key={c} type="button" className="w-6 h-6 rounded-full border-2 border-transparent hover:scale-110 transition-all" style={{ backgroundColor: c }} onClick={() => { const inp = document.querySelector('[name="color"]') as HTMLInputElement; if (inp) inp.value = c }} />
+                      ))}
+                      <input type="hidden" name="color" defaultValue="" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2"><Label className="text-xs">Odgovorna osoba</Label><Input name="assignedTo" placeholder="Ime zaposlenog" /></div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Tagovi</Label>
+                  <div className="flex gap-2">
+                    <Input value={newTag} onChange={(e) => setNewTag(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} className="h-8 text-xs" placeholder="Dodaj tag..." />
+                    <Button type="button" variant="outline" size="sm" className="h-8" onClick={addTag}>Dodaj</Button>
+                  </div>
+                  {projTags.length > 0 && (
+                    <div className="flex gap-1.5 flex-wrap">{projTags.map(tag => (
+                      <Badge key={tag} variant="secondary" className="text-xs gap-1 pr-1">{tag}<button onClick={() => removeTag(tag)} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button></Badge>
+                    ))}</div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={submitting}>{submitting ? 'Čuva se...' : 'Sačuvaj'}</Button>
+                  <Button type="button" variant="outline" onClick={() => setActiveTab('pregled')}>Otkaži</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── TAB: Uredi (Edit List + Inline Edit Form) ── */}
+        <TabsContent value="uredi" className="space-y-4">
+          {/* Edit list or edit form */}
+          {!editing ? (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2"><Pencil className="h-4 w-4" />Izaberite projekat za uređivanje</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {loading ? (
+                  <div className="space-y-3 p-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
+                ) : filtered.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground text-sm">Nema projekata za uređivanje</div>
+                ) : (
+                  <div className="divide-y">
+                    {filtered.map((proj) => {
+                      const statusInfo = getStatusInfo(proj.status)
+                      const prioInfo = getPriorityInfo(proj.priority)
+                      const tags = parseTags(proj.tags)
+                      return (
+                        <div key={proj.id} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {proj.color && <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: proj.color }} />}
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-semibold truncate">{proj.name}</h4>
+                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <Badge variant="outline" className={`text-xs px-2 py-0 ${statusInfo.color}`}>{statusInfo.label}</Badge>
+                                <span className={`text-xs font-medium ${prioInfo.color}`}>{prioInfo.label}</span>
+                                {proj.partner && <span className="text-xs text-muted-foreground">{proj.partner.name}</span>}
+                                {tags.map(tag => <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0">{tag}</Badge>)}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => handleEdit(proj)}><Pencil className="h-3 w-3" /> Uredi</Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(proj.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => { setEditing(null); setProjTags([]) }}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle className="text-base font-semibold">Izmeni projekat</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Naziv projekta *</Label><Input name="name" defaultValue={editing?.name || ''} required placeholder="npr. Redizajn web sajta" /></div>
+                    <div className="space-y-2"><Label className="text-xs">Partner / Klijent</Label>
+                      <Select name="partnerId" defaultValue={editing?.partnerId || ''}>
+                        <SelectTrigger><SelectValue placeholder="Izaberi partnera" /></SelectTrigger>
+                        <SelectContent>{partners.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Opis</Label><Textarea name="description" defaultValue={editing?.description || ''} rows={3} placeholder="Opišite projekat..." /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Status</Label>
+                      <Select name="status" defaultValue={editing?.status || 'aktivan'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent></Select>
+                    </div>
+                    <div className="space-y-2"><Label className="text-xs">Prioritet</Label>
+                      <Select name="priority" defaultValue={editing?.priority || 'srednji'}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent></Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Početak</Label><Input name="startDate" type="date" defaultValue={editing?.startDate?.split('T')[0] || today} /></div>
+                    <div className="space-y-2"><Label className="text-xs">Kraj</Label><Input name="endDate" type="date" defaultValue={editing?.endDate?.split('T')[0] || ''} /></div>
+                    <div className="space-y-2"><Label className="text-xs">Budžet (RSD)</Label><Input name="budget" type="number" step="0.01" defaultValue={editing?.budget || ''} /></div>
+                    <div className="space-y-2"><Label className="text-xs">Boja</Label>
+                      <div className="flex gap-1.5 flex-wrap mt-1">
+                        {PROJECT_COLORS.map(c => (
+                          <button key={c} type="button" className={`w-6 h-6 rounded-full border-2 transition-all ${editing?.color === c ? 'border-foreground scale-110' : 'border-transparent hover:scale-110'}`} style={{ backgroundColor: c }} onClick={() => { const inp = document.querySelector('[name="color"]') as HTMLInputElement; if (inp) inp.value = c }} />
+                        ))}
+                        <input type="hidden" name="color" defaultValue={editing?.color || ''} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Odgovorna osoba</Label><Input name="assignedTo" defaultValue={editing?.assignedTo || ''} placeholder="Ime zaposlenog" /></div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Tagovi</Label>
+                    <div className="flex gap-2">
+                      <Input value={newTag} onChange={(e) => setNewTag(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())} className="h-8 text-xs" placeholder="Dodaj tag..." />
+                      <Button type="button" variant="outline" size="sm" className="h-8" onClick={addTag}>Dodaj</Button>
+                    </div>
+                    {projTags.length > 0 && (
+                      <div className="flex gap-1.5 flex-wrap">{projTags.map(tag => (
+                        <Badge key={tag} variant="secondary" className="text-xs gap-1 pr-1">{tag}<button onClick={() => removeTag(tag)} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button></Badge>
+                      ))}</div>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={submitting}>{submitting ? 'Čuva se...' : 'Sačuvaj'}</Button>
+                    <Button type="button" variant="outline" onClick={() => { setEditing(null); setProjTags([]) }}>Otkaži</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Project Detail */}
+          {!!detailProject && (
+            <Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => setDetailProject(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle className="flex items-center gap-2">
+                    {detailProject.color && <div className="w-3 h-3 rounded-full" style={{ backgroundColor: detailProject.color }} />}
+                    {tc(detailProject.name)}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ProjectDetailView project={detailProject} onClose={() => setDetailProject(null)} onEdit={() => { setDetailProject(null); handleEdit(detailProject) }} />
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+      </Tabs>
     </div>
   )
 }

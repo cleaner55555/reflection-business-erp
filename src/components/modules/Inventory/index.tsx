@@ -395,7 +395,7 @@ function StockOverview() {
 function LokacijeTab() {
   const [locations, setLocations] = useState<WarehouseLocation[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<WarehouseLocation | null>(null)
   const [formType, setFormType] = useState('polica')
@@ -422,9 +422,8 @@ function LokacijeTab() {
     { value: 'bin', label: 'Bin', color: 'bg-violet-100 text-violet-700' },
   ]
 
-  const handleNew = () => { setEditing(null); setFormType('polica'); setFormParentId(''); setViewMode('form') }
-  const handleEdit = (loc: WarehouseLocation) => { setEditing(loc); setFormType(loc.type); setFormParentId(loc.parentId || ''); setViewMode('form') }
-  const handleCancel = () => { setViewMode('list'); setEditing(null) }
+  const handleNew = () => { setEditing(null); setFormType('polica'); setFormParentId(''); setActiveTab('dodaj') }
+  const handleEdit = (loc: WarehouseLocation) => { setEditing(loc); setFormType(loc.type); setFormParentId(loc.parentId || ''); setActiveTab('uredi') }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setSubmitting(true)
@@ -435,7 +434,7 @@ function LokacijeTab() {
       const res = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) { const err = await res.json(); toast.error(err.error); return }
       toast.success(editing ? 'Lokacija ažurirana' : 'Lokacija kreirana')
-      setViewMode('list'); setEditing(null)
+      setActiveTab('pregled'); setEditing(null)
       const newRes = await fetch('/api/warehouse-locations'); setLocations(await newRes.json())
     } catch { toast.error('Greška') } finally { setSubmitting(false) }
   }
@@ -445,68 +444,106 @@ function LokacijeTab() {
     try { await fetch(`/api/warehouse-locations/${id}`, { method: 'DELETE' }); toast.success('Obrisano'); const res = await fetch('/api/warehouse-locations'); setLocations(await res.json()) } catch { toast.error('Greška') }
   }
 
-  if (viewMode === 'form') return (
-    <Card>
-      <CardHeader className="pb-3"><div className="flex items-center gap-3"><Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base font-semibold">{editing ? 'Izmeni lokaciju' : 'Nova lokacija'}</CardTitle></div></CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input name="name" defaultValue={editing?.name || ''} required placeholder="npr. Regal A" /></div>
-            <div className="space-y-2"><Label className="text-xs">Šifra *</Label><Input name="code" defaultValue={editing?.code || ''} required placeholder="npr. WH-A-03" disabled={!!editing} /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label className="text-xs">Tip</Label>
-              <Select value={formType} onValueChange={setFormType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{locTypes.map(lt => <SelectItem key={lt.value} value={lt.value}>{lt.label}</SelectItem>)}</SelectContent></Select>
-            </div>
-            <div className="space-y-2"><Label className="text-xs">Nadređena</Label>
-              <Select value={formParentId || '__none'} onValueChange={v => setFormParentId(v === '__none' ? '' : v)}><SelectTrigger><SelectValue placeholder="Bez" /></SelectTrigger><SelectContent>
-                <SelectItem value="__none">Bez nadređene</SelectItem>
-                {locations.filter(l => l.id !== editing?.id).map(l => <SelectItem key={l.id} value={l.id}>{l.code} — {l.name}</SelectItem>)}
-              </SelectContent></Select>
-            </div>
-          </div>
-          <div className="flex gap-2"><Button type="submit" disabled={submitting}>{submitting ? 'Čuva se...' : 'Sačuvaj'}</Button><Button type="button" variant="outline" onClick={handleCancel}>Otkaži</Button></div>
-        </form>
-      </CardContent>
-    </Card>
-  )
-
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><CardTitle className="text-base font-semibold flex items-center gap-2"><MapPin className="h-4 w-4" />Lokacije magacina</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{locations.length} lokacija</p></div>
-          <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" />Nova lokacija</Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? <Skeleton className="h-64 w-full" /> : (
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader><TableRow>
-                <TableHead className="text-xs">Šifra</TableHead><TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Nadređena</TableHead><TableHead className="text-xs text-center">Pod.</TableHead><TableHead className="text-xs text-center">Kretanja</TableHead><TableHead className="text-xs">Akcije</TableHead>
-              </TableRow></TableHeader>
-              <TableBody>
-                {locations.length === 0 ? (<TableRow><TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">Nema lokacija</TableCell></TableRow>) : locations.map(loc => {
-                  const typeInfo = locTypes.find(lt => lt.value === loc.type) || locTypes[3]
-                  return (
-                    <TableRow key={loc.id}>
-                      <TableCell className="text-xs font-mono font-medium">{loc.code}</TableCell>
-                      <TableCell className="text-xs font-medium">{loc.name}</TableCell>
-                      <TableCell><Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo.color}`}>{typeInfo.label}</Badge></TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{loc.parent ? loc.parent.code : '-'}</TableCell>
-                      <TableCell className="text-xs text-center">{loc._count?.children || 0}</TableCell>
-                      <TableCell className="text-xs text-center">{loc._count?.stockMovements || 0}</TableCell>
-                      <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(loc)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(loc.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'pregled' | 'dodaj' | 'uredi')} className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="pregled" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Pregled</TabsTrigger>
+        <TabsTrigger value="dodaj" className="gap-1.5"><Plus className="h-3.5 w-3.5" />Dodaj</TabsTrigger>
+        <TabsTrigger value="uredi" className="gap-1.5" disabled={!editing}><Pencil className="h-3.5 w-3.5" />Uredi</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="pregled">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div><CardTitle className="text-base font-semibold flex items-center gap-2"><MapPin className="h-4 w-4" />Lokacije magacina</CardTitle><p className="text-xs text-muted-foreground mt-0.5">{locations.length} lokacija</p></div>
+              <Button size="sm" className="gap-2" onClick={handleNew}><Plus className="h-4 w-4" />Nova lokacija</Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? <Skeleton className="h-64 w-full" /> : (
+              <div className="max-h-[500px] overflow-y-auto">
+                <Table>
+                  <TableHeader><TableRow>
+                    <TableHead className="text-xs">Šifra</TableHead><TableHead className="text-xs">Naziv</TableHead><TableHead className="text-xs">Tip</TableHead><TableHead className="text-xs">Nadređena</TableHead><TableHead className="text-xs text-center">Pod.</TableHead><TableHead className="text-xs text-center">Kretanja</TableHead><TableHead className="text-xs">Akcije</TableHead>
+                  </TableRow></TableHeader>
+                  <TableBody>
+                    {locations.length === 0 ? (<TableRow><TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">Nema lokacija</TableCell></TableRow>) : locations.map(loc => {
+                        const typeInfo = locTypes.find(lt => lt.value === loc.type) || locTypes[3]
+                        return (
+                          <TableRow key={loc.id}>
+                            <TableCell className="text-xs font-mono font-medium">{loc.code}</TableCell>
+                            <TableCell className="text-xs font-medium">{loc.name}</TableCell>
+                            <TableCell><Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo.color}`}>{typeInfo.label}</Badge></TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{loc.parent ? loc.parent.code : '-'}</TableCell>
+                            <TableCell className="text-xs text-center">{loc._count?.children || 0}</TableCell>
+                            <TableCell className="text-xs text-center">{loc._count?.stockMovements || 0}</TableCell>
+                            <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(loc)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(loc.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
+                          </TableRow>
+                        )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="dodaj">
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Nova lokacija</CardTitle></CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input name="name" required placeholder="npr. Regal A" /></div>
+                <div className="space-y-2"><Label className="text-xs">Šifra *</Label><Input name="code" required placeholder="npr. WH-A-03" /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="text-xs">Tip</Label>
+                  <Select value={formType} onValueChange={setFormType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{locTypes.map(lt => <SelectItem key={lt.value} value={lt.value}>{lt.label}</SelectItem>)}</SelectContent></Select>
+                </div>
+                <div className="space-y-2"><Label className="text-xs">Nadređena</Label>
+                  <Select value={formParentId || '__none'} onValueChange={v => setFormParentId(v === '__none' ? '' : v)}><SelectTrigger><SelectValue placeholder="Bez" /></SelectTrigger><SelectContent>
+                    <SelectItem value="__none">Bez nadređene</SelectItem>
+                    {locations.map(l => <SelectItem key={l.id} value={l.id}>{l.code} — {l.name}</SelectItem>)}
+                  </SelectContent></Select>
+                </div>
+              </div>
+              <div className="flex gap-2"><Button type="submit" disabled={submitting}>{submitting ? 'Čuva se...' : 'Sačuvaj'}</Button><Button type="button" variant="outline" onClick={() => setActiveTab('pregled')}>Otkaži</Button></div>
+            </form>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="uredi">
+        {editing && (
+          <Card key={editing.id}>
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">Izmeni lokaciju: {editing.name}</CardTitle></CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input name="name" defaultValue={editing.name} required placeholder="npr. Regal A" /></div>
+                  <div className="space-y-2"><Label className="text-xs">Šifra *</Label><Input name="code" defaultValue={editing.code} required placeholder="npr. WH-A-03" disabled /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Tip</Label>
+                    <Select value={formType} onValueChange={setFormType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{locTypes.map(lt => <SelectItem key={lt.value} value={lt.value}>{lt.label}</SelectItem>)}</SelectContent></Select>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Nadređena</Label>
+                    <Select value={formParentId || '__none'} onValueChange={v => setFormParentId(v === '__none' ? '' : v)}><SelectTrigger><SelectValue placeholder="Bez" /></SelectTrigger><SelectContent>
+                      <SelectItem value="__none">Bez nadređene</SelectItem>
+                      {locations.filter(l => l.id !== editing.id).map(l => <SelectItem key={l.id} value={l.id}>{l.code} — {l.name}</SelectItem>)}
+                    </SelectContent></Select>
+                  </div>
+                </div>
+                <div className="flex gap-2"><Button type="submit" disabled={submitting}>{submitting ? 'Čuva se...' : 'Sačuvaj'}</Button><Button type="button" variant="outline" onClick={() => setActiveTab('pregled')}>Otkaži</Button></div>
+              </form>
+            </CardContent>
+          </Card>
         )}
-      </CardContent>
-    </Card>
+      </TabsContent>
+    </Tabs>
   )
 }
 
@@ -519,7 +556,7 @@ function ArtikliTab() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
@@ -550,17 +587,12 @@ function ArtikliTab() {
 
   const handleNew = () => {
     setEditingProduct(null)
-    setViewMode('form')
+    setActiveTab('dodaj')
   }
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product)
-    setViewMode('form')
-  }
-
-  const handleCancel = () => {
-    setViewMode('list')
-    setEditingProduct(null)
+    setActiveTab('uredi')
   }
 
   const handleDelete = async (id: string) => {
@@ -602,7 +634,7 @@ function ArtikliTab() {
         return
       }
       toast.success(isEditing ? t('warehouse.productUpdated') : t('warehouse.productCreated'))
-      setViewMode('list')
+      setActiveTab('pregled')
       setEditingProduct(null)
       fetchProducts()
     } catch {
@@ -612,22 +644,79 @@ function ArtikliTab() {
     }
   }
 
+  const productForm = (isEditing: boolean) => (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs">{t('common.name')} *</Label>
+          <Input name="name" placeholder={t('warehouse.productNamePlaceholder')} defaultValue={isEditing && editingProduct ? editingProduct.name : ''} required />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.skuLabel')} *</Label>
+          <Input name="sku" placeholder="SKU-001" defaultValue={isEditing && editingProduct ? editingProduct.sku : ''} required />
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.barcode')}</Label>
+          <Input name="barcode" placeholder="8600000000000" defaultValue={isEditing && editingProduct ? editingProduct.barcode || '' : ''} />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('common.category')}</Label>
+          <Input name="category" defaultValue={isEditing && editingProduct ? editingProduct.category || '' : ''} />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.unitOfMeasure')}</Label>
+          <Select name="unit" defaultValue={isEditing && editingProduct ? editingProduct.unit : 'kom'}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="kom">kom</SelectItem>
+              <SelectItem value="kg">kg</SelectItem>
+              <SelectItem value="l">l</SelectItem>
+              <SelectItem value="m">m</SelectItem>
+              <SelectItem value="pak">pak</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.purchasePriceLabel')} *</Label>
+          <Input name="purchasePrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(isEditing && editingProduct ? editingProduct.purchasePrice : '')} required />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.sellingPriceLabel')} *</Label>
+          <Input name="sellingPrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(isEditing && editingProduct ? editingProduct.sellingPrice : '')} required />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.minStock')}</Label>
+          <Input name="minStock" type="number" placeholder="0" defaultValue={String(isEditing && editingProduct ? editingProduct.minStock : '')} />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.currentStock')}</Label>
+          <Input name="currentStock" type="number" placeholder="0" defaultValue={String(isEditing && editingProduct ? editingProduct.currentStock : '')} />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={submitting}>
+          {submitting ? t('common.saving') : isEditing ? t('common.saveChanges') : t('warehouse.createProduct')}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => setActiveTab('pregled')}>{t('common.cancel')}</Button>
+      </div>
+    </form>
+  )
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        {viewMode === 'form' ? (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCancel}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle className="text-base font-semibold">
-                {editingProduct ? t('warehouse.editProduct') : t('warehouse.newProduct')}
-              </CardTitle>
-            </div>
-          </div>
-        ) : (
-          <>
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'pregled' | 'dodaj' | 'uredi')} className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="pregled" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Pregled</TabsTrigger>
+        <TabsTrigger value="dodaj" className="gap-1.5"><Plus className="h-3.5 w-3.5" />Dodaj</TabsTrigger>
+        <TabsTrigger value="uredi" className="gap-1.5" disabled={!editingProduct}><Pencil className="h-3.5 w-3.5" />Uredi</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="pregled">
+        <Card>
+          <CardHeader className="pb-3">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle className="text-base font-semibold">{t('warehouse.products')}</CardTitle>
@@ -640,7 +729,6 @@ function ArtikliTab() {
                 </Button>
               </div>
             </div>
-
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -663,140 +751,96 @@ function ArtikliTab() {
                 </SelectContent>
               </Select>
             </div>
-          </>
-        )}
-      </CardHeader>
-      <CardContent>
-        {viewMode === 'form' ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.name')} *</Label>
-                <Input name="name" placeholder={t('warehouse.productNamePlaceholder')} defaultValue={editingProduct?.name || ''} required />
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.skuLabel')} *</Label>
-                <Input name="sku" placeholder="SKU-001" defaultValue={editingProduct?.sku || ''} required />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.barcode')}</Label>
-                <Input name="barcode" placeholder="8600000000000" defaultValue={editingProduct?.barcode || ''} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.category')}</Label>
-                <Input name="category" defaultValue={editingProduct?.category || ''} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.unitOfMeasure')}</Label>
-                <Select name="unit" defaultValue={editingProduct?.unit || 'kom'}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kom">kom</SelectItem>
-                    <SelectItem value="kg">kg</SelectItem>
-                    <SelectItem value="l">l</SelectItem>
-                    <SelectItem value="m">m</SelectItem>
-                    <SelectItem value="pak">pak</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.purchasePriceLabel')} *</Label>
-                <Input name="purchasePrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.purchasePrice || '')} required />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.sellingPriceLabel')} *</Label>
-                <Input name="sellingPrice" type="number" step="0.01" placeholder="0.00" defaultValue={String(editingProduct?.sellingPrice || '')} required />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.minStock')}</Label>
-                <Input name="minStock" type="number" placeholder="0" defaultValue={String(editingProduct?.minStock || '')} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.currentStock')}</Label>
-                <Input name="currentStock" type="number" placeholder="0" defaultValue={String(editingProduct?.currentStock || '')} />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={submitting}>
-                {submitting ? t('common.saving') : editingProduct ? t('common.saveChanges') : t('warehouse.createProduct')}
-              </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
-            </div>
-          </form>
-        ) : loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{t('warehouse.sku')}</TableHead>
-                  <TableHead className="text-xs">{t('common.name')}</TableHead>
-                  <TableHead className="text-xs">{t('common.category')}</TableHead>
-                  <TableHead className="text-xs text-right">{t('warehouse.purchasePriceShort')}</TableHead>
-                  <TableHead className="text-xs text-right">{t('warehouse.sellingPriceShort')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('warehouse.stock')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('warehouse.min')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
-                      {t('warehouse.noProducts')}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  products.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="text-xs font-mono">{tc(p.sku)}</TableCell>
-                      <TableCell className="text-xs font-medium">{tc(p.name)}</TableCell>
-                      <TableCell className="text-xs">
-                        <Badge variant="secondary" className="text-xs px-2 py-0">
-                          {p.category ? tc(p.category) : '-'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-right">{formatRSD(p.purchasePrice)}</TableCell>
-                      <TableCell className="text-xs text-right">{formatRSD(p.sellingPrice)}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          {p.currentStock <= p.minStock && (
-                            <AlertTriangle className="h-3 w-3 text-red-500" />
-                          )}
-                          <span className={`text-xs font-medium ${p.currentStock <= 0 ? 'text-red-600' : p.currentStock <= p.minStock ? 'text-amber-600' : ''}`}>
-                            {p.currentStock} {p.unit}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-center text-muted-foreground">{p.minStock}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(p)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => handleDelete(p.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
+            ) : (
+              <div className="max-h-[500px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">{t('warehouse.sku')}</TableHead>
+                      <TableHead className="text-xs">{t('common.name')}</TableHead>
+                      <TableHead className="text-xs">{t('common.category')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('warehouse.purchasePriceShort')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('warehouse.sellingPriceShort')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('warehouse.stock')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('warehouse.min')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {products.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
+                          {t('warehouse.noProducts')}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      products.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="text-xs font-mono">{tc(p.sku)}</TableCell>
+                          <TableCell className="text-xs font-medium">{tc(p.name)}</TableCell>
+                          <TableCell className="text-xs">
+                            <Badge variant="secondary" className="text-xs px-2 py-0">
+                              {p.category ? tc(p.category) : '-'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-right">{formatRSD(p.purchasePrice)}</TableCell>
+                          <TableCell className="text-xs text-right">{formatRSD(p.sellingPrice)}</TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              {p.currentStock <= p.minStock && (
+                                <AlertTriangle className="h-3 w-3 text-red-500" />
+                              )}
+                              <span className={`text-xs font-medium ${p.currentStock <= 0 ? 'text-red-600' : p.currentStock <= p.minStock ? 'text-amber-600' : ''}`}>
+                                {p.currentStock} {p.unit}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-center text-muted-foreground">{p.minStock}</TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(p)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => handleDelete(p.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="dodaj">
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('warehouse.newProduct')}</CardTitle></CardHeader>
+          <CardContent>{productForm(false)}</CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="uredi">
+        {editingProduct && (
+          <Card key={editingProduct.id}>
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('warehouse.editProduct')}: {editingProduct.name}</CardTitle></CardHeader>
+            <CardContent>{productForm(true)}</CardContent>
+          </Card>
         )}
-      </CardContent>
-    </Card>
+      </TabsContent>
+    </Tabs>
   )
 }
 
@@ -808,7 +852,7 @@ function KretanjaTab() {
   const [movements, setMovements] = useState<StockMovement[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -836,14 +880,6 @@ function KretanjaTab() {
     }
   }, [movements, translateTexts])
 
-  const handleNew = () => {
-    setViewMode('form')
-  }
-
-  const handleCancel = () => {
-    setViewMode('list')
-  }
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitting(true)
@@ -867,7 +903,7 @@ function KretanjaTab() {
         return
       }
       toast.success(t('warehouse.movementCreated'))
-      setViewMode('list')
+      setActiveTab('pregled')
       fetchMovements()
     } catch {
       toast.error(t('common.saveError'))
@@ -897,164 +933,169 @@ function KretanjaTab() {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        {viewMode === 'form' ? (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCancel}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle className="text-base font-semibold">{t('warehouse.newMovement')}</CardTitle>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold">{t('warehouse.movements')}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{t('warehouse.movementsSubtitle')}</p>
-            </div>
-            <Button size="sm" className="gap-2" onClick={handleNew}>
-              <Plus className="h-4 w-4" /> {t('warehouse.newMovement')}
-            </Button>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        {viewMode === 'form' ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.productLabel')} *</Label>
-                <Select name="productId" required>
-                  <SelectTrigger><SelectValue placeholder={t('warehouse.selectProduct')} /></SelectTrigger>
-                  <SelectContent>
-                    {products.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.type')} *</Label>
-                <Select name="type" defaultValue="prijem">
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="prijem">{t('common.prijem')}</SelectItem>
-                    <SelectItem value="izdavanje">{t('common.izdavanje')}</SelectItem>
-                    <SelectItem value="inventura">{t('common.inventura')}</SelectItem>
-                    <SelectItem value="korekcija">{t('common.korekcija')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('common.quantity')} *</Label>
-              <Input name="quantity" type="number" step="0.01" placeholder="0" required />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('warehouse.document')}</Label>
-              <Input name="documentRef" />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('common.notes')}</Label>
-              <Input name="notes" />
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={submitting}>
-                {submitting ? t('common.saving') : t('warehouse.createMovement')}
-              </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
-            </div>
-          </form>
-        ) : loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{t('common.date')}</TableHead>
-                  <TableHead className="text-xs">{t('warehouse.productLabel')}</TableHead>
-                  <TableHead className="text-xs">{t('common.type')}</TableHead>
-                  <TableHead className="text-xs text-right">{t('common.quantity')}</TableHead>
-                  <TableHead className="text-xs">{t('warehouse.document')}</TableHead>
-                  <TableHead className="text-xs">{t('common.notes')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {movements.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      {t('warehouse.noMovements')}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  movements.map((m) => (
-                    <TableRow key={m.id}>
-                      <TableCell className="text-xs">{formatDateTime(m.date)}</TableCell>
-                      <TableCell className="text-xs">
-                        <div>
-                          <span className="font-medium">{tc(m.product?.name || '')}</span>
-                          <span className="text-muted-foreground ml-1 text-xs">({tc(m.product?.sku || '')})</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(m.type)}`}>
-                          {getStatusLabel(m.type)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className={`text-xs text-right font-medium ${m.type === 'prijem' ? 'text-emerald-600' : 'text-red-600'}`}>
-                        {m.type === 'prijem' ? '+' : '-'}{m.quantity}
-                      </TableCell>
-                      <TableCell className="text-xs">{m.documentRef ? tc(m.documentRef) : '-'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{m.notes ? tc(m.notes) : '-'}</TableCell>
-                      <TableCell className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-red-500 hover:text-red-600"
-                          onClick={() => setDeleteId(m.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'pregled' | 'dodaj')} className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="pregled" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Pregled</TabsTrigger>
+        <TabsTrigger value="dodaj" className="gap-1.5"><Plus className="h-3.5 w-3.5" />Dodaj</TabsTrigger>
+      </TabsList>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('warehouse.confirmDeleteMovement')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-            >
-              {deleting ? t('common.deleting') : t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Card>
+      <TabsContent value="pregled">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">{t('warehouse.movements')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('warehouse.movementsSubtitle')}</p>
+              </div>
+              <Button size="sm" className="gap-2" onClick={() => setActiveTab('dodaj')}>
+                <Plus className="h-4 w-4" /> {t('warehouse.newMovement')}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+            ) : (
+              <div className="max-h-[500px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">{t('common.date')}</TableHead>
+                      <TableHead className="text-xs">{t('warehouse.productLabel')}</TableHead>
+                      <TableHead className="text-xs">{t('common.type')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('common.quantity')}</TableHead>
+                      <TableHead className="text-xs">{t('warehouse.document')}</TableHead>
+                      <TableHead className="text-xs">{t('common.notes')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {movements.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                          {t('warehouse.noMovements')}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      movements.map((m) => (
+                        <TableRow key={m.id}>
+                          <TableCell className="text-xs">{formatDateTime(m.date)}</TableCell>
+                          <TableCell className="text-xs">
+                            <div>
+                              <span className="font-medium">{tc(m.product?.name || '')}</span>
+                              <span className="text-muted-foreground ml-1 text-xs">({tc(m.product?.sku || '')})</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(m.type)}`}>
+                              {getStatusLabel(m.type)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className={`text-xs text-right font-medium ${m.type === 'prijem' ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {m.type === 'prijem' ? '+' : '-'}{m.quantity}
+                          </TableCell>
+                          <TableCell className="text-xs">{m.documentRef ? tc(m.documentRef) : '-'}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{m.notes ? tc(m.notes) : '-'}</TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-red-500 hover:text-red-600"
+                              onClick={() => setDeleteId(m.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('warehouse.confirmDeleteMovement')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                >
+                  {deleting ? t('common.deleting') : t('common.delete')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="dodaj">
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('warehouse.newMovement')}</CardTitle></CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('warehouse.productLabel')} *</Label>
+                  <Select name="productId" required>
+                    <SelectTrigger><SelectValue placeholder={t('warehouse.selectProduct')} /></SelectTrigger>
+                    <SelectContent>
+                      {products.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('common.type')} *</Label>
+                  <Select name="type" defaultValue="prijem">
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="prijem">{t('common.prijem')}</SelectItem>
+                      <SelectItem value="izdavanje">{t('common.izdavanje')}</SelectItem>
+                      <SelectItem value="inventura">{t('common.inventura')}</SelectItem>
+                      <SelectItem value="korekcija">{t('common.korekcija')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('common.quantity')} *</Label>
+                <Input name="quantity" type="number" step="0.01" placeholder="0" required />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('warehouse.document')}</Label>
+                <Input name="documentRef" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('common.notes')}</Label>
+                <Input name="notes" />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? t('common.saving') : t('warehouse.createMovement')}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setActiveTab('pregled')}>{t('common.cancel')}</Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
   )
 }
 
@@ -1067,7 +1108,7 @@ function OtpremniceTab() {
   const [products, setProducts] = useState<Product[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<'list' | 'form' | 'print'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<DeliveryNote | null>(null)
   const [printNote, setPrintNote] = useState<DeliveryNote | null>(null)
@@ -1143,7 +1184,7 @@ function OtpremniceTab() {
     setFormPartnerId('')
     setFormInvoiceNumber('')
     setFormNotes('')
-    setViewMode('form')
+    setActiveTab('dodaj')
   }
 
   const openEdit = (note: DeliveryNote) => {
@@ -1159,18 +1200,11 @@ function OtpremniceTab() {
       quantity: String(item.quantity),
       unitPrice: String(item.unitPrice),
     })))
-    setViewMode('form')
-  }
-
-  const handleCancel = () => {
-    setViewMode('list')
-    setEditing(null)
-    setPrintNote(null)
+    setActiveTab('uredi')
   }
 
   const handlePrint = async (note: DeliveryNote) => {
     setPrintLoading(true)
-    setViewMode('print')
     try {
       const res = await fetch(`/api/delivery-notes/${note.id}`)
       if (!res.ok) { toast.error(t('warehouse.loadError')); return }
@@ -1223,7 +1257,7 @@ function OtpremniceTab() {
         return
       }
       toast.success(isEditing ? t('warehouse.deliveryNoteUpdated') : t('warehouse.deliveryNoteCreated'))
-      setViewMode('list')
+      setActiveTab('pregled')
       setEditing(null)
       fetchDeliveryNotes()
     } catch {
@@ -1254,371 +1288,271 @@ function OtpremniceTab() {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        {viewMode === 'form' ? (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCancel}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle className="text-base font-semibold">
-                {editing ? t('warehouse.editDeliveryNote') : t('warehouse.newDeliveryNote')}
-              </CardTitle>
-            </div>
-          </div>
-        ) : viewMode === 'print' ? (
-          <div className="flex items-center gap-3 no-print">
-            <Button variant="ghost" size="icon" onClick={handleCancel}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle className="text-base font-semibold">
-                {t('warehouse.previewDeliveryNote')} {printNote?.number || ''}
-              </CardTitle>
-            </div>
-            <div className="ml-auto">
-              <Button size="sm" className="gap-2" onClick={doPrint}>
-                <Printer className="h-4 w-4" /> {t('common.print')}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <CardTitle className="text-base font-semibold">{t('warehouse.deliveryNotes')}</CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">{deliveryNotes.length} {t('warehouse.deliveryNotesCount')}</p>
-              </div>
-              <Button size="sm" className="gap-2" onClick={openCreate}>
-                <Plus className="h-4 w-4" /> {t('warehouse.newDeliveryNote')}
-              </Button>
-            </div>
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'pregled' | 'dodaj' | 'uredi')} className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="pregled" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Pregled</TabsTrigger>
+        <TabsTrigger value="dodaj" className="gap-1.5"><Plus className="h-3.5 w-3.5" />Dodaj</TabsTrigger>
+        <TabsTrigger value="uredi" className="gap-1.5" disabled={!editing}><Pencil className="h-3.5 w-3.5" />Uredi</TabsTrigger>
+      </TabsList>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('warehouse.searchDeliveryNotes')}
-                  className="pl-8 h-9"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
-                <SelectTrigger className="w-[160px] h-9">
-                  <SelectValue placeholder={t('warehouse.allStatuses')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('warehouse.allStatuses')}</SelectItem>
-                  <SelectItem value="nacrt">{t('common.draft')}</SelectItem>
-                  <SelectItem value="pripremljena">{t('common.pripremljena')}</SelectItem>
-                  <SelectItem value="otpremljena">{t('common.otpremljena')}</SelectItem>
-                  <SelectItem value="stornirana">{t('common.stornirana')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
-      </CardHeader>
-      <CardContent>
-        {viewMode === 'print' && (
-          printLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Skeleton className="h-[600px] w-full max-w-4xl" />
-            </div>
-          ) : printNote ? (
-            <div className="invoice-print-area bg-white rounded-lg border p-6 max-w-4xl mx-auto text-sm">
-              {/* Company Header */}
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <h1 className="text-xl font-bold tracking-tight">{COMPANY.name}</h1>
-                  <p className="text-xs text-gray-500 mt-1">{COMPANY.address}</p>
-                  <p className="text-xs text-gray-500">{COMPANY.city}</p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                    <span className="text-xs text-gray-500">PIB: {COMPANY.pib}</span>
-                    <span className="text-xs text-gray-500">MB: {COMPANY.maticniBr}</span>
-                    <span className="text-xs text-gray-500">{COMPANY.account}</span>
-                    <span className="text-xs text-gray-500">{COMPANY.bank}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold uppercase tracking-wide">{t('warehouse.deliveryNote')}</p>
-                  <p className="text-xs text-gray-500 mt-1">{t('common.number')}: <span className="font-mono font-medium text-gray-800">{printNote.number}</span></p>
-                  <p className="text-xs text-gray-500">{t('common.date')}: {formatDate(printNote.date)}</p>
-                  <p className="text-xs text-gray-500">{t('warehouse.city')}: Beograd</p>
-                </div>
-              </div>
-
-              {/* Partner Info */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
-                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.recipient')}</p>
-                <p className="text-sm font-semibold">{printNote.partner?.name ? tc(printNote.partner.name) : '-'}</p>
-                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
-                  {printNote.partner?.pib && (
-                    <span className="text-xs text-gray-500">PIB: {printNote.partner.pib}</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Items Table */}
-              <table className="w-full text-xs mb-6">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 px-2 py-2 text-center w-10">R.br</th>
-                    <th className="border border-gray-300 px-2 py-2">{t('common.name')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-center w-16">{t('common.quantity')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.price')}</th>
-                    <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.amount')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {printNote.items.map((item, idx) => (
-                    <tr key={item.id}>
-                      <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1.5">{tc(item.productName)}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
-                      <td className="border border-gray-300 px-2 py-1.5 text-right font-medium">{formatRSD(item.quantity * item.unitPrice)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Total */}
-              <div className="flex justify-end mb-6">
-                <div className="w-48 space-y-1">
-                  <div className="flex justify-between text-sm py-2 px-2 bg-gray-100 rounded font-bold border">
-                    <span>{t('common.total')}:</span>
-                    <span>{formatRSD(printNote.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Notes */}
-              {printNote.notes && (
-                <div className="mb-4 text-xs">
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
-                  <p className="text-gray-600">{tc(printNote.notes)}</p>
-                </div>
-              )}
-
-              {/* Invoice Number Reference */}
-              {printNote.invoiceNumber && (
-                <div className="mb-6 text-xs">
-                  <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.invoiceRef')}</p>
-                  <p className="text-gray-600">{t('warehouse.invoice')} br: {printNote.invoiceNumber}</p>
-                </div>
-              )}
-
-              {/* Signatures */}
-              <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
-                <div className="text-center">
-                  <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-xs text-gray-400">{t('warehouse.issuerSignature')}</p>
-                </div>
-                <div className="text-center">
-                  <div className="border-b border-gray-300 mb-1 pb-8"></div>
-                  <p className="text-xs text-gray-400">{t('warehouse.receiverSignature')}</p>
-                </div>
-              </div>
-            </div>
-          ) : null
-        )}
-
-        {viewMode === 'form' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.partner')} *</Label>
-                <Select value={formPartnerId} onValueChange={setFormPartnerId}>
-                  <SelectTrigger><SelectValue placeholder={t('warehouse.selectPartner')} /></SelectTrigger>
-                  <SelectContent>
-                    {partners.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name} (PIB: {p.pib})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.status')}</Label>
-                <Select value={formStatus} onValueChange={setFormStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="nacrt">{t('common.draft')}</SelectItem>
-                    <SelectItem value="pripremljena">{t('common.pripremljena')}</SelectItem>
-                    <SelectItem value="otpremljena">{t('common.otpremljena')}</SelectItem>
-                    <SelectItem value="stornirana">{t('common.stornirana')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.invoiceNumber')}</Label>
-                <Input value={formInvoiceNumber} onChange={(e) => setFormInvoiceNumber(e.target.value)} placeholder="Fak-001" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.notes')}</Label>
-                <Input value={formNotes} onChange={(e) => setFormNotes(e.target.value)} />
-              </div>
-            </div>
-
-            {/* Line Items */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-semibold">{t('warehouse.items')}</Label>
-                <Button type="button" variant="outline" size="sm" className="h-7 gap-1" onClick={addLineItem}>
-                  <Plus className="h-3 w-3" /> {t('warehouse.addItem')}
+      <TabsContent value="pregled">
+        <Card>
+          <CardHeader className="pb-3">
+            {printNote ? (
+              <div className="flex items-center gap-3 no-print">
+                <Button variant="ghost" size="icon" onClick={() => setPrintNote(null)}>
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    {t('warehouse.previewDeliveryNote')} {printNote.number || ''}
+                  </CardTitle>
+                </div>
+                <div className="ml-auto">
+                  <Button size="sm" className="gap-2" onClick={doPrint}>
+                    <Printer className="h-4 w-4" /> {t('common.print')}
+                  </Button>
+                </div>
               </div>
-              {lineItems.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-4">{t('warehouse.noItems')}</p>
-              )}
-              <div className="space-y-2">
-                {lineItems.map((li, idx) => (
-                  <div key={li.tempId} className="grid grid-cols-[1fr_80px_100px_32px] gap-2 items-end">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">{t('warehouse.productLabel')}</Label>
-                      <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder={t('common.select')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">{t('common.quantity')}</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        className="h-8 text-xs"
-                        value={li.quantity}
-                        onChange={(e) => updateLineItem(li.tempId, 'quantity', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        className="h-8 text-xs"
-                        value={li.unitPrice}
-                        onChange={(e) => updateLineItem(li.tempId, 'unitPrice', e.target.value)}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-600"
-                      onClick={() => removeLineItem(li.tempId)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+            ) : (
+              <>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <CardTitle className="text-base font-semibold">{t('warehouse.deliveryNotes')}</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">{deliveryNotes.length} {t('warehouse.deliveryNotesCount')}</p>
                   </div>
+                  <Button size="sm" className="gap-2" onClick={openCreate}>
+                    <Plus className="h-4 w-4" /> {t('warehouse.newDeliveryNote')}
+                  </Button>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center mt-4">
+                  <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder={t('warehouse.searchDeliveryNotes')}
+                      className="pl-8 h-9"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </div>
+                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+                    <SelectTrigger className="w-[160px] h-9">
+                      <SelectValue placeholder={t('warehouse.allStatuses')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('warehouse.allStatuses')}</SelectItem>
+                      <SelectItem value="nacrt">{t('common.draft')}</SelectItem>
+                      <SelectItem value="pripremljena">{t('common.pripremljena')}</SelectItem>
+                      <SelectItem value="otpremljena">{t('common.otpremljena')}</SelectItem>
+                      <SelectItem value="stornirana">{t('common.stornirana')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+          </CardHeader>
+          <CardContent>
+            {printNote ? (
+              printLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Skeleton className="h-[600px] w-full max-w-4xl" />
+                </div>
+              ) : (
+                <div className="invoice-print-area bg-white rounded-lg border p-6 max-w-4xl mx-auto text-sm">
+                  {/* Company Header */}
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      <h1 className="text-xl font-bold tracking-tight">{COMPANY.name}</h1>
+                      <p className="text-xs text-gray-500 mt-1">{COMPANY.address}</p>
+                      <p className="text-xs text-gray-500">{COMPANY.city}</p>
+                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                        <span className="text-xs text-gray-500">PIB: {COMPANY.pib}</span>
+                        <span className="text-xs text-gray-500">MB: {COMPANY.maticniBr}</span>
+                        <span className="text-xs text-gray-500">{COMPANY.account}</span>
+                        <span className="text-xs text-gray-500">{COMPANY.bank}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold uppercase tracking-wide">{t('warehouse.deliveryNote')}</p>
+                      <p className="text-xs text-gray-500 mt-1">{t('common.number')}: <span className="font-mono font-medium text-gray-800">{printNote.number}</span></p>
+                      <p className="text-xs text-gray-500">{t('common.date')}: {formatDate(printNote.date)}</p>
+                      <p className="text-xs text-gray-500">{t('warehouse.city')}: Beograd</p>
+                    </div>
+                  </div>
+                  {/* Partner Info */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-6 border">
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.recipient')}</p>
+                    <p className="text-sm font-semibold">{printNote.partner?.name ? tc(printNote.partner.name) : '-'}</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1">
+                      {printNote.partner?.pib && (
+                        <span className="text-xs text-gray-500">PIB: {printNote.partner.pib}</span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Items Table */}
+                  <table className="w-full text-xs mb-6">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-2 py-2 text-center w-10">R.br</th>
+                        <th className="border border-gray-300 px-2 py-2">{t('common.name')}</th>
+                        <th className="border border-gray-300 px-2 py-2 text-center w-16">{t('common.quantity')}</th>
+                        <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.price')}</th>
+                        <th className="border border-gray-300 px-2 py-2 text-right w-24">{t('common.amount')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {printNote.items.map((item, idx) => (
+                        <tr key={item.id}>
+                          <td className="border border-gray-300 px-2 py-1.5 text-center">{idx + 1}</td>
+                          <td className="border border-gray-300 px-2 py-1.5">{tc(item.productName)}</td>
+                          <td className="border border-gray-300 px-2 py-1.5 text-center">{item.quantity}</td>
+                          <td className="border border-gray-300 px-2 py-1.5 text-right">{formatRSD(item.unitPrice)}</td>
+                          <td className="border border-gray-300 px-2 py-1.5 text-right font-medium">{formatRSD(item.quantity * item.unitPrice)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {/* Total */}
+                  <div className="flex justify-end mb-6">
+                    <div className="w-48 space-y-1">
+                      <div className="flex justify-between text-sm py-2 px-2 bg-gray-100 rounded font-bold border">
+                        <span>{t('common.total')}:</span>
+                        <span>{formatRSD(printNote.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Notes */}
+                  {printNote.notes && (
+                    <div className="mb-4 text-xs">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('common.notes')}</p>
+                      <p className="text-gray-600">{tc(printNote.notes)}</p>
+                    </div>
+                  )}
+                  {/* Invoice Number Reference */}
+                  {printNote.invoiceNumber && (
+                    <div className="mb-6 text-xs">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1 font-medium">{t('warehouse.invoiceRef')}</p>
+                      <p className="text-gray-600">{t('warehouse.invoice')} br: {printNote.invoiceNumber}</p>
+                    </div>
+                  )}
+                  {/* Signatures */}
+                  <div className="print-footer grid grid-cols-2 gap-16 mt-10 pt-6 border-t">
+                    <div className="text-center">
+                      <div className="border-b border-gray-300 mb-1 pb-8"></div>
+                      <p className="text-xs text-gray-400">{t('warehouse.issuerSignature')}</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="border-b border-gray-300 mb-1 pb-8"></div>
+                      <p className="text-xs text-gray-400">{t('warehouse.receiverSignature')}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : loading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
                 ))}
               </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button disabled={submitting} onClick={handleSubmit}>
-                {submitting ? t('common.saving') : editing ? t('common.saveChanges') : t('warehouse.createDeliveryNote')}
-              </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
-            </div>
-          </div>
-        )}
-
-        {viewMode !== 'form' && viewMode !== 'print' && (
-          loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : (
-            <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{t('common.number')}</TableHead>
-                  <TableHead className="text-xs">{t('common.partner')}</TableHead>
-                  <TableHead className="text-xs">{t('common.date')}</TableHead>
-                  <TableHead className="text-xs">{t('common.status')}</TableHead>
-                  <TableHead className="text-xs">{t('warehouse.invoice')}</TableHead>
-                  <TableHead className="text-xs">{t('common.notes')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {deliveryNotes.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      {t('warehouse.noDeliveryNotes')}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  deliveryNotes.map((dn) => (
-                    <TableRow key={dn.id}>
-                      <TableCell className="text-xs font-mono font-medium">{dn.number}</TableCell>
-                      <TableCell className="text-xs font-medium">{dn.partner?.name ? tc(dn.partner.name) : '-'}</TableCell>
-                      <TableCell className="text-xs">{formatDate(dn.date)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(dn.status)}`}>
-                          {getStatusLabel(dn.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{dn.invoiceNumber || '-'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes ? tc(dn.notes) : '-'}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(dn)} title={t('common.print')}>
-                            <Printer className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(dn)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(dn.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
+            ) : (
+              <div className="max-h-[500px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">{t('common.number')}</TableHead>
+                      <TableHead className="text-xs">{t('common.partner')}</TableHead>
+                      <TableHead className="text-xs">{t('common.date')}</TableHead>
+                      <TableHead className="text-xs">{t('common.status')}</TableHead>
+                      <TableHead className="text-xs">{t('warehouse.invoice')}</TableHead>
+                      <TableHead className="text-xs">{t('common.notes')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        ))}
-      </CardContent>
+                  </TableHeader>
+                  <TableBody>
+                    {deliveryNotes.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                          {t('warehouse.noDeliveryNotes')}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      deliveryNotes.map((dn) => (
+                        <TableRow key={dn.id}>
+                          <TableCell className="text-xs font-mono font-medium">{dn.number}</TableCell>
+                          <TableCell className="text-xs font-medium">{dn.partner?.name ? tc(dn.partner.name) : '-'}</TableCell>
+                          <TableCell className="text-xs">{formatDate(dn.date)}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={`text-xs px-2 py-0 ${getStatusColor(dn.status)}`}>
+                              {getStatusLabel(dn.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{dn.invoiceNumber || '-'}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{dn.notes ? tc(dn.notes) : '-'}</TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePrint(dn)} title={t('common.print')}>
+                                <Printer className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(dn)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(dn.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('warehouse.confirmDeleteDeliveryNote')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                >
+                  {deleting ? t('common.deleting') : t('common.delete')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </Card>
+      </TabsContent>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('warehouse.confirmDeleteDeliveryNote')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-            >
-              {deleting ? t('common.deleting') : t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Card>
+      <TabsContent value="dodaj">
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('warehouse.newDeliveryNote')}</CardTitle></CardHeader>
+          <CardContent>
+            {deliveryNoteForm}
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="uredi">
+        {editing && (
+          <Card key={editing.id}>
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('warehouse.editDeliveryNote')}: {editing.number}</CardTitle></CardHeader>
+            <CardContent>
+              {deliveryNoteForm}
+            </CardContent>
+          </Card>
+        )}
+      </TabsContent>
+    </Tabs>
   )
 }
 
@@ -1630,7 +1564,7 @@ function CenovniciTab() {
   const [priceLists, setPriceLists] = useState<PriceList[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  const [activeTab, setActiveTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<PriceList | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -1693,7 +1627,7 @@ function CenovniciTab() {
     setFormValidFrom('')
     setFormValidTo('')
     setLineItems([{ tempId: nextTempId(), productId: '', price: '0', discountPct: '0' }])
-    setViewMode('form')
+    setActiveTab('dodaj')
   }
 
   const openEdit = (pl: PriceList) => {
@@ -1708,11 +1642,11 @@ function CenovniciTab() {
       price: String(item.price),
       discountPct: String(item.discountPct),
     })))
-    setViewMode('form')
+    setActiveTab('uredi')
   }
 
   const handleCancel = () => {
-    setViewMode('list')
+    setActiveTab('pregled')
     setEditing(null)
   }
 
@@ -1752,7 +1686,7 @@ function CenovniciTab() {
         return
       }
       toast.success(isEditing ? t('warehouse.priceListUpdated') : t('warehouse.priceListCreated'))
-      setViewMode('list')
+      setActiveTab('pregled')
       setEditing(null)
       fetchPriceLists()
     } catch {
@@ -1782,212 +1716,227 @@ function CenovniciTab() {
     }
   }
 
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        {viewMode === 'form' ? (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCancel}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle className="text-base font-semibold">
-                {editing ? t('warehouse.editPriceList') : t('warehouse.newPriceList')}
-              </CardTitle>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-base font-semibold">{t('warehouse.priceLists')}</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{priceLists.length} {t('warehouse.priceListsCount')}</p>
-            </div>
-            <Button size="sm" className="gap-2" onClick={openCreate}>
-              <Plus className="h-4 w-4" /> {t('warehouse.newPriceList')}
-            </Button>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        {viewMode === 'form' ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.name')} *</Label>
-                <Input value={formName} onChange={(e) => setFormName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.description')}</Label>
-                <Input value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.validFrom')}</Label>
-                <Input type="date" value={formValidFrom} onChange={(e) => setFormValidFrom(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('warehouse.validTo')}</Label>
-                <Input type="date" value={formValidTo} onChange={(e) => setFormValidTo(e.target.value)} />
-              </div>
-            </div>
+  const priceListForm = (isEditing: boolean) => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs">{t('common.name')} *</Label>
+          <Input value={formName} onChange={(e) => setFormName(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('common.description')}</Label>
+          <Input value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.validFrom')}</Label>
+          <Input type="date" value={formValidFrom} onChange={(e) => setFormValidFrom(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{t('warehouse.validTo')}</Label>
+          <Input type="date" value={formValidTo} onChange={(e) => setFormValidTo(e.target.value)} />
+        </div>
+      </div>
 
-            {/* Line Items */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-semibold">{t('warehouse.priceListItems')}</Label>
-                <Button type="button" variant="outline" size="sm" className="h-7 gap-1" onClick={addLineItem}>
-                  <Plus className="h-3 w-3" /> {t('warehouse.addItem')}
-                </Button>
+      {/* Line Items */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs font-semibold">{t('warehouse.priceListItems')}</Label>
+          <Button type="button" variant="outline" size="sm" className="h-7 gap-1" onClick={addLineItem}>
+            <Plus className="h-3 w-3" /> {t('warehouse.addItem')}
+          </Button>
+        </div>
+        {lineItems.length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-4">{t('warehouse.noItems')}</p>
+        )}
+        <div className="space-y-2">
+          {lineItems.map((li) => (
+            <div key={li.tempId} className="grid grid-cols-[1fr_100px_80px_32px] gap-2 items-end">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">{t('warehouse.productLabel')}</Label>
+                <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder={t('common.select')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {products.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              {lineItems.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-4">{t('warehouse.noItems')}</p>
-              )}
-              <div className="space-y-2">
-                {lineItems.map((li) => (
-                  <div key={li.tempId} className="grid grid-cols-[1fr_100px_80px_32px] gap-2 items-end">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">{t('warehouse.productLabel')}</Label>
-                      <Select value={li.productId} onValueChange={(v) => updateLineItem(li.tempId, 'productId', v)}>
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder={t('common.select')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>{p.name} ({p.sku})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        className="h-8 text-xs"
-                        value={li.price}
-                        onChange={(e) => updateLineItem(li.tempId, 'price', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">{t('warehouse.discountPct')}</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        className="h-8 text-xs"
-                        value={li.discountPct}
-                        onChange={(e) => updateLineItem(li.tempId, 'discountPct', e.target.value)}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-500 hover:text-red-600"
-                      onClick={() => removeLineItem(li.tempId)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">{t('common.price')}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  className="h-8 text-xs"
+                  value={li.price}
+                  onChange={(e) => updateLineItem(li.tempId, 'price', e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">{t('warehouse.discountPct')}</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  className="h-8 text-xs"
+                  value={li.discountPct}
+                  onChange={(e) => updateLineItem(li.tempId, 'discountPct', e.target.value)}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-red-500 hover:text-red-600"
+                onClick={() => removeLineItem(li.tempId)}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <Button disabled={submitting} onClick={handleSubmit}>
+          {submitting ? t('common.saving') : isEditing ? t('common.saveChanges') : t('warehouse.createPriceList')}
+        </Button>
+        <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
+      </div>
+    </div>
+  )
+
+  return (
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'pregled' | 'dodaj' | 'uredi')} className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="pregled" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Pregled</TabsTrigger>
+        <TabsTrigger value="dodaj" className="gap-1.5"><Plus className="h-3.5 w-3.5" />Dodaj</TabsTrigger>
+        <TabsTrigger value="uredi" className="gap-1.5" disabled={!editing}><Pencil className="h-3.5 w-3.5" />Uredi</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="pregled">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">{t('warehouse.priceLists')}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{priceLists.length} {t('warehouse.priceListsCount')}</p>
+              </div>
+              <Button size="sm" className="gap-2" onClick={openCreate}>
+                <Plus className="h-4 w-4" /> {t('warehouse.newPriceList')}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
                 ))}
               </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button disabled={submitting} onClick={handleSubmit}>
-                {submitting ? t('common.saving') : editing ? t('common.saveChanges') : t('warehouse.createPriceList')}
-              </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>{t('common.cancel')}</Button>
-            </div>
-          </div>
-        ) : loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{t('common.name')}</TableHead>
-                  <TableHead className="text-xs">{t('common.description')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('warehouse.itemsCount')}</TableHead>
-                  <TableHead className="text-xs">{t('warehouse.validFrom')}</TableHead>
-                  <TableHead className="text-xs">{t('warehouse.validTo')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('common.status')}</TableHead>
-                  <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {priceLists.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
-                      {t('warehouse.noPriceLists')}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  priceLists.map((pl) => (
-                    <TableRow key={pl.id}>
-                      <TableCell className="text-xs font-medium">{tc(pl.name)}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{pl.description ? tc(pl.description) : '-'}</TableCell>
-                      <TableCell className="text-xs text-center">
-                        <Badge variant="secondary" className="text-xs px-2 py-0">
-                          {pl._count?.items ?? pl.items?.length ?? 0}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs">{pl.validFrom ? formatDate(pl.validFrom) : '-'}</TableCell>
-                      <TableCell className="text-xs">{pl.validTo ? formatDate(pl.validTo) : '-'}</TableCell>
-                      <TableCell className="text-center">
-                        {pl.isActive ? (
-                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs px-2 py-0">{t('common.active')}</Badge>
-                        ) : (
-                          <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-xs px-2 py-0">{t('common.inactive')}</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(pl)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(pl.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
+            ) : (
+              <div className="max-h-[500px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">{t('common.name')}</TableHead>
+                      <TableHead className="text-xs">{t('common.description')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('warehouse.itemsCount')}</TableHead>
+                      <TableHead className="text-xs">{t('warehouse.validFrom')}</TableHead>
+                      <TableHead className="text-xs">{t('warehouse.validTo')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('common.status')}</TableHead>
+                      <TableHead className="text-xs text-center">{t('common.actions')}</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
+                  </TableHeader>
+                  <TableBody>
+                    {priceLists.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-sm">
+                          {t('warehouse.noPriceLists')}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      priceLists.map((pl) => (
+                        <TableRow key={pl.id}>
+                          <TableCell className="text-xs font-medium">{tc(pl.name)}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{pl.description ? tc(pl.description) : '-'}</TableCell>
+                          <TableCell className="text-xs text-center">
+                            <Badge variant="secondary" className="text-xs px-2 py-0">
+                              {pl._count?.items ?? pl.items?.length ?? 0}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs">{pl.validFrom ? formatDate(pl.validFrom) : '-'}</TableCell>
+                          <TableCell className="text-xs">{pl.validTo ? formatDate(pl.validTo) : '-'}</TableCell>
+                          <TableCell className="text-center">
+                            {pl.isActive ? (
+                              <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs px-2 py-0">{t('common.active')}</Badge>
+                            ) : (
+                              <Badge className="bg-slate-100 text-slate-500 border-slate-200 text-xs px-2 py-0">{t('common.inactive')}</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(pl)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(pl.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('warehouse.confirmDeletePriceList')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-            >
-              {deleting ? t('common.deleting') : t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Card>
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('common.confirmDeleteTitle')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('warehouse.confirmDeletePriceList')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                >
+                  {deleting ? t('common.deleting') : t('common.delete')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="dodaj">
+        <Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('warehouse.newPriceList')}</CardTitle></CardHeader>
+          <CardContent>{priceListForm(false)}</CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="uredi">
+        {editing && (
+          <Card key={editing.id}>
+            <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('warehouse.editPriceList')}: {editing.name}</CardTitle></CardHeader>
+            <CardContent>{priceListForm(true)}</CardContent>
+          </Card>
+        )}
+      </TabsContent>
+    </Tabs>
   )
 }

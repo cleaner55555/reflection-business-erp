@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Search, Eye, Pencil, Trash2, CheckCircle2, Clock, Tag } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
@@ -103,74 +102,3 @@ export function TableSection({
   )
 }
 
-export function DetailDialog({ detailItem, open, onClose }: { detailItem: Coupon | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>Detalji kupona</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge className="bg-emerald-100 text-emerald-700 font-mono text-sm px-3">{detailItem.code}</Badge><span className="text-sm font-medium">{detailItem.name}</span></div>{getStatusBadge(detailItem.status)}</div>
-            <p className="text-xs text-muted-foreground">{detailItem.description}</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Tip</div><p className="text-xs font-medium">{getTypeLabel(detailItem.type)}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vrednost</div><p className="text-xs font-bold">{detailItem.type === 'percentage' ? `${detailItem.discountValue}%` : formatCurrency(detailItem.discountValue)}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Min. narudžba</div><p className="text-xs font-medium">{formatCurrency(detailItem.minOrder)}</p></div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Max. popust</div><p className="text-xs font-medium">{detailItem.maxDiscount > 0 ? formatCurrency(detailItem.maxDiscount) : 'Bez limita'}</p></div>
-            </div>
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs"><span className="text-muted-foreground">Korišćenje</span><span className="font-medium">{detailItem.usageCount} / {detailItem.usageLimit}</span></div>
-              <Progress value={detailItem.usageLimit > 0 ? (detailItem.usageCount / detailItem.usageLimit) * 100 : 0} className="h-2" />
-              <div className="flex justify-between text-xs text-muted-foreground"><span>Po korisniku: {detailItem.perUserLimit > 0 ? `${detailItem.perUserLimit}x` : 'Bez limita'}</span><span>Preostalo: {detailItem.usageLimit - detailItem.usageCount}</span></div>
-            </div>
-            <div className="flex justify-between text-xs"><span className="text-muted-foreground">Period</span><span>{formatDate(detailItem.startDate)} — {formatDate(detailItem.endDate)}</span></div>
-            <div className="flex flex-wrap gap-1">{detailItem.applicableCategories.map(c => <Badge key={c} variant="outline" className="text-xs">{c}</Badge>)}{detailItem.customerGroups.map(g => <Badge key={g} variant="outline" className="text-xs">{g}</Badge>)}</div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function EditDialog({
-  editItem, formData, open, onClose,
-  onFormDataChange, onSave
-}: {
-  editItem: Coupon | null
-  formData: { code: string; name: string; description: string; type: Coupon['type']; discountValue: number; minOrder: number; maxDiscount: number; usageLimit: number; perUserLimit: number; startDate: string; endDate: string }
-  open: boolean
-  onClose: () => void
-  onFormDataChange: (fn: (prev: typeof formData) => typeof formData) => void
-  onSave: () => void
-}) {
-  const update = (patch: Partial<typeof formData>) => onFormDataChange(prev => ({ ...prev, ...patch }))
-  return (
-    <Dialog open={open} onOpenChange={o => { if (!o) onClose() }}>
-      <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi kupon' : 'Novi kupon'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Kod *</Label><Input placeholder="SUMMER24" className="text-xs font-mono uppercase" value={formData.code} onChange={e => update({ code: e.target.value.toUpperCase() })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.type} onValueChange={v => update({ type: v as Coupon['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input placeholder="Naziv kupona" className="text-xs" value={formData.name} onChange={e => update({ name: e.target.value })} /></div>
-          <div className="grid gap-2"><Label className="text-xs">Opis</Label><Textarea placeholder="Opis akcije..." className="text-xs" value={formData.description} onChange={e => update({ description: e.target.value })} /></div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Vrednost</Label><Input type="number" className="text-xs" value={formData.discountValue || ''} onChange={e => update({ discountValue: Number(e.target.value) })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Min. narudžba</Label><Input type="number" className="text-xs" value={formData.minOrder || ''} onChange={e => update({ minOrder: Number(e.target.value) })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Max. popust</Label><Input type="number" className="text-xs" value={formData.maxDiscount || ''} onChange={e => update({ maxDiscount: Number(e.target.value) })} /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Limit (ukupno)</Label><Input type="number" className="text-xs" value={formData.usageLimit || ''} onChange={e => update({ usageLimit: Number(e.target.value) })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Po korisniku</Label><Input type="number" className="text-xs" value={formData.perUserLimit || ''} onChange={e => update({ perUserLimit: Number(e.target.value) })} /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Od</Label><Input type="date" className="text-xs" value={formData.startDate} onChange={e => update({ startDate: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Do</Label><Input type="date" className="text-xs" value={formData.endDate} onChange={e => update({ endDate: e.target.value })} /></div>
-          </div>
-        </div>
-        <DialogFooter><Button variant="outline" onClick={onClose}>Otkaži</Button><Button onClick={onSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

@@ -16,15 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-  DialogDescription,
-} from "@/components/ui/dialog";
+
 import {
   Table,
   TableBody,
@@ -525,19 +517,27 @@ export function SubcontractorsTab({
         </CardContent>
       </Card>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingId ? "Уреди подизвођача" : "Нови подизвођач"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingId
-                ? "Измените податке о подизвођачу"
-                : "Унесите податке за новог подизвођача"}
-            </DialogDescription>
-          </DialogHeader>
+      {/* Add/Edit Form */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>
+                  {editingId ? "Уреди подизвођача" : "Нови подизвођач"}
+                </CardTitle>
+                <CardDescription>
+                  {editingId
+                    ? "Измените податке о подизвођачу"
+                    : "Унесите податке за новог подизвођача"}
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="grid gap-4 py-2">
             {/* Basic info */}
             <div className="grid gap-4 sm:grid-cols-2">
@@ -836,7 +836,7 @@ export function SubcontractorsTab({
               />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button
               variant="outline"
               size="sm"
@@ -851,26 +851,33 @@ export function SubcontractorsTab({
             >
               Сачувај
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          {viewing && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+      {/* Detail Card */}
+      {detailOpen && viewing && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CardTitle>
                   {viewing.naziv}
-                  <StatusBadge
-                    status={viewing.status}
-                    labels={subcontractorStatusLabels}
-                    colors={subcontractorStatusColors}
-                  />
-                </DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-2">
+                </CardTitle>
+                <StatusBadge
+                  status={viewing.status}
+                  labels={subcontractorStatusLabels}
+                  colors={subcontractorStatusColors}
+                />
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDetailOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+          <div className="grid gap-4">
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">ПИБ</p>
@@ -992,12 +999,9 @@ export function SubcontractorsTab({
                   <div>Датум измене: {formatDatum(viewing.datumIzmene)}</div>
                 </div>
               </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
+          </CardContent>
+        </Card>
+      )}
       <AlertDialog
         open={!!deleteOpen}
         onOpenChange={(open) => !open && setDeleteOpen(null)}
@@ -1318,19 +1322,27 @@ export function ContractsTab({
         </CardContent>
       </Card>
 
-      {/* Contract Form Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingId ? "Уреди уговор" : "Нови уговор"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingId
-                ? "Измените податке уговора"
-                : "Унесите податке за нови уговор"}
-            </DialogDescription>
-          </DialogHeader>
+      {/* Contract Form Card */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>
+                  {editingId ? "Уреди уговор" : "Нови уговор"}
+                </CardTitle>
+                <CardDescription>
+                  {editingId
+                    ? "Измените податке уговора"
+                    : "Унесите податке за нови уговор"}
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="grid gap-4 py-2">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
@@ -1517,7 +1529,7 @@ export function ContractsTab({
               />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button
               variant="outline"
               size="sm"
@@ -1534,9 +1546,10 @@ export function ContractsTab({
             >
               Сачувај
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
       <AlertDialog
         open={!!deleteOpen}
@@ -1945,14 +1958,20 @@ export function DeliveriesTab({
         </CardContent>
       </Card>
 
-      {/* Delivery Form Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingId ? "Уреди испорукку" : "Нова испорука"}
-            </DialogTitle>
-          </DialogHeader>
+      {/* Delivery Form Card */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>
+                {editingId ? "Уреди испорукку" : "Нова испорука"}
+              </CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="grid gap-4 py-2">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
@@ -2147,7 +2166,7 @@ export function DeliveriesTab({
               />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button
               variant="outline"
               size="sm"
@@ -2164,26 +2183,33 @@ export function DeliveriesTab({
             >
               Сачувај
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          {viewing && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+      {/* Detail Card */}
+      {detailOpen && viewing && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CardTitle>
                   Испорука {viewing.brojIsporuke}
-                  <StatusBadge
-                    status={viewing.status}
-                    labels={deliveryStatusLabels}
-                    colors={deliveryStatusColors}
-                  />
-                </DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-3 py-2 text-sm">
+                </CardTitle>
+                <StatusBadge
+                  status={viewing.status}
+                  labels={deliveryStatusLabels}
+                  colors={deliveryStatusColors}
+                />
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDetailOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+          <div className="grid gap-3 text-sm">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <span className="text-xs text-muted-foreground">
@@ -2275,10 +2301,9 @@ export function DeliveriesTab({
                   </>
                 )}
               </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
       <AlertDialog
         open={!!deleteOpen}
@@ -2664,14 +2689,20 @@ export function FinanceTab({
         </CardContent>
       </Card>
 
-      {/* Payment Form Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingId ? "Уреди плаћање" : "Ново плаћање"}
-            </DialogTitle>
-          </DialogHeader>
+      {/* Payment Form Card */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>
+                {editingId ? "Уреди плаћање" : "Ново плаћање"}
+              </CardTitle>
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="grid gap-4 py-2">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
@@ -2815,7 +2846,7 @@ export function FinanceTab({
               />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button
               variant="outline"
               size="sm"
@@ -2832,9 +2863,10 @@ export function FinanceTab({
             >
               Сачувај
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
       <AlertDialog
         open={!!deleteOpen}

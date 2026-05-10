@@ -45,14 +45,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
+// Dialog imports removed — converted to inline Card forms
 import {
   Select,
   SelectContent,
@@ -634,18 +627,25 @@ export function WorkOrderFormDialog({
     setForm({ ...form, [key]: value });
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <div>
+          <CardTitle>{title}</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
             {isEditing
               ? "Измените податке радног налога"
               : "Попуните податке за нови радни налог"}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-2">
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onOpenChange(false)}>
+          <XCircle className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="wo-title">Назив *</Label>
             <Input
@@ -806,16 +806,16 @@ export function WorkOrderFormDialog({
             </div>
           )}
         </div>
-        <DialogFooter>
+        <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Откажи
           </Button>
           <Button onClick={onSubmit} disabled={!form.title.trim()}>
             {isEditing ? "Сачувај измене" : "Креирај налог"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -842,23 +842,28 @@ export function WorkOrderDetailDialog({
       ? Math.round((completedTasks / order.tasks.length) * 100)
       : 0;
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-mono text-muted-foreground">
-                {order.orderNumber}
-              </p>
-              <DialogTitle className="text-lg">{order.title}</DialogTitle>
-            </div>
-            <div className="flex items-center gap-2">
-              <PriorityBadge priority={order.priority} />
-              <StatusBadge status={order.status} />
-            </div>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-mono text-muted-foreground">
+              {order.orderNumber}
+            </p>
+            <CardTitle className="text-lg">{order.title}</CardTitle>
           </div>
-        </DialogHeader>
+          <div className="flex items-center gap-2">
+            <PriorityBadge priority={order.priority} />
+            <StatusBadge status={order.status} />
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onOpenChange(false)}>
+              <XCircle className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
 
         <div className="space-y-4">
           {/* Description */}
@@ -969,7 +974,7 @@ export function WorkOrderDetailDialog({
           )}
         </div>
 
-        <DialogFooter>
+        <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Затвори
           </Button>
@@ -981,9 +986,9 @@ export function WorkOrderDetailDialog({
           >
             <Edit2 className="h-4 w-4 mr-2" /> Измени
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1029,20 +1034,27 @@ export function TaskFormDialog({
     setForm({ ...form, [key]: value });
   };
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader>
-          <DialogTitle>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <div>
+          <CardTitle>
             {isEditing ? "Измени задатак" : "Нови задатак"}
-          </DialogTitle>
-          <DialogDescription>
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
             {isEditing
               ? "Измените податке задатка"
               : "Додајте нови задатак у радни налог"}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-2">
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onOpenChange(false)}>
+          <XCircle className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="task-title">Назив задатка *</Label>
             <Input
@@ -1125,16 +1137,16 @@ export function TaskFormDialog({
             </div>
           </div>
         </div>
-        <DialogFooter>
+        <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Откажи
           </Button>
           <Button onClick={onSubmit} disabled={!form.title.trim()}>
             {isEditing ? "Сачувај" : "Додај задатак"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

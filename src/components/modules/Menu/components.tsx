@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -135,55 +134,3 @@ export function EditTab({ data, onEdit, onDelete }: { data: MenuItem[]; onEdit: 
   )
 }
 
-/* ---- Detail Dialog ---- */
-export function DetailDialog({ detailItem, open, onClose }: { detailItem: MenuItem | null; open: boolean; onClose: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader><DialogTitle>{detailItem?.name}</DialogTitle></DialogHeader>
-        {detailItem && (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">{detailItem.description}</p>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Kategorija', CATEGORIES[detailItem.category]?.label],
-                ['Cena', formatRSD(detailItem.price)],
-                ['Vreme pripreme', `${detailItem.preparationTime} min`],
-                ['Kalorije', `${detailItem.calories} kcal`],
-                ['Ocena', `${detailItem.rating}/5 (${detailItem.orderCount} narudžbi)`],
-                ['Dostupno', detailItem.isAvailable ? 'Da' : 'Ne'],
-                ['Vegetarijansko', detailItem.isVegetarian ? 'Da' : 'Ne'],
-                ['Vegansko', detailItem.isVegan ? 'Da' : 'Ne'],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-              ))}
-            </div>
-            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Sastojci</div><div className="flex flex-wrap gap-1">{detailItem.ingredients.map(ing => <Badge key={ing} className="text-xs bg-muted">{ing}</Badge>)}</div></div>
-            {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-xs bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-/* ---- Edit Dialog ---- */
-export function EditDialog({ form, editItem, open, onClose, onFormChange, onSave }: { form: Partial<MenuItem>; editItem: MenuItem | null; open: boolean; onClose: () => void; onFormChange: (f: Partial<MenuItem>) => void; onSave: () => void }) {
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Novo jelo'}</DialogTitle></DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => onFormChange({ ...form, name: e.target.value })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Cena</Label><Input className="text-xs" type="number" value={form.price || ''} onChange={e => onFormChange({ ...form, price: Number(e.target.value) })} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'main_course'} onValueChange={v => onFormChange({ ...form, category: v as MenuItem['category'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid gap-2"><Label className="text-xs">Dostupno</Label><Select value={form.isAvailable ? 'yes' : 'no'} onValueChange={v => onFormChange({ ...form, isAvailable: v === 'yes' })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yes">Da</SelectItem><SelectItem value="no">Ne</SelectItem></SelectContent></Select></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Opis</Label><Input className="text-xs" value={form.description || ''} onChange={e => onFormChange({ ...form, description: e.target.value })} /></div>
-        </div>
-        <DialogFooter><Button variant="outline" size="sm" onClick={onClose}>Otkaži</Button><Button size="sm" onClick={onSave}>Sačuvaj</Button></DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
