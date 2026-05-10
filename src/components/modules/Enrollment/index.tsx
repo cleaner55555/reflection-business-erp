@@ -56,7 +56,7 @@ export function Enrollment() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [levelFilter, setLevelFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<Enrollment | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Enrollment>>({})
@@ -98,13 +98,13 @@ export function Enrollment() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ applicantName: '', jmbg: '', email: '', phone: '', program: '', studyLevel: 'bachelor', status: 'pending', applicationDate: new Date().toISOString().split('T')[0], entranceExamScore: 0, highSchoolGPA: 0, previousSchool: '', city: '', documentsComplete: false, interviewDate: '', notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const openEdit = (item: Enrollment) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const handleSave = async () => {
@@ -124,7 +124,7 @@ export function Enrollment() {
         setData(prev => [created, ...prev])
         toast.success('Prijava kreirana')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled')
     } catch {
       toast.error(editItem ? 'Greška pri ažuriranju prijave' : 'Greška pri kreiranju prijave')
     } finally {
@@ -220,21 +220,7 @@ export function Enrollment() {
         </CardContent>
       </Card>)}
 
-      {dialogOpen && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editItem ? 'Uredi prijavu' : 'Nova prijava'}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-        <CardContent>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-xs" value={form.applicantName || ''} onChange={e => setForm({ ...form, applicantName: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pending">Na čekanju</SelectItem><SelectItem value="documents_submitted">Dokumenta</SelectItem><SelectItem value="under_review">U proceduri</SelectItem><SelectItem value="accepted">Prihvaćen</SelectItem><SelectItem value="rejected">Odbijen</SelectItem><SelectItem value="enrolled">Upisan</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Program</Label><Input className="text-xs" value={form.program || ''} onChange={e => setForm({ ...form, program: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Prosek</Label><Input className="text-xs" type="number" step="0.01" value={form.highSchoolGPA || ''} onChange={e => setForm({ ...form, highSchoolGPA: Number(e.target.value) })} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
-        </CardContent>
-      </Card>)}
+      
     </div>
   )
 }

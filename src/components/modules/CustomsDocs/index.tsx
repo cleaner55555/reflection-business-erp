@@ -67,7 +67,7 @@ export function CustomsDocs() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [detailId, setDetailId] = useState<string | null>(null)
   const [editItem, setEditItem] = useState<CustomsDocument | null>(null)
   const [activeTab, setActiveTab] = useState('list')
@@ -110,11 +110,11 @@ export function CustomsDocs() {
   }, [])
 
   const handleOpenCreate = useCallback(() => {
-    setFormData({ declarationNumber: `CU-${new Date().getFullYear()}-${String(data.length + 1).padStart(5, '0')}`, docType: 'import', country: '', borderCrossing: '', declarantName: '', declarantPIB: '', goodsDescription: '', hsCode: '', totalValue: 0, totalWeight: 0, currency: 'EUR', vehiclePlate: '', referenceNumber: '', notes: '' }); setDialogOpen(true)
+    setFormData({ declarationNumber: `CU-${new Date().getFullYear()}-${String(data.length + 1).padStart(5, '0')}`, docType: 'import', country: '', borderCrossing: '', declarantName: '', declarantPIB: '', goodsDescription: '', hsCode: '', totalValue: 0, totalWeight: 0, currency: 'EUR', vehiclePlate: '', referenceNumber: '', notes: '' }); setActiveTab('list'); setSubTab('dodaj')
   }, [data.length])
 
   const handleOpenEdit = useCallback((item: CustomsDocument) => {
-    setFormData({ declarationNumber: item.declarationNumber, docType: item.docType, country: item.country, borderCrossing: item.borderCrossing, declarantName: item.declarantName, declarantPIB: item.declarantPIB, goodsDescription: item.goodsDescription, hsCode: item.hsCode, totalValue: item.totalValue, totalWeight: item.totalWeight, currency: item.currency, vehiclePlate: item.vehiclePlate, referenceNumber: item.referenceNumber, notes: item.notes }); setEditItem(item); setDialogOpen(true)
+    setFormData({ declarationNumber: item.declarationNumber, docType: item.docType, country: item.country, borderCrossing: item.borderCrossing, declarantName: item.declarantName, declarantPIB: item.declarantPIB, goodsDescription: item.goodsDescription, hsCode: item.hsCode, totalValue: item.totalValue, totalWeight: item.totalWeight, currency: item.currency, vehiclePlate: item.vehiclePlate, referenceNumber: item.referenceNumber, notes: item.notes }); setEditItem(item); setActiveTab('list'); setSubTab('dodaj')
   }, [])
 
   const handleSave = useCallback(async () => {
@@ -145,7 +145,7 @@ export function CustomsDocs() {
         setData(prev => [{ ...created, items: typeof created.items === 'string' ? JSON.parse(created.items) : created.items || [] }, ...prev])
         toast.success('Novi dokument kreiran')
       }
-      setDialogOpen(false); setEditItem(null)
+      setActiveTab('list'); setSubTab('pregled'); setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }, [formData, editItem])
 
@@ -178,6 +178,10 @@ export function CustomsDocs() {
         <TabsList><TabsTrigger value="list">Sve prijave</TabsTrigger><TabsTrigger value="summary">Rezime</TabsTrigger></TabsList>
 
         <TabsContent value="list" className="space-y-4">
+          <Tabs value={subTab} onValueChange={v => setSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj" disabled={!editItem && subTab !== 'dodaj'}>{editItem ? 'Uredi' : 'Dodaj'}</TabsTrigger></TabsList>
+            <TabsContent value="pregled" className="mt-4">
+
           <Card>
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -226,6 +230,49 @@ export function CustomsDocs() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+            </TabsContent>
+
+        <TabsContent value="dodaj" className="space-y-4">
+          <Card className="max-w-[600px]">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSubTab('pregled'); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle className="text-base">{editItem ? 'Uredi dokument' : 'Novi carinski dokument'}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-1"><Label className="text-xs">Broj prijave</Label><Input className="text-xs font-mono" value={formData.declarationNumber} onChange={e => setFormData(p => ({ ...p, declarationNumber: e.target.value }))} /></div>
+                  <div className="grid gap-1"><Label className="text-xs">Tip dokumenta</Label><Select value={formData.docType} onValueChange={v => setFormData(p => ({ ...p, docType: v as 'import' | 'export' | 'transit' }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="import">Uvoz</SelectItem><SelectItem value="export">Izvoz</SelectItem><SelectItem value="transit">Tranzit</SelectItem></SelectContent></Select></div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-1"><Label className="text-xs">Zemlja</Label><Input className="text-xs" value={formData.country} onChange={e => setFormData(p => ({ ...p, country: e.target.value }))} /></div>
+                  <div className="grid gap-1"><Label className="text-xs">Granični prelaz</Label><Input className="text-xs" value={formData.borderCrossing} onChange={e => setFormData(p => ({ ...p, borderCrossing: e.target.value }))} /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-1"><Label className="text-xs">Deklarant</Label><Input className="text-xs" value={formData.declarantName} onChange={e => setFormData(p => ({ ...p, declarantName: e.target.value }))} /></div>
+                  <div className="grid gap-1"><Label className="text-xs">PIB</Label><Input className="text-xs font-mono" value={formData.declarantPIB} onChange={e => setFormData(p => ({ ...p, declarantPIB: e.target.value }))} /></div>
+                </div>
+                <div className="grid gap-1"><Label className="text-xs">Opis robe</Label><Textarea className="text-xs" rows={2} value={formData.goodsDescription} onChange={e => setFormData(p => ({ ...p, goodsDescription: e.target.value }))} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-1"><Label className="text-xs">HS kod</Label><Input className="text-xs font-mono" value={formData.hsCode} onChange={e => setFormData(p => ({ ...p, hsCode: e.target.value }))} /></div>
+                  <div className="grid gap-1"><Label className="text-xs">Referentni broj</Label><Input className="text-xs" value={formData.referenceNumber} onChange={e => setFormData(p => ({ ...p, referenceNumber: e.target.value }))} /></div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="grid gap-1"><Label className="text-xs">Vrednost</Label><Input className="text-xs" type="number" value={formData.totalValue} onChange={e => setFormData(p => ({ ...p, totalValue: Number(e.target.value) }))} /></div>
+                  <div className="grid gap-1"><Label className="text-xs">Težina (kg)</Label><Input className="text-xs" type="number" value={formData.totalWeight} onChange={e => setFormData(p => ({ ...p, totalWeight: Number(e.target.value) }))} /></div>
+                  <div className="grid gap-1"><Label className="text-xs">Valuta</Label><Input className="text-xs" value={formData.currency} onChange={e => setFormData(p => ({ ...p, currency: e.target.value }))} /></div>
+                </div>
+                <div className="grid gap-1"><Label className="text-xs">Registarski broj vozila</Label><Input className="text-xs" value={formData.vehiclePlate} onChange={e => setFormData(p => ({ ...p, vehiclePlate: e.target.value }))} /></div>
+                <div className="grid gap-1"><Label className="text-xs">Napomene</Label><Textarea className="text-xs" rows={2} value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
+              </div>
+              <div className="flex gap-2 pt-2"><Button variant="outline" onClick={() => { setSubTab('pregled'); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="summary" className="space-y-4">
@@ -293,43 +340,7 @@ export function CustomsDocs() {
       </Card>)}
 
       {/* Create/Edit Card */}
-      {dialogOpen && (<Card className="max-w-[600px]">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editItem ? 'Uredi prijavu' : 'Nova carinska prijava'}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Broj prijave</Label><Input placeholder="CU-2024-00001" className="text-xs font-mono" value={formData.declarationNumber} onChange={e => setFormData(p => ({ ...p, declarationNumber: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.docType} onValueChange={v => setFormData(p => ({ ...p, docType: v as CustomsDocument['docType'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(DOC_TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Deklarant *</Label><Input placeholder="Naziv firme" className="text-xs" value={formData.declarantName} onChange={e => setFormData(p => ({ ...p, declarantName: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">PIB</Label><Input placeholder="100000000" className="text-xs" value={formData.declarantPIB} onChange={e => setFormData(p => ({ ...p, declarantPIB: e.target.value }))} /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Država porekla</Label><Input placeholder="Nemačka" className="text-xs" value={formData.country} onChange={e => setFormData(p => ({ ...p, country: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Granični prelaz</Label><Input placeholder="Šid" className="text-xs" value={formData.borderCrossing} onChange={e => setFormData(p => ({ ...p, borderCrossing: e.target.value }))} /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Opis robe *</Label><Input placeholder="Elektronska oprema" className="text-xs" value={formData.goodsDescription} onChange={e => setFormData(p => ({ ...p, goodsDescription: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">HS kod</Label><Input placeholder="8471.30" className="text-xs font-mono" value={formData.hsCode} onChange={e => setFormData(p => ({ ...p, hsCode: e.target.value }))} /></div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Vrednost (EUR)</Label><Input type="number" className="text-xs" value={formData.totalValue || ''} onChange={e => setFormData(p => ({ ...p, totalValue: Number(e.target.value) }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" className="text-xs" value={formData.totalWeight || ''} onChange={e => setFormData(p => ({ ...p, totalWeight: Number(e.target.value) }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Vozilo</Label><Input placeholder="BG-111-AB" className="text-xs" value={formData.vehiclePlate} onChange={e => setFormData(p => ({ ...p, vehiclePlate: e.target.value }))} /></div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Referentni broj</Label><Input placeholder="REF-DE-2024-001" className="text-xs font-mono" value={formData.referenceNumber} onChange={e => setFormData(p => ({ ...p, referenceNumber: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Valuta</Label><Select value={formData.currency} onValueChange={v => setFormData(p => ({ ...p, currency: v }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EUR">EUR</SelectItem><SelectItem value="USD">USD</SelectItem><SelectItem value="RSD">RSD</SelectItem></SelectContent></Select></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Napomene..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
-          <div className="flex gap-2 pt-2"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
-        </CardContent>
-      </Card>)}
+      
     </div>
   )
 }

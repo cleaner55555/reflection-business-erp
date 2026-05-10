@@ -110,10 +110,10 @@ export function Routes() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailId, setDetailId] = useState<string | null>(null)
+  const [selected, setSelected] = useState<RouteItem | null>(null)
   const [editItem, setEditItem] = useState<RouteItem | null>(null)
   const [activeTab, setActiveTab] = useState('list')
+  const [listSubTab, setListSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [formData, setFormData] = useState({ name: '', code: '', driver: '', vehicle: '', origin: '', destination: '', priority: 'medium' as RouteItem['priority'], totalDistance: 0, estimatedTime: '', fuelCost: 0, tollCost: 0, notes: '' })
 
   const fetchData = useCallback(async () => {
@@ -157,13 +157,13 @@ export function Routes() {
   const handleOpenCreate = () => {
     setFormData({ name: '', code: `RT-${new Date().getFullYear()}-${String(data.length + 1).padStart(3, '0')}`, driver: '', vehicle: '', origin: '', destination: '', priority: 'medium', totalDistance: 0, estimatedTime: '', fuelCost: 0, tollCost: 0, notes: '' })
     setEditItem(null)
-    setDialogOpen(true)
+    setListSubTab('dodaj')
   }
 
   const handleOpenEdit = (item: RouteItem) => {
     setFormData({ name: item.name, code: item.code, driver: item.driver, vehicle: item.vehicle, origin: item.origin, destination: item.destination, priority: item.priority, totalDistance: item.totalDistance, estimatedTime: item.estimatedTime, fuelCost: item.fuelCost, tollCost: item.tollCost, notes: item.notes })
     setEditItem(item)
-    setDialogOpen(true)
+    setListSubTab('dodaj')
   }
 
   const handleSave = useCallback(async () => {
@@ -176,15 +176,13 @@ export function Routes() {
         const saved = await res.json()
         if (editItem) { setData(prev => prev.map(r => r.id === editItem.id ? { ...r, ...formData } : r)) } else { setData(prev => [saved, ...prev]) }
         toast.success(editItem ? 'Ruta ažurirana' : 'Nova ruta kreirana')
-        setDialogOpen(false)
+        setListSubTab('pregled')
         setEditItem(null)
       }
     } catch { toast.error('Greška pri čuvanju') }
   }, [editItem, formData, activeCompanyId])
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /><Skeleton className="h-32" /></div>
-
-  const detailItem = detailId ? data.find(i => i.id === detailId) : null
 
   return (
     <div className="space-y-6">
@@ -193,7 +191,9 @@ export function Routes() {
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30"><Navigation className="h-5 w-5 text-blue-700 dark:text-blue-400" /></div>
           <div><h1 className="text-2xl font-bold tracking-tight">Rute</h1><p className="text-sm text-muted-foreground">Upravljanje transportnim rutama</p></div></div>
-        <Button size="sm" className="gap-2" onClick={handleOpenCreate}><Plus className="h-4 w-4" />Nova ruta</Button>
+        {activeTab === 'list' && listSubTab === 'pregled' && (
+          <Button size="sm" className="gap-2" onClick={handleOpenCreate}><Plus className="h-4 w-4" />Nova ruta</Button>
+        )}
       </div>
 
       {/* Stats */}
@@ -208,59 +208,174 @@ export function Routes() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setListSubTab('pregled'); setSelected(null); setEditItem(null) }}>
         <TabsList><TabsTrigger value="list">Lista ruta</TabsTrigger><TabsTrigger value="overview">Pregled</TabsTrigger></TabsList>
 
-        <TabsContent value="list" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <CardTitle className="text-base">Sve rute</CardTitle>
-                <div className="flex gap-2 items-center flex-wrap">
-                  <div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-40 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div>
-                  <Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">Svi statusi</SelectItem>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-                  <Select value={priorityFilter || 'all'} onValueChange={v => setPriorityFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-24 h-8 text-xs"><SelectValue placeholder="Prioritet" /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-[520px] overflow-y-auto">
-                <Table>
-                  <TableHeader><TableRow>
-                    <TableHead className="text-xs">Kod</TableHead>
-                    <TableHead className="text-xs">Ruta</TableHead>
-                    <TableHead className="text-xs hidden sm:table-cell">Vozač</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs hidden md:table-cell">Prioritet</TableHead>
-                    <TableHead className="text-xs hidden lg:table-cell">Dist.</TableHead>
-                    <TableHead className="text-xs hidden lg:table-cell">Prog.</TableHead>
-                    <TableHead className="text-xs text-right">Akcije</TableHead>
-                  </TableRow></TableHeader>
-                  <TableBody>
-                    {filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema pronađenih ruta</TableCell></TableRow> : filtered.map(item => {
-                      const progress = calcRouteProgress(item.stops)
-                      return (
-                        <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
-                          <TableCell className="text-xs font-mono">{item.code}</TableCell>
-                          <TableCell><div className="text-xs font-medium">{item.name}</div><div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{item.origin} → {item.destination}</div></TableCell>
-                          <TableCell className="text-xs hidden sm:table-cell"><div className="flex items-center gap-1"><Truck className="h-3 w-3 text-muted-foreground" />{item.driver}</div></TableCell>
-                          <TableCell>{getStatusBadge(item.status)}</TableCell>
-                          <TableCell className="hidden md:table-cell">{getPriorityBadge(item.priority)}</TableCell>
-                          <TableCell className="text-xs hidden lg:table-cell">{item.totalDistance} km</TableCell>
-                          <TableCell className="hidden lg:table-cell"><div className="w-16"><Progress value={progress} className="h-1.5" /><span className="text-xs text-muted-foreground">{progress}%</span></div></TableCell>
-                          <TableCell className="text-right"><div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                          </div></TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="list">
+          <Tabs value={listSubTab} onValueChange={setListSubTab}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">{editItem ? 'Uredi' : 'Dodaj'}</TabsTrigger>
+              <TabsTrigger value="detalji" disabled={!selected}>Detalji</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="pregled" className="space-y-4 mt-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <CardTitle className="text-base">Sve rute</CardTitle>
+                    <div className="flex gap-2 items-center flex-wrap">
+                      <div className="relative"><Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pretraga..." className="pl-8 h-8 w-40 text-xs" value={search} onChange={e => setSearch(e.target.value)} /></div>
+                      <Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-28 h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">Svi statusi</SelectItem>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+                      <Select value={priorityFilter || 'all'} onValueChange={v => setPriorityFilter(v === 'all' ? '' : v)}><SelectTrigger className="w-24 h-8 text-xs"><SelectValue placeholder="Prioritet" /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-h-[520px] overflow-y-auto">
+                    <Table>
+                      <TableHeader><TableRow>
+                        <TableHead className="text-xs">Kod</TableHead>
+                        <TableHead className="text-xs">Ruta</TableHead>
+                        <TableHead className="text-xs hidden sm:table-cell">Vozač</TableHead>
+                        <TableHead className="text-xs">Status</TableHead>
+                        <TableHead className="text-xs hidden md:table-cell">Prioritet</TableHead>
+                        <TableHead className="text-xs hidden lg:table-cell">Dist.</TableHead>
+                        <TableHead className="text-xs hidden lg:table-cell">Prog.</TableHead>
+                        <TableHead className="text-xs text-right">Akcije</TableHead>
+                      </TableRow></TableHeader>
+                      <TableBody>
+                        {filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema pronađenih ruta</TableCell></TableRow> : filtered.map(item => {
+                          const progress = calcRouteProgress(item.stops)
+                          return (
+                            <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => { setSelected(item); setListSubTab('detalji') }}>
+                              <TableCell className="text-xs font-mono">{item.code}</TableCell>
+                              <TableCell><div className="text-xs font-medium">{item.name}</div><div className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{item.origin} → {item.destination}</div></TableCell>
+                              <TableCell className="text-xs hidden sm:table-cell"><div className="flex items-center gap-1"><Truck className="h-3 w-3 text-muted-foreground" />{item.driver}</div></TableCell>
+                              <TableCell>{getStatusBadge(item.status)}</TableCell>
+                              <TableCell className="hidden md:table-cell">{getPriorityBadge(item.priority)}</TableCell>
+                              <TableCell className="text-xs hidden lg:table-cell">{item.totalDistance} km</TableCell>
+                              <TableCell className="hidden lg:table-cell"><div className="w-16"><Progress value={progress} className="h-1.5" /><span className="text-xs text-muted-foreground">{progress}%</span></div></TableCell>
+                              <TableCell className="text-right"><div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSelected(item); setListSubTab('detalji') }}><Eye className="h-3.5 w-3.5" /></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                              </div></TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="dodaj" className="space-y-4 mt-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => { setListSubTab('pregled'); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle className="text-base">{editItem ? 'Uredi rutu' : 'Nova ruta'}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2"><Label className="text-xs">Kod rute</Label><Input placeholder="RT-2024-001" className="text-xs" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /></div>
+                      <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v as RouteItem['priority'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
+                    <div className="grid gap-2"><Label className="text-xs">Naziv rute *</Label><Input placeholder="Beograd - Novi Sad" className="text-xs" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2"><Label className="text-xs">Polazište *</Label><Input placeholder="Beograd" className="text-xs" value={formData.origin} onChange={e => setFormData(p => ({ ...p, origin: e.target.value }))} /></div>
+                      <div className="grid gap-2"><Label className="text-xs">Odredište *</Label><Input placeholder="Novi Sad" className="text-xs" value={formData.destination} onChange={e => setFormData(p => ({ ...p, destination: e.target.value }))} /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2"><Label className="text-xs">Vozač *</Label><Select value={formData.driver} onValueChange={v => setFormData(p => ({ ...p, driver: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozača" /></SelectTrigger><SelectContent>{DRIVERS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select></div>
+                      <div className="grid gap-2"><Label className="text-xs">Vozilo</Label><Select value={formData.vehicle} onValueChange={v => setFormData(p => ({ ...p, vehicle: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozilo" /></SelectTrigger><SelectContent>{VEHICLES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="grid gap-2"><Label className="text-xs">Udaljenost (km)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.totalDistance || ''} onChange={e => setFormData(p => ({ ...p, totalDistance: Number(e.target.value) }))} /></div>
+                      <div className="grid gap-2"><Label className="text-xs">Procenjeno vreme</Label><Input placeholder="2h 30m" className="text-xs" value={formData.estimatedTime} onChange={e => setFormData(p => ({ ...p, estimatedTime: e.target.value }))} /></div>
+                      <div className="grid gap-2"><Label className="text-xs">Trošak goriva (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.fuelCost || ''} onChange={e => setFormData(p => ({ ...p, fuelCost: Number(e.target.value) }))} /></div>
+                    </div>
+                    <div className="grid gap-2"><Label className="text-xs">Putarine (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.tollCost || ''} onChange={e => setFormData(p => ({ ...p, tollCost: Number(e.target.value) }))} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Dodatne informacije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => { setListSubTab('pregled'); setEditItem(null) }}>Otkaži</Button>
+                    <Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="detalji" className="space-y-4 mt-4">
+              {selected && (
+                <Card>
+                  <CardHeader className="flex flex-row items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => { setListSubTab('pregled'); setSelected(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle className="text-base">Detalji rute</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div><p className="text-lg font-bold">{selected.name}</p><p className="text-xs text-muted-foreground">{selected.code}</p></div>
+                        <div className="flex gap-2">{getStatusBadge(selected.status)}{getPriorityBadge(selected.priority)}</div>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{selected.driver}</p></div>
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-medium">{selected.vehicle}</p></div>
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Udaljenost</div><p className="text-xs font-medium">{selected.totalDistance} km</p></div>
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vreme</div><p className="text-xs font-medium">{selected.estimatedTime}</p></div>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Gorivo</div><p className="text-xs font-medium">{formatCurrency(selected.fuelCost)}</p></div>
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Putarine</div><p className="text-xs font-medium">{formatCurrency(selected.tollCost)}</p></div>
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xs font-bold">{formatCurrency(selected.fuelCost + selected.tollCost)}</p></div>
+                      </div>
+
+                      {/* Route visualization */}
+                      <div className="p-4 rounded-lg border">
+                        <p className="text-xs font-medium mb-3 flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />Trasa: {selected.origin} → {selected.destination}</p>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3">
+                            <div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /></div>
+                            <div><p className="text-xs font-medium">{selected.origin}</p><p className="text-xs text-muted-foreground">Polazak: {formatDate(selected.startDate)}</p></div>
+                          </div>
+                          {selected.stops.map((stop, idx) => (
+                            <div key={stop.id} className="flex items-center gap-3 ml-2">
+                              <div className="w-px h-4 bg-border" />
+                              <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.status === 'completed' ? 'bg-emerald-100' : stop.status === 'in_transit' ? 'bg-blue-100' : 'bg-slate-100'}`}>
+                                {stop.status === 'completed' ? <CheckCircle2 className="h-3 w-3 text-emerald-600" /> : stop.status === 'in_transit' ? <Navigation className="h-3 w-3 text-blue-600" /> : <span className="text-xs font-bold text-slate-500">{idx + 1}</span>}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2"><p className="text-xs font-medium">{stop.location}</p>{getStopStatusBadge(stop.status)}</div>
+                                <p className="text-xs text-muted-foreground">{stop.address}</p>
+                                <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
+                                  <span>{stop.cargo} · {stop.weight}kg</span>
+                                  <span>{stop.estimatedArrival} - {stop.estimatedDeparture}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          <div className="flex items-center gap-3">
+                            <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center"><MapPin className="h-3.5 w-3.5 text-blue-600" /></div>
+                            <div><p className="text-xs font-medium">{selected.destination}</p><p className="text-xs text-muted-foreground">{selected.endDate ? `Dolazak: ${formatDate(selected.endDate)}` : 'Predviđeni dolazak'}</p></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Progress value={calcRouteProgress(selected.stops)} className="h-2" />
+                      <p className="text-xs text-muted-foreground text-center">Napredak: {calcRouteProgress(selected.stops)}% · {selected.stops.filter(s => s.status === 'completed').length}/{selected.stops.length} stanica</p>
+
+                      {selected.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{selected.notes}</p></div>}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
@@ -347,111 +462,6 @@ export function Routes() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Detail View */}
-      {detailId && detailItem && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">Detalji rute</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div><p className="text-lg font-bold">{detailItem.name}</p><p className="text-xs text-muted-foreground">{detailItem.code}</p></div>
-                <div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.driver}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-medium">{detailItem.vehicle}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Udaljenost</div><p className="text-xs font-medium">{detailItem.totalDistance} km</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vreme</div><p className="text-xs font-medium">{detailItem.estimatedTime}</p></div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Gorivo</div><p className="text-xs font-medium">{formatCurrency(detailItem.fuelCost)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Putarine</div><p className="text-xs font-medium">{formatCurrency(detailItem.tollCost)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xs font-bold">{formatCurrency(detailItem.fuelCost + detailItem.tollCost)}</p></div>
-              </div>
-
-              {/* Route visualization */}
-              <div className="p-4 rounded-lg border">
-                <p className="text-xs font-medium mb-3 flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />Trasa: {detailItem.origin} → {detailItem.destination}</p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-6 w-6 rounded-full bg-emerald-100 flex items-center justify-center"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /></div>
-                    <div><p className="text-xs font-medium">{detailItem.origin}</p><p className="text-xs text-muted-foreground">Polazak: {formatDate(detailItem.startDate)}</p></div>
-                  </div>
-                  {detailItem.stops.map((stop, idx) => (
-                    <div key={stop.id} className="flex items-center gap-3 ml-2">
-                      <div className="w-px h-4 bg-border" />
-                      <div className={`h-5 w-5 rounded-full flex items-center justify-center ${stop.status === 'completed' ? 'bg-emerald-100' : stop.status === 'in_transit' ? 'bg-blue-100' : 'bg-slate-100'}`}>
-                        {stop.status === 'completed' ? <CheckCircle2 className="h-3 w-3 text-emerald-600" /> : stop.status === 'in_transit' ? <Navigation className="h-3 w-3 text-blue-600" /> : <span className="text-xs font-bold text-slate-500">{idx + 1}</span>}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2"><p className="text-xs font-medium">{stop.location}</p>{getStopStatusBadge(stop.status)}</div>
-                        <p className="text-xs text-muted-foreground">{stop.address}</p>
-                        <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
-                          <span>{stop.cargo} · {stop.weight}kg</span>
-                          <span>{stop.estimatedArrival} - {stop.estimatedDeparture}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="flex items-center gap-3">
-                    <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center"><MapPin className="h-3.5 w-3.5 text-blue-600" /></div>
-                    <div><p className="text-xs font-medium">{detailItem.destination}</p><p className="text-xs text-muted-foreground">{detailItem.endDate ? `Dolazak: ${formatDate(detailItem.endDate)}` : 'Predviđeni dolazak'}</p></div>
-                  </div>
-                </div>
-              </div>
-
-              <Progress value={calcRouteProgress(detailItem.stops)} className="h-2" />
-              <p className="text-xs text-muted-foreground text-center">Napredak: {calcRouteProgress(detailItem.stops)}% · {detailItem.stops.filter(s => s.status === 'completed').length}/{detailItem.stops.length} stanica</p>
-
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Create/Edit Form */}
-      {dialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editItem ? 'Uredi rutu' : 'Nova ruta'}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Kod rute</Label><Input placeholder="RT-2024-001" className="text-xs" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v as RouteItem['priority'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Naziv rute *</Label><Input placeholder="Beograd - Novi Sad" className="text-xs" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Polazište *</Label><Input placeholder="Beograd" className="text-xs" value={formData.origin} onChange={e => setFormData(p => ({ ...p, origin: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Odredište *</Label><Input placeholder="Novi Sad" className="text-xs" value={formData.destination} onChange={e => setFormData(p => ({ ...p, destination: e.target.value }))} /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Vozač *</Label><Select value={formData.driver} onValueChange={v => setFormData(p => ({ ...p, driver: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozača" /></SelectTrigger><SelectContent>{DRIVERS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select></div>
-                <div className="grid gap-2"><Label className="text-xs">Vozilo</Label><Select value={formData.vehicle} onValueChange={v => setFormData(p => ({ ...p, vehicle: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozilo" /></SelectTrigger><SelectContent>{VEHICLES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Udaljenost (km)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.totalDistance || ''} onChange={e => setFormData(p => ({ ...p, totalDistance: Number(e.target.value) }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Procenjeno vreme</Label><Input placeholder="2h 30m" className="text-xs" value={formData.estimatedTime} onChange={e => setFormData(p => ({ ...p, estimatedTime: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Trošak goriva (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.fuelCost || ''} onChange={e => setFormData(p => ({ ...p, fuelCost: Number(e.target.value) }))} /></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Putarine (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.tollCost || ''} onChange={e => setFormData(p => ({ ...p, tollCost: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Dodatne informacije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-              <Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button>
-              <Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

@@ -77,7 +77,7 @@ export function Library() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<Book | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Book>>({})
@@ -117,13 +117,13 @@ export function Library() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ isbn: '', title: '', author: '', publisher: '', year: new Date().getFullYear(), category: 'fiction', totalCopies: 1, availableCopies: 1, borrowedCount: 0, location: '', status: 'available', language: 'Srpski', pages: 0, addedDate: new Date().toISOString().split('T')[0], notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const openEdit = (item: Book) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const handleSave = async () => {
@@ -140,7 +140,7 @@ export function Library() {
         setData(prev => [{ ...created, addedDate: created.createdAt ? new Date(created.createdAt).toISOString().split('T')[0] : '' } as Book, ...prev])
         toast.success('Knjiga kreirana')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled'); setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }
 
@@ -280,24 +280,6 @@ export function Library() {
                 {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card className="sm:max-w-[500px]">
-          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>{editItem ? 'Uredi knjigu' : 'Nova knjiga'}</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-2"><Label className="text-xs">Naslov *</Label><Input className="text-xs" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Autor *</Label><Input className="text-xs" value={form.author || ''} onChange={e => setForm({ ...form, author: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'available'} onValueChange={v => setForm({ ...form, status: v as Book['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">Dostupna</SelectItem><SelectItem value="limited">Ograničena</SelectItem><SelectItem value="reference_only">Samo čitanje</SelectItem><SelectItem value="lost">Izgubljena</SelectItem><SelectItem value="damaged">Oštećena</SelectItem></SelectContent></Select></div>
-                <div className="grid gap-2"><Label className="text-xs">Primeraka</Label><Input className="text-xs" type="number" value={form.totalCopies || ''} onChange={e => setForm({ ...form, totalCopies: Number(e.target.value) })} /></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
           </CardContent>
         </Card>
       )}

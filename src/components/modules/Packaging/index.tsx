@@ -84,7 +84,7 @@ export function Packaging() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [detailId, setDetailId] = useState<string | null>(null)
   const [editItem, setEditItem] = useState<PackagingOrder | null>(null)
   const [formData, setFormData] = useState({ orderNumber: '', orderId: '', customerName: '', priority: 'normal' as PackagingOrder['priority'], packagingType: 'standard' as PackagingOrder['packagingType'], notes: '' })
@@ -163,7 +163,7 @@ export function Packaging() {
   const handleOpenCreate = useCallback(() => {
     setFormData({ orderNumber: `PKG-${new Date().getFullYear()}-${String(data.length + 1).padStart(3, '0')}`, orderId: '', customerName: '', priority: 'normal', packagingType: 'standard', notes: '' })
     setEditItem(null)
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }, [data.length])
 
   const handleSave = useCallback(async () => {
@@ -185,7 +185,7 @@ export function Packaging() {
           setData(prev => [saved, ...prev])
           toast.success('Novi nalog kreiran')
         }
-        setDialogOpen(false)
+        setSubTab('pregled')
         setEditItem(null)
       }
     } catch { toast.error('Greška pri čuvanju') }
@@ -202,8 +202,20 @@ export function Packaging() {
           <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30"><Box className="h-5 w-5 text-orange-700 dark:text-orange-400" /></div>
           <div><h1 className="text-2xl font-bold tracking-tight">Pakovanje</h1><p className="text-sm text-muted-foreground">Upravljanje pakovanjem robe i etiketiranjem</p></div>
         </div>
-        <Button size="sm" className="gap-2" onClick={handleOpenCreate}><Plus className="h-4 w-4" />Novi nalog</Button>
+        {subTab === 'pregled' && <Button size="sm" className="gap-2" onClick={handleOpenCreate}><Plus className="h-4 w-4" />Novi nalog</Button>}
       </div>
+
+      {/* Sub-tab navigation */}
+      {subTab !== 'pregled' && (
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+          <div className="flex gap-1">
+            <Button variant={subTab === 'pregled' ? 'default' : 'outline'} size="sm" onClick={() => setSubTab('pregled')}>Pregled</Button>
+            <Button variant={subTab === 'dodaj' ? 'default' : 'outline'} size="sm" onClick={() => setSubTab('dodaj')}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</Button>
+            {detailId && <Button variant={subTab === 'detalji' ? 'default' : 'outline'} size="sm" onClick={() => setSubTab('detalji')}><Eye className="h-3.5 w-3.5 mr-1" /> Detalji</Button>}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Ukupno</div><p className="text-xl font-bold">{stats.total}</p></Card>
@@ -242,7 +254,7 @@ export function Packaging() {
               </TableRow></TableHeader>
               <TableBody>
                 {filtered.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-sm">Nema naloga</TableCell></TableRow> : filtered.map(item => (
-                  <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
+                  <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => { setDetailId(item.id); setSubTab('detalji') }}>
                     <TableCell className="text-xs font-mono font-bold">{item.orderNumber}</TableCell>
                     <TableCell className="text-xs font-mono hidden sm:table-cell">{item.orderId}</TableCell>
                     <TableCell><div className="text-xs font-medium">{item.customerName}</div><div className="text-xs text-muted-foreground">{item.assignedTo || 'Nije dodeljen'}</div></TableCell>
@@ -252,7 +264,7 @@ export function Packaging() {
                     <TableCell className="text-xs hidden md:table-cell">{item.boxCount}</TableCell>
                     <TableCell className="text-xs hidden lg:table-cell">{item.totalWeight >= 1000 ? `${(item.totalWeight / 1000).toFixed(1)}t` : `${item.totalWeight}kg`}</TableCell>
                     <TableCell className="text-right"><div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDetailId(item.id); setSubTab('detalji') }}><Eye className="h-3.5 w-3.5" /></Button>
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </div></TableCell>
                   </TableRow>
@@ -263,12 +275,10 @@ export function Packaging() {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
-      { detailId && (
-      <Card className="sm:max-w-[750px] max-h-[85vh] overflow-y-auto">
-
-          <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Detalji naloga za pakovanje</CardTitle></div></CardHeader>
-          {detailItem && (
+      {/* Detail View (inline) */}
+      {subTab === 'detalji' && detailItem && (
+      <Card>
+          <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Detalji naloga za pakovanje</CardTitle></div></CardHeader>
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.orderNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderId} · {detailItem.customerName}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}{getPackTypeBadge(detailItem.packagingType)}</div></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -313,15 +323,13 @@ export function Packaging() {
                 </Table>
               </div>
             </div>
-          )}
       </Card>
-    ) }
+      )}
 
-      {/* Create/Edit Dialog */}
-      { dialogOpen && (
-      <Card className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
-
-          <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editItem ? 'Uredi nalog' : 'Novi nalog za pakovanje'}</CardTitle></div></CardHeader>
+      {/* Create/Edit Form (inline) */}
+      {subTab === 'dodaj' && (
+      <Card>
+          <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSubTab('pregled'); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editItem ? 'Uredi nalog' : 'Novi nalog za pakovanje'}</CardTitle></div></CardHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2"><Label className="text-xs">Broj naloga *</Label><Input placeholder="PKG-2024-001" className="text-xs" value={formData.orderNumber} onChange={e => setFormData(p => ({ ...p, orderNumber: e.target.value }))} /></div>
@@ -335,9 +343,9 @@ export function Packaging() {
             </div>
             <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Textarea placeholder="Instrukcije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
           </div>
-          <div className="flex justify-end gap-2 pt-4"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+          <div className="flex justify-end gap-2 pt-4"><Button variant="outline" onClick={() => { setSubTab('pregled'); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
       </Card>
-    ) }
+      )}
     </div>
   )
 }

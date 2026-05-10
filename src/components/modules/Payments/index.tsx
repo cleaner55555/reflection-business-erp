@@ -38,7 +38,7 @@ export function Payments() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [catFilter, setCatFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [editItem, setEditItem] = useState<Payment | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -60,15 +60,16 @@ export function Payments() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Obrisati?')) return
-    try { const res = await fetch(`/api/payments/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Obrisano'); if (detailId === id) setDetailId(null); fetchData() } } catch { toast.error('Greška') }
+    try { const res = await fetch(`/api/payments/${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Obrisano'); if (detailId === id) { setDetailId(null); setSubTab('pregled'); } fetchData() } } catch { toast.error('Greška') }
   }
 
   const openCreate = () => {
     setEditItem(null)
     setForm({ invoiceNo: '', client: '', amount: 0, currency: 'RSD', date: new Date().toISOString().split('T')[0], dueDate: '', paidDate: '', method: 'bank_transfer', status: 'pending', reference: '', category: 'invoice', notes: '' })
-    setDialogOpen(true)
+    setEditItem(null)
+    setSubTab('dodaj')
   }
-  const openEdit = (item: Payment) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
+  const openEdit = (item: Payment) => { setEditItem(item); setForm({ ...item }); setSubTab('dodaj') }
 
   const handleSave = async () => {
     if (!form.client || !form.amount) { toast.error('Popunite obavezna polja'); return }
@@ -76,10 +77,10 @@ export function Payments() {
     try {
       if (editItem) {
         const res = await fetch(`/api/payments/${editItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-        if (res.ok) { toast.success('Ažurirano'); setDialogOpen(false); fetchData() }
+        if (res.ok) { toast.success('Ažurirano'); setSubTab('pregled'); setEditItem(null); fetchData() }
       } else {
         const res = await fetch('/api/payments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-        if (res.ok) { toast.success('Kreirano'); setDialogOpen(false); fetchData() }
+        if (res.ok) { toast.success('Kreirano'); setSubTab('pregled'); setEditItem(null); fetchData() }
       }
     } catch { toast.error('Greška') } finally { setSaving(false) }
   }
@@ -98,9 +99,18 @@ export function Payments() {
           <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30"><CreditCard className="h-5 w-5 text-emerald-700 dark:text-emerald-400" /></div>
           <div><h1 className="text-2xl font-bold tracking-tight">Plaćanja</h1><p className="text-sm text-muted-foreground">Fakture, uplate, praćenje</p></div>
         </div>
-        <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novo plaćanje</Button>
+        {subTab === 'pregled' && <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novo plaćanje</Button>}
       </div>
 
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
+        <TabsList>
+          <TabsTrigger value="pregled">Pregled</TabsTrigger>
+          {editItem && <TabsTrigger value="dodaj">Uredi</TabsTrigger>}
+          {!editItem && subTab === 'dodaj' && <TabsTrigger value="dodaj">Dodaj</TabsTrigger>}
+          {detailId && detailItem && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
+        </TabsList>
+
+        <TabsContent value="pregled" className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="p-4"><div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><CreditCard className="h-3 w-3" />Ukupno</div><p className="text-2xl font-bold">{data.length}</p></Card>
         <Card className="p-4"><div className="text-xs text-emerald-600 mb-1 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Plaćeno RSD</div><p className="text-lg font-bold text-emerald-700">{new Intl.NumberFormat('sr-RS').format(paidRSD)}</p></Card>
@@ -135,7 +145,7 @@ export function Payments() {
                     <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{formatDate(item.dueDate)}</TableCell>
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
                     <TableCell className="text-right"><div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDetailId(item.id); setSubTab('detalji'); }}><Eye className="h-3.5 w-3.5" /></Button>
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </div></TableCell>
@@ -146,13 +156,15 @@ export function Payments() {
           </div>
         </CardContent>
       </Card>
+        </TabsContent>
 
       {/* Detail Card */}
       {detailId && detailItem && (
+        <TabsContent value="detalji" className="space-y-4">
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDetailId(null); setSubTab('pregled'); }}><ArrowLeft className="h-4 w-4" /></Button>
               <CardTitle className="text-base">{detailItem.invoiceNo}</CardTitle>
             </div>
           </CardHeader>
@@ -168,14 +180,15 @@ export function Payments() {
             </div>
           </CardContent>
         </Card>
+        </TabsContent>
       )}
 
       {/* Create/Edit Form */}
-      {dialogOpen && (
+      <TabsContent value="dodaj" className="space-y-4">
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSubTab('pregled'); setEditItem(null); }}><ArrowLeft className="h-4 w-4" /></Button>
               <CardTitle className="text-base">{editItem ? 'Uredi plaćanje' : 'Novo plaćanje'}</CardTitle>
             </div>
           </CardHeader>
@@ -196,10 +209,12 @@ export function Payments() {
                 <div className="grid gap-2 col-span-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+            <div className="flex justify-end gap-2 pt-4"><Button variant="outline" size="sm" onClick={() => { setSubTab('pregled'); setEditItem(null); }}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
           </CardContent>
         </Card>
-      )}
+      </TabsContent>
+
+      </Tabs>
     </div>
   )
 }

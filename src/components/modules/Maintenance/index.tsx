@@ -19,12 +19,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import {ArrowLeft, 
+import {
   Wrench, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, DollarSign,
-  TrendingUp, AlertCircle, Settings, AlertTriangle, Calendar,
-  Cpu, Package, Users, Filter, Copy, Hammer, Gauge, Timer,
-  ShieldCheck, Archive,
+  TrendingUp, AlertCircle, AlertTriangle, Calendar,
+  Cpu, Package, Copy, Gauge, X,
 } from 'lucide-react'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -248,6 +247,16 @@ export function Maintenance() {
   const [items, setItems] = useState<MaintenanceOrder[]>([])
   const [loading, setLoading] = useState(false)
 
+  // --- Sub-tab State (replaces dialog states) ---
+  const [ordersSubTab, setOrdersSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [equipmentSubTab, setEquipmentSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [plansSubTab, setPlansSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [partsSubTab, setPartsSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+
+  // --- Selected items (for detail views) ---
+  const [selected, setSelected] = useState<MaintenanceOrder | null>(null)
+  const [selectedEquip, setSelectedEquip] = useState<EquipmentItem | null>(null)
+
   // --- Orders Tab State ---
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
@@ -256,18 +265,10 @@ export function Maintenance() {
   const [filterDateFrom, setFilterDateFrom] = useState('')
   const [filterDateTo, setFilterDateTo] = useState('')
 
-  // --- Dialog State ---
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [selected, setSelected] = useState<MaintenanceOrder | null>(null)
-
   // --- Equipment Tab State ---
   const [equipment] = useState<EquipmentItem[]>(mockEquipment)
   const [equipFilterCat, setEquipFilterCat] = useState('all')
   const [equipFilterStatus, setEquipFilterStatus] = useState('all')
-  const [equipDialogOpen, setEquipDialogOpen] = useState(false)
-  const [equipDetailOpen, setEquipDetailOpen] = useState(false)
-  const [selectedEquip, setSelectedEquip] = useState<EquipmentItem | null>(null)
   const [equipForm, setEquipForm] = useState({
     name: '', serialNumber: '', category: 'production', location: '', status: 'active',
     lastMaintenance: '', nextMaintenance: '', healthScore: 100,
@@ -275,14 +276,12 @@ export function Maintenance() {
 
   // --- Plans Tab State ---
   const [plans, setPlans] = useState<MaintenancePlan[]>(mockPlans)
-  const [planDialogOpen, setPlanDialogOpen] = useState(false)
   const [planForm, setPlanForm] = useState({
     equipmentName: '', planName: '', frequency: 'monthly', nextDue: '', autoCreate: true,
   })
 
   // --- Parts Tab State ---
   const [parts] = useState<SparePart[]>(mockSpareParts)
-  const [partDialogOpen, setPartDialogOpen] = useState(false)
   const [partForm, setPartForm] = useState({
     name: '', partNumber: '', category: 'production', qtyInStock: 0, minStock: 1, location: '', unitCost: 0,
   })
@@ -341,7 +340,7 @@ export function Maintenance() {
         }),
       })
       if (res.ok) {
-        setDialogOpen(false)
+        setOrdersSubTab('pregled')
         setOrderForm(emptyOrderForm)
         loadItems()
         loadDashboard()
@@ -385,7 +384,7 @@ export function Maintenance() {
         }),
       })
       if (res.ok) {
-        setDetailOpen(false)
+        setSelected(null)
         loadItems()
         loadDashboard()
       }
@@ -455,7 +454,7 @@ export function Maintenance() {
     return total > 0 ? Math.round((prev / total) * 100) : 0
   }, [])
 
-  // ==================== RENDER ====================
+  // ==================== RENDER HELPERS ====================
 
   const getStatusBadge = (status: string) => {
     const cfg = statusConfig[status]
@@ -507,6 +506,8 @@ export function Maintenance() {
     }
   }
 
+  // ==================== RENDER ====================
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -518,7 +519,7 @@ export function Maintenance() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadItems() }}>
             <RefreshCw className="h-4 w-4 mr-1" /> {t('maintenance.refresh')}
           </Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" onClick={() => { setActiveTab('orders'); setOrdersSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> {t('maintenance.newOrder')}
           </Button>
         </div>
@@ -681,289 +682,723 @@ export function Maintenance() {
           )}
         </TabsContent>
 
-        {/* ==================== TAB 2: WORK ORDERS ==================== */}
+        {/* ==================== TAB 2: WORK ORDERS (with sub-tabs) ==================== */}
         <TabsContent value="orders" className="space-y-4">
-          <div className="flex flex-col lg:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t('maintenance.searchOrders')} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[140px]"><SelectValue placeholder={t('maintenance.allStatuses')} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('maintenance.allStatuses')}</SelectItem>
-                  {Object.entries(statusConfig).map(([k]) => (
-                    <SelectItem key={k} value={k}>{t(`maintenance.${statusConfig[k].labelKey}`)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={filterPriority} onValueChange={setFilterPriority}>
-                <SelectTrigger className="w-[130px]"><SelectValue placeholder="Priority" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  {Object.entries(priorityConfig).map(([k]) => (
-                    <SelectItem key={k} value={k}>{t(`maintenance.${priorityConfig[k].labelKey}`)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Type" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  {Object.entries(typeLabels).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{t(v)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input type="date" className="w-[140px]" value={filterDateFrom} onChange={(e) => setFilterDateFrom(e.target.value)} />
-              <Input type="date" className="w-[140px]" value={filterDateTo} onChange={(e) => setFilterDateTo(e.target.value)} />
-            </div>
-          </div>
+          <Tabs value={ordersSubTab} onValueChange={(v) => { setOrdersSubTab(v as 'pregled' | 'dodaj'); if (v === 'pregled') setSelected(null) }}>
+            <TabsList className="w-[200px]">
+              <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj" className="text-xs">Dodaj</TabsTrigger>
+            </TabsList>
 
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : filteredOrders.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Wrench className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">{t('maintenance.noOrders')}</p>
-              <Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> {t('maintenance.createFirst')}</Button>
-            </Card>
-          ) : (
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow className="text-xs text-muted-foreground">
-                    <TableHead>{t('maintenance.orderNumber')}</TableHead>
-                    <TableHead>{t('maintenance.equipmentName')}</TableHead>
-                    <TableHead>{t('maintenance.type')}</TableHead>
-                    <TableHead>{t('maintenance.priority')}</TableHead>
-                    <TableHead>{t('maintenance.assignedTo')}</TableHead>
-                    <TableHead>{t('maintenance.scheduledDate')}</TableHead>
-                    <TableHead>{t('maintenance.cost')}</TableHead>
-                    <TableHead>{t('maintenance.status')}</TableHead>
-                    <TableHead>{t('maintenance.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredOrders.map((o) => (
-                    <TableRow key={o.id}>
-                      <TableCell className="font-mono text-xs">{o.orderNumber}</TableCell>
-                      <TableCell className="text-sm">{o.equipmentName}</TableCell>
-                      <TableCell className="text-sm">{t(typeLabels[o.type] || o.type)}</TableCell>
-                      <TableCell>{getPriorityBadge(o.priority)}</TableCell>
-                      <TableCell className="text-sm">{o.assignedTo || '-'}</TableCell>
-                      <TableCell className="text-xs">{o.scheduledDate || '-'}</TableCell>
-                      <TableCell className="text-sm">{o.cost ? formatRSDShort(o.cost) : '-'}</TableCell>
-                      <TableCell>{getStatusBadge(o.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(o); setDetailOpen(true) }}>
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          {getNextStatusValue(o.status) && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-amber-600" title={t(`maintenance.${getNextStatusLabel(o.status)}`)}
-                              onClick={() => handleUpdateStatus(o.id, getNextStatusValue(o.status)!)}>
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(o.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </TabsContent>
-
-        {/* ==================== TAB 3: EQUIPMENT ==================== */}
-        <TabsContent value="equipment" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <Select value={equipFilterCat} onValueChange={setEquipFilterCat}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Category" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {Object.entries(categoryLabels).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{t(v)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={equipFilterStatus} onValueChange={setEquipFilterStatus}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {Object.entries(equipmentStatusConfig).map(([k]) => (
-                  <SelectItem key={k} value={k}>{t(`maintenance.${equipmentStatusConfig[k].labelKey}`)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="ml-auto">
-              <Button size="sm" onClick={() => setEquipDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" /> {t('maintenance.addEquipment')}
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow className="text-xs text-muted-foreground">
-                  <TableHead>{t('maintenance.equipmentName')}</TableHead>
-                  <TableHead>{t('maintenance.serialNumber')}</TableHead>
-                  <TableHead>{t('maintenance.category')}</TableHead>
-                  <TableHead>{t('maintenance.location')}</TableHead>
-                  <TableHead>{t('maintenance.status')}</TableHead>
-                  <TableHead>{t('maintenance.lastMaintenance')}</TableHead>
-                  <TableHead>{t('maintenance.nextMaintenance')}</TableHead>
-                  <TableHead>{t('maintenance.healthScore')}</TableHead>
-                  <TableHead>{t('maintenance.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEquipment.map((eq) => (
-                  <TableRow key={eq.id}>
-                    <TableCell className="text-sm font-medium">{eq.name}</TableCell>
-                    <TableCell className="text-xs font-mono">{eq.serialNumber}</TableCell>
-                    <TableCell className="text-sm">{t(categoryLabels[eq.category] || eq.category)}</TableCell>
-                    <TableCell className="text-sm">{eq.location}</TableCell>
-                    <TableCell>{getEquipStatusBadge(eq.status)}</TableCell>
-                    <TableCell className="text-xs">{eq.lastMaintenance}</TableCell>
-                    <TableCell className="text-xs">{eq.nextMaintenance}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={eq.healthScore} className={`h-2 w-14 ${getHealthBg(eq.healthScore)}`} />
-                        <span className={`text-xs font-medium ${getHealthColor(eq.healthScore)}`}>{eq.healthScore}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedEquip(eq); setEquipDetailOpen(true) }}>
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEquipForm({ name: eq.name, serialNumber: eq.serialNumber, category: eq.category, location: eq.location, status: eq.status, lastMaintenance: eq.lastMaintenance, nextMaintenance: eq.nextMaintenance, healthScore: eq.healthScore }); setEquipDialogOpen(true) }}>
-                          <Edit3 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </TabsContent>
-
-        {/* ==================== TAB 4: MAINTENANCE PLANS ==================== */}
-        <TabsContent value="plans" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              {overduePlans.length > 0 && (
-                <Badge variant="destructive" className="text-xs mb-2">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  {t('maintenance.overduePlans')}: {overduePlans.length}
-                </Badge>
-              )}
-            </div>
-            <Button size="sm" onClick={() => setPlanDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" /> {t('maintenance.addPlan')}
-            </Button>
-          </div>
-
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow className="text-xs text-muted-foreground">
-                  <TableHead>{t('maintenance.equipmentName')}</TableHead>
-                  <TableHead>{t('maintenance.planName')}</TableHead>
-                  <TableHead>{t('maintenance.frequency')}</TableHead>
-                  <TableHead>{t('maintenance.nextDue')}</TableHead>
-                  <TableHead>{t('maintenance.autoCreate')}</TableHead>
-                  <TableHead>{t('maintenance.planHistory')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {plans.map((plan) => {
-                  const isOverdue = plan.nextDue < new Date().toISOString().slice(0, 10)
-                  return (
-                    <TableRow key={plan.id}>
-                      <TableCell className="text-sm font-medium">{plan.equipmentName}</TableCell>
-                      <TableCell className="text-sm">{plan.planName}</TableCell>
-                      <TableCell className="text-sm">{t(frequencyLabels[plan.frequency] || plan.frequency)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs ${isOverdue ? 'bg-red-50 text-red-700' : ''}`}>
-                          {plan.nextDue} {isOverdue && <AlertTriangle className="h-3 w-3 ml-1 inline" />}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Checkbox checked={plan.autoCreate} disabled />
-                      </TableCell>
-                      <TableCell className="text-xs">{plan.completedDates.length}</TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </TabsContent>
-
-        {/* ==================== TAB 5: SPARE PARTS ==================== */}
-        <TabsContent value="parts" className="space-y-4">
-          <div className="flex justify-end">
-            <Button size="sm" onClick={() => setPartDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" /> {t('maintenance.addPart')}
-            </Button>
-          </div>
-
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow className="text-xs text-muted-foreground">
-                  <TableHead>{t('maintenance.partName')}</TableHead>
-                  <TableHead>{t('maintenance.partNumber')}</TableHead>
-                  <TableHead>{t('maintenance.category')}</TableHead>
-                  <TableHead>{t('maintenance.qtyInStock')}</TableHead>
-                  <TableHead>{t('maintenance.minStock')}</TableHead>
-                  <TableHead>{t('maintenance.location')}</TableHead>
-                  <TableHead>{t('maintenance.unitCost')}</TableHead>
-                  <TableHead>{t('maintenance.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {parts.map((part) => {
-                  const isLow = part.qtyInStock <= part.minStock
-                  return (
-                    <TableRow key={part.id}>
-                      <TableCell className="text-sm font-medium">
-                        {part.name}
-                        {isLow && (
-                          <Badge variant="destructive" className="ml-2 text-xs px-1 py-0">
-                            <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
-                            {t('maintenance.lowStock')}
-                          </Badge>
+            {/* Orders Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
+              {/* Inline order detail */}
+              {selected && (
+                <Card>
+                  <CardHeader className="flex flex-row items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setSelected(null)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <CardTitle className="text-sm flex-1">{t('maintenance.orderDetails')}</CardTitle>
+                    {selected && getNextStatusValue(selected.status) && (
+                      <Button size="sm" variant="outline" className="text-amber-600"
+                        onClick={() => { handleUpdateStatus(selected.id, getNextStatusValue(selected.status)!)
+                          setSelected(null) }}>
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        {t(`maintenance.${getNextStatusLabel(selected.status)}`)}
+                      </Button>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div><span className="text-muted-foreground">{t('maintenance.orderNumber')}:</span> <span className="font-mono">{selected.orderNumber}</span></div>
+                        <div><span className="text-muted-foreground">{t('maintenance.status')}:</span> {getStatusBadge(selected.status)}</div>
+                        <div><span className="text-muted-foreground">{t('maintenance.equipmentName')}:</span> {selected.equipmentName}</div>
+                        <div><span className="text-muted-foreground">{t('maintenance.type')}:</span> {t(typeLabels[selected.type] || selected.type)}</div>
+                        <div><span className="text-muted-foreground">{t('maintenance.priority')}:</span> {getPriorityBadge(selected.priority)}</div>
+                        {selected.assignedTo && <div><span className="text-muted-foreground">{t('maintenance.assignedTo')}:</span> {selected.assignedTo}</div>}
+                        {selected.scheduledDate && <div><span className="text-muted-foreground">{t('maintenance.scheduledDate')}:</span> {selected.scheduledDate}</div>}
+                        {selected.completedDate && <div><span className="text-muted-foreground">{t('maintenance.completedDate')}:</span> {selected.completedDate}</div>}
+                        {selected.cost != null && selected.cost > 0 && (
+                          <div><span className="text-muted-foreground">{t('maintenance.cost')}:</span> <span className="font-bold">{formatRSD(selected.cost)}</span></div>
                         )}
-                      </TableCell>
-                      <TableCell className="text-xs font-mono">{part.partNumber}</TableCell>
-                      <TableCell className="text-sm">{t(categoryLabels[part.category] || part.category)}</TableCell>
-                      <TableCell className={`text-sm font-medium ${isLow ? 'text-red-600' : ''}`}>{part.qtyInStock}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{part.minStock}</TableCell>
-                      <TableCell className="text-sm">{part.location}</TableCell>
-                      <TableCell className="text-sm">{formatRSDShort(part.unitCost)}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7"><Edit3 className="h-3.5 w-3.5" /></Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                      </div>
+                      <Separator />
+                      {selected.description && (
+                        <div className="text-sm"><span className="text-muted-foreground">{t('maintenance.description')}:</span><br />{selected.description}</div>
+                      )}
+                      {selected.notes && (
+                        <div className="text-sm"><span className="text-muted-foreground">{t('maintenance.safetyNotes')}:</span><br />{selected.notes}</div>
+                      )}
+                      {selected.partsNeeded && selected.partsNeeded.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="text-sm">
+                            <span className="text-muted-foreground font-medium">{t('maintenance.partsNeeded')}:</span>
+                            <ul className="mt-1 list-disc list-inside space-y-1">
+                              {selected.partsNeeded.map((p, i) => <li key={i}>{p}</li>)}
+                            </ul>
+                          </div>
+                        </>
+                      )}
+                      {selected.workLog && selected.workLog.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="text-sm">
+                            <span className="text-muted-foreground font-medium">{t('maintenance.workLog')}:</span>
+                            <div className="mt-2 space-y-2">
+                              {selected.workLog.map((w, i) => (
+                                <div key={i} className="border-l-2 border-primary pl-3">
+                                  <div className="text-xs text-muted-foreground">{w.date}</div>
+                                  <div>{w.note}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {selected.partsUsed && selected.partsUsed.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="text-sm">
+                            <span className="text-muted-foreground font-medium">{t('maintenance.partsUsed')}:</span>
+                            <div className="mt-2 space-y-1">
+                              {selected.partsUsed.map((p, i) => (
+                                <div key={i} className="flex justify-between text-sm">
+                                  <span>{p.name}</span>
+                                  <span className="text-muted-foreground">x{p.qty}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      <Separator />
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={handleDuplicateOrder}>
+                          <Copy className="h-4 w-4 mr-1" /> {t('maintenance.duplicateOrder')}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Filters */}
+              <div className="flex flex-col lg:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder={t('maintenance.searchOrders')} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-[140px]"><SelectValue placeholder={t('maintenance.allStatuses')} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('maintenance.allStatuses')}</SelectItem>
+                      {Object.entries(statusConfig).map(([k]) => (
+                        <SelectItem key={k} value={k}>{t(`maintenance.${statusConfig[k].labelKey}`)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterPriority} onValueChange={setFilterPriority}>
+                    <SelectTrigger className="w-[130px]"><SelectValue placeholder="Priority" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {Object.entries(priorityConfig).map(([k]) => (
+                        <SelectItem key={k} value={k}>{t(`maintenance.${priorityConfig[k].labelKey}`)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterType} onValueChange={setFilterType}>
+                    <SelectTrigger className="w-[140px]"><SelectValue placeholder="Type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {Object.entries(typeLabels).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{t(v)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input type="date" className="w-[140px]" value={filterDateFrom} onChange={(e) => setFilterDateFrom(e.target.value)} />
+                  <Input type="date" className="w-[140px]" value={filterDateTo} onChange={(e) => setFilterDateTo(e.target.value)} />
+                </div>
+              </div>
+
+              {/* Orders table */}
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : filteredOrders.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Wrench className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">{t('maintenance.noOrders')}</p>
+                  <Button variant="outline" className="mt-3" onClick={() => setOrdersSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> {t('maintenance.createFirst')}</Button>
+                </Card>
+              ) : (
+                <div className="rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="text-xs text-muted-foreground">
+                        <TableHead>{t('maintenance.orderNumber')}</TableHead>
+                        <TableHead>{t('maintenance.equipmentName')}</TableHead>
+                        <TableHead>{t('maintenance.type')}</TableHead>
+                        <TableHead>{t('maintenance.priority')}</TableHead>
+                        <TableHead>{t('maintenance.assignedTo')}</TableHead>
+                        <TableHead>{t('maintenance.scheduledDate')}</TableHead>
+                        <TableHead>{t('maintenance.cost')}</TableHead>
+                        <TableHead>{t('maintenance.status')}</TableHead>
+                        <TableHead>{t('maintenance.actions')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredOrders.map((o) => (
+                        <TableRow key={o.id}>
+                          <TableCell className="font-mono text-xs">{o.orderNumber}</TableCell>
+                          <TableCell className="text-sm">{o.equipmentName}</TableCell>
+                          <TableCell className="text-sm">{t(typeLabels[o.type] || o.type)}</TableCell>
+                          <TableCell>{getPriorityBadge(o.priority)}</TableCell>
+                          <TableCell className="text-sm">{o.assignedTo || '-'}</TableCell>
+                          <TableCell className="text-xs">{o.scheduledDate || '-'}</TableCell>
+                          <TableCell className="text-sm">{o.cost ? formatRSDShort(o.cost) : '-'}</TableCell>
+                          <TableCell>{getStatusBadge(o.status)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(o); setOrdersSubTab('pregled') }}>
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              {getNextStatusValue(o.status) && (
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-amber-600" title={t(`maintenance.${getNextStatusLabel(o.status)}`)}
+                                  onClick={() => handleUpdateStatus(o.id, getNextStatusValue(o.status)!)}>
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(o.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Orders Dodaj sub-tab */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">{t('maintenance.newOrder')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.equipmentName')}</Label>
+                    <Input value={orderForm.equipmentName} onChange={(e) => setOrderForm({ ...orderForm, equipmentName: e.target.value })} placeholder="Naziv opreme" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.category')}</Label>
+                      <Select value={orderForm.category} onValueChange={(v) => setOrderForm({ ...orderForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(categoryLabels).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{t(v)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.type')}</Label>
+                      <Select value={orderForm.type} onValueChange={(v) => setOrderForm({ ...orderForm, type: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(typeLabels).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{t(v)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.priority')}</Label>
+                    <Select value={orderForm.priority} onValueChange={(v) => setOrderForm({ ...orderForm, priority: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(priorityConfig).map(([k]) => (
+                          <SelectItem key={k} value={k}>{t(`maintenance.${priorityConfig[k].labelKey}`)}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.description')}</Label>
+                    <Textarea value={orderForm.description} onChange={(e) => setOrderForm({ ...orderForm, description: e.target.value })} placeholder="Opišite problem ili rad" rows={3} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.assignedTo')}</Label>
+                      <Input value={orderForm.assignedTo} onChange={(e) => setOrderForm({ ...orderForm, assignedTo: e.target.value })} placeholder="Ime tehničara" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.scheduledDate')}</Label>
+                      <Input type="date" value={orderForm.scheduledDate} onChange={(e) => setOrderForm({ ...orderForm, scheduledDate: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.estimatedCost')} (RSD)</Label>
+                    <Input type="number" value={orderForm.estimatedCost || ''} onChange={(e) => setOrderForm({ ...orderForm, estimatedCost: parseFloat(e.target.value) || 0 })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.partsNeeded')}</Label>
+                    <Textarea value={orderForm.partsNeeded} onChange={(e) => setOrderForm({ ...orderForm, partsNeeded: e.target.value })} placeholder="Jedan deo po liniji" rows={2} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.safetyNotes')}</Label>
+                    <Textarea value={orderForm.safetyNotes} onChange={(e) => setOrderForm({ ...orderForm, safetyNotes: e.target.value })} rows={2} />
+                  </div>
+                  <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+                    <Button variant="outline" onClick={() => { setOrdersSubTab('pregled'); setOrderForm(emptyOrderForm) }}>{t('maintenance.cancel')}</Button>
+                    <Button onClick={handleCreateOrder}><Plus className="h-4 w-4 mr-1" /> {t('maintenance.createOrder')}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ==================== TAB 3: EQUIPMENT (with sub-tabs) ==================== */}
+        <TabsContent value="equipment" className="space-y-4">
+          <Tabs value={equipmentSubTab} onValueChange={(v) => { setEquipmentSubTab(v as 'pregled' | 'dodaj'); if (v === 'pregled') setSelectedEquip(null) }}>
+            <TabsList className="w-[200px]">
+              <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj" className="text-xs">Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Equipment Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
+              {/* Inline equipment detail */}
+              {selectedEquip && (
+                <Card>
+                  <CardHeader className="flex flex-row items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setSelectedEquip(null)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <CardTitle className="text-sm flex-1">{t('maintenance.equipmentDetails')}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div><span className="text-muted-foreground">{t('maintenance.equipmentName')}:</span> <span className="font-medium">{selectedEquip.name}</span></div>
+                        <div><span className="text-muted-foreground">{t('maintenance.serialNumber')}:</span> <span className="font-mono">{selectedEquip.serialNumber}</span></div>
+                        <div><span className="text-muted-foreground">{t('maintenance.category')}:</span> {t(categoryLabels[selectedEquip.category] || selectedEquip.category)}</div>
+                        <div><span className="text-muted-foreground">{t('maintenance.location')}:</span> {selectedEquip.location}</div>
+                        <div><span className="text-muted-foreground">{t('maintenance.status')}:</span> {getEquipStatusBadge(selectedEquip.status)}</div>
+                        <div><span className="text-muted-foreground">{t('maintenance.healthScore')}:</span>
+                          <div className="inline-flex items-center gap-2 ml-1">
+                            <Progress value={selectedEquip.healthScore} className={`h-2 w-14 ${getHealthBg(selectedEquip.healthScore)}`} />
+                            <span className={`font-medium ${getHealthColor(selectedEquip.healthScore)}`}>{selectedEquip.healthScore}%</span>
+                          </div>
                         </div>
-                      </TableCell>
+                        <div><span className="text-muted-foreground">{t('maintenance.lastMaintenance')}:</span> {selectedEquip.lastMaintenance}</div>
+                        <div><span className="text-muted-foreground">{t('maintenance.nextMaintenance')}:</span> {selectedEquip.nextMaintenance}</div>
+                      </div>
+                      <Separator />
+                      <div>
+                        <h4 className="text-sm font-medium mb-3">{t('maintenance.maintenanceHistory')}</h4>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {items.filter((o) => o.equipmentName === selectedEquip.name).length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-4">{t('maintenance.noData')}</p>
+                          ) : (
+                            items.filter((o) => o.equipmentName === selectedEquip.name).map((o) => (
+                              <div key={o.id} className="flex items-center justify-between py-2 border-b last:border-0 text-sm">
+                                <div>
+                                  <span className="font-mono text-xs">{o.orderNumber}</span>
+                                  <span className="text-muted-foreground ml-2">{t(typeLabels[o.type] || o.type)}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {getStatusBadge(o.status)}
+                                  <span className="text-xs text-muted-foreground">{o.completedDate || o.scheduledDate || ''}</span>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Equipment filters */}
+              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                <Select value={equipFilterCat} onValueChange={setEquipFilterCat}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Category" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {Object.entries(categoryLabels).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{t(v)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={equipFilterStatus} onValueChange={setEquipFilterStatus}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {Object.entries(equipmentStatusConfig).map(([k]) => (
+                      <SelectItem key={k} value={k}>{t(`maintenance.${equipmentStatusConfig[k].labelKey}`)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="ml-auto">
+                  <Button size="sm" onClick={() => setEquipmentSubTab('dodaj')}>
+                    <Plus className="h-4 w-4 mr-1" /> {t('maintenance.addEquipment')}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Equipment table */}
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="text-xs text-muted-foreground">
+                      <TableHead>{t('maintenance.equipmentName')}</TableHead>
+                      <TableHead>{t('maintenance.serialNumber')}</TableHead>
+                      <TableHead>{t('maintenance.category')}</TableHead>
+                      <TableHead>{t('maintenance.location')}</TableHead>
+                      <TableHead>{t('maintenance.status')}</TableHead>
+                      <TableHead>{t('maintenance.lastMaintenance')}</TableHead>
+                      <TableHead>{t('maintenance.nextMaintenance')}</TableHead>
+                      <TableHead>{t('maintenance.healthScore')}</TableHead>
+                      <TableHead>{t('maintenance.actions')}</TableHead>
                     </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredEquipment.map((eq) => (
+                      <TableRow key={eq.id}>
+                        <TableCell className="text-sm font-medium">{eq.name}</TableCell>
+                        <TableCell className="text-xs font-mono">{eq.serialNumber}</TableCell>
+                        <TableCell className="text-sm">{t(categoryLabels[eq.category] || eq.category)}</TableCell>
+                        <TableCell className="text-sm">{eq.location}</TableCell>
+                        <TableCell>{getEquipStatusBadge(eq.status)}</TableCell>
+                        <TableCell className="text-xs">{eq.lastMaintenance}</TableCell>
+                        <TableCell className="text-xs">{eq.nextMaintenance}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Progress value={eq.healthScore} className={`h-2 w-14 ${getHealthBg(eq.healthScore)}`} />
+                            <span className={`text-xs font-medium ${getHealthColor(eq.healthScore)}`}>{eq.healthScore}%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedEquip(eq); setEquipmentSubTab('pregled') }}>
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEquipForm({ name: eq.name, serialNumber: eq.serialNumber, category: eq.category, location: eq.location, status: eq.status, lastMaintenance: eq.lastMaintenance, nextMaintenance: eq.nextMaintenance, healthScore: eq.healthScore }); setEquipmentSubTab('dodaj') }}>
+                              <Edit3 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* Equipment Dodaj sub-tab */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">{t('maintenance.addEquipment')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.equipmentName')}</Label>
+                    <Input value={equipForm.name} onChange={(e) => setEquipForm({ ...equipForm, name: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.serialNumber')}</Label>
+                      <Input value={equipForm.serialNumber} onChange={(e) => setEquipForm({ ...equipForm, serialNumber: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.category')}</Label>
+                      <Select value={equipForm.category} onValueChange={(v) => setEquipForm({ ...equipForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(categoryLabels).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{t(v)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.location')}</Label>
+                      <Input value={equipForm.location} onChange={(e) => setEquipForm({ ...equipForm, location: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.status')}</Label>
+                      <Select value={equipForm.status} onValueChange={(v) => setEquipForm({ ...equipForm, status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(equipmentStatusConfig).map(([k]) => (
+                            <SelectItem key={k} value={k}>{t(`maintenance.${equipmentStatusConfig[k].labelKey}`)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.lastMaintenance')}</Label>
+                      <Input type="date" value={equipForm.lastMaintenance} onChange={(e) => setEquipForm({ ...equipForm, lastMaintenance: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.nextMaintenance')}</Label>
+                      <Input type="date" value={equipForm.nextMaintenance} onChange={(e) => setEquipForm({ ...equipForm, nextMaintenance: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+                    <Button variant="outline" onClick={() => setEquipmentSubTab('pregled')}>{t('maintenance.cancel')}</Button>
+                    <Button onClick={() => setEquipmentSubTab('pregled')}>{t('maintenance.createOrder')}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ==================== TAB 4: MAINTENANCE PLANS (with sub-tabs) ==================== */}
+        <TabsContent value="plans" className="space-y-4">
+          <Tabs value={plansSubTab} onValueChange={(v) => setPlansSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList className="w-[200px]">
+              <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj" className="text-xs">Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Plans Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  {overduePlans.length > 0 && (
+                    <Badge variant="destructive" className="text-xs mb-2">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      {t('maintenance.overduePlans')}: {overduePlans.length}
+                    </Badge>
+                  )}
+                </div>
+                <Button size="sm" onClick={() => setPlansSubTab('dodaj')}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('maintenance.addPlan')}
+                </Button>
+              </div>
+
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="text-xs text-muted-foreground">
+                      <TableHead>{t('maintenance.equipmentName')}</TableHead>
+                      <TableHead>{t('maintenance.planName')}</TableHead>
+                      <TableHead>{t('maintenance.frequency')}</TableHead>
+                      <TableHead>{t('maintenance.nextDue')}</TableHead>
+                      <TableHead>{t('maintenance.autoCreate')}</TableHead>
+                      <TableHead>{t('maintenance.planHistory')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {plans.map((plan) => {
+                      const isOverdue = plan.nextDue < new Date().toISOString().slice(0, 10)
+                      return (
+                        <TableRow key={plan.id}>
+                          <TableCell className="text-sm font-medium">{plan.equipmentName}</TableCell>
+                          <TableCell className="text-sm">{plan.planName}</TableCell>
+                          <TableCell className="text-sm">{t(frequencyLabels[plan.frequency] || plan.frequency)}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={`text-xs ${isOverdue ? 'bg-red-50 text-red-700' : ''}`}>
+                              {plan.nextDue} {isOverdue && <AlertTriangle className="h-3 w-3 ml-1 inline" />}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Checkbox checked={plan.autoCreate} disabled />
+                          </TableCell>
+                          <TableCell className="text-xs">{plan.completedDates.length}</TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* Plans Dodaj sub-tab */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">{t('maintenance.addPlan')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.equipmentName')}</Label>
+                    <Input value={planForm.equipmentName} onChange={(e) => setPlanForm({ ...planForm, equipmentName: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.planName')}</Label>
+                    <Input value={planForm.planName} onChange={(e) => setPlanForm({ ...planForm, planName: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.frequency')}</Label>
+                      <Select value={planForm.frequency} onValueChange={(v) => setPlanForm({ ...planForm, frequency: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(frequencyLabels).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{t(v)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.nextDue')}</Label>
+                      <Input type="date" value={planForm.nextDue} onChange={(e) => setPlanForm({ ...planForm, nextDue: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox checked={planForm.autoCreate} onCheckedChange={(checked) => setPlanForm({ ...planForm, autoCreate: checked === true })} />
+                    <Label>{t('maintenance.autoCreate')}</Label>
+                  </div>
+                  <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+                    <Button variant="outline" onClick={() => setPlansSubTab('pregled')}>{t('maintenance.cancel')}</Button>
+                    <Button onClick={() => {
+                      setPlans([...plans, { id: `p${plans.length + 1}`, equipmentId: '', equipmentName: planForm.equipmentName, planName: planForm.planName, frequency: planForm.frequency, nextDue: planForm.nextDue, autoCreate: planForm.autoCreate, completedDates: [] }])
+                      setPlansSubTab('pregled')
+                    }}>{t('maintenance.createOrder')}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ==================== TAB 5: SPARE PARTS (with sub-tabs) ==================== */}
+        <TabsContent value="parts" className="space-y-4">
+          <Tabs value={partsSubTab} onValueChange={(v) => setPartsSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList className="w-[200px]">
+              <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj" className="text-xs">Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Parts Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => setPartsSubTab('dodaj')}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('maintenance.addPart')}
+                </Button>
+              </div>
+
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="text-xs text-muted-foreground">
+                      <TableHead>{t('maintenance.partName')}</TableHead>
+                      <TableHead>{t('maintenance.partNumber')}</TableHead>
+                      <TableHead>{t('maintenance.category')}</TableHead>
+                      <TableHead>{t('maintenance.qtyInStock')}</TableHead>
+                      <TableHead>{t('maintenance.minStock')}</TableHead>
+                      <TableHead>{t('maintenance.location')}</TableHead>
+                      <TableHead>{t('maintenance.unitCost')}</TableHead>
+                      <TableHead>{t('maintenance.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {parts.map((part) => {
+                      const isLow = part.qtyInStock <= part.minStock
+                      return (
+                        <TableRow key={part.id}>
+                          <TableCell className="text-sm font-medium">
+                            {part.name}
+                            {isLow && (
+                              <Badge variant="destructive" className="ml-2 text-xs px-1 py-0">
+                                <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
+                                {t('maintenance.lowStock')}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs font-mono">{part.partNumber}</TableCell>
+                          <TableCell className="text-sm">{t(categoryLabels[part.category] || part.category)}</TableCell>
+                          <TableCell className={`text-sm font-medium ${isLow ? 'text-red-600' : ''}`}>{part.qtyInStock}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{part.minStock}</TableCell>
+                          <TableCell className="text-sm">{part.location}</TableCell>
+                          <TableCell className="text-sm">{formatRSDShort(part.unitCost)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" className="h-7 w-7"><Eye className="h-3.5 w-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7"><Edit3 className="h-3.5 w-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* Parts Dodaj sub-tab */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">{t('maintenance.addPart')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.partName')}</Label>
+                    <Input value={partForm.name} onChange={(e) => setPartForm({ ...partForm, name: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.partNumber')}</Label>
+                      <Input value={partForm.partNumber} onChange={(e) => setPartForm({ ...partForm, partNumber: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.category')}</Label>
+                      <Select value={partForm.category} onValueChange={(v) => setPartForm({ ...partForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(categoryLabels).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{t(v)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.qtyInStock')}</Label>
+                      <Input type="number" value={partForm.qtyInStock || ''} onChange={(e) => setPartForm({ ...partForm, qtyInStock: parseInt(e.target.value) || 0 })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.minStock')}</Label>
+                      <Input type="number" value={partForm.minStock || ''} onChange={(e) => setPartForm({ ...partForm, minStock: parseInt(e.target.value) || 1 })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('maintenance.unitCost')} (RSD)</Label>
+                      <Input type="number" value={partForm.unitCost || ''} onChange={(e) => setPartForm({ ...partForm, unitCost: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('maintenance.location')}</Label>
+                    <Input value={partForm.location} onChange={(e) => setPartForm({ ...partForm, location: e.target.value })} />
+                  </div>
+                  <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+                    <Button variant="outline" onClick={() => setPartsSubTab('pregled')}>{t('maintenance.cancel')}</Button>
+                    <Button onClick={() => setPartsSubTab('pregled')}>{t('maintenance.createOrder')}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ==================== TAB 6: ANALYTICS ==================== */}
@@ -1087,382 +1522,6 @@ export function Maintenance() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* ==================== CREATE ORDER DIALOG ==================== */}
-      {dialogOpen && (
-<Card className="max-w-lg max-h-[90vh] overflow-y-auto">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.newOrder')}</CardTitle></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('maintenance.equipmentName')}</Label>
-              <Input value={orderForm.equipmentName} onChange={(e) => setOrderForm({ ...orderForm, equipmentName: e.target.value })} placeholder="Naziv opreme" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('maintenance.category')}</Label>
-                <Select value={orderForm.category} onValueChange={(v) => setOrderForm({ ...orderForm, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(categoryLabels).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{t(v)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.type')}</Label>
-                <Select value={orderForm.type} onValueChange={(v) => setOrderForm({ ...orderForm, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(typeLabels).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{t(v)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('maintenance.priority')}</Label>
-              <Select value={orderForm.priority} onValueChange={(v) => setOrderForm({ ...orderForm, priority: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(priorityConfig).map(([k]) => (
-                    <SelectItem key={k} value={k}>{t(`maintenance.${priorityConfig[k].labelKey}`)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('maintenance.description')}</Label>
-              <Textarea value={orderForm.description} onChange={(e) => setOrderForm({ ...orderForm, description: e.target.value })} placeholder="Opišite problem ili rad" rows={3} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('maintenance.assignedTo')}</Label>
-                <Input value={orderForm.assignedTo} onChange={(e) => setOrderForm({ ...orderForm, assignedTo: e.target.value })} placeholder="Ime tehničara" />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.scheduledDate')}</Label>
-                <Input type="date" value={orderForm.scheduledDate} onChange={(e) => setOrderForm({ ...orderForm, scheduledDate: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('maintenance.estimatedCost')} (RSD)</Label>
-              <Input type="number" value={orderForm.estimatedCost || ''} onChange={(e) => setOrderForm({ ...orderForm, estimatedCost: parseFloat(e.target.value) || 0 })} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('maintenance.partsNeeded')}</Label>
-              <Textarea value={orderForm.partsNeeded} onChange={(e) => setOrderForm({ ...orderForm, partsNeeded: e.target.value })} placeholder="Jedan deo po liniji" rows={2} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('maintenance.safetyNotes')}</Label>
-              <Textarea value={orderForm.safetyNotes} onChange={(e) => setOrderForm({ ...orderForm, safetyNotes: e.target.value })} rows={2} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => { setDialogOpen(false); setOrderForm(emptyOrderForm) }}>{t('maintenance.cancel')}</Button>
-            <Button onClick={handleCreateOrder}><Plus className="h-4 w-4 mr-1" /> {t('maintenance.createOrder')}</Button>
-          </div>
-        </Card>
-          )}
-
-      {/* ==================== ORDER DETAIL DIALOG ==================== */}
-      {detailOpen && (
-<Card className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-sm flex-1">{t('maintenance.orderDetails')}</CardTitle>
-              {selected && getNextStatusValue(selected.status) && (
-                <Button size="sm" variant="outline" className="text-amber-600"
-                  onClick={() => { handleUpdateStatus(selected.id, getNextStatusValue(selected.status)!)
-                    setDetailOpen(false) }}>
-                  <CheckCircle2 className="h-4 w-4 mr-1" />
-                  {t(`maintenance.${getNextStatusLabel(selected.status)}`)}
-                </Button>
-              )}
-            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-          </CardHeader>
-          {selected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">{t('maintenance.orderNumber')}:</span> <span className="font-mono">{selected.orderNumber}</span></div>
-                <div><span className="text-muted-foreground">{t('maintenance.status')}:</span> {getStatusBadge(selected.status)}</div>
-                <div><span className="text-muted-foreground">{t('maintenance.equipmentName')}:</span> {selected.equipmentName}</div>
-                <div><span className="text-muted-foreground">{t('maintenance.type')}:</span> {t(typeLabels[selected.type] || selected.type)}</div>
-                <div><span className="text-muted-foreground">{t('maintenance.priority')}:</span> {getPriorityBadge(selected.priority)}</div>
-                {selected.assignedTo && <div><span className="text-muted-foreground">{t('maintenance.assignedTo')}:</span> {selected.assignedTo}</div>}
-                {selected.scheduledDate && <div><span className="text-muted-foreground">{t('maintenance.scheduledDate')}:</span> {selected.scheduledDate}</div>}
-                {selected.completedDate && <div><span className="text-muted-foreground">{t('maintenance.completedDate')}:</span> {selected.completedDate}</div>}
-                {selected.cost != null && selected.cost > 0 && (
-                  <div><span className="text-muted-foreground">{t('maintenance.cost')}:</span> <span className="font-bold">{formatRSD(selected.cost)}</span></div>
-                )}
-              </div>
-              <Separator />
-              {selected.description && (
-                <div className="text-sm"><span className="text-muted-foreground">{t('maintenance.description')}:</span><br />{selected.description}</div>
-              )}
-              {selected.notes && (
-                <div className="text-sm"><span className="text-muted-foreground">{t('maintenance.safetyNotes')}:</span><br />{selected.notes}</div>
-              )}
-              {selected.partsNeeded && selected.partsNeeded.length > 0 && (
-                <>
-                  <Separator />
-                  <div className="text-sm">
-                    <span className="text-muted-foreground font-medium">{t('maintenance.partsNeeded')}:</span>
-                    <ul className="mt-1 list-disc list-inside space-y-1">
-                      {selected.partsNeeded.map((p, i) => <li key={i}>{p}</li>)}
-                    </ul>
-                  </div>
-                </>
-              )}
-              {selected.workLog && selected.workLog.length > 0 && (
-                <>
-                  <Separator />
-                  <div className="text-sm">
-                    <span className="text-muted-foreground font-medium">{t('maintenance.workLog')}:</span>
-                    <div className="mt-2 space-y-2">
-                      {selected.workLog.map((w, i) => (
-                        <div key={i} className="border-l-2 border-primary pl-3">
-                          <div className="text-xs text-muted-foreground">{w.date}</div>
-                          <div>{w.note}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-              {selected.partsUsed && selected.partsUsed.length > 0 && (
-                <>
-                  <Separator />
-                  <div className="text-sm">
-                    <span className="text-muted-foreground font-medium">{t('maintenance.partsUsed')}:</span>
-                    <div className="mt-2 space-y-1">
-                      {selected.partsUsed.map((p, i) => (
-                        <div key={i} className="flex justify-between text-sm">
-                          <span>{p.name}</span>
-                          <span className="text-muted-foreground">x{p.qty}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-              <Separator />
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={handleDuplicateOrder}>
-                  <Copy className="h-4 w-4 mr-1" /> {t('maintenance.duplicateOrder')}
-                </Button>
-              </div>
-            </div>
-          )}
-        </Card>
-          )}
-
-      {/* ==================== EQUIPMENT ADD/EDIT DIALOG ==================== */}
-      {equipDialogOpen && (
-<Card className="max-w-lg max-h-[90vh] overflow-y-auto">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setEquipDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.addEquipment')}</CardTitle></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('maintenance.equipmentName')}</Label>
-              <Input value={equipForm.name} onChange={(e) => setEquipForm({ ...equipForm, name: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('maintenance.serialNumber')}</Label>
-                <Input value={equipForm.serialNumber} onChange={(e) => setEquipForm({ ...equipForm, serialNumber: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.category')}</Label>
-                <Select value={equipForm.category} onValueChange={(v) => setEquipForm({ ...equipForm, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(categoryLabels).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{t(v)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('maintenance.location')}</Label>
-                <Input value={equipForm.location} onChange={(e) => setEquipForm({ ...equipForm, location: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.status')}</Label>
-                <Select value={equipForm.status} onValueChange={(v) => setEquipForm({ ...equipForm, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(equipmentStatusConfig).map(([k]) => (
-                      <SelectItem key={k} value={k}>{t(`maintenance.${equipmentStatusConfig[k].labelKey}`)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('maintenance.lastMaintenance')}</Label>
-                <Input type="date" value={equipForm.lastMaintenance} onChange={(e) => setEquipForm({ ...equipForm, lastMaintenance: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.nextMaintenance')}</Label>
-                <Input type="date" value={equipForm.nextMaintenance} onChange={(e) => setEquipForm({ ...equipForm, nextMaintenance: e.target.value })} />
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => setEquipDialogOpen(false)}>{t('maintenance.cancel')}</Button>
-            <Button onClick={() => setEquipDialogOpen(false)}>{t('maintenance.createOrder')}</Button>
-          </div>
-        </Card>
-          )}
-
-      {/* ==================== EQUIPMENT DETAIL DIALOG ==================== */}
-      {equipDetailOpen && (
-<Card className="max-w-lg max-h-[90vh] overflow-y-auto">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setEquipDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.equipmentDetails')}</CardTitle></CardHeader>
-          {selectedEquip && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">{t('maintenance.equipmentName')}:</span> <span className="font-medium">{selectedEquip.name}</span></div>
-                <div><span className="text-muted-foreground">{t('maintenance.serialNumber')}:</span> <span className="font-mono">{selectedEquip.serialNumber}</span></div>
-                <div><span className="text-muted-foreground">{t('maintenance.category')}:</span> {t(categoryLabels[selectedEquip.category] || selectedEquip.category)}</div>
-                <div><span className="text-muted-foreground">{t('maintenance.location')}:</span> {selectedEquip.location}</div>
-                <div><span className="text-muted-foreground">{t('maintenance.status')}:</span> {getEquipStatusBadge(selectedEquip.status)}</div>
-                <div><span className="text-muted-foreground">{t('maintenance.healthScore')}:</span>
-                  <div className={`inline-flex items-center gap-2 ml-1`}>
-                    <Progress value={selectedEquip.healthScore} className={`h-2 w-14 ${getHealthBg(selectedEquip.healthScore)}`} />
-                    <span className={`font-medium ${getHealthColor(selectedEquip.healthScore)}`}>{selectedEquip.healthScore}%</span>
-                  </div>
-                </div>
-                <div><span className="text-muted-foreground">{t('maintenance.lastMaintenance')}:</span> {selectedEquip.lastMaintenance}</div>
-                <div><span className="text-muted-foreground">{t('maintenance.nextMaintenance')}:</span> {selectedEquip.nextMaintenance}</div>
-              </div>
-              <Separator />
-              <div>
-                <h4 className="text-sm font-medium mb-3">{t('maintenance.maintenanceHistory')}</h4>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {items.filter((o) => o.equipmentName === selectedEquip.name).length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">{t('maintenance.noData')}</p>
-                  ) : (
-                    items.filter((o) => o.equipmentName === selectedEquip.name).map((o) => (
-                      <div key={o.id} className="flex items-center justify-between py-2 border-b last:border-0 text-sm">
-                        <div>
-                          <span className="font-mono text-xs">{o.orderNumber}</span>
-                          <span className="text-muted-foreground ml-2">{t(typeLabels[o.type] || o.type)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(o.status)}
-                          <span className="text-xs text-muted-foreground">{o.completedDate || o.scheduledDate || ''}</span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </Card>
-          )}
-
-      {/* ==================== ADD PLAN DIALOG ==================== */}
-      {planDialogOpen && (
-<Card className="max-w-lg">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setPlanDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.addPlan')}</CardTitle></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('maintenance.equipmentName')}</Label>
-              <Input value={planForm.equipmentName} onChange={(e) => setPlanForm({ ...planForm, equipmentName: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('maintenance.planName')}</Label>
-              <Input value={planForm.planName} onChange={(e) => setPlanForm({ ...planForm, planName: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('maintenance.frequency')}</Label>
-                <Select value={planForm.frequency} onValueChange={(v) => setPlanForm({ ...planForm, frequency: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(frequencyLabels).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{t(v)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.nextDue')}</Label>
-                <Input type="date" value={planForm.nextDue} onChange={(e) => setPlanForm({ ...planForm, nextDue: e.target.value })} />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox checked={planForm.autoCreate} onCheckedChange={(checked) => setPlanForm({ ...planForm, autoCreate: checked === true })} />
-              <Label>{t('maintenance.autoCreate')}</Label>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => setPlanDialogOpen(false)}>{t('maintenance.cancel')}</Button>
-            <Button onClick={() => {
-              setPlans([...plans, { id: `p${plans.length + 1}`, equipmentId: '', equipmentName: planForm.equipmentName, planName: planForm.planName, frequency: planForm.frequency, nextDue: planForm.nextDue, autoCreate: planForm.autoCreate, completedDates: [] }])
-              setPlanDialogOpen(false)
-            }}>{t('maintenance.createOrder')}</Button>
-          </div>
-        </Card>
-          )}
-
-      {/* ==================== ADD PART DIALOG ==================== */}
-      {partDialogOpen && (
-<Card className="max-w-lg">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setPartDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.addPart')}</CardTitle></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('maintenance.partName')}</Label>
-              <Input value={partForm.name} onChange={(e) => setPartForm({ ...partForm, name: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('maintenance.partNumber')}</Label>
-                <Input value={partForm.partNumber} onChange={(e) => setPartForm({ ...partForm, partNumber: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.category')}</Label>
-                <Select value={partForm.category} onValueChange={(v) => setPartForm({ ...partForm, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(categoryLabels).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{t(v)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{t('maintenance.qtyInStock')}</Label>
-                <Input type="number" value={partForm.qtyInStock || ''} onChange={(e) => setPartForm({ ...partForm, qtyInStock: parseInt(e.target.value) || 0 })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.minStock')}</Label>
-                <Input type="number" value={partForm.minStock || ''} onChange={(e) => setPartForm({ ...partForm, minStock: parseInt(e.target.value) || 1 })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('maintenance.unitCost')} (RSD)</Label>
-                <Input type="number" value={partForm.unitCost || ''} onChange={(e) => setPartForm({ ...partForm, unitCost: parseFloat(e.target.value) || 0 })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('maintenance.location')}</Label>
-              <Input value={partForm.location} onChange={(e) => setPartForm({ ...partForm, location: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => setPartDialogOpen(false)}>{t('maintenance.cancel')}</Button>
-            <Button onClick={() => setPartDialogOpen(false)}>{t('maintenance.createOrder')}</Button>
-          </div>
-        </Card>
-          )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
- 
+
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
@@ -225,14 +225,10 @@ export function Notes() {
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [sortBy, setSortBy] = useState('updated')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
-  const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
-  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [noteSubTab, setNoteSubTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
+  const [settingsSubTab, setSettingsSubTab] = useState<'pregled' | 'dodaj_category' | 'dodaj_template'>('pregled')
   const [selected, setSelected] = useState<Note | null>(null)
   const [tagInput, setTagInput] = useState('')
-  const [shareEmail, setShareEmail] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Forms
@@ -248,6 +244,15 @@ export function Notes() {
 
   const emptyTemplateForm = { name: '', content: '', categoryId: '', isDefault: false }
   const [templateForm, setTemplateForm] = useState(emptyTemplateForm)
+
+  // ─── Tab change handler ──────────────────────────────────────────────────
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    // Reset sub-tabs when switching main tabs
+    setNoteSubTab('pregled')
+    setSettingsSubTab('pregled')
+  }
 
   // ─── Data Loading ───────────────────────────────────────────────────────
 
@@ -360,7 +365,7 @@ export function Notes() {
         }),
       })
       if (res.ok) {
-        setDialogOpen(false)
+        setNoteSubTab('pregled')
         setNoteForm(emptyNoteForm)
         loadNotes()
         loadDashboard()
@@ -382,7 +387,7 @@ export function Notes() {
         }),
       })
       if (res.ok) {
-        setDetailOpen(false)
+        setNoteSubTab('pregled')
         setSelected(null)
         loadNotes()
       }
@@ -422,7 +427,7 @@ export function Notes() {
         body: JSON.stringify({ companyId: activeCompanyId, ...categoryForm, noteCount: 0 }),
       })
       if (res.ok) {
-        setCategoryDialogOpen(false)
+        setSettingsSubTab('pregled')
         setCategoryForm(emptyCategoryForm)
         loadCategories()
       }
@@ -446,7 +451,7 @@ export function Notes() {
         body: JSON.stringify({ companyId: activeCompanyId, ...templateForm }),
       })
       if (res.ok) {
-        setTemplateDialogOpen(false)
+        setSettingsSubTab('pregled')
         setTemplateForm(emptyTemplateForm)
         loadTemplates()
       }
@@ -471,7 +476,8 @@ export function Notes() {
       categoryId: template.categoryId,
       templateId: template.id,
     })
-    setDialogOpen(true)
+    setActiveTab('notes')
+    setNoteSubTab('dodaj')
   }
 
   const openEdit = (note: Note) => {
@@ -487,7 +493,8 @@ export function Notes() {
       isFavorite: note.isFavorite,
       templateId: note.templateId || '',
     })
-    setDetailOpen(true)
+    setActiveTab('notes')
+    setNoteSubTab('uredi')
   }
 
   const getCategoryName = (catId: string) => {
@@ -514,14 +521,16 @@ export function Notes() {
           <Button variant="outline" size="sm" onClick={() => { loadNotes(); loadDashboard(); }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => { setNoteForm(emptyNoteForm); setDialogOpen(true); }}>
-            <Plus className="h-4 w-4 mr-1" /> Nova beleška
-          </Button>
+          {activeTab !== 'notes' && (
+            <Button size="sm" onClick={() => { setNoteForm(emptyNoteForm); setActiveTab('notes'); setNoteSubTab('dodaj'); }}>
+              <Plus className="h-4 w-4 mr-1" /> Nova beleška
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="notes"><StickyNote className="h-4 w-4 mr-1" /> Sve beleške</TabsTrigger>
@@ -639,7 +648,7 @@ export function Notes() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm">Brzi šabloni</CardTitle>
-                    <Button size="sm" variant="ghost" onClick={() => setTemplateDialogOpen(true)}>
+                    <Button size="sm" variant="ghost" onClick={() => { setActiveTab('settings'); setSettingsSubTab('dodaj_template'); }}>
                       <Plus className="h-3.5 w-3.5 mr-1" /> Dodaj šablon
                     </Button>
                   </div>
@@ -664,103 +673,304 @@ export function Notes() {
           )}
         </TabsContent>
 
-        {/* ─── Sve beleške Tab ────────────────────────────────────────── */}
-        <TabsContent value="notes" className="space-y-4">
-          {/* Search & Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Pretraži beleške..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+        {/* ─── Sve beleške Tab (with sub-tabs: Pregled / Dodaj / Uredi) ── */}
+        <TabsContent value="notes">
+          <Tabs value={noteSubTab} onValueChange={(v) => setNoteSubTab(v as typeof noteSubTab)}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="pregled">Pregled</TabsTrigger>
+                <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</TabsTrigger>
+                <TabsTrigger value="uredi"><Edit3 className="h-3.5 w-3.5 mr-1" /> Uredi</TabsTrigger>
+              </TabsList>
+              {noteSubTab !== 'pregled' && (
+                <Button variant="ghost" size="sm" onClick={() => setNoteSubTab('pregled')}>
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Nazad
+                </Button>
+              )}
             </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Sve kategorije" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Sve kategorije</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-[140px]"><SelectValue placeholder="Svi prioriteti" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi prioriteti</SelectItem>
-                {Object.entries(priorityConfig).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {sortOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex gap-1 border rounded-lg p-1">
-              <Button size="sm" variant={viewMode === 'grid' ? 'default' : 'ghost'} className="h-8 w-8 p-0" onClick={() => setViewMode('grid')}>
-                <FolderOpen className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant={viewMode === 'list' ? 'default' : 'ghost'} className="h-8 w-8 p-0" onClick={() => setViewMode('list')}>
-                <FileText className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
 
-          {/* Notes Display */}
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : filteredNotes.length === 0 ? (
-            <Card className="p-8 text-center">
-              <StickyNote className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema beleški</p>
-              <p className="text-xs text-muted-foreground mt-1">Kreirajte prvu belešku ili promenite filtere</p>
-              <Button variant="outline" className="mt-3" onClick={() => { setNoteForm(emptyNoteForm); setDialogOpen(true); }}>
-                <Plus className="h-4 w-4 mr-1" /> Kreiraj belešku
-              </Button>
-            </Card>
-          ) : (
-            <div>
-              {/* Pinned Notes */}
-              {pinnedNotes.length > 0 && (
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Pin className="h-4 w-4 text-amber-500" />
-                    <span className="text-sm font-medium text-muted-foreground">Prikvačene beleške ({pinnedNotes.length})</span>
-                  </div>
+            {/* ── Sub-tab: Pregled ────────────────────────────────────── */}
+            <TabsContent value="pregled" className="space-y-4">
+              {/* Search & Filters */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Pretraži beleške..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Sve kategorije" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Sve kategorije</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                  <SelectTrigger className="w-[140px]"><SelectValue placeholder="Svi prioriteti" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi prioriteti</SelectItem>
+                    {Object.entries(priorityConfig).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-1 border rounded-lg p-1">
+                  <Button size="sm" variant={viewMode === 'grid' ? 'default' : 'ghost'} className="h-8 w-8 p-0" onClick={() => setViewMode('grid')}>
+                    <FolderOpen className="h-4 w-4" />
+                  </Button>
+                  <Button size="sm" variant={viewMode === 'list' ? 'default' : 'ghost'} className="h-8 w-8 p-0" onClick={() => setViewMode('list')}>
+                    <FileText className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Notes Display */}
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : filteredNotes.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <StickyNote className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema beleški</p>
+                  <p className="text-xs text-muted-foreground mt-1">Kreirajte prvu belešku ili promenite filtere</p>
+                  <Button variant="outline" className="mt-3" onClick={() => { setNoteForm(emptyNoteForm); setNoteSubTab('dodaj'); }}>
+                    <Plus className="h-4 w-4 mr-1" /> Kreiraj belešku
+                  </Button>
+                </Card>
+              ) : (
+                <div>
+                  {/* Pinned Notes */}
+                  {pinnedNotes.length > 0 && (
+                    <div className="mb-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Pin className="h-4 w-4 text-amber-500" />
+                        <span className="text-sm font-medium text-muted-foreground">Prikvačene beleške ({pinnedNotes.length})</span>
+                      </div>
+                      {viewMode === 'grid' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {pinnedNotes.map((note) => (
+                            <NoteCard key={note.id} note={note} getCategoryName={getCategoryName} getCategoryColor={getCategoryColor}
+                              onEdit={openEdit} onTogglePin={handleTogglePin} onToggleFavorite={handleToggleFavorite}
+                              onToggleArchive={handleToggleArchive} onDelete={handleDeleteNote} priorityConfig={priorityConfig} />
+                          ))}
+                        </div>
+                      ) : (
+                        <NoteList notes={pinnedNotes} getCategoryName={getCategoryName} getCategoryColor={getCategoryColor}
+                          onEdit={openEdit} onTogglePin={handleTogglePin} onToggleFavorite={handleToggleFavorite}
+                          onToggleArchive={handleToggleArchive} onDelete={handleDeleteNote} priorityConfig={priorityConfig} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Unpinned Notes */}
                   {viewMode === 'grid' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {pinnedNotes.map((note) => (
+                      {unpinnedNotes.map((note) => (
                         <NoteCard key={note.id} note={note} getCategoryName={getCategoryName} getCategoryColor={getCategoryColor}
                           onEdit={openEdit} onTogglePin={handleTogglePin} onToggleFavorite={handleToggleFavorite}
                           onToggleArchive={handleToggleArchive} onDelete={handleDeleteNote} priorityConfig={priorityConfig} />
                       ))}
                     </div>
                   ) : (
-                    <NoteList notes={pinnedNotes} getCategoryName={getCategoryName} getCategoryColor={getCategoryColor}
+                    <NoteList notes={unpinnedNotes} getCategoryName={getCategoryName} getCategoryColor={getCategoryColor}
                       onEdit={openEdit} onTogglePin={handleTogglePin} onToggleFavorite={handleToggleFavorite}
                       onToggleArchive={handleToggleArchive} onDelete={handleDeleteNote} priorityConfig={priorityConfig} />
                   )}
                 </div>
               )}
+            </TabsContent>
 
-              {/* Unpinned Notes */}
-              {viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {unpinnedNotes.map((note) => (
-                    <NoteCard key={note.id} note={note} getCategoryName={getCategoryName} getCategoryColor={getCategoryColor}
-                      onEdit={openEdit} onTogglePin={handleTogglePin} onToggleFavorite={handleToggleFavorite}
-                      onToggleArchive={handleToggleArchive} onDelete={handleDeleteNote} priorityConfig={priorityConfig} />
-                  ))}
+            {/* ── Sub-tab: Dodaj (Create Note) ───────────────────────── */}
+            <TabsContent value="dodaj">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Nova beleška</CardTitle>
+                  <CardDescription>Kreirajte novu belešku sa naslovom, sadržajem i tagovima</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Naslov</Label>
+                    <Input value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} placeholder="Naslov beleške..." />
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Kategorija</Label>
+                      <Select value={noteForm.categoryId} onValueChange={(v) => setNoteForm({ ...noteForm, categoryId: v })}>
+                        <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                        <SelectContent>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Prioritet</Label>
+                      <Select value={noteForm.priority} onValueChange={(v) => setNoteForm({ ...noteForm, priority: v as Note['priority'] })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(priorityConfig).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Boja pozadine</Label>
+                      <div className="flex gap-1 flex-wrap">
+                        {noteColors.map((c) => (
+                          <button key={c.value} className="w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform"
+                            style={{ backgroundColor: c.value, borderColor: noteForm.color === c.value ? '#000' : '#e5e7eb' }}
+                            onClick={() => setNoteForm({ ...noteForm, color: c.value })}
+                            title={c.label}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sadržaj</Label>
+                    <Textarea value={noteForm.content} onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })} rows={8} placeholder="Sadržaj beleške..." />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tagovi</Label>
+                    <div className="flex gap-2">
+                      <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Dodaj tag..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} className="flex-1" />
+                      <Button size="sm" variant="outline" onClick={addTag}><Plus className="h-4 w-4" /></Button>
+                    </div>
+                    {noteForm.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {noteForm.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            #{tag} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag(tag)} />
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={noteForm.isPinned} onCheckedChange={(v) => setNoteForm({ ...noteForm, isPinned: v })} />
+                      <Label className="text-sm">Prikvači</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={noteForm.isFavorite} onCheckedChange={(v) => setNoteForm({ ...noteForm, isFavorite: v })} />
+                      <Label className="text-sm">Označi zvezdicom</Label>
+                    </div>
+                  </div>
+                </CardContent>
+                <div className="flex justify-end gap-2 px-6 pb-6">
+                  <Button variant="outline" onClick={() => { setNoteSubTab('pregled'); setNoteForm(emptyNoteForm); }}>Otkaži</Button>
+                  <Button onClick={handleCreateNote}><Plus className="h-4 w-4 mr-1" /> Kreiraj belešku</Button>
                 </div>
-              ) : (
-                <NoteList notes={unpinnedNotes} getCategoryName={getCategoryName} getCategoryColor={getCategoryColor}
-                  onEdit={openEdit} onTogglePin={handleTogglePin} onToggleFavorite={handleToggleFavorite}
-                  onToggleArchive={handleToggleArchive} onDelete={handleDeleteNote} priorityConfig={priorityConfig} />
-              )}
-            </div>
-          )}
+              </Card>
+            </TabsContent>
+
+            {/* ── Sub-tab: Uredi (Edit Note) ─────────────────────────── */}
+            <TabsContent value="uredi">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Uredi belešku</CardTitle>
+                  <CardDescription>Izmenite naslov, sadržaj, kategoriju i tagove</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {selected ? (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Naslov</Label>
+                        <Input value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} />
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Kategorija</Label>
+                          <Select value={noteForm.categoryId} onValueChange={(v) => setNoteForm({ ...noteForm, categoryId: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Prioritet</Label>
+                          <Select value={noteForm.priority} onValueChange={(v) => setNoteForm({ ...noteForm, priority: v as Note['priority'] })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(priorityConfig).map(([k, v]) => (
+                                <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Boja</Label>
+                          <div className="flex gap-1 flex-wrap">
+                            {noteColors.map((c) => (
+                              <button key={c.value} className="w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform"
+                                style={{ backgroundColor: c.value, borderColor: noteForm.color === c.value ? '#000' : '#e5e7eb' }}
+                                onClick={() => setNoteForm({ ...noteForm, color: c.value })}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Sadržaj</Label>
+                        <Textarea value={noteForm.content} onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })} rows={8} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Tagovi</Label>
+                        <div className="flex gap-2">
+                          <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Dodaj tag..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} className="flex-1" />
+                          <Button size="sm" variant="outline" onClick={addTag}><Plus className="h-4 w-4" /></Button>
+                        </div>
+                        {noteForm.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {noteForm.tags.map((tag) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                #{tag} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag(tag)} />
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <Separator />
+                      <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                        <div>Kreirano: {new Date(selected.createdAt).toLocaleString('sr-RS')}</div>
+                        <div>Ažurirano: {new Date(selected.updatedAt).toLocaleString('sr-RS')}</div>
+                      </div>
+                      {selected.sharedWith.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          Podeljeno sa: {selected.sharedWith.join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center">
+                      <Edit3 className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-muted-foreground">Nije izabrana beleška za uređivanje</p>
+                      <p className="text-xs text-muted-foreground mt-1">Kliknite na belešku u pregledu da je uredite</p>
+                    </div>
+                  )}
+                </CardContent>
+                {selected && (
+                  <div className="flex justify-end gap-2 px-6 pb-6">
+                    <Button variant="outline" onClick={() => { setNoteSubTab('pregled'); setSelected(null); }}>Otkaži</Button>
+                    <Button onClick={handleUpdateNote}><Edit3 className="h-4 w-4 mr-1" /> Sačuvaj izmene</Button>
+                  </div>
+                )}
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ─── Označene Tab ───────────────────────────────────────────── */}
@@ -786,249 +996,219 @@ export function Notes() {
           )}
         </TabsContent>
 
-        {/* ─── Podešavanja Tab ────────────────────────────────────────── */}
-        <TabsContent value="settings" className="space-y-6">
-          {/* Categories Management */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base">Kategorije</CardTitle>
-                  <CardDescription>Upravljajte kategorijama beleški</CardDescription>
-                </div>
-                <Button size="sm" onClick={() => { setCategoryForm(emptyCategoryForm); setCategoryDialogOpen(true); }}>
-                  <Plus className="h-4 w-4 mr-1" /> Nova kategorija
+        {/* ─── Podešavanja Tab (with sub-tabs: Pregled / Nova kategorija / Novi šablon) ── */}
+        <TabsContent value="settings">
+          <Tabs value={settingsSubTab} onValueChange={(v) => setSettingsSubTab(v as typeof settingsSubTab)}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="pregled">Pregled</TabsTrigger>
+                <TabsTrigger value="dodaj_category"><Plus className="h-3.5 w-3.5 mr-1" /> Nova kategorija</TabsTrigger>
+                <TabsTrigger value="dodaj_template"><BookOpen className="h-3.5 w-3.5 mr-1" /> Novi šablon</TabsTrigger>
+              </TabsList>
+              {settingsSubTab !== 'pregled' && (
+                <Button variant="ghost" size="sm" onClick={() => setSettingsSubTab('pregled')}>
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Nazad
                 </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {categories.map((cat) => (
-                  <div key={cat.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color }} />
-                      <span className="text-lg">{cat.icon}</span>
-                      <div>
-                        <p className="text-sm font-medium">{cat.name}</p>
-                        <p className="text-xs text-muted-foreground">{cat.noteCount} beleški</p>
-                      </div>
+              )}
+            </div>
+
+            {/* ── Sub-tab: Pregled ────────────────────────────────────── */}
+            <TabsContent value="pregled" className="space-y-6">
+              {/* Categories Management */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">Kategorije</CardTitle>
+                      <CardDescription>Upravljajte kategorijama beleški</CardDescription>
                     </div>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteCategory(cat.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
+                    <Button size="sm" onClick={() => { setCategoryForm(emptyCategoryForm); setSettingsSubTab('dodaj_category'); }}>
+                      <Plus className="h-4 w-4 mr-1" /> Nova kategorija
                     </Button>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Templates Management */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base">Šabloni beleški</CardTitle>
-                  <CardDescription>Predefinisani šabloni za brzo kreiranje beleški</CardDescription>
-                </div>
-                <Button size="sm" onClick={() => { setTemplateForm(emptyTemplateForm); setTemplateDialogOpen(true); }}>
-                  <Plus className="h-4 w-4 mr-1" /> Novi šablon
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {templates.map((tpl) => (
-                  <div key={tpl.id} className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-primary" />
-                        <p className="text-sm font-medium">{tpl.name}</p>
-                      </div>
-                      {tpl.isDefault && <Badge variant="outline" className="text-xs bg-primary/10 text-primary">Podrazumevano</Badge>}
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{tpl.content.substring(0, 80)}...</p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => applyTemplate(tpl)}>
-                        <Plus className="h-3 w-3 mr-1" /> Koristi
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => {
-                        if (confirm('Obrisati šablon?')) setTemplates(templates.filter((t) => t.id !== tpl.id))
-                      }}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* All Tags Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Svi tagovi</CardTitle>
-              <CardDescription>Pregled svih korišćenih tagova</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {allTags.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nema tagova</p>
-                ) : (
-                  allTags.map((tag) => {
-                    const count = notes.filter((n) => n.tags.includes(tag)).length
-                    return (
-                      <Badge key={tag} variant="secondary" className="text-xs cursor-pointer hover:bg-primary/20" onClick={() => { setSearch(tag); setActiveTab('notes'); }}>
-                        #{tag} <span className="ml-1 text-muted-foreground">({count})</span>
-                      </Badge>
-                    )
-                  })
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Archive Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Arhiva</CardTitle>
-              <CardDescription>Arhivirane beleške ({notes.filter((n) => n.isArchived).length})</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {notes.filter((n) => n.isArchived).length === 0 ? (
-                <div className="p-6 text-center">
-                  <Archive className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Arhiva je prazna</p>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {notes.filter((n) => n.isArchived).map((note) => (
-                    <div key={note.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium">{note.title}</p>
-                        <p className="text-xs text-muted-foreground">{getCategoryName(note.categoryId)}</p>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleToggleArchive(note)}>
-                          Vrati
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteNote(note.id)}>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {categories.map((cat) => (
+                      <div key={cat.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color }} />
+                          <span className="text-lg">{cat.icon}</span>
+                          <div>
+                            <p className="text-sm font-medium">{cat.name}</p>
+                            <p className="text-xs text-muted-foreground">{cat.noteCount} beleški</p>
+                          </div>
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteCategory(cat.id)}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Templates Management */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">Šabloni beleški</CardTitle>
+                      <CardDescription>Predefinisani šabloni za brzo kreiranje beleški</CardDescription>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* ─── Create Note ──────────────────────────────────────────── */}
-      {dialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base">Nova beleška</CardTitle><CardDescription>Kreirajte novu belešku sa naslovom, sadržajem i tagovima</CardDescription></div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Naslov</Label>
-              <Input value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} placeholder="Naslov beleške..." />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Kategorija</Label>
-                <Select value={noteForm.categoryId} onValueChange={(v) => setNoteForm({ ...noteForm, categoryId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
+                    <Button size="sm" onClick={() => { setTemplateForm(emptyTemplateForm); setSettingsSubTab('dodaj_template'); }}>
+                      <Plus className="h-4 w-4 mr-1" /> Novi šablon
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {templates.map((tpl) => (
+                      <div key={tpl.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-primary" />
+                            <p className="text-sm font-medium">{tpl.name}</p>
+                          </div>
+                          {tpl.isDefault && <Badge variant="outline" className="text-xs bg-primary/10 text-primary">Podrazumevano</Badge>}
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{tpl.content.substring(0, 80)}...</p>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => applyTemplate(tpl)}>
+                            <Plus className="h-3 w-3 mr-1" /> Koristi
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => {
+                            if (confirm('Obrisati šablon?')) setTemplates(templates.filter((t) => t.id !== tpl.id))
+                          }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Prioritet</Label>
-                <Select value={noteForm.priority} onValueChange={(v) => setNoteForm({ ...noteForm, priority: v as Note['priority'] })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(priorityConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Boja pozadine</Label>
-                <div className="flex gap-1 flex-wrap">
-                  {noteColors.map((c) => (
-                    <button key={c.value} className="w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform"
-                      style={{ backgroundColor: c.value, borderColor: noteForm.color === c.value ? '#000' : '#e5e7eb' }}
-                      onClick={() => setNoteForm({ ...noteForm, color: c.value })}
-                      title={c.label}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Sadržaj</Label>
-              <Textarea value={noteForm.content} onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })} rows={8} placeholder="Sadržaj beleške..." />
-            </div>
-            <div className="space-y-2">
-              <Label>Tagovi</Label>
-              <div className="flex gap-2">
-                <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Dodaj tag..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} className="flex-1" />
-                <Button size="sm" variant="outline" onClick={addTag}><Plus className="h-4 w-4" /></Button>
-              </div>
-              {noteForm.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {noteForm.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      #{tag} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag(tag)} />
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Switch checked={noteForm.isPinned} onCheckedChange={(v) => setNoteForm({ ...noteForm, isPinned: v })} />
-                <Label className="text-sm">Prikvači</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={noteForm.isFavorite} onCheckedChange={(v) => setNoteForm({ ...noteForm, isFavorite: v })} />
-                <Label className="text-sm">Označi zvezdicom</Label>
-              </div>
-            </div>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateNote}><Plus className="h-4 w-4 mr-1" /> Kreiraj belešku</Button>
-          </div>
-        </Card>
-      )}
+                  </div>
+                </CardContent>
+              </Card>
 
-      {/* ─── Edit Note (Detail) ───────────────────────────────────── */}
-      {detailOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDetailOpen(false); setSelected(null); }}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base">Uredi belešku</CardTitle><CardDescription>Izmenite naslov, sadržaj, kategoriju i tagove</CardDescription></div>
-          </CardHeader>
-          <CardContent>
-            {selected && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Naslov</Label>
-                  <Input value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} />
+              {/* All Tags Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Svi tagovi</CardTitle>
+                  <CardDescription>Pregled svih korišćenih tagova</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {allTags.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Nema tagova</p>
+                    ) : (
+                      allTags.map((tag) => {
+                        const count = notes.filter((n) => n.tags.includes(tag)).length
+                        return (
+                          <Badge key={tag} variant="secondary" className="text-xs cursor-pointer hover:bg-primary/20" onClick={() => { setSearch(tag); setActiveTab('notes'); setNoteSubTab('pregled'); }}>
+                            #{tag} <span className="ml-1 text-muted-foreground">({count})</span>
+                          </Badge>
+                        )
+                      })
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Archive Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Arhiva</CardTitle>
+                  <CardDescription>Arhivirane beleške ({notes.filter((n) => n.isArchived).length})</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {notes.filter((n) => n.isArchived).length === 0 ? (
+                    <div className="p-6 text-center">
+                      <Archive className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Arhiva je prazna</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {notes.filter((n) => n.isArchived).map((note) => (
+                        <div key={note.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium">{note.title}</p>
+                            <p className="text-xs text-muted-foreground">{getCategoryName(note.categoryId)}</p>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleToggleArchive(note)}>
+                              Vrati
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteNote(note.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Sub-tab: Nova kategorija ────────────────────────────── */}
+            <TabsContent value="dodaj_category">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Nova kategorija</CardTitle>
+                  <CardDescription>Kreirajte novu kategoriju za beleške</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Naziv</Label>
+                    <Input value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} placeholder="Naziv kategorije" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Boja</Label>
+                    <div className="flex gap-2 flex-wrap">
+                      {noteColors.map((c) => (
+                        <button key={c.value} className="w-8 h-8 rounded-lg border-2 hover:scale-110 transition-transform"
+                          style={{ backgroundColor: c.value, borderColor: categoryForm.color === c.value ? '#000' : '#e5e7eb' }}
+                          onClick={() => setCategoryForm({ ...categoryForm, color: c.value })}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Ikona</Label>
+                    <div className="flex gap-2 flex-wrap">
+                      {Object.entries(categoryIcons).map(([key, icon]) => (
+                        <button key={key} className="w-10 h-10 flex items-center justify-center rounded-lg border hover:bg-muted/50 text-lg"
+                          style={{ borderColor: categoryForm.icon === icon ? '#000' : '#e5e7eb' }}
+                          onClick={() => setCategoryForm({ ...categoryForm, icon })}
+                        >
+                          {icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+                <div className="flex justify-end gap-2 px-6 pb-6">
+                  <Button variant="outline" onClick={() => { setSettingsSubTab('pregled'); setCategoryForm(emptyCategoryForm); }}>Otkaži</Button>
+                  <Button onClick={handleCreateCategory}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              </Card>
+            </TabsContent>
+
+            {/* ── Sub-tab: Novi šablon ────────────────────────────────── */}
+            <TabsContent value="dodaj_template">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Novi šablon</CardTitle>
+                  <CardDescription>Kreirajte šablon za brzo kreiranje beleški</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Naziv šablona</Label>
+                    <Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} placeholder="Naziv šablona" />
+                  </div>
                   <div className="space-y-2">
                     <Label>Kategorija</Label>
-                    <Select value={noteForm.categoryId} onValueChange={(v) => setNoteForm({ ...noteForm, categoryId: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select value={templateForm.categoryId} onValueChange={(v) => setTemplateForm({ ...templateForm, categoryId: v })}>
+                      <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
                       <SelectContent>
                         {categories.map((cat) => (
                           <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
@@ -1037,146 +1217,19 @@ export function Notes() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Prioritet</Label>
-                    <Select value={noteForm.priority} onValueChange={(v) => setNoteForm({ ...noteForm, priority: v as Note['priority'] })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(priorityConfig).map(([k, v]) => (
-                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>Sadržaj šablona</Label>
+                    <Textarea value={templateForm.content} onChange={(e) => setTemplateForm({ ...templateForm, content: e.target.value })} rows={6} placeholder="Predložak sadržaja..." />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Boja</Label>
-                    <div className="flex gap-1 flex-wrap">
-                      {noteColors.map((c) => (
-                        <button key={c.value} className="w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform"
-                          style={{ backgroundColor: c.value, borderColor: noteForm.color === c.value ? '#000' : '#e5e7eb' }}
-                          onClick={() => setNoteForm({ ...noteForm, color: c.value })}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                </CardContent>
+                <div className="flex justify-end gap-2 px-6 pb-6">
+                  <Button variant="outline" onClick={() => { setSettingsSubTab('pregled'); setTemplateForm(emptyTemplateForm); }}>Otkaži</Button>
+                  <Button onClick={handleCreateTemplate}><Plus className="h-4 w-4 mr-1" /> Kreiraj šablon</Button>
                 </div>
-                <div className="space-y-2">
-                  <Label>Sadržaj</Label>
-                  <Textarea value={noteForm.content} onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })} rows={8} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Tagovi</Label>
-                  <div className="flex gap-2">
-                    <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Dodaj tag..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} className="flex-1" />
-                    <Button size="sm" variant="outline" onClick={addTag}><Plus className="h-4 w-4" /></Button>
-                  </div>
-                  {noteForm.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {noteForm.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          #{tag} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag(tag)} />
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <Separator />
-                <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-                  <div>Kreirano: {new Date(selected.createdAt).toLocaleString('sr-RS')}</div>
-                  <div>Ažurirano: {new Date(selected.updatedAt).toLocaleString('sr-RS')}</div>
-                </div>
-                {selected.sharedWith.length > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    Podeljeno sa: {selected.sharedWith.join(', ')}
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6">
-            <Button variant="outline" onClick={() => { setDetailOpen(false); setSelected(null); }}>Otkaži</Button>
-            <Button onClick={handleUpdateNote}><Edit3 className="h-4 w-4 mr-1" /> Sačuvaj izmene</Button>
-          </div>
-        </Card>
-      )}
-
-      {/* ─── Category ─────────────────────────────────────────────── */}
-      {categoryDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCategoryDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base">Nova kategorija</CardTitle><CardDescription>Kreirajte novu kategoriju za beleške</CardDescription></div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Naziv</Label>
-              <Input value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} placeholder="Naziv kategorije" />
-            </div>
-            <div className="space-y-2">
-              <Label>Boja</Label>
-              <div className="flex gap-2 flex-wrap">
-                {noteColors.map((c) => (
-                  <button key={c.value} className="w-8 h-8 rounded-lg border-2 hover:scale-110 transition-transform"
-                    style={{ backgroundColor: c.value, borderColor: categoryForm.color === c.value ? '#000' : '#e5e7eb' }}
-                    onClick={() => setCategoryForm({ ...categoryForm, color: c.value })}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Ikona</Label>
-              <div className="flex gap-2 flex-wrap">
-                {Object.entries(categoryIcons).map(([key, icon]) => (
-                  <button key={key} className="w-10 h-10 flex items-center justify-center rounded-lg border hover:bg-muted/50 text-lg"
-                    style={{ borderColor: categoryForm.icon === icon ? '#000' : '#e5e7eb' }}
-                    onClick={() => setCategoryForm({ ...categoryForm, icon })}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6">
-            <Button variant="outline" onClick={() => setCategoryDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateCategory}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </div>
-        </Card>
-      )}
-
-      {/* ─── Template ─────────────────────────────────────────────── */}
-      {templateDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTemplateDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base">Novi šablon</CardTitle><CardDescription>Kreirajte šablon za brzo kreiranje beleški</CardDescription></div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Naziv šablona</Label>
-              <Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} placeholder="Naziv šablona" />
-            </div>
-            <div className="space-y-2">
-              <Label>Kategorija</Label>
-              <Select value={templateForm.categoryId} onValueChange={(v) => setTemplateForm({ ...templateForm, categoryId: v })}>
-                <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Sadržaj šablona</Label>
-              <Textarea value={templateForm.content} onChange={(e) => setTemplateForm({ ...templateForm, content: e.target.value })} rows={6} placeholder="Predložak sadržaja..." />
-            </div>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6">
-            <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateTemplate}><Plus className="h-4 w-4 mr-1" /> Kreiraj šablon</Button>
-          </div>
-        </Card>
-      )}
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

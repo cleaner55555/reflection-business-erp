@@ -25,7 +25,7 @@ import {
   CheckCircle2, Clock, BarChart3, TrendingUp, AlertCircle,
   GitBranch, GitCommit, FileText, FolderOpen, Upload, Download,
   Copy, ArrowRight, Users, Calendar, Filter, History, Package,
-  Cog, Shield, Target, Zap, ArrowLeft,
+  Cog, Shield, Target, Zap,
 } from 'lucide-react'
 
 import { toast } from 'sonner'
@@ -302,19 +302,18 @@ export function PLM() {
   const [productCategoryFilter, setProductCategoryFilter] = useState('all')
   const [productStageFilter, setProductStageFilter] = useState('all')
   const [productStatusFilter, setProductStatusFilter] = useState('all')
-  const [productDialogOpen, setProductDialogOpen] = useState(false)
-  const [productDetailOpen, setProductDetailOpen] = useState(false)
+  const [productSubTab, setProductSubTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [selectedProduct, setSelectedProduct] = useState<PLMProduct | null>(null)
 
   // Revisions (derived from embedded JSON in products)
   const revisions = useMemo(() => dbProducts.flatMap(p => safeParse<PLMRevision>(p.revisions)), [dbProducts])
-  const [revisionDialogOpen, setRevisionDialogOpen] = useState(false)
+  const [revisionSubTab, setRevisionSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [revisionSearch, setRevisionSearch] = useState('')
   const [revisionStatusFilter, setRevisionStatusFilter] = useState('all')
 
   // Documents (derived from embedded JSON in products)
   const documents = useMemo(() => dbProducts.flatMap(p => safeParse<PLMDocument>(p.documents)), [dbProducts])
-  const [docDialogOpen, setDocDialogOpen] = useState(false)
+  const [docSubTab, setDocSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [docSearch, setDocSearch] = useState('')
   const [docTypeFilter, setDocTypeFilter] = useState('all')
   const [docStatusFilter, setDocStatusFilter] = useState('all')
@@ -322,8 +321,7 @@ export function PLM() {
   // ECR/ECO (derived from embedded JSON in products)
   const ecrs = useMemo(() => dbProducts.flatMap(p => safeParse<PLM_ECR>(p.ecrs)), [dbProducts])
   const ecos = useMemo(() => dbProducts.flatMap(p => safeParse<PLM_ECO>(p.ecos)), [dbProducts])
-  const [ecrDialogOpen, setEcrDialogOpen] = useState(false)
-  const [ecoDialogOpen, setEcoDialogOpen] = useState(false)
+  const [ecrSubTab, setEcrSubTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
   const [selectedEco, setSelectedEco] = useState<PLM_ECO | null>(null)
   const [ecrStatusFilter, setEcrStatusFilter] = useState('all')
 
@@ -440,7 +438,7 @@ export function PLM() {
       revisionCount: 0,
     }
     setProducts(prev => [newProduct, ...prev])
-    setProductDialogOpen(false)
+    setProductSubTab('pregled')
     setProductForm(emptyProductForm)
   }, [activeCompanyId, productForm])
 
@@ -466,7 +464,7 @@ export function PLM() {
       affectedComponents: revisionForm.affectedComponents,
     }
     setRevisions(prev => [newRevision, ...prev])
-    setRevisionDialogOpen(false)
+    setRevisionSubTab('pregled')
     setRevisionForm(emptyRevisionForm)
   }, [activeCompanyId, revisionForm, products, t])
 
@@ -492,7 +490,7 @@ export function PLM() {
       size: '-',
     }
     setDocuments(prev => [newDoc, ...prev])
-    setDocDialogOpen(false)
+    setDocSubTab('pregled')
     setDocForm(emptyDocForm)
   }, [activeCompanyId, docForm, products, t])
 
@@ -520,7 +518,7 @@ export function PLM() {
       ecoNumber: null,
     }
     setEcrs(prev => [newEcr, ...prev])
-    setEcrDialogOpen(false)
+    setEcrSubTab('pregled')
     setEcrForm(emptyEcrForm)
   }, [activeCompanyId, ecrForm, products, ecrs.length, t])
 
@@ -559,23 +557,23 @@ export function PLM() {
           <Button variant="outline" size="sm" onClick={() => setProducts(MOCK_PRODUCTS)}>
             <RefreshCw className="h-4 w-4 mr-1" /> {t('plm.refresh')}
           </Button>
-          {activeTab === 'products' && (
-            <Button size="sm" onClick={() => setProductDialogOpen(true)}>
+          {activeTab === 'products' && productSubTab === 'pregled' && (
+            <Button size="sm" onClick={() => setProductSubTab('dodaj')}>
               <Plus className="h-4 w-4 mr-1" /> {t('plm.newProduct')}
             </Button>
           )}
-          {activeTab === 'revisions' && (
-            <Button size="sm" onClick={() => setRevisionDialogOpen(true)}>
+          {activeTab === 'revisions' && revisionSubTab === 'pregled' && (
+            <Button size="sm" onClick={() => setRevisionSubTab('dodaj')}>
               <Plus className="h-4 w-4 mr-1" /> {t('plm.newRevision')}
             </Button>
           )}
-          {activeTab === 'documents' && (
-            <Button size="sm" onClick={() => setDocDialogOpen(true)}>
+          {activeTab === 'documents' && docSubTab === 'pregled' && (
+            <Button size="sm" onClick={() => setDocSubTab('dodaj')}>
               <Plus className="h-4 w-4 mr-1" /> {t('plm.newDocument')}
             </Button>
           )}
-          {activeTab === 'ecr-eco' && (
-            <Button size="sm" onClick={() => setEcrDialogOpen(true)}>
+          {activeTab === 'ecr-eco' && ecrSubTab === 'pregled' && (
+            <Button size="sm" onClick={() => setEcrSubTab('dodaj')}>
               <Plus className="h-4 w-4 mr-1" /> {t('plm.newECR')}
             </Button>
           )}
@@ -737,8 +735,15 @@ export function PLM() {
 
         {/* ====== TAB 2: PRODUCTS ====== */}
         <TabsContent value="products" className="space-y-4">
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <Tabs value={productSubTab} onValueChange={(v) => setProductSubTab(v as 'pregled' | 'dodaj' | 'uredi')}>
+            <TabsList className="w-[400px]">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+              {selectedProduct && <TabsTrigger value="uredi">Uredi</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="pregled" className="space-y-4">
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder={t('plm.searchProducts')} className="pl-9" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} />
@@ -785,7 +790,7 @@ export function PLM() {
                 </TableHeader>
                 <TableBody>
                   {filteredProducts.map(product => (
-                    <TableRow key={product.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedProduct(product); setProductDetailOpen(true) }}>
+                    <TableRow key={product.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedProduct(product); setProductSubTab('uredi') }}>
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell className="font-mono text-xs">{product.sku}</TableCell>
                       <TableCell>{product.category}</TableCell>
@@ -804,7 +809,7 @@ export function PLM() {
                       <TableCell className="text-xs">{product.lastUpdated}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); setProductDetailOpen(true) }}>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); setProductSubTab('uredi') }}>
                             <Eye className="h-3.5 w-3.5" />
                           </Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product.id) }}>
@@ -817,13 +822,150 @@ export function PLM() {
                 </TableBody>
               </Table>
             </div>
-          </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-base">{t('plm.newProduct')}</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2"><Label>{t('plm.name')}</Label><Input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>SKU</Label><Input value={productForm.sku} onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>{t('plm.category')}</Label>
+                      <Select value={productForm.category} onValueChange={(v) => setProductForm({ ...productForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {uniqueCategories.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                          <SelectItem value="Ostalo">Ostalo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>{t('plm.lifecycleStage')}</Label>
+                      <Select value={productForm.lifecycleStage} onValueChange={(v) => setProductForm({ ...productForm, lifecycleStage: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(STAGE_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2"><Label>{t('plm.status')}</Label>
+                      <Select value={productForm.status} onValueChange={(v) => setProductForm({ ...productForm, status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(STATUS_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>{t('plm.version')}</Label><Input value={productForm.version} onChange={(e) => setProductForm({ ...productForm, version: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>{t('plm.owner')}</Label><Input value={productForm.owner} onChange={(e) => setProductForm({ ...productForm, owner: e.target.value })} /></div>
+                  </div>
+                  <div className="space-y-2"><Label>{t('plm.description')}</Label><Textarea value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} rows={3} /></div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setProductSubTab('pregled')}>{t('plm.cancel')}</Button>
+                    <Button onClick={handleCreateProduct}><Plus className="h-4 w-4 mr-1" /> {t('plm.create')}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="uredi" className="space-y-4">
+              {selectedProduct && (
+                <Card className="max-w-4xl">
+                  <CardHeader className="pb-2"><CardTitle className="text-base">{selectedProduct.name}</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div><span className="text-muted-foreground">SKU:</span> <span className="font-mono font-medium">{selectedProduct.sku}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.category')}:</span> <span className="font-medium">{selectedProduct.category}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.version')}:</span> <span className="font-mono font-medium">v{selectedProduct.version}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.lifecycleStage')}:</span> <Badge variant="outline" className={STAGE_CONFIG[selectedProduct.lifecycleStage]?.color}>{STAGE_CONFIG[selectedProduct.lifecycleStage]?.label}</Badge></div>
+                        <div><span className="text-muted-foreground">{t('plm.status')}:</span> <Badge variant="outline" className={STATUS_CONFIG[selectedProduct.status]?.color}>{STATUS_CONFIG[selectedProduct.status]?.label}</Badge></div>
+                        <div><span className="text-muted-foreground">{t('plm.owner')}:</span> <span className="font-medium">{selectedProduct.owner}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.revisions')}:</span> <span className="font-bold">{selectedProduct.revisionCount}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.bom')}:</span> <span className="font-mono text-xs">{selectedProduct.bomRef || '-'}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.lastUpdated')}:</span> <span>{selectedProduct.lastUpdated}</span></div>
+                      </div>
+                      {selectedProduct.description && (
+                        <>
+                          <Separator />
+                          <div><span className="text-sm font-medium">{t('plm.description')}</span><p className="text-sm text-muted-foreground mt-1">{selectedProduct.description}</p></div>
+                        </>
+                      )}
+                      <Separator />
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">{t('plm.versionHistory')}</h4>
+                        <div className="rounded-lg border overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>{t('plm.version')}</TableHead>
+                                <TableHead>{t('plm.description')}</TableHead>
+                                <TableHead>{t('plm.date')}</TableHead>
+                                <TableHead>{t('plm.status')}</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {revisions.filter(r => r.productId === selectedProduct.id).map(rev => (
+                                <TableRow key={rev.id}>
+                                  <TableCell className="font-mono text-xs">v{rev.version}</TableCell>
+                                  <TableCell className="text-sm">{rev.description}</TableCell>
+                                  <TableCell className="text-xs">{rev.date}</TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline" className={`text-xs ${REVISION_STATUS_CONFIG[rev.status]?.color || ''}`}>
+                                      {REVISION_STATUS_CONFIG[rev.status]?.label}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                              {revisions.filter(r => r.productId === selectedProduct.id).length === 0 && (
+                                <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground text-sm py-4">{t('plm.noRevisions')}</TableCell></TableRow>
+                              )}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">{t('plm.linkedDocuments')}</h4>
+                        <div className="space-y-2">
+                          {documents.filter(d => d.productId === selectedProduct.id).map(doc => (
+                            <div key={doc.id} className="flex items-center gap-2 border rounded-md p-2">
+                              <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <span className="text-sm flex-1 truncate">{doc.title}</span>
+                              <Badge variant="outline" className={`text-xs shrink-0 ${DOC_TYPE_CONFIG[doc.docType]?.color || ''}`}>
+                                {DOC_TYPE_CONFIG[doc.docType]?.label}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">v{doc.version}</span>
+                            </div>
+                          ))}
+                          {documents.filter(d => d.productId === selectedProduct.id).length === 0 && (
+                            <p className="text-sm text-muted-foreground text-center py-2">{t('plm.noDocuments')}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button variant="outline" onClick={() => setProductSubTab('pregled')}>Nazad</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ====== TAB 3: REVISIONS ====== */}
         <TabsContent value="revisions" className="space-y-4">
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <Tabs value={revisionSubTab} onValueChange={(v) => setRevisionSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList className="w-[300px]">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+            </TabsList>
+            <TabsContent value="pregled" className="space-y-4">
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder={t('plm.searchRevisions')} className="pl-9" value={revisionSearch} onChange={(e) => setRevisionSearch(e.target.value)} />
@@ -921,12 +1063,54 @@ export function PLM() {
               </div>
             </CardContent>
           </Card>
+            </TabsContent>
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-base">{t('plm.newRevision')}</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2"><Label>{t('plm.product')}</Label>
+                    <Select value={revisionForm.productId} onValueChange={(v) => setRevisionForm({ ...revisionForm, productId: v })}>
+                      <SelectTrigger><SelectValue placeholder={t('plm.selectProduct')} /></SelectTrigger>
+                      <SelectContent>
+                        {products.map(p => (<SelectItem key={p.id} value={p.id}>{p.name} (v{p.version})</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>{t('plm.version')}</Label><Input value={revisionForm.version} onChange={(e) => setRevisionForm({ ...revisionForm, version: e.target.value })} placeholder="npr. 3.3.0" /></div>
+                    <div className="space-y-2"><Label>{t('plm.changeType')}</Label>
+                      <Select value={revisionForm.changeType} onValueChange={(v) => setRevisionForm({ ...revisionForm, changeType: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Major">Major</SelectItem>
+                          <SelectItem value="Minor">Minor</SelectItem>
+                          <SelectItem value="Patch">Patch</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2"><Label>{t('plm.description')}</Label><Textarea value={revisionForm.description} onChange={(e) => setRevisionForm({ ...revisionForm, description: e.target.value })} rows={3} /></div>
+                  <div className="space-y-2"><Label>{t('plm.affectedComponents')}</Label><Input value={revisionForm.affectedComponents} onChange={(e) => setRevisionForm({ ...revisionForm, affectedComponents: e.target.value })} placeholder="npr. U9, R12, C5" /></div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setRevisionSubTab('pregled')}>{t('plm.cancel')}</Button>
+                    <Button onClick={handleCreateRevision}><Plus className="h-4 w-4 mr-1" /> {t('plm.createRevision')}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ====== TAB 4: DOCUMENTS ====== */}
         <TabsContent value="documents" className="space-y-4">
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <Tabs value={docSubTab} onValueChange={(v) => setDocSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList className="w-[300px]">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+            </TabsList>
+            <TabsContent value="pregled" className="space-y-4">
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder={t('plm.searchDocs')} className="pl-9" value={docSearch} onChange={(e) => setDocSearch(e.target.value)} />
@@ -1014,12 +1198,69 @@ export function PLM() {
               </Table>
             </div>
           </div>
+            </TabsContent>
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-base">{t('plm.newDocument')}</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2"><Label>{t('plm.title')}</Label><Input value={docForm.title} onChange={(e) => setDocForm({ ...docForm, title: e.target.value })} /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>{t('plm.product')}</Label>
+                      <Select value={docForm.productId} onValueChange={(v) => setDocForm({ ...docForm, productId: v })}>
+                        <SelectTrigger><SelectValue placeholder={t('plm.selectProduct')} /></SelectTrigger>
+                        <SelectContent>
+                          {products.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2"><Label>{t('plm.type')}</Label>
+                      <Select value={docForm.docType} onValueChange={(v) => setDocForm({ ...docForm, docType: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(DOC_TYPE_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>{t('plm.version')}</Label><Input value={docForm.version} onChange={(e) => setDocForm({ ...docForm, version: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>{t('plm.status')}</Label>
+                      <Select value={docForm.status} onValueChange={(v) => setDocForm({ ...docForm, status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="draft">{t('plm.draft')}</SelectItem>
+                          <SelectItem value="submitted">{t('plm.submitted')}</SelectItem>
+                          <SelectItem value="approved">{t('plm.approved')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{t('plm.uploadFile')}</span>
+                    <Button variant="outline" size="sm" className="ml-auto"><FolderOpen className="h-3.5 w-3.5 mr-1" /> {t('plm.browse')}</Button>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setDocSubTab('pregled')}>{t('plm.cancel')}</Button>
+                    <Button onClick={handleCreateDoc}><Plus className="h-4 w-4 mr-1" /> {t('plm.create')}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ====== TAB 5: ECR/ECO ====== */}
         <TabsContent value="ecr-eco" className="space-y-6">
-          {/* ECR Filter */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <Tabs value={ecrSubTab} onValueChange={(v) => setEcrSubTab(v as 'pregled' | 'dodaj' | 'uredi')}>
+            <TabsList className="w-[400px]">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+              {selectedEco && <TabsTrigger value="uredi">Uredi</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="pregled" className="space-y-6">
+              {/* ECR Filter */}
+              <div className="flex flex-col sm:flex-row gap-3">
             <Select value={ecrStatusFilter} onValueChange={setEcrStatusFilter}>
               <SelectTrigger className="w-[180px]"><SelectValue placeholder={t('plm.allStatuses')} /></SelectTrigger>
               <SelectContent>
@@ -1109,7 +1350,7 @@ export function PLM() {
                         <Badge variant="outline" className={`text-xs ${ECO_STATUS_CONFIG[eco.status]?.color || ''}`}>
                           {ECO_STATUS_CONFIG[eco.status]?.label}
                         </Badge>
-                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setSelectedEco(eco); setEcoDialogOpen(true) }}>
+                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setSelectedEco(eco); setEcrSubTab('uredi') }}>
                           <Eye className="h-3 w-3 mr-1" /> {t('plm.details')}
                         </Button>
                       </div>
@@ -1142,6 +1383,83 @@ export function PLM() {
               </div>
             </CardContent>
           </Card>
+            </TabsContent>
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-base">{t('plm.newECR')}</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2"><Label>{t('plm.product')}</Label>
+                    <Select value={ecrForm.productId} onValueChange={(v) => setEcrForm({ ...ecrForm, productId: v })}>
+                      <SelectTrigger><SelectValue placeholder={t('plm.selectProduct')} /></SelectTrigger>
+                      <SelectContent>
+                        {products.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2"><Label>{t('plm.description')}</Label><Textarea value={ecrForm.description} onChange={(e) => setEcrForm({ ...ecrForm, description: e.target.value })} rows={3} /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>{t('plm.priority')}</Label>
+                      <Select value={ecrForm.priority} onValueChange={(v) => setEcrForm({ ...ecrForm, priority: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2"><Label>{t('plm.affectedAreas')}</Label><Input value={ecrForm.affectedAreas} onChange={(e) => setEcrForm({ ...ecrForm, affectedAreas: e.target.value })} placeholder="npr. Hardver, Firmware" /></div>
+                  </div>
+                  <div className="space-y-2"><Label>{t('plm.justification')}</Label><Textarea value={ecrForm.justification} onChange={(e) => setEcrForm({ ...ecrForm, justification: e.target.value })} rows={3} /></div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setEcrSubTab('pregled')}>{t('plm.cancel')}</Button>
+                    <Button onClick={handleCreateEcr}><Plus className="h-4 w-4 mr-1" /> {t('plm.createECR')}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="uredi" className="space-y-4">
+              {selectedEco && (
+                <Card className="max-w-4xl">
+                  <CardHeader className="pb-2"><CardTitle className="text-base">{t('plm.ecoDetails')}</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div><span className="text-muted-foreground">ECR:</span> <span className="font-mono font-medium">{selectedEco.ecrNumber}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.product')}:</span> <span className="font-medium">{selectedEco.productName}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.status')}:</span> <Badge variant="outline" className={ECO_STATUS_CONFIG[selectedEco.status]?.color}>{ECO_STATUS_CONFIG[selectedEco.status]?.label}</Badge></div>
+                        <div><span className="text-muted-foreground">{t('plm.completion')}:</span> <span className="font-bold">{selectedEco.completion}%</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.team')}:</span> <span className="font-medium">{selectedEco.assignedTeam}</span></div>
+                        <div><span className="text-muted-foreground">{t('plm.targetDate')}:</span> <span className="font-medium">{selectedEco.targetDate || '-'}</span></div>
+                      </div>
+                      <Separator />
+                      <div>
+                        <span className="text-sm font-medium">{t('plm.implementationPlan')}</span>
+                        <p className="text-sm text-muted-foreground mt-1">{selectedEco.implementationPlan}</p>
+                      </div>
+                      <Progress value={selectedEco.completion} className="h-3" />
+                      <Separator />
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">{t('plm.approvalChain')}</h4>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {selectedEco.approvalChain.map((approver, idx) => (
+                            <div key={idx} className="flex items-center gap-1">
+                              <div className="flex items-center gap-1.5 border rounded-md px-2 py-1">
+                                <Shield className="h-3.5 w-3.5 text-green-500" />
+                                <span className="text-xs font-medium">{approver}</span>
+                              </div>
+                              {idx < selectedEco.approvalChain.length - 1 && <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button variant="outline" onClick={() => setEcrSubTab('pregled')}>Nazad</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ====== TAB 6: ANALYTICS ====== */}
@@ -1280,301 +1598,6 @@ export function PLM() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* ====== DIALOGS ====== */}
-
-      {/* New Product Dialog */}
-      { productDialogOpen && (
-      <Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setProductDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.newProduct')}</CardTitle></div></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>{t('plm.name')}</Label><Input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>SKU</Label><Input value={productForm.sku} onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })} /></div>
-              <div className="space-y-2"><Label>{t('plm.category')}</Label>
-                <Select value={productForm.category} onValueChange={(v) => setProductForm({ ...productForm, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {uniqueCategories.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
-                    <SelectItem value="Ostalo">Ostalo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t('plm.lifecycleStage')}</Label>
-                <Select value={productForm.lifecycleStage} onValueChange={(v) => setProductForm({ ...productForm, lifecycleStage: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(STAGE_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>{t('plm.status')}</Label>
-                <Select value={productForm.status} onValueChange={(v) => setProductForm({ ...productForm, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(STATUS_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t('plm.version')}</Label><Input value={productForm.version} onChange={(e) => setProductForm({ ...productForm, version: e.target.value })} /></div>
-              <div className="space-y-2"><Label>{t('plm.owner')}</Label><Input value={productForm.owner} onChange={(e) => setProductForm({ ...productForm, owner: e.target.value })} /></div>
-            </div>
-            <div className="space-y-2"><Label>{t('plm.description')}</Label><Textarea value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} rows={3} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setProductDialogOpen(false)}>{t('plm.cancel')}</Button>
-            <Button onClick={handleCreateProduct}><Plus className="h-4 w-4 mr-1" /> {t('plm.create')}</Button>
-          </div>
-      </Card>
-    ) }
-
-      {/* Product Detail Dialog */}
-      { productDetailOpen && (
-      <Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setProductDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{selectedProduct?.name}</CardTitle></div></CardHeader>
-          {selectedProduct && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                <div><span className="text-muted-foreground">SKU:</span> <span className="font-mono font-medium">{selectedProduct.sku}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.category')}:</span> <span className="font-medium">{selectedProduct.category}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.version')}:</span> <span className="font-mono font-medium">v{selectedProduct.version}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.lifecycleStage')}:</span> <Badge variant="outline" className={STAGE_CONFIG[selectedProduct.lifecycleStage]?.color}>{STAGE_CONFIG[selectedProduct.lifecycleStage]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">{t('plm.status')}:</span> <Badge variant="outline" className={STATUS_CONFIG[selectedProduct.status]?.color}>{STATUS_CONFIG[selectedProduct.status]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">{t('plm.owner')}:</span> <span className="font-medium">{selectedProduct.owner}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.revisions')}:</span> <span className="font-bold">{selectedProduct.revisionCount}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.bom')}:</span> <span className="font-mono text-xs">{selectedProduct.bomRef || '-'}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.lastUpdated')}:</span> <span>{selectedProduct.lastUpdated}</span></div>
-              </div>
-              {selectedProduct.description && (
-                <>
-                  <Separator />
-                  <div><span className="text-sm font-medium">{t('plm.description')}</span><p className="text-sm text-muted-foreground mt-1">{selectedProduct.description}</p></div>
-                </>
-              )}
-
-              <Separator />
-
-              {/* Version History */}
-              <div>
-                <h4 className="text-sm font-medium mb-2">{t('plm.versionHistory')}</h4>
-                <div className="rounded-lg border overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t('plm.version')}</TableHead>
-                        <TableHead>{t('plm.description')}</TableHead>
-                        <TableHead>{t('plm.date')}</TableHead>
-                        <TableHead>{t('plm.status')}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {revisions.filter(r => r.productId === selectedProduct.id).map(rev => (
-                        <TableRow key={rev.id}>
-                          <TableCell className="font-mono text-xs">v{rev.version}</TableCell>
-                          <TableCell className="text-sm">{rev.description}</TableCell>
-                          <TableCell className="text-xs">{rev.date}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={`text-xs ${REVISION_STATUS_CONFIG[rev.status]?.color || ''}`}>
-                              {REVISION_STATUS_CONFIG[rev.status]?.label}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {revisions.filter(r => r.productId === selectedProduct.id).length === 0 && (
-                        <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground text-sm py-4">{t('plm.noRevisions')}</TableCell></TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-
-              {/* Linked Documents */}
-              <div>
-                <h4 className="text-sm font-medium mb-2">{t('plm.linkedDocuments')}</h4>
-                <div className="space-y-2">
-                  {documents.filter(d => d.productId === selectedProduct.id).map(doc => (
-                    <div key={doc.id} className="flex items-center gap-2 border rounded-md p-2">
-                      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm flex-1 truncate">{doc.title}</span>
-                      <Badge variant="outline" className={`text-xs shrink-0 ${DOC_TYPE_CONFIG[doc.docType]?.color || ''}`}>
-                        {DOC_TYPE_CONFIG[doc.docType]?.label}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">v{doc.version}</span>
-                    </div>
-                  ))}
-                  {documents.filter(d => d.productId === selectedProduct.id).length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-2">{t('plm.noDocuments')}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-      </Card>
-    ) }
-
-      {/* New Revision Dialog */}
-      { revisionDialogOpen && (
-      <Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setRevisionDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.newRevision')}</CardTitle></div></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>{t('plm.product')}</Label>
-              <Select value={revisionForm.productId} onValueChange={(v) => setRevisionForm({ ...revisionForm, productId: v })}>
-                <SelectTrigger><SelectValue placeholder={t('plm.selectProduct')} /></SelectTrigger>
-                <SelectContent>
-                  {products.map(p => (<SelectItem key={p.id} value={p.id}>{p.name} (v{p.version})</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t('plm.version')}</Label><Input value={revisionForm.version} onChange={(e) => setRevisionForm({ ...revisionForm, version: e.target.value })} placeholder="npr. 3.3.0" /></div>
-              <div className="space-y-2"><Label>{t('plm.changeType')}</Label>
-                <Select value={revisionForm.changeType} onValueChange={(v) => setRevisionForm({ ...revisionForm, changeType: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Major">Major</SelectItem>
-                    <SelectItem value="Minor">Minor</SelectItem>
-                    <SelectItem value="Patch">Patch</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2"><Label>{t('plm.description')}</Label><Textarea value={revisionForm.description} onChange={(e) => setRevisionForm({ ...revisionForm, description: e.target.value })} rows={3} /></div>
-            <div className="space-y-2"><Label>{t('plm.affectedComponents')}</Label><Input value={revisionForm.affectedComponents} onChange={(e) => setRevisionForm({ ...revisionForm, affectedComponents: e.target.value })} placeholder="npr. U9, R12, C5" /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setRevisionDialogOpen(false)}>{t('plm.cancel')}</Button>
-            <Button onClick={handleCreateRevision}><Plus className="h-4 w-4 mr-1" /> {t('plm.createRevision')}</Button>
-          </div>
-      </Card>
-    ) }
-
-      {/* New Document Dialog */}
-      { docDialogOpen && (
-      <Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDocDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.newDocument')}</CardTitle></div></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>{t('plm.title')}</Label><Input value={docForm.title} onChange={(e) => setDocForm({ ...docForm, title: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t('plm.product')}</Label>
-                <Select value={docForm.productId} onValueChange={(v) => setDocForm({ ...docForm, productId: v })}>
-                  <SelectTrigger><SelectValue placeholder={t('plm.selectProduct')} /></SelectTrigger>
-                  <SelectContent>
-                    {products.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>{t('plm.type')}</Label>
-                <Select value={docForm.docType} onValueChange={(v) => setDocForm({ ...docForm, docType: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(DOC_TYPE_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t('plm.version')}</Label><Input value={docForm.version} onChange={(e) => setDocForm({ ...docForm, version: e.target.value })} /></div>
-              <div className="space-y-2"><Label>{t('plm.status')}</Label>
-                <Select value={docForm.status} onValueChange={(v) => setDocForm({ ...docForm, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">{t('plm.draft')}</SelectItem>
-                    <SelectItem value="submitted">{t('plm.submitted')}</SelectItem>
-                    <SelectItem value="approved">{t('plm.approved')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
-              <Upload className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{t('plm.uploadFile')}</span>
-              <Button variant="outline" size="sm" className="ml-auto"><FolderOpen className="h-3.5 w-3.5 mr-1" /> {t('plm.browse')}</Button>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDocDialogOpen(false)}>{t('plm.cancel')}</Button>
-            <Button onClick={handleCreateDoc}><Plus className="h-4 w-4 mr-1" /> {t('plm.create')}</Button>
-          </div>
-      </Card>
-    ) }
-
-      {/* New ECR Dialog */}
-      { ecrDialogOpen && (
-      <Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEcrDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.newECR')}</CardTitle></div></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>{t('plm.product')}</Label>
-              <Select value={ecrForm.productId} onValueChange={(v) => setEcrForm({ ...ecrForm, productId: v })}>
-                <SelectTrigger><SelectValue placeholder={t('plm.selectProduct')} /></SelectTrigger>
-                <SelectContent>
-                  {products.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2"><Label>{t('plm.description')}</Label><Textarea value={ecrForm.description} onChange={(e) => setEcrForm({ ...ecrForm, description: e.target.value })} rows={3} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>{t('plm.priority')}</Label>
-                <Select value={ecrForm.priority} onValueChange={(v) => setEcrForm({ ...ecrForm, priority: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>{t('plm.affectedAreas')}</Label><Input value={ecrForm.affectedAreas} onChange={(e) => setEcrForm({ ...ecrForm, affectedAreas: e.target.value })} placeholder="npr. Hardver, Firmware" /></div>
-            </div>
-            <div className="space-y-2"><Label>{t('plm.justification')}</Label><Textarea value={ecrForm.justification} onChange={(e) => setEcrForm({ ...ecrForm, justification: e.target.value })} rows={3} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setEcrDialogOpen(false)}>{t('plm.cancel')}</Button>
-            <Button onClick={handleCreateEcr}><Plus className="h-4 w-4 mr-1" /> {t('plm.createECR')}</Button>
-          </div>
-      </Card>
-    ) }
-
-      {/* ECO Detail Dialog */}
-      { ecoDialogOpen && (
-      <Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEcoDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.ecoDetails')}</CardTitle></div></CardHeader>
-          {selectedEco && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">ECR:</span> <span className="font-mono font-medium">{selectedEco.ecrNumber}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.product')}:</span> <span className="font-medium">{selectedEco.productName}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.status')}:</span> <Badge variant="outline" className={ECO_STATUS_CONFIG[selectedEco.status]?.color}>{ECO_STATUS_CONFIG[selectedEco.status]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">{t('plm.completion')}:</span> <span className="font-bold">{selectedEco.completion}%</span></div>
-                <div><span className="text-muted-foreground">{t('plm.team')}:</span> <span className="font-medium">{selectedEco.assignedTeam}</span></div>
-                <div><span className="text-muted-foreground">{t('plm.targetDate')}:</span> <span className="font-medium">{selectedEco.targetDate || '-'}</span></div>
-              </div>
-              <Separator />
-              <div>
-                <span className="text-sm font-medium">{t('plm.implementationPlan')}</span>
-                <p className="text-sm text-muted-foreground mt-1">{selectedEco.implementationPlan}</p>
-              </div>
-              <Progress value={selectedEco.completion} className="h-3" />
-              <Separator />
-              <div>
-                <h4 className="text-sm font-medium mb-2">{t('plm.approvalChain')}</h4>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {selectedEco.approvalChain.map((approver, idx) => (
-                    <div key={idx} className="flex items-center gap-1">
-                      <div className="flex items-center gap-1.5 border rounded-md px-2 py-1">
-                        <Shield className="h-3.5 w-3.5 text-green-500" />
-                        <span className="text-xs font-medium">{approver}</span>
-                      </div>
-                      {idx < selectedEco.approvalChain.length - 1 && <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-      </Card>
-    ) }
     </div>
   )
 }

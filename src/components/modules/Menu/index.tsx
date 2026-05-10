@@ -59,7 +59,7 @@ export function Menu() {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [availabilityFilter, setAvailabilityFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<MenuItem | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<MenuItem>>({})
@@ -102,10 +102,10 @@ export function Menu() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ name: '', description: '', category: 'main_course', price: 0, preparationTime: 15, calories: 0, isVegetarian: false, isVegan: false, isGlutenFree: false, isSpicy: false, isAvailable: true, allergens: [], ingredients: [], rating: 0, orderCount: 0, notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
-  const openEdit = (item: MenuItem) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
+  const openEdit = (item: MenuItem) => { setEditItem(item); setForm({ ...item }); setActiveTab('dodaj') }
 
   const handleSave = async () => {
     if (!form.name) { toast.error('Unesite naziv'); return }
@@ -127,7 +127,7 @@ export function Menu() {
         setData(prev => [{ ...created, category: created.categoryKey || 'main_course', allergens: typeof created.allergens === 'string' ? JSON.parse(created.allergens) : created.allergens, ingredients: typeof created.ingredients === 'string' ? JSON.parse(created.ingredients) : created.ingredients, notes: '' }, ...prev])
         toast.success('Artikal kreiran')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled'); setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }
 
@@ -270,25 +270,6 @@ export function Menu() {
               {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-xs bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
             </div>
           </CardContent>
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editItem ? 'Uredi' : 'Novo jelo'}</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Cena</Label><Input className="text-xs" type="number" value={form.price || ''} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'main_course'} onValueChange={v => setForm({ ...form, category: v as MenuItem['category'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Dostupno</Label><Select value={form.isAvailable ? 'yes' : 'no'} onValueChange={v => setForm({ ...form, isAvailable: v === 'yes' })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yes">Da</SelectItem><SelectItem value="no">Ne</SelectItem></SelectContent></Select></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Opis</Label><Input className="text-xs" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
         </Card>
       )}
     </div>

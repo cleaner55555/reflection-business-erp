@@ -72,7 +72,7 @@ export function Classroom() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<Classroom | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Classroom>>({})
@@ -111,13 +111,13 @@ export function Classroom() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ name: '', building: '', floor: '1', capacity: 30, currentOccupancy: 0, type: 'lecture', status: 'available', equipment: [], responsible: '', area: 45, hasProjector: true, hasAC: false, hasWhiteboard: true, lastInspection: new Date().toISOString().split('T')[0], notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const openEdit = (item: Classroom) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const handleSave = async () => {
@@ -134,7 +134,7 @@ export function Classroom() {
         setData(prev => [{ ...created, equipment: typeof created.equipment === 'string' ? JSON.parse(created.equipment) : created.equipment, lastInspection: created.lastInspection ? new Date(created.lastInspection).toISOString().split('T')[0] : '', notes: created.notes || '' }, ...prev])
         toast.success('Učionica kreirana')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled'); setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }
 
@@ -287,32 +287,6 @@ export function Classroom() {
                 {detailItem.hasWhiteboard && <Badge className="text-xs bg-emerald-100 text-emerald-800">Tabla</Badge>}
               </div>
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle>{editItem ? 'Uredi učionicu' : 'Nova učionica'}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'available'} onValueChange={v => setForm({ ...form, status: v as Classroom['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">Slobodna</SelectItem><SelectItem value="occupied">Zauzeta</SelectItem><SelectItem value="maintenance">Održavanje</SelectItem><SelectItem value="reserved">Rezervisana</SelectItem></SelectContent></Select></div>
-                <div className="grid gap-2"><Label className="text-xs">Kapacitet</Label><Input className="text-xs" type="number" value={form.capacity || ''} onChange={e => setForm({ ...form, capacity: Number(e.target.value) })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Odgovoran</Label><Input className="text-xs" value={form.responsible || ''} onChange={e => setForm({ ...form, responsible: e.target.value })} /></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button size="sm" onClick={handleSave}>Sačuvaj</Button>
             </div>
           </CardContent>
         </Card>

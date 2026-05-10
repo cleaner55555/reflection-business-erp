@@ -55,7 +55,6 @@ export function Timetable() {
   const [search, setSearch] = useState('')
   const [dayFilter, setDayFilter] = useState('')
   const [groupFilter, setGroupFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [editItem, setEditItem] = useState<ScheduleEntry | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<ScheduleEntry>>({})
@@ -96,13 +95,13 @@ export function Timetable() {
   const openCreate = useCallback(() => {
     setEditItem(null)
     setForm({ subject: '', teacher: '', classGroup: '', room: '', dayOfWeek: 'ponedeljak', timeStart: '08:00', timeEnd: '09:30', type: 'lecture', semester: '2023/2024 zimski', status: 'active', notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }, [])
 
   const openEdit = useCallback((item: ScheduleEntry) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }, [])
 
   const handleSave = useCallback(async () => {
@@ -121,7 +120,8 @@ export function Timetable() {
         setData(prev => [...prev, created])
         toast.success('Unos kreiran')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled')
+      setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }, [form, editItem])
 
@@ -134,7 +134,7 @@ export function Timetable() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div><h1 className="text-2xl font-bold tracking-tight">Raspored</h1><p className="text-sm text-muted-foreground">Nedeljni raspored nastave i ispita</p></div>
-        <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novi unos</Button>
+        {activeTab === 'pregled' && <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novi unos</Button>}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -144,13 +144,13 @@ export function Timetable() {
         <Card className="p-4"><div className="text-xs text-amber-600 mb-1">Semestar</div><p className="text-lg font-bold text-amber-700">2023/24</p></Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'dodaj') setEditItem(null) }}>
         <div className="flex items-center justify-between">
-          <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
-          <div className="flex gap-1">
+          <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">{editItem ? 'Uredi' : 'Dodaj'}</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
+          {activeTab === 'pregled' && <div className="flex gap-1">
             <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" className="text-xs h-7" onClick={() => setViewMode('list')}>Lista</Button>
             <Button variant={viewMode === 'table' ? 'default' : 'ghost'} size="sm" className="text-xs h-7" onClick={() => setViewMode('table')}>Tabela</Button>
-          </div>
+          </div>}
         </div>
 
         <TabsContent value="pregled" className="mt-4">
@@ -223,8 +223,13 @@ export function Timetable() {
         </TabsContent>
 
         <TabsContent value="dodaj" className="mt-4">
-          <Card>
-            <CardHeader><CardTitle className="text-base">Novi unos rasporeda</CardTitle></CardHeader>
+          <Card className="sm:max-w-[500px]">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                {editItem && <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setActiveTab('pregled'); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>}
+                <CardTitle className="text-base">{editItem ? 'Uredi unos' : 'Novi unos rasporeda'}</CardTitle>
+              </div>
+            </CardHeader>
             <CardContent>
               <div className="grid gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -237,8 +242,14 @@ export function Timetable() {
                   <div className="grid gap-2"><Label className="text-xs">Početak</Label><Input className="text-xs" type="time" value={form.timeStart || ''} onChange={e => setForm({ ...form, timeStart: e.target.value })} /></div>
                   <div className="grid gap-2"><Label className="text-xs">Kraj</Label><Input className="text-xs" type="time" value={form.timeEnd || ''} onChange={e => setForm({ ...form, timeEnd: e.target.value })} /></div>
                 </div>
+                {editItem && (
+                  <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as ScheduleEntry['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivno</SelectItem><SelectItem value="cancelled">Otkazano</SelectItem><SelectItem value="rescheduled">Pomeren</SelectItem><SelectItem value="completed">Završeno</SelectItem></SelectContent></Select></div>
+                )}
                 <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-                <Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Kreiraj unos</Button>
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                {editItem && <Button variant="outline" size="sm" onClick={() => { setActiveTab('pregled'); setEditItem(null) }}>Otkaži</Button>}
+                <Button size="sm" className="gap-2" onClick={handleSave}><Plus className="h-4 w-4" />{editItem ? 'Sačuvaj' : 'Kreiraj unos'}</Button>
               </div>
             </CardContent>
           </Card>
@@ -292,29 +303,6 @@ export function Timetable() {
             <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
             {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
           </div>
-        </CardContent>
-      </Card>
-      )}
-
-      {dialogOpen && (
-      <Card className="sm:max-w-[500px]">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editItem ? 'Uredi unos' : 'Novi unos'}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Predmet *</Label><Input className="text-xs" value={form.subject || ''} onChange={e => setForm({ ...form, subject: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as ScheduleEntry['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivno</SelectItem><SelectItem value="cancelled">Otkazano</SelectItem><SelectItem value="rescheduled">Pomeren</SelectItem><SelectItem value="completed">Završeno</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Dan</Label><Select value={form.dayOfWeek || 'ponedeljak'} onValueChange={v => setForm({ ...form, dayOfWeek: v as ScheduleEntry['dayOfWeek'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{DAYS.map(d => <SelectItem key={d} value={d}>{DAY_LABELS[d]}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Vreme</Label><div className="flex gap-1"><Input className="text-xs" type="time" value={form.timeStart || ''} onChange={e => setForm({ ...form, timeStart: e.target.value })} /><Input className="text-xs" type="time" value={form.timeEnd || ''} onChange={e => setForm({ ...form, timeEnd: e.target.value })} /></div></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2 mt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
         </CardContent>
       </Card>
       )}

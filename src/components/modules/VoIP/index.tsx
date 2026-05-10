@@ -288,15 +288,15 @@ export function VoIP() {
   const [callDateTo, setCallDateTo] = useState('')
   const [selectedCall, setSelectedCall] = useState<VoipCall | null>(null)
   const [callNotes, setCallNotes] = useState('')
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [callsSubTab, setCallsSubTab] = useState<'pregled' | 'detalji'>('pregled')
 
   // Extensions state
   const [extSearch, setExtSearch] = useState('')
-  const [extDialogOpen, setExtDialogOpen] = useState(false)
+  const [extSubTab, setExtSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingExt, setEditingExt] = useState<Extension | null>(null)
 
   // IVR state
-  const [ivrDialogOpen, setIvrDialogOpen] = useState(false)
+  const [ivrSubTab, setIvrSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingIvr, setEditingIvr] = useState<IvrMenu | null>(null)
 
   // Recordings state
@@ -379,11 +379,11 @@ export function VoIP() {
   const handleOpenCallDetail = (call: VoipCall) => {
     setSelectedCall(call)
     setCallNotes(call.notes || '')
-    setDetailOpen(true)
+    setCallsSubTab('detalji')
   }
 
   const handleSaveCallNotes = () => {
-    setDetailOpen(false)
+    setCallsSubTab('pregled')
     setSelectedCall(null)
   }
 
@@ -402,12 +402,12 @@ export function VoIP() {
 
   const handleOpenExtDialog = (ext?: Extension) => {
     setEditingExt(ext ?? null)
-    setExtDialogOpen(true)
+    setExtSubTab('dodaj')
   }
 
   const handleOpenIvrDialog = (ivr?: IvrMenu) => {
     setEditingIvr(ivr ?? null)
-    setIvrDialogOpen(true)
+    setIvrSubTab('dodaj')
   }
 
   const toggleRecSelection = (id: string) => {
@@ -531,141 +531,154 @@ export function VoIP() {
 
   const renderCalls = () => (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t('voip.search.placeholder')} className="pl-9" value={callSearch} onChange={(e) => setCallSearch(e.target.value)} />
-        </div>
-        <Select value={callDirFilter} onValueChange={setCallDirFilter}>
-          <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('voip.filter.all')}</SelectItem>
-            <SelectItem value="inbound">{t('voip.direction.inbound')}</SelectItem>
-            <SelectItem value="outbound">{t('voip.direction.outbound')}</SelectItem>
-            <SelectItem value="internal">{t('voip.direction.internal')}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={callExtFilter} onValueChange={setCallExtFilter}>
-          <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('voip.filter.allExtensions')}</SelectItem>
-            {MOCK_EXTENSIONS.map((e) => (
-              <SelectItem key={e.id} value={e.number}>{e.number} - {e.name.split(' ')[0]}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input type="date" className="w-[140px]" value={callDateFrom} onChange={(e) => setCallDateFrom(e.target.value)} />
-        <Input type="date" className="w-[140px]" value={callDateTo} onChange={(e) => setCallDateTo(e.target.value)} />
-        <Button variant="outline" size="sm" onClick={handleExportCsv}>
-          <Download className="h-4 w-4 mr-1" /> CSV
-        </Button>
-      </div>
+      <Tabs value={callsSubTab} onValueChange={(v) => setCallsSubTab(v as 'pregled' | 'detalji')}>
+        <TabsList>
+          <TabsTrigger value="pregled">Pregled</TabsTrigger>
+          {callsSubTab === 'detalji' && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
+        </TabsList>
 
-      <div className="rounded-lg border overflow-x-auto max-h-[520px] overflow-y-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-xs">{t('voip.table.time')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.from')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.to')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.direction')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.duration')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.extension')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.status')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.recording')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCalls.map((call) => {
-              const dirCfg = directionConfig[call.direction]
-              const statCfg = callStatusConfig[call.status]
-              return (
-                <TableRow key={call.id}>
-                  <TableCell className="text-xs">
-                    {new Date(call.createdAt).toLocaleString('sr-RS', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                  </TableCell>
-                  <TableCell className="text-xs font-mono">{call.from}</TableCell>
-                  <TableCell className="text-xs font-mono">{call.to}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={`text-xs ${dirCfg.color}`}>{t(dirCfg.labelKey)}</Badge>
-                  </TableCell>
-                  <TableCell className="text-xs">{formatDuration(call.duration)}</TableCell>
-                  <TableCell className="text-xs">{call.extension}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={`text-xs ${statCfg.color}`}>{t(statCfg.labelKey)}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {call.recording ? <Mic className="h-3.5 w-3.5 text-green-600" /> : <span className="text-xs text-muted-foreground">—</span>}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenCallDetail(call)} title={t('voip.action.viewDetails')}>
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600" title={t('voip.action.clickToCall')}>
-                        <PhoneCall className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-        {filteredCalls.length === 0 && (
-          <div className="text-center py-10 text-muted-foreground">
-            <Phone className="h-10 w-10 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">{t('voip.noCalls')}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Call Detail Dialog */}
-      {detailOpen && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('voip.dialog.callDetails')}</CardTitle>
-          </CardHeader>
-          {selectedCall && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">{t('voip.table.from')}</span><p className="font-mono">{selectedCall.from}</p></div>
-                <div><span className="text-muted-foreground">{t('voip.table.to')}</span><p className="font-mono">{selectedCall.to}</p></div>
-                <div><span className="text-muted-foreground">{t('voip.table.direction')}</span><p>{t(directionConfig[selectedCall.direction].labelKey)}</p></div>
-                <div><span className="text-muted-foreground">{t('voip.table.status')}</span><p><Badge variant="outline" className={callStatusConfig[selectedCall.status].color}>{t(callStatusConfig[selectedCall.status].labelKey)}</Badge></p></div>
-                <div><span className="text-muted-foreground">{t('voip.table.duration')}</span><p>{formatDuration(selectedCall.duration)}</p></div>
-                <div><span className="text-muted-foreground">{t('voip.table.extension')}</span><p>{selectedCall.extension}</p></div>
-              </div>
-              {selectedCall.recording && (
-                <div className="rounded-lg border p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Mic className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium">{t('voip.recording.player')}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setPlayingRec(playingRec === selectedCall.id ? null : selectedCall.id)}>
-                      {playingRec === selectedCall.id ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-                    </Button>
-                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: playingRec === selectedCall.id ? '35%' : '0%' }} />
-                    </div>
-                    <span className="text-xs text-muted-foreground">{formatDuration(selectedCall.duration)}</span>
-                  </div>
-                </div>
-              )}
-              <div className="space-y-2">
-                <Label className="text-sm">{t('voip.notes')}</Label>
-                <Textarea placeholder={t('voip.notesPlaceholder')} value={callNotes} onChange={(e) => setCallNotes(e.target.value)} rows={3} />
-              </div>
+        <TabsContent value="pregled" className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder={t('voip.search.placeholder')} className="pl-9" value={callSearch} onChange={(e) => setCallSearch(e.target.value)} />
             </div>
-          )}
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDetailOpen(false)}>{t('voip.action.close')}</Button>
-            <Button onClick={handleSaveCallNotes}>{t('voip.action.saveNotes')}</Button>
+            <Select value={callDirFilter} onValueChange={setCallDirFilter}>
+              <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('voip.filter.all')}</SelectItem>
+                <SelectItem value="inbound">{t('voip.direction.inbound')}</SelectItem>
+                <SelectItem value="outbound">{t('voip.direction.outbound')}</SelectItem>
+                <SelectItem value="internal">{t('voip.direction.internal')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={callExtFilter} onValueChange={setCallExtFilter}>
+              <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('voip.filter.allExtensions')}</SelectItem>
+                {MOCK_EXTENSIONS.map((e) => (
+                  <SelectItem key={e.id} value={e.number}>{e.number} - {e.name.split(' ')[0]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input type="date" className="w-[140px]" value={callDateFrom} onChange={(e) => setCallDateFrom(e.target.value)} />
+            <Input type="date" className="w-[140px]" value={callDateTo} onChange={(e) => setCallDateTo(e.target.value)} />
+            <Button variant="outline" size="sm" onClick={handleExportCsv}>
+              <Download className="h-4 w-4 mr-1" /> CSV
+            </Button>
           </div>
-        </Card>
-      )}
+
+          <div className="rounded-lg border overflow-x-auto max-h-[520px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">{t('voip.table.time')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.from')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.to')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.direction')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.duration')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.extension')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.status')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.recording')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.actions')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCalls.map((call) => {
+                  const dirCfg = directionConfig[call.direction]
+                  const statCfg = callStatusConfig[call.status]
+                  return (
+                    <TableRow key={call.id}>
+                      <TableCell className="text-xs">
+                        {new Date(call.createdAt).toLocaleString('sr-RS', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                      </TableCell>
+                      <TableCell className="text-xs font-mono">{call.from}</TableCell>
+                      <TableCell className="text-xs font-mono">{call.to}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-xs ${dirCfg.color}`}>{t(dirCfg.labelKey)}</Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">{formatDuration(call.duration)}</TableCell>
+                      <TableCell className="text-xs">{call.extension}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-xs ${statCfg.color}`}>{t(statCfg.labelKey)}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {call.recording ? <Mic className="h-3.5 w-3.5 text-green-600" /> : <span className="text-xs text-muted-foreground">—</span>}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenCallDetail(call)} title={t('voip.action.viewDetails')}>
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600" title={t('voip.action.clickToCall')}>
+                            <PhoneCall className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+            {filteredCalls.length === 0 && (
+              <div className="text-center py-10 text-muted-foreground">
+                <Phone className="h-10 w-10 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">{t('voip.noCalls')}</p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="detalji">
+          {selectedCall && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCallsSubTab('pregled')}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle>{t('voip.dialog.callDetails')}</CardTitle>
+                </div>
+              </CardHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">{t('voip.table.from')}</span><p className="font-mono">{selectedCall.from}</p></div>
+                  <div><span className="text-muted-foreground">{t('voip.table.to')}</span><p className="font-mono">{selectedCall.to}</p></div>
+                  <div><span className="text-muted-foreground">{t('voip.table.direction')}</span><p>{t(directionConfig[selectedCall.direction].labelKey)}</p></div>
+                  <div><span className="text-muted-foreground">{t('voip.table.status')}</span><p><Badge variant="outline" className={callStatusConfig[selectedCall.status].color}>{t(callStatusConfig[selectedCall.status].labelKey)}</Badge></p></div>
+                  <div><span className="text-muted-foreground">{t('voip.table.duration')}</span><p>{formatDuration(selectedCall.duration)}</p></div>
+                  <div><span className="text-muted-foreground">{t('voip.table.extension')}</span><p>{selectedCall.extension}</p></div>
+                </div>
+                {selectedCall.recording && (
+                  <div className="rounded-lg border p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Mic className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-medium">{t('voip.recording.player')}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setPlayingRec(playingRec === selectedCall.id ? null : selectedCall.id)}>
+                        {playingRec === selectedCall.id ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                      </Button>
+                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full transition-all" style={{ width: playingRec === selectedCall.id ? '35%' : '0%' }} />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{formatDuration(selectedCall.duration)}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label className="text-sm">{t('voip.notes')}</Label>
+                  <Textarea placeholder={t('voip.notesPlaceholder')} value={callNotes} onChange={(e) => setCallNotes(e.target.value)} rows={3} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setCallsSubTab('pregled')}>{t('voip.action.close')}</Button>
+                <Button onClick={handleSaveCallNotes}>{t('voip.action.saveNotes')}</Button>
+              </div>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 
@@ -675,110 +688,123 @@ export function VoIP() {
 
   const renderExtensions = () => (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t('voip.ext.search')} className="pl-9" value={extSearch} onChange={(e) => setExtSearch(e.target.value)} />
-        </div>
-        <Button size="sm" onClick={() => handleOpenExtDialog()}>
-          <Plus className="h-4 w-4 mr-1" /> {t('voip.ext.add')}
-        </Button>
-      </div>
+      <Tabs value={extSubTab} onValueChange={(v) => setExtSubTab(v as 'pregled' | 'dodaj')}>
+        <TabsList>
+          <TabsTrigger value="pregled">Pregled</TabsTrigger>
+          {extSubTab === 'dodaj' && <TabsTrigger value="dodaj">{editingExt ? 'Uredi' : 'Dodaj'}</TabsTrigger>}
+        </TabsList>
 
-      <div className="rounded-lg border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-xs">{t('voip.ext.number')}</TableHead>
-              <TableHead className="text-xs">{t('voip.ext.name')}</TableHead>
-              <TableHead className="text-xs">{t('voip.ext.department')}</TableHead>
-              <TableHead className="text-xs">{t('voip.ext.type')}</TableHead>
-              <TableHead className="text-xs">{t('voip.ext.status')}</TableHead>
-              <TableHead className="text-xs">{t('voip.ext.device')}</TableHead>
-              <TableHead className="text-xs">IP</TableHead>
-              <TableHead className="text-xs">{t('voip.ext.provisioning')}</TableHead>
-              <TableHead className="text-xs">{t('voip.table.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredExtensions.map((ext) => {
-              const statusCfg = extStatusConfig[ext.status]
-              return (
-                <TableRow key={ext.id}>
-                  <TableCell className="text-xs font-mono font-medium">{ext.number}</TableCell>
-                  <TableCell className="text-xs">{ext.name}</TableCell>
-                  <TableCell className="text-xs">{ext.department}</TableCell>
-                  <TableCell><Badge variant="outline" className="text-xs">{ext.type}</Badge></TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <div className={`h-2 w-2 rounded-full ${statusCfg.dotColor}`} />
-                      <Badge variant="outline" className={`text-xs ${statusCfg.color}`}>{ext.status}</Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs">{ext.device}</TableCell>
-                  <TableCell className="text-xs font-mono">{ext.ipAddress}</TableCell>
-                  <TableCell>
-                    <Badge variant={ext.provisioningStatus === 'active' ? 'default' : 'outline'} className="text-xs">
-                      {ext.provisioningStatus === 'active' ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <AlertCircle className="h-3 w-3 mr-1" />}
-                      {ext.provisioningStatus}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenExtDialog(ext)}><Edit3 className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500"><Trash2 className="h-3.5 w-3.5" /></Button>
-                    </div>
-                  </TableCell>
+        <TabsContent value="pregled" className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder={t('voip.ext.search')} className="pl-9" value={extSearch} onChange={(e) => setExtSearch(e.target.value)} />
+            </div>
+            <Button size="sm" onClick={() => handleOpenExtDialog()}>
+              <Plus className="h-4 w-4 mr-1" /> {t('voip.ext.add')}
+            </Button>
+          </div>
+
+          <div className="rounded-lg border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">{t('voip.ext.number')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.ext.name')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.ext.department')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.ext.type')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.ext.status')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.ext.device')}</TableHead>
+                  <TableHead className="text-xs">IP</TableHead>
+                  <TableHead className="text-xs">{t('voip.ext.provisioning')}</TableHead>
+                  <TableHead className="text-xs">{t('voip.table.actions')}</TableHead>
                 </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {filteredExtensions.map((ext) => {
+                  const statusCfg = extStatusConfig[ext.status]
+                  return (
+                    <TableRow key={ext.id}>
+                      <TableCell className="text-xs font-mono font-medium">{ext.number}</TableCell>
+                      <TableCell className="text-xs">{ext.name}</TableCell>
+                      <TableCell className="text-xs">{ext.department}</TableCell>
+                      <TableCell><Badge variant="outline" className="text-xs">{ext.type}</Badge></TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <div className={`h-2 w-2 rounded-full ${statusCfg.dotColor}`} />
+                          <Badge variant="outline" className={`text-xs ${statusCfg.color}`}>{ext.status}</Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs">{ext.device}</TableCell>
+                      <TableCell className="text-xs font-mono">{ext.ipAddress}</TableCell>
+                      <TableCell>
+                        <Badge variant={ext.provisioningStatus === 'active' ? 'default' : 'outline'} className="text-xs">
+                          {ext.provisioningStatus === 'active' ? <CheckCircle2 className="h-3 w-3 mr-1" /> : <AlertCircle className="h-3 w-3 mr-1" />}
+                          {ext.provisioningStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenExtDialog(ext)}><Edit3 className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500"><Trash2 className="h-3.5 w-3.5" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
 
-      {/* Extension Dialog */}
-      {extDialogOpen && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{editingExt ? t('voip.ext.edit') : t('voip.ext.addNew')}</CardTitle>
-          </CardHeader>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><Label className="text-xs">{t('voip.ext.number')}</Label><Input defaultValue={editingExt?.number ?? ''} placeholder="101" /></div>
-              <div className="space-y-1"><Label className="text-xs">{t('voip.ext.name')}</Label><Input defaultValue={editingExt?.name ?? ''} placeholder={t('voip.ext.namePlaceholder')} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><Label className="text-xs">{t('voip.ext.department')}</Label>
-                <Select defaultValue={editingExt?.department ?? 'Prodaja'}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Prodaja">Prodaja</SelectItem>
-                    <SelectItem value="Podrška">Podrška</SelectItem>
-                    <SelectItem value="IT">IT</SelectItem>
-                    <SelectItem value="Računovodstvo">Računovodstvo</SelectItem>
-                    <SelectItem value="Menadžment">Menadžment</SelectItem>
-                  </SelectContent>
-                </Select>
+        <TabsContent value="dodaj">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setExtSubTab('pregled'); setEditingExt(null) }}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <CardTitle>{editingExt ? t('voip.ext.edit') : t('voip.ext.addNew')}</CardTitle>
               </div>
-              <div className="space-y-1"><Label className="text-xs">{t('voip.ext.type')}</Label>
-                <Select defaultValue={editingExt?.type ?? 'Desk'}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Desk">Desk</SelectItem>
-                    <SelectItem value="Softphone">Softphone</SelectItem>
-                    <SelectItem value="Mobile">Mobile</SelectItem>
-                  </SelectContent>
-                </Select>
+            </CardHeader>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1"><Label className="text-xs">{t('voip.ext.number')}</Label><Input defaultValue={editingExt?.number ?? ''} placeholder="101" /></div>
+                <div className="space-y-1"><Label className="text-xs">{t('voip.ext.name')}</Label><Input defaultValue={editingExt?.name ?? ''} placeholder={t('voip.ext.namePlaceholder')} /></div>
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1"><Label className="text-xs">{t('voip.ext.department')}</Label>
+                  <Select defaultValue={editingExt?.department ?? 'Prodaja'}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Prodaja">Prodaja</SelectItem>
+                      <SelectItem value="Podrška">Podrška</SelectItem>
+                      <SelectItem value="IT">IT</SelectItem>
+                      <SelectItem value="Računovodstvo">Računovodstvo</SelectItem>
+                      <SelectItem value="Menadžment">Menadžment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1"><Label className="text-xs">{t('voip.ext.type')}</Label>
+                  <Select defaultValue={editingExt?.type ?? 'Desk'}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Desk">Desk</SelectItem>
+                      <SelectItem value="Softphone">Softphone</SelectItem>
+                      <SelectItem value="Mobile">Mobile</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1"><Label className="text-xs">{t('voip.ext.device')}</Label><Input defaultValue={editingExt?.device ?? ''} placeholder="Yealink T46S" /></div>
             </div>
-            <div className="space-y-1"><Label className="text-xs">{t('voip.ext.device')}</Label><Input defaultValue={editingExt?.device ?? ''} placeholder="Yealink T46S" /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setExtDialogOpen(false)}>{t('voip.action.close')}</Button>
-            <Button onClick={() => setExtDialogOpen(false)}>{t('voip.action.save')}</Button>
-          </div>
-        </Card>
-      )}
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => { setExtSubTab('pregled'); setEditingExt(null) }}>{t('voip.action.close')}</Button>
+              <Button onClick={() => { setExtSubTab('pregled'); setEditingExt(null) }}>{t('voip.action.save')}</Button>
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 
@@ -788,150 +814,163 @@ export function VoIP() {
 
   const renderIVR = () => (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button size="sm" onClick={() => handleOpenIvrDialog()}>
-          <Plus className="h-4 w-4 mr-1" /> {t('voip.ivr.create')}
-        </Button>
-      </div>
+      <Tabs value={ivrSubTab} onValueChange={(v) => setIvrSubTab(v as 'pregled' | 'dodaj')}>
+        <TabsList>
+          <TabsTrigger value="pregled">Pregled</TabsTrigger>
+          {ivrSubTab === 'dodaj' && <TabsTrigger value="dodaj">{editingIvr ? 'Uredi' : 'Dodaj'}</TabsTrigger>}
+        </TabsList>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {MOCK_IVR_MENUS.map((ivr) => (
-          <Card key={ivr.id} className="overflow-hidden">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">{ivr.name}</CardTitle>
-                <Switch checked={ivr.active} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {ivr.phoneNumber}</span>
-                <span className="flex items-center gap-1"><Radio className="h-3 w-3" /> {ivr.language.toUpperCase()}</span>
-              </div>
-              <Separator />
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">{t('voip.ivr.entries')} ({ivr.entries.length})</p>
-                {ivr.entries.map((entry) => (
-                  <div key={entry.id} className="flex items-center gap-2 text-xs">
-                    <Badge variant="outline" className="font-mono text-xs min-w-[24px] justify-center">{entry.keyPress}</Badge>
-                    <span className="truncate">{entry.label}</span>
-                    <span className="text-muted-foreground ml-auto">→ {entry.target}</span>
+        <TabsContent value="pregled" className="space-y-4">
+          <div className="flex justify-end">
+            <Button size="sm" onClick={() => handleOpenIvrDialog()}>
+              <Plus className="h-4 w-4 mr-1" /> {t('voip.ivr.create')}
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {MOCK_IVR_MENUS.map((ivr) => (
+              <Card key={ivr.id} className="overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium">{ivr.name}</CardTitle>
+                    <Switch checked={ivr.active} />
                   </div>
-                ))}
-              </div>
-              <Separator />
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => handleOpenIvrDialog(ivr)}>
-                  <Edit3 className="h-3 w-3 mr-1" /> {t('voip.action.edit')}
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 text-xs text-red-500">
-                  <Trash2 className="h-3 w-3 mr-1" /> {t('voip.action.delete')}
-                </Button>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {ivr.phoneNumber}</span>
+                    <span className="flex items-center gap-1"><Radio className="h-3 w-3" /> {ivr.language.toUpperCase()}</span>
+                  </div>
+                  <Separator />
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">{t('voip.ivr.entries')} ({ivr.entries.length})</p>
+                    {ivr.entries.map((entry) => (
+                      <div key={entry.id} className="flex items-center gap-2 text-xs">
+                        <Badge variant="outline" className="font-mono text-xs min-w-[24px] justify-center">{entry.keyPress}</Badge>
+                        <span className="truncate">{entry.label}</span>
+                        <span className="text-muted-foreground ml-auto">→ {entry.target}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Separator />
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => handleOpenIvrDialog(ivr)}>
+                      <Edit3 className="h-3 w-3 mr-1" /> {t('voip.action.edit')}
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1 text-xs text-red-500">
+                      <Trash2 className="h-3 w-3 mr-1" /> {t('voip.action.delete')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* IVR Detail / Flow Preview */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">{t('voip.ivr.flowPreview')} — {MOCK_IVR_MENUS[0].name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="rounded-lg border-2 border-primary bg-primary/5 px-6 py-3 text-center">
+                  <p className="text-sm font-medium">{t('voip.ivr.entryPoint')}</p>
+                  <p className="text-xs text-muted-foreground">{MOCK_IVR_MENUS[0].phoneNumber}</p>
+                </div>
+                <div className="h-6 w-px bg-border" />
+                <div className="flex items-center gap-2 rounded-lg border border-dashed px-4 py-2">
+                  <Volume2 className="h-4 w-4 text-primary" />
+                  <span className="text-sm">{t('voip.ivr.greetingMessage')}</span>
+                </div>
+                <div className="h-6 w-px bg-border" />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-2xl">
+                  {MOCK_IVR_MENUS[0].entries.map((entry) => (
+                    <div key={entry.id} className="text-center">
+                      <Badge variant="outline" className="font-mono mb-1">{entry.keyPress}</Badge>
+                      <div className="rounded-lg border bg-muted/50 p-2 text-xs">
+                        <p className="font-medium truncate">{entry.label}</p>
+                        <p className="text-muted-foreground">{entry.action === 'transfer' ? '→ Ext' : entry.action === 'voicemail' ? '→ VM' : '→'}</p>
+                        <p className="text-muted-foreground">{entry.target}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        </TabsContent>
 
-      {/* IVR Detail / Flow Preview */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">{t('voip.ivr.flowPreview')} — {MOCK_IVR_MENUS[0].name}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center gap-3 py-4">
-            <div className="rounded-lg border-2 border-primary bg-primary/5 px-6 py-3 text-center">
-              <p className="text-sm font-medium">{t('voip.ivr.entryPoint')}</p>
-              <p className="text-xs text-muted-foreground">{MOCK_IVR_MENUS[0].phoneNumber}</p>
-            </div>
-            <div className="h-6 w-px bg-border" />
-            <div className="flex items-center gap-2 rounded-lg border border-dashed px-4 py-2">
-              <Volume2 className="h-4 w-4 text-primary" />
-              <span className="text-sm">{t('voip.ivr.greetingMessage')}</span>
-            </div>
-            <div className="h-6 w-px bg-border" />
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-2xl">
-              {MOCK_IVR_MENUS[0].entries.map((entry) => (
-                <div key={entry.id} className="text-center">
-                  <Badge variant="outline" className="font-mono mb-1">{entry.keyPress}</Badge>
-                  <div className="rounded-lg border bg-muted/50 p-2 text-xs">
-                    <p className="font-medium truncate">{entry.label}</p>
-                    <p className="text-muted-foreground">{entry.action === 'transfer' ? '→ Ext' : entry.action === 'voicemail' ? '→ VM' : '→'}</p>
-                    <p className="text-muted-foreground">{entry.target}</p>
+        <TabsContent value="dodaj">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setIvrSubTab('pregled'); setEditingIvr(null) }}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <CardTitle>{editingIvr ? t('voip.ivr.editMenu') : t('voip.ivr.createMenu')}</CardTitle>
+              </div>
+            </CardHeader>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1"><Label className="text-xs">{t('voip.ivr.menuName')}</Label><Input defaultValue={editingIvr?.name ?? ''} placeholder={t('voip.ivr.menuNamePlaceholder')} /></div>
+                <div className="space-y-1"><Label className="text-xs">{t('voip.ivr.phoneNumber')}</Label><Input defaultValue={editingIvr?.phoneNumber ?? ''} placeholder="+38111..." /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1"><Label className="text-xs">{t('voip.ivr.language')}</Label>
+                  <Select defaultValue={editingIvr?.language ?? 'sr'}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sr">Srpski</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end pb-1">
+                  <div className="flex items-center gap-2">
+                    <Switch defaultChecked={editingIvr?.active ?? true} />
+                    <Label className="text-xs">{t('voip.ivr.active')}</Label>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* IVR Edit Dialog */}
-      {ivrDialogOpen && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{editingIvr ? t('voip.ivr.editMenu') : t('voip.ivr.createMenu')}</CardTitle>
-          </CardHeader>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><Label className="text-xs">{t('voip.ivr.menuName')}</Label><Input defaultValue={editingIvr?.name ?? ''} placeholder={t('voip.ivr.menuNamePlaceholder')} /></div>
-              <div className="space-y-1"><Label className="text-xs">{t('voip.ivr.phoneNumber')}</Label><Input defaultValue={editingIvr?.phoneNumber ?? ''} placeholder="+38111..." /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1"><Label className="text-xs">{t('voip.ivr.language')}</Label>
-                <Select defaultValue={editingIvr?.language ?? 'sr'}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sr">Srpski</SelectItem>
-                    <SelectItem value="en">English</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
-              <div className="flex items-end pb-1">
+              <Separator />
+              <p className="text-xs font-medium">{t('voip.ivr.entries')}</p>
+              {(editingIvr?.entries ?? MOCK_IVR_MENUS[0].entries).map((entry) => (
+                <div key={entry.id} className="grid grid-cols-[50px_1fr_1fr_32px] gap-2 items-center">
+                  <Input className="text-center font-mono text-xs" defaultValue={entry.keyPress} placeholder="#" />
+                  <Select defaultValue={entry.action}>
+                    <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="transfer">{t('voip.ivr.action.transfer')}</SelectItem>
+                      <SelectItem value="play_message">{t('voip.ivr.action.playMessage')}</SelectItem>
+                      <SelectItem value="submenu">{t('voip.ivr.action.submenu')}</SelectItem>
+                      <SelectItem value="voicemail">{t('voip.ivr.action.voicemail')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input className="text-xs" defaultValue={entry.target} />
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400"><Trash2 className="h-3 w-3" /></Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" className="w-full text-xs">
+                <Plus className="h-3 w-3 mr-1" /> {t('voip.ivr.addEntry')}
+              </Button>
+              <Separator />
+              <div className="space-y-1">
+                <Label className="text-xs">{t('voip.ivr.uploadGreeting')}</Label>
                 <div className="flex items-center gap-2">
-                  <Switch defaultChecked={editingIvr?.active ?? true} />
-                  <Label className="text-xs">{t('voip.ivr.active')}</Label>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <Volume2 className="h-3 w-3 mr-1" /> {t('voip.ivr.uploadAudio')}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">.wav, .mp3 (max 5MB)</span>
                 </div>
               </div>
             </div>
-            <Separator />
-            <p className="text-xs font-medium">{t('voip.ivr.entries')}</p>
-            {(editingIvr?.entries ?? MOCK_IVR_MENUS[0].entries).map((entry) => (
-              <div key={entry.id} className="grid grid-cols-[50px_1fr_1fr_32px] gap-2 items-center">
-                <Input className="text-center font-mono text-xs" defaultValue={entry.keyPress} placeholder="#" />
-                <Select defaultValue={entry.action}>
-                  <SelectTrigger className="text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="transfer">{t('voip.ivr.action.transfer')}</SelectItem>
-                    <SelectItem value="play_message">{t('voip.ivr.action.playMessage')}</SelectItem>
-                    <SelectItem value="submenu">{t('voip.ivr.action.submenu')}</SelectItem>
-                    <SelectItem value="voicemail">{t('voip.ivr.action.voicemail')}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input className="text-xs" defaultValue={entry.target} />
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400"><Trash2 className="h-3 w-3" /></Button>
-              </div>
-            ))}
-            <Button variant="outline" size="sm" className="w-full text-xs">
-              <Plus className="h-3 w-3 mr-1" /> {t('voip.ivr.addEntry')}
-            </Button>
-            <Separator />
-            <div className="space-y-1">
-              <Label className="text-xs">{t('voip.ivr.uploadGreeting')}</Label>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="text-xs">
-                  <Volume2 className="h-3 w-3 mr-1" /> {t('voip.ivr.uploadAudio')}
-                </Button>
-                <span className="text-xs text-muted-foreground">.wav, .mp3 (max 5MB)</span>
-              </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => { setIvrSubTab('pregled'); setEditingIvr(null) }}>{t('voip.action.close')}</Button>
+              <Button onClick={() => { setIvrSubTab('pregled'); setEditingIvr(null) }}>{t('voip.action.save')}</Button>
             </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setIvrDialogOpen(false)}>{t('voip.action.close')}</Button>
-            <Button onClick={() => setIvrDialogOpen(false)}>{t('voip.action.save')}</Button>
-          </div>
-        </Card>
-      )}
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 

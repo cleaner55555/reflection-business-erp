@@ -43,8 +43,9 @@ export function Barcode() {
   const [typeFilter, setTypeFilter] = useState('')
   const [catFilter, setCatFilter] = useState('')
   const [scanInput, setScanInput] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editing, setEditing] = useState<BarcodeItem | null>(null)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [formData, setFormData] = useState({ code: '', type: 'EAN13' as BarcodeItem['type'], productName: '', productId: '', category: '' })
   const [printMode, setPrintMode] = useState(false)
   const [selectedForPrint, setSelectedForPrint] = useState<Set<string>>(new Set())
@@ -79,9 +80,9 @@ export function Barcode() {
     setScanInput('')
   }, [scanInput, items])
 
-  const handleNew = useCallback(() => { setEditing(null); setFormData({ code: '', type: 'EAN13', productName: '', productId: '', category: '' }); setDialogOpen(true) }, [])
+  const handleNew = useCallback(() => { setEditing(null); setFormData({ code: '', type: 'EAN13', productName: '', productId: '', category: '' }); setSubTab('dodaj') }, [])
 
-  const handleEdit = useCallback((item: BarcodeItem) => { setEditing(item); setFormData({ code: item.code, type: item.type, productName: item.productName, productId: item.productId, category: item.category }); setDialogOpen(true) }, [])
+  const handleEdit = useCallback((item: BarcodeItem) => { setEditing(item); setFormData({ code: item.code, type: item.type, productName: item.productName, productId: item.productId, category: item.category }); setSubTab('dodaj') }, [])
 
   const handleSave = useCallback(async () => {
     if (!formData.code || !formData.productName) { toast.error('Popunite sva polja'); return }
@@ -99,7 +100,7 @@ export function Barcode() {
         setItems(prev => [created, ...prev])
         toast.success('Barkod kreiran')
       }
-      setDialogOpen(false)
+      setSubTab('pregled')
     } catch { toast.error('Greška pri čuvanju') }
   }, [formData, editing])
 
@@ -155,7 +156,37 @@ export function Barcode() {
         <Card className="p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground mb-1"><Tag className="h-3.5 w-3.5" />Kategorije</div><p className="text-2xl font-bold">{categories.length}</p></Card>
       </div>
 
-      <Card>
+      <Tabs value={subTab} onValueChange={v => setSubTab(v as 'pregled' | 'dodaj')}>
+        <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj" disabled={!editing && subTab !== 'dodaj'}>{editing ? 'Uredi' : 'Dodaj'}</TabsTrigger></TabsList>
+        <TabsContent value="pregled" className="mt-4">
+
+        </TabsContent>
+
+        <TabsContent value="dodaj" className="mt-4">
+          <Card className="sm:max-w-[450px]">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={() => { setSubTab('pregled'); setEditing(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle className="text-base font-semibold">{editing ? 'Izmeni barkod' : 'Novi barkod'}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Barkod *</Label><div className="flex gap-2"><Input placeholder="8601234567890" className="font-mono" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /><Select value={formData.type} onValueChange={v => { setFormData(p => ({ ...p, type: v as BarcodeItem['type'] })); handleGenerate(v as BarcodeItem['type']) }}><SelectTrigger className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EAN13">EAN-13</SelectItem><SelectItem value="EAN8">EAN-8</SelectItem><SelectItem value="QR">QR</SelectItem><SelectItem value="CODE128">Code 128</SelectItem></SelectContent></Select></div></div>
+                <div className="grid gap-2"><Label className="text-xs">Naziv proizvoda *</Label><Input placeholder="Naziv..." value={formData.productName} onChange={e => setFormData(p => ({ ...p, productName: e.target.value }))} /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2"><Label className="text-xs">Šifra proizvoda</Label><Input placeholder="prod-xxx" value={formData.productId} onChange={e => setFormData(p => ({ ...p, productId: e.target.value }))} /></div>
+                  <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Input placeholder="Kategorija" value={formData.category} onChange={e => setFormData(p => ({ ...p, category: e.target.value }))} /></div>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" onClick={() => { setSubTab('pregled'); setEditing(null) }}>Otkaži</Button>
+                <Button onClick={handleSave}>{editing ? 'Sačuvaj' : 'Kreiraj'}</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>      <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <CardTitle className="text-base">Lista barkodova</CardTitle>
@@ -190,32 +221,7 @@ export function Barcode() {
         </CardContent>
       </Card>
 
-      {dialogOpen && (
-        <Card className="sm:max-w-[450px]">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <CardTitle className="text-base font-semibold">{editing ? 'Izmeni barkod' : 'Novi barkod'}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Barkod *</Label><div className="flex gap-2"><Input placeholder="8601234567890" className="font-mono" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /><Select value={formData.type} onValueChange={v => { setFormData(p => ({ ...p, type: v as BarcodeItem['type'] })); handleGenerate(v as BarcodeItem['type']) }}><SelectTrigger className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EAN13">EAN-13</SelectItem><SelectItem value="EAN8">EAN-8</SelectItem><SelectItem value="QR">QR</SelectItem><SelectItem value="CODE128">Code 128</SelectItem></SelectContent></Select></div></div>
-              <div className="grid gap-2"><Label className="text-xs">Naziv proizvoda *</Label><Input placeholder="Naziv..." value={formData.productName} onChange={e => setFormData(p => ({ ...p, productName: e.target.value }))} /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Šifra proizvoda</Label><Input placeholder="prod-xxx" value={formData.productId} onChange={e => setFormData(p => ({ ...p, productId: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Input placeholder="Kategorija" value={formData.category} onChange={e => setFormData(p => ({ ...p, category: e.target.value }))} /></div>
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSave}>{editing ? 'Sačuvaj' : 'Kreiraj'}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
     </div>
   )
 }

@@ -62,13 +62,12 @@ export function Referrals() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
+  const [referralsSubTab, setReferralsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
   const [items, setItems] = useState<Referral[]>([])
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
   const [selected, setSelected] = useState<Referral | null>(null)
 
   const emptyForm = {
@@ -108,7 +107,7 @@ export function Referrals() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...form }),
       })
-      if (res.ok) { setDialogOpen(false); setForm(emptyForm); loadItems(); loadDashboard() }
+      if (res.ok) { setReferralsSubTab('pregled'); setForm(emptyForm); loadItems(); loadDashboard() }
     } catch { /* silent */ }
   }
 
@@ -141,13 +140,13 @@ export function Referrals() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadItems() }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" onClick={() => { setActiveTab('referrals'); setReferralsSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> Nova preporuka
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setReferralsSubTab('pregled'); setSelected(null) }}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="referrals"><Share2 className="h-4 w-4 mr-1" /> Preporuke</TabsTrigger>
@@ -249,147 +248,159 @@ export function Referrals() {
           )}
         </TabsContent>
 
-        <TabsContent value="referrals" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Pretraži preporuke..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi statusi</SelectItem>
-                {Object.entries(statusConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
+        <TabsContent value="referrals">
+          <Tabs value={referralsSubTab} onValueChange={setReferralsSubTab}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+              <TabsTrigger value="detalji" disabled={!selected}>Detalji</TabsTrigger>
+            </TabsList>
 
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : items.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Share2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema preporuka</p>
-              <Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Kreiraj preporuku</Button>
-            </Card>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
-                    <th className="p-3">Preporučeni</th><th className="p-3">Preporučilac</th><th className="p-3">Izvor</th><th className="p-3">Status</th><th className="p-3">Akcije</th>
-                  </tr></thead>
-                  <tbody>{items.map((r) => {
-                    const cfg = statusConfig[r.status]
-                    return (
-                      <tr key={r.id} className="border-t hover:bg-muted/30">
-                        <td className="p-3 font-medium">{r.refereeName}</td>
-                        <td className="p-3">{r.referrerName}</td>
-                        <td className="p-3">{sourceLabels[r.source] || r.source}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge></td>
-                        <td className="p-3">
-                          <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(r); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
-                            {r.status === 'pending' && (
-                              <Button size="icon" variant="ghost" className="h-7 w-7 text-blue-600" onClick={() => handleUpdateStatus(r.id, 'contacted')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
-                            )}
-                            {r.status === 'contacted' && (
-                              <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(r.id, 'converted')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
-                            )}
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}</tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {dialogOpen && (
-        <Card className="max-w-lg">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle>Nova preporuka</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Preporučilac</Label>
-                <Input value={form.referrerName} onChange={(e) => setForm({ ...form, referrerName: e.target.value })} placeholder="Ko preporučuje" />
-              </div>
-              <div className="space-y-2">
-                <Label>Preporučeni</Label>
-                <Input value={form.refereeName} onChange={(e) => setForm({ ...form, refereeName: e.target.value })} placeholder="Ko je preporučen" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input type="email" value={form.refereeEmail} onChange={(e) => setForm({ ...form, refereeEmail: e.target.value })} placeholder="Email adresa" />
-              </div>
-              <div className="space-y-2">
-                <Label>Telefon</Label>
-                <Input value={form.refereePhone} onChange={(e) => setForm({ ...form, refereePhone: e.target.value })} placeholder="Broj telefona" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Izvor</Label>
-                <Select value={form.source} onValueChange={(v) => setForm({ ...form, source: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Pretraži preporuke..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
                   <SelectContent>
-                    {Object.entries(sourceLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                    <SelectItem value="all">Svi statusi</SelectItem>
+                    {Object.entries(statusConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Nagrada (RSD)</Label>
-                <Input type="number" value={form.reward || ''} onChange={(e) => setForm({ ...form, reward: parseFloat(e.target.value) || 0 })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Napomene</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {detailOpen && selected && (
-        <Card className="max-w-lg">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle>Detalji preporuke</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="text-muted-foreground">Preporučeni:</span> <span className="font-medium">{selected.refereeName}</span></div>
-              <div><span className="text-muted-foreground">Preporučilac:</span> {selected.referrerName}</div>
-              <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-              <div><span className="text-muted-foreground">Izvor:</span> {sourceLabels[selected.source] || selected.source}</div>
-              {selected.refereeEmail && <div><span className="text-muted-foreground">Email:</span> {selected.refereeEmail}</div>}
-              {selected.refereePhone && <div><span className="text-muted-foreground">Telefon:</span> {selected.refereePhone}</div>}
-              {selected.reward && <div><span className="text-muted-foreground">Nagrada:</span> <span className="font-bold">{formatCurrency(selected.reward)}</span></div>}
-              <div><span className="text-muted-foreground">Datum:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
-            </div>
-            {selected.notes && (
-              <div className="text-sm"><span className="text-muted-foreground">Napomene:</span> {selected.notes}</div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : items.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Share2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema preporuka</p>
+                  <Button variant="outline" className="mt-3" onClick={() => setReferralsSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj preporuku</Button>
+                </Card>
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
+                        <th className="p-3">Preporučeni</th><th className="p-3">Preporučilac</th><th className="p-3">Izvor</th><th className="p-3">Status</th><th className="p-3">Akcije</th>
+                      </tr></thead>
+                      <tbody>{items.map((r) => {
+                        const cfg = statusConfig[r.status]
+                        return (
+                          <tr key={r.id} className="border-t hover:bg-muted/30">
+                            <td className="p-3 font-medium">{r.refereeName}</td>
+                            <td className="p-3">{r.referrerName}</td>
+                            <td className="p-3">{sourceLabels[r.source] || r.source}</td>
+                            <td className="p-3"><Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || r.status}</Badge></td>
+                            <td className="p-3">
+                              <div className="flex gap-1">
+                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(r); setReferralsSubTab('detalji') }}><Eye className="h-3.5 w-3.5" /></Button>
+                                {r.status === 'pending' && (
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-blue-600" onClick={() => handleUpdateStatus(r.id, 'contacted')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
+                                )}
+                                {r.status === 'contacted' && (
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(r.id, 'converted')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
+                                )}
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}</tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-lg">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setReferralsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle>Nova preporuka</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Preporučilac</Label>
+                      <Input value={form.referrerName} onChange={(e) => setForm({ ...form, referrerName: e.target.value })} placeholder="Ko preporučuje" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Preporučeni</Label>
+                      <Input value={form.refereeName} onChange={(e) => setForm({ ...form, refereeName: e.target.value })} placeholder="Ko je preporučen" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input type="email" value={form.refereeEmail} onChange={(e) => setForm({ ...form, refereeEmail: e.target.value })} placeholder="Email adresa" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Telefon</Label>
+                      <Input value={form.refereePhone} onChange={(e) => setForm({ ...form, refereePhone: e.target.value })} placeholder="Broj telefona" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Izvor</Label>
+                      <Select value={form.source} onValueChange={(v) => setForm({ ...form, source: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(sourceLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Nagrada (RSD)</Label>
+                      <Input type="number" value={form.reward || ''} onChange={(e) => setForm({ ...form, reward: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Napomene</Label>
+                    <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="outline" onClick={() => setReferralsSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="detalji" className="space-y-4">
+              {selected && (
+                <Card className="max-w-lg">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setReferralsSubTab('pregled'); setSelected(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+                      <CardTitle>Detalji preporuke</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><span className="text-muted-foreground">Preporučeni:</span> <span className="font-medium">{selected.refereeName}</span></div>
+                      <div><span className="text-muted-foreground">Preporučilac:</span> {selected.referrerName}</div>
+                      <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
+                      <div><span className="text-muted-foreground">Izvor:</span> {sourceLabels[selected.source] || selected.source}</div>
+                      {selected.refereeEmail && <div><span className="text-muted-foreground">Email:</span> {selected.refereeEmail}</div>}
+                      {selected.refereePhone && <div><span className="text-muted-foreground">Telefon:</span> {selected.refereePhone}</div>}
+                      {selected.reward && <div><span className="text-muted-foreground">Nagrada:</span> <span className="font-bold">{formatCurrency(selected.reward)}</span></div>}
+                      <div><span className="text-muted-foreground">Datum:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
+                    </div>
+                    {selected.notes && (
+                      <div className="text-sm"><span className="text-muted-foreground">Napomene:</span> {selected.notes}</div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

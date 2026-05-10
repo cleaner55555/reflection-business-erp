@@ -1,6 +1,784 @@
 # Reflection Business - Work Log
 
 ---
+Task ID: 2-u
+Agent: dialog-converter
+Task: Convert Offers module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 5 dialog state variables in Offers/index.tsx:
+  - dialogOpen → new offer form (renderOfferDialog)
+  - detailOpen → offer detail view (renderDetailDialog)
+  - priceListDialogOpen → new/edit price list form (renderPriceListDialog)
+  - templateDialogOpen → new template form (renderTemplateDialog)
+  - templatePreviewOpen → template preview view (renderTemplatePreviewDialog)
+- Replaced 5 dialog boolean states with 3 sub-tab states:
+  - ordersSubTab: 'pregled' | 'dodaj' | 'detalji'
+  - priceListSubTab: 'pregled' | 'dodaj'
+  - templateSubTab: 'pregled' | 'dodaj' | 'detalji'
+- Added handleTabChange wrapper to reset all sub-tabs to 'pregled' when switching main tabs
+- Restructured 3 main tabs with inner sub-tabs:
+  - Offers tab: Pregled (search + filters + orders table with status actions) / Dodaj (create offer form with partner, dates, line items, totals) / Detalji (order detail with status, notes, convert-to-invoice)
+  - Price Lists tab: Pregled (price list cards with product preview tables) / Dodaj (create/edit price list form with name, type, margin, active toggle)
+  - Templates tab: Pregled (template cards grid with preview/create-from-template) / Dodaj (create template form with line items, payment terms, discount) / Detalji (template preview with line items table)
+- Updated all dialog open calls to tab navigation:
+  - openCreateDialog(template) → setActiveTab('orders') + setOrdersSubTab('dodaj') with template pre-fill
+  - Overview recent row click → setActiveTab('orders') + setOrdersSubTab('detalji')
+  - Offers table Eye button → setSelectedOrder(o) + setOrdersSubTab('detalji')
+  - Template preview → setSelectedTemplate(tpl) + setTemplateSubTab('detalji')
+  - Template create-from-template → openCreateOffer(tpl) (navigates to orders dodaj)
+  - handleDuplicate → openCreateOffer() (navigates to orders dodaj)
+  - openEditPriceList → setPriceListSubTab('dodaj')
+- Updated all dialog close calls to return to 'pregled' sub-tab:
+  - handleCreate → setOrdersSubTab('pregled')
+  - handleSavePriceList → setPriceListSubTab('pregled')
+  - handleSaveTemplate → setTemplateSubTab('pregled')
+- Header "Nova ponuda" button navigates to orders tab + dodaj sub-tab
+- Dodaj buttons now conditionally render only on pregled sub-tab within each tab
+- Removed all 5 dialog render functions (renderOfferDialog, renderDetailDialog, renderPriceListDialog, renderTemplateDialog, renderTemplatePreviewDialog)
+- Removed all 5 dialog render call blocks from after </Tabs>
+- Removed unused ArrowLeft import (was used in dialog back buttons)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- 0 occurrences of dialogOpen, detailOpen, priceListDialogOpen, templateDialogOpen, templatePreviewOpen, ArrowLeft, @/components/ui/dialog in converted file
+- 0 TypeScript compilation errors in Offers file (only pre-existing recharts esModuleInterop warnings)
+
+Stage Summary:
+- Offers module converted from 6-tab + 5-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Offer detail and template preview views now inline within their respective tabs
+- File size: 1584 → 1597 lines (net +13 due to sub-tab wrappers, despite removing ~330 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 2-h
+Agent: dialog-converter
+Task: Convert Spreadsheet module from Dialog to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Identified 9 dialog/popup state variables in Spreadsheet/index.tsx:
+  - templateDialogOpen → template selection (redundant, already a main tab)
+  - formulaHelpOpen → formula help (unused, no render block)
+  - findReplaceOpen → find/replace panel
+  - sheetNameDialogOpen → sheet naming (unused, no render block)
+  - newSheetName → sheet name value (unused)
+  - renameSheetId/renameSheetName → rename sheet form
+  - exportDialogOpen → export/import panel
+  - saveDialogOpen → save document form
+  - loadDialogOpen → load document form
+- Removed 4 unused states: templateDialogOpen, formulaHelpOpen, sheetNameDialogOpen, newSheetName
+- Removed 2 redundant dialog states: loadDialogOpen (merged into saved tab), exportDialogOpen (new main tab)
+- Replaced saveDialogOpen with savedSubTab: 'pregled' | 'dodaj'
+- Kept findReplaceOpen as boolean toggle for inline panel within editor tab
+- Kept renameSheetId/renameSheetName for inline sheet rename within editor tab
+- Restructured main tabs (4 → 5):
+  - Editor tab: spreadsheet grid + inline Find/Replace panel (toggle via header button or Ctrl+F) + inline Rename Sheet form
+  - Templates tab: template cards grid (unchanged)
+  - Formulas tab: formula reference (unchanged)
+  - Saved tab: Pregled (saved docs grid with load/delete) / Sačuvaj (save form with name input)
+  - Export tab (NEW): CSV export, JSON export, CSV import — all inline buttons
+- Updated all dialog open calls to tab navigation:
+  - Header "Šabloni" → setActiveTab('templates')
+  - Header "Sačuvaj" → setActiveTab('saved') + setSavedSubTab('dodaj')
+  - Header "Učitaj" → setActiveTab('saved') + setSavedSubTab('pregled')
+  - Header "Izvezi" → setActiveTab('export')
+  - Ctrl+S → setActiveTab('saved') + setSavedSubTab('dodaj')
+  - applyTemplate → setActiveTab('editor') (after applying template)
+  - handleSave → setSavedSubTab('pregled') (after saving)
+  - handleLoad → setActiveTab('editor') (after loading)
+- Moved Find/Replace form content into inline Card within Editor TabsContent
+- Moved Rename Sheet form content into inline Card within Editor TabsContent
+- Moved Save form content into inline Card within Saved tab's Dodaj sub-tab
+- Added Export tab with inline export/import buttons (CSV, JSON)
+- Removed all 6 dialog render blocks after </Tabs> (~130 lines removed):
+  - Find & Replace card, Save Form card, Load Form card, Export Form card, Rename Sheet Form card
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- 0 occurrences of Dialog, dialogOpen, setXxxDialogOpen, @/components/ui/dialog in converted file
+- 0 TypeScript compilation errors introduced by changes (verified with project-level tsc)
+
+Stage Summary:
+- Spreadsheet module converted from 4-tab + 6-dialog pattern to 5-tab with inner sub-tabs (Pregled/Dodaj)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- New Export tab consolidates all import/export functionality
+- Saved tab now has Pregled/Dodaj sub-tabs for list vs save form
+- Find/Replace and Rename Sheet panels now inline within Editor tab
+- File size: 1628 → 1597 lines (net -31, dialog blocks removed outweighed inline panels added)
+- All existing functionality preserved
+
+---
+Task ID: 2-m
+Agent: dialog-converter
+Task: Convert Forum module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 5 dialog state variables in Forum/index.tsx:
+  - topicDialogOpen → new topic form
+  - detailOpen → topic detail view with replies
+  - catDialogOpen → create/edit category form
+  - qDetailOpen → question detail view with answers
+  - tagDialogOpen → create/edit tag form
+- Replaced 5 dialog boolean states with 4 sub-tab states:
+  - topicSubTab: 'pregled' | 'dodaj' | 'detalji'
+  - catSubTab: 'pregled' | 'dodaj'
+  - qSubTab: 'pregled' | 'detalji'
+  - tagSubTab: 'pregled' | 'dodaj'
+- Added handleTabChange wrapper to reset all sub-tabs to 'pregled' when switching main tabs
+- Restructured 4 main tabs with inner sub-tabs:
+  - Topics tab: Pregled (search + filter + topic list) / Dodaj (create topic form) / Detalji (topic detail with meta, replies, action buttons, reply input)
+  - Categories tab: Pregled (category cards grid with edit/delete) / Dodaj (create/edit category form with color picker)
+  - Questions tab: Pregled (search + filter + questions list with votes) / Detalji (question detail with answers, accept answer, answer input)
+  - Tags tab: Pregled (cloud/list toggle + tag search) / Dodaj (create/edit tag form with color picker)
+- Updated all dialog open calls to tab navigation:
+  - Header "Nova tema" button → setActiveTab('topics') + setTopicSubTab('dodaj')
+  - setTopicDialogOpen(true) → setTopicSubTab('dodaj')
+  - setDetailOpen(true) → setActiveTab('topics') + setTopicSubTab('detalji')
+  - setCatDialogOpen(true) → setCatSubTab('dodaj')
+  - setQDetailOpen(true) → setQSubTab('detalji')
+  - setTagDialogOpen(true) → setTagSubTab('dodaj')
+- Updated all dialog close calls to return to 'pregled' sub-tab
+- Trending topics in overview tab click → setActiveTab('topics') + setTopicSubTab('detalji')
+- Detalji sub-tab triggers conditionally shown only when selectedTopic is set
+- Removed all 5 dialog render blocks (~380 lines removed from after </Tabs>)
+- Removed unused ArrowLeft import (was used only in dialog close buttons)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- 0 occurrences of Dialog, dialogOpen, setDetailOpen, setQDetailOpen, @/components/ui/dialog in converted file
+- 0 TypeScript compilation errors from changes (only pre-existing recharts/path-alias issues)
+
+Stage Summary:
+- Forum module converted from 6-tab + 5-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Topic detail and question detail views now inline with full functionality
+- File size: 1751 → 1801 lines (net +50 due to sub-tab wrappers, despite removing ~380 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 2-q
+Agent: dialog-converter
+Task: Convert Subscriptions module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 5 dialog/popup state variables in Subscriptions/index.tsx:
+  - PretplateTab: dialogOpen → new subscription form
+  - PretplateTab: detailOpen → subscription detail view
+  - PlanoviTab: dialogOpen → new/edit plan form
+  - KuponiTab: dialogOpen → new/edit coupon form
+  - KuponiTab: usageLogOpen → usage log view
+- Replaced 5 dialog/popup boolean states with 3 sub-tab states:
+  - PretplateTab: subTab: 'pregled' | 'dodaj' | 'detalji'
+  - PlanoviTab: subTab: 'pregled' | 'dodaj'
+  - KuponiTab: subTab: 'pregled' | 'dodaj' | 'detalji'
+- Restructured 3 main tabs with inner sub-tabs:
+  - Pretplate tab: Pregled (filters + subscriptions table) / Dodaj (create subscription form) / Detalji (subscription detail with payment history)
+  - Planovi tab: Pregled (plan cards grid) / Dodaj (create/edit plan form with features, pricing, trial)
+  - Kuponi tab: Pregled (coupons table with usage stats) / Dodaj (create/edit coupon form) / Detalji (usage log view)
+- Updated all dialog open calls to tab navigation:
+  - setDialogOpen(true) → setSubTab('dodaj')
+  - setDetailOpen(true) → setSubTab('detalji')
+  - setUsageLogOpen(true) → setSubTab('detalji')
+- Updated all dialog close calls to return to 'pregled' sub-tab:
+  - setDialogOpen(false) → setSubTab('pregled')
+  - setDetailOpen(false) → setSubTab('pregled')
+- Header "Dodaj" buttons now conditionally render only on pregled sub-tab
+- Detalji sub-tab triggers disabled when no item selected
+- PlacanjaTab had no dialog patterns (read-only payments view) — left unchanged
+- PregledTab (overview dashboard) had no dialog patterns — left unchanged
+- AnalitikaTab (analytics charts) had no dialog patterns — left unchanged
+- Removed all 5 dialog/popup render blocks (replaced with sub-tab TabsContent)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- 0 TypeScript compilation errors in Subscriptions file
+- 0 occurrences of dialogOpen, detailOpen, usageLogOpen, @/components/ui/dialog in converted file
+
+Stage Summary:
+- Subscriptions module converted from 6-tab + 5-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Subscription detail and coupon usage log views now inline with back navigation
+- File size: 1704 → 1745 lines (net +41 due to sub-tab wrappers, despite removing dialog conditional blocks)
+- All existing functionality preserved
+
+---
+Task ID: 2-f
+Agent: dialog-converter
+Task: Convert Skills module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 5 dialog state variables in Skills/index.tsx:
+  - dialogOpen → new skill form
+  - empSkillDialogOpen → assign skill to employee form
+  - certDialogOpen → new certification form
+  - assessDialogOpen → new assessment form
+  - detailOpen → skill detail view
+- Replaced 5 dialog boolean states with 4 sub-tab states:
+  - skillsSubTab: 'pregled' | 'dodaj' | 'detalji'
+  - employeesSubTab: 'pregled' | 'dodaj'
+  - certSubTab: 'pregled' | 'dodaj'
+  - assessSubTab: 'pregled' | 'dodaj'
+- Added handleTabChange wrapper to reset all sub-tabs to 'pregled' when switching main tabs
+- Restructured 4 main tabs with inner sub-tabs:
+  - Veštine (Skills) tab: Pregled (filters + skill cards grid) / Dodaj (create skill form) / Detalji (skill detail with category, employees, levels)
+  - Zaposleni (Employees) tab: Pregled (search + skill matrix + employee cards) / Dodaj (assign skill form)
+  - Certifikati (Certifications) tab: Pregled (certifications table) / Dodaj (create certification form)
+  - Procena (Assessment) tab: Pregled (gap analysis + assessment history) / Dodaj (create assessment form)
+- Updated all dialog open calls to tab navigation:
+  - Header "Nova veština" → setActiveTab('skills') + setSkillsSubTab('dodaj')
+  - Empty skills "Kreiraj veštinu" → setSkillsSubTab('dodaj')
+  - Skill Eye button → setSelected(skill) + setSkillsSubTab('detalji')
+  - Employees "Dodeli veštinu" → setEmployeesSubTab('dodaj')
+  - Certifications "Novi sertifikat" → setCertSubTab('dodaj')
+  - Assessment "Nova procena" → setAssessSubTab('dodaj')
+- Updated all dialog close calls to return to 'pregled' sub-tab
+- Detalji sub-tab on Veštine has ArrowLeft back button to return to pregled
+- Dodaj sub-tab forms have Otkaži buttons that navigate back to pregled
+- Removed all 5 dialog render blocks (~220 lines removed from after </Tabs>)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted
+- 0 occurrences of dialogOpen, empSkillDialogOpen, certDialogOpen, assessDialogOpen, detailOpen, setDetailOpen in converted file
+- 0 TypeScript compilation errors in Skills file (verified with project-level tsc)
+
+Stage Summary:
+- Skills module converted from 5-tab + 5-dialog pattern to 5-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Skill detail view now inline with back navigation
+- File size: 1182 → 1238 lines (net +56 due to sub-tab wrappers, despite removing ~220 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 2-i
+Agent: dialog-converter
+Task: Convert Notes module from Dialog to inline tabs (Pregled/Dodaj/Uredi pattern)
+
+Work Log:
+- Identified 5 dialog state variables in Notes/index.tsx:
+  - dialogOpen → new note create form
+  - detailOpen → note edit/detail form
+  - categoryDialogOpen → new category form
+  - templateDialogOpen → new template form
+  - shareDialogOpen → share dialog (state existed but had no render block)
+- Removed 2 unused states: shareDialogOpen, shareEmail (declared but never rendered)
+- Replaced 5 dialog boolean states with 2 sub-tab states:
+  - noteSubTab: 'pregled' | 'dodaj' | 'uredi'
+  - settingsSubTab: 'pregled' | 'dodaj_category' | 'dodaj_template'
+- Added handleTabChange wrapper to reset all sub-tabs to 'pregled' when switching main tabs
+- Restructured 2 main tabs with inner sub-tabs:
+  - Sve beleške tab: Pregled (search + filters + grid/list view with pinned/unpinned sections) / Dodaj (create note form with title, category, priority, color, content, tags, pin/favorite toggles) / Uredi (edit note form with all fields + timestamps + shared info)
+  - Podešavanja tab: Pregled (categories management + templates management + tags overview + archive) / Nova kategorija (create category form with name, color, icon) / Novi šablon (create template form with name, category, content)
+- Updated all dialog open calls to tab navigation:
+  - Header "Nova beleška" → setActiveTab('notes') + setNoteSubTab('dodaj')
+  - Empty state "Kreiraj belešku" → setNoteSubTab('dodaj')
+  - applyTemplate → setActiveTab('notes') + setNoteSubTab('dodaj') (pre-fills form from template)
+  - openEdit → setActiveTab('notes') + setNoteSubTab('uredi') (pre-fills form from selected note)
+  - "Dodaj šablon" in overview → setActiveTab('settings') + setSettingsSubTab('dodaj_template')
+  - "Nova kategorija" in settings → setSettingsSubTab('dodaj_category')
+  - "Novi šablon" in settings → setSettingsSubTab('dodaj_template')
+- Updated all dialog close calls to return to 'pregled' sub-tab:
+  - handleCreateNote → setNoteSubTab('pregled')
+  - handleUpdateNote → setNoteSubTab('pregled') + setSelected(null)
+  - handleCreateCategory → setSettingsSubTab('pregled')
+  - handleCreateTemplate → setSettingsSubTab('pregled')
+- Header "Nova beleška" button now conditionally renders only when not on notes tab
+- Added "Nazad" back buttons on Dodaj/Uredi sub-tabs for navigation
+- Removed all 4 dialog render blocks (~253 lines removed from after </Tabs>): create note card, edit note card, category card, template card
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- 0 occurrences of dialogOpen, detailOpen, categoryDialogOpen, templateDialogOpen, shareDialogOpen, shareEmail in converted file
+
+Stage Summary:
+- Notes module converted from 4-tab + 4-dialog pattern to 4-tab with inner sub-tabs (Pregled/Dodaj/Uredi)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- File size: 1330 → 1383 lines (net +53 due to sub-tab wrappers, despite removing ~253 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 2-t
+Agent: dialog-converter
+Task: Convert KnowledgeBase module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 3 dialog state variables in KnowledgeBase/index.tsx:
+  - articleDialogOpen → article create/edit form
+  - detailDialogOpen → article detail view
+  - categoryDialogOpen → category create/edit form
+- Replaced 3 dialog boolean states with 2 sub-tab states:
+  - articleSubTab: 'pregled' | 'dodaj' | 'detalji'
+  - categorySubTab: 'pregled' | 'dodaj'
+- Added handleMainTabChange wrapper to reset subTabs to 'pregled' when switching main tabs
+- Restructured 2 main tabs with inner sub-tabs:
+  - Articles tab: Pregled (filter + article list) / Dodaj (create/edit article form) / Detalji (article detail with edit/delete actions)
+  - Categories tab: Pregled (category list with hierarchy) / Dodaj (create/edit category form)
+- Updated all dialog open calls to tab navigation:
+  - setArticleDialogOpen(true) → setActiveTab('articles') + setArticleSubTab('dodaj')
+  - setDetailDialogOpen(true) → setActiveTab('articles') + setArticleSubTab('detalji') (5 occurrences)
+  - setCategoryDialogOpen(true) → setActiveTab('categories') + setCategorySubTab('dodaj')
+- Updated all dialog close calls to return to 'pregled' sub-tab
+- Updated article card/table row clicks to navigate to 'detalji' sub-tab (within articles tab)
+- Updated overview and search article clicks to navigate to articles tab + detalji sub-tab
+- Added edit and delete buttons to Detalji sub-tab (inline, no dialog)
+- Removed all 3 dialog render blocks (~265 lines removed from after </Tabs>)
+- Removed unused ArrowLeft import
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted
+- 0 TypeScript compilation errors in KnowledgeBase file
+- 0 ESLint errors in KnowledgeBase file
+
+Stage Summary:
+- KnowledgeBase module converted from 6-tab + 3-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Article detail view now inline with edit/delete actions
+- File reduced from 1610 lines to 1670 lines (net +60 due to sub-tab wrappers, despite removing ~265 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 2-r
+Agent: dialog-converter
+Task: Convert ECommerce module from Dialog to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Identified 3 dialog state variables in ECommerce/index.tsx:
+  - ProductsTab: dialogOpen → product create/edit form
+  - CategoriesTab: dialogOpen → category create/edit form
+  - CouponsTab: dialogOpen → coupon create/edit form
+- Note: OrdersTab uses selectedOrder pattern (not dialog), kept unchanged
+- Replaced 3 dialog boolean states with sub-tab states:
+  - ProductsTab: subTab: 'pregled' | 'dodaj'
+  - CategoriesTab: subTab: 'pregled' | 'dodaj'
+  - CouponsTab: subTab: 'pregled' | 'dodaj'
+- Restructured 3 tab components with inner sub-tabs (Pregled/Dodaj):
+  - Products tab: Pregled (grid/list view with filters + create button) / Dodaj (create/edit product form with basic info, pricing, inventory, SEO, status sections)
+  - Categories tab: Pregled (sorted list with move up/down, active toggle, edit/delete) / Dodaj (create/edit category form with name, slug, description)
+  - Coupons tab: Pregled (coupon cards grid with type/value/usage stats) / Dodaj (create/edit coupon form with code, type, value, dates, limits)
+- Updated all setDialogOpen(true) calls to setSubTab('dodaj')
+- Updated all setDialogOpen(false) calls to setSubTab('pregled')
+- Sub-tab trigger labels dynamically show "Uredi" when editing vs "Dodaj" when creating
+- Delete confirmations remain inline within pregled sub-tab (not separate dialogs)
+- Removed all 3 dialog render blocks (moved into Dodaj sub-tabs)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- Fixed typo in CouponsTab Badge rendering (missing `{` brace)
+- 0 TypeScript compilation errors in ECommerce/index.tsx
+- 0 dialog-related references remaining in file
+
+Stage Summary:
+- ECommerce module converted from 7-tab + 3-dialog pattern to 7-tab with inner sub-tabs (Pregled/Dodaj)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Products, Categories, and Coupons tabs all follow consistent Pregled/Dodaj sub-tab pattern
+- All existing functionality preserved
+
+---
+Task ID: 2-g
+Agent: dialog-converter
+Task: Convert Messaging module from Dialog to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Identified 4 dialog state variables in Messaging/index.tsx:
+  - newMsgDialogOpen → new message form (inline Dodaj in messages tab)
+  - templateDialogOpen → new/edit template form (inline Dodaj in templates tab)
+  - autoReplyDialogOpen → new/edit auto-reply form (inline Dodaj in chatbot tab)
+  - campaignDialogOpen → new campaign form (inline Dodaj in campaigns tab)
+- Replaced 4 dialog boolean states with 4 sub-tab states:
+  - messagesSubTab: 'pregled' | 'dodaj'
+  - templatesSubTab: 'pregled' | 'dodaj'
+  - chatbotSubTab: 'pregled' | 'dodaj'
+  - campaignsSubTab: 'pregled' | 'dodaj'
+- Restructured 4 main tabs with inner sub-tabs:
+  - Messages tab: Pregled (split chat view with conversation list + message area) / Dodaj (new message form with phone + text fields)
+  - Templates tab: Pregled (template cards list with edit buttons) / Dodaj (create/edit template form with name, category, language, body)
+  - Chatbot tab: Pregled (auto-reply cards with edit buttons + toggle switches) / Dodaj (create/edit auto-reply form with trigger, keywords, response)
+  - Campaigns tab: Pregled (campaign cards with stats grid) / Dodaj (create campaign form with template, date, recipient group)
+- Updated all dialog open calls to sub-tab navigation:
+  - setNewMsgDialogOpen(true) → setActiveTab('messages') + setMessagesSubTab('dodaj')
+  - setTemplateDialogOpen(true) → setTemplatesSubTab('dodaj')
+  - setAutoReplyDialogOpen(true) → setChatbotSubTab('dodaj')
+  - setCampaignDialogOpen(true) → setCampaignsSubTab('dodaj')
+- Updated all dialog close calls to return to 'pregled' sub-tab
+- Added Edit3 button to each auto-reply card (was missing before - edit was only accessible via dialog)
+- Header "Nova poruka" button now navigates to messages tab + dodaj sub-tab
+- Removed all 4 dialog render blocks after </Tabs> (~100 lines)
+- Removed unused ArrowLeft import
+- No @/components/ui/dialog imported (compliant with rule 7)
+- No files deleted
+- 0 TypeScript errors introduced (only pre-existing module resolution errors)
+
+Stage Summary:
+- Messaging module converted from 6-tab + 4-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Chatbot tab gained edit button functionality (was partially implemented)
+- File reduced from 1012 lines to 1063 lines (net +51 due to sub-tab wrappers, despite removing ~100 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 2-l
+Agent: dialog-converter
+Task: Convert Events module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 4 dialog state variables in Events/index.tsx:
+  - eventDialogOpen → new/edit event form (inline Card in events tab)
+  - eventDetailOpen → event detail view (inline Card in events tab)
+  - venueDialogOpen → new/edit venue form (inline Card in venues tab)
+  - ticketDialogOpen → new ticket form (inline Card in tickets tab)
+- Replaced 4 dialog boolean states with 3 sub-tab states:
+  - eventSubTab: 'pregled' | 'detalji' | 'dodaj'
+  - venueSubTab: 'pregled' | 'dodaj'
+  - ticketSubTab: 'pregled' | 'dodaj'
+- Added handleTabChange wrapper to reset all sub-tabs to 'pregled' when switching main tabs
+- Restructured 3 main tabs with inner sub-tabs:
+  - Events tab: Pregled (filters + events table with Eye/Edit/Delete actions) / Detalji (event detail with status workflow, registration list, edit/delete buttons) / Dodaj (create/edit event form)
+  - Venues tab: Pregled (venue cards grid with Edit/Delete) / Dodaj (create/edit venue form with equipment checkboxes)
+  - Tickets tab: Pregled (tickets table with sell/issue actions) / Dodaj (create ticket form)
+- Added reusable SubTabBar sub-component for consistent sub-tab navigation UI
+- Updated all dialog open calls to tab navigation:
+  - openCreateEvent → setEventSubTab('dodaj')
+  - openEditEvent → setSelectedEvent(ev) + setEventSubTab('dodaj')
+  - saveEvent → setEventSubTab('pregled')
+  - Eye button in table → setSelectedEvent(ev) + setEventSubTab('detalji')
+  - openCreateVenue → setVenueSubTab('dodaj')
+  - openEditVenue → setVenueSubTab('dodaj')
+  - saveVenue → setVenueSubTab('pregled')
+  - setTicketDialogOpen(true) → setTicketSubTab('dodaj')
+- Header "Dodaj" buttons now conditionally render only on pregled sub-tab
+- Removed all 4 dialog-controlled Card render blocks (replaced with sub-tab conditional rendering)
+- Removed unused ArrowLeft import (was used in dialog back buttons)
+- Removed unused Clock import (pre-existing unused)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted
+- 0 TypeScript compilation errors in Events file
+- 0 ESLint errors in Events file
+
+Stage Summary:
+- Events module converted from 6-tab + 4-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Event detail view now inline with status workflow, registration list, edit/delete actions
+- File size: 1360 → 1448 lines (net +88 due to SubTabBar component + sub-tab wrappers)
+- All existing functionality preserved
+
+---
+Task ID: 2-j
+Agent: dialog-converter
+Task: Convert Trucks module from Dialog to inline tabs (Pregled/Dodaj/Uredi pattern)
+
+Work Log:
+- Identified 3 dialog state variables in Trucks/index.tsx:
+  - truckDialogOpen → new/edit truck form (TruckFormDialog)
+  - maintenanceDialogOpen → new maintenance record form (MaintenanceFormDialog)
+  - costDialogOpen → new cost record form (CostFormDialog)
+- Replaced 3 dialog boolean states with 3 sub-tab states:
+  - vozniParkSubTab: 'pregled' | 'dodaj' | 'uredi'
+  - odrzavanjeSubTab: 'pregled' | 'dodaj'
+  - troskoviSubTab: 'pregled' | 'dodaj'
+- Added handleMainTabChange wrapper to reset all sub-tabs to 'pregled' when switching main tabs
+- Restructured 3 main tabs with inner sub-tabs:
+  - Vozni Park tab: Pregled (FleetTable, MonthlyCostsBar, Fleet Overview, Quick Cards) / Dodaj (new truck form) / Uredi (edit truck form)
+  - Održavanje tab: Pregled (MaintenanceTab table + summary cards) / Dodaj (new maintenance record form)
+  - Troškovi tab: Pregled (CostsTab table + cost summary + cost per truck) / Dodaj (new cost form)
+- Updated all dialog open calls to tab navigation:
+  - handleAddTruck → setEditingTruck(null) + setVozniParkSubTab('dodaj')
+  - handleEditTruck → setEditingTruck(truck) + setVozniParkSubTab('uredi')
+  - MaintenanceTab onAdd → setOdrzavanjeSubTab('dodaj')
+  - CostsTab onAdd → setTroskoviSubTab('dodaj')
+  - Quick card onClick → handleEditTruck (navigates to uredi sub-tab)
+- Updated all dialog close calls to return to 'pregled' sub-tab:
+  - setTruckDialogOpen(false) → setVozniParkSubTab('pregled') (9 occurrences across handleSaveTruck)
+  - setMaintenanceDialogOpen(false) → setOdrzavanjeSubTab('pregled') (3 occurrences)
+  - setCostDialogOpen(false) → setTroskoviSubTab('pregled') (3 occurrences)
+- Added ArrowLeft back buttons + Plus action buttons for sub-tab navigation at top of each tab
+- Form components (TruckFormDialog, MaintenanceFormDialog, CostFormDialog) reused inline with open={true} and onOpenChange navigating back to pregled
+- Removed all 3 dialog render blocks after </Tabs> (~24 lines: lines 854-877)
+- Replaced Zap import with ArrowLeft, Plus imports
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted
+- 0 occurrences of xxxDialogOpen, setXxxDialogOpen in converted file
+- 0 TypeScript compilation errors from changes (all errors are pre-existing)
+
+Stage Summary:
+- Trucks module converted from 4-tab + 3-dialog pattern to 4-tab with inner sub-tabs (Pregled/Dodaj/Uredi)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- File size: 908 → 968 lines (net +60 due to sub-tab wrappers + form inline, despite removing ~24 lines of dialog renders)
+- All existing functionality preserved
+
+---
+Task ID: 2-n
+Agent: dialog-converter
+Task: Convert VoIP module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 3 dialog state variables in VoIP/index.tsx:
+  - detailOpen → call detail view (inline card within call log)
+  - extDialogOpen → new/edit extension form
+  - ivrDialogOpen → new/edit IVR menu form
+- Replaced 3 dialog boolean states with 3 sub-tab states:
+  - callsSubTab: 'pregled' | 'detalji'
+  - extSubTab: 'pregled' | 'dodaj'
+  - ivrSubTab: 'pregled' | 'dodaj'
+- Restructured 3 main tabs with inner sub-tabs:
+  - Calls (Pozivi) tab: Pregled (filters + call log table) / Detalji (call detail card with recording player, notes, save button)
+  - Extensions (Ekstenzije) tab: Pregled (search + extensions table) / Dodaj (create/edit extension form with number, name, department, type, device)
+  - IVR Menus tab: Pregled (IVR cards grid + flow preview) / Dodaj (create/edit IVR form with menu name, phone, language, entries, audio upload)
+- Updated all dialog open calls to tab navigation:
+  - handleOpenCallDetail → setCallsSubTab('detalji')
+  - handleSaveCallNotes → setCallsSubTab('pregled')
+  - handleOpenExtDialog → setExtSubTab('dodaj')
+  - handleOpenIvrDialog → setIvrSubTab('dodaj')
+- Sub-tab triggers conditionally shown only when active (Dodaj/Detalji tab only appears when navigated to)
+- ArrowLeft back buttons added to Dodaj/Detalji sub-tabs for navigation
+- Close/Save buttons in forms navigate back to 'pregled' sub-tab and clear editing state
+- Removed all 3 dialog render blocks (Call Detail, Extension Dialog, IVR Edit Dialog)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted
+- 0 new TypeScript compilation errors in VoIP file (all errors are pre-existing recharts/path-alias issues)
+
+Stage Summary:
+- VoIP module converted from 6-tab + 3-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Call detail view now inline with back navigation, recording player, and notes editing
+- File size: 1298 → 1337 lines (net +39 due to sub-tab wrappers, despite removing ~100 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 2-p
+Agent: dialog-converter
+Task: Convert UserManagement module from Dialog to inline tabs (Pregled/Dodaj/Uredi pattern)
+
+Work Log:
+- Identified 2 dialog state variables in UserManagement/index.tsx:
+  - addDialogOpen → add new user form
+  - editDialogOpen → edit user role form
+  - deleteDialogOpen → AlertDialog for delete confirmation (KEPT)
+- Replaced 2 dialog boolean states with 1 sub-tab state:
+  - subTab: 'pregled' | 'dodaj' | 'uredi'
+- Added handleTabChange wrapper to reset edit state when leaving uredi tab, and reset add form when returning to pregled
+- Restructured single-view component with 3 inner sub-tabs:
+  - Pregled tab: header (with Dodaj button only on pregled), search + stats, user table with actions
+  - Dodaj tab: add new user form (email, name, password, phone, job title, role)
+  - Uredi tab: edit user role form (conditional on editingUser, shown only when editing)
+- Updated all dialog open calls to tab navigation:
+  - setAddDialogOpen(true) → setSubTab('dodaj')
+  - setEditDialogOpen(true) → setSubTab('uredi')
+  - setAddDialogOpen(false) → setSubTab('pregled')
+  - setEditDialogOpen(false) → setSubTab('pregled')
+- Header "Dodaj korisnika" button now conditionally renders only on pregled sub-tab
+- EmptyState onAdd callback now navigates to dodaj sub-tab
+- Uredi tab trigger conditionally shown only when editingUser is set
+- Removed both non-AlertDialog dialog render blocks (add user card + edit role card)
+- Removed unused ArrowLeft import (was used in dialog back buttons)
+- Added Tabs, TabsContent, TabsList, TabsTrigger imports
+- AlertDialog import and usage preserved (delete confirmation)
+- No @/components/ui/dialog imported (compliant with rule 7)
+- 0 TypeScript compilation errors in UserManagement file
+- No files deleted
+
+Stage Summary:
+- UserManagement module converted from single-view + 2-popup-dialog pattern to single-view with 3 inner sub-tabs (Pregled/Dodaj/Uredi)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- All existing functionality preserved including delete confirmation AlertDialog
+
+---
+Task ID: 2-k
+Agent: dialog-converter
+Task: Convert Gamification module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 4 dialog state variables in Gamification/index.tsx:
+  - goalDialogOpen → create goal form
+  - challengeDialogOpen → create challenge form
+  - badgeDialogOpen → create badge form
+  - detailOpen → goal detail view
+- Replaced 4 dialog boolean states with 3 sub-tab states:
+  - goalSubTab: 'pregled' | 'dodaj' | 'detalji'
+  - challengeSubTab: 'pregled' | 'dodaj'
+  - badgeSubTab: 'pregled' | 'dodaj'
+- Added handleTabChange wrapper to reset sub-tabs to 'pregled' when switching main tabs
+- Restructured 3 main tabs with inner sub-tabs:
+  - Goals tab: Pregled (filters + goal cards grid) / Dodaj (create goal form) / Detalji (goal detail with progress, info, delete button)
+  - Challenges tab: Pregled (challenge cards grid) / Dodaj (create challenge form)
+  - Badges tab: Pregled (badge cards grid) / Dodaj (create badge form)
+- Updated all dialog open calls to tab navigation:
+  - Header "Novi cilj" button → setActiveTab('goals') + setGoalSubTab('dodaj')
+  - Goals empty state "Kreiraj cilj" → setGoalSubTab('dodaj')
+  - Goal card Eye button → setSelected(goal) + setGoalSubTab('detalji')
+  - Challenges "Novi izazov" button → setChallengeSubTab('dodaj')
+  - Badges "Nova značka" button → setBadgeSubTab('dodaj')
+  - Template "Koristi" button → setActiveTab('goals') + setGoalSubTab('dodaj') with pre-filled form
+- Updated all dialog close calls to return to 'pregled' sub-tab
+- Removed all 4 dialog render blocks (~200 lines removed from after </Tabs>)
+- Fixed pre-existing bug: mockTemplates → templates reference (line 746)
+- Added delete button to goal detail view (inline in Detalji sub-tab)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted
+- 0 occurrences of Dialog, dialogOpen, setDetailOpen, @/components/ui/dialog, mockTemplates in converted file
+
+Stage Summary:
+- Gamification module converted from 6-tab + 4-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Goal detail view now inline with back + delete actions
+- File size: 988 → 1023 lines (net +35 due to sub-tab wrappers, despite removing ~200 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 2-a (retry)
+Agent: dialog-converter
+Task: Convert WebsiteBuilder dialogs to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Analyzed WebsiteBuilder/index.tsx (1710 lines) for dialog patterns
+- Found that ALL dialog state variables have already been converted:
+  - pageDialogOpen → pagesSubTab ('pregled' | 'dodaj')
+  - uploadDialogOpen → mediaSubTab ('pregled' | 'dodaj' | 'detalji')
+  - menuDialogOpen → navSubTab ('pregled' | 'dodaj')
+  - seoDialogOpen → seoSubTab ('pregled' | 'dodaj')
+- Confirmed 0 occurrences of `xxxDialogOpen`, `Dialog`, `dialog`, `popup`, `modal`, or `@/components/ui/dialog` in the file
+- Confirmed all 4 form tabs already have inner `<Tabs>` with Pregled/Dodaj sub-tabs:
+  - Pages tab (line 719): inner Tabs with Pregled/Dodaj
+  - Navigation tab (line 1001): inner Tabs with Pregled/Dodaj
+  - SEO tab (line 1168): inner Tabs with Pregled/Dodaj
+  - Media tab (line 1553): inner Tabs with Pregled/Dodaj/Detalji
+- Confirmed ArrowLeft buttons navigate back to 'pregled' sub-tab
+- Confirmed no dialog render blocks exist after main `</Tabs>` (file ends at line 1710 with `</Tabs></div>)}`)
+- Confirmed 0 TypeScript compilation errors for the file
+- No files deleted, no @/components/ui/dialog imported
+- File is fully compliant with all 9 conversion rules
+
+Stage Summary:
+- WebsiteBuilder module was ALREADY converted from dialog pattern to inline tabs (likely during initial creation or a prior pass)
+- No changes were needed — all conversion rules already satisfied
+- 0 TypeScript errors, file is clean
+
+---
+Task ID: 4-a
+Agent: dialog-converter
+Task: Convert Approvals + BankSync + Expenses modules from dialog to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Identified dialog patterns in 3 module files:
+  - Approvals/index.tsx: rejectDialogOpen state (1 ref) controlling inline reject form toggle within detalji sub-tab
+  - BankSync/index.tsx: dialogOpen (AccountsTab), importDialogOpen, matchDialogOpen (TransactionsTab) = 3 regular dialog states + AlertDialog for delete
+  - Expenses/index.tsx: detailOpen (ExpensesTab), dialogOpen + detailOpen (ReportsTab), dialogOpen (BudgetsTab), dialogOpen (PoliciesTab) = 6 dialog/popup states
+
+=== Approvals/index.tsx ===
+- Extended subTab type from `'pregled' | 'dodaj' | 'detalji'` to `'pregled' | 'dodaj' | 'detalji' | 'odbi'`
+- Removed `rejectDialogOpen` state variable entirely
+- Replaced `setRejectDialogOpen(true)` → `setSubTab('odbi')` (2 occurrences: card Odbij button, detalji actions)
+- Replaced `setRejectDialogOpen(false)` → `setSubTab('detalji')` in cancel/return handlers
+- Moved reject form from conditional block inside detalji sub-tab to its own `odbi` sub-tab
+- Added 'odbi' TabsTrigger (conditionally shown when subTab === 'odbi')
+- Detalji TabsTrigger hidden when in 'odbi' sub-tab to avoid confusion
+- Updated TabsContent onValueChange type cast to include 'odbi'
+- 0 occurrences of rejectDialogOpen, setRejectDialogOpen remaining
+- No @/components/ui/dialog imported
+
+=== BankSync/index.tsx ===
+- AccountsTab: Replaced `dialogOpen` with `subTab: 'pregled' | 'dodaj'`
+- AccountsTab: Added inner Tabs with Pregled/Dodaj sub-tabs, moved account form into Dodaj sub-tab
+- AccountsTab: Updated handleOpenNew/handleOpenEdit → setSubTab('dodaj'), handleSubmit → setSubTab('pregled')
+- AccountsTab: AlertDialog for delete confirmation preserved (compliant with rule 6)
+- TransactionsTab: Replaced `importDialogOpen` + `matchDialogOpen` with `subTab: 'pregled' | 'import' | 'spoji'`
+- TransactionsTab: Added inner Tabs with conditional Import/Manual Match trigger tabs
+- TransactionsTab: Moved CSV import form into 'import' sub-tab, manual match form into 'spoji' sub-tab
+- TransactionsTab: Updated all handlers (handleImport, handleOpenMatch, handleDrop, header buttons)
+- ReconciliationTab: No dialog patterns found — left unchanged
+- Removed old comment "// Dialog removed - converted to inline Card" (line 26)
+- 0 occurrences of dialogOpen, importDialogOpen, matchDialogOpen remaining
+- AlertDialog import and usage for AccountsTab delete confirmation preserved
+
+=== Expenses/index.tsx ===
+- ExpensesTab: Removed `detailOpen` state, added `detalji` to existing sub-tab triggers
+- ExpensesTab: Moved expense detail view from outside tabs into `detalji` TabsContent
+- ExpensesTab: Updated Eye button → setActiveTab('detalji'), action buttons → setSubTab('pregled') + setSelected(null)
+- ReportsTab: Replaced `dialogOpen` + `detailOpen` with `subTab: 'pregled' | 'dodaj' | 'detalji'`
+- ReportsTab: Added inner Tabs, moved create report form into 'dodaj' sub-tab, report detail into 'detalji' sub-tab
+- ReportsTab: Updated all setDialogOpen/setDetailOpen calls to subTab navigation
+- BudgetsTab: Replaced `dialogOpen` with `subTab: 'pregled' | 'dodaj'`
+- BudgetsTab: Added inner Tabs, moved create budget form into 'dodaj' sub-tab
+- PoliciesTab: Replaced `dialogOpen` with `subTab: 'pregled' | 'dodaj'`
+- PoliciesTab: Added inner Tabs, moved create policy form into 'dodaj' sub-tab
+- 0 occurrences of dialogOpen, setDialogOpen, detailOpen, setDetailOpen remaining
+- 0 occurrences of @/components/ui/dialog imported
+- No AlertDialog imported (none needed — Expenses uses inline confirm pattern)
+
+Stage Summary:
+- 3 module files converted from dialog/popup patterns to inline tabs
+- Approvals: reject form now a dedicated 'odbi' sub-tab within request tabs
+- BankSync: account form, CSV import, manual match all converted to sub-tabs; AlertDialog preserved
+- Expenses: detail view, report form/detail, budget form, policy form all converted to sub-tabs
+- All existing functionality preserved
+
+---
+Task ID: 2-c
+Agent: dialog-converter
+Task: Convert IoT module from Dialog to inline tabs (Pregled/Dodaj/Uredi pattern)
+
+Work Log:
+- Identified 6 dialog state variables in IoT/index.tsx:
+  - sensorDialogOpen → new/edit sensor form
+  - sensorDetailOpen → sensor detail view
+  - deleteConfirmOpen → delete confirmation
+  - ruleDialogOpen → new/edit alert rule form
+  - automationDialogOpen → new/edit automation form
+  - groupDialogOpen → new group form
+- Replaced 6 dialog boolean states with 1 unified subTab state:
+  - subTab: 'pregled' | 'dodaj' | 'detalji'
+- Added handleTabChange wrapper to reset subTab to 'pregled' when switching main tabs
+- Restructured 4 main tabs with inner sub-tabs:
+  - Sensors tab: Pregled (grid/list view with filters) / Dodaj (create/edit sensor form) / Detalji (sensor detail with readings, edit/delete buttons)
+  - Rules tab: Pregled (rule cards list) / Dodaj (create/edit alert rule form)
+  - Automation tab: Pregled (automation cards list) / Dodaj (create/edit automation form)
+  - Groups tab: Pregled (group cards grid) / Dodaj (create group form)
+- Updated all dialog open calls to tab navigation (e.g. setSensorDialogOpen(true) → setActiveTab('sensors') + setSubTab('dodaj'))
+- Updated all dialog close calls to return to 'pregled' sub-tab
+- Updated sensor card/table row clicks to navigate to 'detalji' sub-tab
+- Delete action now inline in detail view (edit + delete buttons at bottom)
+- Removed all 6 dialog render blocks (~310 lines removed from after </Tabs>)
+- No @/components/ui/dialog imported (compliant with rule 7)
+- No files deleted
+- 0 TypeScript compilation errors in IoT file
+- 0 ESLint errors in IoT file
+
+Stage Summary:
+- IoT module converted from 8-tab + 6-dialog pattern to 8-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Sensor detail view now inline with edit/delete actions
+- All existing functionality preserved
+
+---
+Task ID: 2-b
+Agent: dialog-converter
+Task: Convert PLM module from Dialog to inline tabs (Pregled/Dodaj/Uredi pattern)
+
+Work Log:
+- Identified 6 dialog state variables in PLM/index.tsx:
+  - productDialogOpen → new product form
+  - productDetailOpen → product detail view
+  - revisionDialogOpen → new revision form
+  - docDialogOpen → new document form
+  - ecrDialogOpen → new ECR form
+  - ecoDialogOpen → ECO detail view
+- Replaced 6 dialog boolean states with 4 sub-tab states:
+  - productSubTab: 'pregled' | 'dodaj' | 'uredi'
+  - revisionSubTab: 'pregled' | 'dodaj'
+  - docSubTab: 'pregled' | 'dodaj'
+  - ecrSubTab: 'pregled' | 'dodaj' | 'uredi'
+- Restructured 4 main tabs with inner sub-tabs:
+  - Products tab: Pregled (table+filters) / Dodaj (create form) / Uredi (detail view with version history + linked docs)
+  - Revisions tab: Pregled (table+status summary) / Dodaj (create form)
+  - Documents tab: Pregled (table+filters) / Dodaj (create form with file upload)
+  - ECR/ECO tab: Pregled (ECR list+ECO list) / Dodaj (create ECR form) / Uredi (ECO detail with approval chain)
+- Updated all dialog open calls to tab navigation (e.g. setProductDialogOpen(true) → setProductSubTab('dodaj'))
+- Updated all dialog close calls to return to 'pregled' sub-tab
+- Updated table row clicks: product row → setProductSubTab('uredi'), ECO detail → setEcrSubTab('uredi')
+- Header buttons now conditionally show only on pregled sub-tab
+- Removed all 6 dialog render blocks (lines 1602-1897 of original file, ~295 lines)
+- Removed unused ArrowLeft import
+- No @/components/ui/dialog imported (compliant with rule 7)
+- 0 TypeScript compilation errors
+
+Stage Summary:
+- PLM module converted from 6-tab + 6-dialog pattern to 6-tab with inner sub-tabs (Pregled/Dodaj/Uredi)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- File reduced from 1580 lines to 1602 lines (net +22 due to sub-tab wrappers, despite removing ~295 lines of dialog code)
+- All existing functionality preserved
+
+---
 Task ID: 3-1
 Agent: Main (direct)
 Task: Split 3 modules into smaller files (types.ts, data.ts, components.tsx, index.tsx)
@@ -1730,3 +2508,676 @@ Changes made:
 6. **Tuition/components.tsx** — Removed Dialog import (1 line), exported `TuitionDetailDialog` function (~44 lines), exported `TuitionEditDialog` function (~34 lines)
 
 Total: ~1,254 lines of Dialog-related code removed across 6 files. No non-Dialog code was affected. AlertDialog in WebhookManager was intentionally preserved.
+
+---
+Task ID: 2-e
+Agent: dialog-converter
+Task: Convert Maintenance module from Dialog to inline tabs
+
+Work Log:
+- Analyzed Maintenance/index.tsx (1468 lines) — identified 6 dialog-open state patterns:
+  1. `dialogOpen` — Create order dialog (lines 1092-1167)
+  2. `detailOpen` — Order detail dialog (lines 1170-1259)
+  3. `equipDialogOpen` — Equipment add/edit dialog (lines 1262-1320)
+  4. `equipDetailOpen` — Equipment detail dialog (lines 1323-1368)
+  5. `planDialogOpen` — Plan add dialog (lines 1371-1413)
+  6. `partDialogOpen` — Part add dialog (lines 1416-1465)
+
+- Replaced 6 dialog state variables with 4 sub-tab state variables:
+  - `ordersSubTab` ('pregled' | 'dodaj') — replaces `dialogOpen` + `detailOpen`
+  - `equipmentSubTab` ('pregled' | 'dodaj') — replaces `equipDialogOpen` + `equipDetailOpen`
+  - `plansSubTab` ('pregled' | 'dodaj') — replaces `planDialogOpen`
+  - `partsSubTab` ('pregled' | 'dodaj') — replaces `partDialogOpen`
+
+- Converted 4 tab sections to use nested sub-tabs (Pregled/Dodaj):
+  - **Orders tab**: Pregled (inline order detail + filters + table), Dodaj (create order form)
+  - **Equipment tab**: Pregled (inline equipment detail + filters + table), Dodaj (add/edit equipment form)
+  - **Plans tab**: Pregled (overdue badge + table), Dodaj (add plan form)
+  - **Parts tab**: Pregled (table with low stock badges), Dodaj (add part form)
+
+- Detail views now render inline within Pregled sub-tab:
+  - Order detail: full order info, status advance button, duplicate button, close (X) button
+  - Equipment detail: equipment info grid, maintenance history, close (X) button
+
+- Updated all navigation triggers:
+  - Header "New Order" button → `setActiveTab('orders'); setOrdersSubTab('dodaj')`
+  - Orders "create first" button → `setOrdersSubTab('dodaj')`
+  - Equipment "add" button → `setEquipmentSubTab('dodaj')`
+  - Equipment edit button → `setEquipForm(...); setEquipmentSubTab('dodaj')`
+  - Plans "add" button → `setPlansSubTab('dodaj')`
+  - Parts "add" button → `setPartsSubTab('dodaj')`
+  - Order eye button → `setSelected(o); setOrdersSubTab('pregled')`
+  - Equipment eye button → `setSelectedEquip(eq); setEquipmentSubTab('pregled')`
+
+- Updated all close/save handlers:
+  - `handleCreateOrder` success → `setOrdersSubTab('pregled')` instead of `setDialogOpen(false)`
+  - `handleDuplicateOrder` success → `setSelected(null)` instead of `setDetailOpen(false)`
+  - Cancel buttons → switch back to 'pregled' sub-tab
+  - Plan create → `setPlansSubTab('pregled')`
+
+- Removed ALL dialog render blocks (lines 1091-1465 of original, ~374 lines)
+- Removed unused imports: ArrowLeft, Settings, Users, Hammer, ShieldCheck, Archive, Filter, Timer
+- Added X icon import for detail close buttons
+- No @/components/ui/dialog import (was not present)
+- Overview and Analytics tabs unchanged (no dialogs)
+
+Stage Summary:
+- Maintenance module converted from 6-tab + 6-dialog pattern to 6-tab with 4 inner sub-tabs
+- All popup dialogs eliminated in favor of Pregled/Dodaj inline navigation
+- Detail views shown inline within Pregled sub-tab (closeable with X button)
+- ~374 lines of dialog render code removed, replaced with ~120 lines of sub-tab wrappers
+- Net result: file reduced from 1468 to 1524 lines (slight increase due to sub-tab wrappers, but all popups eliminated)
+- 0 dialog state variables remain
+
+---
+Task ID: 2-d
+Agent: dialog-converter
+Task: Convert SmsMarketing module from Dialog to inline tabs (Pregled/Dodaj/Uredi pattern)
+
+Work Log:
+- Identified 5 dialog state variables in SmsMarketing/index.tsx:
+  - campaignDialogOpen → new campaign form
+  - templateDialogOpen → new template form
+  - contactDialogOpen → new contact form
+  - keywordDialogOpen → new keyword form
+  - detailOpen → campaign detail view
+- Replaced 5 dialog boolean states with 4 sub-tab states:
+  - campaignsSubTab: 'pregled' | 'dodaj' | 'uredi'
+  - templatesSubTab: 'pregled' | 'dodaj'
+  - contactsSubTab: 'pregled' | 'dodaj'
+  - keywordsSubTab: 'pregled' | 'dodaj'
+- Restructured 4 main tabs with inner sub-tabs:
+  - Campaigns tab: Pregled (filters+table+drafts/scheduled lists) / Dodaj (create campaign form with SMS char counter) / Uredi (campaign detail with delivery stats)
+  - Templates tab: Pregled (usage chart+template list) / Dodaj (create template form with variable detection)
+  - Contacts tab: Pregled (stats+groups+table) / Dodaj (create contact form with group selector)
+  - Keywords tab: Pregled (distribution chart+keyword list with toggle) / Dodaj (create keyword form with auto-reply toggle)
+- Updated all dialog open calls to tab navigation:
+  - setCampaignDialogOpen(true) → setActiveTab('campaigns') + setCampaignsSubTab('dodaj')
+  - setDetailOpen(true) → setActiveTab('campaigns') + setCampaignsSubTab('uredi')
+  - setTemplateDialogOpen(true) → setTemplatesSubTab('dodaj')
+  - setContactDialogOpen(true) → setContactsSubTab('dodaj')
+  - setKeywordDialogOpen(true) → setKeywordsSubTab('dodaj')
+- Updated all dialog close calls to return to 'pregled' sub-tab
+- Removed all 5 dialog render blocks (~103 lines) after </Tabs>
+- No @/components/ui/dialog imported (compliant with rule 7)
+- No files deleted (compliant with rule 6)
+- 0 TypeScript compilation errors in SmsMarketing module
+
+Stage Summary:
+- SmsMarketing module converted from 7-tab + 5-dialog pattern to 7-tab with inner sub-tabs (Pregled/Dodaj/Uredi)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- File reduced from 1002 lines to 1043 lines (net +41 due to sub-tab wrappers, despite removing ~103 lines of dialog code)
+- All existing functionality preserved (campaign CRUD, template management, contact management, keyword management, SMS log viewing)
+
+
+---
+Task ID: 2-w
+Agent: dialog-converter
+Task: Convert Shipping module from Dialog to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Identified 3 dialog state variables in Shipping/index.tsx:
+  - orderDialogOpen → new order form (now Dodaj sub-tab in Orders)
+  - carrierDialogOpen → new carrier form (now Dodaj sub-tab in Carriers)
+  - trackingDialogOpen → tracking detail view (now Detalji sub-tab in Tracking)
+- Replaced 3 dialog boolean states with 3 sub-tab states:
+  - ordersSubTab: 'pregled' | 'dodaj'
+  - carriersSubTab: 'pregled' | 'dodaj'
+  - trackingSubTab: 'pregled' | 'detalji'
+- Added handleTabChange wrapper to reset sub-tab to 'pregled' when switching main tabs
+- Restructured 3 main tabs with inner sub-tabs:
+  - Orders tab: Pregled (filters + table with actions) / Dodaj (create order form with carrier/partner/dimensions/costs/addresses/notes)
+  - Carriers tab: Pregled (carrier cards grid with details + delete) / Dodaj (create carrier form with name/code/type/contact/pricing)
+  - Tracking tab: Pregled (search + order cards with route visualization) / Detalji (tracking detail with status/route/quick actions)
+- Updated all dialog open calls to tab navigation:
+  - setOrderDialogOpen(true) → setActiveTab('orders') + setOrdersSubTab('dodaj')
+  - setCarrierDialogOpen(true) → setActiveTab('carriers') + setCarriersSubTab('dodaj')
+  - openTracking(o) → setActiveTab('tracking') + setTrackingSubTab('detalji')
+- Updated all dialog close calls to return to 'pregled' sub-tab:
+  - setOrderDialogOpen(false) → setOrdersSubTab('pregled')
+  - setCarrierDialogOpen(false) → setCarriersSubTab('pregled')
+  - setTrackingDialogOpen(false) → setTrackingSubTab('pregled')
+- Header "Nova pošiljka" button now navigates to Orders Dodaj sub-tab
+- "Kreiraj prvu pošiljku" empty state button now navigates to Dodaj sub-tab
+- Removed all 3 dialog render blocks (~300 lines removed from after </Tabs>)
+- File reduced from 1034 to 1074 lines (net +40 due to sub-tab wrappers, despite removing ~300 lines of dialog code)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- All existing functionality preserved
+
+Stage Summary:
+- Shipping module converted from 4-tab + 3-dialog pattern to 4-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Tracking detail view now inline with quick action buttons
+---
+Task ID: 2-s
+Agent: dialog-converter
+Task: Convert WorkOrders module from Dialog to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Identified 2 dialog state variables in WorkOrders/index.tsx:
+  - formOpen → work order create/edit form (WorkOrderFormDialog)
+  - taskFormOpen → task create/edit form (TaskFormDialog)
+  - detailOrder → work order detail view (WorkOrderDetailDialog)
+- Replaced 2 dialog boolean states with 2 sub-tab states:
+  - naloziSubTab: 'pregled' | 'dodaj' | 'detalji'
+  - zadaciSubTab: 'pregled' | 'dodaj'
+- Added handleMainTabChange wrapper to reset both sub-tabs to 'pregled' when switching main tabs
+- Added handleViewOrder helper that sets detailOrder + navigates to nalozi/detalji sub-tab
+- Restructured 2 main tabs with inner sub-tabs:
+  - Radni Nalozi tab: Pregled (stats+filters+table/kanban) / Dodaj (inline WorkOrderFormDialog) / Detalji (inline WorkOrderDetailDialog, shown only when detailOrder is set)
+  - Zadaci tab: Pregled (task list with filters+stats) / Dodaj (inline TaskFormDialog)
+- Updated all dialog open calls to tab navigation:
+  - setFormOpen(true) → setActiveTab('nalozi') + setNaloziSubTab('dodaj')
+  - setTaskFormOpen(true) → setActiveTab('zadaci') + setZadaciSubTab('dodaj')
+  - setDetailOrder(order) → setActiveTab('nalozi') + setNaloziSubTab('detalji')
+- Updated all dialog close calls to return to 'pregled' sub-tab:
+  - setFormOpen(false) → setNaloziSubTab('pregled')
+  - setTaskFormOpen(false) → setZadaciSubTab('pregled')
+- Updated planner card click: onClick={() => setDetailOrder(order)} → onClick={() => handleViewOrder(order)}
+- Added "Назад" (Back) ghost button on non-pregled sub-tabs
+- Removed 3 dialog render blocks (WorkOrderFormDialog, WorkOrderDetailDialog, TaskFormDialog) from after </Tabs>
+- Kept 2 AlertDialog blocks for delete confirmations (work order + task)
+- AlertDialog import and usage preserved (lines 44-52, 1094-1137)
+- No @/components/ui/dialog imported (compliant with rule 7)
+- No files deleted
+- 0 new TypeScript errors in WorkOrders/index.tsx
+- Dev server compiles successfully (200 OK)
+
+Stage Summary:
+- WorkOrders module converted from 4-tab + 3-dialog pattern to 4-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All create/edit/detail forms now inline within corresponding tabs instead of popup dialogs
+- Delete confirmations remain as AlertDialogs
+- All existing functionality preserved
+
+---
+Task ID: 2-v
+Agent: dialog-converter
+Task: Convert CashRegister module from dialog pattern to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Identified 4 dialog state variables in CashRegister/index.tsx:
+  - viewTxDialog (CashTransaction | null) → transaction detail view
+  - productDialogOpen (boolean) → new/edit product form
+  - closeShiftDialog (boolean) → close shift form
+  - txDialogOpen (boolean) → new/edit transaction form
+- Note: These were already rendered as inline Cards (not Dialog components), but appeared outside the Tabs as conditional blocks
+- Replaced 4 dialog states with 3 sub-tab states + 1 active tab state:
+  - activeTab: 'kasa' | 'transakcije' | 'artikli' | 'zatvaranje' (main tab control)
+  - txSubTab: 'pregled' | 'dodaj' | 'detalji'
+  - artikliSubTab: 'pregled' | 'dodaj'
+  - zatvaranjeSubTab: 'pregled' | 'zatvori'
+- Renamed viewTxDialog → viewTx (data storage only)
+- Added handleMainTabChange wrapper to reset all sub-tabs to 'pregled' when switching main tabs
+- Restructured 3 main tabs with inner sub-tabs:
+  - Трансакције tab: Преглед (table+filters) / Додај (create/edit transaction form) / Детаљи (transaction detail with edit button)
+  - Артикли tab: Преглед (product table+search+filter) / Додај (create/edit product form)
+  - Затварање tab: Преглед (shift status+daily summary) / Затвори смееу (close shift form with difference calc)
+- Updated all dialog open calls to sub-tab navigation:
+  - setTxDialogOpen(true) → setTxSubTab('dodaj')
+  - setTxDialogOpen(false) → setTxSubTab('pregled')
+  - setViewTxDialog(tx) → setViewTx(tx) + setTxSubTab('detalji')
+  - setViewTxDialog(null) → setTxSubTab('pregled')
+  - setProductDialogOpen(true) → setArtikliSubTab('dodaj')
+  - setProductDialogOpen(false) → setArtikliSubTab('pregled')
+  - setCloseShiftDialog(true) → setActiveTab('zatvaranje') + setZatvaranjeSubTab('zatvori')
+  - setCloseShiftDialog(false) → setZatvaranjeSubTab('pregled')
+- Header "Затвори смееу" button now navigates to zatvaranje tab + zatvori sub-tab
+- Moved all 4 inline form blocks (lines 1476-1905 of original) into their respective tab sub-tabs
+- Replaced ArrowLeft buttons with ChevronLeft "Назад" buttons in sub-tab headers
+- Removed ArrowLeft from imports, added ChevronLeft
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted
+- 0 TypeScript compilation errors for CashRegister
+- 0 ESLint errors for CashRegister
+
+Stage Summary:
+- CashRegister module converted from 4-tab + 4-inline-dialog-card pattern to 4-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tab sub-tabs instead of floating after the Tabs component
+- File reduced from 1915 lines to 1986 lines (net +71 due to sub-tab wrappers despite removing ~430 lines of dialog code)
+- All existing functionality preserved
+
+---
+Task ID: 3-f
+Agent: dialog-converter
+Task: Convert Inventory module from Dialog to inline tabs (Pregled/Dodaj/Uredi pattern)
+
+Work Log:
+- Analyzed Inventory/index.tsx (1942 lines) for dialog patterns
+- Found that ALL dialog state variables have already been converted:
+  - LokacijeTab: activeTab: 'pregled' | 'dodaj' | 'uredi' (no dialog states)
+  - ArtikliTab: activeTab: 'pregled' | 'dodaj' | 'uredi' (no dialog states)
+  - KretanjaTab: activeTab: 'pregled' | 'dodaj' (no dialog states)
+  - OtpremniceTab: activeTab: 'pregled' | 'dodaj' | 'uredi' (no dialog states)
+  - CenovniciTab: activeTab: 'pregled' | 'dodaj' | 'uredi' (no dialog states)
+- Confirmed 0 occurrences of `Dialog`, `dialogOpen`, `DialogOpen`, `@/components/ui/dialog` in the file
+- Confirmed 3 AlertDialog components present (all for delete confirmation — KRET, KEEPING per instructions):
+  - KretanjaTab delete confirmation (line 1023)
+  - OtpremniceTab delete confirmation (line 1513)
+  - CenovniciTab delete confirmation (line 1902)
+- Confirmed all 5 tab components already have inner `<Tabs>` with Pregled/Dodaj/Uredi sub-tabs
+- Confirmed no dialog render blocks exist after any main `</Tabs>` or at end of file
+- Confirmed 0 TypeScript issues — file is clean
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted
+- File is fully compliant with all conversion rules
+
+Stage Summary:
+- Inventory module was ALREADY converted from dialog pattern to inline tabs (likely during initial creation or a prior pass)
+- No changes were needed — all conversion rules already satisfied
+- AlertDialog components for delete confirmation properly preserved
+- File size: 1942 lines (unchanged)
+- 0 TypeScript errors, file is clean
+
+---
+Task ID: 3-e
+Agent: dialog-converter
+Task: Convert PermissionsEditor module from Dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+- Identified 2 dialog state variables in PermissionsEditor/index.tsx:
+  - editDialogOpen → edit role form with read/edit mode toggle (viewMode)
+  - newDialogOpen → new role creation form
+  - deleteTarget → AlertDialog for delete confirmation (KEPT)
+- Note: Module did NOT import @/components/ui/dialog — dialogs were already rendered as inline Card components controlled by boolean states
+- Replaced 2 dialog boolean states with 1 sub-tab state:
+  - subTab: 'pregled' | 'dodaj' | 'detalji'
+- Kept viewMode: 'list' | 'edit' for read/edit toggle within detalji sub-tab
+- Added resetNewForm helper to consolidate new role form field resets
+- Added handleSubTabChange wrapper to reset edit state and new form when returning to pregled
+- Restructured single-view component with 3 inner sub-tabs:
+  - Pregled tab: header (with Nova uloga button) + roles grid with progress bars and user counts
+  - Dodaj tab: new role form with clone-from-existing, name, displayName, description, permission matrix
+  - Detalji tab: view/edit role form with read-only permission matrix (list mode) and editable matrix (edit mode)
+- Updated all dialog open calls to tab navigation:
+  - setNewDialogOpen(true) → setSubTab('dodaj') (header button)
+  - setEditDialogOpen(true) → setSubTab('detalji') (openEdit function)
+- Updated all dialog close calls to return to 'pregled' sub-tab:
+  - setEditDialogOpen(false) → setSubTab('pregled') + setEditRole(null) (handleSaveEdit, cancel, close)
+  - setNewDialogOpen(false) → setSubTab('pregled') + resetNewForm() (handleCreate, cancel)
+- Detalji sub-tab trigger conditionally shown only when editRole is set
+- ArrowLeft back buttons in Dodaj and Detalji sub-tabs navigate back to pregled
+- Removed 2 dialog-controlled Card render blocks (edit role + new role)
+- Added Tabs, TabsContent, TabsList, TabsTrigger imports
+- AlertDialog import and usage preserved (delete confirmation with user count warning)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- 0 occurrences of editDialogOpen, newDialogOpen, setEditDialogOpen, setNewDialogOpen, @/components/ui/dialog in converted file
+- File size: 870 → 911 lines (net +41 due to Tabs wrapper + handleSubTabChange + resetNewForm helpers)
+
+Stage Summary:
+- PermissionsEditor module converted from single-view + 2-popup-dialog pattern to single-view with 3 inner sub-tabs (Pregled/Dodaj/Detalji)
+- All forms now inline within corresponding tabs instead of boolean-controlled popup Cards
+- Edit role view supports read-only (list mode) and editable (edit mode) within Detalji sub-tab
+- AlertDialog for delete confirmation fully preserved
+- All existing functionality preserved
+
+
+---
+Task ID: 3-g
+Agent: dialog-converter
+Task: Convert Protocol module from viewMode pattern to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Analyzed Protocol/index.tsx (674 lines) for dialog/popup patterns
+- Found NO xxxDialogOpen states and NO @/components/ui/dialog import
+- Found viewMode: 'list' | 'form' state controlling conditional rendering (not a dialog, but a popup-like toggle)
+- AlertDialog for delete confirmation already properly used (lines 647-672) — KEPT
+- Replaced viewMode state with subTab: 'pregled' | 'dodaj' state
+- Restructured Card with inner sub-tabs:
+  - Pregled sub-tab: direction tabs (ulaz/izlaz/sve) with filters + protocol entries table
+  - Dodaj sub-tab: create/edit protocol entry form (direction, doc type, sender/recipient, subject, description, status, priority, due date, responsible, notes)
+- Updated all viewMode navigation calls:
+  - openCreate: setViewMode('form') → setSubTab('dodaj')
+  - openEdit: setViewMode('form') → setSubTab('dodaj')
+  - handleCancel: setViewMode('list') → setSubTab('pregled')
+  - handleSubmit (via handleCancel): setViewMode('list') → setSubTab('pregled')
+- CardHeader now always shows "Registar dopisa" title (not conditional on viewMode)
+- Subtitle dynamically shows record count on Pregled vs "Izmena dopisa" / "Kreiranje novog dopisa" on Dodaj
+- "Novi dopis" button conditionally renders only on Pregled sub-tab
+- Dodaj tab trigger label dynamically shows "Uredi" when editing vs "Dodaj" when creating
+- Removed ArrowLeft import (was only used in form back button, now replaced by tab navigation)
+- AlertDialog import and usage fully preserved (delete confirmation)
+- No @/components/ui/dialog imported (compliant with rule 6)
+- No files deleted (compliant with rule 5)
+- 0 occurrences of viewMode, setViewMode, ArrowLeft in converted file
+- 0 occurrences of Dialog, dialogOpen, @/components/ui/dialog in converted file
+
+Stage Summary:
+- Protocol module converted from viewMode-toggle pattern to inline tabs (Pregled/Dodaj)
+- All forms now inline within Dodaj sub-tab instead of conditional viewMode swap
+- Direction tabs (ulaz/izlaz/sve) remain nested within Pregled sub-tab
+- File size: 674 → 676 lines (net +2 due to Tabs wrapper, despite removing ArrowLeft and viewMode conditional blocks)
+- All existing functionality preserved including delete confirmation AlertDialog
+
+---
+Task ID: 3-b
+Agent: dialog-converter
+Task: Batch convert 17 modules from dialog popup patterns to inline tabs (Pregled/Dodaj pattern)
+
+Work Log:
+- Identified and converted 17 module files from dialog popup patterns to inline tabs
+- All files had `xxxDialogOpen` boolean states replaced with sub-tab states (`subTab: 'pregled' | 'dodaj'`)
+- Group A (8 files with existing Pregled/Dodaj/Uredi tabs + duplicate dialog forms):
+  - Classroom, Kitchen, Lab, Measurements, Menu, MedicalRecords, Library, Homework
+  - Removed `dialogOpen` state, made edit actions navigate to existing 'dodaj' tab
+  - Removed dialog render blocks after `</Tabs>` (each file had duplicate edit form as inline Card)
+  - `setDialogOpen(true)` → `setActiveTab('dodaj')`, `setDialogOpen(false)` → `setActiveTab('pregled'); setEditItem(null)`
+- Group B (2 files without Tabs):
+  - Blueprints, Barcode
+  - Added `subTab: 'pregled' | 'dodaj'` state
+  - Wrapped existing table/list content in `<Tabs>` with Pregled/Dodaj sub-tabs
+  - Moved dialog form content into Dodaj TabsContent
+  - Added ArrowLeft back button navigation in Dodaj tab
+- Group C (2 complex files with multiple dialogs + detail views):
+  - Calendar: replaced `eventDialogOpen`, `eventDetailOpen`, `deleteConfirmOpen` with `eventSubTab: 'pregled' | 'dodaj' | 'detalji'`
+  - Cameras: replaced `cameraDialogOpen`, `cameraDetailOpen`, `deleteConfirmOpen` with `camerasSubTab: 'pregled' | 'dodaj' | 'detalji'`
+  - Wrapped list/cameras tab content with inner sub-tabs (Pregled/Dodaj/Detalji)
+  - Replaced delete confirmation dialogs with `window.confirm()` inline pattern
+  - Removed all dialog render blocks including event detail and camera detail Cards
+- Group D (5 files with non-standard tab names):
+  - CustomsDocs: Added inner sub-tabs within 'list' tab content
+  - Enrollment: Converted dialogOpen to tab navigation (setActiveTab('dodaj'))
+  - FieldService: Added inner sub-tabs within 'orders' tab content
+  - LoadingDock: Added inner sub-tabs within 'schedule' tab content
+  - MarketingAutomation: Added inner sub-tabs within 'workflows' tab content
+
+Verification:
+- 0 occurrences of `dialogOpen`, `DialogOpen` across all 17 converted files
+- 0 occurrences of `@/components/ui/dialog` import across all 17 files
+- No files deleted
+- Total lines: 6501 → 5942 (net -559 lines, dialog blocks removed outweighed sub-tab wrappers added)
+- All existing functionality preserved
+
+Stage Summary:
+- 17 modules batch converted from dialog popup pattern to inline tabs (Pregled/Dodaj)
+- All forms now inline within corresponding tabs instead of popup dialogs
+- Sub-tab triggers conditionally shown only when active (Dodaj/Detalji tabs appear when navigated to)
+- ArrowLeft back buttons added for sub-tab navigation where appropriate
+- Delete confirmations converted to inline window.confirm() pattern
+
+---
+Task ID: 4-e
+Agent: dialog-converter
+Task: Convert Recruitment + RecurringInvoices + Referrals + Reservations + Routes modules from dialog to inline tabs (Pregled/Dodaj/Detalji pattern)
+
+Work Log:
+
+=== Recruitment/index.tsx ===
+- Identified 2 dialog state variables:
+  - dialogOpen → new job posting form
+  - detailOpen → job posting detail view
+- Replaced with 1 sub-tab state: jobsSubTab: 'pregled' | 'dodaj' | 'detalji'
+- Main Tabs onValueChange now resets jobsSubTab to 'pregled' and clears selected
+- Restructured Oglasi tab with inner sub-tabs:
+  - Pregled: search + filter + jobs table with Eye/Status/Delete actions
+  - Dodaj: create job form (title, department, location, type, salary, description, requirements)
+  - Detalji: job detail view (status, department, location, type, candidates, salary range, description, requirements)
+- Updated all references:
+  - Header "Novi oglas" → setActiveTab('jobs') + setJobsSubTab('dodaj')
+  - Empty state "Kreiraj oglas" → setJobsSubTab('dodaj')
+  - Eye button → setSelected(j) + setJobsSubTab('detalji')
+  - handleCreate → setJobsSubTab('pregled')
+  - Cancel button → setJobsSubTab('pregled')
+  - Back button in Detalji → setJobsSubTab('pregled') + setSelected(null)
+- Removed both dialog render blocks (~87 lines from after </Tabs>)
+- Detalji trigger disabled when no item selected
+- File size: 400 → 410 lines (net +10)
+- 0 occurrences of dialogOpen, detailOpen, setDialogOpen, setDetailOpen remaining
+
+=== RecurringInvoices/index.tsx ===
+- Identified 1 dialog state variable:
+  - dialogOpen → create/edit recurring invoice form (large form with line items, partner, frequency, dates)
+- Replaced with subTab: 'pregled' | 'dodaj'
+- Added main Tabs wrapper with Pregled/Dodaj sub-tabs
+- Moved header "new" button to show only on pregled sub-tab
+- Restructured with inner sub-tabs:
+  - Pregled: stats cards (4 cards) + recurring invoice list (animated cards with toggle, generate, edit, delete)
+  - Dodaj: create/edit form (name, partner, frequency, dates, line items with product select, totals, notes)
+- Updated all references:
+  - handleOpenNew → setSubTab('dodaj') (resets form, sets default dates)
+  - handleOpenEdit → setSubTab('dodaj') (fills form from item, sets editing)
+  - handleSubmit success → setSubTab('pregled') + resetForm()
+  - Cancel button → setSubTab('pregled') + resetForm()
+  - Back button → setSubTab('pregled') + resetForm()
+  - Empty state "new" → handleOpenNew()
+- Dodaj trigger label dynamically shows "Uredi" when editing, "Dodaj" when creating
+- Removed dialogOpen render block (~210 lines from after main content)
+- Added Tabs, TabsContent, TabsList, TabsTrigger imports
+- File size: 821 → 832 lines (net +11)
+- 0 occurrences of dialogOpen, setDialogOpen remaining
+
+=== Referrals/index.tsx ===
+- Identified 2 dialog state variables:
+  - dialogOpen → new referral form
+  - detailOpen → referral detail view
+- Replaced with 1 sub-tab state: referralsSubTab: 'pregled' | 'dodaj' | 'detalji'
+- Main Tabs onValueChange now resets referralsSubTab to 'pregled' and clears selected
+- Restructured Preporuke tab with inner sub-tabs:
+  - Pregled: search + filter + referrals table with Eye/Status/Delete actions
+  - Dodaj: create referral form (referrer, referee, email, phone, source, reward, notes)
+  - Detalji: referral detail (names, status, source, contact info, reward, date, notes)
+- Updated all references:
+  - Header "Nova preporuka" → setActiveTab('referrals') + setReferralsSubTab('dodaj')
+  - Empty state "Kreiraj preporuku" → setReferralsSubTab('dodaj')
+  - Eye button → setSelected(r) + setReferralsSubTab('detalji')
+  - handleCreate → setReferralsSubTab('pregled')
+  - Cancel button → setReferralsSubTab('pregled')
+  - Back button in Detalji → setReferralsSubTab('pregled') + setSelected(null)
+- Removed both dialog render blocks (~82 lines from after </Tabs>)
+- Detalji trigger disabled when no item selected
+- File size: 396 → 406 lines (net +10)
+- 0 occurrences of dialogOpen, detailOpen, setDialogOpen, setDetailOpen remaining
+
+=== Reservations/index.tsx ===
+- Identified 2 dialog/popup state variables:
+  - dialogOpen → create/edit reservation form (used by openCreate and openEdit)
+  - detailId → reservation detail view (card after Tabs)
+- Already had main Tabs (pregled, dodaj, uredi) but with leftover dialogOpen pattern
+- Removed dialogOpen state; kept existing activeTab + editItem + detailId states
+- Updated openCreate → setActiveTab('dodaj') (navigates to existing dodaj tab)
+- Updated openEdit → setActiveTab('uredi') (navigates to uredi tab, shows inline edit form)
+- Updated handleSave → setEditItem(null) + setActiveTab('pregled')
+- Moved detail view inline into pregled tab (conditionally shown when detailId is set, replaces table)
+- Moved edit form inline into uredi tab (conditionally shown when editItem is set, replaces list)
+- Removed both dialog render blocks (~85 lines from after </Tabs>)
+- Header "Nova rezervacija" button conditionally shown only on pregled (when not viewing detail)
+- Empty state in pregled → setActiveTab('dodaj')
+- Pencil button in pregled table → openEdit(item) (navigates to uredi tab)
+- Eye button in pregled table → setDetailId(item.id) (shows inline detail in pregled)
+- Cancel button in edit form → setEditItem(null) (returns to uredi list)
+- Back button in detail view → setDetailId(null) (returns to pregled table)
+- Main Tabs onValueChange resets editItem and detailId
+- File size: 449 → 448 lines (net -1)
+- 0 occurrences of dialogOpen, setDialogOpen remaining
+
+=== Routes/index.tsx ===
+- Identified 2 dialog/popup state variables:
+  - dialogOpen → create/edit route form (after Tabs)
+  - detailId → route detail view with stops visualization (after Tabs)
+- Replaced with listSubTab: 'pregled' | 'dodaj' | 'detalji' + selected: RouteItem | null
+- Removed dialogOpen and detailId states
+- Added inner sub-tabs within the 'list' main tab:
+  - Pregled: search + status/priority filters + routes table with Eye/Edit/Delete actions
+  - Dodaj: create/edit route form (code, priority, name, origin, destination, driver, vehicle, distance, time, fuel, tolls, notes)
+  - Detalji: route detail with stops visualization, progress bar, costs, notes
+- Updated all references:
+  - handleOpenCreate → setListSubTab('dodaj') + resetForm
+  - handleOpenEdit → setListSubTab('dodaj') + fillFormFromItem
+  - handleSave success → setListSubTab('pregled') + setEditItem(null)
+  - Eye button → setSelected(item) + setListSubTab('detalji')
+  - Table row click → setSelected(item) + setListSubTab('detalji')
+  - Cancel button → setListSubTab('pregled') + setEditItem(null)
+  - Back button in Detalji → setListSubTab('pregled') + setSelected(null)
+  - Header "Nova ruta" conditionally shown only on list pregled
+- Removed both render blocks after main Tabs (~103 lines)
+- Dodaj trigger label dynamically shows "Uredi" when editing, "Dodaj" when creating
+- Detalji trigger disabled when no item selected
+- Main Tabs onValueChange resets listSubTab, selected, editItem
+- File size: 458 → 467 lines (net +9)
+- 0 occurrences of dialogOpen, setDialogOpen, detailId remaining
+
+Stage Summary:
+- 5 modules converted from dialog popup pattern to inline tabs (Pregled/Dodaj/Detalji)
+- Recruitment: 2-tab + 2-dialog → 2-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- RecurringInvoices: single-view + 1-dialog → single-view with Pregled/Dodaj sub-tabs
+- Referrals: 2-tab + 2-dialog → 2-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- Reservations: 3-tab + 2-popup → 3-tab with inline detail/edit (no external popups)
+- Routes: 2-tab + 2-popup → 2-tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- Total: ~567 lines of dialog/popup render blocks removed, replaced with inline sub-tab content
+- All existing functionality preserved
+- No @/components/ui/dialog imported in any file
+- No files deleted
+- 0 dialog-related references remaining across all 5 files
+
+---
+Task ID: 4-g
+Agent: dialog-converter
+Task: Convert Reports+Packaging+CMS+CompanySwitcher+SocialMedia modules from Dialog to inline tabs
+
+Work Log:
+- Identified dialog state variables across 5 files:
+  - Reports/index.tsx: customDialogOpen (1 ref) → save report form within Custom tab
+  - Packaging/index.tsx: dialogOpen + detailId (6 refs) → create/edit form + detail view
+  - CMS/index.tsx: TypesTab dialogOpen (6 refs) + MediaTab uploadOpen (6 refs) → content type create + media upload
+  - CompanySwitcher/index.tsx: dialogOpen (6 refs) → new company creation form
+  - SocialMedia/index.tsx: dialogOpen + detailOpen (4 refs, detailOpen was undeclared bug) → create post + post detail
+- Replaced dialog boolean states with sub-tab states:
+  - Reports: customSubTab: 'pregled' | 'dodaj' (save report form inline within Custom tab)
+  - Packaging: subTab: 'pregled' | 'dodaj' | 'detalji' (main view + create form + detail view)
+  - CMS TypesTab: subTab: 'pregled' | 'dodaj' (content types list + create type form)
+  - CMS MediaTab: subTab: 'pregled' | 'dodaj' (media grid + upload form)
+  - CompanySwitcher: subTab: 'list' | 'dodaj' (company list dropdown + create form)
+  - SocialMedia: postsSubTab extended to 'pregled'|'dodaj'|'detalji' (posts list + create form + post detail)
+- Updated all setXxxDialogOpen calls to sub-tab navigation
+- Fixed pre-existing bug in SocialMedia: detailOpen/setDetailOpen referenced but never declared as state
+- Moved form content from conditional render blocks into inline sub-tab sections
+- Added sub-tab navigation bars with Pregled/Dodaj/Detalji buttons + ArrowLeft back buttons
+- Removed all dialog render blocks after </Tabs> or at end of components
+- Removed unused dialog state variables
+- No @/components/ui/dialog imported in any file (compliant with rule 8)
+- No files deleted (compliant with rule 7)
+- 0 occurrences of dialogOpen, customDialogOpen, uploadOpen, detailOpen, setDetailOpen across all 5 files
+
+Stage Summary:
+- 5 modules converted from dialog/popup patterns to inline tab patterns (Pregled/Dodaj/Detalji)
+- Reports: save report form now inline within Custom tab (sub-tab toggle)
+- Packaging: table + detail view + create form now inline with sub-tab navigation
+- CMS: TypesTab and MediaTab both have Pregled/Dodaj sub-tabs with navigation
+- CompanySwitcher: new company form triggered from dropdown, shown inline with subTab state
+- SocialMedia: posts tab extended with Dodaj and Detalji sub-tabs inline, fixed missing detailOpen state
+- All existing functionality preserved
+
+---
+Task ID: 4-f
+Agent: dialog-converter
+Task: Convert Signatures + Support + Timetable + Tuition + Utilities modules from dialog to inline tabs
+
+Work Log:
+- Identified dialog patterns in 5 module files:
+
+=== Signatures/index.tsx (2 dialog states) ===
+- Removed: dialogOpen (create form), detailOpen (detail view)
+- Added: requestsSubTab state ('pregled' | 'dodaj' | 'detalji')
+- Restructured "Zahtevi" tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- Pregled: search + filter + requests table with status actions
+- Dodaj: create signing request form (title, type, priority, signer, notes)
+- Detalji: request detail view with status, dates, notes
+- Updated all references:
+  - setDialogOpen(true) → setActiveTab('requests') + setRequestsSubTab('dodaj') (header + empty state)
+  - setDialogOpen(false) → setRequestsSubTab('pregled') (handleCreate + cancel buttons)
+  - setDetailOpen(true) → setSelected(r) + setRequestsSubTab('detalji') (Eye button)
+  - setDetailOpen(false) → setRequestsSubTab('pregled') (back button)
+- Added handleTabChange wrapper to reset requestsSubTab when switching main tabs
+- Removed 2 dialog render blocks after </Tabs> (~78 lines)
+- 0 occurrences of dialogOpen, detailOpen, setDialogOpen, setDetailOpen remaining
+
+=== Support/index.tsx (2 dialog states) ===
+- Removed: dialogOpen (create ticket), detailOpen (ticket detail)
+- Added: ticketsSubTab state ('pregled' | 'dodaj' | 'detalji')
+- Restructured "Tiketi" tab with inner sub-tabs (Pregled/Dodaj/Detalji)
+- Pregled: search + filter + tickets table with status actions
+- Dodaj: create ticket form (subject, client, category, priority, assigned, description)
+- Detalji: ticket detail view with number, status, dates, description
+- Updated all references:
+  - setDialogOpen(true) → setActiveTab('tickets') + setTicketsSubTab('dodaj') (header + empty state)
+  - setDialogOpen(false) → setTicketsSubTab('pregled') (handleCreate + cancel button)
+  - setDetailOpen(true) → setSelected(tk) + setTicketsSubTab('detalji') (Eye button)
+  - setDetailOpen(false) → setTicketsSubTab('pregled') (back button)
+- Added handleTabChange wrapper to reset ticketsSubTab when switching main tabs
+- Removed 2 dialog render blocks after </Tabs> (~69 lines)
+- 0 occurrences of dialogOpen, detailOpen, setDialogOpen, setDetailOpen remaining
+
+=== Timetable/index.tsx (1 dialog state + 1 detail block) ===
+- Already had main tabs: pregled, dodaj, uredi
+- Removed: dialogOpen state (separate create/edit form rendered after </Tabs>)
+- Kept: detailId state (detail view card kept inline, not a dialog)
+- Integrated dialog form into existing 'dodaj' tab:
+  - Dynamic title: "Novi unos rasporeda" vs "Uredi unos" based on editItem
+  - Dynamic button: "Kreiraj unos" vs "Sačuvaj" based on editItem
+  - Added status field (shown only when editItem is set, for edit mode)
+  - Added ArrowLeft back button and Otkaži cancel button when editing
+- Updated all references:
+  - openCreate: setDialogOpen(true) → setActiveTab('dodaj') + setEditItem(null)
+  - openEdit: setDialogOpen(true) → setActiveTab('dodaj') + setEditItem(item)
+  - handleSave: setDialogOpen(false) → setActiveTab('pregled') + setEditItem(null)
+  - Dialog cancel button: setDialogOpen(false) → setActiveTab('pregled') + setEditItem(null)
+- Header "Novi unos" button now conditionally renders only on pregled tab
+- "Dodaj" tab trigger dynamically shows "Uredi" when editItem is set
+- Added handleTabChange wrapper to clear editItem when leaving dodaj tab
+- Removed 1 dialog render block after </Tabs> (~22 lines)
+- 0 occurrences of dialogOpen, setDialogOpen remaining
+
+=== Tuition/index.tsx (1 dialog state + 1 detail block) ===
+- Already had main tabs: pregled, dodaj, uredi
+- Removed: dialogOpen state (separate create/edit form rendered after </Tabs>)
+- Kept: detailId state (detail view card kept inline, not a dialog)
+- Integrated dialog form into existing 'dodaj' tab:
+  - Dynamic title: "Novi zapis školarine" vs "Uredi zapis" based on editItem
+  - Dynamic button: "Kreiraj zapis" vs "Sačuvaj" based on editItem
+  - Added status field (shown only when editItem is set, for edit mode)
+  - Added ArrowLeft back button and Otkaži cancel button when editing
+- Updated all references:
+  - openCreate: setDialogOpen(true) → setActiveTab('dodaj') + setEditItem(null)
+  - openEdit: setDialogOpen(true) → setActiveTab('dodaj') + setEditItem(item)
+  - handleSave: setDialogOpen(false) → setActiveTab('pregled') + setEditItem(null)
+  - Dialog cancel button: setDialogOpen(false) → setActiveTab('pregled') + setEditItem(null)
+- Header "Novi zapis" button now conditionally renders only on pregled tab
+- "Dodaj" tab trigger dynamically shows "Uredi" when editItem is set
+- Added handleTabChange wrapper to clear editItem when leaving dodaj tab
+- Removed 1 dialog render block after </Tabs> (~26 lines)
+- 0 occurrences of dialogOpen, setDialogOpen remaining
+
+=== Utilities/index.tsx (1 dialog state + 1 detail block) ===
+- Already had main tabs: pregled, dodaj, uredi
+- Removed: dialogOpen state (separate create/edit form rendered after </Tabs>)
+- Kept: detailId state (detail view card kept inline, not a dialog)
+- Integrated dialog form into existing 'dodaj' tab:
+  - Dynamic title: "Novi račun" vs "Uredi račun" based on editItem
+  - Dynamic button: "Dodaj" vs "Sačuvaj" based on editItem
+  - Added status field (shown only when editItem is set, for edit mode)
+  - Added ArrowLeft back button and Otkaži cancel button when editing
+- Updated all references:
+  - openCreate: setDialogOpen(true) → setActiveTab('dodaj') + setEditItem(null)
+  - openEdit: setDialogOpen(true) → setActiveTab('dodaj') + setEditItem(item)
+  - handleSave: setDialogOpen(false) → setActiveTab('pregled') + setEditItem(null)
+  - Dialog cancel button: setDialogOpen(false) → setActiveTab('pregled') + setEditItem(null)
+- Header "Novi račun" button now conditionally renders only on pregled tab
+- "Dodaj" tab trigger dynamically shows "Uredi" when editItem is set
+- Added handleTabChange wrapper to clear editItem when leaving dodaj tab
+- Removed 1 dialog render block after </Tabs> (~20 lines)
+- 0 occurrences of dialogOpen, setDialogOpen remaining
+
+=== Cross-file verification ===
+- 0 occurrences of dialogOpen, setDialogOpen, detailOpen, setDetailOpen, @/components/ui/dialog across all 5 files
+- No files deleted (compliant with rule 7)
+- AlertDialog not present in any of the 5 files (no need to preserve)
+- All existing functionality preserved
+
+Stage Summary:
+- 5 modules converted from dialog popup patterns to inline tabs (Pregled/Dodaj/Detalji/Uredi)
+- Signatures and Support: added inner sub-tabs to existing main tabs (overview + requests/tickets)
+- Timetable, Tuition, Utilities: integrated dialog forms into existing dodaj tabs (already had pregled/dodaj/uredi main tabs)
+- All forms now inline within corresponding tabs instead of popup cards
+- Detail views now inline within sub-tabs (Signatures, Support) or as conditional cards (Timetable, Tuition, Utilities)
+- Dynamic tab labels show "Uredi" when editing vs "Dodaj" when creating

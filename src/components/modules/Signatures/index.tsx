@@ -67,13 +67,12 @@ export function Signatures() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
+  const [requestsSubTab, setRequestsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
   const [items, setItems] = useState<SigningRequest[]>([])
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
   const [selected, setSelected] = useState<SigningRequest | null>(null)
 
   const emptyForm = {
@@ -113,7 +112,7 @@ export function Signatures() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...form }),
       })
-      if (res.ok) { setDialogOpen(false); setForm(emptyForm); loadItems(); loadDashboard() }
+      if (res.ok) { setRequestsSubTab('pregled'); setForm(emptyForm); loadItems(); loadDashboard() }
     } catch { /* silent */ }
   }
 
@@ -146,13 +145,13 @@ export function Signatures() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadItems() }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" onClick={() => { setActiveTab('requests'); setRequestsSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> Novi zahtev
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setRequestsSubTab('pregled') }}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="requests"><FileSignature className="h-4 w-4 mr-1" /> Zahtevi</TabsTrigger>
@@ -255,144 +254,153 @@ export function Signatures() {
         </TabsContent>
 
         <TabsContent value="requests" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Pretraži zahteve..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi statusi</SelectItem>
-                {Object.entries(statusConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Tabs value={requestsSubTab} onValueChange={setRequestsSubTab}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              {requestsSubTab !== 'pregled' && (
+                <TabsTrigger value={requestsSubTab}>{requestsSubTab === 'dodaj' ? 'Dodaj' : 'Detalji'}</TabsTrigger>
+              )}
+            </TabsList>
 
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : items.length === 0 ? (
-            <Card className="p-8 text-center">
-              <PenTool className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema zahteva za potpis</p>
-              <Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Kreiraj zahtev</Button>
-            </Card>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
-                    <th className="p-3">Naslov</th><th className="p-3">Tip</th><th className="p-3">Potpisnik</th><th className="p-3">Prioritet</th><th className="p-3">Status</th><th className="p-3">Akcije</th>
-                  </tr></thead>
-                  <tbody>{items.map((r) => {
-                    const sCfg = statusConfig[r.status]
-                    const pCfg = priorityConfig[r.priority]
-                    return (
-                      <tr key={r.id} className="border-t hover:bg-muted/30">
-                        <td className="p-3 font-medium">{r.title}</td>
-                        <td className="p-3">{typeLabels[r.documentType] || r.documentType}</td>
-                        <td className="p-3">{r.signerName}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || r.priority}</Badge></td>
-                        <td className="p-3"><Badge variant="outline" className={`text-xs ${sCfg?.color || ''}`}>{sCfg?.label || r.status}</Badge></td>
-                        <td className="p-3">
-                          <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(r); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
-                            {r.status === 'pending' && (
-                              <>
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(r.id, 'signed')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" onClick={() => handleUpdateStatus(r.id, 'rejected')}><AlertCircle className="h-3.5 w-3.5" /></Button>
-                              </>
-                            )}
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}</tbody>
-                </table>
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Pretraži zahteve..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi statusi</SelectItem>
+                    {Object.entries(statusConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-          )}
+
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : items.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <PenTool className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema zahteva za potpis</p>
+                  <Button variant="outline" className="mt-3" onClick={() => setRequestsSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj zahtev</Button>
+                </Card>
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
+                        <th className="p-3">Naslov</th><th className="p-3">Tip</th><th className="p-3">Potpisnik</th><th className="p-3">Prioritet</th><th className="p-3">Status</th><th className="p-3">Akcije</th>
+                      </tr></thead>
+                      <tbody>{items.map((r) => {
+                        const sCfg = statusConfig[r.status]
+                        const pCfg = priorityConfig[r.priority]
+                        return (
+                          <tr key={r.id} className="border-t hover:bg-muted/30">
+                            <td className="p-3 font-medium">{r.title}</td>
+                            <td className="p-3">{typeLabels[r.documentType] || r.documentType}</td>
+                            <td className="p-3">{r.signerName}</td>
+                            <td className="p-3"><Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || r.priority}</Badge></td>
+                            <td className="p-3"><Badge variant="outline" className={`text-xs ${sCfg?.color || ''}`}>{sCfg?.label || r.status}</Badge></td>
+                            <td className="p-3">
+                              <div className="flex gap-1">
+                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(r); setRequestsSubTab('detalji') }}><Eye className="h-3.5 w-3.5" /></Button>
+                                {r.status === 'pending' && (
+                                  <>
+                                    <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(r.id, 'signed')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
+                                    <Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" onClick={() => handleUpdateStatus(r.id, 'rejected')}><AlertCircle className="h-3.5 w-3.5" /></Button>
+                                  </>
+                                )}
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(r.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}</tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-2xl">
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setRequestsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle>Novi zahtev za potpis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Naslov dokumenta</Label>
+                      <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Naslov dokumenta" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Tip dokumenta</Label>
+                        <Select value={form.documentType} onValueChange={(v) => setForm({ ...form, documentType: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Prioritet</Label>
+                        <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(priorityConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Potpisnik</Label>
+                      <Input value={form.signerName} onChange={(e) => setForm({ ...form, signerName: e.target.value })} placeholder="Ime i prezime potpisnika" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Napomene</Label>
+                      <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setRequestsSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="detalji" className="space-y-4">
+              <Card className="max-w-2xl">
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setRequestsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle>Detalji zahteva</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selected && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div><span className="text-muted-foreground">Naslov:</span> <span className="font-medium">{selected.title}</span></div>
+                        <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
+                        <div><span className="text-muted-foreground">Tip:</span> {typeLabels[selected.documentType] || selected.documentType}</div>
+                        <div><span className="text-muted-foreground">Prioritet:</span> <Badge variant="outline" className={priorityConfig[selected.priority]?.color}>{priorityConfig[selected.priority]?.label}</Badge></div>
+                        <div><span className="text-muted-foreground">Potpisnik:</span> {selected.signerName}</div>
+                        <div><span className="text-muted-foreground">Kreiran:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
+                        {selected.signedAt && <div><span className="text-muted-foreground">Potpisan:</span> {new Date(selected.signedAt).toLocaleDateString('sr-RS')}</div>}
+                      </div>
+                      {selected.notes && (
+                        <div className="text-sm"><span className="text-muted-foreground">Napomene:</span> {selected.notes}</div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
-
-      {/* CREATE FORM */}
-      {dialogOpen && (
-        <Card className="max-w-2xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle>Novi zahtev za potpis</CardTitle>
-          </CardHeader>
-          <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Naslov dokumenta</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Naslov dokumenta" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Tip dokumenta</Label>
-                <Select value={form.documentType} onValueChange={(v) => setForm({ ...form, documentType: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Prioritet</Label>
-                <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(priorityConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Potpisnik</Label>
-              <Input value={form.signerName} onChange={(e) => setForm({ ...form, signerName: e.target.value })} placeholder="Ime i prezime potpisnika" />
-            </div>
-            <div className="space-y-2">
-              <Label>Napomene</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* DETAIL VIEW */}
-      {detailOpen && (
-        <Card className="max-w-2xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle>Detalji zahteva</CardTitle>
-          </CardHeader>
-          <CardContent>
-          {selected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Naslov:</span> <span className="font-medium">{selected.title}</span></div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">Tip:</span> {typeLabels[selected.documentType] || selected.documentType}</div>
-                <div><span className="text-muted-foreground">Prioritet:</span> <Badge variant="outline" className={priorityConfig[selected.priority]?.color}>{priorityConfig[selected.priority]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">Potpisnik:</span> {selected.signerName}</div>
-                <div><span className="text-muted-foreground">Kreiran:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
-                {selected.signedAt && <div><span className="text-muted-foreground">Potpisan:</span> {new Date(selected.signedAt).toLocaleDateString('sr-RS')}</div>}
-              </div>
-              {selected.notes && (
-                <div className="text-sm"><span className="text-muted-foreground">Napomene:</span> {selected.notes}</div>
-              )}
-            </div>
-          )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

@@ -213,10 +213,11 @@ export function Geolocation() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterEventType, setFilterEventType] = useState('all')
 
-  const [geofenceDialogOpen, setGeofenceDialogOpen] = useState(false)
-  const [employeeDetailOpen, setEmployeeDetailOpen] = useState(false)
-  const [selectedEmployee, setSelectedEmployee] = useState<TrackedEmployee | null>(null)
+  // Sub-tabs
+  const [geofencesSubTab, setGeofencesSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [employeesSubTab, setEmployeesSubTab] = useState<'pregled' | 'detalji'>('pregled')
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [selectedEmployee, setSelectedEmployee] = useState<TrackedEmployee | null>(null)
   const [selectedGeofence, setSelectedGeofence] = useState<Geofence | null>(null)
 
   const [geofenceForm, setGeofenceForm] = useState({
@@ -315,7 +316,7 @@ export function Geolocation() {
       setSelectedGeofence(null)
       setGeofenceForm({ name: '', type: 'circle', latitude: '', longitude: '', radius: '', color: '#3b82f6', status: 'active', notifyEnter: true, notifyExit: true, scheduleStart: '', scheduleEnd: '', notes: '' })
     }
-    setGeofenceDialogOpen(true)
+    setActiveTab('geofences'); setGeofencesSubTab('dodaj')
   }
 
   const handleSaveGeofence = () => {
@@ -333,7 +334,7 @@ export function Geolocation() {
       notes: geofenceForm.notes || null, createdAt: selectedGeofence?.createdAt || new Date().toISOString(),
     }
     setGeofences(prev => selectedGeofence ? prev.map(g => g.id === selectedGeofence.id ? newGeofence : g) : [...prev, newGeofence])
-    setGeofenceDialogOpen(false)
+    setGeofencesSubTab('pregled'); setSelectedGeofence(null)
     toast.success(selectedGeofence ? 'Geo-ograničenje ažurirano' : 'Geo-ograničenje kreirano')
   }
 
@@ -366,12 +367,12 @@ export function Geolocation() {
           <p className="text-sm text-muted-foreground">Praćenje lokacija zaposlenih, geo-ograničenja i aktivnosti</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button size="sm" onClick={() => openGeofenceDialog()}><Plus className="h-4 w-4 mr-1" /> Novo ograničenje</Button>
+          <Button size="sm" onClick={() => { setActiveTab('geofences'); setGeofencesSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Novo ograničenje</Button>
           <Button variant="outline" size="sm" onClick={loadData}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setGeofencesSubTab('pregled'); setEmployeesSubTab('pregled') }}>
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview"><BarChart3 className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="employees"><Users className="h-3.5 w-3.5 mr-1" /> Zaposleni</TabsTrigger>
@@ -495,6 +496,19 @@ export function Geolocation() {
 
         {/* ===== ZAPOSLENI ===== */}
         <TabsContent value="employees" className="space-y-4">
+          {/* Sub-tab navigation */}
+          <div className="flex items-center gap-2 mb-2">
+            {employeesSubTab !== 'pregled' && (
+              <Button variant="outline" size="sm" onClick={() => setEmployeesSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+            )}
+            <div className="flex gap-1">
+              <Button variant={employeesSubTab === 'pregled' ? 'default' : 'outline'} size="sm" onClick={() => setEmployeesSubTab('pregled')}>Pregled</Button>
+              {selectedEmployee && <Button variant={employeesSubTab === 'detalji' ? 'default' : 'outline'} size="sm" onClick={() => setEmployeesSubTab('detalji')}>Detalji</Button>}
+            </div>
+          </div>
+
+          {employeesSubTab === 'pregled' && (
+          <>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -555,7 +569,7 @@ export function Geolocation() {
                         {emp.isTracked ? 'Pauziraj' : 'Pokreni'}
                       </Button>
                       {emp.isTracked && (
-                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setSelectedEmployee(emp); setEmployeeDetailOpen(true) }}>
+                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setSelectedEmployee(emp); setEmployeesSubTab('detalji') }}>
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
                       )}
@@ -565,10 +579,72 @@ export function Geolocation() {
               </div>
             </CardContent>
           </Card>
+          </>}
+
+          {/* Detalji sub-tab — Employee detail (moved from dialog) */}
+          {employeesSubTab === 'detalji' && selectedEmployee && (
+            <Card className="border">
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setEmployeesSubTab('pregled')}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="min-w-0 flex-1"><CardTitle className="text-base">{selectedEmployee.name}</CardTitle>
+                <CardDescription>Detalji praćenja zaposlenog</CardDescription>
+              </div>
+              </CardHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-xs text-muted-foreground">Pozicija</span><p className="font-medium">{selectedEmployee.position}</p></div>
+                  <div><span className="text-xs text-muted-foreground">Departman</span><p className="font-medium">{selectedEmployee.department}</p></div>
+                  <div><span className="text-xs text-muted-foreground">Telefon</span><p className="font-medium">{selectedEmployee.phone}</p></div>
+                  <div><span className="text-xs text-muted-foreground">Status</span>
+                    <div className="flex items-center gap-1 mt-0.5"><div className={`w-2 h-2 rounded-full ${selectedEmployee.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} /><span className="font-medium">{selectedEmployee.isOnline ? 'Online' : 'Offline'}</span></div>
+                  </div>
+                </div>
+                <div className="border-t pt-3 space-y-2">
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Poslednja lokacija</span><span className="font-medium">{selectedEmployee.lastLocationName || 'N/A'}</span></div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Koordinate</span>{selectedEmployee.lastLatitude ? (<span className="font-mono text-xs">{selectedEmployee.lastLatitude.toFixed(4)}, {selectedEmployee.lastLongitude?.toFixed(4)}</span>) : <span>N/A</span>}</div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Vreme ažuriranja</span><span>{selectedEmployee.lastLocationAt ? formatTime(selectedEmployee.lastLocationAt) : 'N/A'}</span></div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Brzina</span><span>{selectedEmployee.speed !== null ? `${selectedEmployee.speed} km/h` : 'N/A'}</span></div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Distanca danas</span><span>{selectedEmployee.distanceToday} km</span></div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Baterija</span><div className="flex items-center gap-2"><Progress value={selectedEmployee.batteryLevel} className={`w-20 h-2 ${getBatteryColor(selectedEmployee.batteryLevel)}`} /><span>{selectedEmployee.batteryLevel}%</span></div></div>
+                </div>
+                {selectedEmployee.notes && (<div className="border-t pt-3"><span className="text-xs text-muted-foreground">Napomene</span><p className="text-sm mt-1">{selectedEmployee.notes}</p></div>)}
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* ===== GEO OGRANIČENJA ===== */}
         <TabsContent value="geofences" className="space-y-4">
+          {/* Sub-tab navigation */}
+          <div className="flex items-center gap-2 mb-2">
+            {geofencesSubTab !== 'pregled' && (
+              <Button variant="outline" size="sm" onClick={() => setGeofencesSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+            )}
+            <div className="flex gap-1">
+              <Button variant={geofencesSubTab === 'pregled' ? 'default' : 'outline'} size="sm" onClick={() => setGeofencesSubTab('pregled')}>Pregled</Button>
+              <Button variant={geofencesSubTab === 'dodaj' ? 'default' : 'outline'} size="sm" onClick={() => setGeofencesSubTab('dodaj')}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</Button>
+            </div>
+          </div>
+
+          {/* Delete confirm inline */}
+          {deleteConfirmOpen && selectedGeofence && (
+            <Card className="border border-red-200">
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => { setDeleteConfirmOpen(false); setSelectedGeofence(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+                <div className="min-w-0 flex-1"><CardTitle className="text-base">Brisanje geo-ograničenja</CardTitle>
+                <CardDescription>Da li ste sigurni da želite da obrišete "{selectedGeofence.name}"? Ova radnja je nepovratna.</CardDescription>
+              </div>
+              </CardHeader>
+              <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                <Button variant="outline" onClick={() => { setDeleteConfirmOpen(false); setSelectedGeofence(null) }}>Otkaži</Button>
+                <Button variant="destructive" onClick={handleDeleteGeofence}>Obriši</Button>
+              </div>
+            </Card>
+          )}
+
+          {geofencesSubTab === 'pregled' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {geofences.map(gf => (
               <Card key={gf.id} className="relative">
@@ -613,7 +689,7 @@ export function Geolocation() {
                   )}
                   <div className="flex items-center gap-2 pt-2 border-t">
                     <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={() => openGeofenceDialog(gf)}>
-                      Izmeni
+                      {selectedGeofence?.id === gf.id && geofencesSubTab === 'dodaj' ? 'Uredi' : 'Izmeni'}
                     </Button>
                     <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-500 hover:text-red-700" onClick={() => { setSelectedGeofence(gf); setDeleteConfirmOpen(true) }}>
                       <Trash2 className="h-3.5 w-3.5" />
@@ -623,6 +699,45 @@ export function Geolocation() {
               </Card>
             ))}
           </div>
+          )}
+
+          {/* Dodaj sub-tab — Geofence form (moved from dialog) */}
+          {geofencesSubTab === 'dodaj' && (
+            <Card className="border">
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => { setGeofencesSubTab('pregled'); setSelectedGeofence(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+                <div className="min-w-0 flex-1"><CardTitle className="text-base">{selectedGeofence ? 'Izmeni geo-ograničenje' : 'Novo geo-ograničenje'}</CardTitle>
+                <CardDescription>{selectedGeofence ? 'Ažurirajte podatke o geo-ograničenju' : 'Definišite novo geo-ograničenje za praćenje'}</CardDescription>
+              </div>
+              </CardHeader>
+              <div className="space-y-3">
+                <div><Label className="text-xs">Naziv</Label><Input value={geofenceForm.name} onChange={(e) => setGeofenceForm({ ...geofenceForm, name: e.target.value })} placeholder="npr. Sedište firme" /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label className="text-xs">Tip</Label><Select value={geofenceForm.type} onValueChange={(v) => setGeofenceForm({ ...geofenceForm, type: v as 'circle' | 'polygon' })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="circle">Krug</SelectItem><SelectItem value="polygon">Poligon</SelectItem></SelectContent></Select></div>
+                  <div><Label className="text-xs">Status</Label><Select value={geofenceForm.status} onValueChange={(v) => setGeofenceForm({ ...geofenceForm, status: v as 'active' | 'inactive' })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivno</SelectItem><SelectItem value="inactive">Neaktivno</SelectItem></SelectContent></Select></div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label className="text-xs">Latituda</Label><Input type="number" step="0.0001" value={geofenceForm.latitude} onChange={(e) => setGeofenceForm({ ...geofenceForm, latitude: e.target.value })} placeholder="44.8176" /></div>
+                  <div><Label className="text-xs">Longituda</Label><Input type="number" step="0.0001" value={geofenceForm.longitude} onChange={(e) => setGeofenceForm({ ...geofenceForm, longitude: e.target.value })} placeholder="20.4633" /></div>
+                </div>
+                {geofenceForm.type === 'circle' && (<div><Label className="text-xs">Radius (metri)</Label><Input type="number" value={geofenceForm.radius} onChange={(e) => setGeofenceForm({ ...geofenceForm, radius: e.target.value })} placeholder="200" /></div>)}
+                <div><Label className="text-xs">Boja</Label><div className="flex items-center gap-2"><Input type="color" value={geofenceForm.color} onChange={(e) => setGeofenceForm({ ...geofenceForm, color: e.target.value })} className="w-10 h-8 p-0.5 cursor-pointer" /><Input value={geofenceForm.color} onChange={(e) => setGeofenceForm({ ...geofenceForm, color: e.target.value })} className="flex-1" /></div></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label className="text-xs">Vreme od</Label><Input type="time" value={geofenceForm.scheduleStart} onChange={(e) => setGeofenceForm({ ...geofenceForm, scheduleStart: e.target.value })} /></div>
+                  <div><Label className="text-xs">Vreme do</Label><Input type="time" value={geofenceForm.scheduleEnd} onChange={(e) => setGeofenceForm({ ...geofenceForm, scheduleEnd: e.target.value })} /></div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" checked={geofenceForm.notifyEnter} onChange={(e) => setGeofenceForm({ ...geofenceForm, notifyEnter: e.target.checked })} className="rounded" />Notifikacija ulazak</label>
+                  <label className="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" checked={geofenceForm.notifyExit} onChange={(e) => setGeofenceForm({ ...geofenceForm, notifyExit: e.target.checked })} className="rounded" />Notifikacija izlazak</label>
+                </div>
+                <div><Label className="text-xs">Napomene</Label><Textarea value={geofenceForm.notes} onChange={(e) => setGeofenceForm({ ...geofenceForm, notes: e.target.value })} placeholder="Opcionalne napomene..." rows={2} /></div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                <Button variant="outline" onClick={() => { setGeofencesSubTab('pregled'); setSelectedGeofence(null) }}>Otkaži</Button>
+                <Button onClick={handleSaveGeofence}>{selectedGeofence ? 'Sačuvaj izmene' : 'Kreiraj'}</Button>
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* ===== AKTIVNOSTI ===== */}
@@ -717,196 +832,6 @@ export function Geolocation() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Geofence Dialog */}
-{geofenceDialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGeofenceDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">{selectedGeofence ? 'Izmeni geo-ograničenje' : 'Novo geo-ograničenje'}</CardTitle>
-            <CardDescription>{selectedGeofence ? 'Ažurirajte podatke o geo-ograničenju' : 'Definišite novo geo-ograničenje za praćenje'}</CardDescription>
-          </div>
-            </CardHeader>
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs">Naziv</Label>
-              <Input value={geofenceForm.name} onChange={(e) => setGeofenceForm({ ...geofenceForm, name: e.target.value })} placeholder="npr. Sedište firme" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Tip</Label>
-                <Select value={geofenceForm.type} onValueChange={(v) => setGeofenceForm({ ...geofenceForm, type: v as 'circle' | 'polygon' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="circle">Krug</SelectItem>
-                    <SelectItem value="polygon">Poligon</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs">Status</Label>
-                <Select value={geofenceForm.status} onValueChange={(v) => setGeofenceForm({ ...geofenceForm, status: v as 'active' | 'inactive' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Aktivno</SelectItem>
-                    <SelectItem value="inactive">Neaktivno</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Latituda</Label>
-                <Input type="number" step="0.0001" value={geofenceForm.latitude} onChange={(e) => setGeofenceForm({ ...geofenceForm, latitude: e.target.value })} placeholder="44.8176" />
-              </div>
-              <div>
-                <Label className="text-xs">Longituda</Label>
-                <Input type="number" step="0.0001" value={geofenceForm.longitude} onChange={(e) => setGeofenceForm({ ...geofenceForm, longitude: e.target.value })} placeholder="20.4633" />
-              </div>
-            </div>
-            {geofenceForm.type === 'circle' && (
-              <div>
-                <Label className="text-xs">Radius (metri)</Label>
-                <Input type="number" value={geofenceForm.radius} onChange={(e) => setGeofenceForm({ ...geofenceForm, radius: e.target.value })} placeholder="200" />
-              </div>
-            )}
-            <div>
-              <Label className="text-xs">Boja</Label>
-              <div className="flex items-center gap-2">
-                <Input type="color" value={geofenceForm.color} onChange={(e) => setGeofenceForm({ ...geofenceForm, color: e.target.value })} className="w-10 h-8 p-0.5 cursor-pointer" />
-                <Input value={geofenceForm.color} onChange={(e) => setGeofenceForm({ ...geofenceForm, color: e.target.value })} className="flex-1" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Vreme od</Label>
-                <Input type="time" value={geofenceForm.scheduleStart} onChange={(e) => setGeofenceForm({ ...geofenceForm, scheduleStart: e.target.value })} />
-              </div>
-              <div>
-                <Label className="text-xs">Vreme do</Label>
-                <Input type="time" value={geofenceForm.scheduleEnd} onChange={(e) => setGeofenceForm({ ...geofenceForm, scheduleEnd: e.target.value })} />
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-xs cursor-pointer">
-                <input type="checkbox" checked={geofenceForm.notifyEnter} onChange={(e) => setGeofenceForm({ ...geofenceForm, notifyEnter: e.target.checked })} className="rounded" />
-                Notifikacija ulazak
-              </label>
-              <label className="flex items-center gap-2 text-xs cursor-pointer">
-                <input type="checkbox" checked={geofenceForm.notifyExit} onChange={(e) => setGeofenceForm({ ...geofenceForm, notifyExit: e.target.checked })} className="rounded" />
-                Notifikacija izlazak
-              </label>
-            </div>
-            <div>
-              <Label className="text-xs">Napomene</Label>
-              <Textarea value={geofenceForm.notes} onChange={(e) => setGeofenceForm({ ...geofenceForm, notes: e.target.value })} placeholder="Opcionalne napomene..." rows={2} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setGeofenceDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSaveGeofence}>{selectedGeofence ? 'Sačuvaj izmene' : 'Kreiraj'}</Button>
-          </div>
-</Card>
-)}
-
-      {/* Employee Detail Dialog */}
-{ employeeDetailOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setEmployeeDetailOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">{selectedEmployee?.name}</CardTitle>
-            <CardDescription>Detalji praćenja zaposlenog</CardDescription>
-          </div>
-            </CardHeader>
-          {selectedEmployee && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-xs text-muted-foreground">Pozicija</span>
-                  <p className="font-medium">{selectedEmployee.position}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">Departman</span>
-                  <p className="font-medium">{selectedEmployee.department}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">Telefon</span>
-                  <p className="font-medium">{selectedEmployee.phone}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">Status</span>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <div className={`w-2 h-2 rounded-full ${selectedEmployee.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                    <span className="font-medium">{selectedEmployee.isOnline ? 'Online' : 'Offline'}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="border-t pt-3 space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Poslednja lokacija</span>
-                  <span className="font-medium">{selectedEmployee.lastLocationName || 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Koordinate</span>
-                  {selectedEmployee.lastLatitude ? (
-                    <span className="font-mono text-xs">{selectedEmployee.lastLatitude.toFixed(4)}, {selectedEmployee.lastLongitude?.toFixed(4)}</span>
-                  ) : <span>N/A</span>}
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Vreme ažuriranja</span>
-                  <span>{selectedEmployee.lastLocationAt ? formatTime(selectedEmployee.lastLocationAt) : 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Brzina</span>
-                  <span>{selectedEmployee.speed !== null ? `${selectedEmployee.speed} km/h` : 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Distanca danas</span>
-                  <span>{selectedEmployee.distanceToday} km</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Baterija</span>
-                  <div className="flex items-center gap-2">
-                    <Progress value={selectedEmployee.batteryLevel} className={`w-20 h-2 ${getBatteryColor(selectedEmployee.batteryLevel)}`} />
-                    <span>{selectedEmployee.batteryLevel}%</span>
-                  </div>
-                </div>
-              </div>
-              {selectedEmployee.notes && (
-                <div className="border-t pt-3">
-                  <span className="text-xs text-muted-foreground">Napomene</span>
-                  <p className="text-sm mt-1">{selectedEmployee.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setEmployeeDetailOpen(false)}>Zatvori</Button>
-          </div>
-</Card>
-)}
-
-      {/* Delete Confirm Dialog */}
-{ deleteConfirmOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDeleteConfirmOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">Brisanje geo-ograničenja</CardTitle>
-            <CardDescription>Da li ste sigurni da želite da obrišete &quot;{selectedGeofence?.name}&quot;? Ova radnja je nepovratna.</CardDescription>
-          </div>
-            </CardHeader>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
-            <Button variant="destructive" onClick={handleDeleteGeofence}>Obriši</Button>
-          </div>
-</Card>
-)}
     </div>
   )
 }

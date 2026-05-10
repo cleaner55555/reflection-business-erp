@@ -74,7 +74,6 @@ export function Patients() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [editItem, setEditItem] = useState<Patient | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Patient>>({})
@@ -114,13 +113,13 @@ export function Patients() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ patientNo: `PAC-2024-${String(data.length + 1).padStart(3, '0')}`, firstName: '', lastName: '', jmbg: '', dateOfBirth: '', age: 0, gender: 'male', phone: '', email: '', address: '', city: '', bloodType: '', insuranceNo: '', insuranceStatus: 'pending', primaryDoctor: '', status: 'active', allergies: [], chronicConditions: [], lastVisit: '', nextAppointment: '', totalVisits: 0, notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const openEdit = (item: Patient) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const handleSave = async () => {
@@ -137,7 +136,8 @@ export function Patients() {
         setData(prev => [{ ...created, dateOfBirth: created.dateOfBirth ? new Date(created.dateOfBirth).toISOString().split('T')[0] : '', lastVisit: created.lastVisit ? new Date(created.lastVisit).toISOString().split('T')[0] : '', nextAppointment: created.nextAppointment ? new Date(created.nextAppointment).toISOString().split('T')[0] : '', allergies: typeof created.allergies === 'string' ? JSON.parse(created.allergies) : created.allergies, chronicConditions: typeof created.chronicConditions === 'string' ? JSON.parse(created.chronicConditions) : created.chronicConditions, notes: created.notes || '' }, ...prev])
         toast.success('Pacijent kreiran')
       }
-      setDialogOpen(false)
+      setEditItem(null)
+      setActiveTab('pregled')
     } catch { toast.error('Greška pri čuvanju') }
   }
 
@@ -166,6 +166,38 @@ export function Patients() {
         <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
 
         <TabsContent value="pregled" className="mt-4">
+          {detailId && detailItem && (
+          <Card className="mb-4">
+            <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Karton pacijenta</CardTitle></div></CardHeader>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.firstName} {detailItem.lastName}</h3>{getStatusBadge(detailItem.status)}{getInsuranceBadge(detailItem.insuranceStatus)}</div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  ['Broj pacijenta', detailItem.patientNo],
+                  ['JMBG', detailItem.jmbg],
+                  ['Datum rođenja', formatDate(detailItem.dateOfBirth)],
+                  ['Starost', `${detailItem.age} god.`],
+                  ['Pol', detailItem.gender === 'male' ? 'Muški' : 'Ženski'],
+                  ['Krvna grupa', detailItem.bloodType],
+                  ['Grad', detailItem.city],
+                  ['Adresa', detailItem.address],
+                  ['Telefon', detailItem.phone],
+                  ['Email', detailItem.email || '—'],
+                  ['Lekar', detailItem.primaryDoctor],
+                  ['Br. osiguranja', detailItem.insuranceNo],
+                  ['Poslednja poseta', detailItem.lastVisit ? formatDate(detailItem.lastVisit) : '—'],
+                  ['Sledeći termin', detailItem.nextAppointment ? formatDate(detailItem.nextAppointment) : '—'],
+                  ['Ukupno poseta', String(detailItem.totalVisits)],
+                ].map(([label, val]) => (
+                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                ))}
+              </div>
+              {detailItem.allergies.length > 0 && <div className="p-2 rounded-lg bg-red-50"><div className="text-xs text-red-600 mb-1">⚠ Alergije</div><div className="flex flex-wrap gap-1">{detailItem.allergies.map(a => <Badge key={a} className="text-xs bg-red-100 text-red-700">{a}</Badge>)}</div></div>}
+              {detailItem.chronicConditions.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">Hronične bolesti</div><div className="flex flex-wrap gap-1">{detailItem.chronicConditions.map(c => <Badge key={c} className="text-xs bg-amber-100 text-amber-700">{c}</Badge>)}</div></div>}
+              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+            </div>
+          </Card>
+          )}
           <Card>
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -206,7 +238,7 @@ export function Patients() {
 
         <TabsContent value="dodaj" className="mt-4">
           <Card>
-            <CardHeader><CardTitle className="text-base">Novi pacijent</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{editItem ? 'Uredi pacijenta' : 'Novi pacijent'}</CardTitle></CardHeader>
             <CardContent>
               <div className="grid gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -222,11 +254,17 @@ export function Patients() {
                   <div className="grid gap-2"><Label className="text-xs">Adresa</Label><Input className="text-xs" value={form.address || ''} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
                   <div className="grid gap-2"><Label className="text-xs">Lekar opšte prakse</Label><Input className="text-xs" value={form.primaryDoctor || ''} onChange={e => setForm({ ...form, primaryDoctor: e.target.value })} /></div>
                   <div className="grid gap-2"><Label className="text-xs">Br. osiguranja</Label><Input className="text-xs" value={form.insuranceNo || ''} onChange={e => setForm({ ...form, insuranceNo: e.target.value })} /></div>
+                  {editItem && (
+                  <>
+                  <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as Patient['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="in_treatment">Na lečenju</SelectItem><SelectItem value="critical">Kritičan</SelectItem><SelectItem value="discharged">Otpušten</SelectItem></SelectContent></Select></div>
+                  <div className="grid gap-2"><Label className="text-xs">Osigranje</Label><Select value={form.insuranceStatus || 'pending'} onValueChange={v => setForm({ ...form, insuranceStatus: v as Patient['insuranceStatus'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivno</SelectItem><SelectItem value="expired">Isteklo</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div>
+                  </>
+                  )}
                 </div>
                 <div className="grid gap-2"><Label className="text-xs">Alergije (zarez)</Label><Input className="text-xs" value={(form.allergies || []).join(', ')} onChange={e => setForm({ ...form, allergies: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="Penicilin, Aspirin..." /></div>
                 <div className="grid gap-2"><Label className="text-xs">Hronične bolesti (zarez)</Label><Input className="text-xs" value={(form.chronicConditions || []).join(', ')} onChange={e => setForm({ ...form, chronicConditions: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} /></div>
                 <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-                <Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Kreiraj pacijenta</Button>
+                <div className="flex gap-2"><Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />{editItem ? 'Sačuvaj izmene' : 'Kreiraj pacijenta'}</Button>{editItem && <Button variant="outline" size="sm" onClick={() => { setEditItem(null); setActiveTab('pregled') }}>Otkaži</Button>}</div>
               </div>
             </CardContent>
           </Card>
@@ -252,58 +290,6 @@ export function Patients() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      { detailId && (
-      <Card className="sm:max-w-[550px]">
-
-          <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Karton pacijenta</CardTitle></div></CardHeader>
-          {detailItem && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.firstName} {detailItem.lastName}</h3>{getStatusBadge(detailItem.status)}{getInsuranceBadge(detailItem.insuranceStatus)}</div>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ['Broj pacijenta', detailItem.patientNo],
-                  ['JMBG', detailItem.jmbg],
-                  ['Datum rođenja', formatDate(detailItem.dateOfBirth)],
-                  ['Starost', `${detailItem.age} god.`],
-                  ['Pol', detailItem.gender === 'male' ? 'Muški' : 'Ženski'],
-                  ['Krvna grupa', detailItem.bloodType],
-                  ['Grad', detailItem.city],
-                  ['Adresa', detailItem.address],
-                  ['Telefon', detailItem.phone],
-                  ['Email', detailItem.email || '—'],
-                  ['Lekar', detailItem.primaryDoctor],
-                  ['Br. osiguranja', detailItem.insuranceNo],
-                  ['Poslednja poseta', detailItem.lastVisit ? formatDate(detailItem.lastVisit) : '—'],
-                  ['Sledeći termin', detailItem.nextAppointment ? formatDate(detailItem.nextAppointment) : '—'],
-                  ['Ukupno poseta', String(detailItem.totalVisits)],
-                ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-                ))}
-              </div>
-              {detailItem.allergies.length > 0 && <div className="p-2 rounded-lg bg-red-50"><div className="text-xs text-red-600 mb-1">⚠ Alergije</div><div className="flex flex-wrap gap-1">{detailItem.allergies.map(a => <Badge key={a} className="text-xs bg-red-100 text-red-700">{a}</Badge>)}</div></div>}
-              {detailItem.chronicConditions.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">Hronične bolesti</div><div className="flex flex-wrap gap-1">{detailItem.chronicConditions.map(c => <Badge key={c} className="text-xs bg-amber-100 text-amber-700">{c}</Badge>)}</div></div>}
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-            </div>
-          )}
-      </Card>
-    ) }
-
-      { dialogOpen && (
-      <Card className="sm:max-w-[500px]">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editItem ? 'Uredi pacijenta' : 'Novi pacijent'}</CardTitle></div></CardHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-xs" value={form.firstName || ''} onChange={e => setForm({ ...form, firstName: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Prezime *</Label><Input className="text-xs" value={form.lastName || ''} onChange={e => setForm({ ...form, lastName: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as Patient['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="in_treatment">Na lečenju</SelectItem><SelectItem value="critical">Kritičan</SelectItem><SelectItem value="discharged">Otpušten</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Osigranje</Label><Select value={form.insuranceStatus || 'pending'} onValueChange={v => setForm({ ...form, insuranceStatus: v as Patient['insuranceStatus'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivno</SelectItem><SelectItem value="expired">Isteklo</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
-      </Card>
-    ) }
     </div>
   )
 }

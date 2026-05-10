@@ -626,7 +626,7 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
   const [catFilter, setCatFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingProduct, setEditingProduct] = useState<StoreProduct | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
@@ -648,17 +648,17 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
   const openCreate = () => {
     setEditingProduct(null)
     setForm(emptyForm())
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }
 
   const openEdit = (p: StoreProduct) => {
     setEditingProduct(p)
     setForm({ ...p })
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }
 
   const handleSave = async () => {
-    setDialogOpen(false)
+    setSubTab('pregled')
     if (editingProduct) {
       setProducts((prev) => prev.map((p) => p.id === editingProduct.id ? { ...p, ...form } : p))
     } else {
@@ -678,276 +678,284 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Pretraži po nazivu ili SKU..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
-        <Select value={catFilter} onValueChange={setCatFilter}>
-          <SelectTrigger className="w-[150px]"><SelectValue placeholder="Kategorija" /></SelectTrigger>
-          <SelectContent><SelectItem value="all">Sve kategorije</SelectItem>{categories.map((c) => (<SelectItem key={c} value={c!}>{c}</SelectItem>))}</SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Svi statusi</SelectItem>
-            <SelectItem value="active">Aktivan</SelectItem>
-            <SelectItem value="draft">Nacrt</SelectItem>
-            <SelectItem value="out_of_stock">Nema na stanju</SelectItem>
-            <SelectItem value="archived">Arhiviran</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex gap-1">
-          <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('grid')}><LayoutGrid className="h-4 w-4" /></Button>
-          <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('list')}><List className="h-4 w-4" /></Button>
-        </div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Dodaj proizvod</Button>
-      </div>
+      {/* Sub-tabs */}
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'pregled' | 'dodaj')}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="pregled">Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj">{editingProduct ? 'Uredi proizvod' : 'Dodaj proizvod'}</TabsTrigger>
+        </TabsList>
 
-      {/* Results count */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>Prikazano {filtered.length} od {products.length} proizvoda</span>
-        <span>Istaknuti: {products.filter((p) => p.featured).length}</span>
-      </div>
+        <TabsContent value="pregled" className="space-y-4">
+          {/* Toolbar */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Pretraži po nazivu ili SKU..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            <Select value={catFilter} onValueChange={setCatFilter}>
+              <SelectTrigger className="w-[150px]"><SelectValue placeholder="Kategorija" /></SelectTrigger>
+              <SelectContent><SelectItem value="all">Sve kategorije</SelectItem>{categories.map((c) => (<SelectItem key={c} value={c!}>{c}</SelectItem>))}</SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Svi statusi</SelectItem>
+                <SelectItem value="active">Aktivan</SelectItem>
+                <SelectItem value="draft">Nacrt</SelectItem>
+                <SelectItem value="out_of_stock">Nema na stanju</SelectItem>
+                <SelectItem value="archived">Arhiviran</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex gap-1">
+              <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('grid')}><LayoutGrid className="h-4 w-4" /></Button>
+              <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('list')}><List className="h-4 w-4" /></Button>
+            </div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Dodaj proizvod</Button>
+          </div>
 
-      {/* Grid View */}
-      {filtered.length === 0 ? (
-        <Card className="p-12 text-center">
-          <ShoppingBag className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-          <p className="text-muted-foreground font-medium">Nema proizvoda za prikaz</p>
-          <p className="text-xs text-muted-foreground mt-1">Pokušajte da promenite filtere ili dodajte novi proizvod</p>
-          <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Dodaj prvi proizvod</Button>
-        </Card>
-      ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filtered.map((p) => {
-            const cfg = productStatusConfig[p.status]
-            return (
-              <Card key={p.id} className="group hover:shadow-md transition-shadow">
-                <CardHeader className="p-0 pb-0 relative">
-                  <div className="h-32 bg-muted rounded-t-lg flex items-center justify-center">
-                    <ShoppingBag className="h-8 w-8 text-muted-foreground/50" />
-                  </div>
-                  {p.featured && <div className="absolute top-2 left-2"><Star className="h-4 w-4 text-amber-400 fill-amber-400" /></div>}
-                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Edit className="h-3 w-3" /></Button>
-                    <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => toggleFeatured(p.id)}><Star className="h-3 w-3" /></Button>
-                  </div>
-                  <Badge variant="outline" className={`absolute bottom-2 right-2 text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
-                </CardHeader>
-                <CardContent className="p-3 space-y-1.5">
-                  <p className="text-sm font-medium truncate" title={p.name}>{p.name}</p>
-                  <p className="text-xs text-muted-foreground">{p.category || 'Bez kategorije'} • {p.sku}</p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-bold">{formatCurrency(p.price)}</span>
-                      {p.comparePrice && p.comparePrice > p.price && (
-                        <span className="text-xs text-muted-foreground line-through ml-1">{formatCurrency(p.comparePrice)}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Zaliha: <Badge variant={p.stock <= 5 ? 'destructive' : 'outline'} className="text-xs px-1">{p.stock}</Badge></span>
-                    <span>⭐ {p.rating} ({p.reviews})</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      ) : (
-        /* List View */
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">Proizvod</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead>Kategorija</TableHead>
-                <TableHead className="text-right">Cena</TableHead>
-                <TableHead className="text-right">Zaliha</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-[100px]">Akcije</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          {/* Results count */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>Prikazano {filtered.length} od {products.length} proizvoda</span>
+            <span>Istaknuti: {products.filter((p) => p.featured).length}</span>
+          </div>
+
+          {/* Grid View */}
+          {filtered.length === 0 ? (
+            <Card className="p-12 text-center">
+              <ShoppingBag className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground font-medium">Nema proizvoda za prikaz</p>
+              <p className="text-xs text-muted-foreground mt-1">Pokušajte da promenite filtere ili dodajte novi proizvod</p>
+              <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Dodaj prvi proizvod</Button>
+            </Card>
+          ) : viewMode === 'grid' ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filtered.map((p) => {
                 const cfg = productStatusConfig[p.status]
                 return (
-                  <TableRow key={p.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {p.featured && <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400 shrink-0" />}
+                  <Card key={p.id} className="group hover:shadow-md transition-shadow">
+                    <CardHeader className="p-0 pb-0 relative">
+                      <div className="h-32 bg-muted rounded-t-lg flex items-center justify-center">
+                        <ShoppingBag className="h-8 w-8 text-muted-foreground/50" />
+                      </div>
+                      {p.featured && <div className="absolute top-2 left-2"><Star className="h-4 w-4 text-amber-400 fill-amber-400" /></div>}
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Edit className="h-3 w-3" /></Button>
+                        <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => toggleFeatured(p.id)}><Star className="h-3 w-3" /></Button>
+                      </div>
+                      <Badge variant="outline" className={`absolute bottom-2 right-2 text-xs ${cfg?.color}`}>{cfg?.label}</Badge>
+                    </CardHeader>
+                    <CardContent className="p-3 space-y-1.5">
+                      <p className="text-sm font-medium truncate" title={p.name}>{p.name}</p>
+                      <p className="text-xs text-muted-foreground">{p.category || 'Bez kategorije'} • {p.sku}</p>
+                      <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium truncate">{p.name}</p>
-                          <p className="text-xs text-muted-foreground">⭐ {p.rating} ({p.reviews} recenzija)</p>
+                          <span className="text-sm font-bold">{formatCurrency(p.price)}</span>
+                          {p.comparePrice && p.comparePrice > p.price && (
+                            <span className="text-xs text-muted-foreground line-through ml-1">{formatCurrency(p.comparePrice)}</span>
+                          )}
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm font-mono">{p.sku}</TableCell>
-                    <TableCell className="text-sm">{p.category || '-'}</TableCell>
-                    <TableCell className="text-right text-sm font-medium">{formatCurrency(p.price)}</TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant={p.stock <= 5 ? 'destructive' : 'outline'} className="text-xs">{p.stock}</Badge>
-                    </TableCell>
-                    <TableCell><Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge></TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Edit className="h-3 w-3" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setDeleteConfirm(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Zaliha: <Badge variant={p.stock <= 5 ? 'destructive' : 'outline'} className="text-xs px-1">{p.stock}</Badge></span>
+                        <span>⭐ {p.rating} ({p.reviews})</span>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </CardContent>
+                  </Card>
                 )
               })}
-            </TableBody>
-          </Table>
-        </Card>
-      )}
-
-      {/* Product Form */}
-      {dialogOpen && (<Card className="max-w-2xl">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editingProduct ? 'Izmeni proizvod' : 'Dodaj proizvod'}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-            {/* Basic Info */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold flex items-center gap-2"><Package className="h-4 w-4" /> Osnovne informacije</h3>
-              <div className="space-y-2">
-                <Label>Naziv proizvoda *</Label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="npr. Bežične slušalice Sony WH-1000XM5" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>SKU *</Label>
-                  <Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="npr. SNY-WH1000XM5" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Kategorija</Label>
-                  <Input value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="npr. Audio" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Opis</Label>
-                <Textarea value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Detaljan opis proizvoda..." rows={3} />
-              </div>
             </div>
+          ) : (
+            /* List View */
+            <Card>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[300px]">Proizvod</TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Kategorija</TableHead>
+                    <TableHead className="text-right">Cena</TableHead>
+                    <TableHead className="text-right">Zaliha</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-[100px]">Akcije</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((p) => {
+                    const cfg = productStatusConfig[p.status]
+                    return (
+                      <TableRow key={p.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {p.featured && <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400 shrink-0" />}
+                            <div>
+                              <p className="text-sm font-medium truncate">{p.name}</p>
+                              <p className="text-xs text-muted-foreground">⭐ {p.rating} ({p.reviews} recenzija)</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm font-mono">{p.sku}</TableCell>
+                        <TableCell className="text-sm">{p.category || '-'}</TableCell>
+                        <TableCell className="text-right text-sm font-medium">{formatCurrency(p.price)}</TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant={p.stock <= 5 ? 'destructive' : 'outline'} className="text-xs">{p.stock}</Badge>
+                        </TableCell>
+                        <TableCell><Badge variant="outline" className={`text-xs ${cfg?.color}`}>{cfg?.label}</Badge></TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Edit className="h-3 w-3" /></Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setDeleteConfirm(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </Card>
+          )}
 
-            <Separator />
-
-            {/* Pricing */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4" /> Cene</h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-2">
-                  <Label>Prodajna cena (RSD) *</Label>
-                  <Input type="number" value={form.price || ''} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Uporedna cena</Label>
-                  <Input type="number" value={form.comparePrice || ''} onChange={(e) => setForm({ ...form, comparePrice: parseFloat(e.target.value) || 0 })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nabavna cena</Label>
-                  <Input type="number" value={form.costPrice || ''} onChange={(e) => setForm({ ...form, costPrice: parseFloat(e.target.value) || 0 })} />
-                </div>
-              </div>
-              {form.costPrice && form.price > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Marža: {((form.price - form.costPrice) / form.price * 100).toFixed(1)}% ({formatCurrency(form.price - form.costPrice)})
-                </p>
-              )}
-            </div>
-
-            <Separator />
-
-            {/* Inventory & Physical */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold flex items-center gap-2"><Package className="h-4 w-4" /> Zaliha i fizičke karakteristike</h3>
-              <div className="grid grid-cols-4 gap-3">
-                <div className="space-y-2">
-                  <Label>Zaliha *</Label>
-                  <Input type="number" value={form.stock || ''} onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) || 0 })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Težina (kg)</Label>
-                  <Input type="number" step="0.001" value={form.weight || ''} onChange={(e) => setForm({ ...form, weight: parseFloat(e.target.value) || 0 })} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Dimenzije</Label>
-                  <Input value={form.dimensions || ''} onChange={(e) => setForm({ ...form, dimensions: e.target.value })} placeholder="npr. 22 x 18 x 8 cm" />
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* SEO */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold flex items-center gap-2"><Globe className="h-4 w-4" /> SEO optimizacija</h3>
-              <div className="space-y-2">
-                <Label>SEO Naslov</Label>
-                <Input value={form.seoTitle || ''} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} placeholder="Naslov za pretraživače (meta title)" />
-              </div>
-              <div className="space-y-2">
-                <Label>SEO Opis</Label>
-                <Textarea value={form.seoDescription || ''} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} placeholder="Meta opis za pretraživače (150-160 karaktera)" rows={2} />
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Status & Featured */}
-            <div className="flex items-center justify-between">
+          {/* Delete Confirmation */}
+          {!!deleteConfirm && (<Card className="max-w-sm">
+            <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className="space-y-1">
-                  <Label>Status</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as StoreProduct['status'] })}>
-                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Aktivan</SelectItem>
-                      <SelectItem value="draft">Nacrt</SelectItem>
-                      <SelectItem value="out_of_stock">Nema na stanju</SelectItem>
-                      <SelectItem value="archived">Arhiviran</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirm(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle className="text-base">Brisanje proizvoda</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">Da li ste sigurni da želite da obrišete ovaj proizvod? Ova akcija je nepovratna.</p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Otkaži</Button>
+                <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Obriši</Button>
+              </div>
+            </CardContent>
+          </Card>)}
+        </TabsContent>
+
+        <TabsContent value="dodaj">
+          <Card className="max-w-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{editingProduct ? 'Izmeni proizvod' : 'Dodaj proizvod'}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Basic Info */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2"><Package className="h-4 w-4" /> Osnovne informacije</h3>
+                <div className="space-y-2">
+                  <Label>Naziv proizvoda *</Label>
+                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="npr. Bežične slušalice Sony WH-1000XM5" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>SKU *</Label>
+                    <Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="npr. SNY-WH1000XM5" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Kategorija</Label>
+                    <Input value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="npr. Audio" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Opis</Label>
+                  <Textarea value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Detaljan opis proizvoda..." rows={3} />
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
-                <Label>Istaknuti proizvod</Label>
-              </div>
-            </div>
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSave} disabled={!form.name}>
-              {editingProduct ? 'Sačuvaj izmene' : 'Dodaj proizvod'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>)}
 
-      {/* Delete Confirmation */}
-      {!!deleteConfirm && (<Card className="max-w-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirm(null)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">Brisanje proizvoda</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">Da li ste sigurni da želite da obrišete ovaj proizvod? Ova akcija je nepovratna.</p>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Otkaži</Button>
-            <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Obriši</Button>
-          </div>
-        </CardContent>
-      </Card>)}
+              <Separator />
+
+              {/* Pricing */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4" /> Cene</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label>Prodajna cena (RSD) *</Label>
+                    <Input type="number" value={form.price || ''} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Uporedna cena</Label>
+                    <Input type="number" value={form.comparePrice || ''} onChange={(e) => setForm({ ...form, comparePrice: parseFloat(e.target.value) || 0 })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nabavna cena</Label>
+                    <Input type="number" value={form.costPrice || ''} onChange={(e) => setForm({ ...form, costPrice: parseFloat(e.target.value) || 0 })} />
+                  </div>
+                </div>
+                {form.costPrice && form.price > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Marža: {((form.price - form.costPrice) / form.price * 100).toFixed(1)}% ({formatCurrency(form.price - form.costPrice)})
+                  </p>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Inventory & Physical */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2"><Package className="h-4 w-4" /> Zaliha i fizičke karakteristike</h3>
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="space-y-2">
+                    <Label>Zaliha *</Label>
+                    <Input type="number" value={form.stock || ''} onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) || 0 })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Težina (kg)</Label>
+                    <Input type="number" step="0.001" value={form.weight || ''} onChange={(e) => setForm({ ...form, weight: parseFloat(e.target.value) || 0 })} />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <Label>Dimenzije</Label>
+                    <Input value={form.dimensions || ''} onChange={(e) => setForm({ ...form, dimensions: e.target.value })} placeholder="npr. 22 x 18 x 8 cm" />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* SEO */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2"><Globe className="h-4 w-4" /> SEO optimizacija</h3>
+                <div className="space-y-2">
+                  <Label>SEO Naslov</Label>
+                  <Input value={form.seoTitle || ''} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} placeholder="Naslov za pretraživače (meta title)" />
+                </div>
+                <div className="space-y-2">
+                  <Label>SEO Opis</Label>
+                  <Textarea value={form.seoDescription || ''} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} placeholder="Meta opis za pretraživače (150-160 karaktera)" rows={2} />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Status & Featured */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="space-y-1">
+                    <Label>Status</Label>
+                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as StoreProduct['status'] })}>
+                      <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Aktivan</SelectItem>
+                        <SelectItem value="draft">Nacrt</SelectItem>
+                        <SelectItem value="out_of_stock">Nema na stanju</SelectItem>
+                        <SelectItem value="archived">Arhiviran</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
+                  <Label>Istaknuti proizvod</Label>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleSave} disabled={!form.name}>
+                  {editingProduct ? 'Sačuvaj izmene' : 'Dodaj proizvod'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
@@ -1210,7 +1218,7 @@ function OrdersTab({ orders, setOrders }: { orders: StoreOrder[]; setOrders: Rea
 // ============ CATEGORIES TAB ============
 
 function CategoriesTab({ categories, setCategories }: { categories: Category[]; setCategories: React.Dispatch<React.SetStateAction<Category[]>> }) {
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingCat, setEditingCat] = useState<Category | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
@@ -1220,13 +1228,13 @@ function CategoriesTab({ categories, setCategories }: { categories: Category[]; 
 
   const [form, setForm] = useState<Category>(emptyCat())
 
-  const openCreate = () => { setEditingCat(null); setForm(emptyCat()); setDialogOpen(true) }
-  const openEdit = (c: Category) => { setEditingCat(c); setForm({ ...c }); setDialogOpen(true) }
+  const openCreate = () => { setEditingCat(null); setForm(emptyCat()); setSubTab('dodaj') }
+  const openEdit = (c: Category) => { setEditingCat(c); setForm({ ...c }); setSubTab('dodaj') }
 
   const handleSave = () => {
     if (!form.name) return
     const slug = form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-    setDialogOpen(false)
+    setSubTab('pregled')
     if (editingCat) {
       setCategories((prev) => prev.map((c) => c.id === editingCat.id ? { ...form, slug } : c))
     } else {
@@ -1267,95 +1275,103 @@ function CategoriesTab({ categories, setCategories }: { categories: Category[]; 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{categories.length} kategorija</p>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Nova kategorija</Button>
-      </div>
+      {/* Sub-tabs */}
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'pregled' | 'dodaj')}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="pregled">Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj">{editingCat ? 'Uredi kategoriju' : 'Dodaj kategoriju'}</TabsTrigger>
+        </TabsList>
 
-      {categories.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Tag className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-          <p className="text-muted-foreground font-medium">Nema kategorija</p>
-          <p className="text-xs text-muted-foreground mt-1">Kreirajte kategorije za organizaciju proizvoda</p>
-          <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj kategoriju</Button>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {categories.sort((a, b) => a.sortOrder - b.sortOrder).map((cat, index) => (
-            <Card key={cat.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="flex items-center gap-4 py-3">
-                <div className="flex flex-col gap-0.5">
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveUp(index)} disabled={index === 0}><ChevronRight className="h-3 w-3 rotate-[-90deg]" /></Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveDown(index)} disabled={index === categories.length - 1}><ChevronRight className="h-3 w-3 rotate-90" /></Button>
-                </div>
-                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                  <Tag className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{cat.name}</span>
-                    {!cat.isActive && <Badge variant="secondary" className="text-xs">Neaktivna</Badge>}
-                  </div>
-                  <p className="text-xs text-muted-foreground">/{cat.slug} • {cat.productCount} proizvoda</p>
-                  {cat.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{cat.description}</p>}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Switch checked={cat.isActive} onCheckedChange={() => toggleActive(cat.id)} />
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(cat)}><Edit className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => setDeleteConfirm(cat.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                </div>
-              </CardContent>
+        <TabsContent value="pregled" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{categories.length} kategorija</p>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Nova kategorija</Button>
+          </div>
+
+          {categories.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Tag className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground font-medium">Nema kategorija</p>
+              <p className="text-xs text-muted-foreground mt-1">Kreirajte kategorije za organizaciju proizvoda</p>
+              <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj kategoriju</Button>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="space-y-2">
+              {categories.sort((a, b) => a.sortOrder - b.sortOrder).map((cat, index) => (
+                <Card key={cat.id} className="hover:shadow-sm transition-shadow">
+                  <CardContent className="flex items-center gap-4 py-3">
+                    <div className="flex flex-col gap-0.5">
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveUp(index)} disabled={index === 0}><ChevronRight className="h-3 w-3 rotate-[-90deg]" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveDown(index)} disabled={index === categories.length - 1}><ChevronRight className="h-3 w-3 rotate-90" /></Button>
+                    </div>
+                    <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                      <Tag className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{cat.name}</span>
+                        {!cat.isActive && <Badge variant="secondary" className="text-xs">Neaktivna</Badge>}
+                      </div>
+                      <p className="text-xs text-muted-foreground">/{cat.slug} • {cat.productCount} proizvoda</p>
+                      {cat.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{cat.description}</p>}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Switch checked={cat.isActive} onCheckedChange={() => toggleActive(cat.id)} />
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(cat)}><Edit className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => setDeleteConfirm(cat.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-      {/* Category Form */}
-      {dialogOpen && (<Card className="max-w-md">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editingCat ? 'Izmeni kategoriju' : 'Nova kategorija'}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-xs text-muted-foreground">{editingCat ? 'Ažurirajte podatke o kategoriji' : 'Kreirajte novu kategoriju za proizvode'}</p>
-          <div className="space-y-2">
-            <Label>Naziv kategorije *</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="npr. Audio oprema" />
-          </div>
-          <div className="space-y-2">
-            <Label>URL slug</Label>
-            <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="npr. audio-oprema" />
-            <p className="text-xs text-muted-foreground">Auto-generisan iz naziva ako se ostavi prazno</p>
-          </div>
-          <div className="space-y-2">
-            <Label>Opis</Label>
-            <Textarea value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Kratak opis kategorije..." rows={2} />
-          </div>
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSave} disabled={!form.name}>{editingCat ? 'Sačuvaj' : 'Kreiraj'}</Button>
-          </div>
-        </CardContent>
-      </Card>)}
+          {/* Delete Confirmation */}
+          {!!deleteConfirm && (<Card className="max-w-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirm(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle className="text-base">Brisanje kategorije</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">Da li ste sigurni? Proizvodi u ovoj kategoriji neće biti obrisani.</p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Otkaži</Button>
+                <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Obriši</Button>
+              </div>
+            </CardContent>
+          </Card>)}
+        </TabsContent>
 
-      {/* Delete Confirmation */}
-      {!!deleteConfirm && (<Card className="max-w-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirm(null)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">Brisanje kategorije</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">Da li ste sigurni? Proizvodi u ovoj kategoriji neće biti obrisani.</p>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Otkaži</Button>
-            <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Obriši</Button>
-          </div>
-        </CardContent>
-      </Card>)}
+        <TabsContent value="dodaj">
+          <Card className="max-w-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{editingCat ? 'Izmeni kategoriju' : 'Nova kategorija'}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">{editingCat ? 'Ažurirajte podatke o kategoriji' : 'Kreirajte novu kategoriju za proizvode'}</p>
+              <div className="space-y-2">
+                <Label>Naziv kategorije *</Label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="npr. Audio oprema" />
+              </div>
+              <div className="space-y-2">
+                <Label>URL slug</Label>
+                <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="npr. audio-oprema" />
+                <p className="text-xs text-muted-foreground">Auto-generisan iz naziva ako se ostavi prazno</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Opis</Label>
+                <Textarea value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Kratak opis kategorije..." rows={2} />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleSave} disabled={!form.name}>{editingCat ? 'Sačuvaj' : 'Kreiraj'}</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
@@ -1363,7 +1379,7 @@ function CategoriesTab({ categories, setCategories }: { categories: Category[]; 
 // ============ COUPONS TAB ============
 
 function CouponsTab({ coupons, setCoupons }: { coupons: Coupon[]; setCoupons: React.Dispatch<React.SetStateAction<Coupon[]>> }) {
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
@@ -1375,12 +1391,12 @@ function CouponsTab({ coupons, setCoupons }: { coupons: Coupon[]; setCoupons: Re
 
   const [form, setForm] = useState<Coupon>(emptyCoupon())
 
-  const openCreate = () => { setEditingCoupon(null); setForm(emptyCoupon()); setDialogOpen(true) }
-  const openEdit = (c: Coupon) => { setEditingCoupon(c); setForm({ ...c }); setDialogOpen(true) }
+  const openCreate = () => { setEditingCoupon(null); setForm(emptyCoupon()); setSubTab('dodaj') }
+  const openEdit = (c: Coupon) => { setEditingCoupon(c); setForm({ ...c }); setSubTab('dodaj') }
 
   const handleSave = () => {
     if (!form.code) return
-    setDialogOpen(false)
+    setSubTab('pregled')
     if (editingCoupon) {
       setCoupons((prev) => prev.map((c) => c.id === editingCoupon.id ? { ...form } : c))
     } else {
@@ -1409,148 +1425,156 @@ function CouponsTab({ coupons, setCoupons }: { coupons: Coupon[]; setCoupons: Re
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{coupons.length} kupona • {coupons.filter((c) => c.isActive).length} aktivnih</p>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Novi kupon</Button>
-      </div>
+      {/* Sub-tabs */}
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'pregled' | 'dodaj')}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="pregled">Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj">{editingCoupon ? 'Uredi kupon' : 'Dodaj kupon'}</TabsTrigger>
+        </TabsList>
 
-      {coupons.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Gift className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-          <p className="text-muted-foreground font-medium">Nema kupona</p>
-          <p className="text-xs text-muted-foreground mt-1">Kreirajte kupone za popuste i promocije</p>
-          <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj kupon</Button>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {coupons.map((coupon) => {
-            const expired = isExpired(coupon)
-            const scheduled = isScheduled(coupon)
-            const usagePct = coupon.maxUses > 0 ? (coupon.usedCount / coupon.maxUses) * 100 : 0
-            return (
-              <Card key={coupon.id} className={`relative overflow-hidden ${!coupon.isActive && 'opacity-60'}`}>
-                <div className={`absolute top-0 left-0 right-0 h-1 ${coupon.isActive ? 'bg-primary' : 'bg-gray-300'}`} />
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-lg font-bold tracking-wider">{coupon.code}</span>
-                        <button onClick={() => copyCode(coupon.code)} className="text-muted-foreground hover:text-foreground">
-                          {copiedCode === coupon.code ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-                        </button>
+        <TabsContent value="pregled" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{coupons.length} kupona • {coupons.filter((c) => c.isActive).length} aktivnih</p>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Novi kupon</Button>
+          </div>
+
+          {coupons.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Gift className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground font-medium">Nema kupona</p>
+              <p className="text-xs text-muted-foreground mt-1">Kreirajte kupone za popuste i promocije</p>
+              <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj kupon</Button>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {coupons.map((coupon) => {
+                const expired = isExpired(coupon)
+                const scheduled = isScheduled(coupon)
+                const usagePct = coupon.maxUses > 0 ? (coupon.usedCount / coupon.maxUses) * 100 : 0
+                return (
+                  <Card key={coupon.id} className={`relative overflow-hidden ${!coupon.isActive && 'opacity-60'}`}>
+                    <div className={`absolute top-0 left-0 right-0 h-1 ${coupon.isActive ? 'bg-primary' : 'bg-gray-300'}`} />
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-lg font-bold tracking-wider">{coupon.code}</span>
+                            <button onClick={() => copyCode(coupon.code)} className="text-muted-foreground hover:text-foreground">
+                              {copiedCode === coupon.code ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">{typeLabels[coupon.type]}</Badge>
+                            {expired && <Badge variant="destructive" className="text-xs">Istekao</Badge>}
+                            {scheduled && <Badge variant="secondary" className="text-xs">Zakazan</Badge>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Switch checked={coupon.isActive} onCheckedChange={() => toggleActive(coupon.id)} />
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(coupon)}><Edit className="h-3.5 w-3.5" /></Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">{typeLabels[coupon.type]}</Badge>
-                        {expired && <Badge variant="destructive" className="text-xs">Istekao</Badge>}
-                        {scheduled && <Badge variant="secondary" className="text-xs">Zakazan</Badge>}
+
+                      <div className="text-2xl font-bold">
+                        {coupon.type === 'besplatna_dostava' ? (
+                          <span className="text-green-600 flex items-center gap-1"><Truck className="h-5 w-5" /> Besplatna dostava</span>
+                        ) : coupon.type === 'procenat' ? (
+                          <span className="text-primary">{coupon.value}%<span className="text-sm text-muted-foreground font-normal ml-1">popust</span></span>
+                        ) : (
+                          <span className="text-primary">{formatCurrency(coupon.value)}<span className="text-sm text-muted-foreground font-normal ml-1">popust</span></span>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Switch checked={coupon.isActive} onCheckedChange={() => toggleActive(coupon.id)} />
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(coupon)}><Edit className="h-3.5 w-3.5" /></Button>
-                    </div>
-                  </div>
 
-                  <div className="text-2xl font-bold">
-                    {coupon.type === 'besplatna_dostava' ? (
-                      <span className="text-green-600 flex items-center gap-1"><Truck className="h-5 w-5" /> Besplatna dostava</span>
-                    ) : coupon.type === 'procenat' ? (
-                      <span className="text-primary">{coupon.value}%<span className="text-sm text-muted-foreground font-normal ml-1">popust</span></span>
-                    ) : (
-                      <span className="text-primary">{formatCurrency(coupon.value)}<span className="text-sm text-muted-foreground font-normal ml-1">popust</span></span>
-                    )}
-                  </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        {coupon.minOrder > 0 && <div>Min. narudžbina: <span className="font-medium text-foreground">{formatCurrency(coupon.minOrder)}</span></div>}
+                        {coupon.maxDiscount > 0 && <div>Max. popust: <span className="font-medium text-foreground">{formatCurrency(coupon.maxDiscount)}</span></div>}
+                        <div>Važi od: {coupon.validFrom}</div>
+                        <div>Važi do: {coupon.validTo}</div>
+                        <div>Primenjuje se na: <span className="font-medium text-foreground">{coupon.appliesTo}</span></div>
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                    {coupon.minOrder > 0 && <div>Min. narudžbina: <span className="font-medium text-foreground">{formatCurrency(coupon.minOrder)}</span></div>}
-                    {coupon.maxDiscount > 0 && <div>Max. popust: <span className="font-medium text-foreground">{formatCurrency(coupon.maxDiscount)}</span></div>}
-                    <div>Važi od: {coupon.validFrom}</div>
-                    <div>Važi do: {coupon.validTo}</div>
-                    <div>Primenjuje se na: <span className="font-medium text-foreground">{coupon.appliesTo}</span></div>
-                  </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>Korišćenje: {coupon.usedCount} / {coupon.maxUses || '∞'}</span>
+                          <span>{usagePct.toFixed(0)}%</span>
+                        </div>
+                        <Progress value={usagePct} className="h-2" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+        </TabsContent>
 
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Korišćenje: {coupon.usedCount} / {coupon.maxUses || '∞'}</span>
-                      <span>{usagePct.toFixed(0)}%</span>
-                    </div>
-                    <Progress value={usagePct} className="h-2" />
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Coupon Form */}
-      {dialogOpen && (<Card className="max-w-md">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editingCoupon ? 'Izmeni kupon' : 'Novi kupon'}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-xs text-muted-foreground">{editingCoupon ? 'Ažurirajte detalje kupona' : 'Kreirajte novi kupon za popust'}</p>
-          <div className="space-y-2">
-            <Label>Kupon kod *</Label>
-            <div className="flex gap-2">
-              <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="npr. POPUST20" className="font-mono uppercase" />
-              <Button variant="outline" size="icon" onClick={() => setForm({ ...form, code: Math.random().toString(36).substring(2, 8).toUpperCase() })}><Zap className="h-4 w-4" /></Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Tip kupona</Label>
-              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as Coupon['type'] })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="procenat">Procenat (%)</SelectItem>
-                  <SelectItem value="fiksni_iznos">Fiksni iznos (RSD)</SelectItem>
-                  <SelectItem value="besplatna_dostava">Besplatna dostava</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Vrednost</Label>
-              <Input type="number" value={form.value || ''} onChange={(e) => setForm({ ...form, value: parseFloat(e.target.value) || 0 })} disabled={form.type === 'besplatna_dostava'} placeholder={form.type === 'procenat' ? '%' : 'RSD'} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Min. narudžbina (RSD)</Label>
-              <Input type="number" value={form.minOrder || ''} onChange={(e) => setForm({ ...form, minOrder: parseFloat(e.target.value) || 0 })} placeholder="0" />
-            </div>
-            <div className="space-y-2">
-              <Label>Max. popust (RSD)</Label>
-              <Input type="number" value={form.maxDiscount || ''} onChange={(e) => setForm({ ...form, maxDiscount: parseFloat(e.target.value) || 0 })} placeholder="0" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Važi od</Label>
-              <Input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Važi do</Label>
-              <Input type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Max. korišćenja</Label>
-            <Input type="number" value={form.maxUses || ''} onChange={(e) => setForm({ ...form, maxUses: parseInt(e.target.value) || 0 })} placeholder="0 = neograničeno" />
-          </div>
-          <div className="space-y-2">
-            <Label>Primenjuje se na</Label>
-            <Input value={form.appliesTo || ''} onChange={(e) => setForm({ ...form, appliesTo: e.target.value })} placeholder="npr. Svi proizvodi, Određena kategorija" />
-          </div>
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSave} disabled={!form.code}>{editingCoupon ? 'Sačuvaj' : 'Kreiraj'}</Button>
-          </div>
-        </CardContent>
-      </Card>)}
+        <TabsContent value="dodaj">
+          <Card className="max-w-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{editingCoupon ? 'Izmeni kupon' : 'Novi kupon'}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">{editingCoupon ? 'Ažurirajte detalje kupona' : 'Kreirajte novi kupon za popust'}</p>
+              <div className="space-y-2">
+                <Label>Kupon kod *</Label>
+                <div className="flex gap-2">
+                  <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="npr. POPUST20" className="font-mono uppercase" />
+                  <Button variant="outline" size="icon" onClick={() => setForm({ ...form, code: Math.random().toString(36).substring(2, 8).toUpperCase() })}><Zap className="h-4 w-4" /></Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Tip kupona</Label>
+                  <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as Coupon['type'] })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="procenat">Procenat (%)</SelectItem>
+                      <SelectItem value="fiksni_iznos">Fiksni iznos (RSD)</SelectItem>
+                      <SelectItem value="besplatna_dostava">Besplatna dostava</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Vrednost</Label>
+                  <Input type="number" value={form.value || ''} onChange={(e) => setForm({ ...form, value: parseFloat(e.target.value) || 0 })} disabled={form.type === 'besplatna_dostava'} placeholder={form.type === 'procenat' ? '%' : 'RSD'} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Min. narudžbina (RSD)</Label>
+                  <Input type="number" value={form.minOrder || ''} onChange={(e) => setForm({ ...form, minOrder: parseFloat(e.target.value) || 0 })} placeholder="0" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Max. popust (RSD)</Label>
+                  <Input type="number" value={form.maxDiscount || ''} onChange={(e) => setForm({ ...form, maxDiscount: parseFloat(e.target.value) || 0 })} placeholder="0" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Važi od</Label>
+                  <Input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Važi do</Label>
+                  <Input type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Max. korišćenja</Label>
+                <Input type="number" value={form.maxUses || ''} onChange={(e) => setForm({ ...form, maxUses: parseInt(e.target.value) || 0 })} placeholder="0 = neograničeno" />
+              </div>
+              <div className="space-y-2">
+                <Label>Primenjuje se na</Label>
+                <Input value={form.appliesTo || ''} onChange={(e) => setForm({ ...form, appliesTo: e.target.value })} placeholder="npr. Svi proizvodi, Određena kategorija" />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleSave} disabled={!form.code}>{editingCoupon ? 'Sačuvaj' : 'Kreiraj'}</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

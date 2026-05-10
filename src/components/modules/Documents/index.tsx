@@ -153,12 +153,12 @@ export function Documents() {
 
   // Folders
   const [folders, setFolders] = useState<Folder[]>(DEFAULT_FOLDERS)
-  const [folderDialogOpen, setFolderDialogOpen] = useState(false)
+  const [foldersSubTab, setFoldersSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [folderForm, setFolderForm] = useState({ name: '', color: '#10b981', parentId: '' })
 
   // Dialogs
-  const [docDialogOpen, setDocDialogOpen] = useState(false)
-  const [docDetailOpen, setDocDetailOpen] = useState(false)
+  const [allDocsSubTab, setAllDocsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  // docDetailOpen replaced by allDocsSubTab
   const [editingDoc, setEditingDoc] = useState<Doc | null>(null)
   const [selectedDoc, setSelectedDoc] = useState<Doc | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
@@ -296,7 +296,7 @@ export function Documents() {
   const openNewDoc = () => {
     setEditingDoc(null)
     setDocForm({ title: '', type: '', category: '', fileName: '', notes: '', expiresAt: '', folder: selectedFolder || '', tags: '', status: 'aktivno' })
-    setDocDialogOpen(true)
+    setAllDocsSubTab('dodaj')
   }
 
   const openEditDoc = (doc: Doc) => {
@@ -307,7 +307,7 @@ export function Documents() {
       expiresAt: doc.expiresAt?.split('T')[0] || '',
       folder: doc.folder || '', tags: doc.tags || '', status: doc.status || 'aktivno',
     })
-    setDocDialogOpen(true)
+    setAllDocsSubTab('dodaj')
   }
 
   const handleSubmitDoc = async () => {
@@ -327,7 +327,7 @@ export function Documents() {
         body: JSON.stringify(body),
       })
       if (res.ok) {
-        setDocDialogOpen(false)
+        setAllDocsSubTab('pregled')
         loadDocs()
         showToast(editingDoc ? 'Dokument ažuriran' : 'Dokument kreiran')
       }
@@ -370,9 +370,16 @@ export function Documents() {
       createdAt: new Date().toISOString(),
     }
     setFolders([...folders, newFolder])
-    setFolderDialogOpen(false)
+    setFoldersSubTab('pregled')
     setFolderForm({ name: '', color: '#10b981', parentId: '' })
     showToast('Fascikla kreirana')
+  }
+
+  const handleMainTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setAllDocsSubTab('pregled')
+    setFoldersSubTab('pregled')
+    setDeleteConfirmOpen(false)
   }
 
   // ============ RENDER ============
@@ -393,13 +400,13 @@ export function Documents() {
           <p className="text-sm text-muted-foreground">Upravljanje dokumentima, ugovorima i fasciklama</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button size="sm" onClick={() => setFolderDialogOpen(true)}><FolderPlus className="h-4 w-4 mr-1" /> Fascikla</Button>
+          <Button size="sm" onClick={() => { setActiveTab('folders'); setFoldersSubTab('dodaj'); }}><FolderPlus className="h-4 w-4 mr-1" /> Fascikla</Button>
           <Button size="sm" onClick={openNewDoc}><Plus className="h-4 w-4 mr-1" /> Novi dokument</Button>
           <Button variant="outline" size="sm" onClick={() => { loadDocs() }}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleMainTabChange}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="all"><FileText className="h-4 w-4 mr-1 hidden sm:inline" /> Sva dokumenta</TabsTrigger>
           <TabsTrigger value="folders"><FolderOpen className="h-4 w-4 mr-1 hidden sm:inline" /> Fascikle</TabsTrigger>
@@ -408,6 +415,13 @@ export function Documents() {
 
         {/* ===== ALL DOCUMENTS ===== */}
         <TabsContent value="all" className="space-y-4">
+          <Tabs value={allDocsSubTab} onValueChange={setAllDocsSubTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+              {selectedDoc && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="pregled" className="space-y-4">
           {/* Filters */}
           <Card className="p-3">
             <div className="flex flex-col sm:flex-row gap-3">
@@ -481,7 +495,7 @@ export function Documents() {
                       const FileIcon = getFileIcon(doc.fileName)
                       const days = daysUntilExpiry(doc.expiresAt)
                       return (
-                        <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors" onClick={() => { setSelectedDoc(doc); setDocDetailOpen(true) }}>
+                        <tr key={doc.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors" onClick={() => { setSelectedDoc(doc); setAllDocsSubTab('detalji') }}>
                           <td className="p-3">
                             <div className="flex items-center gap-2">
                               <FileIcon className={`h-4 w-4 shrink-0 ${getFileTypeColor(doc.fileName)}`} />
@@ -523,7 +537,7 @@ export function Documents() {
                 const FileIcon = getFileIcon(doc.fileName)
                 const days = daysUntilExpiry(doc.expiresAt)
                 return (
-                  <Card key={doc.id} className="cursor-pointer hover:shadow-md transition-shadow group" onClick={() => { setSelectedDoc(doc); setDocDetailOpen(true) }}>
+                  <Card key={doc.id} className="cursor-pointer hover:shadow-md transition-shadow group" onClick={() => { setSelectedDoc(doc); setAllDocsSubTab('detalji') }}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3 mb-3">
                         <div className={`h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 ${getFileTypeColor(doc.fileName)}`}>
@@ -557,8 +571,160 @@ export function Documents() {
           )}
         </TabsContent>
 
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAllDocsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle className="text-base">{editingDoc ? 'Izmeni dokument' : 'Novi dokument'}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-xs text-muted-foreground">{editingDoc ? 'Izmenite podatke o dokumentu' : 'Popunite podatke za novi dokument'}</p>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Naziv dokumenta *</Label>
+                    <Input value={docForm.title} onChange={(e) => setDocForm({ ...docForm, title: e.target.value })} placeholder="Unesite naziv..." />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Tip</Label>
+                      <Select value={docForm.type} onValueChange={(v) => setDocForm({ ...docForm, type: v })}>
+                        <SelectTrigger><SelectValue placeholder="Izaberite tip" /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Status</Label>
+                      <Select value={docForm.status} onValueChange={(v) => setDocForm({ ...docForm, status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Kategorija</Label>
+                      <Select value={docForm.category} onValueChange={(v) => setDocForm({ ...docForm, category: v })}>
+                        <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Bez kategorije</SelectItem>
+                          {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Fascikla</Label>
+                      <Select value={docForm.folder} onValueChange={(v) => setDocForm({ ...docForm, folder: v })}>
+                        <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Bez fascikle</SelectItem>
+                          {folders.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Naziv datoteke</Label>
+                      <Input value={docForm.fileName} onChange={(e) => setDocForm({ ...docForm, fileName: e.target.value })} placeholder="faktura.pdf" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Datum isteka</Label>
+                      <Input type="date" value={docForm.expiresAt} onChange={(e) => setDocForm({ ...docForm, expiresAt: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Oznake (tagovi, zarezom odvojene)</Label>
+                    <Input value={docForm.tags} onChange={(e) => setDocForm({ ...docForm, tags: e.target.value })} placeholder="važno, 2025, računi" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Napomene</Label>
+                    <Textarea value={docForm.notes} onChange={(e) => setDocForm({ ...docForm, notes: e.target.value })} placeholder="Dodatne napomene..." rows={3} />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button variant="outline" onClick={() => setAllDocsSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleSubmitDoc} disabled={submitting || !docForm.title.trim()}>
+                      {submitting ? 'Čuvanje...' : editingDoc ? 'Ažuriraj' : 'Kreiraj'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="detalji" className="space-y-4">
+              {selectedDoc && (<Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAllDocsSubTab('pregled'); setSelectedDoc(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <FileText className="h-5 w-5" /> {selectedDoc.title}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div><span className="text-xs text-muted-foreground">Tip:</span><br /><Badge variant="secondary" className="text-xs">{TYPE_LABELS[selectedDoc.type || ''] || selectedDoc.type || '-'}</Badge></div>
+                          <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-xs ${STATUS_COLORS[selectedDoc.status] || ''}`}>{STATUS_LABELS[selectedDoc.status] || selectedDoc.status}</Badge></div>
+                          <div><span className="text-xs text-muted-foreground">Kategorija:</span><br /><span className="text-sm">{selectedDoc.category || '-'}</span></div>
+                          <div><span className="text-xs text-muted-foreground">Datum kreiranja:</span><br /><span className="text-sm">{formatDate(selectedDoc.createdAt)}</span></div>
+                          <div><span className="text-xs text-muted-foreground">Datum isteka:</span><br />
+                            <span className={`text-sm ${daysUntilExpiry(selectedDoc.expiresAt) !== null && daysUntilExpiry(selectedDoc.expiresAt)! <= 7 ? 'text-red-500 font-medium' : ''}`}>
+                              {selectedDoc.expiresAt ? formatDate(selectedDoc.expiresAt) : '-'}
+                            </span>
+                          </div>
+                          <div><span className="text-xs text-muted-foreground">Datoteka:</span><br /><span className="text-sm">{selectedDoc.fileName || '-'} {selectedDoc.fileName && `(${formatFileSize(selectedDoc.fileSize || 0)})`}</span></div>
+                          <div><span className="text-xs text-muted-foreground">Komitent:</span><br /><span className="text-sm">{selectedDoc.partner?.name || '-'}</span></div>
+                          <div><span className="text-xs text-muted-foreground">Oznake:</span><br />
+                            <div className="flex gap-1 flex-wrap mt-1">
+                              {(selectedDoc.tags || '').split(',').filter(Boolean).map((tag, i) => (
+                                <Badge key={i} variant="outline" className="text-xs"><Tag className="h-2.5 w-2.5 mr-0.5" />{tag.trim()}</Badge>
+                              ))}
+                              {!(selectedDoc.tags || '').split(',').filter(Boolean).length && '-'}
+                            </div>
+                          </div>
+                        </div>
+                        {selectedDoc.notes && (
+                          <div>
+                            <span className="text-xs text-muted-foreground">Napomene:</span>
+                            <p className="text-sm mt-1 bg-muted/30 rounded p-2">{selectedDoc.notes}</p>
+                          </div>
+                        )}
+                        <Separator />
+                        {/* Quick Status Actions */}
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">Brze akcije:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedDoc.status !== 'aktivno' && (
+                              <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'aktivno'); setAllDocsSubTab('pregled'); setSelectedDoc(null) }}><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Aktiviraj</Button>
+                            )}
+                            {selectedDoc.status !== 'arhivirano' && (
+                              <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'arhivirano'); setAllDocsSubTab('pregled'); setSelectedDoc(null) }}><Archive className="h-3.5 w-3.5 mr-1" /> Arhiviraj</Button>
+                            )}
+                            {selectedDoc.status !== 'nacrt' && (
+                              <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'nacrt'); setAllDocsSubTab('pregled'); setSelectedDoc(null) }}><Edit3 className="h-3.5 w-3.5 mr-1" /> Postavi kao nacrt</Button>
+                            )}
+                            <Button size="sm" variant="outline" onClick={() => { openEditDoc(selectedDoc); setAllDocsSubTab('pregled') }}><Edit3 className="h-3.5 w-3.5 mr-1" /> Izmeni</Button>
+                            <Button size="sm" variant="outline" className="text-destructive" onClick={() => { setSelectedDoc(selectedDoc); setDeleteConfirmOpen(true) }}><Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši</Button>
+                          </div>
+                        </div>
+                </CardContent>
+              </Card>)}
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
         {/* ===== FOLDERS TAB ===== */}
         <TabsContent value="folders" className="space-y-4">
+          <Tabs value={foldersSubTab} onValueChange={setFoldersSubTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+            </TabsList>
+            <TabsContent value="pregled" className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {folders.map(folder => {
               const folderDocs = docs.filter(d => d.category === folder.name || d.folder === folder.name)
@@ -580,6 +746,38 @@ export function Documents() {
               )
             })}
           </div>
+        </TabsContent>
+
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFoldersSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle className="text-base flex items-center gap-2"><FolderPlus className="h-5 w-5" /> Nova fascikla</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Naziv fascikle *</Label>
+                    <Input value={folderForm.name} onChange={(e) => setFolderForm({ ...folderForm, name: e.target.value })} placeholder="Unesite naziv..." />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Boja</Label>
+                    <div className="flex gap-2 flex-wrap">
+                      {['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#6b7280', '#ec4899', '#06b6d4'].map(c => (
+                        <button key={c} className={`h-8 w-8 rounded-full border-2 transition-transform ${folderForm.color === c ? 'scale-110 border-primary' : 'border-transparent hover:scale-105'}`}
+                          style={{ backgroundColor: c }} onClick={() => setFolderForm({ ...folderForm, color: c })} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button variant="outline" onClick={() => setFoldersSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateFolder} disabled={!folderForm.name.trim()}>Kreiraj</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== OVERVIEW TAB ===== */}
@@ -607,7 +805,7 @@ export function Documents() {
                   <CardContent>
                     <div className="space-y-2">
                       {stats.expiring.map(d => (
-                        <div key={d.id} className="flex items-center justify-between p-2 rounded hover:bg-amber-50 dark:hover:bg-amber-900/10 cursor-pointer" onClick={() => { setSelectedDoc(d); setDocDetailOpen(true) }}>
+                        <div key={d.id} className="flex items-center justify-between p-2 rounded hover:bg-amber-50 dark:hover:bg-amber-900/10 cursor-pointer" onClick={() => { setSelectedDoc(d); setAllDocsSubTab('detalji') }}>
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-amber-500" />
                             <span className="text-sm">{d.title}</span>
@@ -695,7 +893,7 @@ export function Documents() {
                       {stats.recent.map(doc => {
                         const FileIcon = getFileIcon(doc.fileName)
                         return (
-                          <div key={doc.id} className="flex items-center justify-between p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedDoc(doc); setDocDetailOpen(true) }}>
+                          <div key={doc.id} className="flex items-center justify-between p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedDoc(doc); setAllDocsSubTab('detalji') }}>
                             <div className="flex items-center gap-2">
                               <FileIcon className={`h-4 w-4 ${getFileTypeColor(doc.fileName)}`} />
                               <span className="text-sm truncate max-w-[200px]">{doc.title}</span>
@@ -734,17 +932,7 @@ export function Documents() {
         </TabsContent>
       </Tabs>
 
-      {/* ===== INLINE FORMS ===== */}
-
-      {/* New/Edit Document */}
-      {docDialogOpen && (<Card className="max-w-lg">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDocDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editingDoc ? 'Izmeni dokument' : 'Novi dokument'}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      {/* Info */}
           <p className="text-xs text-muted-foreground">{editingDoc ? 'Izmenite podatke o dokumentu' : 'Popunite podatke za novi dokument'}</p>
           <div className="space-y-2">
             <Label className="text-xs">Naziv dokumenta *</Label>
@@ -823,7 +1011,7 @@ export function Documents() {
       {docDetailOpen && selectedDoc && (<Card className="max-w-lg">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDocDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAllDocsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
             <CardTitle className="text-base flex items-center gap-2">
               <FileText className="h-5 w-5" /> {selectedDoc.title}
             </CardTitle>
@@ -863,16 +1051,16 @@ export function Documents() {
                   <p className="text-xs text-muted-foreground">Brze akcije:</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedDoc.status !== 'aktivno' && (
-                      <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'aktivno'); setDocDetailOpen(false) }}><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Aktiviraj</Button>
+                      <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'aktivno'); setAllDocsSubTab('pregled') }}><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Aktiviraj</Button>
                     )}
                     {selectedDoc.status !== 'arhivirano' && (
-                      <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'arhivirano'); setDocDetailOpen(false) }}><Archive className="h-3.5 w-3.5 mr-1" /> Arhiviraj</Button>
+                      <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'arhivirano'); setAllDocsSubTab('pregled') }}><Archive className="h-3.5 w-3.5 mr-1" /> Arhiviraj</Button>
                     )}
                     {selectedDoc.status !== 'nacrt' && (
-                      <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'nacrt'); setDocDetailOpen(false) }}><Edit3 className="h-3.5 w-3.5 mr-1" /> Postavi kao nacrt</Button>
+                      <Button size="sm" variant="outline" onClick={() => { handleStatusChange(selectedDoc, 'nacrt'); setAllDocsSubTab('pregled') }}><Edit3 className="h-3.5 w-3.5 mr-1" /> Postavi kao nacrt</Button>
                     )}
-                    <Button size="sm" variant="outline" onClick={() => { openEditDoc(selectedDoc); setDocDetailOpen(false) }}><Edit3 className="h-3.5 w-3.5 mr-1" /> Izmeni</Button>
-                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => { setDeleteConfirmOpen(true); setDocDetailOpen(false) }}><Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši</Button>
+                    <Button size="sm" variant="outline" onClick={() => { openEditDoc(selectedDoc); setAllDocsSubTab('pregled') }}><Edit3 className="h-3.5 w-3.5 mr-1" /> Izmeni</Button>
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => { setDeleteConfirmOpen(true); setAllDocsSubTab('pregled') }}><Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši</Button>
                   </div>
                 </div>
         </CardContent>
@@ -895,34 +1083,24 @@ export function Documents() {
         </CardContent>
       </Card>)}
 
-      {/* New Folder */}
-      {folderDialogOpen && (<Card className="max-w-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFolderDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base flex items-center gap-2"><FolderPlus className="h-5 w-5" /> Nova fascikla</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-xs">Naziv fascikle *</Label>
-            <Input value={folderForm.name} onChange={(e) => setFolderForm({ ...folderForm, name: e.target.value })} placeholder="Unesite naziv..." />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs">Boja</Label>
-            <div className="flex gap-2 flex-wrap">
-              {['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#6b7280', '#ec4899', '#06b6d4'].map(c => (
-                <button key={c} className={`h-8 w-8 rounded-full border-2 transition-transform ${folderForm.color === c ? 'scale-110 border-primary' : 'border-transparent hover:scale-105'}`}
-                  style={{ backgroundColor: c }} onClick={() => setFolderForm({ ...folderForm, color: c })} />
-              ))}
+      {/* Delete Confirmation */}
+      {deleteConfirmOpen && selectedDoc && (
+        <Card className="max-w-sm border-destructive">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirmOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5" /> Potvrda brisanja</CardTitle>
             </div>
-          </div>
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateFolder} disabled={!folderForm.name.trim()}>Kreiraj</Button>
-          </div>
-        </CardContent>
-      </Card>)}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">Da li ste sigurni da želite obrisati dokument &quot;{selectedDoc?.title}&quot;? Ova radnja je nepovratna.</p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
+              <Button variant="destructive" onClick={handleDeleteDoc}>Obriši</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Info */}
       <Card>

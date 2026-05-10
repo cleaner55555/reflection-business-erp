@@ -121,6 +121,19 @@ export function Shipping() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
 
+  // Sub-tab states (replacing dialog states)
+  const [ordersSubTab, setOrdersSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [carriersSubTab, setCarriersSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [trackingSubTab, setTrackingSubTab] = useState<'pregled' | 'detalji'>('pregled')
+
+  // Reset sub-tabs when switching main tabs
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    if (tab === 'orders') setOrdersSubTab('pregled')
+    if (tab === 'carriers') setCarriersSubTab('pregled')
+    if (tab === 'tracking') setTrackingSubTab('pregled')
+  }
+
   // Overview state
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
 
@@ -132,10 +145,7 @@ export function Shipping() {
   // Carriers state
   const [carriers, setCarriers] = useState<ShippingCarrier[]>([])
 
-  // Dialogs
-  const [orderDialogOpen, setOrderDialogOpen] = useState(false)
-  const [carrierDialogOpen, setCarrierDialogOpen] = useState(false)
-  const [trackingDialogOpen, setTrackingDialogOpen] = useState(false)
+  // Selected order for tracking detail
   const [selectedOrder, setSelectedOrder] = useState<ShippingOrder | null>(null)
 
   // Tracking events
@@ -214,7 +224,7 @@ export function Shipping() {
   }, [activeCompanyId, loadDashboard, loadCarriers, loadPartners])
 
   useEffect(() => {
-    if (activeTab === 'orders' && activeCompanyId) {
+    if ((activeTab === 'orders' || activeTab === 'tracking') && activeCompanyId) {
       const doLoad = async () => { await loadOrders() }
       doLoad()
     }
@@ -231,7 +241,7 @@ export function Shipping() {
         body: JSON.stringify({ companyId: activeCompanyId, ...orderForm }),
       })
       if (res.ok) {
-        setOrderDialogOpen(false)
+        setOrdersSubTab('pregled')
         setOrderForm(emptyOrder)
         loadOrders()
         loadDashboard()
@@ -267,7 +277,7 @@ export function Shipping() {
         body: JSON.stringify({ companyId: activeCompanyId, ...carrierForm }),
       })
       if (res.ok) {
-        setCarrierDialogOpen(false)
+        setCarriersSubTab('pregled')
         setCarrierForm(emptyCarrier)
         loadCarriers()
         loadDashboard()
@@ -311,7 +321,6 @@ export function Shipping() {
         const found = all.find((o: ShippingOrder) => o.id === orderId)
         if (found) {
           setSelectedOrder(found)
-          // For now events are stored via the orders API addEvent
         }
       }
     } catch { /* silent */ }
@@ -319,7 +328,8 @@ export function Shipping() {
 
   const openTracking = async (order: ShippingOrder) => {
     setSelectedOrder(order)
-    setTrackingDialogOpen(true)
+    setActiveTab('tracking')
+    setTrackingSubTab('detalji')
     // Reload the order with latest status
     if (activeCompanyId) {
       try {
@@ -346,13 +356,13 @@ export function Shipping() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadOrders(); loadCarriers(); }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => setOrderDialogOpen(true)}>
+          <Button size="sm" onClick={() => { setActiveTab('orders'); setOrdersSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> Nova pošiljka
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="orders"><Package className="h-4 w-4 mr-1" /> Pošiljke</TabsTrigger>
@@ -501,534 +511,564 @@ export function Shipping() {
 
         {/* ===== ORDERS TAB ===== */}
         <TabsContent value="orders" className="space-y-4">
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Pretraži po broju, primaocu, tracking..."
-                className="pl-9"
-                value={ordersSearch}
-                onChange={(e) => setOrdersSearch(e.target.value)}
-              />
+          <Tabs value={ordersSubTab} onValueChange={(v) => setOrdersSubTab(v as 'pregled' | 'dodaj')}>
+            <div className="flex items-center justify-between">
+              <TabsList>
+                <TabsTrigger value="pregled">Pregled</TabsTrigger>
+                <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</TabsTrigger>
+              </TabsList>
             </div>
-            <Select value={ordersFilter} onValueChange={setOrdersFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Svi statusi" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi statusi</SelectItem>
-                {Object.entries(statusConfig).map(([key, val]) => (
-                  <SelectItem key={key} value={key}>{val.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
-          {/* Orders List */}
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : orders.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Package className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema pošiljki</p>
-              <Button variant="outline" className="mt-3" onClick={() => setOrderDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" /> Kreiraj prvu pošiljku
-              </Button>
-            </Card>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr className="text-left text-xs text-muted-foreground">
-                      <th className="p-3">Broj</th>
-                      <th className="p-3">Kurir</th>
-                      <th className="p-3">Primalac</th>
-                      <th className="p-3">Težina</th>
-                      <th className="p-3">Pouzeće</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Datum</th>
-                      <th className="p-3">Akcije</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((o) => {
-                      const cfg = statusConfig[o.status]
-                      return (
-                        <tr key={o.id} className="border-t hover:bg-muted/30">
-                          <td className="p-3 font-mono text-xs">{o.number}</td>
-                          <td className="p-3">{o.carrier?.name || '-'}</td>
-                          <td className="p-3">
-                            <div>{o.recipientName || '-'}</div>
-                            {o.recipientCity && <div className="text-xs text-muted-foreground">{o.recipientCity}</div>}
-                          </td>
-                          <td className="p-3 text-xs">{o.weight} kg</td>
-                          <td className="p-3 text-xs font-medium">{o.codAmount > 0 ? formatCurrency(o.codAmount) : '-'}</td>
-                          <td className="p-3">
-                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
-                          </td>
-                          <td className="p-3 text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString('sr-RS')}</td>
-                          <td className="p-3">
-                            <div className="flex gap-1">
-                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openTracking(o)}>
-                                <MapPin className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleUpdateOrderStatus(o.id, o.status === 'nacrt' ? 'cekanje_preuzimanja' : o.status === 'cekanje_preuzimanja' ? 'u_tranzitu' : o.status === 'u_tranzitu' ? 'isporuceno' : o.status)}>
-                                <ArrowRight className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteOrder(o.id)}>
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
+            {/* Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Pretraži po broju, primaocu, tracking..."
+                    className="pl-9"
+                    value={ordersSearch}
+                    onChange={(e) => setOrdersSearch(e.target.value)}
+                  />
+                </div>
+                <Select value={ordersFilter} onValueChange={setOrdersFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Svi statusi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi statusi</SelectItem>
+                    {Object.entries(statusConfig).map(([key, val]) => (
+                      <SelectItem key={key} value={key}>{val.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-          )}
+
+              {/* Orders List */}
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : orders.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Package className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema pošiljki</p>
+                  <Button variant="outline" className="mt-3" onClick={() => setOrdersSubTab('dodaj')}>
+                    <Plus className="h-4 w-4 mr-1" /> Kreiraj prvu pošiljku
+                  </Button>
+                </Card>
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50">
+                        <tr className="text-left text-xs text-muted-foreground">
+                          <th className="p-3">Broj</th>
+                          <th className="p-3">Kurir</th>
+                          <th className="p-3">Primalac</th>
+                          <th className="p-3">Težina</th>
+                          <th className="p-3">Pouzeće</th>
+                          <th className="p-3">Status</th>
+                          <th className="p-3">Datum</th>
+                          <th className="p-3">Akcije</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.map((o) => {
+                          const cfg = statusConfig[o.status]
+                          return (
+                            <tr key={o.id} className="border-t hover:bg-muted/30">
+                              <td className="p-3 font-mono text-xs">{o.number}</td>
+                              <td className="p-3">{o.carrier?.name || '-'}</td>
+                              <td className="p-3">
+                                <div>{o.recipientName || '-'}</div>
+                                {o.recipientCity && <div className="text-xs text-muted-foreground">{o.recipientCity}</div>}
+                              </td>
+                              <td className="p-3 text-xs">{o.weight} kg</td>
+                              <td className="p-3 text-xs font-medium">{o.codAmount > 0 ? formatCurrency(o.codAmount) : '-'}</td>
+                              <td className="p-3">
+                                <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
+                              </td>
+                              <td className="p-3 text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString('sr-RS')}</td>
+                              <td className="p-3">
+                                <div className="flex gap-1">
+                                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openTracking(o)}>
+                                    <MapPin className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleUpdateOrderStatus(o.id, o.status === 'nacrt' ? 'cekanje_preuzimanja' : o.status === 'cekanje_preuzimanja' ? 'u_tranzitu' : o.status === 'u_tranzitu' ? 'isporuceno' : o.status)}>
+                                    <ArrowRight className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteOrder(o.id)}>
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Dodaj sub-tab - Order Form */}
+            <TabsContent value="dodaj">
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setOrdersSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle>Nova pošiljka</CardTitle>
+                </CardHeader>
+                <CardContent className="max-h-[90vh] overflow-y-auto">
+                  <div className="space-y-4">
+                    {/* Kurir & Partner */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Kurirska služba</Label>
+                        <Select value={orderForm.carrierId} onValueChange={(v) => setOrderForm({ ...orderForm, carrierId: v })}>
+                          <SelectTrigger><SelectValue placeholder="Izaberite kurira" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Bez kurira</SelectItem>
+                            {carriers.filter(c => c.isActive).map(c => (
+                              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Partner</Label>
+                        <Select value={orderForm.partnerId} onValueChange={(v) => setOrderForm({ ...orderForm, partnerId: v })}>
+                          <SelectTrigger><SelectValue placeholder="Izaberite partnera" /></SelectTrigger>
+                          <SelectContent>
+                            {partners.map(p => (
+                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Dimensions */}
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Težina (kg)</Label>
+                        <Input type="number" step="0.1" value={orderForm.weight} onChange={(e) => setOrderForm({ ...orderForm, weight: parseFloat(e.target.value) || 0 })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Zapremina (m³)</Label>
+                        <Input type="number" step="0.01" value={orderForm.volume} onChange={(e) => setOrderForm({ ...orderForm, volume: parseFloat(e.target.value) || 0 })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Broj paketa</Label>
+                        <Input type="number" value={orderForm.packageCount} onChange={(e) => setOrderForm({ ...orderForm, packageCount: parseInt(e.target.value) || 1 })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Deklarisana vrednost</Label>
+                        <Input type="number" value={orderForm.declaredValue} onChange={(e) => setOrderForm({ ...orderForm, declaredValue: parseFloat(e.target.value) || 0 })} />
+                      </div>
+                    </div>
+
+                    {/* Costs */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Trošak dostave (RSD)</Label>
+                        <Input type="number" value={orderForm.shippingCost} onChange={(e) => setOrderForm({ ...orderForm, shippingCost: parseFloat(e.target.value) || 0 })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Pouzeće (RSD)</Label>
+                        <Input type="number" value={orderForm.codAmount} onChange={(e) => setOrderForm({ ...orderForm, codAmount: parseFloat(e.target.value) || 0 })} />
+                      </div>
+                      <div className="flex items-end gap-2 pb-1">
+                        <Switch checked={orderForm.insurance} onCheckedChange={(v) => setOrderForm({ ...orderForm, insurance: v })} />
+                        <Label className="text-xs">Osiguranje</Label>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Sender */}
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Adresa pošiljaoca</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label className="text-xs">Ime / Firma</Label>
+                          <Input value={orderForm.senderName} onChange={(e) => setOrderForm({ ...orderForm, senderName: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Telefon</Label>
+                          <Input value={orderForm.senderPhone} onChange={(e) => setOrderForm({ ...orderForm, senderPhone: e.target.value })} />
+                        </div>
+                        <div className="col-span-2 space-y-2">
+                          <Label className="text-xs">Adresa</Label>
+                          <Input value={orderForm.senderAddress} onChange={(e) => setOrderForm({ ...orderForm, senderAddress: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Grad</Label>
+                          <Input value={orderForm.senderCity} onChange={(e) => setOrderForm({ ...orderForm, senderCity: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Poštanski broj</Label>
+                          <Input value={orderForm.senderZip} onChange={(e) => setOrderForm({ ...orderForm, senderZip: e.target.value })} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Recipient */}
+                    <div>
+                      <Label className="text-sm font-medium mb-2 block">Adresa primaoca</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label className="text-xs">Ime / Firma</Label>
+                          <Input value={orderForm.recipientName} onChange={(e) => setOrderForm({ ...orderForm, recipientName: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Telefon</Label>
+                          <Input value={orderForm.recipientPhone} onChange={(e) => setOrderForm({ ...orderForm, recipientPhone: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Email</Label>
+                          <Input value={orderForm.recipientEmail} onChange={(e) => setOrderForm({ ...orderForm, recipientEmail: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Poštanski broj</Label>
+                          <Input value={orderForm.recipientZip} onChange={(e) => setOrderForm({ ...orderForm, recipientZip: e.target.value })} />
+                        </div>
+                        <div className="col-span-2 space-y-2">
+                          <Label className="text-xs">Adresa</Label>
+                          <Input value={orderForm.recipientAddress} onChange={(e) => setOrderForm({ ...orderForm, recipientAddress: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Grad</Label>
+                          <Input value={orderForm.recipientCity} onChange={(e) => setOrderForm({ ...orderForm, recipientCity: e.target.value })} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notes */}
+                    <div className="space-y-2">
+                      <Label className="text-xs">Napomene</Label>
+                      <Textarea value={orderForm.notes} onChange={(e) => setOrderForm({ ...orderForm, notes: e.target.value })} rows={2} />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setOrdersSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateOrder}>Kreiraj pošiljku</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== CARRIERS TAB ===== */}
         <TabsContent value="carriers" className="space-y-4">
-          <div className="flex justify-end">
-            <Button size="sm" onClick={() => setCarrierDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" /> Novi kurir
-            </Button>
-          </div>
-
-          {carriers.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Truck className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema kurirskih službi</p>
-              <p className="text-xs text-muted-foreground mt-1">Dodajte kurirske službe (BEX, Post Express, DHL...)</p>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {carriers.map((c) => (
-                <Card key={c.id} className="relative">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-base">{c.name}</CardTitle>
-                        <Badge variant="outline" className="mt-1 text-xs">{carrierTypeLabels[c.type] || c.type}</Badge>
-                      </div>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteCarrier(c.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Globe2 className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{c.code}</span>
-                    </div>
-                    {c.contactPhone && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs">{c.contactPhone}</span>
-                      </div>
-                    )}
-                    {c.contactEmail && (
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs">{c.contactEmail}</span>
-                      </div>
-                    )}
-                    <Separator />
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Pošiljki</span>
-                      <span className="font-medium">{c._count?.orders || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Dostava</span>
-                      <span className="font-medium">{c.deliveryEstimate} dana</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Cena</span>
-                      <span className="font-medium">{c.defaultPrice > 0 ? formatCurrency(c.defaultPrice) : 'Prilagođena'}</span>
-                    </div>
-                    {!c.isActive && (
-                      <Badge variant="secondary" className="text-xs">Neaktivan</Badge>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+          <Tabs value={carriersSubTab} onValueChange={(v) => setCarriersSubTab(v as 'pregled' | 'dodaj')}>
+            <div className="flex items-center justify-end">
+              <TabsList>
+                <TabsTrigger value="pregled">Pregled</TabsTrigger>
+                <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</TabsTrigger>
+              </TabsList>
             </div>
-          )}
+
+            {/* Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
+              {carriers.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Truck className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema kurirskih službi</p>
+                  <p className="text-xs text-muted-foreground mt-1">Dodajte kurirske službe (BEX, Post Express, DHL...)</p>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {carriers.map((c) => (
+                    <Card key={c.id} className="relative">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-base">{c.name}</CardTitle>
+                            <Badge variant="outline" className="mt-1 text-xs">{carrierTypeLabels[c.type] || c.type}</Badge>
+                          </div>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteCarrier(c.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Globe2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">{c.code}</span>
+                        </div>
+                        {c.contactPhone && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-xs">{c.contactPhone}</span>
+                          </div>
+                        )}
+                        {c.contactEmail && (
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-xs">{c.contactEmail}</span>
+                          </div>
+                        )}
+                        <Separator />
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Pošiljki</span>
+                          <span className="font-medium">{c._count?.orders || 0}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Dostava</span>
+                          <span className="font-medium">{c.deliveryEstimate} dana</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Cena</span>
+                          <span className="font-medium">{c.defaultPrice > 0 ? formatCurrency(c.defaultPrice) : 'Prilagođena'}</span>
+                        </div>
+                        {!c.isActive && (
+                          <Badge variant="secondary" className="text-xs">Neaktivan</Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Dodaj sub-tab - Carrier Form */}
+            <TabsContent value="dodaj">
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCarriersSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle>Novi kurir</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Naziv</Label>
+                      <Input value={carrierForm.name} onChange={(e) => setCarrierForm({ ...carrierForm, name: e.target.value })} placeholder="npr. BEX" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Šifra</Label>
+                      <Input value={carrierForm.code} onChange={(e) => setCarrierForm({ ...carrierForm, code: e.target.value })} placeholder="npr. bex" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Tip</Label>
+                      <Select value={carrierForm.type} onValueChange={(v) => setCarrierForm({ ...carrierForm, type: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="domestic">Domaći</SelectItem>
+                          <SelectItem value="regional">Regionalni</SelectItem>
+                          <SelectItem value="international">Međunarodni</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Vreme dostave (dana)</Label>
+                      <Input value={carrierForm.deliveryEstimate} onChange={(e) => setCarrierForm({ ...carrierForm, deliveryEstimate: e.target.value })} placeholder="1-3" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Telefon</Label>
+                      <Input value={carrierForm.contactPhone} onChange={(e) => setCarrierForm({ ...carrierForm, contactPhone: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input value={carrierForm.contactEmail} onChange={(e) => setCarrierForm({ ...carrierForm, contactEmail: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Website</Label>
+                      <Input value={carrierForm.website} onChange={(e) => setCarrierForm({ ...carrierForm, website: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>API URL</Label>
+                      <Input value={carrierForm.apiUrl} onChange={(e) => setCarrierForm({ ...carrierForm, apiUrl: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Podrazumevana težina (kg)</Label>
+                      <Input type="number" step="0.1" value={carrierForm.defaultWeight} onChange={(e) => setCarrierForm({ ...carrierForm, defaultWeight: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Podrazumevana cena (RSD)</Label>
+                      <Input type="number" value={carrierForm.defaultPrice} onChange={(e) => setCarrierForm({ ...carrierForm, defaultPrice: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Napomene</Label>
+                    <Textarea value={carrierForm.notes} onChange={(e) => setCarrierForm({ ...carrierForm, notes: e.target.value })} rows={2} />
+                  </div>
+                  <div className="flex gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setCarriersSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateCarrier}>Dodaj kurira</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== TRACKING TAB ===== */}
         <TabsContent value="tracking" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Pretraži pošiljku po broju ili tracking broju..."
-                className="pl-9"
-                value={ordersSearch}
-                onChange={(e) => setOrdersSearch(e.target.value)}
-              />
+          <Tabs value={trackingSubTab} onValueChange={(v) => setTrackingSubTab(v as 'pregled' | 'detalji')}>
+            <div className="flex items-center justify-between">
+              <TabsList>
+                <TabsTrigger value="pregled">Pregled</TabsTrigger>
+                <TabsTrigger value="detalji"><Eye className="h-3.5 w-3.5 mr-1" /> Detalji</TabsTrigger>
+              </TabsList>
             </div>
-            <Button onClick={loadOrders}>
-              <Search className="h-4 w-4 mr-1" /> Pretraži
-            </Button>
-          </div>
 
-          {orders.length === 0 ? (
-            <Card className="p-8 text-center">
-              <MapPin className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Unesite broj pošiljke ili tracking broj za praćenje</p>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {orders.map((o) => {
-                const cfg = statusConfig[o.status]
-                return (
-                  <Card key={o.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm font-medium">{o.number}</span>
-                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
+            {/* Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Pretraži pošiljku po broju ili tracking broju..."
+                    className="pl-9"
+                    value={ordersSearch}
+                    onChange={(e) => setOrdersSearch(e.target.value)}
+                  />
+                </div>
+                <Button onClick={loadOrders}>
+                  <Search className="h-4 w-4 mr-1" /> Pretraži
+                </Button>
+              </div>
+
+              {orders.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <MapPin className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Unesite broj pošiljke ili tracking broj za praćenje</p>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {orders.map((o) => {
+                    const cfg = statusConfig[o.status]
+                    return (
+                      <Card key={o.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-sm font-medium">{o.number}</span>
+                                <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || o.status}</Badge>
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {o.carrier?.name && <span>{o.carrier.name} · </span>}
+                                {o.trackingNumber && <span>Tracking: {o.trackingNumber}</span>}
+                              </div>
+                            </div>
+                            <Button size="sm" variant="outline" onClick={() => openTracking(o)}>
+                              <Eye className="h-3.5 w-3.5 mr-1" /> Detalji
+                            </Button>
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {o.carrier?.name && <span>{o.carrier.name} · </span>}
-                            {o.trackingNumber && <span>Tracking: {o.trackingNumber}</span>}
+
+                          {/* Route visualization */}
+                          <div className="flex items-center gap-2 text-xs">
+                            <div className="text-center">
+                              <div className="font-medium">{o.senderCity || 'Pošiljalac'}</div>
+                              <div className="text-muted-foreground max-w-[100px] truncate">{o.senderName}</div>
+                            </div>
+                            <div className="flex-1 flex items-center">
+                              <div className={`h-2 w-2 rounded-full ${o.status === 'nacrt' ? 'bg-gray-300' : 'bg-green-500'}`} />
+                              <div className={`flex-1 h-0.5 ${o.status === 'isporuceno' ? 'bg-green-500' : o.status === 'u_tranzitu' ? 'bg-sky-400' : 'bg-gray-200'}`} />
+                              <Truck className={`h-3.5 w-3.5 mx-1 ${o.status === 'u_tranzitu' ? 'text-sky-500' : 'text-gray-300'}`} />
+                              <div className={`flex-1 h-0.5 ${o.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-200'}`} />
+                              <div className={`h-2 w-2 rounded-full ${o.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            </div>
+                            <div className="text-center">
+                              <div className="font-medium">{o.recipientCity || 'Primalac'}</div>
+                              <div className="text-muted-foreground max-w-[100px] truncate">{o.recipientName}</div>
+                            </div>
                           </div>
-                        </div>
-                        <Button size="sm" variant="outline" onClick={() => openTracking(o)}>
-                          <Eye className="h-3.5 w-3.5 mr-1" /> Detalji
-                        </Button>
-                      </div>
-
-                      {/* Route visualization */}
-                      <div className="flex items-center gap-2 text-xs">
-                        <div className="text-center">
-                          <div className="font-medium">{o.senderCity || 'Pošiljalac'}</div>
-                          <div className="text-muted-foreground max-w-[100px] truncate">{o.senderName}</div>
-                        </div>
-                        <div className="flex-1 flex items-center">
-                          <div className={`h-2 w-2 rounded-full ${o.status === 'nacrt' ? 'bg-gray-300' : 'bg-green-500'}`} />
-                          <div className={`flex-1 h-0.5 ${o.status === 'isporuceno' ? 'bg-green-500' : o.status === 'u_tranzitu' ? 'bg-sky-400' : 'bg-gray-200'}`} />
-                          <Truck className={`h-3.5 w-3.5 mx-1 ${o.status === 'u_tranzitu' ? 'text-sky-500' : 'text-gray-300'}`} />
-                          <div className={`flex-1 h-0.5 ${o.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-200'}`} />
-                          <div className={`h-2 w-2 rounded-full ${o.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-300'}`} />
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium">{o.recipientCity || 'Primalac'}</div>
-                          <div className="text-muted-foreground max-w-[100px] truncate">{o.recipientName}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {/* ===== NEW ORDER FORM ===== */}
-      {orderDialogOpen && (
-        <Card className="max-w-3xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setOrderDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle>Nova pošiljka</CardTitle>
-          </CardHeader>
-          <CardContent className="max-h-[90vh] overflow-y-auto">
-          <div className="space-y-4">
-            {/* Kurir & Partner */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Kurirska služba</Label>
-                <Select value={orderForm.carrierId} onValueChange={(v) => setOrderForm({ ...orderForm, carrierId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite kurira" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Bez kurira</SelectItem>
-                    {carriers.filter(c => c.isActive).map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Partner</Label>
-                <Select value={orderForm.partnerId} onValueChange={(v) => setOrderForm({ ...orderForm, partnerId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite partnera" /></SelectTrigger>
-                  <SelectContent>
-                    {partners.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Dimensions */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="space-y-2">
-                <Label className="text-xs">Težina (kg)</Label>
-                <Input type="number" step="0.1" value={orderForm.weight} onChange={(e) => setOrderForm({ ...orderForm, weight: parseFloat(e.target.value) || 0 })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Zapremina (m³)</Label>
-                <Input type="number" step="0.01" value={orderForm.volume} onChange={(e) => setOrderForm({ ...orderForm, volume: parseFloat(e.target.value) || 0 })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Broj paketa</Label>
-                <Input type="number" value={orderForm.packageCount} onChange={(e) => setOrderForm({ ...orderForm, packageCount: parseInt(e.target.value) || 1 })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Deklarisana vrednost</Label>
-                <Input type="number" value={orderForm.declaredValue} onChange={(e) => setOrderForm({ ...orderForm, declaredValue: parseFloat(e.target.value) || 0 })} />
-              </div>
-            </div>
-
-            {/* Costs */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-2">
-                <Label className="text-xs">Trošak dostave (RSD)</Label>
-                <Input type="number" value={orderForm.shippingCost} onChange={(e) => setOrderForm({ ...orderForm, shippingCost: parseFloat(e.target.value) || 0 })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Pouzeće (RSD)</Label>
-                <Input type="number" value={orderForm.codAmount} onChange={(e) => setOrderForm({ ...orderForm, codAmount: parseFloat(e.target.value) || 0 })} />
-              </div>
-              <div className="flex items-end gap-2 pb-1">
-                <Switch checked={orderForm.insurance} onCheckedChange={(v) => setOrderForm({ ...orderForm, insurance: v })} />
-                <Label className="text-xs">Osiguranje</Label>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Sender */}
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Adresa pošiljaoca</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-xs">Ime / Firma</Label>
-                  <Input value={orderForm.senderName} onChange={(e) => setOrderForm({ ...orderForm, senderName: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Telefon</Label>
-                  <Input value={orderForm.senderPhone} onChange={(e) => setOrderForm({ ...orderForm, senderPhone: e.target.value })} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label className="text-xs">Adresa</Label>
-                  <Input value={orderForm.senderAddress} onChange={(e) => setOrderForm({ ...orderForm, senderAddress: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Grad</Label>
-                  <Input value={orderForm.senderCity} onChange={(e) => setOrderForm({ ...orderForm, senderCity: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Poštanski broj</Label>
-                  <Input value={orderForm.senderZip} onChange={(e) => setOrderForm({ ...orderForm, senderZip: e.target.value })} />
-                </div>
-              </div>
-            </div>
-
-            {/* Recipient */}
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Adresa primaoca</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-xs">Ime / Firma</Label>
-                  <Input value={orderForm.recipientName} onChange={(e) => setOrderForm({ ...orderForm, recipientName: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Telefon</Label>
-                  <Input value={orderForm.recipientPhone} onChange={(e) => setOrderForm({ ...orderForm, recipientPhone: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Email</Label>
-                  <Input value={orderForm.recipientEmail} onChange={(e) => setOrderForm({ ...orderForm, recipientEmail: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Poštanski broj</Label>
-                  <Input value={orderForm.recipientZip} onChange={(e) => setOrderForm({ ...orderForm, recipientZip: e.target.value })} />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label className="text-xs">Adresa</Label>
-                  <Input value={orderForm.recipientAddress} onChange={(e) => setOrderForm({ ...orderForm, recipientAddress: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Grad</Label>
-                  <Input value={orderForm.recipientCity} onChange={(e) => setOrderForm({ ...orderForm, recipientCity: e.target.value })} />
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label className="text-xs">Napomene</Label>
-              <Textarea value={orderForm.notes} onChange={(e) => setOrderForm({ ...orderForm, notes: e.target.value })} rows={2} />
-            </div>
-          </div>
-
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setOrderDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateOrder}>Kreiraj pošiljku</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ===== NEW CARRIER FORM ===== */}
-      {carrierDialogOpen && (
-        <Card className="max-w-3xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCarrierDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle>Novi kurir</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Naziv</Label>
-                <Input value={carrierForm.name} onChange={(e) => setCarrierForm({ ...carrierForm, name: e.target.value })} placeholder="npr. BEX" />
-              </div>
-              <div className="space-y-2">
-                <Label>Šifra</Label>
-                <Input value={carrierForm.code} onChange={(e) => setCarrierForm({ ...carrierForm, code: e.target.value })} placeholder="npr. bex" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Tip</Label>
-                <Select value={carrierForm.type} onValueChange={(v) => setCarrierForm({ ...carrierForm, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="domestic">Domaći</SelectItem>
-                    <SelectItem value="regional">Regionalni</SelectItem>
-                    <SelectItem value="international">Međunarodni</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Vreme dostave (dana)</Label>
-                <Input value={carrierForm.deliveryEstimate} onChange={(e) => setCarrierForm({ ...carrierForm, deliveryEstimate: e.target.value })} placeholder="1-3" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Telefon</Label>
-                <Input value={carrierForm.contactPhone} onChange={(e) => setCarrierForm({ ...carrierForm, contactPhone: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={carrierForm.contactEmail} onChange={(e) => setCarrierForm({ ...carrierForm, contactEmail: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Website</Label>
-                <Input value={carrierForm.website} onChange={(e) => setCarrierForm({ ...carrierForm, website: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>API URL</Label>
-                <Input value={carrierForm.apiUrl} onChange={(e) => setCarrierForm({ ...carrierForm, apiUrl: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Podrazumevana težina (kg)</Label>
-                <Input type="number" step="0.1" value={carrierForm.defaultWeight} onChange={(e) => setCarrierForm({ ...carrierForm, defaultWeight: parseFloat(e.target.value) || 0 })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Podrazumevana cena (RSD)</Label>
-                <Input type="number" value={carrierForm.defaultPrice} onChange={(e) => setCarrierForm({ ...carrierForm, defaultPrice: parseFloat(e.target.value) || 0 })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Napomene</Label>
-              <Textarea value={carrierForm.notes} onChange={(e) => setCarrierForm({ ...carrierForm, notes: e.target.value })} rows={2} />
-            </div>
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setCarrierDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateCarrier}>Dodaj kurira</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ===== TRACKING DETAIL VIEW ===== */}
-      {trackingDialogOpen && (
-        <Card className="max-w-3xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTrackingDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle>Praćenje pošiljke {selectedOrder?.number}</CardTitle>
-          </CardHeader>
-          <CardContent>
-          {selectedOrder && (
-            <div className="space-y-4">
-              {/* Status header */}
-              <div className="flex items-center justify-between">
-                <Badge variant="outline" className={`text-xs ${statusConfig[selectedOrder.status]?.color || ''}`}>
-                  {statusConfig[selectedOrder.status]?.label || selectedOrder.status}
-                </Badge>
-                {selectedOrder.trackingNumber && (
-                  <span className="text-xs text-muted-foreground font-mono">{selectedOrder.trackingNumber}</span>
-                )}
-              </div>
-
-              {/* Route */}
-              <div className="flex items-center gap-2 text-sm p-3 bg-muted/50 rounded-lg">
-                <div className="text-center">
-                  <div className="font-medium">{selectedOrder.senderCity || 'Od'}</div>
-                  <div className="text-xs text-muted-foreground">{selectedOrder.senderName}</div>
-                </div>
-                <div className="flex-1 flex items-center gap-1">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  <div className={`flex-1 h-0.5 ${selectedOrder.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                  <div className={`flex-1 h-0.5 ${selectedOrder.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  <div className={`h-1.5 w-1.5 rounded-full ${selectedOrder.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-300'}`} />
-                </div>
-                <div className="text-center">
-                  <div className="font-medium">{selectedOrder.recipientCity || 'Do'}</div>
-                  <div className="text-xs text-muted-foreground">{selectedOrder.recipientName}</div>
-                </div>
-              </div>
-
-              {/* Details */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex justify-between p-2 bg-muted/30 rounded"><span className="text-muted-foreground">Težina:</span><span>{selectedOrder.weight} kg</span></div>
-                <div className="flex justify-between p-2 bg-muted/30 rounded"><span className="text-muted-foreground">Paketa:</span><span>{selectedOrder.packageCount}</span></div>
-                <div className="flex justify-between p-2 bg-muted/30 rounded"><span className="text-muted-foreground">Trošak:</span><span>{formatCurrency(selectedOrder.shippingCost)}</span></div>
-                <div className="flex justify-between p-2 bg-muted/30 rounded"><span className="text-muted-foreground">Pouzeće:</span><span>{formatCurrency(selectedOrder.codAmount)}</span></div>
-              </div>
-
-              {/* Quick Actions */}
-              {selectedOrder.status !== 'isporuceno' && selectedOrder.status !== 'vraceno' && selectedOrder.status !== 'otkazano' && (
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium">Brze akcije</Label>
-                  <div className="flex gap-2 flex-wrap">
-                    <Button size="sm" variant="outline" onClick={() => handleAddTrackingEvent('picked_up', 'Pošiljka preuzeta od pošiljaoca', selectedOrder.senderCity)}>
-                      Preuzeto
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleAddTrackingEvent('in_transit', 'Pošiljka u tranzitu', selectedOrder.recipientCity)}>
-                      U tranzitu
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleAddTrackingEvent('out_for_delivery', 'Isporuka u toku', selectedOrder.recipientCity)}>
-                      Isporuka u toku
-                    </Button>
-                    <Button size="sm" onClick={() => handleAddTrackingEvent('delivered', 'Uspešno isporučeno', selectedOrder.recipientCity)}>
-                      <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Isporučeno
-                    </Button>
-                  </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
                 </div>
               )}
-            </div>
-          )}
-          </CardContent>
-        </Card>
-      )}
+            </TabsContent>
+
+            {/* Detalji sub-tab - Tracking Detail */}
+            <TabsContent value="detalji">
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTrackingSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle>Praćenje pošiljke {selectedOrder?.number}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selectedOrder && (
+                    <div className="space-y-4">
+                      {/* Status header */}
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className={`text-xs ${statusConfig[selectedOrder.status]?.color || ''}`}>
+                          {statusConfig[selectedOrder.status]?.label || selectedOrder.status}
+                        </Badge>
+                        {selectedOrder.trackingNumber && (
+                          <span className="text-xs text-muted-foreground font-mono">{selectedOrder.trackingNumber}</span>
+                        )}
+                      </div>
+
+                      {/* Route */}
+                      <div className="flex items-center gap-2 text-sm p-3 bg-muted/50 rounded-lg">
+                        <div className="text-center">
+                          <div className="font-medium">{selectedOrder.senderCity || 'Od'}</div>
+                          <div className="text-xs text-muted-foreground">{selectedOrder.senderName}</div>
+                        </div>
+                        <div className="flex-1 flex items-center gap-1">
+                          <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                          <div className={`flex-1 h-0.5 ${selectedOrder.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                          <div className={`flex-1 h-0.5 ${selectedOrder.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <div className={`h-1.5 w-1.5 rounded-full ${selectedOrder.status === 'isporuceno' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium">{selectedOrder.recipientCity || 'Do'}</div>
+                          <div className="text-xs text-muted-foreground">{selectedOrder.recipientName}</div>
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex justify-between p-2 bg-muted/30 rounded"><span className="text-muted-foreground">Težina:</span><span>{selectedOrder.weight} kg</span></div>
+                        <div className="flex justify-between p-2 bg-muted/30 rounded"><span className="text-muted-foreground">Paketa:</span><span>{selectedOrder.packageCount}</span></div>
+                        <div className="flex justify-between p-2 bg-muted/30 rounded"><span className="text-muted-foreground">Trošak:</span><span>{formatCurrency(selectedOrder.shippingCost)}</span></div>
+                        <div className="flex justify-between p-2 bg-muted/30 rounded"><span className="text-muted-foreground">Pouzeće:</span><span>{formatCurrency(selectedOrder.codAmount)}</span></div>
+                      </div>
+
+                      {/* Quick Actions */}
+                      {selectedOrder.status !== 'isporuceno' && selectedOrder.status !== 'vraceno' && selectedOrder.status !== 'otkazano' && (
+                        <div className="space-y-2">
+                          <Label className="text-xs font-medium">Brze akcije</Label>
+                          <div className="flex gap-2 flex-wrap">
+                            <Button size="sm" variant="outline" onClick={() => handleAddTrackingEvent('picked_up', 'Pošiljka preuzeta od pošiljaoca', selectedOrder.senderCity)}>
+                              Preuzeto
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleAddTrackingEvent('in_transit', 'Pošiljka u tranzitu', selectedOrder.recipientCity)}>
+                              U tranzitu
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleAddTrackingEvent('out_for_delivery', 'Isporuka u toku', selectedOrder.recipientCity)}>
+                              Isporuka u toku
+                            </Button>
+                            <Button size="sm" onClick={() => handleAddTrackingEvent('delivered', 'Uspešno isporučeno', selectedOrder.recipientCity)}>
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Isporučeno
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

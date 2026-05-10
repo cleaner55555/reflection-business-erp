@@ -66,8 +66,9 @@ export function Blueprints() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [detailId, setDetailId] = useState<string | null>(null)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editItem, setEditItem] = useState<Blueprint | null>(null)
   const [formData, setFormData] = useState({ name: '', code: '', project: '', category: 'architectural' as Blueprint['category'], author: '', client: '', scale: '', sheetSize: '', notes: '' })
 
@@ -109,13 +110,13 @@ export function Blueprints() {
 
   const handleOpenCreate = useCallback(() => {
     setFormData({ name: '', code: `BP-${new Date().getFullYear()}-${String(data.length + 1).padStart(3, '0')}`, project: '', category: 'architectural', author: '', client: '', scale: '', sheetSize: '', notes: '' })
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }, [data.length])
 
   const handleOpenEdit = useCallback((item: Blueprint) => {
     setFormData({ name: item.name, code: item.code, project: item.project, category: item.category, author: item.author, client: item.client, scale: item.scale, sheetSize: item.sheetSize, notes: item.notes })
     setEditItem(item)
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }, [])
 
   const handleSave = useCallback(async () => {
@@ -134,7 +135,7 @@ export function Blueprints() {
         setData(prev => [{ ...created, revisions: typeof created.revisions === 'string' ? JSON.parse(created.revisions) : created.revisions || [] }, ...prev])
         toast.success('Novi nacrt kreiran')
       }
-      setDialogOpen(false); setEditItem(null)
+      setSubTab('pregled'); setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }, [formData, editItem])
 
@@ -149,7 +150,7 @@ export function Blueprints() {
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30"><Ruler className="h-5 w-5 text-blue-700 dark:text-blue-400" /></div>
           <div><h1 className="text-2xl font-bold tracking-tight">Projektovanje</h1><p className="text-sm text-muted-foreground">Upravljanje nacrtima i projektima</p></div>
         </div>
-        <Button size="sm" className="gap-2" onClick={handleOpenCreate}><Plus className="h-4 w-4" />Novi nacrt</Button>
+        <Button size="sm" className="gap-2" onClick={() => { setEditItem(null); handleOpenCreate() }}><Plus className="h-4 w-4" />Novi nacrt</Button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
@@ -162,7 +163,46 @@ export function Blueprints() {
         <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">Veličina</div><p className="text-xl font-bold">{stats.totalSize.toFixed(1)} MB</p></Card>
       </div>
 
-      <Card>
+<Tabs value={subTab} onValueChange={v => setSubTab(v as 'pregled' | 'dodaj')}>
+        <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj" disabled={!editItem && subTab !== 'dodaj'}>{editItem ? 'Uredi' : 'Dodaj'}</TabsTrigger></TabsList>
+        <TabsContent value="pregled" className="mt-4">
+
+        </TabsContent>
+
+      <TabsContent value="dodaj" className="mt-4">
+        <Card className="sm:max-w-[550px]">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base font-semibold">{editItem ? 'Uredi nacrt' : 'Novi nacrt'}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Kod</Label><Input placeholder="BP-2024-001" className="text-xs font-mono" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={formData.category} onValueChange={v => setFormData(p => ({ ...p, category: v as Blueprint['category'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input placeholder="Naziv nacrta" className="text-xs" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Projekat *</Label><Input placeholder="Naziv projekta" className="text-xs" value={formData.project} onChange={e => setFormData(p => ({ ...p, project: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Autor *</Label><Select value={formData.author} onValueChange={v => setFormData(p => ({ ...p, author: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi" /></SelectTrigger><SelectContent>{AUTHORS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Klijent</Label><Input placeholder="Ime klijenta" className="text-xs" value={formData.client} onChange={e => setFormData(p => ({ ...p, client: e.target.value }))} /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Skala</Label><Input placeholder="1:100" className="text-xs" value={formData.scale} onChange={e => setFormData(p => ({ ...p, scale: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Format</Label><Select value={formData.sheetSize} onValueChange={v => setFormData(p => ({ ...p, sheetSize: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Format" /></SelectTrigger><SelectContent>{['A0', 'A1', 'A2', 'A3', 'A4'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Opis projekta..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => { setSubTab('pregled'); setEditItem(null) }}>Otkaži</Button>
+              <Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      </Tabs>      <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <CardTitle className="text-base">Svi nacrti</CardTitle>
@@ -253,41 +293,7 @@ export function Blueprints() {
       )}
 
       {/* Create/Edit Inline */}
-      {dialogOpen && (
-        <Card className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => { setDialogOpen(false); setEditItem(null) }}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <CardTitle className="text-base font-semibold">{editItem ? 'Uredi nacrt' : 'Novi nacrt'}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Kod</Label><Input placeholder="BP-2024-001" className="text-xs font-mono" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={formData.category} onValueChange={v => setFormData(p => ({ ...p, category: v as Blueprint['category'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input placeholder="Naziv nacrta" className="text-xs" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Projekat *</Label><Input placeholder="Naziv projekta" className="text-xs" value={formData.project} onChange={e => setFormData(p => ({ ...p, project: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Autor *</Label><Select value={formData.author} onValueChange={v => setFormData(p => ({ ...p, author: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi" /></SelectTrigger><SelectContent>{AUTHORS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Klijent</Label><Input placeholder="Ime klijenta" className="text-xs" value={formData.client} onChange={e => setFormData(p => ({ ...p, client: e.target.value }))} /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Skala</Label><Input placeholder="1:100" className="text-xs" value={formData.scale} onChange={e => setFormData(p => ({ ...p, scale: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Format</Label><Select value={formData.sheetSize} onValueChange={v => setFormData(p => ({ ...p, sheetSize: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Format" /></SelectTrigger><SelectContent>{['A0', 'A1', 'A2', 'A3', 'A4'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Opis projekta..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button>
-              <Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
     </div>
   )
 }

@@ -23,7 +23,6 @@ import {
   Clock, ArrowRight, BarChart3, DollarSign, TrendingUp, AlertCircle, Send,
   X, Copy, Printer, FileBarChart, BookTemplate, History, Percent,
   Calculator, Users, Package,
-  ArrowLeft
 } from 'lucide-react'
 
 // ==================== TYPES ====================
@@ -222,6 +221,11 @@ export function Offers() {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
 
+  // Sub-tab states (replacing dialog states)
+  const [ordersSubTab, setOrdersSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [priceListSubTab, setPriceListSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [templateSubTab, setTemplateSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+
   // Data states
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
   const [orders, setOrders] = useState<SalesOrder[]>([])
@@ -241,8 +245,6 @@ export function Offers() {
 
   // UI states
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null)
   const [editingOrder, setEditingOrder] = useState<SalesOrder | null>(null)
 
@@ -259,14 +261,11 @@ export function Offers() {
 
   const [form, setForm] = useState(emptyForm)
 
-  // Price list dialog
-  const [priceListDialogOpen, setPriceListDialogOpen] = useState(false)
+  // Price list form
   const [editingPriceList, setEditingPriceList] = useState<PriceList | null>(null)
   const [plForm, setPlForm] = useState({ name: '', description: '', type: 'standard', margin: 0, rounding: 0, isActive: true })
 
-  // Template dialog
-  const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
-  const [templatePreviewOpen, setTemplatePreviewOpen] = useState(false)
+  // Template form
   const [selectedTemplate, setSelectedTemplate] = useState<OfferTemplate | null>(null)
   const [tplForm, setTplForm] = useState({
     name: '', description: '', lineItems: [emptyLineItem()],
@@ -277,6 +276,14 @@ export function Offers() {
   const [auditUserFilter, setAuditUserFilter] = useState('all')
   const [auditDateFrom, setAuditDateFrom] = useState('')
   const [auditDateTo, setAuditDateTo] = useState('')
+
+  // Reset sub-tabs when switching main tabs
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setOrdersSubTab('pregled')
+    setPriceListSubTab('pregled')
+    setTemplateSubTab('pregled')
+  }
 
   // ==================== DATA LOADING ====================
 
@@ -393,7 +400,8 @@ export function Offers() {
   const grandTotal = useMemo(() => subtotal * (1 - form.globalDiscount / 100) + totalTax * (1 - form.globalDiscount / 100), [subtotal, totalTax, form.globalDiscount])
 
   const resetForm = () => { setForm(emptyForm); setEditingOrder(null) }
-  const openCreateDialog = (template?: OfferTemplate) => {
+
+  const openCreateOffer = (template?: OfferTemplate) => {
     resetForm()
     if (template) {
       setForm(prev => ({
@@ -404,7 +412,8 @@ export function Offers() {
         lineItems: template.lineItems.map(li => ({ ...li, id: generateId() })),
       }))
     }
-    setDialogOpen(true)
+    setActiveTab('orders')
+    setOrdersSubTab('dodaj')
   }
 
   // ==================== CRUD OPERATIONS ====================
@@ -426,7 +435,7 @@ export function Offers() {
       const res = await fetch('/api/sales-orders', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       })
-      if (res.ok) { setDialogOpen(false); resetForm(); loadOrders(); loadDashboard() }
+      if (res.ok) { setOrdersSubTab('pregled'); resetForm(); loadOrders(); loadDashboard() }
     } catch { /* silent */ }
   }
 
@@ -457,7 +466,7 @@ export function Offers() {
   }
 
   const handleDuplicate = (order: SalesOrder) => {
-    openCreateDialog()
+    openCreateOffer()
     setForm(prev => ({ ...prev, partnerId: order.partnerId || '', notes: order.notes || '' }))
   }
 
@@ -476,14 +485,14 @@ export function Offers() {
     } else {
       setPriceLists(prev => [...prev, { ...plForm, id: generateId(), createdAt: new Date().toISOString().split('T')[0] }])
     }
-    setPriceListDialogOpen(false); setEditingPriceList(null)
+    setPriceListSubTab('pregled'); setEditingPriceList(null)
     setPlForm({ name: '', description: '', type: 'standard', margin: 0, rounding: 0, isActive: true })
   }
 
   const openEditPriceList = (pl: PriceList) => {
     setEditingPriceList(pl)
     setPlForm({ name: pl.name, description: pl.description, type: pl.type, margin: pl.margin, rounding: pl.rounding, isActive: pl.isActive })
-    setPriceListDialogOpen(true)
+    setPriceListSubTab('dodaj')
   }
 
   // ==================== TEMPLATE HANDLERS ====================
@@ -496,7 +505,7 @@ export function Offers() {
       createdAt: new Date().toISOString().split('T')[0],
     }
     setTemplates(prev => [...prev, newTpl as OfferTemplate])
-    setTemplateDialogOpen(false)
+    setTemplateSubTab('pregled')
     setTplForm({ name: '', description: '', lineItems: [emptyLineItem()], paymentTerms: '30days', defaultNotes: '', defaultDiscount: 0 })
   }
 
@@ -734,7 +743,7 @@ export function Offers() {
                   </thead>
                   <tbody>
                     {recentOrders.map((o) => (
-                      <tr key={o.id} className="border-b last:border-0 hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedOrder(o); setDetailOpen(true) }}>
+                      <tr key={o.id} className="border-b last:border-0 hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedOrder(o); setActiveTab('orders'); setOrdersSubTab('detalji') }}>
                         <td className="py-2 pr-4 font-mono text-xs">{o.number}</td>
                         <td className="py-2 pr-4">{o.partnerName || '-'}</td>
                         <td className="py-2 pr-4">{formatRSD(o.totalAmount)}</td>
@@ -757,9 +766,9 @@ export function Offers() {
     )
   }
 
-  // ==================== RENDER: OFFERS TAB ====================
+  // ==================== RENDER: OFFERS TAB - PREGLED ====================
 
-  const renderOffers = () => (
+  const renderOrdersPregled = () => (
     <div className="space-y-4">
       {/* Search + Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -787,7 +796,7 @@ export function Offers() {
         <Card className="p-8 text-center">
           <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
           <p className="text-muted-foreground">{t('offers.noOffers')}</p>
-          <Button variant="outline" className="mt-3" onClick={() => openCreateDialog()}>
+          <Button variant="outline" className="mt-3" onClick={() => { resetForm(); setOrdersSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> {t('offers.createOffer')}
           </Button>
         </Card>
@@ -829,7 +838,7 @@ export function Offers() {
                     <td className="p-3 text-xs text-muted-foreground">{o.validUntil ? new Date(o.validUntil).toLocaleDateString('sr-RS') : '-'}</td>
                     <td className="p-3">
                       <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" title={t('common.details')} onClick={() => { setSelectedOrder(o); setDetailOpen(true) }}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" title={t('common.details')} onClick={() => { setSelectedOrder(o); setOrdersSubTab('detalji') }}>
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
                         {o.status === 'draft' && (
@@ -868,127 +877,439 @@ export function Offers() {
     </div>
   )
 
-  // ==================== RENDER: PRICE LISTS TAB ====================
+  // ==================== RENDER: OFFERS TAB - DODAJ ====================
 
-  const renderPriceLists = () => (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button size="sm" onClick={() => { setEditingPriceList(null); setPlForm({ name: '', description: '', type: 'standard', margin: 0, rounding: 0, isActive: true }); setPriceListDialogOpen(true) }}>
-          <Plus className="h-4 w-4 mr-1" /> {t('offers.createPriceList')}
-        </Button>
-      </div>
+  const renderOrdersDodaj = () => (
+    <Card className="max-w-3xl">
+      <CardHeader>
+        <CardTitle className="text-base">{editingOrder ? t('offers.editOffer') : t('offers.newOffer')}</CardTitle>
+      </CardHeader>
+      <div className="space-y-4">
+        {/* Partner + Payment Terms */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>{t('offers.partner')}</Label>
+            <Select value={form.partnerId} onValueChange={(v) => setForm(prev => ({ ...prev, partnerId: v }))}>
+              <SelectTrigger><SelectValue placeholder={t('offers.selectPartner')} /></SelectTrigger>
+              <SelectContent>{partners.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}</SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{t('offers.paymentTerms')}</Label>
+            <Select value={form.paymentTerms} onValueChange={(v) => setForm(prev => ({ ...prev, paymentTerms: v as PaymentTerms }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PAYMENT_TERMS_OPTIONS.map(pt => (<SelectItem key={pt.value} value={pt.value}>{t(pt.label)}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
-      <div className="grid gap-4">
-        {priceLists.map((pl) => (
-          <Card key={pl.id}>
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <FileBarChart className="h-5 w-5 text-primary" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{pl.name}</span>
-                      {pl.isActive && <Badge className="bg-emerald-100 text-emerald-700 text-xs">{t('offers.active')}</Badge>}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{pl.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <span className="text-xs text-muted-foreground">{t('offers.type')}</span>
-                    <p className="text-sm font-medium">{t(PRICE_LIST_TYPES.find(pt => pt.value === pl.type)?.label || pl.type)}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs text-muted-foreground">{t('offers.margin')}</span>
-                    <p className={`text-sm font-medium ${pl.margin < 0 ? 'text-emerald-600' : pl.margin > 0 ? 'text-red-600' : ''}`}>{pl.margin > 0 ? '+' : ''}{pl.margin}%</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditPriceList(pl)}><Edit3 className="h-3.5 w-3.5" /></Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setPriceLists(prev => prev.filter(p => p.id !== pl.id))}><Trash2 className="h-3.5 w-3.5" /></Button>
-                  </div>
-                </div>
-              </div>
-              {/* Price list product preview */}
-              <Separator className="my-3" />
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="text-left text-muted-foreground border-b">
-                      <th className="pb-1.5 pr-4">{t('offers.product')}</th>
-                      <th className="pb-1.5 pr-4">{t('offers.basePrice')}</th>
-                      <th className="pb-1.5">{t('offers.listPrice')}</th>
+        {/* Dates */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>{t('offers.dateOrder')}</Label>
+            <Input type="date" value={form.dateOrder} onChange={(e) => setForm(prev => ({ ...prev, dateOrder: e.target.value }))} />
+          </div>
+          <div className="space-y-2">
+            <Label>{t('offers.validUntil')}</Label>
+            <Input type="date" value={form.validUntil} onChange={(e) => setForm(prev => ({ ...prev, validUntil: e.target.value }))} />
+          </div>
+        </div>
+
+        {/* Line Items */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label>{t('offers.lineItems')}</Label>
+            <Button size="sm" variant="outline" onClick={addLineItem}><Plus className="h-3.5 w-3.5 mr-1" /> {t('offers.addLineItem')}</Button>
+          </div>
+          <div className="rounded-lg border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr className="text-left text-xs text-muted-foreground">
+                    <th className="p-2">{t('offers.product')}</th>
+                    <th className="p-2 w-16">{t('offers.qty')}</th>
+                    <th className="p-2 w-24">{t('offers.unitPrice')}</th>
+                    <th className="p-2 w-16">{t('offers.discountPct')}</th>
+                    <th className="p-2 w-16">{t('offers.taxPct')}</th>
+                    <th className="p-2 w-28">{t('offers.lineTotal')}</th>
+                    <th className="p-2 w-8"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {form.lineItems.map((li, idx) => (
+                    <tr key={li.id} className="border-t">
+                      <td className="p-1">
+                        <Select value={li.productId} onValueChange={(v) => updateLineItem(idx, 'productId', v)}>
+                          <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={t('offers.selectProduct')} /></SelectTrigger>
+                          <SelectContent>
+                            {products.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="p-1"><Input type="number" min="1" className="h-8 text-xs" value={li.quantity || ''} onChange={(e) => updateLineItem(idx, 'quantity', parseFloat(e.target.value) || 0)} /></td>
+                      <td className="p-1"><Input type="number" min="0" step="0.01" className="h-8 text-xs" value={li.unitPrice || ''} onChange={(e) => updateLineItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)} /></td>
+                      <td className="p-1"><Input type="number" min="0" max="100" className="h-8 text-xs" value={li.discount || ''} onChange={(e) => updateLineItem(idx, 'discount', parseFloat(e.target.value) || 0)} /></td>
+                      <td className="p-1"><Input type="number" min="0" max="100" className="h-8 text-xs" value={li.tax || ''} onChange={(e) => updateLineItem(idx, 'tax', parseFloat(e.target.value) || 0)} /></td>
+                      <td className="p-1 text-xs font-medium text-right">{formatRSD(li.lineTotal)}</td>
+                      <td className="p-1">
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => removeLineItem(idx)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {products.slice(0, 5).map((prod) => {
-                      const listPrice = prod.price * (1 + pl.margin / 100)
-                      return (
-                        <tr key={prod.id} className="border-b last:border-0">
-                          <td className="py-1.5 pr-4">{prod.name}</td>
-                          <td className="py-1.5 pr-4">{formatRSD(prod.price)}</td>
-                          <td className="py-1.5 font-medium">{formatRSD(Math.round(listPrice / pl.rounding) * pl.rounding || Math.round(listPrice * 100) / 100)}</td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Global Discount + Notes */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>{t('offers.globalDiscount')} (%)</Label>
+            <Input type="number" min="0" max="100" value={form.globalDiscount || ''} onChange={(e) => setForm(prev => ({ ...prev, globalDiscount: parseFloat(e.target.value) || 0 }))} />
+          </div>
+          <div className="space-y-2">
+            <Label>{t('offers.notes')}</Label>
+            <Textarea value={form.notes} onChange={(e) => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} />
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Totals summary */}
+        <div className="flex justify-end">
+          <div className="w-64 space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-muted-foreground">{t('offers.subtotal')}</span><span>{formatRSD(subtotal)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">{t('offers.taxTotal')}</span><span>{formatRSD(totalTax)}</span></div>
+            {form.globalDiscount > 0 && (
+              <div className="flex justify-between text-red-600"><span>{t('offers.globalDiscount')} (-{form.globalDiscount}%)</span><span>-{formatRSD((subtotal + totalTax) * form.globalDiscount / 100)}</span></div>
+            )}
+            <Separator />
+            <div className="flex justify-between font-bold text-base"><span>{t('offers.grandTotal')}</span><span>{formatRSD(grandTotal)}</span></div>
+          </div>
+        </div>
       </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={() => { setOrdersSubTab('pregled'); resetForm() }}>{t('common.cancel')}</Button>
+        <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('offers.createOffer')}</Button>
+      </div>
+    </Card>
+  )
+
+  // ==================== RENDER: OFFERS TAB - DETALJI ====================
+
+  const renderOrdersDetalji = () => (
+    <Card className="max-w-lg">
+      <CardHeader>
+        <CardTitle className="text-base">{t('offers.offerDetails')}</CardTitle>
+      </CardHeader>
+      {selectedOrder && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div><span className="text-muted-foreground">{t('offers.number')}:</span> <span className="font-mono">{selectedOrder.number}</span></div>
+            <div>
+              <span className="text-muted-foreground">{t('offers.status')}:</span>{' '}
+              <Badge variant="outline" className={getStatusColor(selectedOrder.status)}>{t(getStatusLabelKey(selectedOrder.status))}</Badge>
+            </div>
+            <div><span className="text-muted-foreground">{t('offers.partner')}:</span> {selectedOrder.partnerName || '-'}</div>
+            <div><span className="text-muted-foreground">{t('offers.total')}:</span> <span className="font-bold">{formatRSD(selectedOrder.totalAmount)}</span></div>
+            <div><span className="text-muted-foreground">{t('offers.date')}:</span> {new Date(selectedOrder.dateOrder).toLocaleDateString('sr-RS')}</div>
+            {selectedOrder.validUntil && (
+              <div><span className="text-muted-foreground">{t('offers.validUntil')}:</span> {new Date(selectedOrder.validUntil).toLocaleDateString('sr-RS')}</div>
+            )}
+          </div>
+          <Separator />
+          <div className="space-y-2 text-sm">
+            <span className="text-muted-foreground">{t('offers.notes')}:</span>
+            <p className="bg-muted/50 p-3 rounded-md text-sm">{selectedOrder.notes || t('offers.noNotes')}</p>
+          </div>
+          {selectedOrder.status === 'confirmed' && (
+            <Button className="w-full" variant="outline">
+              <FileText className="h-4 w-4 mr-2" /> {t('offers.convertToInvoice')}
+            </Button>
+          )}
+        </div>
+      )}
+    </Card>
+  )
+
+  // ==================== RENDER: PRICE LISTS TAB - PREGLED ====================
+
+  const renderPriceListPregled = () => (
+    <div className="grid gap-4">
+      {priceLists.map((pl) => (
+        <Card key={pl.id}>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <FileBarChart className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{pl.name}</span>
+                    {pl.isActive && <Badge className="bg-emerald-100 text-emerald-700 text-xs">{t('offers.active')}</Badge>}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{pl.description}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <span className="text-xs text-muted-foreground">{t('offers.type')}</span>
+                  <p className="text-sm font-medium">{t(PRICE_LIST_TYPES.find(pt => pt.value === pl.type)?.label || pl.type)}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-muted-foreground">{t('offers.margin')}</span>
+                  <p className={`text-sm font-medium ${pl.margin < 0 ? 'text-emerald-600' : pl.margin > 0 ? 'text-red-600' : ''}`}>{pl.margin > 0 ? '+' : ''}{pl.margin}%</p>
+                </div>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditPriceList(pl)}><Edit3 className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setPriceLists(prev => prev.filter(p => p.id !== pl.id))}><Trash2 className="h-3.5 w-3.5" /></Button>
+                </div>
+              </div>
+            </div>
+            {/* Price list product preview */}
+            <Separator className="my-3" />
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-muted-foreground border-b">
+                    <th className="pb-1.5 pr-4">{t('offers.product')}</th>
+                    <th className="pb-1.5 pr-4">{t('offers.basePrice')}</th>
+                    <th className="pb-1.5">{t('offers.listPrice')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.slice(0, 5).map((prod) => {
+                    const listPrice = prod.price * (1 + pl.margin / 100)
+                    return (
+                      <tr key={prod.id} className="border-b last:border-0">
+                        <td className="py-1.5 pr-4">{prod.name}</td>
+                        <td className="py-1.5 pr-4">{formatRSD(prod.price)}</td>
+                        <td className="py-1.5 font-medium">{formatRSD(Math.round(listPrice / pl.rounding) * pl.rounding || Math.round(listPrice * 100) / 100)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   )
 
-  // ==================== RENDER: TEMPLATES TAB ====================
+  // ==================== RENDER: PRICE LISTS TAB - DODAJ ====================
 
-  const renderTemplates = () => (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button size="sm" onClick={() => { setTplForm({ name: '', description: '', lineItems: [emptyLineItem()], paymentTerms: '30days', defaultNotes: '', defaultDiscount: 0 }); setTemplateDialogOpen(true) }}>
-          <Plus className="h-4 w-4 mr-1" /> {t('offers.createTemplate')}
-        </Button>
+  const renderPriceListDodaj = () => (
+    <Card className="max-w-lg">
+      <CardHeader>
+        <CardTitle className="text-base">{editingPriceList ? t('offers.editPriceList') : t('offers.newPriceList')}</CardTitle>
+      </CardHeader>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>{t('offers.priceListName')}</Label>
+          <Input value={plForm.name} onChange={(e) => setPlForm(prev => ({ ...prev, name: e.target.value }))} />
+        </div>
+        <div className="space-y-2">
+          <Label>{t('offers.description')}</Label>
+          <Textarea value={plForm.description} onChange={(e) => setPlForm(prev => ({ ...prev, description: e.target.value }))} rows={2} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>{t('offers.type')}</Label>
+            <Select value={plForm.type} onValueChange={(v) => setPlForm(prev => ({ ...prev, type: v }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PRICE_LIST_TYPES.map(pt => (<SelectItem key={pt.value} value={pt.value}>{t(pt.label)}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{t('offers.marginMarkup')} (%)</Label>
+            <Input type="number" value={plForm.margin || ''} onChange={(e) => setPlForm(prev => ({ ...prev, margin: parseFloat(e.target.value) || 0 }))} />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox checked={plForm.isActive} onCheckedChange={(v) => setPlForm(prev => ({ ...prev, isActive: v === true }))} />
+          <Label>{t('offers.active')}</Label>
+        </div>
       </div>
+      <div className="flex justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={() => { setPriceListSubTab('pregled'); setEditingPriceList(null) }}>{t('common.cancel')}</Button>
+        <Button onClick={handleSavePriceList}>{t('common.save')}</Button>
+      </div>
+    </Card>
+  )
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {templates.map((tpl) => (
-          <Card key={tpl.id} className="flex flex-col">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <BookTemplate className="h-4 w-4" /> {tpl.name}
-                </CardTitle>
-                <Badge variant="secondary" className="text-xs">{tpl.useCount}x</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">{tpl.description}</p>
-            </CardHeader>
-            <CardContent className="flex-1 space-y-3">
-              <div className="flex flex-wrap gap-2 text-xs">
-                <Badge variant="outline">{t('offers.itemsCount', { count: tpl.lineItems.length })}</Badge>
-                <Badge variant="outline">{t(PAYMENT_TERMS_OPTIONS.find(pt => pt.value === tpl.paymentTerms)?.label || tpl.paymentTerms)}</Badge>
-                {tpl.defaultDiscount > 0 && <Badge variant="outline"><Percent className="h-3 w-3 mr-1" />{tpl.defaultDiscount}%</Badge>}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {tpl.lineItems.map((li, i) => (
-                  <div key={i} className="flex justify-between py-0.5">
-                    <span>{li.productName}</span>
-                    <span>{formatRSDShort(li.lineTotal)}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-            <div className="px-4 pb-4 flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => { setSelectedTemplate(tpl); setTemplatePreviewOpen(true) }}>
-                <Eye className="h-3.5 w-3.5 mr-1" /> {t('offers.preview')}
-              </Button>
-              <Button size="sm" className="flex-1 text-xs" onClick={() => openCreateDialog(tpl)}>
-                <Plus className="h-3.5 w-3.5 mr-1" /> {t('offers.createFromTemplate')}
-              </Button>
+  // ==================== RENDER: TEMPLATES TAB - PREGLED ====================
+
+  const renderTemplatePregled = () => (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {templates.map((tpl) => (
+        <Card key={tpl.id} className="flex flex-col">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <BookTemplate className="h-4 w-4" /> {tpl.name}
+              </CardTitle>
+              <Badge variant="secondary" className="text-xs">{tpl.useCount}x</Badge>
             </div>
-          </Card>
-        ))}
-      </div>
+            <p className="text-xs text-muted-foreground">{tpl.description}</p>
+          </CardHeader>
+          <CardContent className="flex-1 space-y-3">
+            <div className="flex flex-wrap gap-2 text-xs">
+              <Badge variant="outline">{t('offers.itemsCount', { count: tpl.lineItems.length })}</Badge>
+              <Badge variant="outline">{t(PAYMENT_TERMS_OPTIONS.find(pt => pt.value === tpl.paymentTerms)?.label || tpl.paymentTerms)}</Badge>
+              {tpl.defaultDiscount > 0 && <Badge variant="outline"><Percent className="h-3 w-3 mr-1" />{tpl.defaultDiscount}%</Badge>}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {tpl.lineItems.map((li, i) => (
+                <div key={i} className="flex justify-between py-0.5">
+                  <span>{li.productName}</span>
+                  <span>{formatRSDShort(li.lineTotal)}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+          <div className="px-4 pb-4 flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => { setSelectedTemplate(tpl); setTemplateSubTab('detalji') }}>
+              <Eye className="h-3.5 w-3.5 mr-1" /> {t('offers.preview')}
+            </Button>
+            <Button size="sm" className="flex-1 text-xs" onClick={() => openCreateOffer(tpl)}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> {t('offers.createFromTemplate')}
+            </Button>
+          </div>
+        </Card>
+      ))}
     </div>
+  )
+
+  // ==================== RENDER: TEMPLATES TAB - DODAJ ====================
+
+  const renderTemplateDodaj = () => (
+    <Card className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <CardHeader>
+        <CardTitle className="text-base">{t('offers.newTemplate')}</CardTitle>
+      </CardHeader>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>{t('offers.templateName')}</Label>
+            <Input value={tplForm.name} onChange={(e) => setTplForm(prev => ({ ...prev, name: e.target.value }))} />
+          </div>
+          <div className="space-y-2">
+            <Label>{t('offers.paymentTerms')}</Label>
+            <Select value={tplForm.paymentTerms} onValueChange={(v) => setTplForm(prev => ({ ...prev, paymentTerms: v as PaymentTerms }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PAYMENT_TERMS_OPTIONS.map(pt => (<SelectItem key={pt.value} value={pt.value}>{t(pt.label)}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>{t('offers.description')}</Label>
+          <Textarea value={tplForm.description} onChange={(e) => setTplForm(prev => ({ ...prev, description: e.target.value }))} rows={2} />
+        </div>
+        <div className="space-y-2">
+          <Label>{t('offers.defaultNotes')}</Label>
+          <Textarea value={tplForm.defaultNotes} onChange={(e) => setTplForm(prev => ({ ...prev, defaultNotes: e.target.value }))} rows={2} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>{t('offers.globalDiscount')} (%)</Label>
+            <Input type="number" min="0" max="100" value={tplForm.defaultDiscount || ''} onChange={(e) => setTplForm(prev => ({ ...prev, defaultDiscount: parseFloat(e.target.value) || 0 }))} />
+          </div>
+        </div>
+
+        {/* Template line items */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label>{t('offers.lineItems')}</Label>
+            <Button size="sm" variant="outline" onClick={() => setTplForm(prev => ({ ...prev, lineItems: [...prev.lineItems, emptyLineItem()] }))}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> {t('offers.addLineItem')}
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {tplForm.lineItems.map((li, idx) => (
+              <div key={li.id} className="flex gap-2 items-end">
+                <div className="flex-1 space-y-1">
+                  <span className="text-xs text-muted-foreground">{t('offers.product')}</span>
+                  <Input className="h-8 text-xs" value={li.productName} onChange={(e) => { const items = [...tplForm.lineItems]; items[idx] = { ...items[idx], productName: e.target.value }; setTplForm(prev => ({ ...prev, lineItems: items })) }} />
+                </div>
+                <div className="w-16 space-y-1">
+                  <span className="text-xs text-muted-foreground">{t('offers.qty')}</span>
+                  <Input type="number" min="1" className="h-8 text-xs" value={li.quantity || ''} onChange={(e) => updateTemplateLineItem(idx, 'quantity', parseFloat(e.target.value) || 0)} />
+                </div>
+                <div className="w-24 space-y-1">
+                  <span className="text-xs text-muted-foreground">{t('offers.unitPrice')}</span>
+                  <Input type="number" min="0" className="h-8 text-xs" value={li.unitPrice || ''} onChange={(e) => updateTemplateLineItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)} />
+                </div>
+                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive shrink-0" onClick={() => setTplForm(prev => ({ ...prev, lineItems: prev.lineItems.filter((_, i) => i !== idx) }))}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={() => setTemplateSubTab('pregled')}>{t('common.cancel')}</Button>
+        <Button onClick={handleSaveTemplate}>{t('common.save')}</Button>
+      </div>
+    </Card>
+  )
+
+  // ==================== RENDER: TEMPLATES TAB - DETALJI ====================
+
+  const renderTemplateDetalji = () => (
+    <Card className="max-w-lg">
+      <CardHeader>
+        <CardTitle className="text-base">{t('offers.templatePreview')}</CardTitle>
+      </CardHeader>
+      {selectedTemplate && (
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-semibold">{selectedTemplate.name}</h3>
+            <p className="text-sm text-muted-foreground">{selectedTemplate.description}</p>
+          </div>
+          <Separator />
+          <div className="text-sm space-y-2">
+            <div><span className="text-muted-foreground">{t('offers.paymentTerms')}:</span> {t(PAYMENT_TERMS_OPTIONS.find(pt => pt.value === selectedTemplate.paymentTerms)?.label || '')}</div>
+            <div><span className="text-muted-foreground">{t('offers.defaultDiscount')}:</span> {selectedTemplate.defaultDiscount}%</div>
+            <div><span className="text-muted-foreground">{t('offers.defaultNotes')}:</span> {selectedTemplate.defaultNotes || '—'}</div>
+          </div>
+          <Separator />
+          <div>
+            <span className="text-sm font-medium">{t('offers.lineItems')}:</span>
+            <table className="w-full text-sm mt-2">
+              <thead>
+                <tr className="border-b text-xs text-muted-foreground">
+                  <th className="text-left pb-1.5">{t('offers.product')}</th>
+                  <th className="text-right pb-1.5">{t('offers.qty')}</th>
+                  <th className="text-right pb-1.5">{t('offers.unitPrice')}</th>
+                  <th className="text-right pb-1.5">{t('offers.lineTotal')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedTemplate.lineItems.map((li, i) => (
+                  <tr key={i} className="border-b last:border-0">
+                    <td className="py-1.5">{li.productName}</td>
+                    <td className="py-1.5 text-right">{li.quantity}</td>
+                    <td className="py-1.5 text-right">{formatRSD(li.unitPrice)}</td>
+                    <td className="py-1.5 text-right font-medium">{formatRSD(li.lineTotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </Card>
   )
 
   // ==================== RENDER: ANALYTICS TAB ====================
@@ -1177,335 +1498,6 @@ export function Offers() {
     </div>
   )
 
-  // ==================== RENDER: OFFER FORM DIALOG ====================
-
-  const renderOfferDialog = () => (
-    dialogOpen && (
-      <Card className="max-w-3xl max-h-[90vh] overflow-y-auto">
-
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editingOrder ? t('offers.editOffer') : t('offers.newOffer')}</CardTitle></div></CardHeader>
-        <div className="space-y-4">
-          {/* Partner + Payment Terms */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('offers.partner')}</Label>
-              <Select value={form.partnerId} onValueChange={(v) => setForm(prev => ({ ...prev, partnerId: v }))}>
-                <SelectTrigger><SelectValue placeholder={t('offers.selectPartner')} /></SelectTrigger>
-                <SelectContent>{partners.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}</SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('offers.paymentTerms')}</Label>
-              <Select value={form.paymentTerms} onValueChange={(v) => setForm(prev => ({ ...prev, paymentTerms: v as PaymentTerms }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PAYMENT_TERMS_OPTIONS.map(pt => (<SelectItem key={pt.value} value={pt.value}>{t(pt.label)}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('offers.dateOrder')}</Label>
-              <Input type="date" value={form.dateOrder} onChange={(e) => setForm(prev => ({ ...prev, dateOrder: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('offers.validUntil')}</Label>
-              <Input type="date" value={form.validUntil} onChange={(e) => setForm(prev => ({ ...prev, validUntil: e.target.value }))} />
-            </div>
-          </div>
-
-          {/* Line Items */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>{t('offers.lineItems')}</Label>
-              <Button size="sm" variant="outline" onClick={addLineItem}><Plus className="h-3.5 w-3.5 mr-1" /> {t('offers.addLineItem')}</Button>
-            </div>
-            <div className="rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr className="text-left text-xs text-muted-foreground">
-                      <th className="p-2">{t('offers.product')}</th>
-                      <th className="p-2 w-16">{t('offers.qty')}</th>
-                      <th className="p-2 w-24">{t('offers.unitPrice')}</th>
-                      <th className="p-2 w-16">{t('offers.discountPct')}</th>
-                      <th className="p-2 w-16">{t('offers.taxPct')}</th>
-                      <th className="p-2 w-28">{t('offers.lineTotal')}</th>
-                      <th className="p-2 w-8"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {form.lineItems.map((li, idx) => (
-                      <tr key={li.id} className="border-t">
-                        <td className="p-1">
-                          <Select value={li.productId} onValueChange={(v) => updateLineItem(idx, 'productId', v)}>
-                            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={t('offers.selectProduct')} /></SelectTrigger>
-                            <SelectContent>
-                              {products.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
-                            </SelectContent>
-                          </Select>
-                        </td>
-                        <td className="p-1"><Input type="number" min="1" className="h-8 text-xs" value={li.quantity || ''} onChange={(e) => updateLineItem(idx, 'quantity', parseFloat(e.target.value) || 0)} /></td>
-                        <td className="p-1"><Input type="number" min="0" step="0.01" className="h-8 text-xs" value={li.unitPrice || ''} onChange={(e) => updateLineItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)} /></td>
-                        <td className="p-1"><Input type="number" min="0" max="100" className="h-8 text-xs" value={li.discount || ''} onChange={(e) => updateLineItem(idx, 'discount', parseFloat(e.target.value) || 0)} /></td>
-                        <td className="p-1"><Input type="number" min="0" max="100" className="h-8 text-xs" value={li.tax || ''} onChange={(e) => updateLineItem(idx, 'tax', parseFloat(e.target.value) || 0)} /></td>
-                        <td className="p-1 text-xs font-medium text-right">{formatRSD(li.lineTotal)}</td>
-                        <td className="p-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => removeLineItem(idx)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Global Discount + Totals */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('offers.globalDiscount')} (%)</Label>
-              <Input type="number" min="0" max="100" value={form.globalDiscount || ''} onChange={(e) => setForm(prev => ({ ...prev, globalDiscount: parseFloat(e.target.value) || 0 }))} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('offers.notes')}</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={2} />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Totals summary */}
-          <div className="flex justify-end">
-            <div className="w-64 space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">{t('offers.subtotal')}</span><span>{formatRSD(subtotal)}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">{t('offers.taxTotal')}</span><span>{formatRSD(totalTax)}</span></div>
-              {form.globalDiscount > 0 && (
-                <div className="flex justify-between text-red-600"><span>{t('offers.globalDiscount')} (-{form.globalDiscount}%)</span><span>-{formatRSD((subtotal + totalTax) * form.globalDiscount / 100)}</span></div>
-              )}
-              <Separator />
-              <div className="flex justify-between font-bold text-base"><span>{t('offers.grandTotal')}</span><span>{formatRSD(grandTotal)}</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm() }}>{t('common.cancel')}</Button>
-          <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('offers.createOffer')}</Button>
-        </div>
-      </Card>
-    )
-  )
-
-  // ==================== RENDER: DETAIL DIALOG ====================
-
-  const renderDetailDialog = () => (
-    detailOpen && (
-      <Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('offers.offerDetails')}</CardTitle></div></CardHeader>
-        {selectedOrder && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="text-muted-foreground">{t('offers.number')}:</span> <span className="font-mono">{selectedOrder.number}</span></div>
-              <div>
-                <span className="text-muted-foreground">{t('offers.status')}:</span>{' '}
-                <Badge variant="outline" className={getStatusColor(selectedOrder.status)}>{t(getStatusLabelKey(selectedOrder.status))}</Badge>
-              </div>
-              <div><span className="text-muted-foreground">{t('offers.partner')}:</span> {selectedOrder.partnerName || '-'}</div>
-              <div><span className="text-muted-foreground">{t('offers.total')}:</span> <span className="font-bold">{formatRSD(selectedOrder.totalAmount)}</span></div>
-              <div><span className="text-muted-foreground">{t('offers.date')}:</span> {new Date(selectedOrder.dateOrder).toLocaleDateString('sr-RS')}</div>
-              {selectedOrder.validUntil && (
-                <div><span className="text-muted-foreground">{t('offers.validUntil')}:</span> {new Date(selectedOrder.validUntil).toLocaleDateString('sr-RS')}</div>
-              )}
-            </div>
-            <Separator />
-            <div className="space-y-2 text-sm">
-              <span className="text-muted-foreground">{t('offers.notes')}:</span>
-              <p className="bg-muted/50 p-3 rounded-md text-sm">{selectedOrder.notes || t('offers.noNotes')}</p>
-            </div>
-            {selectedOrder.status === 'confirmed' && (
-              <Button className="w-full" variant="outline">
-                <FileText className="h-4 w-4 mr-2" /> {t('offers.convertToInvoice')}
-              </Button>
-            )}
-          </div>
-        )}
-      </Card>
-    )
-  )
-
-  // ==================== RENDER: PRICE LIST DIALOG ====================
-
-  const renderPriceListDialog = () => (
-    priceListDialogOpen && (
-      <Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPriceListDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editingPriceList ? t('offers.editPriceList') : t('offers.newPriceList')}</CardTitle></div></CardHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t('offers.priceListName')}</Label>
-            <Input value={plForm.name} onChange={(e) => setPlForm(prev => ({ ...prev, name: e.target.value }))} />
-          </div>
-          <div className="space-y-2">
-            <Label>{t('offers.description')}</Label>
-            <Textarea value={plForm.description} onChange={(e) => setPlForm(prev => ({ ...prev, description: e.target.value }))} rows={2} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('offers.type')}</Label>
-              <Select value={plForm.type} onValueChange={(v) => setPlForm(prev => ({ ...prev, type: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PRICE_LIST_TYPES.map(pt => (<SelectItem key={pt.value} value={pt.value}>{t(pt.label)}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('offers.marginMarkup')} (%)</Label>
-              <Input type="number" value={plForm.margin || ''} onChange={(e) => setPlForm(prev => ({ ...prev, margin: parseFloat(e.target.value) || 0 }))} />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Checkbox checked={plForm.isActive} onCheckedChange={(v) => setPlForm(prev => ({ ...prev, isActive: v === true }))} />
-            <Label>{t('offers.active')}</Label>
-          </div>
-        </div>
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={() => setPriceListDialogOpen(false)}>{t('common.cancel')}</Button>
-          <Button onClick={handleSavePriceList}>{t('common.save')}</Button>
-        </div>
-      </Card>
-    )
-  )
-
-  // ==================== RENDER: TEMPLATE DIALOG ====================
-
-  const renderTemplateDialog = () => (
-    templateDialogOpen && (
-      <Card className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setTemplateDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('offers.newTemplate')}</CardTitle></div></CardHeader>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('offers.templateName')}</Label>
-              <Input value={tplForm.name} onChange={(e) => setTplForm(prev => ({ ...prev, name: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('offers.paymentTerms')}</Label>
-              <Select value={tplForm.paymentTerms} onValueChange={(v) => setTplForm(prev => ({ ...prev, paymentTerms: v as PaymentTerms }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PAYMENT_TERMS_OPTIONS.map(pt => (<SelectItem key={pt.value} value={pt.value}>{t(pt.label)}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>{t('offers.description')}</Label>
-            <Textarea value={tplForm.description} onChange={(e) => setTplForm(prev => ({ ...prev, description: e.target.value }))} rows={2} />
-          </div>
-          <div className="space-y-2">
-            <Label>{t('offers.defaultNotes')}</Label>
-            <Textarea value={tplForm.defaultNotes} onChange={(e) => setTplForm(prev => ({ ...prev, defaultNotes: e.target.value }))} rows={2} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t('offers.globalDiscount')} (%)</Label>
-              <Input type="number" min="0" max="100" value={tplForm.defaultDiscount || ''} onChange={(e) => setTplForm(prev => ({ ...prev, defaultDiscount: parseFloat(e.target.value) || 0 }))} />
-            </div>
-          </div>
-
-          {/* Template line items */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>{t('offers.lineItems')}</Label>
-              <Button size="sm" variant="outline" onClick={() => setTplForm(prev => ({ ...prev, lineItems: [...prev.lineItems, emptyLineItem()] }))}>
-                <Plus className="h-3.5 w-3.5 mr-1" /> {t('offers.addLineItem')}
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {tplForm.lineItems.map((li, idx) => (
-                <div key={li.id} className="flex gap-2 items-end">
-                  <div className="flex-1 space-y-1">
-                    <span className="text-xs text-muted-foreground">{t('offers.product')}</span>
-                    <Input className="h-8 text-xs" value={li.productName} onChange={(e) => { const items = [...tplForm.lineItems]; items[idx] = { ...items[idx], productName: e.target.value }; setTplForm(prev => ({ ...prev, lineItems: items })) }} />
-                  </div>
-                  <div className="w-16 space-y-1">
-                    <span className="text-xs text-muted-foreground">{t('offers.qty')}</span>
-                    <Input type="number" min="1" className="h-8 text-xs" value={li.quantity || ''} onChange={(e) => updateTemplateLineItem(idx, 'quantity', parseFloat(e.target.value) || 0)} />
-                  </div>
-                  <div className="w-24 space-y-1">
-                    <span className="text-xs text-muted-foreground">{t('offers.unitPrice')}</span>
-                    <Input type="number" min="0" className="h-8 text-xs" value={li.unitPrice || ''} onChange={(e) => updateTemplateLineItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)} />
-                  </div>
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive shrink-0" onClick={() => setTplForm(prev => ({ ...prev, lineItems: prev.lineItems.filter((_, i) => i !== idx) }))}>
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>{t('common.cancel')}</Button>
-          <Button onClick={handleSaveTemplate}>{t('common.save')}</Button>
-        </div>
-      </Card>
-    )
-  )
-
-  // ==================== RENDER: TEMPLATE PREVIEW DIALOG ====================
-
-  const renderTemplatePreviewDialog = () => (
-    templatePreviewOpen && (
-      <Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setTemplatePreviewOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('offers.templatePreview')}</CardTitle></div></CardHeader>
-        {selectedTemplate && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold">{selectedTemplate.name}</h3>
-              <p className="text-sm text-muted-foreground">{selectedTemplate.description}</p>
-            </div>
-            <Separator />
-            <div className="text-sm space-y-2">
-              <div><span className="text-muted-foreground">{t('offers.paymentTerms')}:</span> {t(PAYMENT_TERMS_OPTIONS.find(pt => pt.value === selectedTemplate.paymentTerms)?.label || '')}</div>
-              <div><span className="text-muted-foreground">{t('offers.defaultDiscount')}:</span> {selectedTemplate.defaultDiscount}%</div>
-              <div><span className="text-muted-foreground">{t('offers.defaultNotes')}:</span> {selectedTemplate.defaultNotes || '—'}</div>
-            </div>
-            <Separator />
-            <div>
-              <span className="text-sm font-medium">{t('offers.lineItems')}:</span>
-              <table className="w-full text-sm mt-2">
-                <thead>
-                  <tr className="border-b text-xs text-muted-foreground">
-                    <th className="text-left pb-1.5">{t('offers.product')}</th>
-                    <th className="text-right pb-1.5">{t('offers.qty')}</th>
-                    <th className="text-right pb-1.5">{t('offers.unitPrice')}</th>
-                    <th className="text-right pb-1.5">{t('offers.lineTotal')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedTemplate.lineItems.map((li, i) => (
-                    <tr key={i} className="border-b last:border-0">
-                      <td className="py-1.5">{li.productName}</td>
-                      <td className="py-1.5 text-right">{li.quantity}</td>
-                      <td className="py-1.5 text-right">{formatRSD(li.unitPrice)}</td>
-                      <td className="py-1.5 text-right font-medium">{formatRSD(li.lineTotal)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </Card>
-    )
-  )
-
   // ==================== MAIN RENDER ====================
 
   return (
@@ -1520,14 +1512,14 @@ export function Offers() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadOrders() }}>
             <RefreshCw className="h-4 w-4 mr-1" /> {t('common.refresh')}
           </Button>
-          <Button size="sm" onClick={() => openCreateDialog()}>
+          <Button size="sm" onClick={() => openCreateOffer()}>
             <Plus className="h-4 w-4 mr-1" /> {t('offers.newOffer')}
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
           <TabsTrigger value="overview" className="text-xs sm:text-sm"><BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" /> {t('offers.tabOverview')}</TabsTrigger>
           <TabsTrigger value="orders" className="text-xs sm:text-sm"><FileText className="h-4 w-4 mr-1 hidden sm:inline" /> {t('offers.tabOffers')}</TabsTrigger>
@@ -1538,19 +1530,68 @@ export function Offers() {
         </TabsList>
 
         <TabsContent value="overview">{renderOverview()}</TabsContent>
-        <TabsContent value="orders">{renderOffers()}</TabsContent>
-        <TabsContent value="pricelists">{renderPriceLists()}</TabsContent>
-        <TabsContent value="templates">{renderTemplates()}</TabsContent>
+
+        <TabsContent value="orders">
+          <Tabs value={ordersSubTab} onValueChange={(v) => setOrdersSubTab(v as typeof ordersSubTab)}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="pregled">{t('common.overview')}</TabsTrigger>
+                <TabsTrigger value="dodaj">{t('common.add')}</TabsTrigger>
+                {selectedOrder && <TabsTrigger value="detalji">{t('common.details')}</TabsTrigger>}
+              </TabsList>
+              {ordersSubTab === 'pregled' && (
+                <Button size="sm" onClick={() => { resetForm(); setOrdersSubTab('dodaj') }}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('offers.createOffer')}
+                </Button>
+              )}
+            </div>
+            <TabsContent value="pregled">{renderOrdersPregled()}</TabsContent>
+            <TabsContent value="dodaj">{renderOrdersDodaj()}</TabsContent>
+            <TabsContent value="detalji">{renderOrdersDetalji()}</TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        <TabsContent value="pricelists">
+          <Tabs value={priceListSubTab} onValueChange={(v) => setPriceListSubTab(v as typeof priceListSubTab)}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="pregled">{t('common.overview')}</TabsTrigger>
+                <TabsTrigger value="dodaj">{t('common.add')}</TabsTrigger>
+              </TabsList>
+              {priceListSubTab === 'pregled' && (
+                <Button size="sm" onClick={() => { setEditingPriceList(null); setPlForm({ name: '', description: '', type: 'standard', margin: 0, rounding: 0, isActive: true }); setPriceListSubTab('dodaj') }}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('offers.createPriceList')}
+                </Button>
+              )}
+            </div>
+            <TabsContent value="pregled">{renderPriceListPregled()}</TabsContent>
+            <TabsContent value="dodaj">{renderPriceListDodaj()}</TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        <TabsContent value="templates">
+          <Tabs value={templateSubTab} onValueChange={(v) => setTemplateSubTab(v as typeof templateSubTab)}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="pregled">{t('common.overview')}</TabsTrigger>
+                <TabsTrigger value="dodaj">{t('common.add')}</TabsTrigger>
+                {selectedTemplate && <TabsTrigger value="detalji">{t('common.details')}</TabsTrigger>}
+              </TabsList>
+              {templateSubTab === 'pregled' && (
+                <Button size="sm" onClick={() => { setTplForm({ name: '', description: '', lineItems: [emptyLineItem()], paymentTerms: '30days', defaultNotes: '', defaultDiscount: 0 }); setTemplateSubTab('dodaj') }}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('offers.createTemplate')}
+                </Button>
+              )}
+            </div>
+            <TabsContent value="pregled">{renderTemplatePregled()}</TabsContent>
+            <TabsContent value="dodaj">{renderTemplateDodaj()}</TabsContent>
+            <TabsContent value="detalji">{renderTemplateDetalji()}</TabsContent>
+          </Tabs>
+        </TabsContent>
+
         <TabsContent value="analytics">{renderAnalytics()}</TabsContent>
         <TabsContent value="history">{renderHistory()}</TabsContent>
       </Tabs>
-
-      {/* Dialogs */}
-      {renderOfferDialog()}
-      {renderDetailDialog()}
-      {renderPriceListDialog()}
-      {renderTemplateDialog()}
-      {renderTemplatePreviewDialog()}
     </div>
   )
 }

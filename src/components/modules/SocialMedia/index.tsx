@@ -68,8 +68,7 @@ export function SocialMedia() {
   const [platformFilter, setPlatformFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [postsSubTab, setPostsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [selected, setSelected] = useState<SocialPost | null>(null)
 
   const emptyForm = {
@@ -115,7 +114,7 @@ export function SocialMedia() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...form }),
       })
-      if (res.ok) { setDialogOpen(false); setForm(emptyForm); loadPosts() }
+      if (res.ok) { setForm(emptyForm); setPostsSubTab('pregled'); loadPosts() }
     } catch { /* silent */ }
   }
 
@@ -136,11 +135,11 @@ export function SocialMedia() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={loadPosts}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Nova objava</Button>
+          <Button size="sm" onClick={() => { setForm(emptyForm); setActiveTab('posts'); setPostsSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Nova objava</Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); if (tab !== 'posts') setPostsSubTab('pregled') }}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="posts"><Share2 className="h-4 w-4 mr-1" /> Objave</TabsTrigger>
@@ -193,6 +192,20 @@ export function SocialMedia() {
         </TabsContent>
 
         <TabsContent value="posts" className="space-y-4">
+          {/* Sub-tab navigation */}
+          <div className="flex items-center gap-2 mb-2">
+            {postsSubTab !== 'pregled' && (
+              <Button variant="outline" size="sm" onClick={() => setPostsSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+            )}
+            <div className="flex gap-1">
+              <Button variant={postsSubTab === 'pregled' ? 'default' : 'outline'} size="sm" onClick={() => setPostsSubTab('pregled')}>Pregled</Button>
+              <Button variant={postsSubTab === 'dodaj' ? 'default' : 'outline'} size="sm" onClick={() => { setForm(emptyForm); setPostsSubTab('dodaj') }}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</Button>
+              {selected && <Button variant={postsSubTab === 'detalji' ? 'default' : 'outline'} size="sm" onClick={() => setPostsSubTab('detalji')}><Eye className="h-3.5 w-3.5 mr-1" /> Detalji</Button>}
+            </div>
+          </div>
+
+          {postsSubTab === 'pregled' && (
+          <>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži objave..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
             <Select value={platformFilter} onValueChange={setPlatformFilter}>
@@ -221,7 +234,7 @@ export function SocialMedia() {
                           <Badge variant="outline" className={`text-xs ${statCfg?.color}`}>{statCfg?.label}</Badge>
                         </div>
                         <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(p); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(p); setPostsSubTab('detalji') }}><Eye className="h-3.5 w-3.5" /></Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
@@ -239,6 +252,53 @@ export function SocialMedia() {
               })}
             </div>
           )}
+          </>
+          )}
+
+          {postsSubTab === 'dodaj' && (
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setPostsSubTab('pregled')} /> Nova objava</CardTitle></CardHeader>
+              <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Platforma</Label>
+                  <Select value={form.platform} onValueChange={(v) => setForm({ ...form, platform: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{Object.entries(platformConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>))}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Sadržaj</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={5} placeholder="Napišite sadržaj objave..." /></div>
+                <div className="space-y-2"><Label>Datum objave (opcionalno)</Label><Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} /></div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                <Button variant="outline" onClick={() => setPostsSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+              </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {postsSubTab === 'detalji' && selected && (
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setPostsSubTab('pregled')} /> Detalji objave</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{platformConfig[selected.platform]?.icon}</span>
+                    <Badge variant="outline" className={platformConfig[selected.platform]?.color}>{platformConfig[selected.platform]?.label}</Badge>
+                    <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge>
+                  </div>
+                  <p className="text-sm">{selected.content}</p>
+                  <Separator />
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div><p className="text-lg font-bold">{selected.likes || 0}</p><p className="text-xs text-muted-foreground">Lajkovi</p></div>
+                    <div><p className="text-lg font-bold">{selected.comments || 0}</p><p className="text-xs text-muted-foreground">Komentari</p></div>
+                    <div><p className="text-lg font-bold">{selected.shares || 0}</p><p className="text-xs text-muted-foreground">Deljenja</p></div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="calendar" className="space-y-4">
@@ -249,51 +309,6 @@ export function SocialMedia() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {dialogOpen && (
-        <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDialogOpen(false)} /> Nova objava</CardTitle></CardHeader>
-          <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Platforma</Label>
-              <Select value={form.platform} onValueChange={(v) => setForm({ ...form, platform: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{Object.entries(platformConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>))}</SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2"><Label>Sadržaj</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={5} placeholder="Napišite sadržaj objave..." /></div>
-            <div className="space-y-2"><Label>Datum objave (opcionalno)</Label><Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {detailOpen && selected && (
-        <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDetailOpen(false)} /> Detalji objave</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{platformConfig[selected.platform]?.icon}</span>
-                <Badge variant="outline" className={platformConfig[selected.platform]?.color}>{platformConfig[selected.platform]?.label}</Badge>
-                <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge>
-              </div>
-              <p className="text-sm">{selected.content}</p>
-              <Separator />
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div><p className="text-lg font-bold">{selected.likes || 0}</p><p className="text-xs text-muted-foreground">Lajkovi</p></div>
-                <div><p className="text-lg font-bold">{selected.comments || 0}</p><p className="text-xs text-muted-foreground">Komentari</p></div>
-                <div><p className="text-lg font-bold">{selected.shares || 0}</p><p className="text-xs text-muted-foreground">Deljenja</p></div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

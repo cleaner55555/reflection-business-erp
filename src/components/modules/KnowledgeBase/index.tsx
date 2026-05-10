@@ -60,7 +60,6 @@ import {
   XCircle,
   Check,
   AlertCircle,
-  ArrowLeft,
 } from 'lucide-react'
 
 // ==================== TYPES ====================
@@ -315,17 +314,18 @@ export function KnowledgeBase() {
   const [articleStatusFilter, setArticleStatusFilter] = useState('all')
   const [articleAuthorFilter, setArticleAuthorFilter] = useState('all')
 
-  // Article dialog
-  const [articleDialogOpen, setArticleDialogOpen] = useState(false)
+  // Sub-tab states
+  const [articleSubTab, setArticleSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [categorySubTab, setCategorySubTab] = useState<'pregled' | 'dodaj'>('pregled')
+
+  // Article form state
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
   const [articleForm, setArticleForm] = useState<ArticleForm>(EMPTY_ARTICLE_FORM)
 
-  // Article detail dialog
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  // Article detail
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
 
-  // Category dialog
-  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
+  // Category form state
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [categoryForm, setCategoryForm] = useState<CategoryForm>(EMPTY_CATEGORY_FORM)
 
@@ -437,7 +437,8 @@ export function KnowledgeBase() {
   const openCreateArticle = () => {
     setEditingArticleId(null)
     setArticleForm(EMPTY_ARTICLE_FORM)
-    setArticleDialogOpen(true)
+    setActiveTab('articles')
+    setArticleSubTab('dodaj')
   }
 
   const openEditArticle = (article: Article) => {
@@ -451,7 +452,8 @@ export function KnowledgeBase() {
       tags: article.tags.join(', '),
       relatedArticleIds: article.relatedArticleIds,
     })
-    setArticleDialogOpen(true)
+    setActiveTab('articles')
+    setArticleSubTab('dodaj')
   }
 
   const handleSaveArticle = () => {
@@ -499,7 +501,7 @@ export function KnowledgeBase() {
         showToast(t('knowledge.createArticle'))
       })
     }
-    setArticleDialogOpen(false)
+    setArticleSubTab('pregled')
   }
 
   const handleDeleteArticle = (id: string) => {
@@ -512,7 +514,8 @@ export function KnowledgeBase() {
   const openCreateCategory = () => {
     setEditingCategoryId(null)
     setCategoryForm(EMPTY_CATEGORY_FORM)
-    setCategoryDialogOpen(true)
+    setActiveTab('categories')
+    setCategorySubTab('dodaj')
   }
 
   const openEditCategory = (cat: Category) => {
@@ -523,7 +526,8 @@ export function KnowledgeBase() {
       icon: cat.icon,
       description: cat.description,
     })
-    setCategoryDialogOpen(true)
+    setActiveTab('categories')
+    setCategorySubTab('dodaj')
   }
 
   const handleSaveCategory = () => {
@@ -546,7 +550,7 @@ export function KnowledgeBase() {
       }
       setCategories((prev) => [...prev, newCat])
     }
-    setCategoryDialogOpen(false)
+    setCategorySubTab('pregled')
   }
 
   const handleDeleteCategory = (id: string) => {
@@ -572,6 +576,13 @@ export function KnowledgeBase() {
       prev.map((r) => (selectedReviewIds.includes(r.id) ? { ...r, status: 'rejected' as const } : r))
     )
     setSelectedReviewIds([])
+  }
+
+  // ---- Main tab change handler ----
+  const handleMainTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setArticleSubTab('pregled')
+    setCategorySubTab('pregled')
   }
 
   // ---- Render ----
@@ -606,7 +617,7 @@ export function KnowledgeBase() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleMainTabChange}>
         <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="overview">
             <BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" />
@@ -750,7 +761,7 @@ export function KnowledgeBase() {
                   <div
                     key={a.id}
                     className="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer hover:bg-muted/30 rounded px-2 -mx-2"
-                    onClick={() => { setSelectedArticle(a); setDetailDialogOpen(true) }}
+                    onClick={() => { setSelectedArticle(a); setActiveTab('articles'); setArticleSubTab('detalji') }}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{a.title}</p>
@@ -774,7 +785,7 @@ export function KnowledgeBase() {
                   <div
                     key={a.id}
                     className="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer hover:bg-muted/30 rounded px-2 -mx-2"
-                    onClick={() => { setSelectedArticle(a); setDetailDialogOpen(true) }}
+                    onClick={() => { setSelectedArticle(a); setActiveTab('articles'); setArticleSubTab('detalji') }}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{a.title}</p>
@@ -792,200 +803,508 @@ export function KnowledgeBase() {
 
         {/* ==================== TAB 2: ARTICLES ==================== */}
         <TabsContent value="articles" className="space-y-4">
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('knowledge.searchPlaceholder')}
-                className="pl-9"
-                value={articleSearch}
-                onChange={(e) => setArticleSearch(e.target.value)}
-              />
-            </div>
-            <Select value={articleCatFilter} onValueChange={setArticleCatFilter}>
-              <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder={t('knowledge.filterCategory')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('knowledge.filterCategory')}</SelectItem>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={articleStatusFilter} onValueChange={setArticleStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue placeholder={t('knowledge.filterStatus')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('knowledge.filterStatus')}</SelectItem>
-                <SelectItem value="published">{t('knowledge.statusPublished')}</SelectItem>
-                <SelectItem value="draft">{t('knowledge.statusDraft')}</SelectItem>
-                <SelectItem value="review">{t('knowledge.statusReview')}</SelectItem>
-                <SelectItem value="archived">{t('knowledge.statusArchived')}</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={articleAuthorFilter} onValueChange={setArticleAuthorFilter}>
-              <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder={t('knowledge.filterAuthor')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('knowledge.filterAuthor')}</SelectItem>
-                {uniqueAuthors.map((author) => (
-                  <SelectItem key={author} value={author}>{author}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Article List */}
-          {filteredArticles.length === 0 ? (
-            <Card className="p-8 text-center">
-              <BookOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">{t('knowledge.noArticles')}</p>
-              <Button variant="outline" className="mt-3" onClick={openCreateArticle}>
+          <Tabs value={articleSubTab} onValueChange={(v) => setArticleSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
+            <TabsList>
+              <TabsTrigger value="pregled">
+                <BookOpen className="h-4 w-4 mr-1" />
+                {t('knowledge.tabOverview', 'Pregled')}
+              </TabsTrigger>
+              <TabsTrigger value="dodaj">
                 <Plus className="h-4 w-4 mr-1" />
-                {t('knowledge.createArticle')}
-              </Button>
-            </Card>
-          ) : (
-            <div className="space-y-2 max-h-[600px] overflow-y-auto">
-              {filteredArticles.map((a) => {
-                const statusCfg = ARTICLE_STATUS_MAP[a.status]
-                return (
-                  <Card key={a.id} className="hover:bg-muted/30 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div
-                          className="flex-1 min-w-0 cursor-pointer"
-                          onClick={() => { setSelectedArticle(a); setDetailDialogOpen(true) }}
+                {editingArticleId ? t('knowledge.editArticle', 'Uredi') : t('knowledge.newArticle', 'Dodaj')}
+              </TabsTrigger>
+              <TabsTrigger value="detalji">
+                <Eye className="h-4 w-4 mr-1" />
+                {t('knowledge.tabDetail', 'Detalji')}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Articles Sub-tab: Pregled */}
+            <TabsContent value="pregled" className="space-y-4 mt-4">
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={t('knowledge.searchPlaceholder')}
+                    className="pl-9"
+                    value={articleSearch}
+                    onChange={(e) => setArticleSearch(e.target.value)}
+                  />
+                </div>
+                <Select value={articleCatFilter} onValueChange={setArticleCatFilter}>
+                  <SelectTrigger className="w-full sm:w-[160px]">
+                    <SelectValue placeholder={t('knowledge.filterCategory')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('knowledge.filterCategory')}</SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={articleStatusFilter} onValueChange={setArticleStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[150px]">
+                    <SelectValue placeholder={t('knowledge.filterStatus')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('knowledge.filterStatus')}</SelectItem>
+                    <SelectItem value="published">{t('knowledge.statusPublished')}</SelectItem>
+                    <SelectItem value="draft">{t('knowledge.statusDraft')}</SelectItem>
+                    <SelectItem value="review">{t('knowledge.statusReview')}</SelectItem>
+                    <SelectItem value="archived">{t('knowledge.statusArchived')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={articleAuthorFilter} onValueChange={setArticleAuthorFilter}>
+                  <SelectTrigger className="w-full sm:w-[160px]">
+                    <SelectValue placeholder={t('knowledge.filterAuthor')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('knowledge.filterAuthor')}</SelectItem>
+                    {uniqueAuthors.map((author) => (
+                      <SelectItem key={author} value={author}>{author}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Article List */}
+              {filteredArticles.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <BookOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">{t('knowledge.noArticles')}</p>
+                  <Button variant="outline" className="mt-3" onClick={openCreateArticle}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    {t('knowledge.createArticle')}
+                  </Button>
+                </Card>
+              ) : (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {filteredArticles.map((a) => {
+                    const statusCfg = ARTICLE_STATUS_MAP[a.status]
+                    return (
+                      <Card key={a.id} className="hover:bg-muted/30 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div
+                              className="flex-1 min-w-0 cursor-pointer"
+                              onClick={() => { setSelectedArticle(a); setArticleSubTab('detalji') }}
+                            >
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-medium truncate">{a.title}</span>
+                                <Badge variant="outline" className={`text-xs shrink-0 ${statusCfg?.color ?? ''}`}>
+                                  {t(`knowledge.status${a.status.charAt(0).toUpperCase() + a.status.slice(1)}`)}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
+                                {a.categoryId && <span>{getCategoryName(a.categoryId)}</span>}
+                                <span className="flex items-center gap-1"><Users className="h-3 w-3" />{a.author}</span>
+                                <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{a.views}</span>
+                                {a.rating > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                    {a.rating.toFixed(1)}
+                                  </span>
+                                )}
+                                <span>{formatDate(a.updatedAt)}</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-1 shrink-0">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7"
+                                onClick={() => { setSelectedArticle(a); setArticleSubTab('detalji') }}
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7"
+                                onClick={() => openEditArticle(a)}
+                              >
+                                <Edit3 className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-destructive"
+                                onClick={() => handleDeleteArticle(a.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Articles Sub-tab: Dodaj (Create/Edit) */}
+            <TabsContent value="dodaj" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{editingArticleId ? t('knowledge.editArticle') : t('knowledge.createArticle')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('knowledge.articleTitle')}</Label>
+                    <Input
+                      value={articleForm.title}
+                      onChange={(e) => setArticleForm((f) => ({ ...f, title: e.target.value }))}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('knowledge.articleCategory')}</Label>
+                      <Select
+                        value={articleForm.categoryId}
+                        onValueChange={(v) => setArticleForm((f) => ({ ...f, categoryId: v }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('knowledge.articleCategory')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('knowledge.articleAuthor')}</Label>
+                      <Input
+                        value={articleForm.author}
+                        onChange={(e) => setArticleForm((f) => ({ ...f, author: e.target.value }))}
+                        placeholder={t('knowledge.articleAuthor')}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('knowledge.articleStatus')}</Label>
+                      <Select
+                        value={articleForm.status}
+                        onValueChange={(v) => setArticleForm((f) => ({ ...f, status: v as ArticleForm['status'] }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="draft">{t('knowledge.statusDraft')}</SelectItem>
+                          <SelectItem value="review">{t('knowledge.statusReview')}</SelectItem>
+                          <SelectItem value="published">{t('knowledge.statusPublished')}</SelectItem>
+                          <SelectItem value="archived">{t('knowledge.statusArchived')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('knowledge.articleContent')}</Label>
+                    <Textarea
+                      value={articleForm.content}
+                      onChange={(e) => setArticleForm((f) => ({ ...f, content: e.target.value }))}
+                      rows={8}
+                      placeholder={t('knowledge.contentPlaceholder')}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('knowledge.articleTags')}</Label>
+                      <Input
+                        value={articleForm.tags}
+                        onChange={(e) => setArticleForm((f) => ({ ...f, tags: e.target.value }))}
+                        placeholder={t('knowledge.tagsPlaceholder')}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('knowledge.articleRelated')}</Label>
+                      <Select
+                        value={articleForm.relatedArticleIds[0] ?? 'none'}
+                        onValueChange={(v) => setArticleForm((f) => ({
+                          ...f,
+                          relatedArticleIds: v === 'none' ? [] : [v],
+                        }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('knowledge.relatedPlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">{t('knowledge.relatedPlaceholder')}</SelectItem>
+                          {articles
+                            .filter((a) => a.id !== editingArticleId)
+                            .map((a) => (
+                              <SelectItem key={a.id} value={a.id}>{a.title}</SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => setArticleSubTab('pregled')}>
+                      {t('knowledge.cancel')}
+                    </Button>
+                    <Button onClick={handleSaveArticle}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      {editingArticleId ? t('knowledge.save') : t('knowledge.createArticle')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Articles Sub-tab: Detalji (Detail) */}
+            <TabsContent value="detalji" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{selectedArticle?.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selectedArticle ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge
+                          variant="outline"
+                          className={ARTICLE_STATUS_MAP[selectedArticle.status]?.color ?? ''}
                         >
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium truncate">{a.title}</span>
-                            <Badge variant="outline" className={`text-xs shrink-0 ${statusCfg?.color ?? ''}`}>
-                              {t(`knowledge.status${a.status.charAt(0).toUpperCase() + a.status.slice(1)}`)}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-                            {a.categoryId && <span>{getCategoryName(a.categoryId)}</span>}
-                            <span className="flex items-center gap-1"><Users className="h-3 w-3" />{a.author}</span>
-                            <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{a.views}</span>
-                            {a.rating > 0 && (
-                              <span className="flex items-center gap-1">
-                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                {a.rating.toFixed(1)}
-                              </span>
-                            )}
-                            <span>{formatDate(a.updatedAt)}</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-1 shrink-0">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            onClick={() => { setSelectedArticle(a); setDetailDialogOpen(true) }}
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            onClick={() => openEditArticle(a)}
-                          >
-                            <Edit3 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-destructive"
-                            onClick={() => handleDeleteArticle(a.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                          {t(`knowledge.status${selectedArticle.status.charAt(0).toUpperCase() + selectedArticle.status.slice(1)}`)}
+                        </Badge>
+                        {selectedArticle.categoryId && (
+                          <Badge variant="outline">{getCategoryName(selectedArticle.categoryId)}</Badge>
+                        )}
+                        {selectedArticle.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            <Tag className="h-2.5 w-2.5 mr-0.5" />
+                            {tag}
+                          </Badge>
+                        ))}
                       </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          )}
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5" />
+                          {selectedArticle.author}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3.5 w-3.5" />
+                          {selectedArticle.views} {t('knowledge.detailViews')}
+                        </span>
+                        {selectedArticle.rating > 0 && (
+                          <span className="flex items-center gap-1">
+                            <StarRating rating={selectedArticle.rating} />
+                            <span>{selectedArticle.rating.toFixed(1)}</span>
+                          </span>
+                        )}
+                        <span>{formatDate(selectedArticle.updatedAt)}</span>
+                      </div>
+                      <Separator />
+                      <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {selectedArticle.content}
+                      </div>
+                      {selectedArticle.relatedArticleIds.length > 0 && (
+                        <>
+                          <Separator />
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-2">
+                              {t('knowledge.articleRelated')}
+                            </p>
+                            <div className="space-y-1">
+                              {selectedArticle.relatedArticleIds.map((relId) => (
+                                <div
+                                  key={relId}
+                                  className="text-sm text-primary cursor-pointer hover:underline"
+                                  onClick={() => {
+                                    const rel = articles.find((a) => a.id === relId)
+                                    if (rel) setSelectedArticle(rel)
+                                  }}
+                                >
+                                  {getArticleTitle(relId)}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      <div className="flex gap-2 pt-4 border-t">
+                        <Button variant="outline" onClick={() => selectedArticle && openEditArticle(selectedArticle)}>
+                          <Edit3 className="h-4 w-4 mr-1" />
+                          {t('knowledge.editArticle')}
+                        </Button>
+                        <Button variant="outline" className="text-destructive" onClick={() => {
+                          if (selectedArticle) {
+                            handleDeleteArticle(selectedArticle.id)
+                            setArticleSubTab('pregled')
+                          }
+                        }}>
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          {t('knowledge.deleteArticle', 'Obriši')}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      <BookOpen className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                      {t('knowledge.noArticleSelected', 'Izaberite članak za pregled')}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ==================== TAB 3: CATEGORIES ==================== */}
         <TabsContent value="categories" className="space-y-4">
-          <div className="flex justify-end">
-            <Button size="sm" onClick={openCreateCategory}>
-              <Plus className="h-4 w-4 mr-1" />
-              {t('knowledge.newCategory')}
-            </Button>
-          </div>
+          <Tabs value={categorySubTab} onValueChange={(v) => setCategorySubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled">
+                <FolderOpen className="h-4 w-4 mr-1" />
+                {t('knowledge.tabOverview', 'Pregled')}
+              </TabsTrigger>
+              <TabsTrigger value="dodaj">
+                <Plus className="h-4 w-4 mr-1" />
+                {editingCategoryId ? t('knowledge.editCategory', 'Uredi') : t('knowledge.newCategory', 'Dodaj')}
+              </TabsTrigger>
+            </TabsList>
 
-          {categories.length === 0 ? (
-            <Card className="p-8 text-center">
-              <FolderOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">{t('knowledge.noCategories')}</p>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {categories.map((cat) => {
-                    const articleCount = articles.filter((a) => a.categoryId === cat.id).length
-                    const parentCat = cat.parentId ? categories.find((c) => c.id === cat.parentId) : null
-                    const children = categories.filter((c) => c.parentId === cat.id)
-                    return (
-                      <div key={cat.id}>
-                        <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span className="text-lg">{cat.icon}</span>
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium truncate">{cat.name}</p>
-                              {parentCat && (
-                                <p className="text-xs text-muted-foreground">
-                                  {t('knowledge.categoryParent')}: {parentCat.name}
-                                </p>
-                              )}
-                              {cat.description && (
-                                <p className="text-xs text-muted-foreground truncate mt-0.5">{cat.description}</p>
-                              )}
+            {/* Categories Sub-tab: Pregled */}
+            <TabsContent value="pregled" className="space-y-4 mt-4">
+              <div className="flex justify-end">
+                <Button size="sm" onClick={openCreateCategory}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  {t('knowledge.newCategory')}
+                </Button>
+              </div>
+
+              {categories.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <FolderOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">{t('knowledge.noCategories')}</p>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="divide-y">
+                      {categories.map((cat) => {
+                        const articleCount = articles.filter((a) => a.categoryId === cat.id).length
+                        const parentCat = cat.parentId ? categories.find((c) => c.id === cat.parentId) : null
+                        const children = categories.filter((c) => c.parentId === cat.id)
+                        return (
+                          <div key={cat.id}>
+                            <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span className="text-lg">{cat.icon}</span>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium truncate">{cat.name}</p>
+                                  {parentCat && (
+                                    <p className="text-xs text-muted-foreground">
+                                      {t('knowledge.categoryParent')}: {parentCat.name}
+                                    </p>
+                                  )}
+                                  {cat.description && (
+                                    <p className="text-xs text-muted-foreground truncate mt-0.5">{cat.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 shrink-0">
+                                {children.length > 0 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {children.length} sub
+                                  </Badge>
+                                )}
+                                <Badge variant="outline">{articleCount}</Badge>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7"
+                                  onClick={() => openEditCategory(cat)}
+                                >
+                                  <Edit3 className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7 text-destructive"
+                                  onClick={() => handleDeleteCategory(cat.id)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 shrink-0">
-                            {children.length > 0 && (
-                              <Badge variant="secondary" className="text-xs">
-                                {children.length} sub
-                              </Badge>
-                            )}
-                            <Badge variant="outline">{articleCount}</Badge>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              onClick={() => openEditCategory(cat)}
-                            >
-                              <Edit3 className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7 text-destructive"
-                              onClick={() => handleDeleteCategory(cat.id)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Categories Sub-tab: Dodaj (Create/Edit) */}
+            <TabsContent value="dodaj" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{editingCategoryId ? t('knowledge.editCategory') : t('knowledge.createCategory')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('knowledge.categoryName')}</Label>
+                      <Input
+                        value={categoryForm.name}
+                        onChange={(e) => setCategoryForm((f) => ({ ...f, name: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('knowledge.categoryIcon')}</Label>
+                      <Input
+                        value={categoryForm.icon}
+                        onChange={(e) => setCategoryForm((f) => ({ ...f, icon: e.target.value }))}
+                        className="text-center text-lg"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('knowledge.categoryParent')}</Label>
+                    <Select
+                      value={categoryForm.parentId}
+                      onValueChange={(v) => setCategoryForm((f) => ({ ...f, parentId: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('knowledge.noParent')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">{t('knowledge.noParent')}</SelectItem>
+                        {categories
+                          .filter((c) => c.id !== editingCategoryId)
+                          .map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('knowledge.categoryDescription')}</Label>
+                    <Textarea
+                      value={categoryForm.description}
+                      onChange={(e) => setCategoryForm((f) => ({ ...f, description: e.target.value }))}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => setCategorySubTab('pregled')}>
+                      {t('knowledge.cancel')}
+                    </Button>
+                    <Button onClick={handleSaveCategory}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      {t('knowledge.save')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ==================== TAB 4: SEARCH ==================== */}
@@ -1051,7 +1370,7 @@ export function KnowledgeBase() {
                     <div
                       key={a.id}
                       className="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer hover:bg-muted/30 rounded px-2 -mx-2"
-                      onClick={() => { setSelectedArticle(a); setDetailDialogOpen(true) }}
+                      onClick={() => { setSelectedArticle(a); setActiveTab('articles'); setArticleSubTab('detalji') }}
                     >
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">
@@ -1346,265 +1665,6 @@ export function KnowledgeBase() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* ==================== ARTICLE CREATE/EDIT CARD ==================== */}
-      {articleDialogOpen && (
-        <Card className="border">
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setArticleDialogOpen(false)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingArticleId ? t('knowledge.editArticle') : t('knowledge.createArticle')}</CardTitle></div>
-          </CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('knowledge.articleTitle')}</Label>
-              <Input
-                value={articleForm.title}
-                onChange={(e) => setArticleForm((f) => ({ ...f, title: e.target.value }))}
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{t('knowledge.articleCategory')}</Label>
-                <Select
-                  value={articleForm.categoryId}
-                  onValueChange={(v) => setArticleForm((f) => ({ ...f, categoryId: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('knowledge.articleCategory')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('knowledge.articleAuthor')}</Label>
-                <Input
-                  value={articleForm.author}
-                  onChange={(e) => setArticleForm((f) => ({ ...f, author: e.target.value }))}
-                  placeholder={t('knowledge.articleAuthor')}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('knowledge.articleStatus')}</Label>
-                <Select
-                  value={articleForm.status}
-                  onValueChange={(v) => setArticleForm((f) => ({ ...f, status: v as ArticleForm['status'] }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">{t('knowledge.statusDraft')}</SelectItem>
-                    <SelectItem value="review">{t('knowledge.statusReview')}</SelectItem>
-                    <SelectItem value="published">{t('knowledge.statusPublished')}</SelectItem>
-                    <SelectItem value="archived">{t('knowledge.statusArchived')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('knowledge.articleContent')}</Label>
-              <Textarea
-                value={articleForm.content}
-                onChange={(e) => setArticleForm((f) => ({ ...f, content: e.target.value }))}
-                rows={8}
-                placeholder={t('knowledge.contentPlaceholder')}
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('knowledge.articleTags')}</Label>
-                <Input
-                  value={articleForm.tags}
-                  onChange={(e) => setArticleForm((f) => ({ ...f, tags: e.target.value }))}
-                  placeholder={t('knowledge.tagsPlaceholder')}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('knowledge.articleRelated')}</Label>
-                <Select
-                  value={articleForm.relatedArticleIds[0] ?? 'none'}
-                  onValueChange={(v) => setArticleForm((f) => ({
-                    ...f,
-                    relatedArticleIds: v === 'none' ? [] : [v],
-                  }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('knowledge.relatedPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t('knowledge.relatedPlaceholder')}</SelectItem>
-                    {articles
-                      .filter((a) => a.id !== editingArticleId)
-                      .map((a) => (
-                        <SelectItem key={a.id} value={a.id}>{a.title}</SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setArticleDialogOpen(false)}>
-              {t('knowledge.cancel')}
-            </Button>
-            <Button onClick={handleSaveArticle}>
-              <Plus className="h-4 w-4 mr-1" />
-              {editingArticleId ? t('knowledge.save') : t('knowledge.createArticle')}
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {/* ==================== ARTICLE DETAIL CARD ==================== */}
-      {detailDialogOpen && (
-        <Card className="border">
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDetailDialogOpen(false)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="min-w-0 flex-1"><CardTitle className="text-base">{selectedArticle?.title}</CardTitle></div>
-          </CardHeader>
-          {selectedArticle && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge
-                  variant="outline"
-                  className={ARTICLE_STATUS_MAP[selectedArticle.status]?.color ?? ''}
-                >
-                  {t(`knowledge.status${selectedArticle.status.charAt(0).toUpperCase() + selectedArticle.status.slice(1)}`)}
-                </Badge>
-                {selectedArticle.categoryId && (
-                  <Badge variant="outline">{getCategoryName(selectedArticle.categoryId)}</Badge>
-                )}
-                {selectedArticle.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    <Tag className="h-2.5 w-2.5 mr-0.5" />
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-                <span className="flex items-center gap-1">
-                  <Users className="h-3.5 w-3.5" />
-                  {selectedArticle.author}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Eye className="h-3.5 w-3.5" />
-                  {selectedArticle.views} {t('knowledge.detailViews')}
-                </span>
-                {selectedArticle.rating > 0 && (
-                  <span className="flex items-center gap-1">
-                    <StarRating rating={selectedArticle.rating} />
-                    <span>{selectedArticle.rating.toFixed(1)}</span>
-                  </span>
-                )}
-                <span>{formatDate(selectedArticle.updatedAt)}</span>
-              </div>
-              <Separator />
-              <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                {selectedArticle.content}
-              </div>
-              {selectedArticle.relatedArticleIds.length > 0 && (
-                <>
-                  <Separator />
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">
-                      {t('knowledge.articleRelated')}
-                    </p>
-                    <div className="space-y-1">
-                      {selectedArticle.relatedArticleIds.map((relId) => (
-                        <div
-                          key={relId}
-                          className="text-sm text-primary cursor-pointer hover:underline"
-                          onClick={() => {
-                            const rel = articles.find((a) => a.id === relId)
-                            if (rel) setSelectedArticle(rel)
-                          }}
-                        >
-                          {getArticleTitle(relId)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* ==================== CATEGORY CREATE/EDIT CARD ==================== */}
-      {categoryDialogOpen && (
-        <Card className="border">
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCategoryDialogOpen(false)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingCategoryId ? t('knowledge.editCategory') : t('knowledge.createCategory')}</CardTitle></div>
-          </CardHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('knowledge.categoryName')}</Label>
-                <Input
-                  value={categoryForm.name}
-                  onChange={(e) => setCategoryForm((f) => ({ ...f, name: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('knowledge.categoryIcon')}</Label>
-                <Input
-                  value={categoryForm.icon}
-                  onChange={(e) => setCategoryForm((f) => ({ ...f, icon: e.target.value }))}
-                  className="text-center text-lg"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('knowledge.categoryParent')}</Label>
-              <Select
-                value={categoryForm.parentId}
-                onValueChange={(v) => setCategoryForm((f) => ({ ...f, parentId: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('knowledge.noParent')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">{t('knowledge.noParent')}</SelectItem>
-                  {categories
-                    .filter((c) => c.id !== editingCategoryId)
-                    .map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('knowledge.categoryDescription')}</Label>
-              <Textarea
-                value={categoryForm.description}
-                onChange={(e) => setCategoryForm((f) => ({ ...f, description: e.target.value }))}
-                rows={3}
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setCategoryDialogOpen(false)}>
-              {t('knowledge.cancel')}
-            </Button>
-            <Button onClick={handleSaveCategory}>
-              <Plus className="h-4 w-4 mr-1" />
-              {t('knowledge.save')}
-            </Button>
-          </div>
-        </Card>
-      )}
     </div>
   )
 }

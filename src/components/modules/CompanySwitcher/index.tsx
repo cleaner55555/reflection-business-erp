@@ -39,8 +39,8 @@ export function CompanySwitcher() {
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(false)
 
-  // New company dialog
-  const [dialogOpen, setDialogOpen] = useState(false)
+  // New company form state
+  const [subTab, setSubTab] = useState<'list' | 'dodaj'>('list')
   const [newName, setNewName] = useState('')
   const [newPib, setNewPib] = useState('')
   const [newCity, setNewCity] = useState('')
@@ -98,7 +98,7 @@ export function CompanySwitcher() {
       }
       const company = await res.json()
       toast.success(`Kompanija "${company.name}" je kreirana`)
-      setDialogOpen(false)
+      setSubTab('list')
       setNewName('')
       setNewPib('')
       setNewCity('')
@@ -154,18 +154,18 @@ export function CompanySwitcher() {
           ))}
 
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setDialogOpen(true)} className="text-primary cursor-pointer">
+          <DropdownMenuItem onClick={() => setSubTab('dodaj')} className="text-primary cursor-pointer">
             <Plus className="h-4 w-4 mr-2" />
             Nova kompanija
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {dialogOpen && (
+      {subTab === 'dodaj' && (
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setSubTab('list')}><ArrowLeft className="h-4 w-4" /></Button>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-primary" />
                 Nova kompanija
@@ -236,7 +236,7 @@ export function CompanySwitcher() {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button variant="outline" onClick={() => setSubTab('list')}>Otkaži</Button>
               <Button onClick={handleCreateCompany} disabled={creating || !newName.trim()}>
                 {creating ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Kreiranje...</>

@@ -157,12 +157,10 @@ export function Calendar() {
   const [filterType, setFilterType] = useState('all')
   const [filterColor, setFilterColor] = useState('all')
 
-  // Dialogs
-  const [eventDialogOpen, setEventDialogOpen] = useState(false)
-  const [eventDetailOpen, setEventDetailOpen] = useState(false)
+  // Sub-tabs
+  const [eventSubTab, setEventSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [editingEvent, setEditingEvent] = useState<CalEvent | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<CalEvent | null>(null)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   // Form
   const emptyForm = { title: '', description: '', startTime: '', endTime: '', allDay: false, color: 'primary', type: 'sastanak', location: '', attendees: '', reminder: '15', recurrence: 'none', priority: 'medium' }
@@ -264,7 +262,7 @@ export function Calendar() {
     setEditingEvent(null)
     const startStr = date ? `${date.toISOString().slice(0, 10)}T09:00` : `${new Date().toISOString().slice(0, 10)}T${new Date().toTimeString().slice(0, 5)}`
     setEventForm({ ...emptyForm, startTime: startStr, endTime: '' })
-    setEventDialogOpen(true)
+    setActiveTab('list'); setEventSubTab('dodaj')
   }
 
   const openEditEvent = (ev: CalEvent) => {
@@ -276,7 +274,7 @@ export function Calendar() {
       location: ev.location || '', attendees: ev.attendees || '',
       reminder: ev.reminder || '15', recurrence: ev.recurrence || 'none', priority: ev.priority || 'medium',
     })
-    setEventDialogOpen(true)
+    setActiveTab('list'); setEventSubTab('dodaj')
   }
 
   const handleSubmitEvent = async () => {
@@ -292,14 +290,14 @@ export function Calendar() {
       }
       const url = editingEvent ? `/api/calendar/${editingEvent.id}` : '/api/calendar'
       const res = await fetch(url, { method: editingEvent ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      if (res.ok) { setEventDialogOpen(false); loadEvents(); showToast(editingEvent ? 'Događaj ažuriran' : 'Događaj kreiran') }
+      if (res.ok) { setEventSubTab('pregled'); setEditingEvent(null); loadEvents(); showToast(editingEvent ? 'Događaj ažuriran' : 'Događaj kreiran') }
     } catch { showToast('Greška') }
     setSubmitting(false)
   }
 
   const handleDeleteEvent = async () => {
     if (!selectedEvent) return
-    try { await fetch(`/api/calendar/${selectedEvent.id}`, { method: 'DELETE' }); setDeleteConfirmOpen(false); setSelectedEvent(null); loadEvents(); showToast('Događaj obrisan') }
+    try { await fetch(`/api/calendar/${selectedEvent.id}`, { method: 'DELETE' }); setSelectedEvent(null); loadEvents(); showToast('Događaj obrisan') }
     catch { showToast('Greška') }
   }
 
@@ -414,7 +412,7 @@ export function Calendar() {
                           const Icon = typeInfo?.icon || CalendarIcon
                           return (
                             <button key={ev.id} className={`w-full text-left text-xs px-1 py-0.5 rounded border truncate flex items-center gap-0.5 ${COLORS[ev.color] || COLORS.primary}`}
-                              onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setEventDetailOpen(true) }}>
+                              onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setActiveTab('list'); setEventSubTab('detalji') }}>
                               <Icon className="h-2.5 w-2.5 shrink-0" /><span className="truncate">{ev.title}</span>
                             </button>
                           )
@@ -471,7 +469,7 @@ export function Calendar() {
                       <div className="space-y-1">
                         {dayEvents.map(ev => (
                           <button key={ev.id} className={`w-full text-left p-2 rounded border flex items-center gap-2 hover:shadow-sm transition-shadow ${COLORS[ev.color] || COLORS.primary}`}
-                            onClick={() => { setSelectedEvent(ev); setEventDetailOpen(true) }}>
+                            onClick={() => { setSelectedEvent(ev); setActiveTab('list'); setEventSubTab('detalji') }}>
                             <Circle className={`h-2 w-2 fill-current ${COLOR_DOTS[ev.color] || 'bg-primary'}`} />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium truncate">{ev.title}</p>
@@ -490,7 +488,15 @@ export function Calendar() {
         </TabsContent>
 
         {/* ===== LIST VIEW ===== */}
-        <TabsContent value="list" className="space-y-4">
+        <TabsContent value="list" className="space-y-4"> className="space-y-4">
+          <Tabs value={eventSubTab} onValueChange={v => setEventSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              {(editingEvent || eventSubTab === 'dodaj') && <TabsTrigger value="dodaj">{editingEvent ? 'Uredi' : 'Dodaj'}</TabsTrigger>}
+              {(selectedEvent || eventSubTab === 'detalji') && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="pregled" className="mt-4">
+
           <Card className="p-3">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -531,7 +537,7 @@ export function Calendar() {
                 const upcoming = isEventUpcoming(ev.startTime)
                 return (
                   <Card key={ev.id} className={`p-3 cursor-pointer hover:shadow-md transition-shadow ${past ? 'opacity-50' : ''} ${upcoming ? 'border-amber-300' : ''}`}
-                    onClick={() => { setSelectedEvent(ev); setEventDetailOpen(true) }}>
+                    onClick={() => { setSelectedEvent(ev); setActiveTab('list'); setEventSubTab('detalji') }}>
                     <div className="flex items-center gap-3">
                       <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${COLORS[ev.color] || COLORS.primary}`}>
                         <Icon className="h-5 w-5" />
@@ -552,7 +558,7 @@ export function Calendar() {
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100">
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditEvent(ev) }}><Edit3 className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setDeleteConfirmOpen(true) }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); if (!confirm('Obrisati događaj?')) return; fetch('/api/calendar/' + ev.id, { method: 'DELETE' }).then(() => { loadEvents(); showToast('Događaj obrisan') }) }}><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
                     </div>
                   </Card>
@@ -560,7 +566,10 @@ export function Calendar() {
               })}
             </div>
           )}
-        </TabsContent>
+        
+            </TabsContent>
+          </Tabs>
+        </TabsContent></TabsContent>
 
         {/* ===== OVERVIEW TAB ===== */}
         <TabsContent value="overview" className="space-y-4">
@@ -592,7 +601,7 @@ export function Calendar() {
               ) : (
                 <div className="space-y-2">
                   {todayEvents.map(ev => (
-                    <div key={ev.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedEvent(ev); setEventDetailOpen(true) }}>
+                    <div key={ev.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedEvent(ev); setActiveTab('list'); setEventSubTab('detalji') }}>
                       <Circle className={`h-2.5 w-2.5 fill-current ${COLOR_DOTS[ev.color] || 'bg-primary'}`} />
                       <div className="flex-1">
                         <p className="text-sm font-medium">{ev.title}</p>
@@ -618,7 +627,7 @@ export function Calendar() {
                 {upcomingEvents.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">Nema nadolazećih događaja</p>
                 ) : upcomingEvents.map(ev => (
-                  <div key={ev.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedEvent(ev); setEventDetailOpen(true) }}>
+                  <div key={ev.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedEvent(ev); setActiveTab('list'); setEventSubTab('detalji') }}>
                     <div className={`h-8 w-8 rounded flex items-center justify-center ${COLORS[ev.color] || COLORS.primary}`}>
                       <span className="text-xs font-bold">{new Date(ev.startTime).getDate()}</span>
                     </div>
@@ -673,119 +682,13 @@ export function Calendar() {
       </Tabs>
 
       {/* New/Edit Event */}
-      {eventDialogOpen && (
-        <Card className="max-w-lg">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setEventDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle className="text-base font-semibold">{editingEvent ? 'Izmeni događaj' : 'Novi događaj'}</CardTitle></div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label className="text-xs">Naslov *</Label><Input value={eventForm.title} onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })} placeholder="Unesite naslov..." /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Tip</Label>
-                  <Select value={eventForm.type} onValueChange={(v) => setEventForm({ ...eventForm, type: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{EVENT_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2"><Label className="text-xs">Boja</Label>
-                  <Select value={eventForm.color} onValueChange={(v) => setEventForm({ ...eventForm, color: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{Object.entries(COLOR_DOTS).map(([k, v]) => <SelectItem key={k} value={k}><div className="flex items-center gap-2"><div className={`h-3 w-3 rounded-full ${v}`} />{k === 'primary' ? 'Plava' : k.charAt(0).toUpperCase() + k.slice(1)}</div></SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Početak *</Label><Input type="datetime-local" value={eventForm.startTime} onChange={(e) => setEventForm({ ...eventForm, startTime: e.target.value })} /></div>
-                <div className="space-y-2"><Label className="text-xs">Kraj</Label><Input type="datetime-local" value={eventForm.endTime} onChange={(e) => setEventForm({ ...eventForm, endTime: e.target.value })} /></div>
-              </div>
-              <label className="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" checked={eventForm.allDay} onChange={(e) => setEventForm({ ...eventForm, allDay: e.target.checked })} className="rounded" /> Ceo dan</label>
-              <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={eventForm.location} onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })} placeholder="Adresa ili link..." /></div>
-              <div className="space-y-2"><Label className="text-xs">Učesnici (zarezom odvojeni)</Label><Input value={eventForm.attendees} onChange={(e) => setEventForm({ ...eventForm, attendees: e.target.value })} placeholder="Marko, Jelena, Nikola" /></div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Podsetnik</Label>
-                  <Select value={eventForm.reminder} onValueChange={(v) => setEventForm({ ...eventForm, reminder: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{REMINDER_OPTIONS.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2"><Label className="text-xs">Ponavljanje</Label>
-                  <Select value={eventForm.recurrence} onValueChange={(v) => setEventForm({ ...eventForm, recurrence: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{RECURRENCE_OPTIONS.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2"><Label className="text-xs">Prioritet</Label>
-                  <Select value={eventForm.priority} onValueChange={(v) => setEventForm({ ...eventForm, priority: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}><span className={p.color}>{p.label}</span></SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2"><Label className="text-xs">Opis</Label><Textarea value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })} placeholder="Dodatne napomene..." rows={2} /></div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setEventDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSubmitEvent} disabled={submitting || !eventForm.title.trim()}>{submitting ? 'Čuvanje...' : editingEvent ? 'Ažuriraj' : 'Kreiraj'}</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
 
       {/* Event Detail */}
-      {eventDetailOpen && selectedEvent && (
-        <Card className="max-w-md">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setEventDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="text-base font-semibold flex items-center gap-2"><CalendarDays className="h-5 w-5" /> {selectedEvent.title}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-xs text-muted-foreground">Tip:</span><br /><Badge variant="secondary" className="text-xs mt-1">{EVENT_TYPES.find(t => t.value === selectedEvent.type)?.label || selectedEvent.type}</Badge></div>
-                <div><span className="text-xs text-muted-foreground">Prioritet:</span><br /><span className={`text-xs mt-1 ${PRIORITY_OPTIONS.find(p => p.value === selectedEvent.priority)?.color || ''}`}>{PRIORITY_OPTIONS.find(p => p.value === selectedEvent.priority)?.label || '-'}</span></div>
-                <div><span className="text-xs text-muted-foreground">Datum:</span><br /><span className="text-xs">{formatDateFull(selectedEvent.startTime)}</span></div>
-                <div><span className="text-xs text-muted-foreground">Vreme:</span><br /><span className="text-xs">{selectedEvent.allDay ? 'Ceo dan' : `${formatTime(selectedEvent.startTime)}${selectedEvent.endTime ? ` — ${formatTime(selectedEvent.endTime)}` : ''}`}</span></div>
-                {getEventDuration(selectedEvent.startTime, selectedEvent.endTime) && <div><span className="text-xs text-muted-foreground">Trajanje:</span><br /><span className="text-xs">{getEventDuration(selectedEvent.startTime, selectedEvent.endTime)}</span></div>}
-                {selectedEvent.location && <div className="col-span-2"><span className="text-xs text-muted-foreground">Lokacija:</span><br /><span className="text-xs">{selectedEvent.location}</span></div>}
-                {selectedEvent.attendees && <div className="col-span-2"><span className="text-xs text-muted-foreground">Učesnici:</span><br /><div className="flex gap-1 flex-wrap mt-1">{selectedEvent.attendees.split(',').map((a, i) => <Badge key={i} variant="outline" className="text-xs">{a.trim()}</Badge>)}</div></div>}
-                {selectedEvent.recurrence && selectedEvent.recurrence !== 'none' && <div><span className="text-xs text-muted-foreground">Ponavljanje:</span><br /><Badge variant="outline" className="text-xs mt-1"><Repeat className="h-2.5 w-2.5 mr-0.5" />{RECURRENCE_OPTIONS.find(r => r.value === selectedEvent.recurrence)?.label}</Badge></div>}
-                {selectedEvent.reminder && selectedEvent.reminder !== 'none' && <div><span className="text-xs text-muted-foreground">Podsetnik:</span><br /><Badge variant="outline" className="text-xs mt-1"><Bell className="h-2.5 w-2.5 mr-0.5" />{REMINDER_OPTIONS.find(r => r.value === selectedEvent.reminder)?.label}</Badge></div>}
-              </div>
-              {selectedEvent.description && <div><span className="text-xs text-muted-foreground">Opis:</span><p className="text-sm mt-1 bg-muted/30 rounded p-2">{selectedEvent.description}</p></div>}
-              <Separator />
-              <div className="flex gap-2">
-                <Button size="sm" onClick={() => { openEditEvent(selectedEvent); setEventDetailOpen(false) }}><Edit3 className="h-3.5 w-3.5 mr-1" /> Izmeni</Button>
-                <Button size="sm" variant="outline" className="text-destructive" onClick={() => { setDeleteConfirmOpen(true); setEventDetailOpen(false) }}><Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
 
       {/* Delete Confirmation */}
-      {deleteConfirmOpen && (
-        <Card className="max-w-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDeleteConfirmOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="text-base font-semibold text-destructive flex items-center gap-2"><AlertTriangle className="h-5 w-5" /> Potvrda brisanja</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">Obrisati događaj &quot;{selectedEvent?.title}&quot;?</p>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
-              <Button variant="destructive" onClick={handleDeleteEvent}>Obriši</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
 
       {/* Info */}
       <Card>

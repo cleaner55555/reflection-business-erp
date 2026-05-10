@@ -71,7 +71,7 @@ export function Lab() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<LabEquipment | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<LabEquipment>>({})
@@ -110,13 +110,13 @@ export function Lab() {
   const openCreate = useCallback(() => {
     setEditItem(null)
     setForm({ inventoryNo: `INV-LAB-${String(data.length + 1).padStart(3, '0')}`, name: '', category: 'measurement', manufacturer: '', model: '', serialNo: '', location: '', status: 'operational', purchaseDate: new Date().toISOString().split('T')[0], purchasePrice: 0, lastCalibration: '', nextCalibration: '', responsible: '', condition: 'good', notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }, [data.length])
 
   const openEdit = useCallback((item: LabEquipment) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }, [])
 
   const handleSave = useCallback(async () => {
@@ -134,7 +134,7 @@ export function Lab() {
           setData(prev => [saved, ...prev])
           toast.success('Oprema kreirana')
         }
-        setDialogOpen(false)
+        setActiveTab('pregled'); setEditItem(null)
         setEditItem(null)
       }
     } catch { toast.error('Greška pri čuvanju') }
@@ -280,24 +280,6 @@ export function Lab() {
                 {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card className="sm:max-w-[500px]">
-          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>{editItem ? 'Uredi opremu' : 'Nova oprema'}</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'operational'} onValueChange={v => setForm({ ...form, status: v as LabEquipment['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="operational">Operativan</SelectItem><SelectItem value="calibration">Kalibracija</SelectItem><SelectItem value="maintenance">Održavanje</SelectItem><SelectItem value="out_of_order">Kvar</SelectItem><SelectItem value="stored">Skladište</SelectItem></SelectContent></Select></div>
-                <div className="grid gap-2"><Label className="text-xs">Stanje</Label><Select value={form.condition || 'good'} onValueChange={v => setForm({ ...form, condition: v as LabEquipment['condition'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="excellent">Odlično</SelectItem><SelectItem value="good">Dobro</SelectItem><SelectItem value="fair">Zadovoljavajuće</SelectItem><SelectItem value="poor">Loše</SelectItem></SelectContent></Select></div>
-                <div className="grid gap-2"><Label className="text-xs">Lokacija</Label><Input className="text-xs" value={form.location || ''} onChange={e => setForm({ ...form, location: e.target.value })} /></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
           </CardContent>
         </Card>
       )}

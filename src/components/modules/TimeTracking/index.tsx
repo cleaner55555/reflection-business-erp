@@ -37,6 +37,7 @@ import {
   ActivityLog, ProjectReportTable, EmployeeReportTable,
   WeeklySummaryTable, ReportSummaryCards, ReportFilterBar, SettingsPanel,
 } from './components'
+import { ArrowLeft } from 'lucide-react'
 
 // ============ MAIN EXPORT ============
 
@@ -87,8 +88,8 @@ export function TimeTracking() {
     mostActiveProject: '-', mostActiveEmployee: '-', overtimeHours: 0,
   })
 
-  // Dialogs
-  const [entryDialogOpen, setEntryDialogOpen] = useState(false)
+  // Sub-tabs
+  const [pracenjeSubTab, setPracenjeSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -372,7 +373,8 @@ export function TimeTracking() {
 
   const handleEditEntry = useCallback((entry: TimeEntry) => {
     setEditingEntry(entry)
-    setEntryDialogOpen(true)
+    setActiveTab('pracenje')
+    setPracenjeSubTab('dodaj')
   }, [])
 
   const handleUpdateEntry = useCallback(async (data: {
@@ -602,7 +604,7 @@ export function TimeTracking() {
             <Download className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Извези CSV</span>
           </Button>
-          <Button size="sm" className="gap-1.5" onClick={() => { setEditingEntry(null); setEntryDialogOpen(true) }}>
+          <Button size="sm" className="gap-1.5" onClick={() => { setEditingEntry(null); setActiveTab('pracenje'); setPracenjeSubTab('dodaj') }}>
             <Plus className="h-3.5 w-3.5" />
             Нови унос
           </Button>
@@ -632,6 +634,13 @@ export function TimeTracking() {
 
         {/* ==================== TAB 1: ПРАЋЕЊЕ ==================== */}
         <TabsContent value="pracenje" className="space-y-6 mt-6">
+          <Tabs value={pracenjeSubTab} onValueChange={(v) => setPracenjeSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled">Преглед</TabsTrigger>
+              {(editingEntry || pracenjeSubTab === 'dodaj') && <TabsTrigger value="dodaj">{editingEntry ? 'Уреди' : 'Додај'}</TabsTrigger>}
+            </TabsList>
+
+            <TabsContent value="pregled" className="space-y-6">
           {/* Active Timer */}
           <ActiveTimer
             timer={timer}
@@ -742,6 +751,20 @@ export function TimeTracking() {
             onDelete={handleDeleteEntry}
             onStatusChange={handleStatusChange}
           />
+            </TabsContent>
+
+            <TabsContent value="dodaj" className="space-y-6">
+              <EntryFormDialog
+                open={true}
+                onOpenChange={(v) => { if (!v) { setPracenjeSubTab('pregled'); setEditingEntry(null) } }}
+                editingEntry={editingEntry}
+                projects={mockProjects}
+                tasks={mockTasks}
+                employees={mockEmployees}
+                onSubmit={editingEntry ? handleUpdateEntry : handleCreateEntry}
+              />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ==================== TAB 2: ИЗВЕШТАЈИ ==================== */}
@@ -950,17 +973,6 @@ export function TimeTracking() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Entry Form Dialog */}
-      <EntryFormDialog
-        open={entryDialogOpen}
-        onOpenChange={setEntryDialogOpen}
-        editingEntry={editingEntry}
-        projects={mockProjects}
-        tasks={mockTasks}
-        employees={mockEmployees}
-        onSubmit={editingEntry ? handleUpdateEntry : handleCreateEntry}
-      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

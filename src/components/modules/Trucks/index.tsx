@@ -18,6 +18,7 @@ import {
   Truck, FileCheck, Wrench, DollarSign,
   AlertTriangle, Fuel, MapPin, Clock, TrendingUp,
   ShieldCheck, CarFront, Zap, BarChart3, Activity,
+  ArrowLeft, Plus,
 } from 'lucide-react'
 import type {
   Truck as TruckType,
@@ -66,6 +67,11 @@ export function Trucks() {
   // ─── TAB STATE ─────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<TruckTab>('vozni_park')
 
+  // ─── SUB-TAB STATE (Pregled/Dodaj/Uredi) ───────────────
+  const [vozniParkSubTab, setVozniParkSubTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
+  const [odrzavanjeSubTab, setOdrzavanjeSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [troskoviSubTab, setTroskoviSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+
   // ─── DATA STATE ────────────────────────────────────────
   const [trucks, setTrucks] = useState<TruckType[]>([])
   const [maintenance, setMaintenance] = useState<MaintenanceRecord[]>([])
@@ -76,13 +82,9 @@ export function Trucks() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<TruckStatus | ''>('')
 
-  // ─── DIALOG STATE ──────────────────────────────────────
-  const [truckDialogOpen, setTruckDialogOpen] = useState(false)
+  // ─── FORM STATE ────────────────────────────────────────
   const [editingTruck, setEditingTruck] = useState<TruckType | null>(null)
   const [submitting, setSubmitting] = useState(false)
-
-  const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false)
-  const [costDialogOpen, setCostDialogOpen] = useState(false)
 
   // ────────────────────────────────────────────────────────
   // DATA FETCHING
@@ -186,12 +188,12 @@ export function Trucks() {
 
   const handleAddTruck = () => {
     setEditingTruck(null)
-    setTruckDialogOpen(true)
+    setVozniParkSubTab('dodaj')
   }
 
   const handleEditTruck = (truck: TruckType) => {
     setEditingTruck(truck)
-    setTruckDialogOpen(true)
+    setVozniParkSubTab('uredi')
   }
 
   const handleSaveTruck = async (data: TruckFormData) => {
@@ -209,7 +211,7 @@ export function Trucks() {
 
       if (res.ok) {
         toast.success(editingTruck ? 'Камион ажуриран' : 'Камион додат')
-        setTruckDialogOpen(false)
+        setVozniParkSubTab('pregled')
         fetchTrucks()
       } else {
         // Fallback: update local state
@@ -232,7 +234,7 @@ export function Trucks() {
           setTrucks((prev) => [newTruck, ...prev])
           toast.success('Камион додат (локално)')
         }
-        setTruckDialogOpen(false)
+        setVozniParkSubTab('pregled')
       }
     } catch {
       // Offline fallback
@@ -255,7 +257,7 @@ export function Trucks() {
         setTrucks((prev) => [newTruck, ...prev])
         toast.success('Камион додат (локално)')
       }
-      setTruckDialogOpen(false)
+      setVozniParkSubTab('pregled')
     } finally {
       setSubmitting(false)
     }
@@ -304,17 +306,17 @@ export function Trucks() {
       })
       if (res.ok) {
         toast.success('Сервисни запис додат')
-        setMaintenanceDialogOpen(false)
+        setOdrzavanjeSubTab('pregled')
         fetchMaintenance()
       } else {
         setMaintenance((prev) => [newRecord, ...prev])
         toast.success('Сервисни запис додат (локално)')
-        setMaintenanceDialogOpen(false)
+        setOdrzavanjeSubTab('pregled')
       }
     } catch {
       setMaintenance((prev) => [newRecord, ...prev])
       toast.success('Сервисни запис додат (локално)')
-      setMaintenanceDialogOpen(false)
+      setOdrzavanjeSubTab('pregled')
     } finally {
       setSubmitting(false)
     }
@@ -359,17 +361,17 @@ export function Trucks() {
       })
       if (res.ok) {
         toast.success('Трошак додат')
-        setCostDialogOpen(false)
+        setTroskoviSubTab('pregled')
         fetchCosts()
       } else {
         setCosts((prev) => [newCost, ...prev])
         toast.success('Трошак додат (локално)')
-        setCostDialogOpen(false)
+        setTroskoviSubTab('pregled')
       }
     } catch {
       setCosts((prev) => [newCost, ...prev])
       toast.success('Трошак додат (локално)')
-      setCostDialogOpen(false)
+      setTroskoviSubTab('pregled')
     } finally {
       setSubmitting(false)
     }
@@ -390,6 +392,17 @@ export function Trucks() {
       setCosts((prev) => prev.filter((c) => c.id !== id))
       toast.success('Трошак обрисан (локално)')
     }
+  }
+
+  // ────────────────────────────────────────────────────────
+  // MAIN TAB CHANGE (reset sub-tabs)
+  // ────────────────────────────────────────────────────────
+
+  const handleMainTabChange = (v: string) => {
+    setActiveTab(v as TruckTab)
+    setVozniParkSubTab('pregled')
+    setOdrzavanjeSubTab('pregled')
+    setTroskoviSubTab('pregled')
   }
 
   // ────────────────────────────────────────────────────────
@@ -482,7 +495,7 @@ export function Trucks() {
       {/* ─── TABS ───────────────────────────────────────── */}
       <Tabs
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as TruckTab)}
+        onValueChange={handleMainTabChange}
         className="space-y-4"
       >
         <TabsList className="grid grid-cols-4 w-full sm:w-auto sm:inline-grid">
@@ -520,142 +533,173 @@ export function Trucks() {
 
         {/* ── TAB: VOZNI PARK ──────────────────────────── */}
         <TabsContent value="vozni_park" className="space-y-4">
-          <FleetTable
-            trucks={trucks}
-            search={search}
-            onSearchChange={setSearch}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            onAdd={handleAddTruck}
-            onEdit={handleEditTruck}
-            onDelete={handleDeleteTruck}
-            loading={false}
-          />
-
-          {/* Fleet Summary Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <MonthlyCostsBar stats={fleetStats} />
-
-            {/* Quick Fleet Overview */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  Преглед возног парка
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-3.5 w-3.5 text-emerald-600" />
-                      <span className="text-xs font-medium">Активних камиона</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-sm font-bold text-emerald-700">{fleetStats.activeTrucks}</span>
-                      <span className="text-xs text-muted-foreground ml-2">
-                        / {fleetStats.totalTrucks}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Wrench className="h-3.5 w-3.5 text-amber-600" />
-                      <span className="text-xs font-medium">На сервису / У гаражи</span>
-                    </div>
-                    <span className="text-sm font-bold text-amber-700">
-                      {fleetStats.inService + fleetStats.inGarage}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-                      <span className="text-xs font-medium">Кварова</span>
-                    </div>
-                    <span className="text-sm font-bold text-red-700">{fleetStats.breakdowns}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <Fuel className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-medium">Укупна потрошња горива</span>
-                    </div>
-                    <span className="text-sm font-bold">{formatRSDShort(fleetStats.fuelCostsTotal)}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-medium">Укупни трошкови</span>
-                    </div>
-                    <span className="text-sm font-bold">{formatRSD(fleetStats.totalCosts)}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-2">
-                      <CarFront className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-medium">Просечна километража</span>
-                    </div>
-                    <span className="text-sm font-bold font-mono">{formatMileage(fleetStats.avgMileage)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Sub-tab navigation */}
+          <div className="flex items-center gap-2">
+            {vozniParkSubTab !== 'pregled' && (
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => setVozniParkSubTab('pregled')}>
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Преглед
+              </Button>
+            )}
+            {vozniParkSubTab === 'pregled' && (
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setEditingTruck(null); setVozniParkSubTab('dodaj') }}>
+                <Plus className="h-3.5 w-3.5" />
+                Нови камион
+              </Button>
+            )}
           </div>
 
-          {/* Individual Truck Quick Cards */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Truck className="h-4 w-4 text-muted-foreground" />
-                Брзи преглед — активни камиони
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto">
-                {trucks
-                  .filter((t) => t.status === 'aktivan' || t.status === 'na_servisu')
-                  .map((truck) => {
-                    const regDays = getDaysRemaining(truck.registrationExpiry)
-                    const techDays = getDaysRemaining(truck.techInspectionExpiry)
-                    const insDays = getDaysRemaining(truck.insuranceExpiry)
-                    const minDays = Math.min(regDays, techDays, insDays)
+          {vozniParkSubTab === 'pregled' && (
+            <>
+              <FleetTable
+                trucks={trucks}
+                search={search}
+                onSearchChange={setSearch}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                onAdd={handleAddTruck}
+                onEdit={handleEditTruck}
+                onDelete={handleDeleteTruck}
+                loading={false}
+              />
 
-                    return (
-                      <div
-                        key={truck.id}
-                        className="p-3 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer"
-                        onClick={() => handleEditTruck(truck)}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-mono font-bold text-sm">{truck.plate}</span>
-                          <Badge className={`text-xs px-2 py-0 ${getStatusBadgeClass(truck.status)}`}>
-                            {getStatusLabel(truck.status)}
-                          </Badge>
+              {/* Fleet Summary Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <MonthlyCostsBar stats={fleetStats} />
+
+                {/* Quick Fleet Overview */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                      Преглед возног парка
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-3.5 w-3.5 text-emerald-600" />
+                          <span className="text-xs font-medium">Активних камиона</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          {truck.make} {truck.model} · {truck.year}
-                        </p>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                          <Fuel className="h-3 w-3" />
-                          <span>{getFuelLabel(truck.fuelType)}</span>
-                          <span className="mx-1">·</span>
-                          <span className="font-mono">{formatMileage(truck.mileage)}</span>
-                        </div>
-                        {truck.driver && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            📍 {truck.driver}
-                          </p>
-                        )}
-                        {/* Status indicators */}
-                        <div className="flex gap-1.5 mt-2 flex-wrap">
-                          <MiniStatusBadge label="Рег" days={regDays} />
-                          <MiniStatusBadge label="Тех" days={techDays} />
-                          <MiniStatusBadge label="Осиг" days={insDays} />
+                        <div className="text-right">
+                          <span className="text-sm font-bold text-emerald-700">{fleetStats.activeTrucks}</span>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            / {fleetStats.totalTrucks}
+                          </span>
                         </div>
                       </div>
-                    )
-                  })}
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Wrench className="h-3.5 w-3.5 text-amber-600" />
+                          <span className="text-xs font-medium">На сервису / У гаражи</span>
+                        </div>
+                        <span className="text-sm font-bold text-amber-700">
+                          {fleetStats.inService + fleetStats.inGarage}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+                          <span className="text-xs font-medium">Кварова</span>
+                        </div>
+                        <span className="text-sm font-bold text-red-700">{fleetStats.breakdowns}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <Fuel className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs font-medium">Укупна потрошња горива</span>
+                        </div>
+                        <span className="text-sm font-bold">{formatRSDShort(fleetStats.fuelCostsTotal)}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs font-medium">Укупни трошкови</span>
+                        </div>
+                        <span className="text-sm font-bold">{formatRSD(fleetStats.totalCosts)}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                          <CarFront className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs font-medium">Просечна километража</span>
+                        </div>
+                        <span className="text-sm font-bold font-mono">{formatMileage(fleetStats.avgMileage)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
+
+              {/* Individual Truck Quick Cards */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    Брзи преглед — активни камиони
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto">
+                    {trucks
+                      .filter((t) => t.status === 'aktivan' || t.status === 'na_servisu')
+                      .map((truck) => {
+                        const regDays = getDaysRemaining(truck.registrationExpiry)
+                        const techDays = getDaysRemaining(truck.techInspectionExpiry)
+                        const insDays = getDaysRemaining(truck.insuranceExpiry)
+                        const minDays = Math.min(regDays, techDays, insDays)
+
+                        return (
+                          <div
+                            key={truck.id}
+                            className="p-3 rounded-lg border hover:border-primary/50 transition-colors cursor-pointer"
+                            onClick={() => handleEditTruck(truck)}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-mono font-bold text-sm">{truck.plate}</span>
+                              <Badge className={`text-xs px-2 py-0 ${getStatusBadgeClass(truck.status)}`}>
+                                {getStatusLabel(truck.status)}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {truck.make} {truck.model} · {truck.year}
+                            </p>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                              <Fuel className="h-3 w-3" />
+                              <span>{getFuelLabel(truck.fuelType)}</span>
+                              <span className="mx-1">·</span>
+                              <span className="font-mono">{formatMileage(truck.mileage)}</span>
+                            </div>
+                            {truck.driver && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                📍 {truck.driver}
+                              </p>
+                            )}
+                            {/* Status indicators */}
+                            <div className="flex gap-1.5 mt-2 flex-wrap">
+                              <MiniStatusBadge label="Рег" days={regDays} />
+                              <MiniStatusBadge label="Тех" days={techDays} />
+                              <MiniStatusBadge label="Осиг" days={insDays} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {/* Dodaj / Uredi inline form */}
+          {(vozniParkSubTab === 'dodaj' || vozniParkSubTab === 'uredi') && (
+            <TruckFormDialog
+              open={true}
+              onOpenChange={(v) => { if (!v) setVozniParkSubTab('pregled') }}
+              truck={editingTruck}
+              onSave={handleSaveTruck}
+              submitting={submitting}
+            />
+          )}
         </TabsContent>
 
         {/* ── TAB: REGISTRACIJA ─────────────────────────── */}
@@ -696,185 +740,222 @@ export function Trucks() {
 
         {/* ── TAB: ODRŽAVANJE ────────────────────────────── */}
         <TabsContent value="odrzavanje" className="space-y-4">
-          <MaintenanceTab
-            records={maintenance}
-            trucks={trucks}
-            onAdd={() => setMaintenanceDialogOpen(true)}
-            onDelete={handleDeleteMaintenance}
-          />
-
-          {/* Maintenance Summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                <Wrench className="h-3.5 w-3.5" />
-                Укупно записа
-              </div>
-              <p className="text-2xl font-bold">{maintenance.length}</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-xs text-emerald-600 mb-1">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Завршено
-              </div>
-              <p className="text-2xl font-bold text-emerald-700">
-                {maintenance.filter((m) => m.status === 'zavrseno').length}
-              </p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-xs text-amber-600 mb-1">
-                <Clock className="h-3.5 w-3.5" />
-                У току / Заказано
-              </div>
-              <p className="text-2xl font-bold text-amber-700">
-                {maintenance.filter((m) => m.status === 'u_toku' || m.status === 'zakazano').length}
-              </p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                <DollarSign className="h-3.5 w-3.5" />
-                Укупни трошкови сервиса
-              </div>
-              <p className="text-lg font-bold">
-                {formatRSD(maintenance.reduce((s, m) => s + m.cost, 0))}
-              </p>
-            </Card>
+          {/* Sub-tab navigation */}
+          <div className="flex items-center gap-2">
+            {odrzavanjeSubTab !== 'pregled' && (
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => setOdrzavanjeSubTab('pregled')}>
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Преглед
+              </Button>
+            )}
+            {odrzavanjeSubTab === 'pregled' && (
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setOdrzavanjeSubTab('dodaj')}>
+                <Plus className="h-3.5 w-3.5" />
+                Нови запис
+              </Button>
+            )}
           </div>
+
+          {odrzavanjeSubTab === 'pregled' && (
+            <>
+              <MaintenanceTab
+                records={maintenance}
+                trucks={trucks}
+                onAdd={() => setOdrzavanjeSubTab('dodaj')}
+                onDelete={handleDeleteMaintenance}
+              />
+
+              {/* Maintenance Summary */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <Wrench className="h-3.5 w-3.5" />
+                    Укупно записа
+                  </div>
+                  <p className="text-2xl font-bold">{maintenance.length}</p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 text-xs text-emerald-600 mb-1">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Завршено
+                  </div>
+                  <p className="text-2xl font-bold text-emerald-700">
+                    {maintenance.filter((m) => m.status === 'zavrseno').length}
+                  </p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 text-xs text-amber-600 mb-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    У току / Заказано
+                  </div>
+                  <p className="text-2xl font-bold text-amber-700">
+                    {maintenance.filter((m) => m.status === 'u_toku' || m.status === 'zakazano').length}
+                  </p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Укупни трошкови сервиса
+                  </div>
+                  <p className="text-lg font-bold">
+                    {formatRSD(maintenance.reduce((s, m) => s + m.cost, 0))}
+                  </p>
+                </Card>
+              </div>
+            </>
+          )}
+
+          {/* Dodaj inline form */}
+          {odrzavanjeSubTab === 'dodaj' && (
+            <MaintenanceFormDialog
+              open={true}
+              onOpenChange={(v) => { if (!v) setOdrzavanjeSubTab('pregled') }}
+              trucks={trucks}
+              onSave={handleSaveMaintenance}
+              submitting={submitting}
+            />
+          )}
         </TabsContent>
 
         {/* ── TAB: TROŠKOVI ──────────────────────────────── */}
         <TabsContent value="troskovi" className="space-y-4">
-          <CostsTab
-            costs={costs}
-            trucks={trucks}
-            onAdd={() => setCostDialogOpen(true)}
-            onDelete={handleDeleteCost}
-          />
-
-          {/* Cost Summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                <DollarSign className="h-3.5 w-3.5" />
-                Укупно трошкова
-              </div>
-              <p className="text-lg font-bold">{formatRSD(costs.reduce((s, c) => s + c.amount, 0))}</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-xs text-emerald-600 mb-1">
-                <Fuel className="h-3.5 w-3.5" />
-                Гориво
-              </div>
-              <p className="text-lg font-bold text-emerald-700">
-                {formatRSD(costs.filter((c) => c.type === 'gorivo').reduce((s, c) => s + c.amount, 0))}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {costs.filter((c) => c.type === 'gorivo').length} чланова
-              </p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-xs text-amber-600 mb-1">
-                <MapPin className="h-3.5 w-3.5" />
-                Путарине и паркинг
-              </div>
-              <p className="text-lg font-bold text-amber-700">
-                {formatRSD(costs.filter((c) => c.type === 'putarina' || c.type === 'parking').reduce((s, c) => s + c.amount, 0))}
-              </p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                <Wrench className="h-3.5 w-3.5" />
-                Сервис и делови
-              </div>
-              <p className="text-lg font-bold">
-                {formatRSD(costs.filter((c) => ['servis', 'delovi', 'gume', 'podmazivanje', 'adr_oprema'].includes(c.type)).reduce((s, c) => s + c.amount, 0))}
-              </p>
-            </Card>
+          {/* Sub-tab navigation */}
+          <div className="flex items-center gap-2">
+            {troskoviSubTab !== 'pregled' && (
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => setTroskoviSubTab('pregled')}>
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Преглед
+              </Button>
+            )}
+            {troskoviSubTab === 'pregled' && (
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setTroskoviSubTab('dodaj')}>
+                <Plus className="h-3.5 w-3.5" />
+                Нови трошак
+              </Button>
+            )}
           </div>
 
-          {/* Cost per Truck */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                Трошкови по камиону
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                {trucks
-                  .map((truck) => {
-                    const truckCosts = costs.filter((c) => c.truckId === truck.id)
-                    const total = truckCosts.reduce((s, c) => s + c.amount, 0)
-                    const fuelTotal = truckCosts.filter((c) => c.type === 'gorivo').reduce((s, c) => s + c.amount, 0)
-                    return { truck, total, fuelTotal, count: truckCosts.length }
-                  })
-                  .filter((item) => item.count > 0)
-                  .sort((a, b) => b.total - a.total)
-                  .map(({ truck, total, fuelTotal, count }) => {
-                    const maxCost = Math.max(
-                      ...trucks.map((t) => costs.filter((c) => c.truckId === t.id).reduce((s, c) => s + c.amount, 0)),
-                      1
-                    )
-                    const barPct = (total / maxCost) * 100
-                    return (
-                      <div key={truck.id} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-semibold w-20">{truck.plate}</span>
-                            <span className="text-muted-foreground">{truck.make} {truck.model}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-bold">{formatRSD(total)}</span>
-                            <span className="text-xs text-muted-foreground ml-1">({count})</span>
-                          </div>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden flex">
-                          <div
-                            className="h-full bg-emerald-500 rounded-l-full"
-                            style={{ width: `${(fuelTotal / maxCost) * 100}%` }}
-                          />
-                          <div
-                            className="h-full bg-amber-500 rounded-r-full"
-                            style={{ width: `${((total - fuelTotal) / maxCost) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                {trucks.every((t) => costs.filter((c) => c.truckId === t.id).length === 0) && (
-                  <p className="text-xs text-muted-foreground text-center py-4">Нема података о трошковима</p>
-                )}
+          {troskoviSubTab === 'pregled' && (
+            <>
+              <CostsTab
+                costs={costs}
+                trucks={trucks}
+                onAdd={() => setTroskoviSubTab('dodaj')}
+                onDelete={handleDeleteCost}
+              />
+
+              {/* Cost Summary */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Укупно трошкова
+                  </div>
+                  <p className="text-lg font-bold">{formatRSD(costs.reduce((s, c) => s + c.amount, 0))}</p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 text-xs text-emerald-600 mb-1">
+                    <Fuel className="h-3.5 w-3.5" />
+                    Гориво
+                  </div>
+                  <p className="text-lg font-bold text-emerald-700">
+                    {formatRSD(costs.filter((c) => c.type === 'gorivo').reduce((s, c) => s + c.amount, 0))}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {costs.filter((c) => c.type === 'gorivo').length} чланова
+                  </p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 text-xs text-amber-600 mb-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    Путарине и паркинг
+                  </div>
+                  <p className="text-lg font-bold text-amber-700">
+                    {formatRSD(costs.filter((c) => c.type === 'putarina' || c.type === 'parking').reduce((s, c) => s + c.amount, 0))}
+                  </p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <Wrench className="h-3.5 w-3.5" />
+                    Сервис и делови
+                  </div>
+                  <p className="text-lg font-bold">
+                    {formatRSD(costs.filter((c) => ['servis', 'delovi', 'gume', 'podmazivanje', 'adr_oprema'].includes(c.type)).reduce((s, c) => s + c.amount, 0))}
+                  </p>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
+
+              {/* Cost per Truck */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                    Трошкови по камиону
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {trucks
+                      .map((truck) => {
+                        const truckCosts = costs.filter((c) => c.truckId === truck.id)
+                        const total = truckCosts.reduce((s, c) => s + c.amount, 0)
+                        const fuelTotal = truckCosts.filter((c) => c.type === 'gorivo').reduce((s, c) => s + c.amount, 0)
+                        return { truck, total, fuelTotal, count: truckCosts.length }
+                      })
+                      .filter((item) => item.count > 0)
+                      .sort((a, b) => b.total - a.total)
+                      .map(({ truck, total, fuelTotal, count }) => {
+                        const maxCost = Math.max(
+                          ...trucks.map((t) => costs.filter((c) => c.truckId === t.id).reduce((s, c) => s + c.amount, 0)),
+                          1
+                        )
+                        const barPct = (total / maxCost) * 100
+                        return (
+                          <div key={truck.id} className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-semibold w-20">{truck.plate}</span>
+                                <span className="text-muted-foreground">{truck.make} {truck.model}</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="font-bold">{formatRSD(total)}</span>
+                                <span className="text-xs text-muted-foreground ml-1">({count})</span>
+                              </div>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden flex">
+                              <div
+                                className="h-full bg-emerald-500 rounded-l-full"
+                                style={{ width: `${(fuelTotal / maxCost) * 100}%` }}
+                              />
+                              <div
+                                className="h-full bg-amber-500 rounded-r-full"
+                                style={{ width: `${((total - fuelTotal) / maxCost) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    {trucks.every((t) => costs.filter((c) => c.truckId === t.id).length === 0) && (
+                      <p className="text-xs text-muted-foreground text-center py-4">Нема података о трошковима</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {/* Dodaj inline form */}
+          {troskoviSubTab === 'dodaj' && (
+            <CostFormDialog
+              open={true}
+              onOpenChange={(v) => { if (!v) setTroskoviSubTab('pregled') }}
+              trucks={trucks}
+              onSave={handleSaveCost}
+              submitting={submitting}
+            />
+          )}
         </TabsContent>
       </Tabs>
-
-      {/* ─── DIALOGS ─────────────────────────────────────── */}
-      <TruckFormDialog
-        open={truckDialogOpen}
-        onOpenChange={setTruckDialogOpen}
-        truck={editingTruck}
-        onSave={handleSaveTruck}
-        submitting={submitting}
-      />
-
-      <MaintenanceFormDialog
-        open={maintenanceDialogOpen}
-        onOpenChange={setMaintenanceDialogOpen}
-        trucks={trucks}
-        onSave={handleSaveMaintenance}
-        submitting={submitting}
-      />
-
-      <CostFormDialog
-        open={costDialogOpen}
-        onOpenChange={setCostDialogOpen}
-        trucks={trucks}
-        onSave={handleSaveCost}
-        submitting={submitting}
-      />
     </div>
   )
 }

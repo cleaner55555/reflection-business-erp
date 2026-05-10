@@ -73,9 +73,10 @@ export function LoadingDock() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [dockFilter, setDockFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [detailId, setDetailId] = useState<string | null>(null)
   const [editItem, setEditItem] = useState<DockAppointment | null>(null)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [activeTab, setActiveTab] = useState('schedule')
   const [formData, setFormData] = useState({ dockNumber: '', dockType: 'unloading' as DockAppointment['dockType'], vehiclePlate: '', driverName: '', companyName: '', appointmentDate: '', scheduledTime: '', cargoType: '', cargoWeight: 0, palletCount: 0, priority: 'normal' as DockAppointment['priority'], doorAssignment: '', handlingInstructions: '', notes: '' })
 
@@ -149,13 +150,13 @@ export function LoadingDock() {
   const handleOpenCreate = useCallback(() => {
     setFormData({ dockNumber: '', dockType: 'unloading', vehiclePlate: '', driverName: '', companyName: '', appointmentDate: '', scheduledTime: '', cargoType: '', cargoWeight: 0, palletCount: 0, priority: 'normal', doorAssignment: '', handlingInstructions: '', notes: '' })
     setEditItem(null)
-    setDialogOpen(true)
+    setActiveTab('schedule'); setSubTab('dodaj')
   }, [])
 
   const handleOpenEdit = useCallback((item: DockAppointment) => {
     setFormData({ dockNumber: item.dockNumber, dockType: item.dockType, vehiclePlate: item.vehiclePlate, driverName: item.driverName, companyName: item.companyName, appointmentDate: item.appointmentDate, scheduledTime: item.scheduledTime, cargoType: item.cargoType, cargoWeight: item.cargoWeight, palletCount: item.palletCount, priority: item.priority, doorAssignment: item.doorAssignment, handlingInstructions: item.handlingInstructions, notes: item.notes })
     setEditItem(item)
-    setDialogOpen(true)
+    setActiveTab('schedule'); setSubTab('dodaj')
   }, [])
 
   const handleSave = useCallback(async () => {
@@ -180,7 +181,7 @@ export function LoadingDock() {
         setData(prev => [created, ...prev])
         toast.success('Novi termin kreiran')
       }
-      setDialogOpen(false)
+      setSubTab('pregled')
       setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }, [formData, editItem])
@@ -214,6 +215,10 @@ export function LoadingDock() {
         <TabsList><TabsTrigger value="schedule">Raspored</TabsTrigger><TabsTrigger value="docks">Rampa stanje</TabsTrigger><TabsTrigger value="overview">Pregled</TabsTrigger></TabsList>
 
         <TabsContent value="schedule" className="space-y-4">
+          <Tabs value={subTab} onValueChange={v => setSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj" disabled={!editItem && subTab !== 'dodaj'}>{editItem ? 'Uredi' : 'Dodaj'}</TabsTrigger></TabsList>
+            <TabsContent value="pregled" className="mt-4">
+
           <Card>
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -262,6 +267,9 @@ export function LoadingDock() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="docks" className="space-y-4">
@@ -366,40 +374,7 @@ export function LoadingDock() {
       )}
 
       {/* Create/Edit Form */}
-      {dialogOpen && (
-        <Card className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>{editItem ? 'Uredi termin' : 'Novi termin'}</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Rampa</Label><Input placeholder="R-01" className="text-xs" value={formData.dockNumber} onChange={e => setFormData(p => ({ ...p, dockNumber: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.dockType} onValueChange={v => setFormData(p => ({ ...p, dockType: v as DockAppointment['dockType'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(DOCK_TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Reg. broj *</Label><Input placeholder="BG-123-AB" className="text-xs" value={formData.vehiclePlate} onChange={e => setFormData(p => ({ ...p, vehiclePlate: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Vozač *</Label><Input placeholder="Ime vozača" className="text-xs" value={formData.driverName} onChange={e => setFormData(p => ({ ...p, driverName: e.target.value }))} /></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Firma *</Label><Input placeholder="Naziv firme" className="text-xs" value={formData.companyName} onChange={e => setFormData(p => ({ ...p, companyName: e.target.value }))} /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input type="date" className="text-xs" value={formData.appointmentDate} onChange={e => setFormData(p => ({ ...p, appointmentDate: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Vreme *</Label><Input type="time" className="text-xs" value={formData.scheduledTime} onChange={e => setFormData(p => ({ ...p, scheduledTime: e.target.value }))} /></div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Roba</Label><Input placeholder="Tip robe" className="text-xs" value={formData.cargoType} onChange={e => setFormData(p => ({ ...p, cargoType: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" className="text-xs" value={formData.cargoWeight || ''} onChange={e => setFormData(p => ({ ...p, cargoWeight: Number(e.target.value) }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Palete</Label><Input type="number" className="text-xs" value={formData.palletCount || ''} onChange={e => setFormData(p => ({ ...p, palletCount: Number(e.target.value) }))} /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v as DockAppointment['priority'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-                <div className="grid gap-2"><Label className="text-xs">Vrata</Label><Input placeholder="Vrata 1" className="text-xs" value={formData.doorAssignment} onChange={e => setFormData(p => ({ ...p, doorAssignment: e.target.value }))} /></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Instrukcije</Label><Textarea placeholder="Uputstva za rukovanje..." className="text-xs" value={formData.handlingInstructions} onChange={e => setFormData(p => ({ ...p, handlingInstructions: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Dodatne beleške..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
-          </CardContent>
-        </Card>
-      )}
+      
     </div>
   )
 }

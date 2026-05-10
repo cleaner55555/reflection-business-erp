@@ -95,7 +95,7 @@ export function Delivery() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [detailId, setDetailId] = useState<string | null>(null)
   const [editItem, setEditItem] = useState<DeliveryOrder | null>(null)
   const [activeTab, setActiveTab] = useState('list')
@@ -131,7 +131,7 @@ export function Delivery() {
     if (!confirm('Obrisati dostavu?')) return
     try {
       const res = await fetch(`/api/delivery/${id}`, { method: 'DELETE' })
-      if (res.ok) { toast.success('Dostava obrisana'); if (detailId === id) setDetailId(null); fetchData() }
+      if (res.ok) { toast.success('Dostava obrisana'); if (detailId === id) { setDetailId(null); setSubTab('pregled'); } fetchData() }
     } catch { toast.error('Greška') }
   }
 
@@ -148,13 +148,13 @@ export function Delivery() {
   const handleOpenCreate = () => {
     setFormData({ senderName: '', senderPhone: '', senderAddress: '', recipientName: '', recipientPhone: '', recipientAddress: '', priority: 'standard', weight: 0, dimensions: '', codAmount: 0, notes: '' })
     setEditItem(null)
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }
 
   const handleOpenEdit = (item: DeliveryOrder) => {
     setFormData({ senderName: item.senderName, senderPhone: item.senderPhone, senderAddress: item.senderAddress, recipientName: item.recipientName, recipientPhone: item.recipientPhone, recipientAddress: item.recipientAddress, priority: item.priority, weight: item.weight, dimensions: item.dimensions, codAmount: item.codAmount, notes: item.notes || '' })
     setEditItem(item)
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }
 
   const handleSave = async () => {
@@ -165,12 +165,12 @@ export function Delivery() {
         const res = await fetch(`/api/delivery/${editItem.id}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData),
         })
-        if (res.ok) { toast.success('Dostava ažurirana'); setDialogOpen(false); setEditItem(null); fetchData() }
+        if (res.ok) { toast.success('Dostava ažurirana'); setSubTab('pregled'); setEditItem(null); fetchData() }
       } else {
         const res = await fetch('/api/delivery', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData),
         })
-        if (res.ok) { toast.success('Nova dostava kreirana'); setDialogOpen(false); fetchData() }
+        if (res.ok) { toast.success('Nova dostava kreirana'); setSubTab('pregled'); fetchData() }
       }
     } catch { toast.error('Greška') } finally { setSaving(false) }
   }
@@ -178,6 +178,9 @@ export function Delivery() {
   if (loading && data.length === 0) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
 
   const detailItem = detailId ? data.find(i => i.id === detailId) : null
+  const detailSubTab = subTab === 'detalji' && detailItem ? 'detalji' : subTab
+
+  const handleMainTabChange = (val: string) => { setActiveTab(val); setSubTab('pregled'); setEditItem(null); setDetailId(null); }
 
   return (
     <div className="space-y-6">
@@ -186,7 +189,7 @@ export function Delivery() {
           <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30"><Package className="h-5 w-5 text-emerald-700 dark:text-emerald-400" /></div>
           <div><h1 className="text-2xl font-bold tracking-tight">Dostava</h1><p className="text-sm text-muted-foreground">Upravljanje isporukama i praćenje pošiljki</p></div>
         </div>
-        <Button size="sm" className="gap-2" onClick={handleOpenCreate}><Plus className="h-4 w-4" />Nova dostava</Button>
+        {subTab === 'pregled' && <Button size="sm" className="gap-2" onClick={handleOpenCreate}><Plus className="h-4 w-4" />Nova dostava</Button>}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
@@ -200,10 +203,18 @@ export function Delivery() {
         <Card className="p-4"><div className="text-xs text-muted-foreground mb-1">COD</div><p className="text-xl font-bold">{formatCurrency(stats.totalCOD)}</p></Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleMainTabChange}>
         <TabsList><TabsTrigger value="list">Pošiljke</TabsTrigger><TabsTrigger value="tracking">Praćenje</TabsTrigger><TabsTrigger value="overview">Pregled</TabsTrigger></TabsList>
 
         <TabsContent value="list" className="space-y-4">
+          <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              {editItem && <TabsTrigger value="dodaj">Uredi</TabsTrigger>}
+              {!editItem && subTab === 'dodaj' && <TabsTrigger value="dodaj">Dodaj</TabsTrigger>}
+              {detailItem && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="pregled" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -223,7 +234,7 @@ export function Delivery() {
                   </TableRow></TableHeader>
                   <TableBody>
                     {data.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nema pošiljki</TableCell></TableRow> : data.map(item => (
-                      <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(item.id)}>
+                      <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50" onClick={() => { setDetailId(item.id); setSubTab('detalji'); }}>
                         <TableCell className="text-xs font-mono">{item.trackingNumber}</TableCell>
                         <TableCell><div className="text-xs font-medium">{item.recipientName}</div><div className="text-xs text-muted-foreground">{item.recipientPhone}</div></TableCell>
                         <TableCell className="text-xs text-muted-foreground hidden sm:table-cell max-w-[150px] truncate">{item.recipientAddress}</TableCell>
@@ -232,7 +243,7 @@ export function Delivery() {
                         <TableCell className="text-xs hidden lg:table-cell">{item.codAmount > 0 ? formatCurrency(item.codAmount) : '-'}</TableCell>
                         <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{formatDate(item.estimatedDelivery)}</TableCell>
                         <TableCell className="text-right"><div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDetailId(item.id); setSubTab('detalji'); }}><Eye className="h-3.5 w-3.5" /></Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div></TableCell>
@@ -243,6 +254,95 @@ export function Delivery() {
               </div>
             </CardContent>
           </Card>
+            </TabsContent>
+
+            {/* Detalji Sub-tab */}
+            {detailItem && (
+            <TabsContent value="detalji" className="space-y-4">
+              <Card className="max-w-[700px]">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDetailId(null); setSubTab('pregled'); }}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle className="text-base">Detalji pošiljke</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>{(() => {
+                  const history = parseHistory(detailItem.history)
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div><p className="text-lg font-bold font-mono">{detailItem.trackingNumber}</p><p className="text-xs text-muted-foreground">{formatDate(detailItem.estimatedDelivery)}</p></div>
+                        <div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 rounded-lg border space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p><p className="text-xs font-medium">{detailItem.senderName}</p><p className="text-xs text-muted-foreground">{detailItem.senderPhone}</p><p className="text-xs text-muted-foreground">{detailItem.senderAddress}</p></div>
+                        <div className="p-3 rounded-lg border space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p><p className="text-xs font-medium">{detailItem.recipientName}</p><p className="text-xs text-muted-foreground">{detailItem.recipientPhone}</p><p className="text-xs text-muted-foreground">{detailItem.recipientAddress}</p></div>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.weight} kg</p></div>
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Dimenzije</div><p className="text-xs font-medium">{detailItem.dimensions}</p></div>
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Trošak</div><p className="text-xs font-medium">{formatCurrency(detailItem.shippingCost)}</p></div>
+                        <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">COD</div><p className="text-xs font-bold">{detailItem.codAmount > 0 ? formatCurrency(detailItem.codAmount) : 'Nema'}</p></div>
+                      </div>
+                      <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.assignedDriver || 'Nije dodeljen'}</p><p className="text-xs text-muted-foreground mt-1">Trenutna lokacija: {detailItem.currentLocation}</p></div>
+                      <div className="space-y-3">
+                        <p className="text-xs font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Istorija praćenja</p>
+                        <div className="space-y-2">
+                          {[...history].reverse().map((h, idx) => (
+                            <div key={idx} className="flex items-start gap-3">
+                              <div className="flex flex-col items-center"><div className="h-6 w-6 rounded-full flex items-center justify-center bg-muted">{getStatusIcon(h.status)}</div>{idx < history.length - 1 && <div className="w-px h-4 bg-border mt-1" />}</div>
+                              <div className="pb-2"><div className="flex items-center gap-2"><span className="text-xs text-muted-foreground">{h.date}</span>{getStatusBadge(h.status)}</div><p className="text-xs">{h.location}</p>{h.note && <p className="text-xs text-muted-foreground">{h.note}</p>}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+                      <div className="flex gap-2">
+                        <Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v)}><SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+                      </div>
+                    </div>
+                  )
+                })()}</CardContent>
+              </Card>
+            </TabsContent>
+            )}
+
+            {/* Dodaj/Uredi Sub-tab */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-[600px]">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSubTab('pregled'); setEditItem(null); }}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle className="text-base">{editItem ? 'Uredi dostavu' : 'Nova dostava'}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                  <div className="p-3 rounded-lg border space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p>
+                    <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Naziv firme ili ime" className="text-xs" value={formData.senderName} onChange={e => setFormData(p => ({ ...p, senderName: e.target.value }))} /></div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.senderPhone} onChange={e => setFormData(p => ({ ...p, senderPhone: e.target.value }))} /></div>
+                      <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
+                    <div className="grid gap-2"><Label className="text-xs">Adresa</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.senderAddress} onChange={e => setFormData(p => ({ ...p, senderAddress: e.target.value }))} /></div>
+                  </div>
+                  <div className="p-3 rounded-lg border space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p>
+                    <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Ime primaoca" className="text-xs" value={formData.recipientName} onChange={e => setFormData(p => ({ ...p, recipientName: e.target.value }))} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.recipientPhone} onChange={e => setFormData(p => ({ ...p, recipientPhone: e.target.value }))} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Adresa *</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.recipientAddress} onChange={e => setFormData(p => ({ ...p, recipientAddress: e.target.value }))} /></div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.weight || ''} onChange={e => setFormData(p => ({ ...p, weight: Number(e.target.value) }))} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Dimenzije</Label><Input placeholder="40x30x20 cm" className="text-xs" value={formData.dimensions} onChange={e => setFormData(p => ({ ...p, dimensions: e.target.value }))} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">COD (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.codAmount || ''} onChange={e => setFormData(p => ({ ...p, codAmount: Number(e.target.value) }))} /></div>
+                  </div>
+                  <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Posebne instrukcije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
+                  <div className="flex gap-2 pt-2"><Button variant="outline" onClick={() => { setSubTab('pregled'); setEditItem(null); }}>Otkaži</Button><Button onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="tracking" className="space-y-4">
@@ -277,7 +377,7 @@ export function Delivery() {
                         <SelectTrigger className="h-7 text-xs w-40"><SelectValue /></SelectTrigger>
                         <SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                       </Select>
-                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setDetailId(item.id)}>Detalji</Button>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setDetailId(item.id); setSubTab('detalji'); }}>Detalji</Button>
                     </div>
                   </div>
                 )
@@ -332,56 +432,9 @@ export function Delivery() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Detail Card */}
-      {!!detailId && detailItem && (<Card className="max-w-[700px]">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">Detalji pošiljke</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>{(() => {
-          const history = parseHistory(detailItem.history)
-          return (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div><p className="text-lg font-bold font-mono">{detailItem.trackingNumber}</p><p className="text-xs text-muted-foreground">{formatDate(detailItem.estimatedDelivery)}</p></div>
-                <div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 rounded-lg border space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p><p className="text-xs font-medium">{detailItem.senderName}</p><p className="text-xs text-muted-foreground">{detailItem.senderPhone}</p><p className="text-xs text-muted-foreground">{detailItem.senderAddress}</p></div>
-                <div className="p-3 rounded-lg border space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p><p className="text-xs font-medium">{detailItem.recipientName}</p><p className="text-xs text-muted-foreground">{detailItem.recipientPhone}</p><p className="text-xs text-muted-foreground">{detailItem.recipientAddress}</p></div>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.weight} kg</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Dimenzije</div><p className="text-xs font-medium">{detailItem.dimensions}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Trošak</div><p className="text-xs font-medium">{formatCurrency(detailItem.shippingCost)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">COD</div><p className="text-xs font-bold">{detailItem.codAmount > 0 ? formatCurrency(detailItem.codAmount) : 'Nema'}</p></div>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.assignedDriver || 'Nije dodeljen'}</p><p className="text-xs text-muted-foreground mt-1">Trenutna lokacija: {detailItem.currentLocation}</p></div>
-              <div className="space-y-3">
-                <p className="text-xs font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Istorija praćenja</p>
-                <div className="space-y-2">
-                  {[...history].reverse().map((h, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="flex flex-col items-center"><div className="h-6 w-6 rounded-full flex items-center justify-center bg-muted">{getStatusIcon(h.status)}</div>{idx < history.length - 1 && <div className="w-px h-4 bg-border mt-1" />}</div>
-                      <div className="pb-2"><div className="flex items-center gap-2"><span className="text-xs text-muted-foreground">{h.date}</span>{getStatusBadge(h.status)}</div><p className="text-xs">{h.location}</p>{h.note && <p className="text-xs text-muted-foreground">{h.note}</p>}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
-              <div className="flex gap-2">
-                <Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v)}><SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-              </div>
-            </div>
-          )
-        })()}</CardContent>
-      </Card>)}
-
-      {/* Create/Edit Card */}
-      {dialogOpen && (<Card className="max-w-[600px]">
+    </div>
+  )
+}
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>

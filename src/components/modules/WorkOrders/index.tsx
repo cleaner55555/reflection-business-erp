@@ -148,21 +148,23 @@ export function WorkOrders() {
   )
   const [activeTab, setActiveTab] = useState<string>('nalozi')
 
+  // ---- Sub-tab state (replaces dialog open states) ----
+  const [naloziSubTab, setNaloziSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [zadaciSubTab, setZadaciSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+
   // ---- Filter / search state ----
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [viewMode, setViewMode] = useState<WorkOrderViewMode>('tabela')
 
-  // ---- CRUD dialogs ----
-  const [formOpen, setFormOpen] = useState(false)
+  // ---- Work Order form state ----
   const [editingOrder, setEditingOrder] = useState<WorkOrder | null>(null)
   const [formData, setFormData] = useState<WorkOrderFormData>(getDefaultWorkOrderForm())
   const [detailOrder, setDetailOrder] = useState<WorkOrder | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  // ---- Task CRUD ----
-  const [taskFormOpen, setTaskFormOpen] = useState(false)
+  // ---- Task form state ----
   const [editingTask, setEditingTask] = useState<WorkOrderTask | null>(null)
   const [taskForm, setTaskForm] = useState<TaskFormData>(getDefaultTaskForm(''))
   const [taskDeleteId, setTaskDeleteId] = useState<string | null>(null)
@@ -237,11 +239,25 @@ export function WorkOrders() {
     })
   }, [orders, search, statusFilter, priorityFilter])
 
+  // ---- Tab navigation helpers ----
+  const handleMainTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setNaloziSubTab('pregled')
+    setZadaciSubTab('pregled')
+  }
+
+  const handleViewOrder = (order: WorkOrder) => {
+    setDetailOrder(order)
+    setActiveTab('nalozi')
+    setNaloziSubTab('detalji')
+  }
+
   // ---- Work Order CRUD handlers ----
   const handleCreate = () => {
     setEditingOrder(null)
     setFormData(getDefaultWorkOrderForm())
-    setFormOpen(true)
+    setActiveTab('nalozi')
+    setNaloziSubTab('dodaj')
   }
 
   const handleEdit = (order: WorkOrder) => {
@@ -257,7 +273,8 @@ export function WorkOrders() {
       costRSD: order.costRSD,
       pdvRate: order.pdvRate,
     })
-    setFormOpen(true)
+    setActiveTab('nalozi')
+    setNaloziSubTab('dodaj')
   }
 
   const handleFormSubmit = () => {
@@ -305,7 +322,7 @@ export function WorkOrders() {
       saveWorkOrder(newOrder)
     }
 
-    setFormOpen(false)
+    setNaloziSubTab('pregled')
     setEditingOrder(null)
   }
 
@@ -321,7 +338,8 @@ export function WorkOrders() {
   const handleCreateTask = (workOrderId: string) => {
     setEditingTask(null)
     setTaskForm(getDefaultTaskForm(workOrderId))
-    setTaskFormOpen(true)
+    setActiveTab('zadaci')
+    setZadaciSubTab('dodaj')
   }
 
   const handleEditTask = (task: WorkOrderTask) => {
@@ -335,7 +353,8 @@ export function WorkOrders() {
       dueDate: task.dueDate,
       estimatedHours: task.estimatedHours,
     })
-    setTaskFormOpen(true)
+    setActiveTab('zadaci')
+    setZadaciSubTab('dodaj')
   }
 
   const handleTaskFormSubmit = () => {
@@ -398,7 +417,7 @@ export function WorkOrders() {
         ),
     })))
 
-    setTaskFormOpen(false)
+    setZadaciSubTab('pregled')
     setEditingTask(null)
   }
 
@@ -422,7 +441,9 @@ export function WorkOrders() {
         if (
           !t.title.toLowerCase().includes(q) &&
           !getEmployeeName(t.assignedTo).toLowerCase().includes(q)
-        ) return false
+        ) {
+          return false
+        }
       }
       return true
     })
@@ -509,8 +530,8 @@ export function WorkOrders() {
         </Button>
       </div>
 
-      {/* ---- Tabs ---- */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      {/* ---- Main Tabs ---- */}
+      <Tabs value={activeTab} onValueChange={handleMainTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="nalozi" className="gap-1.5 text-xs sm:text-sm">
             <ClipboardList className="h-3.5 w-3.5 hidden sm:inline" />
@@ -532,38 +553,97 @@ export function WorkOrders() {
 
         {/* ==================== TAB 1: Radni Nalozi ==================== */}
         <TabsContent value="nalozi" className="space-y-4">
-          <StatsCards orders={orders} />
+          {/* Inner sub-tabs: Pregled / Dodaj / Detalji */}
+          <Tabs value={naloziSubTab} onValueChange={(v) => setNaloziSubTab(v as typeof naloziSubTab)}>
+            <div className="flex items-center justify-between">
+              <TabsList>
+                <TabsTrigger value="pregled" className="gap-1.5 text-xs sm:text-sm">
+                  <ClipboardList className="h-3.5 w-3.5 hidden sm:inline" />
+                  Преглед
+                </TabsTrigger>
+                <TabsTrigger value="dodaj" className="gap-1.5 text-xs sm:text-sm">
+                  <Plus className="h-3.5 w-3.5 hidden sm:inline" />
+                  {editingOrder ? 'Уреди' : 'Додај'}
+                </TabsTrigger>
+                {detailOrder && (
+                  <TabsTrigger value="detalji" className="gap-1.5 text-xs sm:text-sm">
+                    <Eye className="h-3.5 w-3.5 hidden sm:inline" />
+                    Детали
+                  </TabsTrigger>
+                )}
+              </TabsList>
+              {naloziSubTab !== 'pregled' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-xs"
+                  onClick={() => setNaloziSubTab('pregled')}
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Назад
+                </Button>
+              )}
+            </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <FilterBar
-              search={search}
-              onSearchChange={setSearch}
-              statusFilter={statusFilter}
-              onStatusFilterChange={setStatusFilter}
-              priorityFilter={priorityFilter}
-              onPriorityFilterChange={setPriorityFilter}
-            />
-            <ViewToggle mode={viewMode} onModeChange={setViewMode} />
-          </div>
+            {/* ---- Sub-tab: Pregled ---- */}
+            <TabsContent value="pregled" className="space-y-4 mt-4">
+              <StatsCards orders={orders} />
 
-          {viewMode === 'tabela' ? (
-            <WorkOrderTable
-              orders={filteredOrders}
-              onView={o => setDetailOrder(o)}
-              onEdit={handleEdit}
-              onDelete={id => setDeleteId(id)}
-            />
-          ) : (
-            <KanbanBoard
-              orders={filteredOrders}
-              onEdit={handleEdit}
-              onView={o => setDetailOrder(o)}
-            />
-          )}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <FilterBar
+                  search={search}
+                  onSearchChange={setSearch}
+                  statusFilter={statusFilter}
+                  onStatusFilterChange={setStatusFilter}
+                  priorityFilter={priorityFilter}
+                  onPriorityFilterChange={setPriorityFilter}
+                />
+                <ViewToggle mode={viewMode} onModeChange={setViewMode} />
+              </div>
 
-          <div className="text-xs text-muted-foreground text-right">
-            Приказано {filteredOrders.length} од {orders.length} налога
-          </div>
+              {viewMode === 'tabela' ? (
+                <WorkOrderTable
+                  orders={filteredOrders}
+                  onView={handleViewOrder}
+                  onEdit={handleEdit}
+                  onDelete={id => setDeleteId(id)}
+                />
+              ) : (
+                <KanbanBoard
+                  orders={filteredOrders}
+                  onEdit={handleEdit}
+                  onView={handleViewOrder}
+                />
+              )}
+
+              <div className="text-xs text-muted-foreground text-right">
+                Приказано {filteredOrders.length} од {orders.length} налога
+              </div>
+            </TabsContent>
+
+            {/* ---- Sub-tab: Dodaj / Uredi ---- */}
+            <TabsContent value="dodaj" className="mt-4">
+              <WorkOrderFormDialog
+                open={true}
+                onOpenChange={(open) => { if (!open) setNaloziSubTab('pregled') }}
+                form={formData}
+                setForm={setFormData}
+                onSubmit={handleFormSubmit}
+                isEditing={!!editingOrder}
+                title={editingOrder ? `Измена: ${editingOrder.orderNumber}` : 'Нови радни налог'}
+              />
+            </TabsContent>
+
+            {/* ---- Sub-tab: Detalji ---- */}
+            <TabsContent value="detalji" className="mt-4">
+              <WorkOrderDetailDialog
+                open={true}
+                onOpenChange={(open) => { if (!open) setNaloziSubTab('pregled') }}
+                order={detailOrder}
+                onEdit={handleEdit}
+              />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ==================== TAB 2: Planer ==================== */}
@@ -658,7 +738,7 @@ export function WorkOrders() {
                             <Card
                               key={order.id}
                               className="p-3 cursor-pointer hover:shadow-md transition-shadow"
-                              onClick={() => setDetailOrder(order)}
+                              onClick={() => handleViewOrder(order)}
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
@@ -705,205 +785,247 @@ export function WorkOrders() {
 
         {/* ==================== TAB 3: Zadaci ==================== */}
         <TabsContent value="zadaci" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <ListChecks className="h-5 w-5 text-primary" />
-                  Управљање задацима
-                </CardTitle>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="sm" className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      Нови задатак
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {orders
-                      .filter(o => o.status !== 'zavrsen' && o.status !== 'otkazan')
-                      .map(o => (
-                        <DropdownMenuItem
-                          key={o.id}
-                          onClick={() => handleCreateTask(o.id)}
-                        >
-                          <span className="font-mono text-xs text-muted-foreground mr-2">
-                            {o.orderNumber}
-                          </span>
-                          {o.title}
-                        </DropdownMenuItem>
-                      ))}
-                    {orders.filter(o => o.status !== 'zavrsen' && o.status !== 'otkazan').length === 0 && (
-                      <DropdownMenuItem disabled>
-                        Нема активних налога
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Task filters */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Претрага задатака..."
-                    className="pl-8 h-9"
-                    value={taskSearch}
-                    onChange={e => setTaskSearch(e.target.value)}
-                  />
-                </div>
-                <Select value={taskWoFilter} onValueChange={setTaskWoFilter}>
-                  <SelectTrigger className="h-9 w-full sm:w-[200px]">
-                    <SelectValue placeholder="Сви налози" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Сви налози</SelectItem>
-                    {orders.map(o => (
-                      <SelectItem key={o.id} value={o.id}>
-                        {o.orderNumber} – {o.title.slice(0, 25)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={taskStatusFilter} onValueChange={setTaskStatusFilter}>
-                  <SelectTrigger className="h-9 w-full sm:w-[150px]">
-                    <SelectValue placeholder="Сви статуси" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Сви статуси</SelectItem>
-                    {ALL_TASK_STATUSES.map(s => (
-                      <SelectItem key={s} value={s}>
-                        {TASK_STATUS_CONFIG[s].label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Inner sub-tabs: Pregled / Dodaj */}
+          <Tabs value={zadaciSubTab} onValueChange={(v) => setZadaciSubTab(v as typeof zadaciSubTab)}>
+            <div className="flex items-center justify-between">
+              <TabsList>
+                <TabsTrigger value="pregled" className="gap-1.5 text-xs sm:text-sm">
+                  <ListChecks className="h-3.5 w-3.5 hidden sm:inline" />
+                  Преглед
+                </TabsTrigger>
+                <TabsTrigger value="dodaj" className="gap-1.5 text-xs sm:text-sm">
+                  <Plus className="h-3.5 w-3.5 hidden sm:inline" />
+                  {editingTask ? 'Уреди' : 'Додај'}
+                </TabsTrigger>
+              </TabsList>
+              {zadaciSubTab !== 'pregled' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-xs"
+                  onClick={() => setZadaciSubTab('pregled')}
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Назад
+                </Button>
+              )}
+            </div>
 
-              {/* Task stats */}
-              <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-                <div className="rounded-lg bg-muted/50 p-3 text-center">
-                  <p className="text-2xl font-bold">{allTasks.length}</p>
-                  <p className="text-xs text-muted-foreground">Укупно задатака</p>
-                </div>
-                <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3 text-center">
-                  <p className="text-2xl font-bold text-amber-600">
-                    {allTasks.filter(t => t.status === 'u_toku').length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">У току</p>
-                </div>
-                <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 p-3 text-center">
-                  <p className="text-2xl font-bold text-emerald-600">
-                    {allTasks.filter(t => t.status === 'zavrsen').length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Завршено</p>
-                </div>
-                <div className="rounded-lg bg-rose-50 dark:bg-rose-950/30 p-3 text-center">
-                  <p className="text-2xl font-bold text-rose-600">
-                    {allTasks.filter(t => t.status === 'blokiran').length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Блокирано</p>
-                </div>
-              </div>
+            {/* ---- Sub-tab: Pregled ---- */}
+            <TabsContent value="pregled" className="space-y-4 mt-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <ListChecks className="h-5 w-5 text-primary" />
+                      Управљање задацима
+                    </CardTitle>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" className="gap-2">
+                          <Plus className="h-4 w-4" />
+                          Нови задатак
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {orders
+                          .filter(o => o.status !== 'zavrsen' && o.status !== 'otkazan')
+                          .map(o => (
+                            <DropdownMenuItem
+                              key={o.id}
+                              onClick={() => handleCreateTask(o.id)}
+                            >
+                              <span className="font-mono text-xs text-muted-foreground mr-2">
+                                {o.orderNumber}
+                              </span>
+                              {o.title}
+                            </DropdownMenuItem>
+                          ))}
+                        {orders.filter(o => o.status !== 'zavrsen' && o.status !== 'otkazan').length === 0 && (
+                          <DropdownMenuItem disabled>
+                            Нема активних налога
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Task filters */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Претрага задатака..."
+                        className="pl-8 h-9"
+                        value={taskSearch}
+                        onChange={e => setTaskSearch(e.target.value)}
+                      />
+                    </div>
+                    <Select value={taskWoFilter} onValueChange={setTaskWoFilter}>
+                      <SelectTrigger className="h-9 w-full sm:w-[200px]">
+                        <SelectValue placeholder="Сви налози" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Сви налози</SelectItem>
+                        {orders.map(o => (
+                          <SelectItem key={o.id} value={o.id}>
+                            {o.orderNumber} – {o.title.slice(0, 25)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={taskStatusFilter} onValueChange={setTaskStatusFilter}>
+                      <SelectTrigger className="h-9 w-full sm:w-[150px]">
+                        <SelectValue placeholder="Сви статуси" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Сви статуси</SelectItem>
+                        {ALL_TASK_STATUSES.map(s => (
+                          <SelectItem key={s} value={s}>
+                            {TASK_STATUS_CONFIG[s].label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Task list */}
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Задатак</TableHead>
-                      <TableHead className="hidden md:table-cell">Радни налог</TableHead>
-                      <TableHead className="hidden sm:table-cell">Статус</TableHead>
-                      <TableHead className="hidden lg:table-cell">Задужен</TableHead>
-                      <TableHead className="hidden md:table-cell">Рок</TableHead>
-                      <TableHead className="hidden sm:table-cell text-right">Сати</TableHead>
-                      <TableHead className="w-[50px]" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTasks.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
-                          <ListChecks className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                          <p>Нема задатака за приказ</p>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredTasks.map(task => {
-                        const wo = orders.find(o => o.id === task.workOrderId)
-                        return (
-                          <TableRow key={task.id}>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="text-sm font-medium">{task.title}</span>
-                                {task.description && (
-                                  <span className="text-xs text-muted-foreground line-clamp-1">
-                                    {task.description}
-                                  </span>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              {wo ? (
-                                <Badge variant="outline" className="font-mono text-xs">
-                                  {wo.orderNumber}
-                                </Badge>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">—</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              <TaskStatusBadge status={task.status} />
-                            </TableCell>
-                            <TableCell className="hidden lg:table-cell">
-                              <EmployeeChip employeeId={task.assignedTo} />
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              <span className="text-xs text-muted-foreground">
-                                {formatDate(task.dueDate)}
-                              </span>
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell text-right">
-                              <span className="text-xs">
-                                {task.actualHours}/{task.estimatedHours}h
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleEditTask(task)}>
-                                    <Edit2 className="h-4 w-4 mr-2" /> Измени
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
-                                    onClick={() => setTaskDeleteId(task.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" /> Обриши
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                  {/* Task stats */}
+                  <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                    <div className="rounded-lg bg-muted/50 p-3 text-center">
+                      <p className="text-2xl font-bold">{allTasks.length}</p>
+                      <p className="text-xs text-muted-foreground">Укупно задатака</p>
+                    </div>
+                    <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3 text-center">
+                      <p className="text-2xl font-bold text-amber-600">
+                        {allTasks.filter(t => t.status === 'u_toku').length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">У току</p>
+                    </div>
+                    <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 p-3 text-center">
+                      <p className="text-2xl font-bold text-emerald-600">
+                        {allTasks.filter(t => t.status === 'zavrsen').length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Завршено</p>
+                    </div>
+                    <div className="rounded-lg bg-rose-50 dark:bg-rose-950/30 p-3 text-center">
+                      <p className="text-2xl font-bold text-rose-600">
+                        {allTasks.filter(t => t.status === 'blokiran').length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Блокирано</p>
+                    </div>
+                  </div>
+
+                  {/* Task list */}
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Задатак</TableHead>
+                          <TableHead className="hidden md:table-cell">Радни налог</TableHead>
+                          <TableHead className="hidden sm:table-cell">Статус</TableHead>
+                          <TableHead className="hidden lg:table-cell">Задужен</TableHead>
+                          <TableHead className="hidden md:table-cell">Рок</TableHead>
+                          <TableHead className="hidden sm:table-cell text-right">Сати</TableHead>
+                          <TableHead className="w-[50px]" />
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredTasks.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                              <ListChecks className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                              <p>Нема задатака за приказ</p>
                             </TableCell>
                           </TableRow>
-                        )
-                      })
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                        ) : (
+                          filteredTasks.map(task => {
+                            const wo = orders.find(o => o.id === task.workOrderId)
+                            return (
+                              <TableRow key={task.id}>
+                                <TableCell>
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-medium">{task.title}</span>
+                                    {task.description && (
+                                      <span className="text-xs text-muted-foreground line-clamp-1">
+                                        {task.description}
+                                      </span>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  {wo ? (
+                                    <Badge variant="outline" className="font-mono text-xs">
+                                      {wo.orderNumber}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">—</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                  <TaskStatusBadge status={task.status} />
+                                </TableCell>
+                                <TableCell className="hidden lg:table-cell">
+                                  <EmployeeChip employeeId={task.assignedTo} />
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDate(task.dueDate)}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell text-right">
+                                  <span className="text-xs">
+                                    {task.actualHours}/{task.estimatedHours}h
+                                  </span>
+                                </TableCell>
+                                <TableCell>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => handleEditTask(task)}>
+                                        <Edit2 className="h-4 w-4 mr-2" /> Измени
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() => setTaskDeleteId(task.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" /> Обриши
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
 
-              <div className="text-xs text-muted-foreground text-right">
-                Приказано {filteredTasks.length} од {allTasks.length} задатака
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="text-xs text-muted-foreground text-right">
+                    Приказано {filteredTasks.length} од {allTasks.length} задатака
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ---- Sub-tab: Dodaj / Uredi ---- */}
+            <TabsContent value="dodaj" className="mt-4">
+              <TaskFormDialog
+                open={true}
+                onOpenChange={(open) => { if (!open) setZadaciSubTab('pregled') }}
+                form={taskForm}
+                setForm={setTaskForm}
+                onSubmit={handleTaskFormSubmit}
+                isEditing={!!editingTask}
+              />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ==================== TAB 4: Izveštaji ==================== */}
@@ -929,7 +1051,7 @@ export function WorkOrders() {
                         <TableHead>Број</TableHead>
                         <TableHead>Назив</TableHead>
                         <TableHead className="hidden sm:table-cell">Приоритет</TableHead>
-                        <TableHead className="hidden md:table-cell">Задужен</TableHead>
+                        <TableHead className="hidden md:table-cell">Задружен</TableHead>
                         <TableHead>Рок</TableHead>
                         <TableHead className="hidden sm:table-cell">Дана закаснело</TableHead>
                       </TableRow>
@@ -969,28 +1091,9 @@ export function WorkOrders() {
         </TabsContent>
       </Tabs>
 
-      {/* ==================== Dialogs ==================== */}
+      {/* ==================== AlertDialogs (DELETE CONFIRMATION ONLY) ==================== */}
 
-      {/* Work Order Form Dialog */}
-      <WorkOrderFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        form={formData}
-        setForm={setFormData}
-        onSubmit={handleFormSubmit}
-        isEditing={!!editingOrder}
-        title={editingOrder ? `Измена: ${editingOrder.orderNumber}` : 'Нови радни налог'}
-      />
-
-      {/* Work Order Detail Dialog */}
-      <WorkOrderDetailDialog
-        open={!!detailOrder}
-        onOpenChange={open => { if (!open) setDetailOrder(null) }}
-        order={detailOrder}
-        onEdit={handleEdit}
-      />
-
-      {/* Delete Confirmation */}
+      {/* Work Order Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={open => { if (!open) setDeleteId(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1011,16 +1114,6 @@ export function WorkOrders() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Task Form Dialog */}
-      <TaskFormDialog
-        open={taskFormOpen}
-        onOpenChange={setTaskFormOpen}
-        form={taskForm}
-        setForm={setTaskForm}
-        onSubmit={handleTaskFormSubmit}
-        isEditing={!!editingTask}
-      />
 
       {/* Task Delete Confirmation */}
       <AlertDialog open={!!taskDeleteId} onOpenChange={open => { if (!open) setTaskDeleteId(null) }}>

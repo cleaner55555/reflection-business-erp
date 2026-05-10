@@ -68,13 +68,12 @@ export function Support() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
+  const [ticketsSubTab, setTicketsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
   const [items, setItems] = useState<Ticket[]>([])
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
   const [selected, setSelected] = useState<Ticket | null>(null)
 
   const emptyForm = {
@@ -114,7 +113,7 @@ export function Support() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...form }),
       })
-      if (res.ok) { setDialogOpen(false); setForm(emptyForm); loadItems(); loadDashboard() }
+      if (res.ok) { setTicketsSubTab('pregled'); setForm(emptyForm); loadItems(); loadDashboard() }
     } catch { /* silent */ }
   }
 
@@ -147,13 +146,13 @@ export function Support() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadItems() }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" onClick={() => { setActiveTab('tickets'); setTicketsSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> Novi tiket
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setTicketsSubTab('pregled') }}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="tickets"><Headphones className="h-4 w-4 mr-1" /> Tiketi</TabsTrigger>
@@ -256,135 +255,160 @@ export function Support() {
         </TabsContent>
 
         <TabsContent value="tickets" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Pretraži tikete..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi statusi</SelectItem>
-                {Object.entries(statusConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Tabs value={ticketsSubTab} onValueChange={setTicketsSubTab}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              {ticketsSubTab !== 'pregled' && (
+                <TabsTrigger value={ticketsSubTab}>{ticketsSubTab === 'dodaj' ? 'Dodaj' : 'Detalji'}</TabsTrigger>
+              )}
+            </TabsList>
 
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : items.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Headphones className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema tiketa</p>
-              <Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Kreiraj tiket</Button>
-            </Card>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
-                    <th className="p-3">Broj</th><th className="p-3">Naslov</th><th className="p-3">Klijent</th><th className="p-3">Prioritet</th><th className="p-3">Status</th><th className="p-3">Akcije</th>
-                  </tr></thead>
-                  <tbody>{items.map((tk) => {
-                    const sCfg = statusConfig[tk.status]
-                    const pCfg = priorityConfig[tk.priority]
-                    return (
-                      <tr key={tk.id} className="border-t hover:bg-muted/30">
-                        <td className="p-3 font-mono text-xs">{tk.ticketNumber}</td>
-                        <td className="p-3 font-medium">{tk.subject}</td>
-                        <td className="p-3">{tk.customerName}</td>
-                        <td className="p-3"><Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || tk.priority}</Badge></td>
-                        <td className="p-3"><Badge variant="outline" className={`text-xs ${sCfg?.color || ''}`}>{sCfg?.label || tk.status}</Badge></td>
-                        <td className="p-3">
-                          <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(tk); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
-                            {tk.status === 'open' && (
-                              <Button size="icon" variant="ghost" className="h-7 w-7 text-amber-600" onClick={() => handleUpdateStatus(tk.id, 'in_progress')}><Clock className="h-3.5 w-3.5" /></Button>
-                            )}
-                            {tk.status === 'in_progress' && (
-                              <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(tk.id, 'resolved')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
-                            )}
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(tk.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}</tbody>
-                </table>
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Pretraži tikete..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi statusi</SelectItem>
+                    {Object.entries(statusConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-          )}
+
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : items.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Headphones className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema tiketa</p>
+                  <Button variant="outline" className="mt-3" onClick={() => setTicketsSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj tiket</Button>
+                </Card>
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
+                        <th className="p-3">Broj</th><th className="p-3">Naslov</th><th className="p-3">Klijent</th><th className="p-3">Prioritet</th><th className="p-3">Status</th><th className="p-3">Akcije</th>
+                      </tr></thead>
+                      <tbody>{items.map((tk) => {
+                        const sCfg = statusConfig[tk.status]
+                        const pCfg = priorityConfig[tk.priority]
+                        return (
+                          <tr key={tk.id} className="border-t hover:bg-muted/30">
+                            <td className="p-3 font-mono text-xs">{tk.ticketNumber}</td>
+                            <td className="p-3 font-medium">{tk.subject}</td>
+                            <td className="p-3">{tk.customerName}</td>
+                            <td className="p-3"><Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || tk.priority}</Badge></td>
+                            <td className="p-3"><Badge variant="outline" className={`text-xs ${sCfg?.color || ''}`}>{sCfg?.label || tk.status}</Badge></td>
+                            <td className="p-3">
+                              <div className="flex gap-1">
+                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(tk); setTicketsSubTab('detalji') }}><Eye className="h-3.5 w-3.5" /></Button>
+                                {tk.status === 'open' && (
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-amber-600" onClick={() => handleUpdateStatus(tk.id, 'in_progress')}><Clock className="h-3.5 w-3.5" /></Button>
+                                )}
+                                {tk.status === 'in_progress' && (
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(tk.id, 'resolved')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
+                                )}
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(tk.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}</tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-lg">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setTicketsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle className="text-base">Novi tiket</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Naslov</Label>
+                    <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Kratak opis problema" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Klijent</Label>
+                      <Input value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} placeholder="Ime klijenta" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Kategorija</Label>
+                      <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(categoryLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Prioritet</Label>
+                      <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(priorityConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Zaduzeni</Label>
+                      <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ime agenta" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Opis</Label>
+                    <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Detaljan opis problema..." />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setTicketsSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="detalji" className="space-y-4">
+              <Card className="max-w-lg">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setTicketsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle className="text-base">Detalji tiketa</CardTitle>
+                  </div>
+                </CardHeader>
+                {selected && (
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><span className="text-muted-foreground">Broj:</span> <span className="font-mono">{selected.ticketNumber}</span></div>
+                      <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
+                      <div><span className="text-muted-foreground">Klijent:</span> {selected.customerName}</div>
+                      <div><span className="text-muted-foreground">Kategorija:</span> {categoryLabels[selected.category] || selected.category}</div>
+                      <div><span className="text-muted-foreground">Prioritet:</span> <Badge variant="outline" className={priorityConfig[selected.priority]?.color}>{priorityConfig[selected.priority]?.label}</Badge></div>
+                      {selected.assignedTo && <div><span className="text-muted-foreground">Zaduzeni:</span> {selected.assignedTo}</div>}
+                      <div><span className="text-muted-foreground">Kreiran:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
+                      {selected.resolvedAt && <div><span className="text-muted-foreground">Rešen:</span> {new Date(selected.resolvedAt).toLocaleDateString('sr-RS')}</div>}
+                    </div>
+                    {selected.description && (
+                      <div className="text-sm"><span className="text-muted-foreground">Opis:</span> {selected.description}</div>
+                    )}
+                  </CardContent>
+                )}
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
-
-      {dialogOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Novi tiket</CardTitle></div></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Naslov</Label>
-            <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Kratak opis problema" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Klijent</Label>
-              <Input value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} placeholder="Ime klijenta" />
-            </div>
-            <div className="space-y-2">
-              <Label>Kategorija</Label>
-              <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(categoryLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Prioritet</Label>
-              <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(priorityConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Zaduzeni</Label>
-              <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ime agenta" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Opis</Label>
-            <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Detaljan opis problema..." />
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </div>
-        </CardContent>
-      </Card>)}
-
-      {detailOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Detalji tiketa</CardTitle></div></CardHeader>
-        {selected && (
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="text-muted-foreground">Broj:</span> <span className="font-mono">{selected.ticketNumber}</span></div>
-              <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-              <div><span className="text-muted-foreground">Klijent:</span> {selected.customerName}</div>
-              <div><span className="text-muted-foreground">Kategorija:</span> {categoryLabels[selected.category] || selected.category}</div>
-              <div><span className="text-muted-foreground">Prioritet:</span> <Badge variant="outline" className={priorityConfig[selected.priority]?.color}>{priorityConfig[selected.priority]?.label}</Badge></div>
-              {selected.assignedTo && <div><span className="text-muted-foreground">Zaduzeni:</span> {selected.assignedTo}</div>}
-              <div><span className="text-muted-foreground">Kreiran:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
-              {selected.resolvedAt && <div><span className="text-muted-foreground">Rešen:</span> {new Date(selected.resolvedAt).toLocaleDateString('sr-RS')}</div>}
-            </div>
-            {selected.description && (
-              <div className="text-sm"><span className="text-muted-foreground">Opis:</span> {selected.description}</div>
-            )}
-          </CardContent>
-        )}
-      </Card>)}
     </div>
   )
 }

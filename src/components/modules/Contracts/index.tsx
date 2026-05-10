@@ -235,9 +235,8 @@ export function Contracts() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [renewalDialogOpen, setRenewalDialogOpen] = useState(false)
+  const [contractsSubTab, setContractsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [renewalsSubTab, setRenewalsSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [selected, setSelected] = useState<Contract | null>(null)
 
   // Forms
@@ -335,8 +334,8 @@ export function Contracts() {
         }),
       })
       if (res.ok) {
-        setDialogOpen(false)
         setForm(emptyForm)
+        setContractsSubTab('pregled')
         loadContracts()
         loadDashboard()
       }
@@ -365,7 +364,7 @@ export function Contracts() {
       notes: renewalForm.notes,
     }
     setRenewals([newRenewal, ...renewals])
-    setRenewalDialogOpen(false)
+    setRenewalsSubTab('pregled')
     setRenewalForm(emptyRenewalForm)
   }
 
@@ -377,7 +376,14 @@ export function Contracts() {
       newEndDate: '',
       notes: '',
     })
-    setRenewalDialogOpen(true)
+    setActiveTab('renewals')
+    setRenewalsSubTab('dodaj')
+  }
+
+  const handleMainTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setContractsSubTab('pregled')
+    setRenewalsSubTab('pregled')
   }
 
   // ─── Render ─────────────────────────────────────────────────────────────
@@ -394,14 +400,14 @@ export function Contracts() {
           <Button variant="outline" size="sm" onClick={() => { loadContracts(); loadDashboard(); }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => { setForm(emptyForm); setDialogOpen(true); }}>
+          <Button size="sm" onClick={() => { setForm(emptyForm); setActiveTab('contracts'); setContractsSubTab('dodaj'); }}>
             <Plus className="h-4 w-4 mr-1" /> Novi ugovor
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleMainTabChange}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="contracts"><FileSignature className="h-4 w-4 mr-1" /> Ugovori</TabsTrigger>
@@ -539,6 +545,14 @@ export function Contracts() {
 
         {/* ─── Ugovori Tab ─────────────────────────────────────────────── */}
         <TabsContent value="contracts" className="space-y-4">
+          <Tabs value={contractsSubTab} onValueChange={setContractsSubTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+              {selected && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
+            </TabsList>
+
+            <TabsContent value="pregled" className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -570,7 +584,7 @@ export function Contracts() {
             <Card className="p-8 text-center">
               <FileSignature className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground">Nema ugovora</p>
-              <Button variant="outline" className="mt-3" onClick={() => { setForm(emptyForm); setDialogOpen(true); }}>
+              <Button variant="outline" className="mt-3" onClick={() => { setForm(emptyForm); setContractsSubTab('dodaj'); }}>
                 <Plus className="h-4 w-4 mr-1" /> Kreiraj ugovor
               </Button>
             </Card>
@@ -616,7 +630,7 @@ export function Contracts() {
                           </td>
                           <td className="p-3">
                             <div className="flex gap-1">
-                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(c); setDetailOpen(true); }}>
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(c); setContractsSubTab('detalji'); }}>
                                 <Eye className="h-3.5 w-3.5" />
                               </Button>
                               {(c.status === 'pre_expiring' || c.status === 'expired') && (
@@ -639,11 +653,173 @@ export function Contracts() {
           )}
         </TabsContent>
 
+        <TabsContent value="dodaj" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setContractsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <CardTitle>Novi ugovor</CardTitle>
+                  <p className="text-xs text-muted-foreground">Kreirajte novi radni ugovor za zaposlenog</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="max-h-[90vh] overflow-y-auto">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="space-y-2"><Label>Zaposleni</Label><Input value={form.employeeName} onChange={(e) => setForm({ ...form, employeeName: e.target.value })} placeholder="Ime i prezime" /></div>
+                  <div className="space-y-2"><Label>Odeljenje</Label><Input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="Odeljenje" /></div>
+                  <div className="space-y-2"><Label>Pozicija</Label><Input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} placeholder="Pozicija" /></div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Tip ugovora</Label>
+                    <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(typeConfig).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Nacrt</SelectItem>
+                        <SelectItem value="active">Aktivan</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2"><Label>Broj ugovora</Label><Input value={form.contractNumber} onChange={(e) => setForm({ ...form, contractNumber: e.target.value })} placeholder="UG-2025-XXX" /></div>
+                </div>
+                <Separator />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-2"><Label>Datum početka</Label><Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Datum završetka</Label><Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Kraj probnog roka</Label><Input type="date" value={form.probationEndDate} onChange={(e) => setForm({ ...form, probationEndDate: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Radnih sati</Label><Input type="number" value={form.workHours} onChange={(e) => setForm({ ...form, workHours: parseInt(e.target.value) || 0 })} /></div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-2"><Label>Bruto plata (RSD)</Label><Input type="number" value={form.salaryGross} onChange={(e) => setForm({ ...form, salaryGross: e.target.value })} placeholder="0.00" /></div>
+                  <div className="space-y-2"><Label>Neto plata (RSD)</Label><Input type="number" value={form.salaryNet} onChange={(e) => setForm({ ...form, salaryNet: e.target.value })} placeholder="0.00" /></div>
+                  <div className="space-y-2 col-span-2"><Label>Lokacija rada</Label><Input value={form.workLocation} onChange={(e) => setForm({ ...form, workLocation: e.target.value })} placeholder="Grad" /></div>
+                </div>
+                <div className="space-y-2"><Label>Napomene</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Dodatne napomene..." /></div>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" onClick={() => setContractsSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj ugovor</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="detalji" className="space-y-4">
+          {selected && (<Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setContractsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle>Detalji ugovora</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="max-h-[90vh] overflow-y-auto">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">{selected.employeeName}</h3>
+                    <p className="text-sm text-muted-foreground">{selected.position} · {selected.department}</p>
+                  </div>
+                  <Badge variant="outline" className={`text-xs ${statusConfig[selected.status]?.color}`}>
+                    {statusConfig[selected.status]?.icon} {statusConfig[selected.status]?.label}
+                  </Badge>
+                </div>
+
+                <Separator />
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                  <div><span className="text-muted-foreground">Broj ugovora:</span><p className="font-medium">{selected.contractNumber}</p></div>
+                  <div><span className="text-muted-foreground">Tip:</span><p className="font-medium">{typeConfig[selected.type]?.label}</p></div>
+                  <div><span className="text-muted-foreground">Lokacija:</span><p className="font-medium">{selected.workLocation}</p></div>
+                  <div><span className="text-muted-foreground">Početak:</span><p className="font-medium">{new Date(selected.startDate).toLocaleDateString('sr-RS')}</p></div>
+                  <div><span className="text-muted-foreground">Kraj:</span><p className="font-medium">{selected.endDate ? new Date(selected.endDate).toLocaleDateString('sr-RS') : 'Neodređeno'}</p></div>
+                  <div><span className="text-muted-foreground">Probni rok:</span><p className="font-medium">{selected.probationEndDate ? new Date(selected.probationEndDate).toLocaleDateString('sr-RS') : '-'}</p></div>
+                  <div><span className="text-muted-foreground">Bruto plata:</span><p className="font-bold text-lg">{formatCurrency(selected.salaryGross)}</p></div>
+                  <div><span className="text-muted-foreground">Neto plata:</span><p className="font-bold text-lg text-green-600">{formatCurrency(selected.salaryNet)}</p></div>
+                  <div><span className="text-muted-foreground">Radnih sati:</span><p className="font-medium">{selected.workHours}h/ned</p></div>
+                </div>
+
+                {selected.notes && (
+                  <div>
+                    <span className="text-sm text-muted-foreground">Napomene:</span>
+                    <p className="text-sm mt-1">{selected.notes}</p>
+                  </div>
+                )}
+
+                {selected.endDate && selected.status !== 'expired' && selected.status !== 'terminated' && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Ugovor ističe za {daysUntilExpiry(selected.endDate)} dana ({new Date(selected.endDate).toLocaleDateString('sr-RS')}).
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <Separator />
+
+                {/* Documents */}
+                <div>
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4" /> Dokumenta ({selected.documents.length})
+                  </h4>
+                  {selected.documents.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">Nema priloženih dokumenata</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {selected.documents.map((doc) => (
+                        <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-red-400" />
+                            <div>
+                              <p className="text-sm font-medium">{doc.name}</p>
+                              <p className="text-xs text-muted-foreground">{doc.size} · {doc.uploadedBy} · {new Date(doc.uploadedAt).toLocaleDateString('sr-RS')}</p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" className="h-7 text-xs">
+                            <Download className="h-3 w-3 mr-1" /> Preuzmi
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {(selected.status === 'pre_expiring' || selected.status === 'expired') && (
+                  <Button className="w-full" onClick={() => { openRenewal(selected); }}>
+                    <RefreshCw className="h-4 w-4 mr-2" /> Započni obnavljanje
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>)}
+        </TabsContent>
+          </Tabs>
+        </TabsContent>
+
         {/* ─── Obnavljanja Tab ─────────────────────────────────────────── */}
         <TabsContent value="renewals" className="space-y-4">
+          <Tabs value={renewalsSubTab} onValueChange={setRenewalsSubTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="pregled" className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">Zahtevi za obnavljanje ugovora</p>
-            <Button size="sm" onClick={() => { setRenewalForm(emptyRenewalForm); setRenewalDialogOpen(true); }}>
+            <Button size="sm" onClick={() => { setRenewalForm(emptyRenewalForm); setRenewalsSubTab('dodaj'); }}
               <Plus className="h-4 w-4 mr-1" /> Novo obnavljanje
             </Button>
           </div>
@@ -678,7 +854,56 @@ export function Contracts() {
               ))}
             </div>
           )}
+        </TabsContent>
 
+        <TabsContent value="dodaj" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setRenewalsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <CardTitle>Obnavljanje ugovora</CardTitle>
+                  <p className="text-xs text-muted-foreground">Kreirajte zahtev za obnavljanje ugovora</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Zaposleni</Label>
+                  <Select value={renewalForm.contractId} onValueChange={(v) => {
+                    const contract = contracts.find((c) => c.id === v)
+                    setRenewalForm({
+                      ...renewalForm,
+                      contractId: v,
+                      employeeName: contract?.employeeName || '',
+                      newStartDate: contract?.endDate || '',
+                    })
+                  }}>
+                    <SelectTrigger><SelectValue placeholder="Izaberite ugovor" /></SelectTrigger>
+                    <SelectContent>
+                      {contracts.filter((c) => c.endDate).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.employeeName} (do {new Date(c.endDate!).toLocaleDateString('sr-RS')})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label>Novi početak</Label><Input type="date" value={renewalForm.newStartDate} onChange={(e) => setRenewalForm({ ...renewalForm, newStartDate: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Novi kraj</Label><Input type="date" value={renewalForm.newEndDate} onChange={(e) => setRenewalForm({ ...renewalForm, newEndDate: e.target.value })} /></div>
+                </div>
+                <div className="space-y-2"><Label>Napomene</Label><Textarea value={renewalForm.notes} onChange={(e) => setRenewalForm({ ...renewalForm, notes: e.target.value })} rows={3} placeholder="Razlog obnavljanja..." /></div>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" onClick={() => setRenewalsSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleRenewalCreate}><Plus className="h-4 w-4 mr-1" /> Podnesi zahtev</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+          </Tabs>
+          )}
+          {(renewalsSubTab === 'pregled' || renewalsSubTab === 'dodaj') && (<>
           {/* Expiring Timeline */}
           <Card>
             <CardHeader className="pb-3">
@@ -713,6 +938,8 @@ export function Contracts() {
               </div>
             </CardContent>
           </Card>
+          </>
+          </Tabs>
         </TabsContent>
 
         {/* ─── Dokumenta Tab ──────────────────────────────────────────── */}
@@ -794,204 +1021,6 @@ export function Contracts() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* ─── Create Contract Card ────────────────────────────────────────── */}
-      {dialogOpen && (<Card className="max-w-2xl">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle>Novi ugovor</CardTitle>
-              <p className="text-xs text-muted-foreground">Kreirajte novi radni ugovor za zaposlenog</p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="max-h-[90vh] overflow-y-auto">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="space-y-2"><Label>Zaposleni</Label><Input value={form.employeeName} onChange={(e) => setForm({ ...form, employeeName: e.target.value })} placeholder="Ime i prezime" /></div>
-              <div className="space-y-2"><Label>Odeljenje</Label><Input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="Odeljenje" /></div>
-              <div className="space-y-2"><Label>Pozicija</Label><Input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} placeholder="Pozicija" /></div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Tip ugovora</Label>
-                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(typeConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Nacrt</SelectItem>
-                    <SelectItem value="active">Aktivan</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>Broj ugovora</Label><Input value={form.contractNumber} onChange={(e) => setForm({ ...form, contractNumber: e.target.value })} placeholder="UG-2025-XXX" /></div>
-            </div>
-            <Separator />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="space-y-2"><Label>Datum početka</Label><Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Datum završetka</Label><Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Kraj probnog roka</Label><Input type="date" value={form.probationEndDate} onChange={(e) => setForm({ ...form, probationEndDate: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Radnih sati</Label><Input type="number" value={form.workHours} onChange={(e) => setForm({ ...form, workHours: parseInt(e.target.value) || 0 })} /></div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="space-y-2"><Label>Bruto plata (RSD)</Label><Input type="number" value={form.salaryGross} onChange={(e) => setForm({ ...form, salaryGross: e.target.value })} placeholder="0.00" /></div>
-              <div className="space-y-2"><Label>Neto plata (RSD)</Label><Input type="number" value={form.salaryNet} onChange={(e) => setForm({ ...form, salaryNet: e.target.value })} placeholder="0.00" /></div>
-              <div className="space-y-2 col-span-2"><Label>Lokacija rada</Label><Input value={form.workLocation} onChange={(e) => setForm({ ...form, workLocation: e.target.value })} placeholder="Grad" /></div>
-            </div>
-            <div className="space-y-2"><Label>Napomene</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Dodatne napomene..." /></div>
-          </div>
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj ugovor</Button>
-          </div>
-        </CardContent>
-      </Card>)}
-
-      {/* ─── Detail Card ────────────────────────────────────────────────── */}
-      {!!selected && detailOpen && (<Card className="max-w-2xl">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle>Detalji ugovora</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="max-h-[90vh] overflow-y-auto">
-          {selected && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold">{selected.employeeName}</h3>
-                  <p className="text-sm text-muted-foreground">{selected.position} · {selected.department}</p>
-                </div>
-                <Badge variant="outline" className={`text-xs ${statusConfig[selected.status]?.color}`}>
-                  {statusConfig[selected.status]?.icon} {statusConfig[selected.status]?.label}
-                </Badge>
-              </div>
-
-              <Separator />
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Broj ugovora:</span><p className="font-medium">{selected.contractNumber}</p></div>
-                <div><span className="text-muted-foreground">Tip:</span><p className="font-medium">{typeConfig[selected.type]?.label}</p></div>
-                <div><span className="text-muted-foreground">Lokacija:</span><p className="font-medium">{selected.workLocation}</p></div>
-                <div><span className="text-muted-foreground">Početak:</span><p className="font-medium">{new Date(selected.startDate).toLocaleDateString('sr-RS')}</p></div>
-                <div><span className="text-muted-foreground">Kraj:</span><p className="font-medium">{selected.endDate ? new Date(selected.endDate).toLocaleDateString('sr-RS') : 'Neodređeno'}</p></div>
-                <div><span className="text-muted-foreground">Probni rok:</span><p className="font-medium">{selected.probationEndDate ? new Date(selected.probationEndDate).toLocaleDateString('sr-RS') : '-'}</p></div>
-                <div><span className="text-muted-foreground">Bruto plata:</span><p className="font-bold text-lg">{formatCurrency(selected.salaryGross)}</p></div>
-                <div><span className="text-muted-foreground">Neto plata:</span><p className="font-bold text-lg text-green-600">{formatCurrency(selected.salaryNet)}</p></div>
-                <div><span className="text-muted-foreground">Radnih sati:</span><p className="font-medium">{selected.workHours}h/ned</p></div>
-              </div>
-
-              {selected.notes && (
-                <div>
-                  <span className="text-sm text-muted-foreground">Napomene:</span>
-                  <p className="text-sm mt-1">{selected.notes}</p>
-                </div>
-              )}
-
-              {selected.endDate && selected.status !== 'expired' && selected.status !== 'terminated' && (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Ugovor ističe za {daysUntilExpiry(selected.endDate)} dana ({new Date(selected.endDate).toLocaleDateString('sr-RS')}).
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <Separator />
-
-              {/* Documents */}
-              <div>
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <FolderOpen className="h-4 w-4" /> Dokumenta ({selected.documents.length})
-                </h4>
-                {selected.documents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">Nema priloženih dokumenata</p>
-                ) : (
-                  <div className="space-y-2">
-                    {selected.documents.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-red-400" />
-                          <div>
-                            <p className="text-sm font-medium">{doc.name}</p>
-                            <p className="text-xs text-muted-foreground">{doc.size} · {doc.uploadedBy} · {new Date(doc.uploadedAt).toLocaleDateString('sr-RS')}</p>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="outline" className="h-7 text-xs">
-                          <Download className="h-3 w-3 mr-1" /> Preuzmi
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {(selected.status === 'pre_expiring' || selected.status === 'expired') && (
-                <Button className="w-full" onClick={() => { setDetailOpen(false); openRenewal(selected); }}>
-                  <RefreshCw className="h-4 w-4 mr-2" /> Započni obnavljanje
-                </Button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>)}
-
-      {/* ─── Renewal Card ────────────────────────────────────────────────── */}
-      {renewalDialogOpen && (<Card className="max-w-md">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setRenewalDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle>Obnavljanje ugovora</CardTitle>
-              <p className="text-xs text-muted-foreground">Kreirajte zahtev za obnavljanje ugovora</p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Zaposleni</Label>
-              <Select value={renewalForm.contractId} onValueChange={(v) => {
-                const contract = contracts.find((c) => c.id === v)
-                setRenewalForm({
-                  ...renewalForm,
-                  contractId: v,
-                  employeeName: contract?.employeeName || '',
-                  newStartDate: contract?.endDate || '',
-                })
-              }}>
-                <SelectTrigger><SelectValue placeholder="Izaberite ugovor" /></SelectTrigger>
-                <SelectContent>
-                  {contracts.filter((c) => c.endDate).map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.employeeName} (do {new Date(c.endDate!).toLocaleDateString('sr-RS')})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Novi početak</Label><Input type="date" value={renewalForm.newStartDate} onChange={(e) => setRenewalForm({ ...renewalForm, newStartDate: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Novi kraj</Label><Input type="date" value={renewalForm.newEndDate} onChange={(e) => setRenewalForm({ ...renewalForm, newEndDate: e.target.value })} /></div>
-            </div>
-            <div className="space-y-2"><Label>Napomene</Label><Textarea value={renewalForm.notes} onChange={(e) => setRenewalForm({ ...renewalForm, notes: e.target.value })} rows={3} placeholder="Razlog obnavljanja..." /></div>
-          </div>
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setRenewalDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleRenewalCreate}><Plus className="h-4 w-4 mr-1" /> Podnesi zahtev</Button>
-          </div>
-        </CardContent>
-      </Card>)}
 
       {/* ─── Contract Statistics Panel ────────────────────────────────────── */}
       {activeTab === 'contracts' && filteredContracts.length > 0 && (

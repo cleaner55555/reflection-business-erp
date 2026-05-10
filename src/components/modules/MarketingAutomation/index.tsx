@@ -53,10 +53,11 @@ export function MarketingAutomation() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [workflows, setWorkflows] = useState<MarketingWorkflow[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [detailOpen, setDetailOpen] = useState(false)
   const [selected, setSelected] = useState<MarketingWorkflow | null>(null)
 
@@ -104,7 +105,7 @@ export function MarketingAutomation() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...form, executionCount: 0 }),
       })
-      if (res.ok) { setDialogOpen(false); setForm(emptyForm); loadWorkflows() }
+      if (res.ok) { setSubTab('pregled'); setForm(emptyForm); loadWorkflows() }
     } catch { /* silent */ }
   }
 
@@ -136,7 +137,7 @@ export function MarketingAutomation() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={loadWorkflows}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Novi workflow</Button>
+          <Button size="sm" onClick={() => setActiveTab('workflows'); setSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Novi workflow</Button>
         </div>
       </div>
 
@@ -193,9 +194,13 @@ export function MarketingAutomation() {
         </TabsContent>
 
         <TabsContent value="workflows" className="space-y-4">
+          <Tabs value={subTab} onValueChange={v => setSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj" disabled={subTab !== 'dodaj'}>Dodaj</TabsTrigger></TabsList>
+            <TabsContent value="pregled" className="mt-4">
+
           <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži workflow-e..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
           {loading ? (<div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>) : filtered.length === 0 ? (
-            <Card className="p-8 text-center"><Workflow className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema workflow-a</p><Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Kreiraj workflow</Button></Card>
+            <Card className="p-8 text-center"><Workflow className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema workflow-a</p><Button variant="outline" className="mt-3" onClick={() => setActiveTab('workflows'); setSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj workflow</Button></Card>
           ) : (
             <div className="space-y-3">
               {filtered.map((w) => {
@@ -238,6 +243,9 @@ export function MarketingAutomation() {
             </div>
           )}
         </TabsContent>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
 
         <TabsContent value="templates" className="space-y-4">
           <Card className="p-8 text-center">
@@ -248,43 +256,7 @@ export function MarketingAutomation() {
         </TabsContent>
       </Tabs>
 
-      {dialogOpen && (
-<Card className="max-w-lg">
-<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">Novi marketing workflow</CardTitle></CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Naziv</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="npr. Dobrodošlica novom lead-u" /></div>
-            <div className="space-y-2">
-              <Label>Trigger</Label>
-              <Select value={form.trigger} onValueChange={(v) => setForm({ ...form, trigger: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{Object.entries(triggerConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}</SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Akcije</Label>
-              <div className="space-y-2">
-                {form.actions.map((action, i) => {
-                  const opt = actionOptions.find((o) => o.value === action)
-                  return (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="flex-1 p-2 border rounded-md text-sm">{opt?.label || action}</div>
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setForm({ ...form, actions: form.actions.filter((_, j) => j !== i) })}><Trash2 className="h-3.5 w-3.5" /></Button>
-                    </div>
-                  )
-                })}
-                <Select onValueChange={(v) => { if (!form.actions.includes(v)) setForm({ ...form, actions: [...form.actions, v] }) }}>
-                  <SelectTrigger><SelectValue placeholder="+ Dodaj akciju" /></SelectTrigger>
-                  <SelectContent>{actionOptions.filter((o) => !form.actions.includes(o.value)).map((o) => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </div>
-        </Card>
-          )}
+      
 
       {detailOpen && (
 <Card className="max-w-lg">

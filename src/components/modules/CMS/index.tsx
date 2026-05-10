@@ -612,13 +612,13 @@ function ContentTab({ content, setContent }: { content: ContentItem[]; setConten
 
 function TypesTab() {
   const [types, setTypes] = useState(mockContentTypes)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [form, setForm] = useState({ name: '', description: '', icon: 'FileText' })
 
   const handleCreate = () => {
     const newType: ContentType = { id: `ct-${Date.now()}`, name: form.name, slug: generateSlug(form.name), description: form.description, icon: form.icon, fields: [{ id: `f-${Date.now()}`, name: 'Sadržaj', type: 'richtext', required: true }], itemCount: 0, template: 'custom' }
     setTypes(prev => [...prev, newType])
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm({ name: '', description: '', icon: 'FileText' })
   }
 
@@ -626,7 +626,18 @@ function TypesTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center"><h3 className="text-sm font-medium">Tipovi sadržaja ({types.length})</h3><Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Novi tip</Button></div>
+      <div className="flex items-center gap-2 mb-2">
+        {subTab !== 'pregled' && (
+          <Button variant="outline" size="sm" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+        )}
+        <div className="flex gap-1">
+          <Button variant={subTab === 'pregled' ? 'default' : 'outline'} size="sm" onClick={() => setSubTab('pregled')}>Pregled</Button>
+          <Button variant={subTab === 'dodaj' ? 'default' : 'outline'} size="sm" onClick={() => setSubTab('dodaj')}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</Button>
+        </div>
+        <span className="text-xs text-muted-foreground ml-auto">Tipovi sadržaja ({types.length})</span>
+      </div>
+      {subTab === 'pregled' && (
+      <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {types.map(t => (
           <Card key={t.id}>
@@ -663,18 +674,20 @@ function TypesTab() {
           </Card>
         ))}
       </div>
-      {dialogOpen && (
+      </>
+      )}
+      {subTab === 'dodaj' && (
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
               <div><CardTitle>Novi tip sadržaja</CardTitle></div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4"><div className="space-y-2"><Label>Naziv</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div><div className="space-y-2"><Label>Opis</Label><Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div></div>
             <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
               <Button onClick={handleCreate}>Kreiraj</Button>
             </div>
           </CardContent>
@@ -691,7 +704,7 @@ function MediaTab() {
   const [folders] = useState(mockFolders)
   const [folderFilter, setFolderFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
-  const [uploadOpen, setUploadOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [search, setSearch] = useState('')
 
   const filtered = media.filter(m => {
@@ -705,6 +718,17 @@ function MediaTab() {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-2">
+        {subTab !== 'pregled' && (
+          <Button variant="outline" size="sm" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+        )}
+        <div className="flex gap-1">
+          <Button variant={subTab === 'pregled' ? 'default' : 'outline'} size="sm" onClick={() => setSubTab('pregled')}>Pregled</Button>
+          <Button variant={subTab === 'dodaj' ? 'default' : 'outline'} size="sm" onClick={() => setSubTab('dodaj')}><Upload className="h-3.5 w-3.5 mr-1" /> Upload</Button>
+        </div>
+      </div>
+      {subTab === 'pregled' && (
+      <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4"><span className="text-xs text-muted-foreground">Ukupno fajlova</span><p className="text-xl font-bold">{media.length}</p></Card>
         <Card className="p-4"><span className="text-xs text-muted-foreground">Ukupna veličina</span><p className="text-xl font-bold">{formatFileSize(totalSize)}</p></Card>
@@ -715,25 +739,26 @@ function MediaTab() {
         <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži medije..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div>
         <Select value={folderFilter} onValueChange={setFolderFilter}><SelectTrigger className="w-full lg:w-[160px]"><SelectValue placeholder="Folder" /></SelectTrigger><SelectContent><SelectItem value="all">Svi folderi</SelectItem>{folders.map(f => <SelectItem key={f.id} value={f.id}>{f.name} ({f.itemCount})</SelectItem>)}</SelectContent></Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger className="w-full lg:w-[130px]"><SelectValue placeholder="Tip" /></SelectTrigger><SelectContent><SelectItem value="all">Svi tipovi</SelectItem><SelectItem value="image">Slike</SelectItem><SelectItem value="document">Dokumenta</SelectItem><SelectItem value="video">Video</SelectItem><SelectItem value="audio">Audio</SelectItem><SelectItem value="icon">Ikone</SelectItem></SelectContent></Select>
-        <Button size="sm" onClick={() => setUploadOpen(true)}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filtered.map(m => { const Icon = mediaTypeIcons[m.type]; const color = mediaTypeColors[m.type]; return (
           <Card key={m.id} className="p-3 hover:shadow-md transition-shadow cursor-pointer group"><div className="flex items-center justify-center h-32 bg-muted/50 rounded-lg mb-3"><Icon className="h-12 w-12 text-muted-foreground/50" aria-label={m.type} /></div><p className="text-xs font-medium truncate" title={m.name}>{m.name}</p><div className="flex items-center justify-between mt-1"><p className="text-xs text-muted-foreground">{formatFileSize(m.size)}</p><Badge variant="outline" className={`text-xs ${color}`}>{m.type}</Badge></div><div className="flex items-center justify-between mt-2 opacity-0 group-hover:opacity-100 transition-opacity"><Button variant="ghost" size="icon" className="h-6 w-6"><Copy className="h-3 w-3" /></Button><Button variant="ghost" size="icon" className="h-6 w-6"><ExternalLink className="h-3 w-3" /></Button><Button variant="ghost" size="icon" className="h-6 w-6 text-destructive"><Trash2 className="h-3 w-3" /></Button></div>{m.usageCount > 0 && <p className="text-xs text-muted-foreground mt-1">Korišćeno: {m.usageCount}x</p>}</Card>
         ) })}
       </div>
-      {uploadOpen && (
+      </>
+      )}
+      {subTab === 'dodaj' && (
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setUploadOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
               <div><CardTitle>Upload medija</CardTitle><CardDescription>Izaberite fajlove za upload</CardDescription></div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4"><div className="border-2 border-dashed rounded-lg p-8 text-center"><Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" /><p className="text-sm text-muted-foreground">Prevucite fajlove ovde ili kliknite za biranje</p><p className="text-xs text-muted-foreground mt-1">Podržano: JPG, PNG, GIF, SVG, PDF, MP4, MP3 (max 50MB)</p></div><div className="space-y-2"><Label>Folder</Label><Select><SelectTrigger><SelectValue placeholder="Izaberite folder" /></SelectTrigger><SelectContent>{folders.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent></Select></div></div>
             <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setUploadOpen(false)}>Otkaži</Button>
+              <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
               <Button>Upload</Button>
             </div>
           </CardContent>

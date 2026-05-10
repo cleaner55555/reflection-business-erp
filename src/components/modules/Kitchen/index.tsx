@@ -66,7 +66,7 @@ export function Kitchen() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<KitchenItem | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<KitchenItem>>({})
@@ -98,10 +98,10 @@ export function Kitchen() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ name: '', category: 'ingredient', unit: 'kom', quantity: 0, minQuantity: 5, maxQuantity: 50, unitPrice: 0, supplier: '', storageArea: '', expiryDate: '', receivedDate: new Date().toISOString().split('T')[0], status: 'in_stock', allergens: [], notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
-  const openEdit = (item: KitchenItem) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
+  const openEdit = (item: KitchenItem) => { setEditItem(item); setForm({ ...item }); setActiveTab('dodaj') }
 
   const handleSave = async () => {
     if (!form.name) { toast.error('Unesite naziv'); return }
@@ -115,7 +115,7 @@ export function Kitchen() {
         if (res.ok) { toast.success('Artikal kreiran'); loadData() }
       }
     } catch { toast.error('Greška pri čuvanju') }
-    setDialogOpen(false)
+    setActiveTab('pregled'); setEditItem(null)
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
@@ -256,27 +256,6 @@ export function Kitchen() {
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           )}
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card className="border">
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDialogOpen(false)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="min-w-0 flex-1"><CardTitle className="text-base">{editItem ? 'Uredi artikal' : 'Novi artikal'}</CardTitle></div>
-          </CardHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'in_stock'} onValueChange={v => setForm({ ...form, status: v as KitchenItem['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="in_stock">Na stanju</SelectItem><SelectItem value="low_stock">Nisko</SelectItem><SelectItem value="out_of_stock">Nema</SelectItem><SelectItem value="expired">Istekao</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Količina</Label><Input className="text-xs" type="number" value={form.quantity || ''} onChange={e => setForm({ ...form, quantity: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Cena/jed</Label><Input className="text-xs" type="number" value={form.unitPrice || ''} onChange={e => setForm({ ...form, unitPrice: Number(e.target.value) })} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
         </Card>
       )}
     </div>

@@ -34,6 +34,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs'
+import {
   Shield,
   Plus,
   Pencil,
@@ -336,17 +342,18 @@ export function PermissionsEditor() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Edit dialog
+  // Sub-tab navigation
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+
+  // Edit role
   const [editRole, setEditRole] = useState<Role | null>(null)
   const [editPerms, setEditPerms] = useState<Permissions>({})
   const [editName, setEditName] = useState('')
   const [editDisplayName, setEditDisplayName] = useState('')
   const [editDescription, setEditDescription] = useState('')
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'edit'>('list')
 
-  // New role dialog
-  const [newDialogOpen, setNewDialogOpen] = useState(false)
+  // New role
   const [newName, setNewName] = useState('')
   const [newDisplayName, setNewDisplayName] = useState('')
   const [newDescription, setNewDescription] = useState('')
@@ -354,7 +361,7 @@ export function PermissionsEditor() {
   const [newSaving, setNewSaving] = useState(false)
   const [cloneFromRole, setCloneFromRole] = useState('')
 
-  // Delete dialog
+  // Delete dialog (AlertDialog - kept)
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null)
   const [deleteSaving, setDeleteSaving] = useState(false)
 
@@ -374,6 +381,25 @@ export function PermissionsEditor() {
 
   useEffect(() => { fetchRoles() }, [fetchRoles])
 
+  // Reset new role form
+  const resetNewForm = useCallback(() => {
+    setNewName('')
+    setNewDisplayName('')
+    setNewDescription('')
+    setNewPerms({})
+    setCloneFromRole('')
+  }, [])
+
+  // Sub-tab change handler
+  const handleSubTabChange = useCallback((value: string) => {
+    setSubTab(value as 'pregled' | 'dodaj' | 'detalji')
+    if (value === 'pregled') {
+      setViewMode('list')
+      setEditRole(null)
+      resetNewForm()
+    }
+  }, [resetNewForm])
+
   // Open edit
   const openEdit = (role: Role) => {
     setEditRole(role)
@@ -385,8 +411,8 @@ export function PermissionsEditor() {
     setEditName(role.name)
     setEditDisplayName(role.displayName)
     setEditDescription(role.description || '')
-    setEditDialogOpen(true)
-    setViewMode('edit')
+    setViewMode('list')
+    setSubTab('detalji')
   }
 
   // Save edit
@@ -408,7 +434,8 @@ export function PermissionsEditor() {
         throw new Error(err.error || 'Greška')
       }
       toast.success(`Uloga "${editDisplayName}" uspešno ažurirana`)
-      setEditDialogOpen(false)
+      setSubTab('pregled')
+      setEditRole(null)
       setViewMode('list')
       fetchRoles()
     } catch (err) {
@@ -441,7 +468,7 @@ export function PermissionsEditor() {
         throw new Error(err.error || 'Greška')
       }
       toast.success(`Uloga "${newDisplayName}" kreirana`)
-      setNewDialogOpen(false)
+      setSubTab('pregled')
       setNewName('')
       setNewDisplayName('')
       setNewDescription('')
@@ -523,312 +550,326 @@ export function PermissionsEditor() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            Upravljanje ulogama i permisijama
-          </h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            Definišite uloge i kontrolišite pristup modulima po akcijama
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs">
-            {roles.length} uloga
-          </Badge>
-          <Button size="sm" className="gap-2" onClick={() => setNewDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Nova uloga
-          </Button>
-        </div>
-      </div>
+      <Tabs value={subTab} onValueChange={handleSubTabChange}>
+        <TabsList>
+          <TabsTrigger value="pregled">Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj">Nova uloga</TabsTrigger>
+          {editRole && (
+            <TabsTrigger value="detalji">{editDisplayName}</TabsTrigger>
+          )}
+        </TabsList>
 
-      {/* Roles Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {roles.map((role) => {
-          const moduleCount = countPerms(role)
-          const actionCount = countActions(role)
-          const totalModules = Object.keys(MODULE_LABELS).length
+        {/* ============ PREGLED ============ */}
 
-          return (
-            <Card
-              key={role.id}
-              className="relative overflow-hidden transition-all hover:shadow-md cursor-pointer"
-              onClick={() => openEdit(role)}
-            >
-              {role.isDefault && (
-                <div className="absolute top-0 right-0">
-                  <div className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-bl-lg">
-                    DEFAULT
-                  </div>
-                </div>
-              )}
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-sm text-foreground">{role.displayName}</h3>
-                    <p className="text-xs text-muted-foreground font-mono mt-0.5">{role.name}</p>
-                    {role.description && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{role.description}</p>
-                    )}
-                  </div>
-                  <Badge variant="outline" className={`shrink-0 text-xs ${getRoleColor(role.name)}`}>
-                    {role._count?.userCompanies || 0}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${(moduleCount / totalModules) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {moduleCount}/{totalModules} modula · {actionCount} prava
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-                  <Users className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    {role._count?.userCompanies || 0} korisnika
-                  </span>
-                  <div className="flex-1" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 gap-1 text-xs"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      openEdit(role)
-                    }}
-                  >
-                    <Pencil className="h-3 w-3" />
-                    Izmeni
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* ============ EDIT ROLE ============ */}
-
-      {editDialogOpen && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditDialogOpen(false); setViewMode('list') }}><ArrowLeft className="h-4 w-4" /></Button>
-              <div>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  {viewMode === 'edit' ? `Izmeni ulogu: ${editDisplayName}` : editDisplayName}
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">
-                  {viewMode === 'edit'
-                    ? 'Podesite permisije za svaki modul i akciju'
-                    : `Pregled permisija za ulogu ${editDisplayName}`}
-                </CardDescription>
-              </div>
+        <TabsContent value="pregled" className="space-y-4">
+          {/* Header */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Upravljanje ulogama i permisijama
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Definišite uloge i kontrolišite pristup modulima po akcijama
+              </p>
             </div>
-          </CardHeader>
-          <CardContent className="max-h-[90vh] overflow-y-auto">
-            {viewMode === 'edit' ? (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {roles.length} uloga
+              </Badge>
+              <Button size="sm" className="gap-2" onClick={() => setSubTab('dodaj')}>
+                <Plus className="h-4 w-4" />
+                Nova uloga
+              </Button>
+            </div>
+          </div>
+
+          {/* Roles Grid */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {roles.map((role) => {
+              const moduleCount = countPerms(role)
+              const actionCount = countActions(role)
+              const totalModules = Object.keys(MODULE_LABELS).length
+
+              return (
+                <Card
+                  key={role.id}
+                  className="relative overflow-hidden transition-all hover:shadow-md cursor-pointer"
+                  onClick={() => openEdit(role)}
+                >
+                  {role.isDefault && (
+                    <div className="absolute top-0 right-0">
+                      <div className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-bl-lg">
+                        DEFAULT
+                      </div>
+                    </div>
+                  )}
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-sm text-foreground">{role.displayName}</h3>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5">{role.name}</p>
+                        {role.description && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{role.description}</p>
+                        )}
+                      </div>
+                      <Badge variant="outline" className={`shrink-0 text-xs ${getRoleColor(role.name)}`}>
+                        {role._count?.userCompanies || 0}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${(moduleCount / totalModules) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {moduleCount}/{totalModules} modula · {actionCount} prava
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+                      <Users className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {role._count?.userCompanies || 0} korisnika
+                      </span>
+                      <div className="flex-1" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEdit(role)
+                        }}
+                      >
+                        <Pencil className="h-3 w-3" />
+                        Izmeni
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </TabsContent>
+
+        {/* ============ DODAJ (New Role) ============ */}
+
+        <TabsContent value="dodaj">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                  setSubTab('pregled')
+                  resetNewForm()
+                }}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-primary" />
+                    Nova uloga
+                  </CardTitle>
+                  <CardDescription className="text-xs mt-1">
+                    Kreirajte novu ulogu i podesite permisije
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="max-h-[90vh] overflow-y-auto">
               <div className="space-y-6">
+                {/* Clone from existing */}
+                <Card className="border-dashed">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
+                      <Copy className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="flex-1">
+                        <Label className="text-xs">Kopiraj permisije iz postojeće uloge (opciono)</Label>
+                        <Select value={cloneFromRole} onValueChange={handleCloneFrom}>
+                          <SelectTrigger className="h-8 mt-1">
+                            <SelectValue placeholder="Izaberite ulogu za kopiranje..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {roles.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>
+                                {r.displayName} ({r.name})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Role info */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-xs">Naziv (displayName)</Label>
+                    <Label className="text-xs">Ključ (name) *</Label>
                     <Input
-                      value={editDisplayName}
-                      onChange={(e) => setEditDisplayName(e.target.value)}
-                      placeholder="npr. Knjigovođa"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value.replace(/[^a-z_0-9]/g, '_'))}
+                      placeholder="npr. prodavac_vip"
+                      className="font-mono text-xs"
                     />
+                    <p className="text-xs text-muted-foreground">Samo mala slova, brojevi i _</p>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">Opis</Label>
+                    <Label className="text-xs">Naziv (displayName) *</Label>
                     <Input
-                      value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                      placeholder="Kratak opis uloge"
+                      value={newDisplayName}
+                      onChange={(e) => setNewDisplayName(e.target.value)}
+                      placeholder="npr. VIP Prodavac"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Opis</Label>
+                  <Input
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    placeholder="Kratak opis uloge"
+                  />
                 </div>
 
                 {/* Permission matrix */}
-                <div className="max-h-[450px] overflow-y-auto">
+                <div className="max-h-[400px] overflow-y-auto">
                   <PermissionMatrix
-                    permissions={editPerms}
-                    onChange={setEditPerms}
+                    permissions={newPerms}
+                    onChange={setNewPerms}
                   />
                 </div>
 
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => {
-                    setViewMode('list')
-                  }}>
-                    Pregled
-                  </Button>
-                  <div className="flex-1" />
-                  <Button variant="outline" onClick={() => {
-                    setEditDialogOpen(false)
-                    setViewMode('list')
+                    setSubTab('pregled')
+                    resetNewForm()
                   }}>
                     Otkaži
                   </Button>
-                  <Button onClick={handleSaveEdit} disabled={saving} className="gap-2">
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                    Sačuvaj
+                  <Button onClick={handleCreate} disabled={newSaving} className="gap-2">
+                    {newSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                    Kreiraj ulogu
                   </Button>
                 </div>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Read-only permission matrix */}
-                <div className="max-h-[450px] overflow-y-auto">
-                  <PermissionMatrix
-                    permissions={editPerms}
-                    onChange={() => {}}
-                    readOnly
-                  />
-                </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => {
-                    setEditDialogOpen(false)
+        {/* ============ DETALJI (Edit/View Role) ============ */}
+
+        {editRole && (
+          <TabsContent value="detalji">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                    setSubTab('pregled')
                     setViewMode('list')
-                  }}>
-                    Zatvori
-                  </Button>
-                  <Button onClick={() => setViewMode('edit')} className="gap-2">
-                    <Pencil className="h-4 w-4" />
-                    Izmeni
-                  </Button>
+                    setEditRole(null)
+                  }}><ArrowLeft className="h-4 w-4" /></Button>
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" />
+                      {viewMode === 'edit' ? `Izmeni ulogu: ${editDisplayName}` : editDisplayName}
+                    </CardTitle>
+                    <CardDescription className="text-xs mt-1">
+                      {viewMode === 'edit'
+                        ? 'Podesite permisije za svaki modul i akciju'
+                        : `Pregled permisija za ulogu ${editDisplayName}`}
+                    </CardDescription>
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              </CardHeader>
+              <CardContent className="max-h-[90vh] overflow-y-auto">
+                {viewMode === 'edit' ? (
+                  <div className="space-y-6">
+                    {/* Role info */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Naziv (displayName)</Label>
+                        <Input
+                          value={editDisplayName}
+                          onChange={(e) => setEditDisplayName(e.target.value)}
+                          placeholder="npr. Knjigovođa"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Opis</Label>
+                        <Input
+                          value={editDescription}
+                          onChange={(e) => setEditDescription(e.target.value)}
+                          placeholder="Kratak opis uloge"
+                        />
+                      </div>
+                    </div>
 
-      {/* ============ NEW ROLE ============ */}
+                    {/* Permission matrix */}
+                    <div className="max-h-[450px] overflow-y-auto">
+                      <PermissionMatrix
+                        permissions={editPerms}
+                        onChange={setEditPerms}
+                      />
+                    </div>
 
-      {newDialogOpen && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
-                setNewDialogOpen(false)
-                setNewName('')
-                setNewDisplayName('')
-                setNewDescription('')
-                setNewPerms({})
-                setCloneFromRole('')
-              }}><ArrowLeft className="h-4 w-4" /></Button>
-              <div>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-primary" />
-                  Nova uloga
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">
-                  Kreirajte novu ulogu i podesite permisije
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="max-h-[90vh] overflow-y-auto">
-            <div className="space-y-6">
-              {/* Clone from existing */}
-              <Card className="border-dashed">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-3">
-                    <Copy className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="flex-1">
-                      <Label className="text-xs">Kopiraj permisije iz postojeće uloge (opciono)</Label>
-                      <Select value={cloneFromRole} onValueChange={handleCloneFrom}>
-                        <SelectTrigger className="h-8 mt-1">
-                          <SelectValue placeholder="Izaberite ulogu za kopiranje..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {roles.map((r) => (
-                            <SelectItem key={r.id} value={r.id}>
-                              {r.displayName} ({r.name})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => {
+                        setViewMode('list')
+                      }}>
+                        Pregled
+                      </Button>
+                      <div className="flex-1" />
+                      <Button variant="outline" onClick={() => {
+                        setSubTab('pregled')
+                        setViewMode('list')
+                        setEditRole(null)
+                      }}>
+                        Otkaži
+                      </Button>
+                      <Button onClick={handleSaveEdit} disabled={saving} className="gap-2">
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                        Sačuvaj
+                      </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Read-only permission matrix */}
+                    <div className="max-h-[450px] overflow-y-auto">
+                      <PermissionMatrix
+                        permissions={editPerms}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </div>
 
-              {/* Role info */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-xs">Ključ (name) *</Label>
-                  <Input
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value.replace(/[^a-z_0-9]/g, '_'))}
-                    placeholder="npr. prodavac_vip"
-                    className="font-mono text-xs"
-                  />
-                  <p className="text-xs text-muted-foreground">Samo mala slova, brojevi i _</p>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Naziv (displayName) *</Label>
-                  <Input
-                    value={newDisplayName}
-                    onChange={(e) => setNewDisplayName(e.target.value)}
-                    placeholder="npr. VIP Prodavac"
-                  />
-                </div>
-              </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => {
+                        setSubTab('pregled')
+                        setViewMode('list')
+                        setEditRole(null)
+                      }}>
+                        Zatvori
+                      </Button>
+                      <Button onClick={() => setViewMode('edit')} className="gap-2">
+                        <Pencil className="h-4 w-4" />
+                        Izmeni
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+      </Tabs>
 
-              <div className="space-y-2">
-                <Label className="text-xs">Opis</Label>
-                <Input
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="Kratak opis uloge"
-                />
-              </div>
-
-              {/* Permission matrix */}
-              <div className="max-h-[400px] overflow-y-auto">
-                <PermissionMatrix
-                  permissions={newPerms}
-                  onChange={setNewPerms}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => {
-                  setNewDialogOpen(false)
-                  setNewName('')
-                  setNewDisplayName('')
-                  setNewDescription('')
-                  setNewPerms({})
-                  setCloneFromRole('')
-                }}>
-                  Otkaži
-                </Button>
-                <Button onClick={handleCreate} disabled={newSaving} className="gap-2">
-                  {newSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                  Kreiraj ulogu
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ============ DELETE CONFIRMATION ============ */}
+      {/* ============ DELETE CONFIRMATION (AlertDialog - kept) ============ */}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => {
         if (!open) setDeleteTarget(null)

@@ -70,12 +70,13 @@ export function FieldService() {
   const { activeCompanyId } = useAppStore()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('overview')
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [dashboard, setDashboard] = useState<DashboardData | null>(null)
   const [items, setItems] = useState<FieldOrder[]>([])
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [detailOpen, setDetailOpen] = useState(false)
   const [selected, setSelected] = useState<FieldOrder | null>(null)
 
@@ -117,7 +118,7 @@ export function FieldService() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...form }),
       })
-      if (res.ok) { setDialogOpen(false); setForm(emptyForm); loadItems(); loadDashboard() }
+      if (res.ok) { setSubTab('pregled'); setForm(emptyForm); loadItems(); loadDashboard() }
     } catch { /* silent */ }
   }
 
@@ -150,7 +151,7 @@ export function FieldService() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadItems() }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" onClick={() => setActiveTab('orders'); setSubTab('dodaj')}>
             <Plus className="h-4 w-4 mr-1" /> Novi nalog
           </Button>
         </div>
@@ -255,6 +256,10 @@ export function FieldService() {
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-4">
+          <Tabs value={subTab} onValueChange={v => setSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj" disabled={subTab !== 'dodaj'}>Dodaj</TabsTrigger></TabsList>
+            <TabsContent value="pregled" className="mt-4">
+
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -275,7 +280,7 @@ export function FieldService() {
             <Card className="p-8 text-center">
               <Truck className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground">Nema terenskih naloga</p>
-              <Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Kreiraj nalog</Button>
+              <Button variant="outline" className="mt-3" onClick={() => setActiveTab('orders'); setSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj nalog</Button>
             </Card>
           ) : (
             <div className="rounded-lg border overflow-hidden">
@@ -314,67 +319,12 @@ export function FieldService() {
             </div>
           )}
         </TabsContent>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
       </Tabs>
 
-      {dialogOpen && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">Novi terenski nalog<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Klijent</Label>
-                <Input value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} placeholder="Ime klijenta" />
-              </div>
-              <div className="space-y-2">
-                <Label>Adresa</Label>
-                <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Adresa terenskog posla" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Tip</Label>
-                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Prioritet</Label>
-                <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(priorityConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Zaduzeni</Label>
-                <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ime tehničara" />
-              </div>
-              <div className="space-y-2">
-                <Label>Zakazano za</Label>
-                <Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Opis</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Opis terenskog posla..." />
-            </div>
-            <div className="space-y-2">
-              <Label>Napomene</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </div>
-        </CardContent>
-      </Card>)}
+      
 
       {detailOpen && (<Card>
         <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">Detalji naloga<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>

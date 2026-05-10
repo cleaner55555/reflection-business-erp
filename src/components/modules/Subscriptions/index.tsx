@@ -541,8 +541,7 @@ function PretplateTab() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [planFilter, setPlanFilter] = useState('all')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [selected, setSelected] = useState<Subscription | null>(null)
   const [form, setForm] = useState(EMPTY_SUB_FORM)
   const payments = useMemo(() => generateMockPayments(), [])
@@ -594,7 +593,7 @@ function PretplateTab() {
     }).then(newSub => {
       if (newSub) setSubscriptions(prev => [newSub, ...prev])
     })
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm(EMPTY_SUB_FORM)
   }
 
@@ -618,7 +617,7 @@ function PretplateTab() {
 
   const handleViewDetail = (sub: Subscription) => {
     setSelected(sub)
-    setDetailOpen(true)
+    setSubTab('detalji')
   }
 
   const subPayments = useMemo(() => {
@@ -664,213 +663,228 @@ function PretplateTab() {
         </div>
       </Card>
 
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={() => { setForm(EMPTY_SUB_FORM); setDialogOpen(true) }}>
-          <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.newSubscription')}
-        </Button>
-        <div className="ml-auto text-sm text-muted-foreground self-center">
-          {filtered.length} {t('subscriptions.itemsFound')}
-        </div>
-      </div>
+      {/* Sub-tabs: Pregled / Dodaj / Detalji */}
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as typeof subTab)} className="space-y-4">
+        <TabsList className="h-9">
+          <TabsTrigger value="pregled" className="text-xs gap-1"><Eye className="h-3 w-3" /> Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj" className="text-xs gap-1"><Plus className="h-3 w-3" /> Dodaj</TabsTrigger>
+          <TabsTrigger value="detalji" className="text-xs gap-1" disabled={!selected}><CreditCard className="h-3 w-3" /> Detalji</TabsTrigger>
+        </TabsList>
 
-      <Card>
-        {filtered.length === 0 ? (
-          <div className="p-8 text-center">
-            <CreditCard className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-            <p className="text-muted-foreground">{t('subscriptions.noSubscriptions')}</p>
-            <Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}>
+        {/* Sub-tab: Pregled */}
+        <TabsContent value="pregled" className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => { setForm(EMPTY_SUB_FORM); setSubTab('dodaj') }}>
               <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.newSubscription')}
             </Button>
+            <div className="ml-auto text-sm text-muted-foreground self-center">
+              {filtered.length} {t('subscriptions.itemsFound')}
+            </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{t('subscriptions.customer')}</TableHead>
-                  <TableHead className="text-xs">{t('subscriptions.plan')}</TableHead>
-                  <TableHead className="text-xs hidden md:table-cell">{t('subscriptions.startDate')}</TableHead>
-                  <TableHead className="text-xs hidden lg:table-cell">{t('subscriptions.renewalDate')}</TableHead>
-                  <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
-                  <TableHead className="text-xs">{t('common.status')}</TableHead>
-                  <TableHead className="text-xs">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map(sub => {
-                  const cfg = SUB_STATUS_CONFIG[sub.status]
-                  return (
-                    <TableRow key={sub.id} className="hover:bg-muted/30">
-                      <TableCell className="text-xs font-medium">{sub.customer}</TableCell>
-                      <TableCell className="text-xs">
-                        <Badge variant="secondary" className="text-xs">{sub.planName}</Badge>
-                      </TableCell>
-                      <TableCell className="text-xs hidden md:table-cell">{sub.startDate}</TableCell>
-                      <TableCell className="text-xs hidden lg:table-cell">{sub.renewalDate}</TableCell>
-                      <TableCell className="text-xs text-right font-semibold">{formatRSD(sub.amount)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || sub.status}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleViewDetail(sub)}>
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          {sub.status !== 'cancelled' && sub.status !== 'expired' && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleAdvanceStatus(sub)}>
-                              <ArrowRight className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(sub.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
+
+          <Card>
+            {filtered.length === 0 ? (
+              <div className="p-8 text-center">
+                <CreditCard className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                <p className="text-muted-foreground">{t('subscriptions.noSubscriptions')}</p>
+                <Button variant="outline" className="mt-3" onClick={() => { setForm(EMPTY_SUB_FORM); setSubTab('dodaj') }}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.newSubscription')}
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">{t('subscriptions.customer')}</TableHead>
+                      <TableHead className="text-xs">{t('subscriptions.plan')}</TableHead>
+                      <TableHead className="text-xs hidden md:table-cell">{t('subscriptions.startDate')}</TableHead>
+                      <TableHead className="text-xs hidden lg:table-cell">{t('subscriptions.renewalDate')}</TableHead>
+                      <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+                      <TableHead className="text-xs">{t('common.status')}</TableHead>
+                      <TableHead className="text-xs">{t('common.actions')}</TableHead>
                     </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map(sub => {
+                      const cfg = SUB_STATUS_CONFIG[sub.status]
+                      return (
+                        <TableRow key={sub.id} className="hover:bg-muted/30">
+                          <TableCell className="text-xs font-medium">{sub.customer}</TableCell>
+                          <TableCell className="text-xs">
+                            <Badge variant="secondary" className="text-xs">{sub.planName}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs hidden md:table-cell">{sub.startDate}</TableCell>
+                          <TableCell className="text-xs hidden lg:table-cell">{sub.renewalDate}</TableCell>
+                          <TableCell className="text-xs text-right font-semibold">{formatRSD(sub.amount)}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={`text-xs ${cfg?.color || ''}`}>{cfg?.label || sub.status}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleViewDetail(sub)}>
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              {sub.status !== 'cancelled' && sub.status !== 'expired' && (
+                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleAdvanceStatus(sub)}>
+                                  <ArrowRight className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(sub.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </Card>
+        </TabsContent>
 
-      {/* Create Form */}
-      {dialogOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.newSubscription')}</CardTitle></div></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-xs">{t('subscriptions.customer')} *</Label>
-            <Input value={form.customer} onChange={(e) => setForm({ ...form, customer: e.target.value })} placeholder={t('subscriptions.customerPlaceholder')} />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs">{t('subscriptions.plan')}</Label>
-            <Select value={form.planId} onValueChange={(v) => setForm({ ...form, planId: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {plans.filter(p => p.isActive).map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.name} - {formatRSD(p.price)}/{CYCLE_LABELS[p.billingCycle]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.billingCycle')}</Label>
-              <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v as 'monthly' | 'quarterly' | 'annually' })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">{t('subscriptions.monthly')}</SelectItem>
-                  <SelectItem value="quarterly">{t('subscriptions.quarterly')}</SelectItem>
-                  <SelectItem value="annually">{t('subscriptions.annually')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.trialDays')}</Label>
-              <Input type="number" min={0} value={form.trialDays || ''} onChange={(e) => setForm({ ...form, trialDays: parseInt(e.target.value) || 0 })} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">{t('common.amount')} (RSD)</Label>
-              <Input type="number" value={form.amount || ''} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} placeholder={t('subscriptions.amountPlaceholder')} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.startDate')}</Label>
-              <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleCreate} disabled={!form.customer}>
-              <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.createSubscription')}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>)}
-
-      {/* Detail View */}
-      {detailOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.subscriptionDetails')}</CardTitle></div></CardHeader>
-        {selected && (
-            <div className="space-y-4">
+        {/* Sub-tab: Dodaj (Create Form) */}
+        <TabsContent value="dodaj">
+          <Card className="max-w-lg">
+            <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.newSubscription')}</CardTitle></div></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs">{t('subscriptions.customer')} *</Label>
+                <Input value={form.customer} onChange={(e) => setForm({ ...form, customer: e.target.value })} placeholder={t('subscriptions.customerPlaceholder')} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('subscriptions.plan')}</Label>
+                <Select value={form.planId} onValueChange={(v) => setForm({ ...form, planId: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {plans.filter(p => p.isActive).map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name} - {formatRSD(p.price)}/{CYCLE_LABELS[p.billingCycle]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('subscriptions.customer')}</p>
-                  <p className="text-sm font-medium">{selected.customer}</p>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.billingCycle')}</Label>
+                  <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v as 'monthly' | 'quarterly' | 'annually' })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">{t('subscriptions.monthly')}</SelectItem>
+                      <SelectItem value="quarterly">{t('subscriptions.quarterly')}</SelectItem>
+                      <SelectItem value="annually">{t('subscriptions.annually')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('subscriptions.plan')}</p>
-                  <p className="text-sm font-medium">{selected.planName}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('common.amount')}</p>
-                  <p className="text-sm font-bold">{formatRSD(selected.amount)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('common.status')}</p>
-                  <Badge variant="outline" className={`text-xs ${SUB_STATUS_CONFIG[selected.status]?.color || ''}`}>
-                    {SUB_STATUS_CONFIG[selected.status]?.label || selected.status}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('subscriptions.startDate')}</p>
-                  <p className="text-sm">{selected.startDate}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('subscriptions.renewalDate')}</p>
-                  <p className="text-sm">{selected.renewalDate}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('subscriptions.billingCycle')}</p>
-                  <p className="text-sm">{CYCLE_LABELS[selected.billingCycle]}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('subscriptions.trialDays')}</p>
-                  <p className="text-sm">{selected.trialDays}</p>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.trialDays')}</Label>
+                  <Input type="number" min={0} value={form.trialDays || ''} onChange={(e) => setForm({ ...form, trialDays: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
-              <Separator />
-              <div>
-                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  {t('subscriptions.paymentHistory')}
-                </h4>
-                {subPayments.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">{t('subscriptions.noPayments')}</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs">{t('common.date')}</TableHead>
-                        <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
-                        <TableHead className="text-xs">{t('subscriptions.method')}</TableHead>
-                        <TableHead className="text-xs">{t('common.status')}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {subPayments.map(p => {
-                        const pCfg = PAYMENT_STATUS_CONFIG[p.status]
-                        return (
-                          <TableRow key={p.id}>
-                            <TableCell className="text-xs">{p.date}</TableCell>
-                            <TableCell className="text-xs text-right font-semibold">{formatRSD(p.amount)}</TableCell>
-                            <TableCell className="text-xs">{PAYMENT_METHOD_LABELS[p.method]}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || p.status}</Badge>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </TableBody>
-                  </Table>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('common.amount')} (RSD)</Label>
+                  <Input type="number" value={form.amount || ''} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} placeholder={t('subscriptions.amountPlaceholder')} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.startDate')}</Label>
+                  <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+                </div>
               </div>
-            </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>{t('common.cancel')}</Button>
+                <Button onClick={handleCreate} disabled={!form.customer}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.createSubscription')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Sub-tab: Detalji (Detail View) */}
+        <TabsContent value="detalji">
+          {selected && (
+            <Card className="max-w-lg">
+              <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.subscriptionDetails')}</CardTitle></div></CardHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('subscriptions.customer')}</p>
+                    <p className="text-sm font-medium">{selected.customer}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('subscriptions.plan')}</p>
+                    <p className="text-sm font-medium">{selected.planName}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('common.amount')}</p>
+                    <p className="text-sm font-bold">{formatRSD(selected.amount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('common.status')}</p>
+                    <Badge variant="outline" className={`text-xs ${SUB_STATUS_CONFIG[selected.status]?.color || ''}`}>
+                      {SUB_STATUS_CONFIG[selected.status]?.label || selected.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('subscriptions.startDate')}</p>
+                    <p className="text-sm">{selected.startDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('subscriptions.renewalDate')}</p>
+                    <p className="text-sm">{selected.renewalDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('subscriptions.billingCycle')}</p>
+                    <p className="text-sm">{CYCLE_LABELS[selected.billingCycle]}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('subscriptions.trialDays')}</p>
+                    <p className="text-sm">{selected.trialDays}</p>
+                  </div>
+                </div>
+                <Separator />
+                <div>
+                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    {t('subscriptions.paymentHistory')}
+                  </h4>
+                  {subPayments.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">{t('subscriptions.noPayments')}</p>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">{t('common.date')}</TableHead>
+                          <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
+                          <TableHead className="text-xs">{t('subscriptions.method')}</TableHead>
+                          <TableHead className="text-xs">{t('common.status')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {subPayments.map(p => {
+                          const pCfg = PAYMENT_STATUS_CONFIG[p.status]
+                          return (
+                            <TableRow key={p.id}>
+                              <TableCell className="text-xs">{p.date}</TableCell>
+                              <TableCell className="text-xs text-right font-semibold">{formatRSD(p.amount)}</TableCell>
+                              <TableCell className="text-xs">{PAYMENT_METHOD_LABELS[p.method]}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={`text-xs ${pCfg?.color || ''}`}>{pCfg?.label || p.status}</Badge>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+              </div>
+            </Card>
           )}
-        </Card>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
@@ -880,7 +894,7 @@ function PretplateTab() {
 function PlanoviTab() {
   const { t } = useTranslation()
   const [plans, setPlans] = useState<Plan[]>([])
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(EMPTY_PLAN_FORM)
@@ -901,7 +915,7 @@ function PlanoviTab() {
       setupFee: form.setupFee,
     }
     setPlans(prev => [...prev, newPlan])
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm(EMPTY_PLAN_FORM)
     setIsEditing(false)
   }
@@ -918,7 +932,7 @@ function PlanoviTab() {
     })
     setEditingId(plan.id)
     setIsEditing(true)
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }
 
   const handleSave = () => {
@@ -937,7 +951,7 @@ function PlanoviTab() {
       handleCreate()
       return
     }
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm(EMPTY_PLAN_FORM)
     setIsEditing(false)
     setEditingId(null)
@@ -953,134 +967,147 @@ function PlanoviTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={() => { setForm(EMPTY_PLAN_FORM); setIsEditing(false); setDialogOpen(true) }}>
-          <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.newPlan')}
-        </Button>
-      </div>
+      {/* Sub-tabs: Pregled / Dodaj */}
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as typeof subTab)} className="space-y-4">
+        <TabsList className="h-9">
+          <TabsTrigger value="pregled" className="text-xs gap-1"><Crown className="h-3 w-3" /> Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj" className="text-xs gap-1"><Plus className="h-3 w-3" /> Dodaj</TabsTrigger>
+        </TabsList>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {plans.map(plan => (
-          <Card key={plan.id} className={`relative ${!plan.isActive ? 'opacity-60' : ''}`}>
-            {plan.isActive && (
-              <div className="absolute top-3 right-3">
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
-                  <Zap className="h-3 w-3 mr-1" /> {t('common.active')}
-                </Badge>
-              </div>
-            )}
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Crown className="h-5 w-5 text-amber-500" />
-                {plan.name}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">{plan.description}</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <span className="text-2xl font-bold">{formatRSD(plan.price)}</span>
-                <span className="text-sm text-muted-foreground">/{CYCLE_LABELS[plan.billingCycle]?.toLowerCase()}</span>
-              </div>
+        {/* Sub-tab: Pregled */}
+        <TabsContent value="pregled" className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => { setForm(EMPTY_PLAN_FORM); setIsEditing(false); setSubTab('dodaj') }}>
+              <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.newPlan')}
+            </Button>
+          </div>
 
-              {plan.setupFee > 0 && (
-                <div className="text-xs text-muted-foreground">
-                  {t('subscriptions.setupFee')}: {formatRSD(plan.setupFee)}
-                </div>
-              )}
-
-              <Separator />
-
-              <div className="space-y-2">
-                <p className="text-xs font-semibold">{t('subscriptions.features')}</p>
-                <ul className="space-y-1">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="text-xs flex items-center gap-2">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{t('subscriptions.subscribers')}: <strong className="text-foreground">{plan.subscriberCount}</strong></span>
-                {plan.trialPeriod > 0 && (
-                  <span>{t('subscriptions.trial')}: <strong className="text-foreground">{plan.trialPeriod}d</strong></span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {plans.map(plan => (
+              <Card key={plan.id} className={`relative ${!plan.isActive ? 'opacity-60' : ''}`}>
+                {plan.isActive && (
+                  <div className="absolute top-3 right-3">
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
+                      <Zap className="h-3 w-3 mr-1" /> {t('common.active')}
+                    </Badge>
+                  </div>
                 )}
-              </div>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-amber-500" />
+                    {plan.name}
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">{plan.description}</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <span className="text-2xl font-bold">{formatRSD(plan.price)}</span>
+                    <span className="text-sm text-muted-foreground">/{CYCLE_LABELS[plan.billingCycle]?.toLowerCase()}</span>
+                  </div>
 
-              <div className="flex gap-2 pt-2">
-                <div className="flex items-center gap-2">
-                  <Switch checked={plan.isActive} onCheckedChange={() => handleToggleActive(plan.id)} />
-                  <span className="text-xs">{plan.isActive ? t('common.active') : t('common.inactive')}</span>
+                  {plan.setupFee > 0 && (
+                    <div className="text-xs text-muted-foreground">
+                      {t('subscriptions.setupFee')}: {formatRSD(plan.setupFee)}
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold">{t('subscriptions.features')}</p>
+                    <ul className="space-y-1">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="text-xs flex items-center gap-2">
+                          <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{t('subscriptions.subscribers')}: <strong className="text-foreground">{plan.subscriberCount}</strong></span>
+                    {plan.trialPeriod > 0 && (
+                      <span>{t('subscriptions.trial')}: <strong className="text-foreground">{plan.trialPeriod}d</strong></span>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={plan.isActive} onCheckedChange={() => handleToggleActive(plan.id)} />
+                      <span className="text-xs">{plan.isActive ? t('common.active') : t('common.inactive')}</span>
+                    </div>
+                    <div className="ml-auto flex gap-1">
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(plan)}>
+                        <Edit3 className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(plan.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Sub-tab: Dodaj (Create/Edit Plan Form) */}
+        <TabsContent value="dodaj">
+          <Card className="max-w-lg">
+            <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{isEditing ? t('subscriptions.editPlan') : t('subscriptions.newPlan')}</CardTitle></div></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs">{t('common.name')} *</Label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('common.description')}</Label>
+                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('common.price')} (RSD)</Label>
+                  <Input type="number" value={form.price || ''} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} />
                 </div>
-                <div className="ml-auto flex gap-1">
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(plan)}>
-                    <Edit3 className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(plan.id)}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.billingCycle')}</Label>
+                  <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v as 'monthly' | 'quarterly' | 'annually' })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">{t('subscriptions.monthly')}</SelectItem>
+                      <SelectItem value="quarterly">{t('subscriptions.quarterly')}</SelectItem>
+                      <SelectItem value="annually">{t('subscriptions.annually')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.trialPeriod')} ({t('subscriptions.days')})</Label>
+                  <Input type="number" min={0} value={form.trialPeriod || ''} onChange={(e) => setForm({ ...form, trialPeriod: parseInt(e.target.value) || 0 })} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.setupFee')} (RSD)</Label>
+                  <Input type="number" min={0} value={form.setupFee || ''} onChange={(e) => setForm({ ...form, setupFee: parseFloat(e.target.value) || 0 })} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('subscriptions.features')} ({t('subscriptions.onePerLine')})</Label>
+                <Textarea value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} rows={5} placeholder={t('subscriptions.featuresPlaceholder')} />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>{t('common.cancel')}</Button>
+                <Button onClick={handleSave} disabled={!form.name}>
+                  {isEditing ? t('common.save') : t('subscriptions.createPlan')}
+                </Button>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
-
-      {/* Create/Edit Plan Form */}
-      {dialogOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{isEditing ? t('subscriptions.editPlan') : t('subscriptions.newPlan')}</CardTitle></div></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-xs">{t('common.name')} *</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs">{t('common.description')}</Label>
-            <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">{t('common.price')} (RSD)</Label>
-              <Input type="number" value={form.price || ''} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.billingCycle')}</Label>
-              <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v as 'monthly' | 'quarterly' | 'annually' })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">{t('subscriptions.monthly')}</SelectItem>
-                  <SelectItem value="quarterly">{t('subscriptions.quarterly')}</SelectItem>
-                  <SelectItem value="annually">{t('subscriptions.annually')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.trialPeriod')} ({t('subscriptions.days')})</Label>
-              <Input type="number" min={0} value={form.trialPeriod || ''} onChange={(e) => setForm({ ...form, trialPeriod: parseInt(e.target.value) || 0 })} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.setupFee')} (RSD)</Label>
-              <Input type="number" min={0} value={form.setupFee || ''} onChange={(e) => setForm({ ...form, setupFee: parseFloat(e.target.value) || 0 })} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs">{t('subscriptions.features')} ({t('subscriptions.onePerLine')})</Label>
-            <Textarea value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} rows={5} placeholder={t('subscriptions.featuresPlaceholder')} />
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleSave} disabled={!form.name}>
-              {isEditing ? t('common.save') : t('subscriptions.createPlan')}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>)}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
@@ -1230,14 +1257,13 @@ function PlacanjaTab() {
 function KuponiTab() {
   const { t } = useTranslation()
   const [coupons, setCoupons] = useState<Coupon[]>([])
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(EMPTY_COUPON_FORM)
+  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null)
 
   useEffect(() => { setCoupons(generateMockCoupons()) }, [])
-  const [usageLogOpen, setUsageLogOpen] = useState(false)
-  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null)
 
   const handleCreate = () => {
     const newCoupon: Coupon = {
@@ -1253,7 +1279,7 @@ function KuponiTab() {
       usageLog: [],
     }
     setCoupons(prev => [...prev, newCoupon])
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm(EMPTY_COUPON_FORM)
     setIsEditing(false)
   }
@@ -1273,7 +1299,7 @@ function KuponiTab() {
       handleCreate()
       return
     }
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm(EMPTY_COUPON_FORM)
     setIsEditing(false)
     setEditingId(null)
@@ -1290,7 +1316,7 @@ function KuponiTab() {
     })
     setEditingId(coupon.id)
     setIsEditing(true)
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }
 
   const handleDelete = (id: string) => {
@@ -1299,193 +1325,208 @@ function KuponiTab() {
 
   const handleViewLog = (coupon: Coupon) => {
     setSelectedCoupon(coupon)
-    setUsageLogOpen(true)
+    setSubTab('detalji')
   }
 
   const activeCoupons = coupons.filter(c => c.status === 'active').length
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={() => { setForm(EMPTY_COUPON_FORM); setIsEditing(false); setDialogOpen(true) }}>
-          <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.newCoupon')}
-        </Button>
-        <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
-          <Gift className="h-4 w-4" />
-          <span>{activeCoupons} {t('subscriptions.activeCoupons')}</span>
-        </div>
-      </div>
+      {/* Sub-tabs: Pregled / Dodaj / Detalji */}
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as typeof subTab)} className="space-y-4">
+        <TabsList className="h-9">
+          <TabsTrigger value="pregled" className="text-xs gap-1"><Tag className="h-3 w-3" /> Pregled</TabsTrigger>
+          <TabsTrigger value="dodaj" className="text-xs gap-1"><Plus className="h-3 w-3" /> Dodaj</TabsTrigger>
+          <TabsTrigger value="detalji" className="text-xs gap-1" disabled={!selectedCoupon}><Eye className="h-3 w-3" /> Detalji</TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-xs">{t('subscriptions.code')}</TableHead>
-                <TableHead className="text-xs">{t('common.discount')}</TableHead>
-                <TableHead className="text-xs">{t('subscriptions.usage')}</TableHead>
-                <TableHead className="text-xs hidden sm:table-cell">{t('subscriptions.validPeriod')}</TableHead>
-                <TableHead className="text-xs">{t('common.status')}</TableHead>
-                <TableHead className="text-xs">{t('common.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {coupons.map(coupon => {
-                const usagePct = coupon.maxUses > 0 ? Math.min((coupon.usedCount / coupon.maxUses) * 100, 100) : 0
-                return (
-                  <TableRow key={coupon.id} className="hover:bg-muted/30">
-                    <TableCell className="text-xs">
-                      <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono font-bold">{coupon.code}</code>
-                    </TableCell>
-                    <TableCell className="text-xs font-semibold">
-                      {coupon.discountType === 'percentage' ? (
-                        <span className="flex items-center gap-1">
-                          <Percent className="h-3 w-3" />
-                          {coupon.discountValue}%
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1">
-                          <Tag className="h-3 w-3" />
-                          {formatRSD(coupon.discountValue)}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16">
-                          <Progress value={usagePct} className="h-2" />
-                        </div>
-                        <span className="text-muted-foreground">
-                          {coupon.usedCount}{coupon.maxUses > 0 ? `/${coupon.maxUses}` : '/∞'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs hidden sm:table-cell text-muted-foreground">
-                      {coupon.validFrom} — {coupon.validTo}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={`text-xs ${
-                        coupon.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                        coupon.status === 'expired' ? 'bg-red-50 text-red-700 border-red-200' :
-                        'bg-slate-100 text-slate-700 border-slate-200'
-                      }`}>
-                        {coupon.status === 'active' ? t('common.active') :
-                         coupon.status === 'expired' ? t('subscriptions.expired') :
-                         t('common.inactive')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleViewLog(coupon)} title={t('subscriptions.usageLog')}>
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(coupon)}>
-                          <Edit3 className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(coupon.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
-
-      {/* Create/Edit Coupon Form */}
-      {dialogOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{isEditing ? t('subscriptions.editCoupon') : t('subscriptions.newCoupon')}</CardTitle></div></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-xs">{t('subscriptions.code')} *</Label>
-            <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder={t('subscriptions.codePlaceholder')} className="uppercase font-mono" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.discountType')}</Label>
-              <Select value={form.discountType} onValueChange={(v) => setForm({ ...form, discountType: v as 'percentage' | 'fixed' })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="percentage">{t('subscriptions.percentage')}</SelectItem>
-                  <SelectItem value="fixed">{t('subscriptions.fixedAmount')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.discountValue')}</Label>
-              <Input type="number" min={0} value={form.discountValue || ''} onChange={(e) => setForm({ ...form, discountValue: parseFloat(e.target.value) || 0 })} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs">{t('subscriptions.maxUses')} (0 = {t('subscriptions.unlimited')})</Label>
-            <Input type="number" min={0} value={form.maxUses || ''} onChange={(e) => setForm({ ...form, maxUses: parseInt(e.target.value) || 0 })} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.validFrom')}</Label>
-              <Input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.validTo')}</Label>
-              <Input type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleSave} disabled={!form.code}>
-              {isEditing ? t('common.save') : t('subscriptions.createCoupon')}
+        {/* Sub-tab: Pregled */}
+        <TabsContent value="pregled" className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => { setForm(EMPTY_COUPON_FORM); setIsEditing(false); setSubTab('dodaj') }}>
+              <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.newCoupon')}
             </Button>
+            <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
+              <Gift className="h-4 w-4" />
+              <span>{activeCoupons} {t('subscriptions.activeCoupons')}</span>
+            </div>
           </div>
-        </CardContent>
-      </Card>)}
 
-      {/* Usage Log View */}
-      {usageLogOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setUsageLogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.usageLog')} - {selectedCoupon?.code}</CardTitle></div></CardHeader>
-        {selectedCoupon && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-xs text-muted-foreground">{t('common.discount')}</span>
-                  <p className="font-semibold">
-                    {selectedCoupon.discountType === 'percentage' ? `${selectedCoupon.discountValue}%` : formatRSD(selectedCoupon.discountValue)}
-                  </p>
+          <Card>
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">{t('subscriptions.code')}</TableHead>
+                    <TableHead className="text-xs">{t('common.discount')}</TableHead>
+                    <TableHead className="text-xs">{t('subscriptions.usage')}</TableHead>
+                    <TableHead className="text-xs hidden sm:table-cell">{t('subscriptions.validPeriod')}</TableHead>
+                    <TableHead className="text-xs">{t('common.status')}</TableHead>
+                    <TableHead className="text-xs">{t('common.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {coupons.map(coupon => {
+                    const usagePct = coupon.maxUses > 0 ? Math.min((coupon.usedCount / coupon.maxUses) * 100, 100) : 0
+                    return (
+                      <TableRow key={coupon.id} className="hover:bg-muted/30">
+                        <TableCell className="text-xs">
+                          <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono font-bold">{coupon.code}</code>
+                        </TableCell>
+                        <TableCell className="text-xs font-semibold">
+                          {coupon.discountType === 'percentage' ? (
+                            <span className="flex items-center gap-1">
+                              <Percent className="h-3 w-3" />
+                              {coupon.discountValue}%
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1">
+                              <Tag className="h-3 w-3" />
+                              {formatRSD(coupon.discountValue)}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          <div className="flex items-center gap-2">
+                            <div className="w-16">
+                              <Progress value={usagePct} className="h-2" />
+                            </div>
+                            <span className="text-muted-foreground">
+                              {coupon.usedCount}{coupon.maxUses > 0 ? `/${coupon.maxUses}` : '/∞'}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs hidden sm:table-cell text-muted-foreground">
+                          {coupon.validFrom} — {coupon.validTo}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`text-xs ${
+                            coupon.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            coupon.status === 'expired' ? 'bg-red-50 text-red-700 border-red-200' :
+                            'bg-slate-100 text-slate-700 border-slate-200'
+                          }`}>
+                            {coupon.status === 'active' ? t('common.active') :
+                             coupon.status === 'expired' ? t('subscriptions.expired') :
+                             t('common.inactive')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleViewLog(coupon)} title={t('subscriptions.usageLog')}>
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(coupon)}>
+                              <Edit3 className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(coupon.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Sub-tab: Dodaj (Create/Edit Coupon Form) */}
+        <TabsContent value="dodaj">
+          <Card className="max-w-lg">
+            <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{isEditing ? t('subscriptions.editCoupon') : t('subscriptions.newCoupon')}</CardTitle></div></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs">{t('subscriptions.code')} *</Label>
+                <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder={t('subscriptions.codePlaceholder')} className="uppercase font-mono" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.discountType')}</Label>
+                  <Select value={form.discountType} onValueChange={(v) => setForm({ ...form, discountType: v as 'percentage' | 'fixed' })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">{t('subscriptions.percentage')}</SelectItem>
+                      <SelectItem value="fixed">{t('subscriptions.fixedAmount')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">{t('subscriptions.usage')}</span>
-                  <p className="font-semibold">{selectedCoupon.usedCount}{selectedCoupon.maxUses > 0 ? `/${selectedCoupon.maxUses}` : '/∞'}</p>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.discountValue')}</Label>
+                  <Input type="number" min={0} value={form.discountValue || ''} onChange={(e) => setForm({ ...form, discountValue: parseFloat(e.target.value) || 0 })} />
                 </div>
               </div>
-              <Separator />
-              {selectedCoupon.usageLog.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">{t('subscriptions.noUsageYet')}</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs">{t('common.date')}</TableHead>
-                      <TableHead className="text-xs">{t('subscriptions.customer')}</TableHead>
-                      <TableHead className="text-xs">{t('subscriptions.subscription')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {selectedCoupon.usageLog.map((log, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="text-xs">{log.date}</TableCell>
-                        <TableCell className="text-xs font-medium">{log.customer}</TableCell>
-                        <TableCell className="text-xs">{log.subscription}</TableCell>
+              <div className="space-y-2">
+                <Label className="text-xs">{t('subscriptions.maxUses')} (0 = {t('subscriptions.unlimited')})</Label>
+                <Input type="number" min={0} value={form.maxUses || ''} onChange={(e) => setForm({ ...form, maxUses: parseInt(e.target.value) || 0 })} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.validFrom')}</Label>
+                  <Input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('subscriptions.validTo')}</Label>
+                  <Input type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>{t('common.cancel')}</Button>
+                <Button onClick={handleSave} disabled={!form.code}>
+                  {isEditing ? t('common.save') : t('subscriptions.createCoupon')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Sub-tab: Detalji (Usage Log View) */}
+        <TabsContent value="detalji">
+          {selectedCoupon && (
+            <Card className="max-w-lg">
+              <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.usageLog')} - {selectedCoupon.code}</CardTitle></div></CardHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-xs text-muted-foreground">{t('common.discount')}</span>
+                    <p className="font-semibold">
+                      {selectedCoupon.discountType === 'percentage' ? `${selectedCoupon.discountValue}%` : formatRSD(selectedCoupon.discountValue)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground">{t('subscriptions.usage')}</span>
+                    <p className="font-semibold">{selectedCoupon.usedCount}{selectedCoupon.maxUses > 0 ? `/${selectedCoupon.maxUses}` : '/∞'}</p>
+                  </div>
+                </div>
+                <Separator />
+                {selectedCoupon.usageLog.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">{t('subscriptions.noUsageYet')}</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">{t('common.date')}</TableHead>
+                        <TableHead className="text-xs">{t('subscriptions.customer')}</TableHead>
+                        <TableHead className="text-xs">{t('subscriptions.subscription')}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedCoupon.usageLog.map((log, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="text-xs">{log.date}</TableCell>
+                          <TableCell className="text-xs font-medium">{log.customer}</TableCell>
+                          <TableCell className="text-xs">{log.subscription}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </Card>
           )}
-        </Card>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

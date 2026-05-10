@@ -65,7 +65,7 @@ export function Measurements() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<Measurement | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Measurement>>({})
@@ -104,13 +104,13 @@ export function Measurements() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ code: `MER-2024-${String(data.length + 1).padStart(3, '0')}`, product: '', parameter: '', nominalValue: '', unit: 'mm', measuredValue: '', tolerance: '', deviation: '', status: 'pending', instrument: '', operator: '', station: '', batch: '', date: new Date().toISOString().split('T')[0], notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const openEdit = (item: Measurement) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const handleSave = async () => {
@@ -127,7 +127,7 @@ export function Measurements() {
         setData(prev => [{ ...created, date: created.date ? new Date(created.date).toISOString().split('T')[0] : '' } as Measurement, ...prev])
         toast.success('Merenje kreirano')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled'); setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }
 
@@ -279,27 +279,6 @@ export function Measurements() {
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           </CardContent>
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editItem ? 'Uredi merenje' : 'Novo merenje'}</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Proizvod *</Label><Input className="text-xs" value={form.product || ''} onChange={e => setForm({ ...form, product: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Parametar</Label><Input className="text-xs" value={form.parameter || ''} onChange={e => setForm({ ...form, parameter: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Nominalna vrednost</Label><Input className="text-xs" value={form.nominalValue || ''} onChange={e => setForm({ ...form, nominalValue: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Izmerena vrednost</Label><Input className="text-xs" value={form.measuredValue || ''} onChange={e => setForm({ ...form, measuredValue: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v as Measurement['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="ok">OK</SelectItem><SelectItem value="warning">Upozorenje</SelectItem><SelectItem value="fail">Otkaz</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Operater</Label><Input className="text-xs" value={form.operator || ''} onChange={e => setForm({ ...form, operator: e.target.value })} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
         </Card>
       )}
     </div>

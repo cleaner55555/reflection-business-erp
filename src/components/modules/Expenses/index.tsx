@@ -580,7 +580,6 @@ function ExpensesTab() {
   const [dateTo, setDateTo] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState('pregled')
-  const [detailOpen, setDetailOpen] = useState(false)
   const [selected, setSelected] = useState<Expense | null>(null)
   const [form, setForm] = useState(EMPTY_EXPENSE_FORM)
   const [isEditing, setIsEditing] = useState(false)
@@ -729,6 +728,10 @@ function ExpensesTab() {
             <Edit3 className="h-3.5 w-3.5" />
             <span>Uredi</span>
           </TabsTrigger>
+          {selected && <TabsTrigger value="detalji" className="gap-1.5">
+            <Eye className="h-3.5 w-3.5" />
+            <span>Detalji</span>
+          </TabsTrigger>}
         </TabsList>
 
         {/* ==================== PREGLED TAB ==================== */}
@@ -850,7 +853,7 @@ function ExpensesTab() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(e); setDetailOpen(true) }}>
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(e); setActiveTab('detalji'); }}>
                                 <Eye className="h-3.5 w-3.5" />
                               </Button>
                               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(e)}>
@@ -1107,9 +1110,10 @@ function ExpensesTab() {
         </TabsContent>
       </Tabs>
 
-      {/* Detail View — stays outside tabs */}
-      {detailOpen && selected && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.expenseDetails')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+      {/* Detail View */}
+      <TabsContent value="detalji">
+      {selected && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.expenseDetails')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => { setActiveTab('pregled'); setSelected(null); }}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1154,21 +1158,23 @@ function ExpensesTab() {
               )}
               <Separator />
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => { setDetailOpen(false); handleEdit(selected) }}>
+                <Button variant="outline" size="sm" onClick={() => { setActiveTab("uredi"); handleEdit(selected) }}>
                   <Edit3 className="h-3.5 w-3.5 mr-1" /> {t('expenses.edit')}
                 </Button>
                 {selected.status === 'submitted' && (
-                  <Button size="sm" className="text-emerald-600" onClick={() => { handleStatusChange(selected.id, 'approved'); setDetailOpen(false) }}>
+                  <Button size="sm" className="text-emerald-600" onClick={() => { handleStatusChange(selected.id, 'approved'); setActiveTab('pregled'); setSelected(null) }}>
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> {t('expenses.approve')}
                   </Button>
                 )}
-                <Button variant="outline" size="sm" className="text-destructive" onClick={() => { handleDelete(selected.id); setDetailOpen(false) }}>
+                <Button variant="outline" size="sm" className="text-destructive" onClick={() => { handleDelete(selected.id); setActiveTab('pregled'); setSelected(null) }}>
                   <Trash2 className="h-3.5 w-3.5 mr-1" /> {t('expenses.delete')}
                 </Button>
               </div>
             </div>
           </CardContent>
-      </Card>)}
+            </Card>
+          </TabsContent>
+        </Tabs>}
     </div>
   )
 }
@@ -1179,8 +1185,7 @@ function ReportsTab() {
   const { t } = useTranslation()
   const [reports, setReports] = useState<ExpenseReport[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [selectedReport, setSelectedReport] = useState<ExpenseReport | null>(null)
   const [form, setForm] = useState(EMPTY_REPORT_FORM)
   const [expenses, setExpenses] = useState<Expense[]>([])
@@ -1219,7 +1224,7 @@ function ReportsTab() {
       createdAt: new Date().toISOString(),
     }
     setReports(prev => [newReport, ...prev])
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm(EMPTY_REPORT_FORM)
   }
 
@@ -1251,8 +1256,16 @@ function ReportsTab() {
 
   return (
     <div className="space-y-4">
+      <Tabs value={subTab} onValueChange={(v) => { setSubTab(v as 'pregled' | 'dodaj' | 'detalji'); if (v === 'pregled') setSelectedReport(null); }}>
+        <TabsList>
+          <TabsTrigger value="pregled" className="gap-1.5"><FileText className="h-3.5 w-3.5" /><span>Pregled</span></TabsTrigger>
+          <TabsTrigger value="dodaj" className="gap-1.5"><Plus className="h-3.5 w-3.5" /><span>Dodaj</span></TabsTrigger>
+          {selectedReport && <TabsTrigger value="detalji" className="gap-1.5"><Eye className="h-3.5 w-3.5" /><span>Detalji</span></TabsTrigger>}
+        </TabsList>
+
+        <TabsContent value="pregled" className="space-y-4">
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => setDialogOpen(true)}>
+        <Button size="sm" onClick={() => setSubTab('dodaj')}>
           <Plus className="h-4 w-4 mr-1" /> {t('expenses.newReport')}
         </Button>
       </div>
@@ -1300,7 +1313,7 @@ function ReportsTab() {
                 </div>
                 <Separator className="my-3" />
                 <div className="flex gap-1">
-                  <Button size="sm" variant="ghost" className="h-7 text-xs flex-1" onClick={() => { setSelectedReport(report); setDetailOpen(true) }}>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs flex-1" onClick={() => { setSelectedReport(report); setSubTab('detalji') }}>
                     <Eye className="h-3 w-3 mr-1" /> {t('expenses.view')}
                   </Button>
                   <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handlePrint(report)}>
@@ -1324,11 +1337,12 @@ function ReportsTab() {
             )
           })}
         </div>
-      )}
+          </TabsContent>
 
-      {/* Create Report Form */}
-      {dialogOpen && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newReport')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          {/* Dodaj Sub-tab - Create Report */}
+          <TabsContent value="dodaj" className="space-y-4">
+      (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newReport')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -1360,15 +1374,18 @@ function ReportsTab() {
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('expenses.cancel')}</Button>
+            <Button variant="outline" onClick={() => setSubTab('pregled')}>{t('expenses.cancel')}</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('expenses.create')}</Button>
           </div>
         </CardContent>
-      </Card>)}
+            </Card>
+          </TabsContent>
+        </Tabs>}
 
-      {/* Report Detail View */}
-      {detailOpen && selectedReport && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><div className="flex items-center gap-2"><span>{selectedReport.title}</span>{selectedReport && (<Badge variant="outline" className={STATUS_CONFIG[selectedReport.status]?.color}>{STATUS_CONFIG[selectedReport.status]?.label}</Badge>)}</div><Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          {/* Detalji Sub-tab - Report Detail View */}
+          <TabsContent value="detalji" className="space-y-4">
+      {selectedReport && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><div className="flex items-center gap-2"><span>{selectedReport.title}</span>{selectedReport && (<Badge variant="outline" className={STATUS_CONFIG[selectedReport.status]?.color}>{STATUS_CONFIG[selectedReport.status]?.label}</Badge>)}</div><Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setSubTab('pregled'); setSelectedReport(null)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent className="max-h-[90vh] overflow-y-auto">
           {selectedReport && (
             <div className="space-y-4">
@@ -1422,17 +1439,17 @@ function ReportsTab() {
               )}
               <div className="flex gap-2">
                 {selectedReport.status === 'draft' && (
-                  <Button size="sm" onClick={() => { handleStatusChange(selectedReport.id, 'submitted'); setDetailOpen(false) }}>
+                  <Button size="sm" onClick={() => { handleStatusChange(selectedReport.id, 'submitted'); setSubTab('pregled'); setSelectedReport(null) }}>
                     <ArrowRight className="h-3.5 w-3.5 mr-1" /> {t('expenses.submit')}
                   </Button>
                 )}
                 {selectedReport.status === 'manager_review' && (
-                  <Button size="sm" className="text-emerald-600" onClick={() => { handleStatusChange(selectedReport.id, 'approved'); setDetailOpen(false) }}>
+                  <Button size="sm" className="text-emerald-600" onClick={() => { handleStatusChange(selectedReport.id, 'approved'); setSubTab('pregled'); setSelectedReport(null) }}>
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> {t('expenses.approve')}
                   </Button>
                 )}
                 {selectedReport.status === 'approved' && (
-                  <Button size="sm" className="text-emerald-600" onClick={() => { handleStatusChange(selectedReport.id, 'paid'); setDetailOpen(false) }}>
+                  <Button size="sm" className="text-emerald-600" onClick={() => { handleStatusChange(selectedReport.id, 'paid'); setSubTab('pregled'); setSelectedReport(null) }}>
                     <Wallet className="h-3.5 w-3.5 mr-1" /> {t('expenses.markPaid')}
                   </Button>
                 )}
@@ -1443,8 +1460,12 @@ function ReportsTab() {
             </div>
           )}
           </CardContent>
-      </Card>)}
-    </div>
+            </Card>
+          </TabsContent>
+        </Tabs>}
+          </TabsContent>
+        </Tabs>
+      </div>
   )
 }
 
@@ -1453,7 +1474,7 @@ function ReportsTab() {
 function BudgetsTab() {
   const { t } = useTranslation()
   const [budgets, setBudgets] = useState<Budget[]>(generateMockBudgets())
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [form, setForm] = useState(EMPTY_BUDGET_FORM)
 
   const handleCreate = () => {
@@ -1463,7 +1484,7 @@ function BudgetsTab() {
       spentAmount: 0,
     }
     setBudgets(prev => [...prev, newBudget])
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm(EMPTY_BUDGET_FORM)
   }
 
@@ -1504,7 +1525,7 @@ function BudgetsTab() {
 
       {/* Create Budget */}
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => { setForm(EMPTY_BUDGET_FORM); setDialogOpen(true) }}>
+        <Button size="sm" onClick={() => { setForm(EMPTY_BUDGET_FORM); setSubTab('dodaj') }}>
           <Plus className="h-4 w-4 mr-1" /> {t('expenses.newBudget')}
         </Button>
       </div>
@@ -1585,9 +1606,12 @@ function BudgetsTab() {
         </CardContent>
       </Card>
 
-      {/* Create Budget Form */}
-      {dialogOpen && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newBudget')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+      </Card>
+
+          {/* Dodaj Sub-tab - Create Budget Form */}
+          <TabsContent value="dodaj" className="space-y-4">
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newBudget')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -1628,11 +1652,13 @@ function BudgetsTab() {
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('expenses.cancel')}</Button>
+            <Button variant="outline" onClick={() => setSubTab('pregled')}>{t('expenses.cancel')}</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('expenses.create')}</Button>
           </div>
         </CardContent>
-      </Card>)}
+      </Card>
+          </TabsContent>
+        </Tabs>
     </div>
   )
 }
@@ -1642,7 +1668,7 @@ function BudgetsTab() {
 function PoliciesTab() {
   const { t } = useTranslation()
   const [policies, setPolicies] = useState<Policy[]>(generateMockPolicies())
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [form, setForm] = useState(EMPTY_POLICY_FORM)
 
   const handleCreate = () => {
@@ -1651,7 +1677,7 @@ function PoliciesTab() {
       ...form,
     }
     setPolicies(prev => [...prev, newPolicy])
-    setDialogOpen(false)
+    setSubTab('pregled')
     setForm(EMPTY_POLICY_FORM)
   }
 
@@ -1740,8 +1766,9 @@ function PoliciesTab() {
       )}
 
       {/* Policies */}
+      <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'pregled' | 'dodaj')}>
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => { setForm(EMPTY_POLICY_FORM); setDialogOpen(true) }}>
+        <Button size="sm" onClick={() => { setForm(EMPTY_POLICY_FORM); setSubTab('dodaj') }}>
           <Plus className="h-4 w-4 mr-1" /> {t('expenses.newPolicy')}
         </Button>
       </div>
@@ -1792,8 +1819,8 @@ function PoliciesTab() {
       </Card>
 
       {/* Create Policy Form */}
-      {dialogOpen && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newPolicy')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+      (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newPolicy')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -1839,11 +1866,13 @@ function PoliciesTab() {
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('expenses.cancel')}</Button>
+            <Button variant="outline" onClick={() => setSubTab('pregled')}>{t('expenses.cancel')}</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('expenses.create')}</Button>
           </div>
         </CardContent>
-      </Card>)}
+            </Card>
+          </TabsContent>
+        </Tabs>}
     </div>
   )
 }

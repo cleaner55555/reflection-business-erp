@@ -158,7 +158,7 @@ export function BankSync() {
 function AccountsTab() {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -183,12 +183,12 @@ function AccountsTab() {
 
   const handleOpenNew = () => {
     setEditingAccount(null)
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }
 
   const handleOpenEdit = (account: BankAccount) => {
     setEditingAccount(account)
-    setDialogOpen(true)
+    setSubTab('dodaj')
   }
 
   const handleDelete = async () => {
@@ -235,7 +235,7 @@ function AccountsTab() {
         return
       }
       toast.success(t('common.saveSuccess'))
-      setDialogOpen(false)
+      setSubTab('pregled')
       setEditingAccount(null)
       fetchAccounts()
     } catch {
@@ -250,8 +250,14 @@ function AccountsTab() {
   return (
     <>
       <div className="space-y-4">
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Sub-tabs */}
+        <Tabs value={subTab} onValueChange={(v) => { setSubTab(v as 'pregled' | 'dodaj'); if (v === 'pregled') setEditingAccount(null); }}>
+          <TabsList>
+            <TabsTrigger value="pregled">Pregled</TabsTrigger>
+            <TabsTrigger value="dodaj">{editingAccount ? t('bankSync.editAccount') : t('bankSync.addAccount')}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="pregled" className="space-y-4">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <Card>
               <CardContent className="p-4">
@@ -407,57 +413,59 @@ function AccountsTab() {
           </CardContent>
         </Card>
       </div>
+          </TabsContent>
 
-      {/* Add/Edit */}
-      {dialogOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <div><CardTitle>{editingAccount ? t('bankSync.editAccount') : t('bankSync.addAccount')}</CardTitle><CardDescription>{editingAccount ? t('bankSync.editAccountDesc') : t('bankSync.addAccountDesc')}</CardDescription></div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('bankSync.accountName')} *</Label>
-                  <Input name="name" placeholder={t('bankSync.accountNamePlaceholder')} required defaultValue={editingAccount?.name || ''} />
+          {/* Dodaj Sub-tab - Add/Edit Form */}
+          <TabsContent value="dodaj" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => { setSubTab('pregled'); setEditingAccount(null); }}><ArrowLeft className="h-4 w-4" /></Button>
+                  <div><CardTitle>{editingAccount ? t('bankSync.editAccount') : t('bankSync.addAccount')}</CardTitle><CardDescription>{editingAccount ? t('bankSync.editAccountDesc') : t('bankSync.addAccountDesc')}</CardDescription></div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">{t('bankSync.bankName')}</Label>
-                    <Input name="bank" placeholder={t('bankSync.bankNamePlaceholder')} defaultValue={editingAccount?.bank || ''} />
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} key={editingAccount?.id || 'new'}>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">{t('bankSync.accountName')} *</Label>
+                      <Input name="name" placeholder={t('bankSync.accountNamePlaceholder')} required defaultValue={editingAccount?.name || ''} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">{t('bankSync.bankName')}</Label>
+                        <Input name="bank" placeholder={t('bankSync.bankNamePlaceholder')} defaultValue={editingAccount?.bank || ''} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">{t('bankSync.currency')}</Label>
+                        <Select name="currency" defaultValue={editingAccount?.currency || 'RSD'}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="RSD">RSD</SelectItem><SelectItem value="EUR">EUR</SelectItem><SelectItem value="USD">USD</SelectItem><SelectItem value="CHF">CHF</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">{t('bankSync.accountNumber')} *</Label>
+                      <Input name="account" placeholder="265-0000000000000-00" required defaultValue={editingAccount?.account || ''} />
+                    </div>
+                    {editingAccount && (
+                      <div className="flex items-center gap-3">
+                        <Switch name="isActive" defaultChecked={editingAccount.isActive} />
+                        <Label className="text-xs">{t('common.active')}</Label>
+                      </div>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">{t('bankSync.currency')}</Label>
-                    <Select name="currency" defaultValue={editingAccount?.currency || 'RSD'}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="RSD">RSD</SelectItem><SelectItem value="EUR">EUR</SelectItem><SelectItem value="USD">USD</SelectItem><SelectItem value="CHF">CHF</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex gap-2 mt-4">
+                    <Button type="button" variant="outline" onClick={() => { setSubTab('pregled'); setEditingAccount(null); }}>{t('common.cancel')}</Button>
+                    <Button type="submit" disabled={submitting}>{submitting ? t('common.saving') : t('common.save')}</Button>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('bankSync.accountNumber')} *</Label>
-                  <Input name="account" placeholder="265-0000000000000-00" required defaultValue={editingAccount?.account || ''} />
-                </div>
-                {editingAccount && (
-                  <div className="flex items-center gap-3">
-                    <Switch name="isActive" defaultChecked={editingAccount.isActive} />
-                    <Label className="text-xs">{t('common.active')}</Label>
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-2 mt-4">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
-                <Button type="submit" disabled={submitting}>{submitting ? t('common.saving') : t('common.save')}</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
@@ -490,10 +498,9 @@ function TransactionsTab() {
   const [statusFilter, setStatusFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
-  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'import' | 'spoji'>('pregled')
   const [importAccountId, setImportAccountId] = useState('')
   const [importPreview, setImportPreview] = useState<string | null>(null)
-  const [matchDialogOpen, setMatchDialogOpen] = useState(false)
   const [matchTransaction, setMatchTransaction] = useState<BankTransaction | null>(null)
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('')
@@ -566,7 +573,7 @@ function TransactionsTab() {
       toast.success(
         t('bankSync.importSuccess', { imported: result.imported, failed: result.failed })
       )
-      setImportDialogOpen(false)
+      setSubTab('pregled')
       setImportPreview(null)
       setImportAccountId('')
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -582,7 +589,7 @@ function TransactionsTab() {
   const handleOpenMatch = async (transaction: BankTransaction) => {
     setMatchTransaction(transaction)
     setSelectedInvoiceId('')
-    setMatchDialogOpen(true)
+    setSubTab('spoji')
 
     try {
       const res = await fetch('/api/invoices?status=poslata,nacrt&type=izlazna')
@@ -608,7 +615,7 @@ function TransactionsTab() {
         return
       }
       toast.success(t('bankSync.matchSuccess'))
-      setMatchDialogOpen(false)
+      setSubTab('pregled')
       fetchTransactions()
     } catch {
       toast.error(t('common.errorOccurred'))
@@ -628,7 +635,7 @@ function TransactionsTab() {
     const reader = new FileReader()
     reader.onload = (evt) => {
       setImportPreview(evt.target?.result as string)
-      setImportDialogOpen(true)
+      setSubTab('import')
     }
     reader.readAsText(file)
   }
@@ -648,6 +655,15 @@ function TransactionsTab() {
   return (
     <>
       <div className="space-y-4">
+        {/* Sub-tabs */}
+        <Tabs value={subTab} onValueChange={(v) => { setSubTab(v as 'pregled' | 'import' | 'spoji'); if (v === 'pregled') { setImportPreview(null); setMatchTransaction(null); } }}>
+          <TabsList>
+            <TabsTrigger value="pregled">{t('bankSync.transactions')}</TabsTrigger>
+            {subTab === 'import' && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> {t('bankSync.importCSV')}</TabsTrigger>}
+            {subTab === 'spoji' && <TabsTrigger value="spoji"><Link2 className="h-4 w-4 mr-1" /> {t('bankSync.manualMatch')}</TabsTrigger>}
+          </TabsList>
+
+          <TabsContent value="pregled" className="space-y-4">
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
@@ -726,7 +742,7 @@ function TransactionsTab() {
                   size="sm"
                   className="gap-2"
                   onClick={() => {
-                    setImportDialogOpen(true)
+                    setSubTab('import')
                     setImportPreview(null)
                   }}
                 >
@@ -892,13 +908,14 @@ function TransactionsTab() {
           </CardContent>
         </Card>
       </div>
+          </TabsContent>
 
-      {/* Import */}
-      {importDialogOpen && (
+          {/* Import Sub-tab */}
+          <TabsContent value="import" className="space-y-4">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => { setImportDialogOpen(false); setImportPreview(null); setImportAccountId('') }}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => { setSubTab('pregled'); setImportPreview(null); setImportAccountId('') }}><ArrowLeft className="h-4 w-4" /></Button>
               <div><CardTitle className="flex items-center gap-2"><Upload className="h-5 w-5" /> {t('bankSync.importCSV')}</CardTitle><CardDescription>{t('bankSync.importCSVDesc')}</CardDescription></div>
             </div>
           </CardHeader>
@@ -939,21 +956,21 @@ function TransactionsTab() {
               )}
             </div>
             <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => { setImportDialogOpen(false); setImportPreview(null); setImportAccountId('') }}>{t('common.cancel')}</Button>
+              <Button variant="outline" onClick={() => { setSubTab('pregled'); setImportPreview(null); setImportAccountId('') }}>{t('common.cancel')}</Button>
               <Button onClick={handleImport} disabled={importing || !importAccountId || !importPreview}>
                 {importing ? (<><RefreshCw className="h-4 w-4 animate-spin mr-2" />{t('bankSync.importing')}</>) : (<><Upload className="h-4 w-4 mr-2" />{t('bankSync.startImport')}</>)}
               </Button>
             </div>
           </CardContent>
         </Card>
-      )}
+          </TabsContent>
 
-      {/* Manual Match */}
-      {matchDialogOpen && (
+          {/* Manual Match Sub-tab */}
+          <TabsContent value="spoji" className="space-y-4">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setMatchDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
               <div><CardTitle className="flex items-center gap-2"><Link2 className="h-5 w-5" /> {t('bankSync.manualMatch')}</CardTitle><CardDescription>{t('bankSync.manualMatchDesc')}</CardDescription></div>
             </div>
           </CardHeader>
@@ -1006,14 +1023,16 @@ function TransactionsTab() {
               </div>
             )}
             <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setMatchDialogOpen(false)}>{t('common.cancel')}</Button>
+              <Button variant="outline" onClick={() => setSubTab('pregled')}>{t('common.cancel')}</Button>
               <Button onClick={handleMatch} disabled={matching || !selectedInvoiceId}>
                 {matching ? (<><RefreshCw className="h-4 w-4 animate-spin mr-2" />{t('bankSync.matching')}</>) : (<><Link2 className="h-4 w-4 mr-2" />{t('bankSync.matchInvoice')}</>)}
               </Button>
             </div>
           </CardContent>
         </Card>
-      )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </>
   )
 }

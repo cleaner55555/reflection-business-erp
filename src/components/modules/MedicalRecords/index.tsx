@@ -50,7 +50,7 @@ export function MedicalRecords() {
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<MedicalRecord | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<MedicalRecord>>({})
@@ -103,10 +103,10 @@ export function MedicalRecords() {
     setEditItem(null)
     const nextNum = data.length + 1
     setForm({ recordNo: `KAR-2024-${String(nextNum).padStart(4, '0')}`, patientName: '', patientNo: '', doctor: '', date: new Date().toISOString().split('T')[0], type: 'checkup', diagnosis: '', diagnosisCode: '', symptoms: '', treatment: '', prescribedMeds: [], vitalSigns: '', labResults: '', nextAction: '', notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
-  const openEdit = (item: MedicalRecord) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
+  const openEdit = (item: MedicalRecord) => { setEditItem(item); setForm({ ...item }); setActiveTab('dodaj') }
 
   const handleSave = async () => {
     if (!form.patientName || !form.diagnosis) { toast.error('Popunite obavezna polja'); return }
@@ -124,7 +124,7 @@ export function MedicalRecords() {
         setData(prev => [created, ...prev])
         toast.success('Zapis kreiran')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled'); setEditItem(null)
     } catch (err) {
       console.error(err)
       toast.error(editItem ? 'Greška pri ažuriranju zapisa' : 'Greška pri kreiranju zapisa')
@@ -265,25 +265,6 @@ export function MedicalRecords() {
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           </CardContent>
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editItem ? 'Uredi zapis' : 'Novi zapis'}</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Pacijent *</Label><Input className="text-xs" value={form.patientName || ''} onChange={e => setForm({ ...form, patientName: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'checkup'} onValueChange={v => setForm({ ...form, type: v as MedicalRecord['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="checkup">Pregled</SelectItem><SelectItem value="follow_up">Kontrola</SelectItem><SelectItem value="emergency">Hitno</SelectItem><SelectItem value="lab_result">Lab.</SelectItem><SelectItem value="surgery">Operacija</SelectItem><SelectItem value="referral">Uput</SelectItem><SelectItem value="discharge">Otpust</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Dijagnoza *</Label><Input className="text-xs" value={form.diagnosis || ''} onChange={e => setForm({ ...form, diagnosis: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input className="text-xs" type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
         </Card>
       )}
     </div>

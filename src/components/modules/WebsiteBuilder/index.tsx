@@ -231,27 +231,26 @@ export function WebsiteBuilder() {
 
   // Pages state
   const [pages, setPages] = useState<Page[]>([])
-  const [pageDialogOpen, setPageDialogOpen] = useState(false)
+  const [pagesSubTab, setPagesSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingPage, setEditingPage] = useState<Page | null>(null)
   const [pageFilter, setPageFilter] = useState('all')
-  const [sectionDialogOpen, setSectionDialogOpen] = useState(false)
+  const [sectionPickerOpen, setSectionPickerOpen] = useState(false)
 
   // Media state
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
   const [mediaFilter, setMediaFilter] = useState('all')
   const [mediaSearch, setMediaSearch] = useState('')
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
-  const [mediaDetailOpen, setMediaDetailOpen] = useState(false)
+  const [mediaSubTab, setMediaSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [selectedMedia, setSelectedMedia] = useState<MediaFile | null>(null)
 
   // Navigation state
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-  const [menuDialogOpen, setMenuDialogOpen] = useState(false)
+  const [navSubTab, setNavSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingMenu, setEditingMenu] = useState<MenuItem | null>(null)
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set())
 
   // SEO state
-  const [seoDialogOpen, setSeoDialogOpen] = useState(false)
+  const [seoSubTab, setSeoSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [selectedPageSeo, setSelectedPageSeo] = useState<Page | null>(null)
   const [seoForm, setSeoForm] = useState<SeoSettings>({
     metaTitle: '', metaDescription: '', ogTitle: '', ogDescription: '',
@@ -341,7 +340,7 @@ export function WebsiteBuilder() {
   const emptyPageForm = { title: '', slug: '', type: 'custom', status: 'draft', template: 'blank', metaDescription: '', sections: [] as PageSection[] }
   const [pageForm, setPageForm] = useState(emptyPageForm)
 
-  const openPageDialog = (page?: Page) => {
+  const openPageForm = (page?: Page) => {
     if (page) {
       setEditingPage(page)
       setPageForm({
@@ -353,7 +352,8 @@ export function WebsiteBuilder() {
       setEditingPage(null)
       setPageForm(emptyPageForm)
     }
-    setPageDialogOpen(true)
+    setSectionPickerOpen(false)
+    setPagesSubTab('dodaj')
   }
 
   const applyTemplate = (templateKey: string) => {
@@ -410,7 +410,7 @@ export function WebsiteBuilder() {
         body: JSON.stringify({ companyId: activeCompanyId, ...pageForm, slug }),
       })
       if (res.ok) {
-        setPageDialogOpen(false)
+        setPagesSubTab('pregled')
         setEditingPage(null)
         setPageForm(emptyPageForm)
         loadPages()
@@ -428,7 +428,7 @@ export function WebsiteBuilder() {
 
   // ─── SEO Functions ────────────────────────────────────────────────────────
 
-  const openSeoDialog = (page: Page) => {
+  const openSeoForm = (page: Page) => {
     setSelectedPageSeo(page)
     setSeoForm({
       metaTitle: page.seoTitle || page.title,
@@ -437,7 +437,7 @@ export function WebsiteBuilder() {
       ogDescription: page.metaDescription || '',
       ogImage: '', canonicalUrl: '', robotsIndex: true, robotsFollow: true, structuredData: '',
     })
-    setSeoDialogOpen(true)
+    setSeoSubTab('dodaj')
   }
 
   const generateMetaDescription = () => {
@@ -458,7 +458,7 @@ export function WebsiteBuilder() {
   const emptyMenuForm = { label: '', url: '/', icon: 'Home', parentId: null as string | null, orderNum: 0, target: '_self', visible: true }
   const [menuForm, setMenuForm] = useState(emptyMenuForm)
 
-  const openMenuDialog = (item?: MenuItem) => {
+  const openMenuForm = (item?: MenuItem) => {
     if (item) {
       setEditingMenu(item)
       setMenuForm({ label: item.label, url: item.url, icon: item.icon, parentId: item.parentId, orderNum: item.orderNum, target: item.target, visible: item.visible })
@@ -466,7 +466,7 @@ export function WebsiteBuilder() {
       setEditingMenu(null)
       setMenuForm(emptyMenuForm)
     }
-    setMenuDialogOpen(true)
+    setNavSubTab('dodaj')
   }
 
   const handleSaveMenu = async () => {
@@ -477,7 +477,7 @@ export function WebsiteBuilder() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...menuForm, id: editingMenu?.id }),
       })
-      if (res.ok) { setMenuDialogOpen(false); loadMenuItems() }
+      if (res.ok) { setNavSubTab('pregled'); loadMenuItems() }
     } catch { /* silent */ }
   }
 
@@ -530,7 +530,7 @@ export function WebsiteBuilder() {
           <Button variant="outline" size="sm" onClick={() => { loadPages(); loadMedia(); loadMenuItems() }}>
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} /> Osveži
           </Button>
-          <Button size="sm" onClick={() => openPageDialog()}>
+          <Button size="sm" onClick={() => { setEditingPage(null); setPageForm(emptyPageForm); setSectionPickerOpen(false); setActiveTab('pages'); setPagesSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> Nova stranica
           </Button>
         </div>
@@ -697,10 +697,10 @@ export function WebsiteBuilder() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { icon: Plus, label: 'Nova stranica', action: () => openPageDialog() },
+                  { icon: Plus, label: 'Nova stranica', action: () => { setEditingPage(null); setPageForm(emptyPageForm); setSectionPickerOpen(false); setActiveTab('pages'); setPagesSubTab('dodaj') } },
                   { icon: Palette, label: 'Prilagodi temu', action: () => setActiveTab('theme') },
                   { icon: Shield, label: 'SEO podešavanja', action: () => setActiveTab('seo') },
-                  { icon: ImagePlus, label: 'Upload medije', action: () => setUploadDialogOpen(true) },
+                  { icon: ImagePlus, label: 'Upload medije', action: () => { setActiveTab('media'); setMediaSubTab('dodaj') } },
                 ].map((item) => (
                   <Button key={item.label} variant="outline" className="h-auto py-4 flex flex-col gap-2" onClick={item.action}>
                     <item.icon className="h-5 w-5 text-muted-foreground" />
@@ -715,7 +715,15 @@ export function WebsiteBuilder() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* STRANICE (Pages) Tab                                                */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <TabsContent value="pages" className="space-y-4">
+        <TabsContent value="pages">
+          <Tabs value={pagesSubTab} onValueChange={(v) => setPagesSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1" /> Dodaj/Uredi</TabsTrigger>
+            </TabsList>
+
+            {/* Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
           {/* Search and Filter Bar */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -748,7 +756,7 @@ export function WebsiteBuilder() {
               <Globe2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground mb-1">Nema pronađenih stranica</p>
               <p className="text-xs text-muted-foreground mb-4">Kreirajte novu stranicu ili promenite filtere pretrage</p>
-              <Button variant="outline" onClick={() => openPageDialog()}><Plus className="h-4 w-4 mr-1" /> Kreiraj stranicu</Button>
+              <Button variant="outline" onClick={() => { setEditingPage(null); setPageForm(emptyPageForm); setSectionPickerOpen(false); setPagesSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Kreiraj stranicu</Button>
             </Card>
           ) : (
             <div className="rounded-lg border overflow-hidden">
@@ -790,10 +798,10 @@ export function WebsiteBuilder() {
                       <TableCell className="text-xs text-muted-foreground">{formatDate(p.updatedAt)}</TableCell>
                       <TableCell>
                         <div className="flex gap-1 justify-end">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openSeoDialog(p)} title="SEO">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setActiveTab('seo'); openSeoForm(p) }} title="SEO">
                             <Shield className="h-3.5 w-3.5" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openPageDialog(p)} title="Uredi">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openPageForm(p)} title="Uredi">
                             <Edit3 className="h-3.5 w-3.5" />
                           </Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeletePage(p.id)} title="Obriši">
@@ -807,6 +815,136 @@ export function WebsiteBuilder() {
               </Table>
             </div>
           )}
+            </TabsContent>
+
+            {/* Dodaj/Uredi sub-tab */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPagesSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <h3 className="text-sm font-semibold">{editingPage ? 'Uredi stranicu' : 'Nova stranica'}</h3>
+                  <p className="text-xs text-muted-foreground">{editingPage ? 'Izmenite podešavanja postojeće stranice' : 'Kreirajte novu stranicu za vaš sajt'}</p>
+                </div>
+              </div>
+
+              {sectionPickerOpen ? (
+                <Card>
+                  <CardHeader className="flex flex-row items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSectionPickerOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+                    <div>
+                      <CardTitle className="text-base">Dodaj sekciju</CardTitle>
+                      <CardDescription>Izaberite tip sekcije koji želite da dodate na stranicu</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="max-h-[400px]">
+                      <div className="grid grid-cols-2 gap-3">
+                        {Object.entries(sectionTypes).map(([key, sec]) => (
+                          <Button key={key} variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" onClick={() => { addSection(key); setSectionPickerOpen(false) }}>
+                            <sec.icon className="h-6 w-6 text-muted-foreground" />
+                            <span className="text-xs font-medium">{sec.label}</span>
+                            <span className="text-xs text-muted-foreground text-center">{sec.description}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              ) : (
+              <Card>
+                <CardContent className="max-w-2xl space-y-5">
+                <div className="space-y-5">
+                  {/* Basic Info */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold flex items-center gap-2"><FileCode className="h-4 w-4" /> Osnovne informacije</h4>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Naziv stranice</Label>
+                      <Input value={pageForm.title} onChange={(e) => setPageForm({ ...pageForm, title: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-čćžšđ]/g, '') })} placeholder="Naziv stranice" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">URL slug</Label>
+                        <Input value={pageForm.slug} onChange={(e) => setPageForm({ ...pageForm, slug: e.target.value })} placeholder="url-slug-stranice" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Tip stranice</Label>
+                        <Select value={pageForm.type} onValueChange={(v) => setPageForm({ ...pageForm, type: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{Object.entries(pageTypeConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Status</Label>
+                        <Select value={pageForm.status} onValueChange={(v) => setPageForm({ ...pageForm, status: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{Object.entries(pageStatusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Template</Label>
+                        <Select value={pageForm.template} onValueChange={(v) => applyTemplate(v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{Object.entries(templateOptions).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Meta opis (SEO)</Label>
+                      <Textarea value={pageForm.metaDescription} onChange={(e) => setPageForm({ ...pageForm, metaDescription: e.target.value })} placeholder="Opišite stranicu u 1-2 rečenice za pretraživače..." className="min-h-[60px]" />
+                      <p className="text-xs text-muted-foreground text-right">{pageForm.metaDescription.length}/160 karaktera</p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Page Sections */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold flex items-center gap-2"><Layers className="h-4 w-4" /> Sekcije stranice ({pageForm.sections.length})</h4>
+                      <Button size="sm" variant="outline" onClick={() => setSectionPickerOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj sekciju</Button>
+                    </div>
+                    {pageForm.sections.length === 0 ? (
+                      <div className="text-center py-6 border border-dashed rounded-lg text-muted-foreground">
+                        <Layers className="h-8 w-8 mx-auto mb-2" />
+                        <p className="text-sm">Nema sekcija</p>
+                        <p className="text-xs">Izaberite template ili dodajte sekcije ručno</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {pageForm.sections.map((sec, idx) => {
+                          const secType = sectionTypes[sec.type]
+                          return (
+                            <div key={sec.id} className={`flex items-center gap-3 p-3 border rounded-lg ${!sec.enabled ? 'opacity-50' : ''}`}>
+                              <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab shrink-0" />
+                              <div className="flex items-center gap-2 shrink-0">
+                                {secType && <secType.icon className="h-4 w-4 text-muted-foreground" />}
+                                <span className="text-xs font-medium">{secType?.label || sec.type}</span>
+                              </div>
+                              <div className="flex-1" />
+                              <Switch checked={sec.enabled} onCheckedChange={() => toggleSection(sec.id)} className="shrink-0" />
+                              <div className="flex gap-1">
+                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveSection(sec.id, 'up')} disabled={idx === 0}><MoveUp className="h-3 w-3" /></Button>
+                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveSection(sec.id, 'down')} disabled={idx === pageForm.sections.length - 1}><MoveDown className="h-3 w-3" /></Button>
+                                <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeSection(sec.id)}><X className="h-3 w-3" /></Button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setPagesSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleSavePage}>{editingPage ? 'Sačuvaj izmene' : 'Kreiraj stranicu'}</Button>
+                </div>
+                </CardContent>
+              </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
@@ -859,13 +997,21 @@ export function WebsiteBuilder() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* NAVIGACIJA (Navigation) Tab                                         */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <TabsContent value="navigation" className="space-y-6">
+        <TabsContent value="navigation">
+          <Tabs value={navSubTab} onValueChange={(v) => setNavSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1" /> Dodaj/Uredi</TabsTrigger>
+            </TabsList>
+
+            {/* Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">Struktura menija</h3>
               <p className="text-sm text-muted-foreground">Upravljajte navigacionim menijem sajta</p>
             </div>
-            <Button size="sm" onClick={() => openMenuDialog()}><Plus className="h-4 w-4 mr-1" /> Nova stavka</Button>
+            <Button size="sm" onClick={() => { setEditingMenu(null); setMenuForm(emptyMenuForm); setNavSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Nova stavka</Button>
           </div>
 
           {/* Menu Preview */}
@@ -897,7 +1043,7 @@ export function WebsiteBuilder() {
                         {!item.visible && <Badge variant="outline" className="text-xs text-red-500">Sakriveno</Badge>}
                         <Badge variant="outline" className="text-xs">{item.target === '_blank' ? 'Novi tab' : 'Isti tab'}</Badge>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openMenuDialog(item)}><Edit3 className="h-3.5 w-3.5" /></Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openMenuForm(item)}><Edit3 className="h-3.5 w-3.5" /></Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteMenu(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
@@ -910,7 +1056,7 @@ export function WebsiteBuilder() {
                               <span className="text-sm flex-1">{child.label}</span>
                               <span className="text-xs text-muted-foreground">{child.url}</span>
                               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openMenuDialog(child)}><Edit3 className="h-3.5 w-3.5" /></Button>
+                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openMenuForm(child)}><Edit3 className="h-3.5 w-3.5" /></Button>
                                 <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteMenu(child.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                               </div>
                             </div>
@@ -943,12 +1089,90 @@ export function WebsiteBuilder() {
               <p className="text-xl font-bold mt-1">{menuItems.filter((m) => m.target === '_blank').length}</p>
             </Card>
           </div>
+            </TabsContent>
+
+            {/* Dodaj/Uredi sub-tab */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setNavSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <h3 className="text-sm font-semibold">{editingMenu ? 'Uredi stavku menija' : 'Nova stavka menija'}</h3>
+                  <p className="text-xs text-muted-foreground">Podesite navigacionu stavku sajta</p>
+                </div>
+              </div>
+              <Card>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Naziv (label)</Label>
+                      <Input value={menuForm.label} onChange={(e) => setMenuForm({ ...menuForm, label: e.target.value })} placeholder="Naziv stavke" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">URL</Label>
+                      <Input value={menuForm.url} onChange={(e) => setMenuForm({ ...menuForm, url: e.target.value })} placeholder="/stranica ili https://..." />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Ikona</Label>
+                        <Select value={menuForm.icon} onValueChange={(v) => setMenuForm({ ...menuForm, icon: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{menuIcons.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Cilj (target)</Label>
+                        <Select value={menuForm.target} onValueChange={(v) => setMenuForm({ ...menuForm, target: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="_self">Isti tab</SelectItem>
+                            <SelectItem value="_blank">Novi tab</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Roditelj</Label>
+                        <Select value={menuForm.parentId || 'none'} onValueChange={(v) => setMenuForm({ ...menuForm, parentId: v === 'none' ? null : v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Bez roditelja (root)</SelectItem>
+                            {rootMenuItems.filter((m) => m.id !== editingMenu?.id).map((m) => <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Redosled</Label>
+                        <Input type="number" value={menuForm.orderNum} onChange={(e) => setMenuForm({ ...menuForm, orderNum: parseInt(e.target.value) || 0 })} min={0} />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs">Vidljivo u meniju</Label>
+                      <Switch checked={menuForm.visible} onCheckedChange={(v) => setMenuForm({ ...menuForm, visible: v })} />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setNavSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleSaveMenu}>{editingMenu ? 'Sačuvaj' : 'Dodaj'}</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* SEO Tab                                                             */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <TabsContent value="seo" className="space-y-6">
+        <TabsContent value="seo">
+          <Tabs value={seoSubTab} onValueChange={(v) => setSeoSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Shield className="h-4 w-4 mr-1" /> SEO Uredi</TabsTrigger>
+            </TabsList>
+
+            {/* Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-6">
           {/* SEO Score Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="p-6 flex flex-col items-center justify-center">
@@ -1034,7 +1258,7 @@ export function WebsiteBuilder() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant="ghost" onClick={() => openSeoDialog(p)}>
+                          <Button size="sm" variant="ghost" onClick={() => openSeoForm(p)}>
                             <Shield className="h-3.5 w-3.5 mr-1" /> Uredi
                           </Button>
                         </TableCell>
@@ -1082,6 +1306,105 @@ export function WebsiteBuilder() {
               </div>
             </CardContent>
           </Card>
+            </TabsContent>
+
+            {/* Dodaj/Uredi sub-tab (SEO form) */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSeoSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <h3 className="text-sm font-semibold">SEO podešavanja — {selectedPageSeo?.title}</h3>
+                  <p className="text-xs text-muted-foreground">Optimizujte stranicu za pretraživače</p>
+                </div>
+              </div>
+              <Card>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Meta title</Label>
+                        <span className="text-xs text-muted-foreground">{seoForm.metaTitle.length}/60</span>
+                      </div>
+                      <Input value={seoForm.metaTitle} onChange={(e) => setSeoForm({ ...seoForm, metaTitle: e.target.value })} placeholder="Meta title (do 60 karaktera)" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Meta opis</Label>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={generateMetaDescription}><Sparkles className="h-3 w-3 mr-1" /> Generiši</Button>
+                          <span className="text-xs text-muted-foreground">{seoForm.metaDescription.length}/160</span>
+                        </div>
+                      </div>
+                      <Textarea value={seoForm.metaDescription} onChange={(e) => setSeoForm({ ...seoForm, metaDescription: e.target.value })} placeholder="Meta opis (do 160 karaktera)" className="min-h-[60px]" />
+                    </div>
+
+                    <Separator />
+
+                    <h4 className="text-sm font-semibold">Open Graph</h4>
+                    <div className="space-y-2">
+                      <Label className="text-xs">OG title</Label>
+                      <Input value={seoForm.ogTitle} onChange={(e) => setSeoForm({ ...seoForm, ogTitle: e.target.value })} placeholder="Naslov za društvene mreže" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">OG opis</Label>
+                      <Textarea value={seoForm.ogDescription} onChange={(e) => setSeoForm({ ...seoForm, ogDescription: e.target.value })} placeholder="Opis za društvene mreže" className="min-h-[50px]" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">OG slika (URL)</Label>
+                      <Input value={seoForm.ogImage} onChange={(e) => setSeoForm({ ...seoForm, ogImage: e.target.value })} placeholder="https://example.com/og-image.jpg" />
+                    </div>
+
+                    <Separator />
+
+                    <h4 className="text-sm font-semibold">Dodatna podešavanja</h4>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Canonical URL</Label>
+                      <Input value={seoForm.canonicalUrl} onChange={(e) => setSeoForm({ ...seoForm, canonicalUrl: e.target.value })} placeholder="https://example.com/stranica" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs">Robots: Index</Label>
+                      <Switch checked={seoForm.robotsIndex} onCheckedChange={(v) => setSeoForm({ ...seoForm, robotsIndex: v })} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs">Robots: Follow</Label>
+                      <Switch checked={seoForm.robotsFollow} onCheckedChange={(v) => setSeoForm({ ...seoForm, robotsFollow: v })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Struktuirani podaci (JSON-LD)</Label>
+                      <Textarea value={seoForm.structuredData} onChange={(e) => setSeoForm({ ...seoForm, structuredData: e.target.value })} placeholder='{"@context": "https://schema.org", ...}' className="font-mono text-xs min-h-[80px]" />
+                    </div>
+
+                    {/* SEO Score Preview */}
+                    <div className="p-3 border rounded-lg bg-muted/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium">Predviđena SEO ocena</span>
+                        <span className={`text-sm font-bold ${(seoForm.metaTitle.length > 0 && seoForm.metaTitle.length <= 60 && seoForm.metaDescription.length > 0 && seoForm.metaDescription.length <= 160) ? 'text-green-600' : 'text-amber-600'}`}>
+                          {(seoForm.metaTitle.length > 0 && seoForm.metaTitle.length <= 60 && seoForm.metaDescription.length > 0 && seoForm.metaDescription.length <= 160) ? '85/100' : '45/100'}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {[
+                          { ok: seoForm.metaTitle.length > 0 && seoForm.metaTitle.length <= 60, text: 'Meta title okvirno dužine' },
+                          { ok: seoForm.metaDescription.length > 0 && seoForm.metaDescription.length <= 160, text: 'Meta opis okvirno dužine' },
+                          { ok: seoForm.ogTitle.length > 0, text: 'OG title podešen' },
+                          { ok: seoForm.canonicalUrl.length > 0, text: 'Canonical URL podešen' },
+                        ].map((c) => (
+                          <div key={c.text} className="flex items-center gap-2">
+                            {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <X className="h-3.5 w-3.5 text-red-400" />}
+                            <span className="text-xs">{c.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setSeoSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={() => { setSeoSubTab('pregled'); loadPages() }}>Sačuvaj SEO</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
@@ -1226,7 +1549,18 @@ export function WebsiteBuilder() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* MEDIJI (Media) Tab                                                  */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <TabsContent value="media" className="space-y-4">
+        <TabsContent value="media">
+          <Tabs value={mediaSubTab} onValueChange={(v) => setMediaSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
+            <TabsList>
+              <TabsTrigger value="pregled"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Upload className="h-4 w-4 mr-1" /> Upload</TabsTrigger>
+              {mediaSubTab === 'detalji' && (
+                <TabsTrigger value="detalji"><Eye className="h-4 w-4 mr-1" /> Detalji</TabsTrigger>
+              )}
+            </TabsList>
+
+            {/* Pregled sub-tab */}
+            <TabsContent value="pregled" className="space-y-4">
           {/* Upload & Filter Bar */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -1242,7 +1576,7 @@ export function WebsiteBuilder() {
                 <SelectItem value="application">Dokumenta</SelectItem>
               </SelectContent>
             </Select>
-            <Button size="sm" onClick={() => setUploadDialogOpen(true)}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
+            <Button size="sm" onClick={() => setMediaSubTab('dodaj')}><Upload className="h-4 w-4 mr-1" /> Upload</Button>
           </div>
 
           {/* Media Stats */}
@@ -1259,12 +1593,12 @@ export function WebsiteBuilder() {
               <FolderOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground mb-1">Nema medija</p>
               <p className="text-xs text-muted-foreground mb-4">Uploadujte slike, video ili dokumente</p>
-              <Button variant="outline" onClick={() => setUploadDialogOpen(true)}><Upload className="h-4 w-4 mr-1" /> Uploaduj fajl</Button>
+              <Button variant="outline" onClick={() => setMediaSubTab('dodaj')}><Upload className="h-4 w-4 mr-1" /> Uploaduj fajl</Button>
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {filteredMedia.map((file) => (
-                <div key={file.id} className="border rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group" onClick={() => { setSelectedMedia(file); setMediaDetailOpen(true) }}>
+                <div key={file.id} className="border rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer group" onClick={() => { setSelectedMedia(file); setMediaSubTab('detalji') }}>
                   <div className="aspect-square bg-muted flex items-center justify-center relative">
                     {file.type.startsWith('image') ? (
                       <Image className="h-8 w-8 text-muted-foreground" />
@@ -1289,382 +1623,88 @@ export function WebsiteBuilder() {
               ))}
             </div>
           )}
+            </TabsContent>
+
+            {/* Dodaj sub-tab (Upload) */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMediaSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <h3 className="text-sm font-semibold">Upload medija</h3>
+                  <p className="text-xs text-muted-foreground">Dodajte slike, video ili dokumente u biblioteku</p>
+                </div>
+              </div>
+              <Card>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                      <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-sm font-medium">Prevucite fajlove ovde</p>
+                      <p className="text-xs text-muted-foreground mb-3">ili kliknite za izbor</p>
+                      <Input type="file" className="hidden" multiple accept="image/*,video/*,.pdf,.doc,.docx" />
+                      <Button size="sm" variant="outline">Izaberi fajlove</Button>
+                    </div>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p>Podržani formati: JPG, PNG, GIF, SVG, WebP, MP4, PDF, DOC, DOCX</p>
+                      <p>Maksimalna veličina: 10MB po fajlu</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Detalji sub-tab (Media Detail) */}
+            {mediaSubTab === 'detalji' && (
+            <TabsContent value="detalji" className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMediaSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <h3 className="text-sm font-semibold">Detalji medija</h3>
+                  <p className="text-xs text-muted-foreground">Informacije o izabranom fajlu</p>
+                </div>
+              </div>
+              <Card>
+                <CardContent>
+                  {selectedMedia && (
+                    <div className="space-y-4">
+                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                        {selectedMedia.type.startsWith('image') ? (
+                          <Image className="h-12 w-12 text-muted-foreground" />
+                        ) : selectedMedia.type.startsWith('video') ? (
+                          <Monitor className="h-12 w-12 text-muted-foreground" />
+                        ) : (
+                          <FileCode className="h-12 w-12 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div><span className="text-muted-foreground">Naziv:</span> <span className="font-medium">{selectedMedia.name}</span></div>
+                        <div><span className="text-muted-foreground">Tip:</span> <span className="font-medium">{selectedMedia.type}</span></div>
+                        <div><span className="text-muted-foreground">Veličina:</span> <span className="font-medium">{formatSize(selectedMedia.size)}</span></div>
+                        <div><span className="text-muted-foreground">Korišćenje:</span> <span className="font-medium">{selectedMedia.usageCount} puta</span></div>
+                        <div className="col-span-2"><span className="text-muted-foreground">Datum uploada:</span> <span className="font-medium">{formatDate(selectedMedia.uploadedAt)}</span></div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Alt tekst</Label>
+                        <Input value={selectedMedia.alt || ''} placeholder="Alternativni tekst za sliku" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">URL fajla</Label>
+                        <Input value={selectedMedia.url} readOnly className="font-mono text-xs" />
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => { if (selectedMedia) navigator.clipboard.writeText(selectedMedia.url) }}>Kopiraj URL</Button>
+                    <Button variant="destructive">Obriši</Button>
+                    <Button variant="outline" onClick={() => setMediaSubTab('pregled')}>Zatvori</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            )}
+          </Tabs>
         </TabsContent>
       </Tabs>
-
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* DIALOGS                                                              */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-
-      {/* Page Create/Edit Form */}
-      {pageDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPageDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle className="text-base">{editingPage ? 'Uredi stranicu' : 'Nova stranica'}</CardTitle>
-              <CardDescription>{editingPage ? 'Izmenite podešavanja postojeće stranice' : 'Kreirajte novu stranicu za vaš sajt'}</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="max-w-2xl space-y-5">
-          <div className="space-y-5">
-            {/* Basic Info */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold flex items-center gap-2"><FileCode className="h-4 w-4" /> Osnovne informacije</h4>
-              <div className="space-y-2">
-                <Label className="text-xs">Naziv stranice</Label>
-                <Input value={pageForm.title} onChange={(e) => setPageForm({ ...pageForm, title: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-čćžšđ]/g, '') })} placeholder="Naziv stranice" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">URL slug</Label>
-                  <Input value={pageForm.slug} onChange={(e) => setPageForm({ ...pageForm, slug: e.target.value })} placeholder="url-slug-stranice" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Tip stranice</Label>
-                  <Select value={pageForm.type} onValueChange={(v) => setPageForm({ ...pageForm, type: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{Object.entries(pageTypeConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">Status</Label>
-                  <Select value={pageForm.status} onValueChange={(v) => setPageForm({ ...pageForm, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{Object.entries(pageStatusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Template</Label>
-                  <Select value={pageForm.template} onValueChange={(v) => applyTemplate(v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{Object.entries(templateOptions).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Meta opis (SEO)</Label>
-                <Textarea value={pageForm.metaDescription} onChange={(e) => setPageForm({ ...pageForm, metaDescription: e.target.value })} placeholder="Opišite stranicu u 1-2 rečenice za pretraživače..." className="min-h-[60px]" />
-                <p className="text-xs text-muted-foreground text-right">{pageForm.metaDescription.length}/160 karaktera</p>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Page Sections */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold flex items-center gap-2"><Layers className="h-4 w-4" /> Sekcije stranice ({pageForm.sections.length})</h4>
-                <Button size="sm" variant="outline" onClick={() => setSectionDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj sekciju</Button>
-              </div>
-              {pageForm.sections.length === 0 ? (
-                <div className="text-center py-6 border border-dashed rounded-lg text-muted-foreground">
-                  <Layers className="h-8 w-8 mx-auto mb-2" />
-                  <p className="text-sm">Nema sekcija</p>
-                  <p className="text-xs">Izaberite template ili dodajte sekcije ručno</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {pageForm.sections.map((sec, idx) => {
-                    const secType = sectionTypes[sec.type]
-                    return (
-                      <div key={sec.id} className={`flex items-center gap-3 p-3 border rounded-lg ${!sec.enabled ? 'opacity-50' : ''}`}>
-                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab shrink-0" />
-                        <div className="flex items-center gap-2 shrink-0">
-                          {secType && <secType.icon className="h-4 w-4 text-muted-foreground" />}
-                          <span className="text-xs font-medium">{secType?.label || sec.type}</span>
-                        </div>
-                        <div className="flex-1" />
-                        <Switch checked={sec.enabled} onCheckedChange={() => toggleSection(sec.id)} className="shrink-0" />
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveSection(sec.id, 'up')} disabled={idx === 0}><MoveUp className="h-3 w-3" /></Button>
-                          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveSection(sec.id, 'down')} disabled={idx === pageForm.sections.length - 1}><MoveDown className="h-3 w-3" /></Button>
-                          <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeSection(sec.id)}><X className="h-3 w-3" /></Button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setPageDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSavePage}>{editingPage ? 'Sačuvaj izmene' : 'Kreiraj stranicu'}</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Add Section Picker */}
-      {sectionDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSectionDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle className="text-base">Dodaj sekciju</CardTitle>
-              <CardDescription>Izaberite tip sekcije koji želite da dodate na stranicu</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-          <ScrollArea className="max-h-[400px]">
-            <div className="grid grid-cols-2 gap-3">
-              {Object.entries(sectionTypes).map(([key, sec]) => (
-                <Button key={key} variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" onClick={() => { addSection(key); setSectionDialogOpen(false) }}>
-                  <sec.icon className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs font-medium">{sec.label}</span>
-                  <span className="text-xs text-muted-foreground text-center">{sec.description}</span>
-                </Button>
-              ))}
-            </div>
-          </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* SEO Edit Form */}
-      {seoDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSeoDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle className="text-base">SEO podešavanja — {selectedPageSeo?.title}</CardTitle>
-              <CardDescription>Optimizujte stranicu za pretraživače</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Meta title</Label>
-                <span className="text-xs text-muted-foreground">{seoForm.metaTitle.length}/60</span>
-              </div>
-              <Input value={seoForm.metaTitle} onChange={(e) => setSeoForm({ ...seoForm, metaTitle: e.target.value })} placeholder="Meta title (do 60 karaktera)" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Meta opis</Label>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={generateMetaDescription}><Sparkles className="h-3 w-3 mr-1" /> Generiši</Button>
-                  <span className="text-xs text-muted-foreground">{seoForm.metaDescription.length}/160</span>
-                </div>
-              </div>
-              <Textarea value={seoForm.metaDescription} onChange={(e) => setSeoForm({ ...seoForm, metaDescription: e.target.value })} placeholder="Meta opis (do 160 karaktera)" className="min-h-[60px]" />
-            </div>
-
-            <Separator />
-
-            <h4 className="text-sm font-semibold">Open Graph</h4>
-            <div className="space-y-2">
-              <Label className="text-xs">OG title</Label>
-              <Input value={seoForm.ogTitle} onChange={(e) => setSeoForm({ ...seoForm, ogTitle: e.target.value })} placeholder="Naslov za društvene mreže" />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">OG opis</Label>
-              <Textarea value={seoForm.ogDescription} onChange={(e) => setSeoForm({ ...seoForm, ogDescription: e.target.value })} placeholder="Opis za društvene mreže" className="min-h-[50px]" />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">OG slika (URL)</Label>
-              <Input value={seoForm.ogImage} onChange={(e) => setSeoForm({ ...seoForm, ogImage: e.target.value })} placeholder="https://example.com/og-image.jpg" />
-            </div>
-
-            <Separator />
-
-            <h4 className="text-sm font-semibold">Dodatna podešavanja</h4>
-            <div className="space-y-2">
-              <Label className="text-xs">Canonical URL</Label>
-              <Input value={seoForm.canonicalUrl} onChange={(e) => setSeoForm({ ...seoForm, canonicalUrl: e.target.value })} placeholder="https://example.com/stranica" />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">Robots: Index</Label>
-              <Switch checked={seoForm.robotsIndex} onCheckedChange={(v) => setSeoForm({ ...seoForm, robotsIndex: v })} />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">Robots: Follow</Label>
-              <Switch checked={seoForm.robotsFollow} onCheckedChange={(v) => setSeoForm({ ...seoForm, robotsFollow: v })} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Struktuirani podaci (JSON-LD)</Label>
-              <Textarea value={seoForm.structuredData} onChange={(e) => setSeoForm({ ...seoForm, structuredData: e.target.value })} placeholder='{"@context": "https://schema.org", ...}' className="font-mono text-xs min-h-[80px]" />
-            </div>
-
-            {/* SEO Score Preview */}
-            <div className="p-3 border rounded-lg bg-muted/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium">Predviđena SEO ocena</span>
-                <span className={`text-sm font-bold ${(seoForm.metaTitle.length > 0 && seoForm.metaTitle.length <= 60 && seoForm.metaDescription.length > 0 && seoForm.metaDescription.length <= 160) ? 'text-green-600' : 'text-amber-600'}`}>
-                  {(seoForm.metaTitle.length > 0 && seoForm.metaTitle.length <= 60 && seoForm.metaDescription.length > 0 && seoForm.metaDescription.length <= 160) ? '85/100' : '45/100'}
-                </span>
-              </div>
-              <div className="space-y-1">
-                {[
-                  { ok: seoForm.metaTitle.length > 0 && seoForm.metaTitle.length <= 60, text: 'Meta title okvirno dužine' },
-                  { ok: seoForm.metaDescription.length > 0 && seoForm.metaDescription.length <= 160, text: 'Meta opis okvirno dužine' },
-                  { ok: seoForm.ogTitle.length > 0, text: 'OG title podešen' },
-                  { ok: seoForm.canonicalUrl.length > 0, text: 'Canonical URL podešen' },
-                ].map((c) => (
-                  <div key={c.text} className="flex items-center gap-2">
-                    {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <X className="h-3.5 w-3.5 text-red-400" />}
-                    <span className="text-xs">{c.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setSeoDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={() => { setSeoDialogOpen(false); loadPages() }}>Sačuvaj SEO</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
-
-            {/* Menu Item Create/Edit Form */}
-      {menuDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMenuDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle className="text-base">{editingMenu ? 'Uredi stavku menija' : 'Nova stavka menija'}</CardTitle>
-              <CardDescription>Podesite navigacionu stavku sajta</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs">Naziv (label)</Label>
-              <Input value={menuForm.label} onChange={(e) => setMenuForm({ ...menuForm, label: e.target.value })} placeholder="Naziv stavke" />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">URL</Label>
-              <Input value={menuForm.url} onChange={(e) => setMenuForm({ ...menuForm, url: e.target.value })} placeholder="/stranica ili https://..." />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Ikona</Label>
-                <Select value={menuForm.icon} onValueChange={(v) => setMenuForm({ ...menuForm, icon: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{menuIcons.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Cilj (target)</Label>
-                <Select value={menuForm.target} onValueChange={(v) => setMenuForm({ ...menuForm, target: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_self">Isti tab</SelectItem>
-                    <SelectItem value="_blank">Novi tab</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Roditelj</Label>
-                <Select value={menuForm.parentId || 'none'} onValueChange={(v) => setMenuForm({ ...menuForm, parentId: v === 'none' ? null : v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Bez roditelja (root)</SelectItem>
-                    {rootMenuItems.filter((m) => m.id !== editingMenu?.id).map((m) => <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Redosled</Label>
-                <Input type="number" value={menuForm.orderNum} onChange={(e) => setMenuForm({ ...menuForm, orderNum: parseInt(e.target.value) || 0 })} min={0} />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">Vidljivo u meniju</Label>
-              <Switch checked={menuForm.visible} onCheckedChange={(v) => setMenuForm({ ...menuForm, visible: v })} />
-            </div>
-          </div>
-                    <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setMenuDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSaveMenu}>{editingMenu ? 'Sačuvaj' : 'Dodaj'}</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
-
-
-            {/* Upload Media Form */}
-      {uploadDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setUploadDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle className="text-base">Upload medija</CardTitle>
-              <CardDescription>Dodajte slike, video ili dokumente u biblioteku</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-          <div className="space-y-4">
-            <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
-              <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-sm font-medium">Prevucite fajlove ovde</p>
-              <p className="text-xs text-muted-foreground mb-3">ili kliknite za izbor</p>
-              <Input type="file" className="hidden" multiple accept="image/*,video/*,.pdf,.doc,.docx" />
-              <Button size="sm" variant="outline" onClick={() => { setUploadDialogOpen(false) }}>Izaberi fajlove</Button>
-            </div>
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>Podržani formati: JPG, PNG, GIF, SVG, WebP, MP4, PDF, DOC, DOCX</p>
-              <p>Maksimalna veličina: 10MB po fajlu</p>
-            </div>
-                    </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Media Detail Form */}
-      {mediaDetailOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMediaDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle className="text-base">Detalji medija</CardTitle>
-              <CardDescription>Informacije o izabranom fajlu</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-          {selectedMedia && (
-            <div className="space-y-4">
-              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                {selectedMedia.type.startsWith('image') ? (
-                  <Image className="h-12 w-12 text-muted-foreground" />
-                ) : selectedMedia.type.startsWith('video') ? (
-                  <Monitor className="h-12 w-12 text-muted-foreground" />
-                ) : (
-                  <FileCode className="h-12 w-12 text-muted-foreground" />
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Naziv:</span> <span className="font-medium">{selectedMedia.name}</span></div>
-                <div><span className="text-muted-foreground">Tip:</span> <span className="font-medium">{selectedMedia.type}</span></div>
-                <div><span className="text-muted-foreground">Veličina:</span> <span className="font-medium">{formatSize(selectedMedia.size)}</span></div>
-                <div><span className="text-muted-foreground">Korišćenje:</span> <span className="font-medium">{selectedMedia.usageCount} puta</span></div>
-                <div className="col-span-2"><span className="text-muted-foreground">Datum uploada:</span> <span className="font-medium">{formatDate(selectedMedia.uploadedAt)}</span></div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Alt tekst</Label>
-                <Input value={selectedMedia.alt || ''} placeholder="Alternativni tekst za sliku" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">URL fajla</Label>
-                <Input value={selectedMedia.url} readOnly className="font-mono text-xs" />
-              </div>
-            </div>
-          )}
-                    <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => { if (selectedMedia) navigator.clipboard.writeText(selectedMedia.url) }}>Kopiraj URL</Button>
-            <Button variant="destructive" onClick={() => { setMediaDetailOpen(false) }}>Obriši</Button>
-            <Button variant="outline" onClick={() => setMediaDetailOpen(false)}>Zatvori</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

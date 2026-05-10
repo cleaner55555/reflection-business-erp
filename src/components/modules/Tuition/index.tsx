@@ -55,7 +55,6 @@ export function Tuition() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [programFilter, setProgramFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [editItem, setEditItem] = useState<Tuition | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Tuition>>({})
@@ -110,13 +109,13 @@ export function Tuition() {
       status: 'pending', dueDate: '', paidDate: '', paymentMethod: 'cash',
       discount: 0, notes: '',
     })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const openEdit = (item: Tuition) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const handleSave = async () => {
@@ -144,7 +143,8 @@ export function Tuition() {
         setData(prev => [created, ...prev])
         toast.success('Zapis kreiran')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled')
+      setEditItem(null)
     } catch {
       toast.error('Greška pri čuvanju zapisa')
     } finally {
@@ -164,7 +164,7 @@ export function Tuition() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div><h1 className="text-2xl font-bold tracking-tight">Školarina</h1><p className="text-sm text-muted-foreground">Upravljanje školarinom, uplatama i stipendijama</p></div>
-        <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novi zapis</Button>
+        {activeTab === 'pregled' && <Button size="sm" className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" />Novi zapis</Button>}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -174,8 +174,8 @@ export function Tuition() {
         <Card className="p-4"><div className="text-xs text-blue-600 mb-1 flex items-center gap-1"><TrendingUp className="h-3 w-3" />Regulisanih</div><p className="text-2xl font-bold text-blue-700">{paidCount}/{data.length}</p></Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v !== 'dodaj') setEditItem(null) }}>
+        <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">{editItem ? 'Uredi' : 'Dodaj'}</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
 
         <TabsContent value="pregled" className="mt-4">
           <Card>
@@ -217,13 +217,21 @@ export function Tuition() {
         </TabsContent>
 
         <TabsContent value="dodaj" className="mt-4">
-          <Card>
-            <CardHeader><CardTitle className="text-base">Novi zapis školarine</CardTitle></CardHeader>
+          <Card className="sm:max-w-[500px]">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                {editItem && <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setActiveTab('pregled'); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>}
+                <CardTitle className="text-base">{editItem ? 'Uredi zapis' : 'Novi zapis školarine'}</CardTitle>
+              </div>
+            </CardHeader>
             <CardContent>
               <div className="grid gap-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2"><Label className="text-xs">Student *</Label><Input className="text-xs" value={form.studentName || ''} onChange={e => setForm({ ...form, studentName: e.target.value })} /></div>
                   <div className="grid gap-2"><Label className="text-xs">Program *</Label><Input className="text-xs" value={form.program || ''} onChange={e => setForm({ ...form, program: e.target.value })} /></div>
+                  {editItem && (
+                    <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="paid">Plaćena</SelectItem><SelectItem value="partial">Delimično</SelectItem><SelectItem value="pending">Na čekanju</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="exempt">Otpust</SelectItem></SelectContent></Select></div>
+                  )}
                   <div className="grid gap-2"><Label className="text-xs">Nivo studija</Label><Select value={form.studyLevel || 'bachelor'} onValueChange={v => setForm({ ...form, studyLevel: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="bachelor">Osnovne</SelectItem><SelectItem value="master">Master</SelectItem><SelectItem value="doctoral">Doktorske</SelectItem></SelectContent></Select></div>
                   <div className="grid gap-2"><Label className="text-xs">Akademska godina</Label><Input className="text-xs" placeholder="2024/2025" value={form.academicYear || ''} onChange={e => setForm({ ...form, academicYear: e.target.value })} /></div>
                   <div className="grid gap-2"><Label className="text-xs">Semestar</Label><Select value={form.semester || 'zimski'} onValueChange={v => setForm({ ...form, semester: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="zimski">Zimski</SelectItem><SelectItem value="letnji">Letnji</SelectItem></SelectContent></Select></div>
@@ -232,7 +240,10 @@ export function Tuition() {
                   <div className="grid gap-2"><Label className="text-xs">Rok uplate</Label><Input className="text-xs" type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
                 </div>
                 <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-                <Button size="sm" className="w-fit gap-2" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin" />}<Plus className="h-4 w-4" />Kreiraj zapis</Button>
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                {editItem && <Button variant="outline" size="sm" onClick={() => { setActiveTab('pregled'); setEditItem(null) }}>Otkaži</Button>}
+                <Button size="sm" className="gap-2" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin" />}<Plus className="h-4 w-4" />{editItem ? 'Sačuvaj' : 'Kreiraj zapis'}</Button>
               </div>
             </CardContent>
           </Card>
@@ -290,33 +301,6 @@ export function Tuition() {
             <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
             {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
           </div>
-        </CardContent>
-      </Card>
-      )}
-
-      {dialogOpen && (
-      <Card className="sm:max-w-[500px]">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editItem ? 'Uredi zapis' : 'Novi zapis'}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Student *</Label><Input className="text-xs" value={form.studentName || ''} onChange={e => setForm({ ...form, studentName: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Program *</Label><Input className="text-xs" value={form.program || ''} onChange={e => setForm({ ...form, program: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="paid">Plaćena</SelectItem><SelectItem value="partial">Delimično</SelectItem><SelectItem value="pending">Na čekanju</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="exempt">Otpust</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Semestar</Label><Select value={form.semester || 'zimski'} onValueChange={v => setForm({ ...form, semester: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="zimski">Zimski</SelectItem><SelectItem value="letnji">Letnji</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input className="text-xs" type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Uplaćeno</Label><Input className="text-xs" type="number" value={form.paid || ''} onChange={e => setForm({ ...form, paid: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Popust (%)</Label><Input className="text-xs" type="number" value={form.discount || '0'} onChange={e => setForm({ ...form, discount: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Rok uplate</Label><Input className="text-xs" type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2 mt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin" />}{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
         </CardContent>
       </Card>
       )}

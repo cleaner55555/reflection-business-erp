@@ -450,7 +450,7 @@ export function Reports() {
   const [customReportName, setCustomReportName] = useState('')
   const [customReportDesc, setCustomReportDesc] = useState('')
   const [customGenerated, setCustomGenerated] = useState(false)
-  const [customDialogOpen, setCustomDialogOpen] = useState(false)
+  const [customSubTab, setCustomSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -552,7 +552,7 @@ export function Reports() {
     setSavedReports((prev) => [...prev, newReport])
     setCustomReportName('')
     setCustomReportDesc('')
-    setCustomDialogOpen(false)
+    setCustomSubTab('pregled')
   }
 
   const handleDeleteReport = (id: string) => {
@@ -1613,49 +1613,51 @@ export function Reports() {
                   <Play className="h-3.5 w-3.5" />
                   {t('reports.generateReport')}
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setCustomDialogOpen(true)}>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setCustomSubTab('dodaj')}>
                   <Save className="h-3.5 w-3.5" />
                   {t('reports.saveReport')}
                 </Button>
-              {customDialogOpen && (
-                <Card className="mt-4">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCustomDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-                      <CardTitle>{t('reports.saveReportTitle')}</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4 py-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">{t('reports.reportName')}</Label>
-                      <Input
-                        value={customReportName}
-                        onChange={(e) => setCustomReportName(e.target.value)}
-                        placeholder={t('reports.reportNamePlaceholder')}
-                        className="h-9 text-sm"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">{t('reports.reportDescription')}</Label>
-                      <Input
-                        value={customReportDesc}
-                        onChange={(e) => setCustomReportDesc(e.target.value)}
-                        placeholder={t('reports.reportDescPlaceholder')}
-                        className="h-9 text-sm"
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setCustomDialogOpen(false)}>
-                        {t('common.cancel') || 'Otkaži'}
-                      </Button>
-                      <Button size="sm" onClick={handleSaveReport} disabled={!customReportName.trim()}>
-                        <Save className="h-3.5 w-3.5 mr-1" />
-                        {t('common.save') || 'Sačuvaj'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              </div>
+            </div>
+            {customSubTab === 'dodaj' && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCustomSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                    <CardTitle>{t('reports.saveReportTitle')}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 py-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{t('reports.reportName')}</Label>
+                    <Input
+                      value={customReportName}
+                      onChange={(e) => setCustomReportName(e.target.value)}
+                      placeholder={t('reports.reportNamePlaceholder')}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{t('reports.reportDescription')}</Label>
+                    <Input
+                      value={customReportDesc}
+                      onChange={(e) => setCustomReportDesc(e.target.value)}
+                      placeholder={t('reports.reportDescPlaceholder')}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setCustomSubTab('pregled')}>
+                      {t('common.cancel') || 'Otkaži'}
+                    </Button>
+                    <Button size="sm" onClick={handleSaveReport} disabled={!customReportName.trim()}>
+                      <Save className="h-3.5 w-3.5 mr-1" />
+                      {t('common.save') || 'Sačuvaj'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
               </div>
             </SectionCard>
 

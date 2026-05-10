@@ -76,7 +76,6 @@ export function Reservations() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [dateFilter, setDateFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [editItem, setEditItem] = useState<Reservation | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Reservation>>({})
@@ -122,13 +121,13 @@ export function Reservations() {
       partySize: 2, tableNo: '', area: 'indoor', status: 'pending',
       occasion: '', specialRequests: '', source: 'phone', duration: 90, deposit: 0, notes: '',
     })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const openEdit = (item: Reservation) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('uredi')
   }
 
   const handleSave = async () => {
@@ -156,7 +155,8 @@ export function Reservations() {
         }
       }
     } catch { toast.error('Greška pri čuvanju') }
-    setDialogOpen(false)
+    setEditItem(null)
+    setActiveTab('pregled')
   }
 
   if (loading) return <div className="space-y-4"><Skeleton className="h-8 w-64" /><Skeleton className="h-64" /></div>
@@ -179,9 +179,11 @@ export function Reservations() {
           <Button variant="outline" size="sm" className="gap-2" onClick={loadData}>
             <RefreshCw className="h-4 w-4" /> Osveži
           </Button>
-          <Button size="sm" className="gap-2" onClick={openCreate}>
-            <Plus className="h-4 w-4" /> Nova rezervacija
-          </Button>
+          {activeTab === 'pregled' && !detailId && (
+            <Button size="sm" className="gap-2" onClick={openCreate}>
+              <Plus className="h-4 w-4" /> Nova rezervacija
+            </Button>
+          )}
         </div>
       </div>
 
@@ -208,7 +210,7 @@ export function Reservations() {
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab as string); setEditItem(null); setDetailId(null) }}>
         <TabsList>
           <TabsTrigger value="pregled">Pregled</TabsTrigger>
           <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
@@ -216,80 +218,128 @@ export function Reservations() {
         </TabsList>
 
         <TabsContent value="pregled" className="mt-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <CardTitle className="text-base">Lista rezervacija</CardTitle>
-                <div className="flex gap-2 items-center flex-wrap">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input placeholder="Pretraga..." className="pl-8 h-8 w-40 text-xs" value={search} onChange={e => setSearch(e.target.value)} />
-                  </div>
-                  <Input type="date" className="h-8 w-36 text-xs" value={dateFilter} onChange={e => setDateFilter(e.target.value)} />
-                  <Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}>
-                    <SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Sve</SelectItem>
-                      {Object.entries(STATUSES).map(([key, cfg]) => (
-                        <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+          {detailId && detailItem ? (
+            <Card>
+              <CardHeader className="flex flex-row items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle className="text-base">Detalji rezervacije</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold">{detailItem.guestName}</h3>
+                  {getStatusBadge(detailItem.status)}
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-[480px] overflow-y-auto">
-                {data.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Calendar className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm">Nema rezervacija</p>
-                    <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj rezervaciju</Button>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    ['Br. rezervacije', detailItem.reservationNo],
+                    ['Telefon', detailItem.phone || '—'],
+                    ['Email', detailItem.email || '—'],
+                    ['Datum', formatDate(detailItem.date)],
+                    ['Vreme', detailItem.time],
+                    ['Trajanje', `${detailItem.duration} min`],
+                    ['Osoba', String(detailItem.partySize)],
+                    ['Sto', detailItem.tableNo || 'Nije dodeljen'],
+                    ['Zona', AREAS[detailItem.area]?.label],
+                    ['Povod', detailItem.occasion || '—'],
+                    ['Izvor', SOURCES[detailItem.source]?.label || detailItem.source],
+                    ['Depozit', detailItem.deposit > 0 ? formatRSD(detailItem.deposit) : 'Nema'],
+                  ].map(([label, val]) => (
+                    <div key={label} className="p-2 rounded-lg bg-muted/50">
+                      <div className="text-xs text-muted-foreground">{label}</div>
+                      <div className="text-sm font-medium">{val}</div>
+                    </div>
+                  ))}
+                </div>
+                {detailItem.specialRequests && (
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <div className="text-xs text-muted-foreground mb-1">Specijalni zahtevi</div>
+                    <div className="text-sm">{detailItem.specialRequests}</div>
                   </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs">Gost</TableHead>
-                        <TableHead className="text-xs hidden sm:table-cell">Datum</TableHead>
-                        <TableHead className="text-xs hidden sm:table-cell">Vreme</TableHead>
-                        <TableHead className="text-xs hidden md:table-cell">Osoba</TableHead>
-                        <TableHead className="text-xs hidden md:table-cell">Sto</TableHead>
-                        <TableHead className="text-xs hidden lg:table-cell">Povod</TableHead>
-                        <TableHead className="text-xs">Status</TableHead>
-                        <TableHead className="text-xs text-right">Akcije</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {data.map(item => (
-                        <TableRow key={item.id}>
-                          <TableCell className="text-xs font-medium">
-                            <div className="flex items-center gap-2">
-                              <span className="truncate max-w-[150px]">{item.guestName}</span>
-                              {item.deposit > 0 && <span className="text-emerald-600 font-bold">({formatRSD(item.deposit)})</span>}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(item.date)}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground hidden sm:table-cell font-mono">{item.time}</TableCell>
-                          <TableCell className="text-xs hidden md:table-cell">{item.partySize}</TableCell>
-                          <TableCell className="text-xs hidden md:table-cell">{item.tableNo || AREAS[item.area]?.label}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{item.occasion || '—'}</TableCell>
-                          <TableCell>{getStatusBadge(item.status)}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+                {detailItem.notes && (
+                  <div className="p-2 rounded-lg bg-muted/50">
+                    <div className="text-xs text-muted-foreground mb-1">Napomene</div>
+                    <div className="text-sm">{detailItem.notes}</div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <CardTitle className="text-base">Lista rezervacija</CardTitle>
+                  <div className="flex gap-2 items-center flex-wrap">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                      <Input placeholder="Pretraga..." className="pl-8 h-8 w-40 text-xs" value={search} onChange={e => setSearch(e.target.value)} />
+                    </div>
+                    <Input type="date" className="h-8 w-36 text-xs" value={dateFilter} onChange={e => setDateFilter(e.target.value)} />
+                    <Select value={statusFilter || 'all'} onValueChange={v => setStatusFilter(v === 'all' ? '' : v)}>
+                      <SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Sve</SelectItem>
+                        {Object.entries(STATUSES).map(([key, cfg]) => (
+                          <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="max-h-[480px] overflow-y-auto">
+                  {data.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Calendar className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                      <p className="text-sm">Nema rezervacija</p>
+                      <Button className="mt-4" size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj rezervaciju</Button>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs">Gost</TableHead>
+                          <TableHead className="text-xs hidden sm:table-cell">Datum</TableHead>
+                          <TableHead className="text-xs hidden sm:table-cell">Vreme</TableHead>
+                          <TableHead className="text-xs hidden md:table-cell">Osoba</TableHead>
+                          <TableHead className="text-xs hidden md:table-cell">Sto</TableHead>
+                          <TableHead className="text-xs hidden lg:table-cell">Povod</TableHead>
+                          <TableHead className="text-xs">Status</TableHead>
+                          <TableHead className="text-xs text-right">Akcije</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {data.map(item => (
+                          <TableRow key={item.id}>
+                            <TableCell className="text-xs font-medium">
+                              <div className="flex items-center gap-2">
+                                <span className="truncate max-w-[150px]">{item.guestName}</span>
+                                {item.deposit > 0 && <span className="text-emerald-600 font-bold">({formatRSD(item.deposit)})</span>}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">{formatDate(item.date)}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden sm:table-cell font-mono">{item.time}</TableCell>
+                            <TableCell className="text-xs hidden md:table-cell">{item.partySize}</TableCell>
+                            <TableCell className="text-xs hidden md:table-cell">{item.tableNo || AREAS[item.area]?.label}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{item.occasion || '—'}</TableCell>
+                            <TableCell>{getStatusBadge(item.status)}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(item.id)}><Eye className="h-3.5 w-3.5" /></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="dodaj" className="mt-4">
@@ -331,118 +381,68 @@ export function Reservations() {
         </TabsContent>
 
         <TabsContent value="uredi" className="mt-4">
-          <Card>
-            <CardHeader><CardTitle className="text-base">Uredi rezervacije</CardTitle></CardHeader>
-            <CardContent>
-              <div className="max-h-[500px] overflow-y-auto space-y-3">
-                {data.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">Nema rezervacija</p>
-                ) : data.map(item => (
-                  <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{item.guestName}</span>
-                        {getStatusBadge(item.status)}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {formatDate(item.date)} {item.time} — {item.partySize} osoba — {item.tableNo || AREAS[item.area]?.label}
-                      </p>
+          {editItem ? (
+            <Card>
+              <CardHeader className="flex flex-row items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setEditItem(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                <div>
+                  <CardTitle className="text-base">Uredi rezervaciju</CardTitle>
+                  <p className="text-xs text-muted-foreground">Izmenite podatke rezervacije</p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-sm" value={form.guestName || ''} onChange={e => setForm({ ...form, guestName: e.target.value })} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input className="text-sm" value={form.phone || ''} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Status</Label>
+                      <Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}>
+                        <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                        <SelectContent>{Object.entries(STATUSES).map(([key, cfg]) => <SelectItem key={key} value={key}>{cfg.label}</SelectItem>)}</SelectContent>
+                      </Select>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <div className="grid gap-2"><Label className="text-xs">Sto</Label><Input className="text-sm" value={form.tableNo || ''} onChange={e => setForm({ ...form, tableNo: e.target.value })} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input className="text-sm" type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Vreme</Label><Input className="text-sm" type="time" value={form.time || ''} onChange={e => setForm({ ...form, time: e.target.value })} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Osoba</Label><Input className="text-sm" type="number" value={form.partySize || ''} onChange={e => setForm({ ...form, partySize: Number(e.target.value) })} /></div>
+                    <div className="grid gap-2"><Label className="text-xs">Depozit (RSD)</Label><Input className="text-sm" type="number" value={form.deposit || ''} onChange={e => setForm({ ...form, deposit: Number(e.target.value) })} /></div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Textarea className="text-sm" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} /></div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                  <Button variant="outline" size="sm" onClick={() => setEditItem(null)}>Otkaži</Button>
+                  <Button size="sm" onClick={handleSave}>Sačuvaj</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Uredi rezervacije</CardTitle></CardHeader>
+              <CardContent>
+                <div className="max-h-[500px] overflow-y-auto space-y-3">
+                  {data.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-8">Nema rezervacija</p>
+                  ) : data.map(item => (
+                    <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{item.guestName}</span>
+                          {getStatusBadge(item.status)}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {formatDate(item.date)} {item.time} — {item.partySize} osoba — {item.tableNo || AREAS[item.area]?.label}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
-
-      {/* Detail View */}
-      {detailId && detailItem && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">Detalji rezervacije</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold">{detailItem.guestName}</h3>
-              {getStatusBadge(detailItem.status)}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['Br. rezervacije', detailItem.reservationNo],
-                ['Telefon', detailItem.phone || '—'],
-                ['Email', detailItem.email || '—'],
-                ['Datum', formatDate(detailItem.date)],
-                ['Vreme', detailItem.time],
-                ['Trajanje', `${detailItem.duration} min`],
-                ['Osoba', String(detailItem.partySize)],
-                ['Sto', detailItem.tableNo || 'Nije dodeljen'],
-                ['Zona', AREAS[detailItem.area]?.label],
-                ['Povod', detailItem.occasion || '—'],
-                ['Izvor', SOURCES[detailItem.source]?.label || detailItem.source],
-                ['Depozit', detailItem.deposit > 0 ? formatRSD(detailItem.deposit) : 'Nema'],
-              ].map(([label, val]) => (
-                <div key={label} className="p-2 rounded-lg bg-muted/50">
-                  <div className="text-xs text-muted-foreground">{label}</div>
-                  <div className="text-sm font-medium">{val}</div>
-                </div>
-              ))}
-            </div>
-            {detailItem.specialRequests && (
-              <div className="p-2 rounded-lg bg-muted/50">
-                <div className="text-xs text-muted-foreground mb-1">Specijalni zahtevi</div>
-                <div className="text-sm">{detailItem.specialRequests}</div>
-              </div>
-            )}
-            {detailItem.notes && (
-              <div className="p-2 rounded-lg bg-muted/50">
-                <div className="text-xs text-muted-foreground mb-1">Napomene</div>
-                <div className="text-sm">{detailItem.notes}</div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Edit/Create Form */}
-      {dialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div>
-              <CardTitle className="text-base">{editItem ? 'Uredi rezervaciju' : 'Nova rezervacija'}</CardTitle>
-              <p className="text-xs text-muted-foreground">{editItem ? 'Izmenite podatke rezervacije' : 'Popunite podatke za novu rezervaciju'}</p>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-sm" value={form.guestName || ''} onChange={e => setForm({ ...form, guestName: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input className="text-sm" value={form.phone || ''} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Status</Label>
-                  <Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}>
-                    <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>{Object.entries(STATUSES).map(([key, cfg]) => <SelectItem key={key} value={key}>{cfg.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2"><Label className="text-xs">Sto</Label><Input className="text-sm" value={form.tableNo || ''} onChange={e => setForm({ ...form, tableNo: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input className="text-sm" type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Vreme</Label><Input className="text-sm" type="time" value={form.time || ''} onChange={e => setForm({ ...form, time: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Osoba</Label><Input className="text-sm" type="number" value={form.partySize || ''} onChange={e => setForm({ ...form, partySize: Number(e.target.value) })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Depozit (RSD)</Label><Input className="text-sm" type="number" value={form.deposit || ''} onChange={e => setForm({ ...form, deposit: Number(e.target.value) })} /></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Textarea className="text-sm" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-              <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button size="sm" onClick={handleSave}>Sačuvaj</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

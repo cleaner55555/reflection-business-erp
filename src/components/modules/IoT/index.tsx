@@ -304,13 +304,8 @@ export function IoT() {
   const [filterGroup, setFilterGroup] = useState('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  // Dialogs
-  const [sensorDialogOpen, setSensorDialogOpen] = useState(false)
-  const [sensorDetailOpen, setSensorDetailOpen] = useState(false)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [ruleDialogOpen, setRuleDialogOpen] = useState(false)
-  const [automationDialogOpen, setAutomationDialogOpen] = useState(false)
-  const [groupDialogOpen, setGroupDialogOpen] = useState(false)
+  // Sub-tab navigation (replaces dialog states)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [editingSensor, setEditingSensor] = useState<IoTSensor | null>(null)
   const [selectedSensor, setSelectedSensor] = useState<IoTSensor | null>(null)
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null)
@@ -418,7 +413,8 @@ export function IoT() {
   const openNewSensor = () => {
     setEditingSensor(null)
     setSensorForm({ name: '', type: 'temperature', location: '', status: 'online', firmware: '', protocol: 'MQTT', groupId: '', notes: '', minThreshold: '', maxThreshold: '', alertEnabled: true, samplingRate: 60 })
-    setSensorDialogOpen(true)
+    setActiveTab('sensors')
+    setSubTab('dodaj')
   }
 
   const openEditSensor = (sensor: IoTSensor) => {
@@ -430,7 +426,8 @@ export function IoT() {
       minThreshold: sensor.minThreshold?.toString() || '', maxThreshold: sensor.maxThreshold?.toString() || '',
       alertEnabled: sensor.alertEnabled, samplingRate: sensor.samplingRate || 60,
     })
-    setSensorDialogOpen(true)
+    setActiveTab('sensors')
+    setSubTab('dodaj')
   }
 
   const handleSubmitSensor = async () => {
@@ -450,7 +447,7 @@ export function IoT() {
         body: JSON.stringify(body),
       })
       if (res.ok) {
-        setSensorDialogOpen(false)
+        setSubTab('pregled')
         loadData()
         showToast(editingSensor ? 'Senzor ažuriran' : 'Senzor kreiran')
       }
@@ -462,7 +459,7 @@ export function IoT() {
     if (!selectedSensor) return
     try {
       await fetch(`/api/iot/sensors/${selectedSensor.id}`, { method: 'DELETE' })
-      setDeleteConfirmOpen(false)
+      setSubTab('pregled')
       setSelectedSensor(null)
       loadData()
       showToast('Senzor obrisan')
@@ -489,7 +486,8 @@ export function IoT() {
   const openNewRule = () => {
     setEditingRule(null)
     setRuleForm({ name: '', sensorType: 'temperature', sensorId: '', condition: 'above', threshold: '', thresholdMax: '', duration: '300', severity: 'warning', notifyEmail: true, notifyPush: false, notifySms: false, cooldown: '600', enabled: true })
-    setRuleDialogOpen(true)
+    setActiveTab('rules')
+    setSubTab('dodaj')
   }
 
   const handleSaveRule = () => {
@@ -505,7 +503,7 @@ export function IoT() {
       lastTriggeredAt: null, triggerCount: 0, createdAt: new Date().toISOString(),
     }
     setAlertRules(prev => editingRule ? prev.map(r => r.id === editingRule.id ? { ...r, ...newRule } : r) : [...prev, newRule])
-    setRuleDialogOpen(false)
+    setSubTab('pregled')
     showToast(editingRule ? 'Pravilo ažurirano' : 'Pravilo kreirano')
   }
 
@@ -514,7 +512,8 @@ export function IoT() {
   const openNewAutomation = () => {
     setEditingAutomation(null)
     setAutoForm({ name: '', description: '', triggerType: 'sensor_value', triggerSensorId: '', triggerCondition: 'above', triggerValue: '', actionType: 'notify', actionConfig: '', enabled: true })
-    setAutomationDialogOpen(true)
+    setActiveTab('automation')
+    setSubTab('dodaj')
   }
 
   const handleSaveAutomation = () => {
@@ -529,7 +528,7 @@ export function IoT() {
       lastExecutedAt: null, executionCount: 0, createdAt: new Date().toISOString(),
     }
     setAutomationRules(prev => editingAutomation ? prev.map(r => r.id === editingAutomation.id ? { ...r, ...newRule } : r) : [...prev, newRule])
-    setAutomationDialogOpen(false)
+    setSubTab('pregled')
     showToast(editingAutomation ? 'Automatizacija ažurirana' : 'Automatizacija kreirana')
   }
 
@@ -543,9 +542,21 @@ export function IoT() {
       sensorCount: 0, createdAt: new Date().toISOString(),
     }
     setGroups(prev => [...prev, newGroup])
-    setGroupDialogOpen(false)
+    setSubTab('pregled')
     setGroupForm({ name: '', description: '', location: '', color: '#10b981' })
     showToast('Grupa kreirana')
+  }
+
+  const openNewGroup = () => {
+    setGroupForm({ name: '', description: '', location: '', color: '#10b981' })
+    setActiveTab('groups')
+    setSubTab('dodaj')
+  }
+
+  // Reset sub-tab when changing main tabs
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setSubTab('pregled')
   }
 
   // ============ RENDER ============
@@ -587,12 +598,12 @@ export function IoT() {
         <div className="flex gap-2 flex-wrap">
           <Button size="sm" onClick={openNewSensor}><Plus className="h-4 w-4 mr-1" /> Novi senzor</Button>
           <Button size="sm" variant="outline" onClick={openNewRule}><Bell className="h-4 w-4 mr-1" /> Pravilo</Button>
-          <Button size="sm" variant="outline" onClick={() => setGroupDialogOpen(true)}><LayoutGrid className="h-4 w-4 mr-1" /> Grupa</Button>
+          <Button size="sm" variant="outline" onClick={openNewGroup}><LayoutGrid className="h-4 w-4 mr-1" /> Grupa</Button>
           <Button variant="outline" size="sm" onClick={loadData}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview"><BarChart3 className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="sensors"><Wifi className="h-3.5 w-3.5 mr-1" /> Senzori</TabsTrigger>
@@ -743,6 +754,17 @@ export function IoT() {
 
         {/* ===== SENSORS ===== */}
         <TabsContent value="sensors" className="space-y-4">
+          {/* Sub-tab back navigation */}
+          {subTab !== 'pregled' && (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad na listu</Button>
+              <Separator className="flex-1" />
+              <span className="text-xs text-muted-foreground">{subTab === 'dodaj' ? (editingSensor ? 'Izmena senzora' : 'Novi senzor') : 'Detalji senzora'}</span>
+            </div>
+          )}
+
+          {subTab === 'pregled' && (
+            <>
           {/* Filters */}
           <Card className="p-3">
             <div className="flex flex-col sm:flex-row gap-3">
@@ -795,7 +817,7 @@ export function IoT() {
                 const typeCfg = SENSOR_TYPE_CONFIG[sensor.type]
                 const statCfg = STATUS_CONFIG[sensor.status]
                 return (
-                  <Card key={sensor.id} className="cursor-pointer hover:shadow-md transition-shadow group" onClick={() => { setSelectedSensor(sensor); setSensorDetailOpen(true) }}>
+                  <Card key={sensor.id} className="cursor-pointer hover:shadow-md transition-shadow group" onClick={() => { setSelectedSensor(sensor); setSubTab('detalji') }}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -845,7 +867,7 @@ export function IoT() {
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditSensor(sensor) }}><Edit3 className="h-3.5 w-3.5" /></Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedSensor(sensor); setDeleteConfirmOpen(true) }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedSensor(sensor); setSubTab('detalji') }}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
 
@@ -880,7 +902,7 @@ export function IoT() {
                       const typeCfg = SENSOR_TYPE_CONFIG[sensor.type]
                       const statCfg = STATUS_CONFIG[sensor.status]
                       return (
-                        <tr key={sensor.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedSensor(sensor); setSensorDetailOpen(true) }}>
+                        <tr key={sensor.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedSensor(sensor); setSubTab('detalji') }}>
                           <td className="p-3">
                             <div className="flex items-center gap-2">
                               <span className="text-sm">{typeCfg?.icon}</span>
@@ -899,7 +921,7 @@ export function IoT() {
                           <td className="p-3">
                             <div className="flex gap-1">
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); openEditSensor(sensor) }}><Edit3 className="h-3.5 w-3.5" /></Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedSensor(sensor); setDeleteConfirmOpen(true) }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); setSelectedSensor(sensor); setSubTab('detalji') }}><Trash2 className="h-3.5 w-3.5" /></Button>
                             </div>
                           </td>
                         </tr>
@@ -910,9 +932,154 @@ export function IoT() {
               </div>
             </Card>
           )}
-        </TabsContent>
+            </>
+          )}
 
-        {/* ===== SENSOR DATA / TELEMETRY ===== */}
+          {/* ===== SENSOR ADD/EDIT FORM ===== */}
+          {subTab === 'dodaj' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{editingSensor ? 'Izmeni senzor' : 'Novi senzor'}</CardTitle>
+                <CardDescription>{editingSensor ? 'Izmenite podatke o senzoru' : 'Dodajte novi IoT senzor'}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2"><Label className="text-xs">Naziv senzora *</Label><Input value={sensorForm.name} onChange={(e) => setSensorForm({ ...sensorForm, name: e.target.value })} placeholder="npr. Hladnjača A1" /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Tip senzora</Label>
+                    <Select value={sensorForm.type} onValueChange={(v) => setSensorForm({ ...sensorForm, type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(SENSOR_TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Status</Label>
+                    <Select value={sensorForm.status} onValueChange={(v) => setSensorForm({ ...sensorForm, status: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(STATUS_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={sensorForm.location} onChange={(e) => setSensorForm({ ...sensorForm, location: e.target.value })} placeholder="npr. Magacin 1" /></div>
+                  <div className="space-y-2"><Label className="text-xs">Protokol</Label>
+                    <Select value={sensorForm.protocol} onValueChange={(v) => setSensorForm({ ...sensorForm, protocol: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{PROTOCOLS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Firmware verzija</Label><Input value={sensorForm.firmware} onChange={(e) => setSensorForm({ ...sensorForm, firmware: e.target.value })} placeholder="v1.0.0" /></div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Intervalska stopa</Label>
+                    <Select value={String(sensorForm.samplingRate)} onValueChange={(v) => setSensorForm({ ...sensorForm, samplingRate: Number(v) })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{SAMPLE_RATES.map(r => <SelectItem key={r.value} value={String(r.value)}>{r.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Min prag ({SENSOR_TYPE_CONFIG[sensorForm.type]?.unit || ''})</Label><Input type="number" value={sensorForm.minThreshold} onChange={(e) => setSensorForm({ ...sensorForm, minThreshold: e.target.value })} placeholder="Min" /></div>
+                  <div className="space-y-2"><Label className="text-xs">Max prag ({SENSOR_TYPE_CONFIG[sensorForm.type]?.unit || ''})</Label><Input type="number" value={sensorForm.maxThreshold} onChange={(e) => setSensorForm({ ...sensorForm, maxThreshold: e.target.value })} placeholder="Max" /></div>
+                </div>
+                <div className="space-y-2"><Label className="text-xs">Grupa</Label>
+                  <Select value={sensorForm.groupId} onValueChange={(v) => setSensorForm({ ...sensorForm, groupId: v })}>
+                    <SelectTrigger><SelectValue placeholder="Izaberite grupu" /></SelectTrigger>
+                    <SelectContent><SelectItem value="">Bez grupe</SelectItem>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2"><Switch checked={sensorForm.alertEnabled} onCheckedChange={(v) => setSensorForm({ ...sensorForm, alertEnabled: v })} /><Label className="text-xs">Omogući alerte za ovaj senzor</Label></div>
+                <div className="space-y-2"><Label className="text-xs">Napomene</Label><Textarea value={sensorForm.notes} onChange={(e) => setSensorForm({ ...sensorForm, notes: e.target.value })} placeholder="Dodatne informacije..." rows={2} /></div>
+              </CardContent>
+              <div className="flex justify-end gap-2 px-6 pb-6">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleSubmitSensor} disabled={submitting || !sensorForm.name.trim()}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
+              </div>
+            </Card>
+          )}
+
+          {/* ===== SENSOR DETAIL ===== */}
+          {subTab === 'detalji' && selectedSensor && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="text-xl">{SENSOR_TYPE_CONFIG[selectedSensor.type]?.icon}</span>
+                  {selectedSensor.name}
+                </CardTitle>
+                <CardDescription>{SENSOR_TYPE_CONFIG[selectedSensor.type]?.label} · {selectedSensor.location}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-xs ${STATUS_CONFIG[selectedSensor.status]?.color}`}>{STATUS_CONFIG[selectedSensor.status]?.label}</Badge></div>
+                  <div><span className="text-xs text-muted-foreground">Protokol:</span><br /><Badge variant="secondary">{selectedSensor.protocol}</Badge></div>
+                  <div><span className="text-xs text-muted-foreground">Firmware:</span><br /><span className="text-xs">{selectedSensor.firmware || '-'}</span></div>
+                  <div><span className="text-xs text-muted-foreground">Intervalska stopa:</span><br /><span className="text-xs">{selectedSensor.samplingRate}s</span></div>
+                </div>
+                <Separator />
+                <div className="text-center p-4 bg-muted/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1">Trenutna vrednost</p>
+                  <p className="text-3xl font-bold">
+                    {selectedSensor.lastReading !== null ? selectedSensor.lastReading : 'N/A'}
+                    {selectedSensor.unit && <span className="text-lg text-muted-foreground ml-1">{selectedSensor.unit}</span>}
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-3 bg-muted/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground">Baterija</p>
+                    <div className="flex items-center justify-center gap-1 mt-1">{getBatteryIcon(selectedSensor.batteryLevel)}<span className="text-sm font-bold">{selectedSensor.batteryLevel}%</span></div>
+                    <Progress value={selectedSensor.batteryLevel} className="mt-1 h-1.5" />
+                  </div>
+                  <div className="text-center p-3 bg-muted/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground">Signal</p>
+                    <div className="flex items-center justify-center gap-1 mt-1">{getSignalBars(selectedSensor.signalStrength)}<span className="text-sm font-bold">{selectedSensor.signalStrength}%</span></div>
+                  </div>
+                  <div className="text-center p-3 bg-muted/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground">Uptime</p>
+                    <p className="text-sm font-bold mt-1">{formatUptime(selectedSensor.uptime)}</p>
+                  </div>
+                </div>
+                {selectedSensor.minThreshold !== null && selectedSensor.maxThreshold !== null && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium">Pragovi za alerte</p>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Min: {selectedSensor.minThreshold}{selectedSensor.unit}</span>
+                        <span>Max: {selectedSensor.maxThreshold}{selectedSensor.unit}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch checked={selectedSensor.alertEnabled} disabled />
+                        <Label className="text-xs">{selectedSensor.alertEnabled ? 'Alerti aktivni' : 'Alerti deaktivirani'}</Label>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {selectedSensor.notes && (
+                  <><Separator /><div><p className="text-xs font-medium mb-1">Napomene</p><p className="text-xs text-muted-foreground bg-muted/30 rounded p-2">{selectedSensor.notes}</p></div></>
+                )}
+                {selectedSensor.readings && selectedSensor.readings.length > 0 && (
+                  <>
+                    <Separator />
+                    <p className="text-xs font-medium">Poslednja merenja (24h)</p>
+                    <div className="flex items-end gap-px h-16">
+                      {selectedSensor.readings.map((r, i) => {
+                        const vals = selectedSensor.readings!.map(x => x.value)
+                        const cMax = Math.max(...vals) || 1
+                        const pct = (r.value / cMax) * 100
+                        return <div key={r.id} className={`flex-1 rounded-t-sm ${i === selectedSensor.readings!.length - 1 ? 'bg-primary' : 'bg-primary/30'}`} style={{ height: `${Math.max(5, pct)}%` }} />
+                      })}
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                  <Button variant="outline" onClick={() => openEditSensor(selectedSensor)}><Edit3 className="h-4 w-4 mr-1" /> Izmeni</Button>
+                  <Button variant="destructive" onClick={handleDeleteSensor}><Trash2 className="h-4 w-4 mr-1" /> Obriši</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
         <TabsContent value="data" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sensors.filter(s => s.readings && s.readings.length > 0).map(sensor => {
@@ -1047,6 +1214,15 @@ export function IoT() {
 
         {/* ===== ALERT RULES ===== */}
         <TabsContent value="rules" className="space-y-4">
+          {subTab !== 'pregled' && (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+              <Separator className="flex-1" />
+              <span className="text-xs text-muted-foreground">{editingRule ? 'Izmena pravila' : 'Novo pravilo'}</span>
+            </div>
+          )}
+          {subTab === 'pregled' && (
+            <>
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{alertRules.length} pravila upozorenja</p>
             <Button size="sm" onClick={openNewRule}><Plus className="h-4 w-4 mr-1" /> Novo pravilo</Button>
@@ -1085,7 +1261,7 @@ export function IoT() {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <Switch checked={rule.enabled} onCheckedChange={() => handleToggleRule(rule.id)} />
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingRule(rule); setRuleForm({ name: rule.name, sensorType: rule.sensorType, sensorId: rule.sensorId || '', condition: rule.condition, threshold: rule.threshold?.toString() || '', thresholdMax: rule.thresholdMax?.toString() || '', duration: rule.duration.toString(), severity: rule.severity, notifyEmail: rule.notifyEmail, notifyPush: rule.notifyPush, notifySms: rule.notifySms, cooldown: rule.cooldown.toString(), enabled: rule.enabled }); setRuleDialogOpen(true) }}><Edit3 className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingRule(rule); setRuleForm({ name: rule.name, sensorType: rule.sensorType, sensorId: rule.sensorId || '', condition: rule.condition, threshold: rule.threshold?.toString() || '', thresholdMax: rule.thresholdMax?.toString() || '', duration: rule.duration.toString(), severity: rule.severity, notifyEmail: rule.notifyEmail, notifyPush: rule.notifyPush, notifySms: rule.notifySms, cooldown: rule.cooldown.toString(), enabled: rule.enabled }); setSubTab('dodaj') }}><Edit3 className="h-3.5 w-3.5" /></Button>
                       </div>
                     </div>
                   </CardContent>
@@ -1093,10 +1269,76 @@ export function IoT() {
               )
             })}
           </div>
+            </>
+          )}
+
+          {subTab === 'dodaj' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{editingRule ? 'Izmeni pravilo' : 'Novo pravilo upozorenja'}</CardTitle>
+                <CardDescription>Definišite uslove za automatska upozorenja</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2"><Label className="text-xs">Naziv pravila *</Label><Input value={ruleForm.name} onChange={(e) => setRuleForm({ ...ruleForm, name: e.target.value })} placeholder="npr. Visoka temperatura" /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Tip senzora</Label>
+                    <Select value={ruleForm.sensorType} onValueChange={(v) => setRuleForm({ ...ruleForm, sensorType: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(SENSOR_TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Uslov</Label>
+                    <Select value={ruleForm.condition} onValueChange={(v) => setRuleForm({ ...ruleForm, condition: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(CONDITION_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Prag (donji/tačan)</Label><Input type="number" value={ruleForm.threshold} onChange={(e) => setRuleForm({ ...ruleForm, threshold: e.target.value })} placeholder="Vrednost" /></div>
+                  <div className="space-y-2"><Label className="text-xs">Prag (gornji - za opseg)</Label><Input type="number" value={ruleForm.thresholdMax} onChange={(e) => setRuleForm({ ...ruleForm, thresholdMax: e.target.value })} placeholder="Max" /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2"><Label className="text-xs">Trajanje (sekunde)</Label><Input type="number" value={ruleForm.duration} onChange={(e) => setRuleForm({ ...ruleForm, duration: e.target.value })} /></div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Ozbiljnost</Label>
+                    <Select value={ruleForm.severity} onValueChange={(v) => setRuleForm({ ...ruleForm, severity: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(SEVERITY_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2"><Label className="text-xs">Cooldown (sekunde)</Label><Input type="number" value={ruleForm.cooldown} onChange={(e) => setRuleForm({ ...ruleForm, cooldown: e.target.value })} /></div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Kanal obaveštenja</Label>
+                  <div className="flex gap-4">
+                    <div className="flex items-center gap-1.5"><Switch checked={ruleForm.notifyEmail} onCheckedChange={(v) => setRuleForm({ ...ruleForm, notifyEmail: v })} /><Label className="text-xs">📧 Email</Label></div>
+                    <div className="flex items-center gap-1.5"><Switch checked={ruleForm.notifyPush} onCheckedChange={(v) => setRuleForm({ ...ruleForm, notifyPush: v })} /><Label className="text-xs">📱 Push</Label></div>
+                    <div className="flex items-center gap-1.5"><Switch checked={ruleForm.notifySms} onCheckedChange={(v) => setRuleForm({ ...ruleForm, notifySms: v })} /><Label className="text-xs">💬 SMS</Label></div>
+                  </div>
+                </div>
+              </CardContent>
+              <div className="flex justify-end gap-2 px-6 pb-6">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleSaveRule}>{editingRule ? 'Sačuvaj izmene' : 'Kreiraj pravilo'}</Button>
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* ===== AUTOMATION ===== */}
         <TabsContent value="automation" className="space-y-4">
+          {subTab !== 'pregled' && (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+              <Separator className="flex-1" />
+              <span className="text-xs text-muted-foreground">{editingAutomation ? 'Izmena automatizacije' : 'Nova automatizacija'}</span>
+            </div>
+          )}
+          {subTab === 'pregled' && (
+            <>
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{automationRules.length} automatizacija</p>
             <Button size="sm" onClick={openNewAutomation}><Plus className="h-4 w-4 mr-1" /> Nova automatizacija</Button>
@@ -1123,17 +1365,74 @@ export function IoT() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <Switch checked={rule.enabled} onCheckedChange={() => handleToggleAutomation(rule.id)} />
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingAutomation(rule); setAutoForm({ name: rule.name, description: rule.description, triggerType: rule.triggerType, triggerSensorId: rule.triggerSensorId || '', triggerCondition: rule.triggerCondition, triggerValue: rule.triggerValue?.toString() || '', actionType: rule.actionType, actionConfig: rule.actionConfig || '', enabled: rule.enabled }); setAutomationDialogOpen(true) }}><Edit3 className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingAutomation(rule); setAutoForm({ name: rule.name, description: rule.description, triggerType: rule.triggerType, triggerSensorId: rule.triggerSensorId || '', triggerCondition: rule.triggerCondition, triggerValue: rule.triggerValue?.toString() || '', actionType: rule.actionType, actionConfig: rule.actionConfig || '', enabled: rule.enabled }); setSubTab('dodaj') }}><Edit3 className="h-3.5 w-3.5" /></Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
+            </>
+          )}
+
+          {subTab === 'dodaj' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{editingAutomation ? 'Izmeni automatizaciju' : 'Nova automatizacija'}</CardTitle>
+                <CardDescription>Definišite trigger i akciju za automatizaciju</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={autoForm.name} onChange={(e) => setAutoForm({ ...autoForm, name: e.target.value })} placeholder="npr. Alert na visoku temp" /></div>
+                <div className="space-y-2"><Label className="text-xs">Opis</Label><Textarea value={autoForm.description} onChange={(e) => setAutoForm({ ...autoForm, description: e.target.value })} placeholder="Opis automatizacije..." rows={2} /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Trigger tip</Label>
+                    <Select value={autoForm.triggerType} onValueChange={(v) => setAutoForm({ ...autoForm, triggerType: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(TRIGGER_TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Akcija</Label>
+                    <Select value={autoForm.actionType} onValueChange={(v) => setAutoForm({ ...autoForm, actionType: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{Object.entries(ACTION_TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Senzor</Label>
+                    <Select value={autoForm.triggerSensorId} onValueChange={(v) => setAutoForm({ ...autoForm, triggerSensorId: v })}>
+                      <SelectTrigger><SelectValue placeholder="Svi senzori" /></SelectTrigger>
+                      <SelectContent><SelectItem value="">Svi senzori</SelectItem>{sensors.map(s => <SelectItem key={s.id} value={s.id}>{SENSOR_TYPE_CONFIG[s.type]?.icon} {s.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Trigger vrednost</Label><Input type="number" value={autoForm.triggerValue} onChange={(e) => setAutoForm({ ...autoForm, triggerValue: e.target.value })} placeholder="Opcionalno" /></div>
+                </div>
+                {autoForm.actionType === 'webhook' && (
+                  <div className="space-y-2"><Label className="text-xs">Webhook URL</Label><Input value={autoForm.actionConfig} onChange={(e) => setAutoForm({ ...autoForm, actionConfig: e.target.value })} placeholder="https://..." /></div>
+                )}
+              </CardContent>
+              <div className="flex justify-end gap-2 px-6 pb-6">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleSaveAutomation}>{editingAutomation ? 'Sačuvaj' : 'Kreiraj'}</Button>
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* ===== GROUPS ===== */}
         <TabsContent value="groups" className="space-y-4">
+          {subTab !== 'pregled' && (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4 mr-1" /> Nazad</Button>
+              <Separator className="flex-1" />
+              <span className="text-xs text-muted-foreground">Nova grupa uređaja</span>
+            </div>
+          )}
+          {subTab === 'pregled' && (
+            <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {groups.map(g => {
               const groupSensors = sensors.filter(s => s.groupId === g.id)
@@ -1176,6 +1475,27 @@ export function IoT() {
               )
             })}
           </div>
+            </>
+          )}
+
+          {subTab === 'dodaj' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Nova grupa uređaja</CardTitle>
+                <CardDescription>Grupišite senzore po lokaciji ili funkciji</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2"><Label className="text-xs">Naziv grupe *</Label><Input value={groupForm.name} onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="npr. Magacini" /></div>
+                <div className="space-y-2"><Label className="text-xs">Opis</Label><Input value={groupForm.description} onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })} placeholder="Opcionalno" /></div>
+                <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={groupForm.location} onChange={(e) => setGroupForm({ ...groupForm, location: e.target.value })} placeholder="npr. Magacin 1" /></div>
+                <div className="space-y-2"><Label className="text-xs">Boja</Label><Input type="color" value={groupForm.color} onChange={(e) => setGroupForm({ ...groupForm, color: e.target.value })} className="h-8 w-16" /></div>
+              </CardContent>
+              <div className="flex justify-end gap-2 px-6 pb-6">
+                <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
+                <Button onClick={handleCreateGroup} disabled={!groupForm.name.trim()}>Kreiraj grupu</Button>
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* ===== SETTINGS ===== */}
@@ -1240,320 +1560,6 @@ export function IoT() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* ===== DIALOGS ===== */}
-
-      {/* New/Edit Sensor */}
-{sensorDialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setSensorDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingSensor ? 'Izmeni senzor' : 'Novi senzor'}</CardTitle>
-            <CardDescription>{editingSensor ? 'Izmenite podatke o senzoru' : 'Dodajte novi IoT senzor'}</CardDescription>
-          </div>
-            </CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv senzora *</Label><Input value={sensorForm.name} onChange={(e) => setSensorForm({ ...sensorForm, name: e.target.value })} placeholder="npr. Hladnjača A1" /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Tip senzora</Label>
-                <Select value={sensorForm.type} onValueChange={(v) => setSensorForm({ ...sensorForm, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(SENSOR_TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Status</Label>
-                <Select value={sensorForm.status} onValueChange={(v) => setSensorForm({ ...sensorForm, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(STATUS_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={sensorForm.location} onChange={(e) => setSensorForm({ ...sensorForm, location: e.target.value })} placeholder="npr. Magacin 1" /></div>
-              <div className="space-y-2"><Label className="text-xs">Protokol</Label>
-                <Select value={sensorForm.protocol} onValueChange={(v) => setSensorForm({ ...sensorForm, protocol: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{PROTOCOLS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Firmware verzija</Label><Input value={sensorForm.firmware} onChange={(e) => setSensorForm({ ...sensorForm, firmware: e.target.value })} placeholder="v1.0.0" /></div>
-              <div className="space-y-2">
-                <Label className="text-xs">Intervalska stopa</Label>
-                <Select value={String(sensorForm.samplingRate)} onValueChange={(v) => setSensorForm({ ...sensorForm, samplingRate: Number(v) })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{SAMPLE_RATES.map(r => <SelectItem key={r.value} value={String(r.value)}>{r.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Min prag ({SENSOR_TYPE_CONFIG[sensorForm.type]?.unit || ''})</Label><Input type="number" value={sensorForm.minThreshold} onChange={(e) => setSensorForm({ ...sensorForm, minThreshold: e.target.value })} placeholder="Min" /></div>
-              <div className="space-y-2"><Label className="text-xs">Max prag ({SENSOR_TYPE_CONFIG[sensorForm.type]?.unit || ''})</Label><Input type="number" value={sensorForm.maxThreshold} onChange={(e) => setSensorForm({ ...sensorForm, maxThreshold: e.target.value })} placeholder="Max" /></div>
-            </div>
-            <div className="space-y-2"><Label className="text-xs">Grupa</Label>
-              <Select value={sensorForm.groupId} onValueChange={(v) => setSensorForm({ ...sensorForm, groupId: v })}>
-                <SelectTrigger><SelectValue placeholder="Izaberite grupu" /></SelectTrigger>
-                <SelectContent><SelectItem value="">Bez grupe</SelectItem>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2"><Switch checked={sensorForm.alertEnabled} onCheckedChange={(v) => setSensorForm({ ...sensorForm, alertEnabled: v })} /><Label className="text-xs">Omogući alerte za ovaj senzor</Label></div>
-            <div className="space-y-2"><Label className="text-xs">Napomene</Label><Textarea value={sensorForm.notes} onChange={(e) => setSensorForm({ ...sensorForm, notes: e.target.value })} placeholder="Dodatne informacije..." rows={2} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setSensorDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSubmitSensor} disabled={submitting || !sensorForm.name.trim()}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-          </div>
-</Card>
-)}
-
-      {/* Sensor Detail */}
-{sensorDetailOpen && (
-<Card className="border">
-{selectedSensor && (
-            <>
-              <CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setSensorDetailOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base flex items-center gap-2">
-                  <span className="text-xl">{SENSOR_TYPE_CONFIG[selectedSensor.type]?.icon}</span>
-                  {selectedSensor.name}
-                </CardTitle>
-                <CardDescription>{SENSOR_TYPE_CONFIG[selectedSensor.type]?.label} · {selectedSensor.location}</CardDescription>
-              </div>
-            </CardHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-xs ${STATUS_CONFIG[selectedSensor.status]?.color}`}>{STATUS_CONFIG[selectedSensor.status]?.label}</Badge></div>
-                  <div><span className="text-xs text-muted-foreground">Protokol:</span><br /><Badge variant="secondary">{selectedSensor.protocol}</Badge></div>
-                  <div><span className="text-xs text-muted-foreground">Firmware:</span><br /><span className="text-xs">{selectedSensor.firmware || '-'}</span></div>
-                  <div><span className="text-xs text-muted-foreground">Intervalska stopa:</span><br /><span className="text-xs">{selectedSensor.samplingRate}s</span></div>
-                </div>
-
-                <Separator />
-
-                <div className="text-center p-4 bg-muted/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground mb-1">Trenutna vrednost</p>
-                  <p className="text-3xl font-bold">
-                    {selectedSensor.lastReading !== null ? selectedSensor.lastReading : 'N/A'}
-                    {selectedSensor.unit && <span className="text-lg text-muted-foreground ml-1">{selectedSensor.unit}</span>}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 bg-muted/30 rounded-lg">
-                    <p className="text-xs text-muted-foreground">Baterija</p>
-                    <div className="flex items-center justify-center gap-1 mt-1">{getBatteryIcon(selectedSensor.batteryLevel)}<span className="text-sm font-bold">{selectedSensor.batteryLevel}%</span></div>
-                    <Progress value={selectedSensor.batteryLevel} className="mt-1 h-1.5" />
-                  </div>
-                  <div className="text-center p-3 bg-muted/30 rounded-lg">
-                    <p className="text-xs text-muted-foreground">Signal</p>
-                    <div className="flex items-center justify-center gap-1 mt-1">{getSignalBars(selectedSensor.signalStrength)}<span className="text-sm font-bold">{selectedSensor.signalStrength}%</span></div>
-                  </div>
-                  <div className="text-center p-3 bg-muted/30 rounded-lg">
-                    <p className="text-xs text-muted-foreground">Uptime</p>
-                    <p className="text-sm font-bold mt-1">{formatUptime(selectedSensor.uptime)}</p>
-                  </div>
-                </div>
-
-                {selectedSensor.minThreshold !== null && selectedSensor.maxThreshold !== null && (
-                  <>
-                    <Separator />
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium">Pragovi za alerte</p>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Min: {selectedSensor.minThreshold}{selectedSensor.unit}</span>
-                        <span>Max: {selectedSensor.maxThreshold}{selectedSensor.unit}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch checked={selectedSensor.alertEnabled} disabled />
-                        <Label className="text-xs">{selectedSensor.alertEnabled ? 'Alerti aktivni' : 'Alerti deaktivirani'}</Label>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {selectedSensor.notes && (
-                  <><Separator /><div><p className="text-xs font-medium mb-1">Napomene</p><p className="text-xs text-muted-foreground bg-muted/30 rounded p-2">{selectedSensor.notes}</p></div></>
-                )}
-
-                {selectedSensor.readings && selectedSensor.readings.length > 0 && (
-                  <>
-                    <Separator />
-                    <p className="text-xs font-medium">Poslednja merenja (24h)</p>
-                    <div className="flex items-end gap-px h-16">
-                      {selectedSensor.readings.map((r, i) => {
-                        const vals = selectedSensor.readings!.map(x => x.value)
-                        const cMax = Math.max(...vals) || 1
-                        const pct = (r.value / cMax) * 100
-                        return <div key={r.id} className={`flex-1 rounded-t-sm ${i === selectedSensor.readings!.length - 1 ? 'bg-primary' : 'bg-primary/30'}`} style={{ height: `${Math.max(5, pct)}%` }} />
-                      })}
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-</Card>
-)}
-
-      {/* New/Edit Alert Rule */}
-{ruleDialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setRuleDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingRule ? 'Izmeni pravilo' : 'Novo pravilo upozorenja'}</CardTitle>
-            <CardDescription>Definišite uslove za automatska upozorenja</CardDescription>
-          </div>
-            </CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv pravila *</Label><Input value={ruleForm.name} onChange={(e) => setRuleForm({ ...ruleForm, name: e.target.value })} placeholder="npr. Visoka temperatura" /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Tip senzora</Label>
-                <Select value={ruleForm.sensorType} onValueChange={(v) => setRuleForm({ ...ruleForm, sensorType: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(SENSOR_TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Uslov</Label>
-                <Select value={ruleForm.condition} onValueChange={(v) => setRuleForm({ ...ruleForm, condition: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(CONDITION_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Prag (donji/tačan)</Label><Input type="number" value={ruleForm.threshold} onChange={(e) => setRuleForm({ ...ruleForm, threshold: e.target.value })} placeholder="Vrednost" /></div>
-              <div className="space-y-2"><Label className="text-xs">Prag (gornji - za opseg)</Label><Input type="number" value={ruleForm.thresholdMax} onChange={(e) => setRuleForm({ ...ruleForm, thresholdMax: e.target.value })} placeholder="Max" /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Trajanje (sekunde)</Label><Input type="number" value={ruleForm.duration} onChange={(e) => setRuleForm({ ...ruleForm, duration: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Ozbiljnost</Label>
-                <Select value={ruleForm.severity} onValueChange={(v) => setRuleForm({ ...ruleForm, severity: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(SEVERITY_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2"><Label className="text-xs">Cooldown (sekunde)</Label><Input type="number" value={ruleForm.cooldown} onChange={(e) => setRuleForm({ ...ruleForm, cooldown: e.target.value })} /></div>
-            <div className="space-y-2">
-              <Label className="text-xs">Kanal obaveštenja</Label>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-1.5"><Switch checked={ruleForm.notifyEmail} onCheckedChange={(v) => setRuleForm({ ...ruleForm, notifyEmail: v })} /><Label className="text-xs">📧 Email</Label></div>
-                <div className="flex items-center gap-1.5"><Switch checked={ruleForm.notifyPush} onCheckedChange={(v) => setRuleForm({ ...ruleForm, notifyPush: v })} /><Label className="text-xs">📱 Push</Label></div>
-                <div className="flex items-center gap-1.5"><Switch checked={ruleForm.notifySms} onCheckedChange={(v) => setRuleForm({ ...ruleForm, notifySms: v })} /><Label className="text-xs">💬 SMS</Label></div>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setRuleDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSaveRule}>{editingRule ? 'Sačuvaj izmene' : 'Kreiraj pravilo'}</Button>
-          </div>
-</Card>
-)}
-
-      {/* New/Edit Automation */}
-{ automationDialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setAutomationDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingAutomation ? 'Izmeni automatizaciju' : 'Nova automatizacija'}</CardTitle>
-            <CardDescription>Definišite trigger i akciju za automatizaciju</CardDescription>
-          </div>
-            </CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={autoForm.name} onChange={(e) => setAutoForm({ ...autoForm, name: e.target.value })} placeholder="npr. Alert na visoku temp" /></div>
-            <div className="space-y-2"><Label className="text-xs">Opis</Label><Textarea value={autoForm.description} onChange={(e) => setAutoForm({ ...autoForm, description: e.target.value })} placeholder="Opis automatizacije..." rows={2} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Trigger tip</Label>
-                <Select value={autoForm.triggerType} onValueChange={(v) => setAutoForm({ ...autoForm, triggerType: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(TRIGGER_TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Akcija</Label>
-                <Select value={autoForm.actionType} onValueChange={(v) => setAutoForm({ ...autoForm, actionType: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(ACTION_TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Senzor</Label>
-                <Select value={autoForm.triggerSensorId} onValueChange={(v) => setAutoForm({ ...autoForm, triggerSensorId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Svi senzori" /></SelectTrigger>
-                  <SelectContent><SelectItem value="">Svi senzori</SelectItem>{sensors.map(s => <SelectItem key={s.id} value={s.id}>{SENSOR_TYPE_CONFIG[s.type]?.icon} {s.name}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label className="text-xs">Trigger vrednost</Label><Input type="number" value={autoForm.triggerValue} onChange={(e) => setAutoForm({ ...autoForm, triggerValue: e.target.value })} placeholder="Opcionalno" /></div>
-            </div>
-            {autoForm.actionType === 'webhook' && (
-              <div className="space-y-2"><Label className="text-xs">Webhook URL</Label><Input value={autoForm.actionConfig} onChange={(e) => setAutoForm({ ...autoForm, actionConfig: e.target.value })} placeholder="https://..." /></div>
-            )}
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setAutomationDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSaveAutomation}>{editingAutomation ? 'Sačuvaj' : 'Kreiraj'}</Button>
-          </div>
-</Card>
-)}
-
-      {/* New Group */}
-{ groupDialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGroupDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">Nova grupa uređaja</CardTitle><CardDescription>Grupišite senzore po lokaciji ili funkciji</CardDescription></div>
-            </CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv grupe *</Label><Input value={groupForm.name} onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="npr. Magacini" /></div>
-            <div className="space-y-2"><Label className="text-xs">Opis</Label><Input value={groupForm.description} onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })} placeholder="Opcionalno" /></div>
-            <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={groupForm.location} onChange={(e) => setGroupForm({ ...groupForm, location: e.target.value })} placeholder="npr. Magacin 1" /></div>
-            <div className="space-y-2"><Label className="text-xs">Boja</Label><Input type="color" value={groupForm.color} onChange={(e) => setGroupForm({ ...groupForm, color: e.target.value })} className="h-8 w-16" /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setGroupDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateGroup} disabled={!groupForm.name.trim()}>Kreiraj grupu</Button>
-          </div>
-</Card>
-)}
-
-      {/* Delete Confirm */}
-{ deleteConfirmOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDeleteConfirmOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">Obriši senzor</CardTitle>
-            <CardDescription>Da li ste sigurni da želite da obrišete senzor &quot;{selectedSensor?.name}&quot;? Ova akcija je nepovratna.</CardDescription>
-          </div>
-            </CardHeader>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
-            <Button variant="destructive" onClick={handleDeleteSensor}>Obriši</Button>
-          </div>
-</Card>
-)}
     </div>
   )
 }

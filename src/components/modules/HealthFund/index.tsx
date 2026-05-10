@@ -175,11 +175,17 @@ export function HealthFund() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [claimStatusFilter, setClaimStatusFilter] = useState('all')
 
-  // Dialogs
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [createType, setCreateType] = useState<'contribution' | 'claim'>('contribution')
+  // Sub-tab states (replaced Dialog states)
+  const [contributionsSubTab, setContributionsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [claimsSubTab, setClaimsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [selectedItem, setSelectedItem] = useState<Contribution | HealthClaim | null>(null)
+
+  const handleMainTabChange = (v: string) => {
+    setActiveTab(v)
+    setContributionsSubTab('pregled')
+    setClaimsSubTab('pregled')
+    setSelectedItem(null)
+  }
 
   // Forms
   const emptyContribForm = {
@@ -221,11 +227,15 @@ export function HealthFund() {
   useEffect(() => { loadData() }, [loadData])
 
   // Create handlers
-  const openCreate = (type: 'contribution' | 'claim') => {
-    setCreateType(type)
-    if (type === 'contribution') setContribForm(emptyContribForm)
-    else setClaimForm(emptyClaimForm)
-    setCreateOpen(true)
+  const openCreateContribution = () => {
+    setContribForm(emptyContribForm)
+    setActiveTab('contributions')
+    setContributionsSubTab('dodaj')
+  }
+  const openCreateClaim = () => {
+    setClaimForm(emptyClaimForm)
+    setActiveTab('claims')
+    setClaimsSubTab('dodaj')
   }
 
   const handleCreateContribution = async () => {
@@ -244,7 +254,7 @@ export function HealthFund() {
       dueDate: `2025-01-31`, createdAt: new Date().toISOString(),
     }
     setContributions(prev => [newContrib, ...prev])
-    setCreateOpen(false)
+    setContributionsSubTab('pregled')
     toast.success('Doprinos kreiran')
   }
 
@@ -264,7 +274,7 @@ export function HealthFund() {
       processedDate: null, notes: claimForm.notes,
     }
     setClaims(prev => [newClaim, ...prev])
-    setCreateOpen(false)
+    setClaimsSubTab('pregled')
     toast.success('Zahtev podnet')
   }
 
@@ -316,13 +326,13 @@ export function HealthFund() {
           <Button variant="outline" size="sm" onClick={loadData}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => openCreate('contribution')}>
+          <Button size="sm" onClick={openCreateContribution}>
             <Plus className="h-4 w-4 mr-1" /> Novi doprinos
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleMainTabChange}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">
             <BarChart3 className="h-4 w-4 mr-1" /> Pregled
@@ -457,7 +467,7 @@ export function HealthFund() {
                     {claims.filter(c => c.status === 'submitted' || c.status === 'approved').slice(0, 5).map(cl => {
                       const sc = STATUS_CONFIG[cl.status]
                       return (
-                        <div key={cl.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedItem(cl); setDetailOpen(true) }}>
+                        <div key={cl.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedItem(cl); setActiveTab('claims'); setClaimsSubTab('detalji') }}>
                           <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                             <Heart className="h-4 w-4 text-blue-600" />
                           </div>
@@ -487,6 +497,14 @@ export function HealthFund() {
 
         {/* ===== DOPRINOSI ===== */}
         <TabsContent value="contributions" className="space-y-4">
+          <Tabs value={contributionsSubTab} onValueChange={(v) => { setContributionsSubTab(v as typeof contributionsSubTab); if (v === 'pregled') setSelectedItem(null) }}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj" className="gap-1"><Plus className="h-3 w-3" /> Dodaj</TabsTrigger>
+              {contributionsSubTab === 'detalji' && selectedItem && <TabsTrigger value="detalji" className="gap-1"><ArrowLeft className="h-3 w-3" /> Detalji</TabsTrigger>}
+            </TabsList>
+
+            <TabsContent value="pregled" className="mt-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -501,7 +519,7 @@ export function HealthFund() {
                 <SelectItem value="rejected">Odbijeno</SelectItem>
               </SelectContent>
             </Select>
-            <Button size="sm" onClick={() => openCreate('contribution')}>
+            <Button size="sm" onClick={openCreateContribution}>
               <Plus className="h-4 w-4 mr-1" /> Novi doprinos
             </Button>
           </div>
@@ -546,7 +564,7 @@ export function HealthFund() {
                   {filteredContributions.map(c => {
                     const sc = STATUS_CONFIG[c.status]
                     return (
-                      <tr key={c.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedItem(c); setDetailOpen(true) }}>
+                      <tr key={c.id} className="border-b hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedItem(c); setContributionsSubTab('detalji') }}>
                         <td className="p-3 font-medium">{c.employeeName}</td>
                         <td className="p-3 text-muted-foreground">{c.month} {c.year}.</td>
                         <td className="p-3 text-right">{formatCurrency(c.baseAmount)}</td>
@@ -557,7 +575,7 @@ export function HealthFund() {
                           <Badge variant="outline" className={`text-xs ${sc.color}`}>{sc.label}</Badge>
                         </td>
                         <td className="p-3 text-center">
-                          <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); setSelectedItem(c); setDetailOpen(true) }}>
+                          <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); setSelectedItem(c); setContributionsSubTab('detalji') }}>
                             <Eye className="h-3.5 w-3.5" />
                           </Button>
                         </td>
@@ -570,8 +588,90 @@ export function HealthFund() {
           </div>
         </TabsContent>
 
+            </TabsContent>
+
+            {/* DODAJ - Contribution form */}
+            <TabsContent value="dodaj" className="mt-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setContributionsSubTab('pregled')}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="min-w-0 flex-1"><CardTitle className="text-base">Novi doprinos</CardTitle>
+                  <CardDescription>Unesite podatke o zdravstvenom doprinosu za zaposlenog</CardDescription></div>
+                </CardHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Zaposleni</Label>
+                    <Input placeholder="Ime zaposlenog" value={contribForm.employeeName} onChange={e => setContribForm(p => ({ ...p, employeeName: e.target.value }))} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2"><Label>Osnovica (RSD)</Label><Input type="number" placeholder="0.00" value={contribForm.baseAmount} onChange={e => setContribForm(p => ({ ...p, baseAmount: e.target.value }))} /></div>
+                    <div className="space-y-2">
+                      <Label>Mesec</Label>
+                      <Select value={contribForm.month} onValueChange={v => setContribForm(p => ({ ...p, month: v }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+                          {['januar', 'februar', 'mart', 'april', 'maj', 'jun', 'jul', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'].map(m => (<SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>))}
+                        </SelectContent></Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2"><Label>Stopa poslodavca (%)</Label><Input type="number" step="0.1" value={contribForm.employerRate} onChange={e => setContribForm(p => ({ ...p, employerRate: e.target.value }))} /></div>
+                    <div className="space-y-2"><Label>Stopa zaposlenog (%)</Label><Input type="number" step="0.1" value={contribForm.employeeRate} onChange={e => setContribForm(p => ({ ...p, employeeRate: e.target.value }))} /></div>
+                  </div>
+                  {contribForm.baseAmount && (<div className="rounded-lg bg-muted/50 p-3 text-sm"><span className="text-muted-foreground">Ukupno doprinos: </span><span className="font-bold">{formatCurrency(parseFloat(contribForm.baseAmount) * ((parseFloat(contribForm.employerRate) || 13.5) + (parseFloat(contribForm.employeeRate) || 7.7)) / 100)}</span></div>)}
+                  <div className="flex gap-2">
+                    <Button onClick={handleCreateContribution}>Kreiraj doprinos</Button>
+                    <Button variant="outline" onClick={() => setContributionsSubTab('pregled')}>Otkaži</Button>
+                  </div>
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* DETALJI - Contribution detail */}
+            {contributionsSubTab === 'detalji' && selectedItem && !('claimNumber' in selectedItem) && (
+              <TabsContent value="detalji" className="mt-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setContributionsSubTab('pregled')}>
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="min-w-0 flex-1"><CardTitle className="text-base">Doprinos - {selectedItem.employeeName}</CardTitle><CardDescription>Pregled detalja</CardDescription></div>
+                  </CardHeader>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Zaposleni</p><p className="text-sm font-medium">{selectedItem.employeeName}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Status</p><Badge variant="outline" className={`text-xs ${STATUS_CONFIG[selectedItem.status]?.color}`}>{STATUS_CONFIG[selectedItem.status]?.label}</Badge></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Osnovica</p><p className="text-sm font-bold">{formatCurrency(selectedItem.baseAmount)}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Ukupno</p><p className="text-sm font-bold">{formatCurrency(selectedItem.totalAmount)}</p></div>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-muted-foreground">Mesec:</span><span>{selectedItem.month} {selectedItem.year}.</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Udeo poslodavca:</span><span className="text-blue-600">{formatCurrency(selectedItem.employerShare)}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Udeo zaposlenog:</span><span className="text-orange-600">{formatCurrency(selectedItem.employeeShare)}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Rok plaćanja:</span><span>{formatDate(selectedItem.dueDate)}</span></div>
+                      {selectedItem.paymentDate && <div className="flex justify-between"><span className="text-muted-foreground">Datum plaćanja:</span><span className="text-emerald-600">{formatDate(selectedItem.paymentDate)}</span></div>}
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => setContributionsSubTab('pregled')}>Zatvori</Button>
+                  </div>
+                </Card>
+              </TabsContent>
+            )}
+          </Tabs>
+        </TabsContent>
+
         {/* ===== ZAHTEVI ===== */}
         <TabsContent value="claims" className="space-y-4">
+          <Tabs value={claimsSubTab} onValueChange={(v) => { setClaimsSubTab(v as typeof claimsSubTab); if (v === 'pregled') setSelectedItem(null) }}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj" className="gap-1"><Plus className="h-3 w-3" /> Dodaj</TabsTrigger>
+              {claimsSubTab === 'detalji' && selectedItem && <TabsTrigger value="detalji" className="gap-1"><ArrowLeft className="h-3 w-3" /> Detalji</TabsTrigger>}
+            </TabsList>
+
+            <TabsContent value="pregled" className="mt-4">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -587,7 +687,7 @@ export function HealthFund() {
                 <SelectItem value="rejected">Odbijeno</SelectItem>
               </SelectContent>
             </Select>
-            <Button size="sm" onClick={() => openCreate('claim')}>
+            <Button size="sm" onClick={openCreateClaim}>
               <Plus className="h-4 w-4 mr-1" /> Novi zahtev
             </Button>
           </div>
@@ -617,7 +717,7 @@ export function HealthFund() {
             {filteredClaims.map(cl => {
               const sc = STATUS_CONFIG[cl.status]
               return (
-                <Card key={cl.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => { setSelectedItem(cl); setDetailOpen(true) }}>
+                <Card key={cl.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => { setSelectedItem(cl); setClaimsSubTab('detalji') }}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
@@ -648,6 +748,80 @@ export function HealthFund() {
               )
             })}
           </div>
+            </TabsContent>
+
+            {/* DODAJ - Claim form */}
+            <TabsContent value="dodaj" className="mt-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setClaimsSubTab('pregled')}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="min-w-0 flex-1"><CardTitle className="text-base">Novi zdravstveni zahtev</CardTitle>
+                  <CardDescription>Podnesite novi zahtev za refundaciju zdravstvenih troškova</CardDescription></div>
+                </CardHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2"><Label>Zaposleni</Label><Input placeholder="Ime zaposlenog" value={claimForm.employeeName} onChange={e => setClaimForm(p => ({ ...p, employeeName: e.target.value }))} /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2"><Label>Iznos (RSD)</Label><Input type="number" placeholder="0.00" value={claimForm.amount} onChange={e => setClaimForm(p => ({ ...p, amount: e.target.value }))} /></div>
+                    <div className="space-y-2">
+                      <Label>Tip usluge</Label>
+                      <Select value={claimForm.serviceType} onValueChange={v => setClaimForm(p => ({ ...p, serviceType: v }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
+                          {SERVICE_TYPES.map(st => (<SelectItem key={st} value={st}>{st}</SelectItem>))}
+                        </SelectContent></Select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2"><Label>Šifra dijagnoze</Label><Input placeholder="npr. J06.9" value={claimForm.diagnosisCode} onChange={e => setClaimForm(p => ({ ...p, diagnosisCode: e.target.value }))} /></div>
+                    <div className="space-y-2"><Label>Naziv dijagnoze</Label><Input placeholder="Naziv bolesti" value={claimForm.diagnosisName} onChange={e => setClaimForm(p => ({ ...p, diagnosisName: e.target.value }))} /></div>
+                  </div>
+                  <div className="space-y-2"><Label>Pružalac usluge</Label><Input placeholder="npr. Dom zdravlja" value={claimForm.providerName} onChange={e => setClaimForm(p => ({ ...p, providerName: e.target.value }))} /></div>
+                  <div className="space-y-2"><Label>Datum usluge</Label><Input type="date" value={claimForm.serviceDate} onChange={e => setClaimForm(p => ({ ...p, serviceDate: e.target.value }))} /></div>
+                  <div className="space-y-2"><Label>Napomena</Label><Textarea placeholder="Dodatne napomene..." value={claimForm.notes} onChange={e => setClaimForm(p => ({ ...p, notes: e.target.value }))} rows={2} /></div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setClaimsSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateClaim}>Podnesi zahtev</Button>
+                  </div>
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* DETALJI - Claim detail */}
+            {claimsSubTab === 'detalji' && selectedItem && 'claimNumber' in selectedItem && (
+              <TabsContent value="detalji" className="mt-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setClaimsSubTab('pregled')}>
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="min-w-0 flex-1"><CardTitle className="text-base">Zahtev {(selectedItem as HealthClaim).claimNumber}</CardTitle><CardDescription>Pregled detalja izabranog zapisa</CardDescription></div>
+                  </CardHeader>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Zaposleni</p><p className="text-sm font-medium">{selectedItem.employeeName}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Status</p><Badge variant="outline" className={`text-xs ${STATUS_CONFIG[selectedItem.status]?.color}`}>{STATUS_CONFIG[selectedItem.status]?.label}</Badge></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Iznos</p><p className="text-sm font-bold">{formatCurrency(selectedItem.amount)}</p></div>
+                      <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Odobreno</p><p className="text-sm font-medium">{selectedItem.approvedAmount !== null ? formatCurrency(selectedItem.approvedAmount) : 'N/A'}</p></div>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between"><span className="text-muted-foreground">Tip usluge:</span><span>{selectedItem.serviceType}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Dijagnoza:</span><span>{selectedItem.diagnosisCode} - {selectedItem.diagnosisName}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Pružalac:</span><span>{selectedItem.providerName}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Datum usluge:</span><span>{formatDate(selectedItem.serviceDate)}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Datum podnošenja:</span><span>{formatDate(selectedItem.submittedDate)}</span></div>
+                      {selectedItem.processedDate && <div className="flex justify-between"><span className="text-muted-foreground">Datum obrade:</span><span>{formatDate(selectedItem.processedDate)}</span></div>}
+                      {selectedItem.notes && <div className="pt-2 border-t"><span className="text-muted-foreground text-xs">Napomena:</span><p className="text-sm mt-1">{selectedItem.notes}</p></div>}
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => setClaimsSubTab('pregled')}>Zatvori</Button>
+                  </div>
+                </Card>
+              </TabsContent>
+            )}
+          </Tabs>
         </TabsContent>
 
         {/* ===== IZVEŠTAJI ===== */}

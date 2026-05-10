@@ -258,12 +258,16 @@ export function Approvals() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj' | 'detalji' | 'odbi'>('pregled')
   const [commentInput, setCommentInput] = useState('')
   const [rejectNote, setRejectNote] = useState('')
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [selected, setSelected] = useState<ApprovalRequest | null>(null)
+
+  const handleTabChange = (val: string) => {
+    setActiveTab(val)
+    setSubTab('pregled')
+    setSelected(null)
+  }
 
   // Forms
   const emptyForm = {
@@ -355,7 +359,7 @@ export function Approvals() {
         }),
       })
       if (res.ok) {
-        setDialogOpen(false)
+        setSubTab('pregled')
         setForm(emptyForm)
         loadRequests()
         loadDashboard()
@@ -379,7 +383,7 @@ export function Approvals() {
         loadRequests()
         loadDashboard()
         setSelected(null)
-        setDetailOpen(false)
+        setSubTab('pregled')
       }
     } catch { /* silent */ }
   }
@@ -398,12 +402,11 @@ export function Approvals() {
         }),
       })
       if (res.ok) {
-        setRejectDialogOpen(false)
         setRejectNote('')
         loadRequests()
         loadDashboard()
         setSelected(null)
-        setDetailOpen(false)
+        setSubTab('pregled')
       }
     } catch { /* silent */ }
   }
@@ -420,7 +423,7 @@ export function Approvals() {
         loadRequests()
         loadDashboard()
         setSelected(null)
-        setDetailOpen(false)
+        setSubTab('pregled')
       }
     } catch { /* silent */ }
   }
@@ -472,14 +475,16 @@ export function Approvals() {
           <Button variant="outline" size="sm" onClick={() => { loadRequests(); loadDashboard(); }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => { setForm(emptyForm); setDialogOpen(true); }}>
+          {subTab === 'pregled' && (
+          <Button size="sm" onClick={() => { setForm(emptyForm); setActiveTab('my_requests'); setSubTab('dodaj'); }}>
             <Plus className="h-4 w-4 mr-1" /> Novi zahtev
           </Button>
+          )}
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="my_requests"><UserCheck className="h-4 w-4 mr-1" /> Moji zahtevi</TabsTrigger>
@@ -660,98 +665,383 @@ export function Approvals() {
         {/* ─── Generic Request List Tabs ────────────────────────────────── */}
         {['my_requests', 'pending', 'approved', 'rejected'].map((tabKey) => (
           <TabsContent key={tabKey} value={tabKey} className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Pretraži zahteve..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-              </div>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi tipovi" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Svi tipovi</SelectItem>
-                  {Object.entries(typeConfig).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="w-[140px]"><SelectValue placeholder="Svi prioriteti" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Svi prioriteti</SelectItem>
-                  {Object.entries(priorityConfig).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Tabs value={subTab} onValueChange={(v) => setSubTab(v as 'pregled' | 'dodaj' | 'detalji' | 'odbi')}>
+              <TabsList>
+                <TabsTrigger value="pregled">Pregled</TabsTrigger>
+                {tabKey === 'my_requests' && <TabsTrigger value="dodaj">Dodaj</TabsTrigger>}
+                {selected && subTab !== 'odbi' && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
+                {subTab === 'odbi' && <TabsTrigger value="odbi">Odbij</TabsTrigger>}
+              </TabsList>
 
-            {loading ? (
-              <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-            ) : filteredRequests.length === 0 ? (
-              <Card className="p-8 text-center">
-                <FileSignature className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                <p className="text-muted-foreground">Nema zahteva</p>
-                {tabKey === 'my_requests' && (
-                  <Button variant="outline" className="mt-3" onClick={() => { setForm(emptyForm); setDialogOpen(true); }}>
-                    <Plus className="h-4 w-4 mr-1" /> Kreiraj zahtev
-                  </Button>
-                )}
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {filteredRequests.map((r) => {
-                  const sCfg = statusConfig[r.status]
-                  const tCfg = typeConfig[r.type]
-                  const pCfg = priorityConfig[r.priority]
-                  return (
-                    <Card key={r.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => { setSelected(r); setDetailOpen(true); }}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-3 flex-1">
-                            <span className="text-2xl mt-0.5">{tCfg?.icon}</span>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-sm font-medium truncate">{r.title}</h3>
-                                <Badge variant="outline" className={`text-xs shrink-0 ${sCfg?.color}`}>{sCfg?.label}</Badge>
-                                <Badge variant="outline" className={`text-xs shrink-0 ${pCfg?.color}`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full ${pCfg?.dotColor} mr-1`} />
-                                  {pCfg?.label}
-                                </Badge>
+              {/* Pregled Sub-tab */}
+              <TabsContent value="pregled" className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Pretraži zahteve..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                  </div>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi tipovi" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Svi tipovi</SelectItem>
+                      {Object.entries(typeConfig).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                    <SelectTrigger className="w-[140px]"><SelectValue placeholder="Svi prioriteti" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Svi prioriteti</SelectItem>
+                      {Object.entries(priorityConfig).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {loading ? (
+                  <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                ) : filteredRequests.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <FileSignature className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-muted-foreground">Nema zahteva</p>
+                    {tabKey === 'my_requests' && (
+                      <Button variant="outline" className="mt-3" onClick={() => { setForm(emptyForm); setSubTab('dodaj'); }}>
+                        <Plus className="h-4 w-4 mr-1" /> Kreiraj zahtev
+                      </Button>
+                    )}
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredRequests.map((r) => {
+                      const sCfg = statusConfig[r.status]
+                      const tCfg = typeConfig[r.type]
+                      const pCfg = priorityConfig[r.priority]
+                      return (
+                        <Card key={r.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => { setSelected(r); setSubTab('detalji'); }}>
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-3 flex-1">
+                                <span className="text-2xl mt-0.5">{tCfg?.icon}</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="text-sm font-medium truncate">{r.title}</h3>
+                                    <Badge variant="outline" className={`text-xs shrink-0 ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                                    <Badge variant="outline" className={`text-xs shrink-0 ${pCfg?.color}`}>
+                                      <span className={`w-1.5 h-1.5 rounded-full ${pCfg?.dotColor} mr-1`} />
+                                      {pCfg?.label}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground line-clamp-1">{r.description}</p>
+                                  <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                    <span>{r.requestedBy}</span>
+                                    <span>→ {r.assignedTo}</span>
+                                    {r.amount && <span className="font-medium text-foreground">{formatCurrency(r.amount, r.currency)}</span>}
+                                    <span>{new Date(r.createdAt).toLocaleDateString('sr-RS')}</span>
+                                    {r.comments.length > 0 && (
+                                      <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {r.comments.length}</span>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                              <p className="text-xs text-muted-foreground line-clamp-1">{r.description}</p>
-                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                <span>{r.requestedBy}</span>
-                                <span>→ {r.assignedTo}</span>
-                                {r.amount && <span className="font-medium text-foreground">{formatCurrency(r.amount, r.currency)}</span>}
-                                <span>{new Date(r.createdAt).toLocaleDateString('sr-RS')}</span>
-                                {r.comments.length > 0 && (
-                                  <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {r.comments.length}</span>
+                              <div className="flex gap-1 ml-2 shrink-0">
+                                {(r.status === 'pending' || r.status === 'in_review') && (
+                                  <>
+                                    <Button size="sm" variant="outline" className="h-7 text-xs text-green-600 border-green-200 hover:bg-green-50" onClick={(e) => { e.stopPropagation(); setSelected(r); handleApprove(); }}>
+                                      <CheckCircle2 className="h-3 w-3 mr-1" /> Odobri
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); setSelected(r); setSubTab('odbi'); }}>
+                                      <XCircle className="h-3 w-3 mr-1" /> Odbij
+                                    </Button>
+                                  </>
                                 )}
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(r.id); }}>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex gap-1 ml-2 shrink-0">
-                            {(r.status === 'pending' || r.status === 'in_review') && (
-                              <>
-                                <Button size="sm" variant="outline" className="h-7 text-xs text-green-600 border-green-200 hover:bg-green-50" onClick={(e) => { e.stopPropagation(); setSelected(r); handleApprove(); }}>
-                                  <CheckCircle2 className="h-3 w-3 mr-1" /> Odobri
-                                </Button>
-                                <Button size="sm" variant="outline" className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); setSelected(r); setRejectDialogOpen(true); }}>
-                                  <XCircle className="h-3 w-3 mr-1" /> Odbij
-                                </Button>
-                              </>
-                            )}
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(r.id); }}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Dodaj Sub-tab (create request form) */}
+              {tabKey === 'my_requests' && (
+              <TabsContent value="dodaj" className="space-y-4">
+                <Card className="max-w-2xl">
+                  <CardHeader className="flex flex-row items-center gap-3">
+                    <Button variant="ghost" size="icon" onClick={() => setSubTab('pregled')}>
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div>
+                      <CardTitle>Novi zahtev za odobrenje</CardTitle>
+                      <CardDescription>Popunite formu za podnošenje zahteva</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Naslov zahteva</Label>
+                        <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Naslov zahteva..." />
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Tip</Label>
+                          <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(typeConfig).map(([k, v]) => (
+                                <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Prioritet</Label>
+                          <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(priorityConfig).map(([k, v]) => (
+                                <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Zahtevač</Label>
+                          <Input value={form.requestedBy} onChange={(e) => setForm({ ...form, requestedBy: e.target.value })} placeholder="Ime" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Opis</Label>
+                        <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} placeholder="Detaljan opis zahteva..." />
+                      </div>
+                      <Separator />
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="space-y-2">
+                          <Label>Iznos</Label>
+                          <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Valuta</Label>
+                          <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="RSD">RSD</SelectItem>
+                              <SelectItem value="EUR">EUR</SelectItem>
+                              <SelectItem value="USD">USD</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Datum početka</Label>
+                          <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Datum završetka</Label>
+                          <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Odobritelj</Label>
+                        <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ko odobrava?" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button variant="outline" onClick={() => setSubTab('pregled')}>Otkaži</Button>
+                      <Button onClick={handleCreate}><Send className="h-4 w-4 mr-1" /> Podnesi zahtev</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              )}
+
+              {/* Detalji Sub-tab */}
+              {selected && (
+              <TabsContent value="detalji" className="space-y-4">
+                <Card className="max-w-2xl">
+                  <CardHeader className="flex flex-row items-center gap-3">
+                    <Button variant="ghost" size="icon" onClick={() => { setSubTab('pregled'); setSelected(null); }}>
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div>
+                      <CardTitle>Detalji zahteva</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      {/* Status Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{typeConfig[selected.type]?.icon}</span>
+                          <div>
+                            <h3 className="text-lg font-semibold">{selected.title}</h3>
+                            <p className="text-sm text-muted-foreground">{typeConfig[selected.type]?.label} · {priorityConfig[selected.priority]?.label}</p>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            )}
+                        <Badge variant="outline" className={`text-xs ${statusConfig[selected.status]?.color}`}>
+                          {statusConfig[selected.status]?.icon} {statusConfig[selected.status]?.label}
+                        </Badge>
+                      </div>
+
+                      <Separator />
+
+                      {/* Details Grid */}
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Zahtevač:</span>
+                          <p className="font-medium">{selected.requestedBy}</p>
+                          <p className="text-xs text-muted-foreground">{selected.requestedByRole}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Odobritelj:</span>
+                          <p className="font-medium">{selected.assignedTo}</p>
+                          <p className="text-xs text-muted-foreground">{selected.assignedToRole}</p>
+                        </div>
+                        {selected.amount && (
+                          <div>
+                            <span className="text-muted-foreground">Iznos:</span>
+                            <p className="font-bold text-lg">{formatCurrency(selected.amount, selected.currency)}</p>
+                          </div>
+                        )}
+                        {selected.startDate && (
+                          <div>
+                            <span className="text-muted-foreground">Period:</span>
+                            <p className="font-medium">{new Date(selected.startDate).toLocaleDateString('sr-RS')}{selected.endDate ? ` - ${new Date(selected.endDate).toLocaleDateString('sr-RS')}` : ''}</p>
+                          </div>
+                        )}
+                        <div>
+                          <span className="text-muted-foreground">Kreirano:</span>
+                          <p>{new Date(selected.createdAt).toLocaleString('sr-RS')}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Ažurirano:</span>
+                          <p>{new Date(selected.updatedAt).toLocaleString('sr-RS')}</p>
+                        </div>
+                      </div>
+
+                      {selected.description && (
+                        <div>
+                          <span className="text-sm text-muted-foreground">Opis:</span>
+                          <p className="text-sm mt-1 whitespace-pre-line">{selected.description}</p>
+                        </div>
+                      )}
+
+                      <Separator />
+
+                      {/* History */}
+                      <div>
+                        <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                          <ListChecks className="h-4 w-4" /> Istorija
+                        </h4>
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                          {selected.history.map((h, idx) => (
+                            <div key={idx} className="flex items-start gap-3 text-sm py-1.5 border-l-2 border-muted pl-3">
+                              <div>
+                                <p className="font-medium">{h.action} <span className="text-muted-foreground font-normal">— {h.performedBy}</span></p>
+                                <p className="text-xs text-muted-foreground">{new Date(h.timestamp).toLocaleString('sr-RS')}</p>
+                                {h.note && <p className="text-xs text-muted-foreground mt-0.5 italic">{h.note}</p>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Comments */}
+                      <div>
+                        <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4" /> Komentari ({selected.comments.length})
+                        </h4>
+                        <div className="space-y-2 max-h-40 overflow-y-auto mb-3">
+                          {selected.comments.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-4">Nema komentara</p>
+                          ) : (
+                            selected.comments.map((c) => (
+                              <div key={c.id} className="p-3 bg-muted/30 rounded-lg">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm font-medium">{c.author}</span>
+                                  <span className="text-xs text-muted-foreground">{new Date(c.createdAt).toLocaleString('sr-RS')}</span>
+                                </div>
+                                <p className="text-sm">{c.content}</p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {(selected.status === 'pending' || selected.status === 'in_review') && (
+                          <div className="flex gap-2">
+                            <Input value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Dodaj komentar..." className="flex-1"
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(); }} />
+                            <Button size="sm" onClick={handleAddComment}><Send className="h-4 w-4" /></Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      {(selected.status === 'pending' || selected.status === 'in_review') && (
+                        <>
+                          <Separator />
+                          <div className="flex gap-3">
+                            <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleApprove}>
+                              <CheckCircle2 className="h-4 w-4 mr-2" /> Odobri
+                            </Button>
+                            <Button className="flex-1 bg-orange-500 hover:bg-orange-600" onClick={handleReturn}>
+                              <ArrowRight className="h-4 w-4 mr-2" /> Vrati na dopunu
+                            </Button>
+                            <Button className="flex-1 bg-red-600 hover:bg-red-700" onClick={() => setSubTab('odbi')}>
+                              <XCircle className="h-4 w-4 mr-2" /> Odbij
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              )}
+
+              {/* Odbi Sub-tab */}
+              {selected && (
+              <TabsContent value="odbi" className="space-y-4">
+                <Card className="max-w-md">
+                  <CardHeader className="flex flex-row items-center gap-3">
+                    <Button variant="ghost" size="icon" onClick={() => setSubTab('detalji')}>
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div>
+                      <CardTitle>Odbij zahtev</CardTitle>
+                      <CardDescription>Navedite razlog odbijanja zahteva</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Odbijanje zahteva će obavestiti zahtevača. Razlog će biti vidljiv u istoriji.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="space-y-2">
+                        <Label>Razlog odbijanja</Label>
+                        <Textarea value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} rows={3} placeholder="Razlog odbijanja..." />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button variant="outline" onClick={() => setSubTab('detalji')}>Otkaži</Button>
+                      <Button className="bg-red-600 hover:bg-red-700" onClick={handleReject}>
+                        <XCircle className="h-4 w-4 mr-1" /> Potvrdi odbijanje
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              )}
+            </Tabs>
           </TabsContent>
         ))}
 
@@ -791,7 +1081,7 @@ export function Approvals() {
                       <span className="text-xs text-muted-foreground">Korišćeno {tpl.usageCount} puta</span>
                       <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
                         setForm({ ...emptyForm, type: tpl.type, title: tpl.name, assignedTo: tpl.approverRole })
-                        setDialogOpen(true)
+                        setActiveTab('my_requests'); setSubTab('dodaj')
                       }}>
                         <Plus className="h-3 w-3 mr-1" /> Koristi
                       </Button>
@@ -804,272 +1094,6 @@ export function Approvals() {
         </TabsContent>
       </Tabs>
 
-      {/* ─── Create Request Form ──────────────────────────────────────────── */}
-      {dialogOpen && (
-        <Card className="max-w-2xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle>Novi zahtev za odobrenje</CardTitle>
-              <CardDescription>Popunite formu za podnošenje zahteva</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Naslov zahteva</Label>
-                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Naslov zahteva..." />
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Tip</Label>
-                  <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(typeConfig).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Prioritet</Label>
-                  <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(priorityConfig).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Zahtevač</Label>
-                  <Input value={form.requestedBy} onChange={(e) => setForm({ ...form, requestedBy: e.target.value })} placeholder="Ime" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Opis</Label>
-                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} placeholder="Detaljan opis zahteva..." />
-              </div>
-              <Separator />
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label>Iznos</Label>
-                  <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Valuta</Label>
-                  <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="RSD">RSD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Datum početka</Label>
-                  <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Datum završetka</Label>
-                  <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Odobritelj</Label>
-                <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ko odobrava?" />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreate}><Send className="h-4 w-4 mr-1" /> Podnesi zahtev</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ─── Detail View ──────────────────────────────────────────────────── */}
-      {detailOpen && selected && (
-        <Card className="max-w-2xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => { setDetailOpen(false); setSelected(null); }}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle>Detalji zahteva</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Status Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{typeConfig[selected.type]?.icon}</span>
-                  <div>
-                    <h3 className="text-lg font-semibold">{selected.title}</h3>
-                    <p className="text-sm text-muted-foreground">{typeConfig[selected.type]?.label} · {priorityConfig[selected.priority]?.label}</p>
-                  </div>
-                </div>
-                <Badge variant="outline" className={`text-xs ${statusConfig[selected.status]?.color}`}>
-                  {statusConfig[selected.status]?.icon} {statusConfig[selected.status]?.label}
-                </Badge>
-              </div>
-
-              <Separator />
-
-              {/* Details Grid */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Zahtevač:</span>
-                  <p className="font-medium">{selected.requestedBy}</p>
-                  <p className="text-xs text-muted-foreground">{selected.requestedByRole}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Odobritelj:</span>
-                  <p className="font-medium">{selected.assignedTo}</p>
-                  <p className="text-xs text-muted-foreground">{selected.assignedToRole}</p>
-                </div>
-                {selected.amount && (
-                  <div>
-                    <span className="text-muted-foreground">Iznos:</span>
-                    <p className="font-bold text-lg">{formatCurrency(selected.amount, selected.currency)}</p>
-                  </div>
-                )}
-                {selected.startDate && (
-                  <div>
-                    <span className="text-muted-foreground">Period:</span>
-                    <p className="font-medium">{new Date(selected.startDate).toLocaleDateString('sr-RS')}{selected.endDate ? ` - ${new Date(selected.endDate).toLocaleDateString('sr-RS')}` : ''}</p>
-                  </div>
-                )}
-                <div>
-                  <span className="text-muted-foreground">Kreirano:</span>
-                  <p>{new Date(selected.createdAt).toLocaleString('sr-RS')}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Ažurirano:</span>
-                  <p>{new Date(selected.updatedAt).toLocaleString('sr-RS')}</p>
-                </div>
-              </div>
-
-              {selected.description && (
-                <div>
-                  <span className="text-sm text-muted-foreground">Opis:</span>
-                  <p className="text-sm mt-1 whitespace-pre-line">{selected.description}</p>
-                </div>
-              )}
-
-              <Separator />
-
-              {/* History */}
-              <div>
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <ListChecks className="h-4 w-4" /> Istorija
-                </h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {selected.history.map((h, idx) => (
-                    <div key={idx} className="flex items-start gap-3 text-sm py-1.5 border-l-2 border-muted pl-3">
-                      <div>
-                        <p className="font-medium">{h.action} <span className="text-muted-foreground font-normal">— {h.performedBy}</span></p>
-                        <p className="text-xs text-muted-foreground">{new Date(h.timestamp).toLocaleString('sr-RS')}</p>
-                        {h.note && <p className="text-xs text-muted-foreground mt-0.5 italic">{h.note}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Comments */}
-              <div>
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" /> Komentari ({selected.comments.length})
-                </h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto mb-3">
-                  {selected.comments.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">Nema komentara</p>
-                  ) : (
-                    selected.comments.map((c) => (
-                      <div key={c.id} className="p-3 bg-muted/30 rounded-lg">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium">{c.author}</span>
-                          <span className="text-xs text-muted-foreground">{new Date(c.createdAt).toLocaleString('sr-RS')}</span>
-                        </div>
-                        <p className="text-sm">{c.content}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-                {(selected.status === 'pending' || selected.status === 'in_review') && (
-                  <div className="flex gap-2">
-                    <Input value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Dodaj komentar..." className="flex-1"
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(); }} />
-                    <Button size="sm" onClick={handleAddComment}><Send className="h-4 w-4" /></Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              {(selected.status === 'pending' || selected.status === 'in_review') && (
-                <>
-                  <Separator />
-                  <div className="flex gap-3">
-                    <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={handleApprove}>
-                      <CheckCircle2 className="h-4 w-4 mr-2" /> Odobri
-                    </Button>
-                    <Button className="flex-1 bg-orange-500 hover:bg-orange-600" onClick={handleReturn}>
-                      <ArrowRight className="h-4 w-4 mr-2" /> Vrati na dopunu
-                    </Button>
-                    <Button className="flex-1 bg-red-600 hover:bg-red-700" onClick={() => setRejectDialogOpen(true)}>
-                      <XCircle className="h-4 w-4 mr-2" /> Odbij
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ─── Reject Form ─────────────────────────────────────────────────── */}
-      {rejectDialogOpen && selected && (
-        <Card className="max-w-md">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => setRejectDialogOpen(false)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle>Odbij zahtev</CardTitle>
-              <CardDescription>Navedite razlog odbijanja zahteva</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Odbijanje zahteva će obavestiti zahtevača. Razlog će biti vidljiv u istoriji.
-                </AlertDescription>
-              </Alert>
-              <div className="space-y-2">
-                <Label>Razlog odbijanja</Label>
-                <Textarea value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} rows={3} placeholder="Razlog odbijanja..." />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Otkaži</Button>
-              <Button className="bg-red-600 hover:bg-red-700" onClick={handleReject}>
-                <XCircle className="h-4 w-4 mr-1" /> Potvrdi odbijanje
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

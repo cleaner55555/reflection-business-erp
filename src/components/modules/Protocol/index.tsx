@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select'
 import {
   Plus, Search, Pencil, Trash2, Mail, Inbox, Send, AlertTriangle,
-  FileCheck, Filter, ArrowLeft,
+  FileCheck, Filter,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
@@ -104,8 +104,8 @@ export function Protocol() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
 
-  // View mode state
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
+  // Sub-tab state (Pregled/Dodaj pattern)
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [submitting, setSubmitting] = useState(false)
   const [editing, setEditing] = useState<ProtocolEntry | null>(null)
   const [form, setForm] = useState<FormData>({ ...EMPTY_FORM })
@@ -169,7 +169,7 @@ export function Protocol() {
   const openCreate = () => {
     setEditing(null)
     setForm({ ...EMPTY_FORM, direction: activeTab === 'izlaz' ? 'izlaz' : 'ulaz' })
-    setViewMode('form')
+    setSubTab('dodaj')
   }
 
   const openEdit = (entry: ProtocolEntry) => {
@@ -187,11 +187,11 @@ export function Protocol() {
       priority: entry.priority,
       notes: entry.notes || '',
     })
-    setViewMode('form')
+    setSubTab('dodaj')
   }
 
   const handleCancel = () => {
-    setViewMode('list')
+    setSubTab('pregled')
     setEditing(null)
     setForm({ ...EMPTY_FORM })
   }
@@ -300,195 +300,38 @@ export function Protocol() {
       {/* Main Card */}
       <Card>
         <CardHeader className="pb-3">
-          {viewMode === 'form' ? (
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={handleCancel}><ArrowLeft className="h-4 w-4" /></Button>
-              <div>
-                <CardTitle className="text-base font-semibold">
-                  {editing ? 'Izmeni dopis' : 'Novi dopis'}
-                </CardTitle>
-              </div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Registar dopisa
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {subTab === 'pregled'
+                  ? `${filtered.length} od ${totalCount} zapisa`
+                  : (editing ? 'Izmena dopisa' : 'Kreiranje novog dopisa')}
+              </p>
             </div>
-          ) : (
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Registar dopisa
-                </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {filtered.length} od {totalCount} zapisa
-                </p>
-              </div>
+            {subTab === 'pregled' && (
               <Button size="sm" className="gap-2" onClick={openCreate}>
                 <Plus className="h-4 w-4" />
                 Novi dopis
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {viewMode === 'form' ? (
-            /* ─── Inline Create / Edit Form ───────────────────────────────── */
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Direction */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">Smer *</Label>
-                  <Select value={form.direction} onValueChange={v => updateField('direction', v)}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ulaz">
-                        <span className="flex items-center gap-1.5"><Inbox className="h-3.5 w-3.5" /> {t('protocol.incoming')}</span>
-                      </SelectItem>
-                      <SelectItem value="izlaz">
-                        <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> {t('protocol.outgoing')}</span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+        <CardContent>
+          <Tabs value={subTab} onValueChange={v => setSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj" className="text-xs">
+                {editing ? 'Uredi' : 'Dodaj'}
+              </TabsTrigger>
+            </TabsList>
 
-                {/* Document type */}
-                <div className="space-y-2">
-                  <Label className="text-xs">Tip dokumenta</Label>
-                  <Select value={form.documentType} onValueChange={v => updateField('documentType', v)}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Izaberite" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(DOC_TYPES).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Sender / Recipient — conditional on direction */}
-              {form.direction === 'ulaz' ? (
-                <div className="space-y-2">
-                  <Label className="text-xs">Pošiljalac</Label>
-                  <Input
-                    className="h-9 text-sm"
-                    placeholder="Ko šalje dopis..."
-                    value={form.sender}
-                    onChange={e => updateField('sender', e.target.value)}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label className="text-xs">Primalac</Label>
-                  <Input
-                    className="h-9 text-sm"
-                    placeholder="Kom se šalje dopis..."
-                    value={form.recipient}
-                    onChange={e => updateField('recipient', e.target.value)}
-                  />
-                </div>
-              )}
-
-              {/* Subject */}
-              <div className="space-y-2">
-                <Label className="text-xs">Predmet *</Label>
-                <Input
-                  className="h-9 text-sm"
-                  placeholder="Predmet dopisa..."
-                  value={form.subject}
-                  onChange={e => updateField('subject', e.target.value)}
-                  required
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label className="text-xs">Opis</Label>
-                <Textarea
-                  className="text-sm min-h-[70px] resize-none"
-                  placeholder="Detaljan opis..."
-                  value={form.description}
-                  onChange={e => updateField('description', e.target.value)}
-                />
-              </div>
-
-              {/* Status / Priority */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">Status</Label>
-                  <Select value={form.status} onValueChange={v => updateField('status', v)}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Prioritet</Label>
-                  <Select value={form.priority} onValueChange={v => updateField('priority', v)}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Due date / Responsible */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">Rok</Label>
-                  <Input
-                    type="date"
-                    className="h-9 text-sm"
-                    value={form.dueDate}
-                    onChange={e => updateField('dueDate', e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Odgovorno lice</Label>
-                  <Input
-                    className="h-9 text-sm"
-                    placeholder="Ime zaposlenog..."
-                    value={form.responsible}
-                    onChange={e => updateField('responsible', e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div className="space-y-2">
-                <Label className="text-xs">Napomene</Label>
-                <Input
-                  className="h-9 text-sm"
-                  placeholder="Dodatne napomene..."
-                  value={form.notes}
-                  onChange={e => updateField('notes', e.target.value)}
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-2">
-                <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>
-                  Otkaži
-                </Button>
-                <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? t('common.saving') : editing ? t('common.update') : t('common.create')}
-                </Button>
-              </div>
-            </form>
-          ) : (
-            /* ─── List View with Tabs & Filters ───────────────────────────── */
-            <>
-              {/* Tabs */}
+            {/* ─── Pregled (List View) ──────────────────────────────────────── */}
+            <TabsContent value="pregled" className="space-y-4 mt-4">
+              {/* Direction Tabs */}
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="w-full sm:w-auto">
                   <TabsTrigger value="ulaz" className="gap-1.5 text-xs">
@@ -638,8 +481,167 @@ export function Protocol() {
                   )}
                 </TabsContent>
               </Tabs>
-            </>
-          )}
+            </TabsContent>
+
+            {/* ─── Dodaj (Create / Edit Form) ──────────────────────────────── */}
+            <TabsContent value="dodaj" className="mt-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Direction */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Smer *</Label>
+                    <Select value={form.direction} onValueChange={v => updateField('direction', v)}>
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ulaz">
+                          <span className="flex items-center gap-1.5"><Inbox className="h-3.5 w-3.5" /> {t('protocol.incoming')}</span>
+                        </SelectItem>
+                        <SelectItem value="izlaz">
+                          <span className="flex items-center gap-1.5"><Send className="h-3.5 w-3.5" /> {t('protocol.outgoing')}</span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Document type */}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Tip dokumenta</Label>
+                    <Select value={form.documentType} onValueChange={v => updateField('documentType', v)}>
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder="Izaberite" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(DOC_TYPES).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Sender / Recipient — conditional on direction */}
+                {form.direction === 'ulaz' ? (
+                  <div className="space-y-2">
+                    <Label className="text-xs">Pošiljalac</Label>
+                    <Input
+                      className="h-9 text-sm"
+                      placeholder="Ko šalje dopis..."
+                      value={form.sender}
+                      onChange={e => updateField('sender', e.target.value)}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label className="text-xs">Primalac</Label>
+                    <Input
+                      className="h-9 text-sm"
+                      placeholder="Kom se šalje dopis..."
+                      value={form.recipient}
+                      onChange={e => updateField('recipient', e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {/* Subject */}
+                <div className="space-y-2">
+                  <Label className="text-xs">Predmet *</Label>
+                  <Input
+                    className="h-9 text-sm"
+                    placeholder="Predmet dopisa..."
+                    value={form.subject}
+                    onChange={e => updateField('subject', e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label className="text-xs">Opis</Label>
+                  <Textarea
+                    className="text-sm min-h-[70px] resize-none"
+                    placeholder="Detaljan opis..."
+                    value={form.description}
+                    onChange={e => updateField('description', e.target.value)}
+                  />
+                </div>
+
+                {/* Status / Priority */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Status</Label>
+                    <Select value={form.status} onValueChange={v => updateField('status', v)}>
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Prioritet</Label>
+                    <Select value={form.priority} onValueChange={v => updateField('priority', v)}>
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(PRIORITY_CONFIG).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Due date / Responsible */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Rok</Label>
+                    <Input
+                      type="date"
+                      className="h-9 text-sm"
+                      value={form.dueDate}
+                      onChange={e => updateField('dueDate', e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Odgovorno lice</Label>
+                    <Input
+                      className="h-9 text-sm"
+                      placeholder="Ime zaposlenog..."
+                      value={form.responsible}
+                      onChange={e => updateField('responsible', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <Label className="text-xs">Napomene</Label>
+                  <Input
+                    className="h-9 text-sm"
+                    placeholder="Dodatne napomene..."
+                    value={form.notes}
+                    onChange={e => updateField('notes', e.target.value)}
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-2">
+                  <Button type="button" variant="outline" className="flex-1" onClick={handleCancel}>
+                    Otkaži
+                  </Button>
+                  <Button type="submit" className="flex-1" disabled={submitting}>
+                    {submitting ? t('common.saving') : editing ? t('common.update') : t('common.create')}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

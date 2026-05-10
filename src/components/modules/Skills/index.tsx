@@ -248,11 +248,10 @@ export function Skills() {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [empSkillDialogOpen, setEmpSkillDialogOpen] = useState(false)
-  const [certDialogOpen, setCertDialogOpen] = useState(false)
-  const [assessDialogOpen, setAssessDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [skillsSubTab, setSkillsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [employeesSubTab, setEmployeesSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [certSubTab, setCertSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [assessSubTab, setAssessSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [selected, setSelected] = useState<Skill | null>(null)
   const [matrixEmployee, setMatrixEmployee] = useState<string>('all')
 
@@ -389,7 +388,7 @@ export function Skills() {
         body: JSON.stringify({ companyId: activeCompanyId, ...skillForm, isActive: true, employeeCount: 0 }),
       })
       if (res.ok) {
-        setDialogOpen(false)
+        setSkillsSubTab('pregled')
         setSkillForm(emptySkillForm)
         loadSkills()
         loadDashboard()
@@ -419,7 +418,7 @@ export function Skills() {
       lastAssessed: new Date().toISOString().split('T')[0],
     }
     setEmployeeSkills([...employeeSkills, newES])
-    setEmpSkillDialogOpen(false)
+    setEmployeesSubTab('pregled')
     setEmpSkillForm(emptyEmpSkillForm)
   }
 
@@ -432,7 +431,7 @@ export function Skills() {
       status: 'active',
     }
     setCertifications([...certifications, newCert])
-    setCertDialogOpen(false)
+    setCertSubTab('pregled')
     setCertForm(emptyCertForm)
   }
 
@@ -451,8 +450,17 @@ export function Skills() {
       notes: assessForm.notes,
     }
     setAssessments([newAssessment, ...assessments])
-    setAssessDialogOpen(false)
+    setAssessSubTab('pregled')
     setAssessForm(emptyAssessForm)
+  }
+
+  // ─── Tab change handler (reset sub-tabs on main tab switch) ─────────
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setSkillsSubTab('pregled')
+    setEmployeesSubTab('pregled')
+    setCertSubTab('pregled')
+    setAssessSubTab('pregled')
   }
 
   // ─── Render ─────────────────────────────────────────────────────────────
@@ -469,14 +477,14 @@ export function Skills() {
           <Button variant="outline" size="sm" onClick={() => { loadSkills(); loadDashboard(); }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => { setSkillForm(emptySkillForm); setDialogOpen(true); }}>
+          <Button size="sm" onClick={() => { setSkillForm(emptySkillForm); setActiveTab('skills'); setSkillsSubTab('dodaj'); }}>
             <Plus className="h-4 w-4 mr-1" /> Nova veština
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="employees"><Users className="h-4 w-4 mr-1" /> Zaposleni</TabsTrigger>
@@ -629,70 +637,393 @@ export function Skills() {
 
         {/* ─── Zaposleni Tab ───────────────────────────────────────────── */}
         <TabsContent value="employees" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Pretraži zaposlene..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={matrixEmployee} onValueChange={setMatrixEmployee}>
-              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Svi zaposleni" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi zaposleni</SelectItem>
-                {uniqueEmployees.map((e) => (
-                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" onClick={() => { setEmpSkillForm(emptyEmpSkillForm); setEmpSkillDialogOpen(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> Dodeli veštinu
-            </Button>
-          </div>
+          <Tabs value={employeesSubTab} onValueChange={(v) => setEmployeesSubTab(v as typeof employeesSubTab)}>
+            <TabsList>
+              <TabsTrigger value="pregled"><Eye className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1" /> Dodaj</TabsTrigger>
+            </TabsList>
 
-          {/* Skill Matrix */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Matrica veština</CardTitle>
-              <CardDescription>Pregled nivoa veština po zaposlenima</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="w-full">
-                <div className="min-w-[800px]">
+            {/* Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Pretraži zaposlene..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={matrixEmployee} onValueChange={setMatrixEmployee}>
+                  <SelectTrigger className="w-[200px]"><SelectValue placeholder="Svi zaposleni" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi zaposleni</SelectItem>
+                    {uniqueEmployees.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" onClick={() => { setEmpSkillForm(emptyEmpSkillForm); setEmployeesSubTab('dodaj'); }}>
+                  <Plus className="h-4 w-4 mr-1" /> Dodeli veštinu
+                </Button>
+              </div>
+
+              {/* Skill Matrix */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Matrica veština</CardTitle>
+                  <CardDescription>Pregled nivoa veština po zaposlenima</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="w-full">
+                    <div className="min-w-[800px]">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/50">
+                          <tr className="text-left text-xs text-muted-foreground">
+                            <th className="p-2 sticky left-0 bg-muted/50 min-w-[150px]">Zaposleni</th>
+                            {matrixSkills.map((s) => (
+                              <th key={s.id} className="p-2 text-center min-w-[80px]">{s.name}</th>
+                            ))}
+                            <th className="p-2 text-center min-w-[80px]">Prosek</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {matrixEmployees.map((emp) => {
+                            const empSkills = employeeSkills.filter((es) => es.employeeId === emp.id)
+                            const avgLevel = empSkills.length > 0
+                              ? empSkills.reduce((sum, es) => sum + es.level, 0) / empSkills.length
+                              : 0
+                            return (
+                              <tr key={emp.id} className="border-t hover:bg-muted/30">
+                                <td className="p-2 sticky left-0 bg-background font-medium">
+                                  <div>
+                                    <p className="text-sm">{emp.name}</p>
+                                    <p className="text-xs text-muted-foreground">{emp.department}</p>
+                                  </div>
+                                </td>
+                                {matrixSkills.map((s) => {
+                                  const level = getEmployeeSkillLevel(emp.id, s.id)
+                                  return (
+                                    <td key={s.id} className="p-2 text-center">
+                                      <Badge variant="outline" className={`text-xs ${getLevelColor(level)}`}>
+                                        {level > 0 ? level : '-'}
+                                      </Badge>
+                                    </td>
+                                  )
+                                })}
+                                <td className="p-2 text-center">
+                                  <span className="text-sm font-bold">{avgLevel > 0 ? avgLevel.toFixed(1) : '-'}</span>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+
+              {/* Employee Skills Detail */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {uniqueEmployees.map((emp) => {
+                  const empSkills = employeeSkills.filter((es) => es.employeeId === emp.id)
+                  if (empSkills.length === 0) return null
+                  const avgLevel = empSkills.reduce((sum, es) => sum + es.level, 0) / empSkills.length
+                  return (
+                    <Card key={emp.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-sm font-medium">{emp.name}</p>
+                            <p className="text-xs text-muted-foreground">{emp.department} · {empSkills.length} veština</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold">{avgLevel.toFixed(1)}</p>
+                            <p className="text-xs text-muted-foreground">prosek</p>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          {empSkills.map((es) => (
+                            <div key={es.id} className="flex items-center justify-between">
+                              <span className="text-xs">{es.skillName}</span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-12 bg-muted rounded-full h-1.5">
+                                  <div className="h-1.5 rounded-full bg-primary" style={{ width: `${(es.level / 5) * 100}%` }} />
+                                </div>
+                                <span className="text-xs font-medium">{es.level}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </TabsContent>
+
+            {/* Dodaj — Assign Skill Form */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-md">
+                <CardHeader>
+                  <CardTitle>Dodeli veštinu</CardTitle>
+                  <CardDescription>Dodelite veštinu zaposlenom sa nivom i iskustvom</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2"><Label>Zaposleni</Label><Input value={empSkillForm.employeeName} onChange={(e) => setEmpSkillForm({ ...empSkillForm, employeeName: e.target.value })} placeholder="Ime zaposlenog" /></div>
+                    <div className="space-y-2">
+                      <Label>Veština</Label>
+                      <Select value={empSkillForm.skillId} onValueChange={(v) => setEmpSkillForm({ ...empSkillForm, skillId: v })}>
+                        <SelectTrigger><SelectValue placeholder="Izaberite veštinu" /></SelectTrigger>
+                        <SelectContent>
+                          {skills.filter((s) => s.isActive).map((s) => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Nivo (1-5)</Label>
+                        <Select value={String(empSkillForm.level)} onValueChange={(v) => setEmpSkillForm({ ...empSkillForm, level: parseInt(v) })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {skillLevels.map((l) => (
+                              <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2"><Label>Godine iskustva</Label><Input type="number" value={empSkillForm.yearsExperience} onChange={(e) => setEmpSkillForm({ ...empSkillForm, yearsExperience: parseInt(e.target.value) || 0 })} /></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => setEmployeesSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateEmployeeSkill}><Plus className="h-4 w-4 mr-1" /> Dodeli</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ─── Veštine Tab ─────────────────────────────────────────────── */}
+        <TabsContent value="skills" className="space-y-4">
+          <Tabs value={skillsSubTab} onValueChange={(v) => setSkillsSubTab(v as typeof skillsSubTab)}>
+            <TabsList>
+              <TabsTrigger value="pregled"><Eye className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1" /> Dodaj</TabsTrigger>
+              <TabsTrigger value="detalji" disabled={!selected}><FileCheck className="h-4 w-4 mr-1" /> Detalji</TabsTrigger>
+            </TabsList>
+
+            {/* Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Pretraži veštine..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sve kategorije" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Sve kategorije</SelectItem>
+                    {skillCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : filteredSkills.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Zap className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema veština</p>
+                  <Button variant="outline" className="mt-3" onClick={() => { setSkillForm(emptySkillForm); setSkillsSubTab('dodaj'); }}>
+                    <Plus className="h-4 w-4 mr-1" /> Kreiraj veštinu
+                  </Button>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredSkills.map((skill) => {
+                    const catInfo = getCategoryInfo(skill.category)
+                    return (
+                      <Card key={skill.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: catInfo?.color + '20' }}>
+                                <span style={{ color: catInfo?.color }}>{catInfo?.icon || <Zap className="h-4 w-4" />}</span>
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-medium">{skill.name}</h3>
+                                <p className="text-xs text-muted-foreground">{catInfo?.name}</p>
+                              </div>
+                            </div>
+                            <Badge variant={skill.isActive ? 'default' : 'secondary'} className="text-xs">
+                              {skill.isActive ? 'Aktivna' : 'Neaktivna'}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{skill.description}</p>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {skill.employeeCount} zaposlenih</span>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(skill); setSkillsSubTab('detalji'); }}>
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteSkill(skill.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Dodaj — Create Skill Form */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-md">
+                <CardHeader>
+                  <CardTitle>Nova veština</CardTitle>
+                  <CardDescription>Dodajte novu veštinu u bazu</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2"><Label>Naziv veštine</Label><Input value={skillForm.name} onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })} placeholder="Naziv veštine" /></div>
+                    <div className="space-y-2">
+                      <Label>Kategorija</Label>
+                      <Select value={skillForm.category} onValueChange={(v) => setSkillForm({ ...skillForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {skillCategories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2"><Label>Opis</Label><Textarea value={skillForm.description} onChange={(e) => setSkillForm({ ...skillForm, description: e.target.value })} rows={3} /></div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => setSkillsSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateSkill}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Detalji — Skill Detail */}
+            <TabsContent value="detalji" className="space-y-4">
+              {selected && (
+                <Card className="max-w-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setSkillsSubTab('pregled')} />
+                      Detalji veštine
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: (getCategoryInfo(selected.category)?.color || '#000') + '20' }}>
+                          <span style={{ color: getCategoryInfo(selected.category)?.color }}>{getCategoryInfo(selected.category)?.icon || <Zap className="h-5 w-5" />}</span>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold">{selected.name}</h3>
+                          <p className="text-sm text-muted-foreground">{getCategoryName(selected.category)}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{selected.description}</p>
+                      <Separator />
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div><span className="text-muted-foreground">Zaposleni sa veštinom:</span> <span className="font-bold">{selected.employeeCount}</span></div>
+                        <div><span className="text-muted-foreground">Status:</span> <Badge variant={selected.isActive ? 'default' : 'secondary'} className="text-xs">{selected.isActive ? 'Aktivna' : 'Neaktivna'}</Badge></div>
+                      </div>
+                      <Separator />
+                      <div>
+                        <p className="text-sm font-medium mb-2">Zaposleni sa ovom veštinom</p>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {employeeSkills.filter((es) => es.skillId === selected.id).map((es) => (
+                            <div key={es.id} className="flex items-center justify-between p-2 border rounded-lg">
+                              <div>
+                                <p className="text-sm font-medium">{es.employeeName}</p>
+                                <p className="text-xs text-muted-foreground">{es.employeeDepartment}</p>
+                              </div>
+                              <div className="text-right">
+                                <Badge variant="outline" className={`text-xs ${getLevelColor(es.level)}`}>{getLevelLabel(es.level)} ({es.level})</Badge>
+                                <p className="text-xs text-muted-foreground mt-1">{es.yearsExperience} god. iskustva</p>
+                              </div>
+                            </div>
+                          ))}
+                          {employeeSkills.filter((es) => es.skillId === selected.id).length === 0 && (
+                            <p className="text-sm text-muted-foreground text-center py-4">Nema zaposlenih sa ovom veštinom</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ─── Certifikati Tab ─────────────────────────────────────────── */}
+        <TabsContent value="certifications" className="space-y-4">
+          <Tabs value={certSubTab} onValueChange={(v) => setCertSubTab(v as typeof certSubTab)}>
+            <TabsList>
+              <TabsTrigger value="pregled"><Eye className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1" /> Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => { setCertForm(emptyCertForm); setCertSubTab('dodaj'); }}>
+                  <Plus className="h-4 w-4 mr-1" /> Novi sertifikat
+                </Button>
+              </div>
+
+              {certifications.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <GraduationCap className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema sertifikata</p>
+                </Card>
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50">
                       <tr className="text-left text-xs text-muted-foreground">
-                        <th className="p-2 sticky left-0 bg-muted/50 min-w-[150px]">Zaposleni</th>
-                        {matrixSkills.map((s) => (
-                          <th key={s.id} className="p-2 text-center min-w-[80px]">{s.name}</th>
-                        ))}
-                        <th className="p-2 text-center min-w-[80px]">Prosek</th>
+                        <th className="p-3">Sertifikat</th>
+                        <th className="p-3">Zaposleni</th>
+                        <th className="p-3 hidden md:table-cell">Veština</th>
+                        <th className="p-3 hidden md:table-cell">Izdavač</th>
+                        <th className="p-3 hidden lg:table-cell">Datum</th>
+                        <th className="p-3">Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {matrixEmployees.map((emp) => {
-                        const empSkills = employeeSkills.filter((es) => es.employeeId === emp.id)
-                        const avgLevel = empSkills.length > 0
-                          ? empSkills.reduce((sum, es) => sum + es.level, 0) / empSkills.length
-                          : 0
+                      {certifications.map((cert) => {
+                        const sCfg = certStatusConfig[cert.status]
                         return (
-                          <tr key={emp.id} className="border-t hover:bg-muted/30">
-                            <td className="p-2 sticky left-0 bg-background font-medium">
+                          <tr key={cert.id} className="border-t hover:bg-muted/30">
+                            <td className="p-3">
                               <div>
-                                <p className="text-sm">{emp.name}</p>
-                                <p className="text-xs text-muted-foreground">{emp.department}</p>
+                                <p className="font-medium text-sm">{cert.name}</p>
+                                {cert.certificateNumber && <p className="text-xs text-muted-foreground">#{cert.certificateNumber}</p>}
                               </div>
                             </td>
-                            {matrixSkills.map((s) => {
-                              const level = getEmployeeSkillLevel(emp.id, s.id)
-                              return (
-                                <td key={s.id} className="p-2 text-center">
-                                  <Badge variant="outline" className={`text-xs ${getLevelColor(level)}`}>
-                                    {level > 0 ? level : '-'}
-                                  </Badge>
-                                </td>
-                              )
-                            })}
-                            <td className="p-2 text-center">
-                              <span className="text-sm font-bold">{avgLevel > 0 ? avgLevel.toFixed(1) : '-'}</span>
+                            <td className="p-3 text-sm">{cert.employeeName}</td>
+                            <td className="p-3 text-sm hidden md:table-cell">{cert.skillName}</td>
+                            <td className="p-3 text-sm hidden md:table-cell">{cert.issuedBy}</td>
+                            <td className="p-3 text-xs hidden lg:table-cell">
+                              {new Date(cert.issueDate).toLocaleDateString('sr-RS')}
+                              {cert.expiryDate && <span className="text-muted-foreground"> → {new Date(cert.expiryDate).toLocaleDateString('sr-RS')}</span>}
+                            </td>
+                            <td className="p-3">
+                              <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
                             </td>
                           </tr>
                         )
@@ -700,483 +1031,208 @@ export function Skills() {
                     </tbody>
                   </table>
                 </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+              )}
+            </TabsContent>
 
-          {/* Employee Skills Detail */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {uniqueEmployees.map((emp) => {
-              const empSkills = employeeSkills.filter((es) => es.employeeId === emp.id)
-              if (empSkills.length === 0) return null
-              const avgLevel = empSkills.reduce((sum, es) => sum + es.level, 0) / empSkills.length
-              return (
-                <Card key={emp.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="text-sm font-medium">{emp.name}</p>
-                        <p className="text-xs text-muted-foreground">{emp.department} · {empSkills.length} veština</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold">{avgLevel.toFixed(1)}</p>
-                        <p className="text-xs text-muted-foreground">prosek</p>
-                      </div>
+            {/* Dodaj — Certification Form */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-lg">
+                <CardHeader>
+                  <CardTitle>Novi sertifikat</CardTitle>
+                  <CardDescription>Unesite podatke o sertifikatu zaposlenog</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2"><Label>Naziv sertifikata</Label><Input value={certForm.name} onChange={(e) => setCertForm({ ...certForm, name: e.target.value })} placeholder="Naziv sertifikata" /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><Label>Zaposleni</Label><Input value={certForm.employeeName} onChange={(e) => setCertForm({ ...certForm, employeeName: e.target.value })} placeholder="Ime" /></div>
+                      <div className="space-y-2"><Label>Izdavač</Label><Input value={certForm.issuedBy} onChange={(e) => setCertForm({ ...certForm, issuedBy: e.target.value })} placeholder="Organizacija" /></div>
                     </div>
                     <div className="space-y-2">
-                      {empSkills.map((es) => (
-                        <div key={es.id} className="flex items-center justify-between">
-                          <span className="text-xs">{es.skillName}</span>
-                          <div className="flex items-center gap-2">
-                            <div className="w-12 bg-muted rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-primary" style={{ width: `${(es.level / 5) * 100}%` }} />
-                            </div>
-                            <span className="text-xs font-medium">{es.level}</span>
-                          </div>
-                        </div>
-                      ))}
+                      <Label>Veština</Label>
+                      <Select value={certForm.skillId} onValueChange={(v) => setCertForm({ ...certForm, skillId: v })}>
+                        <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                        <SelectContent>
+                          {skills.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </TabsContent>
-
-        {/* ─── Veštine Tab ─────────────────────────────────────────────── */}
-        <TabsContent value="skills" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Pretraži veštine..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sve kategorije" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Sve kategorije</SelectItem>
-                {skillCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : filteredSkills.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Zap className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema veština</p>
-              <Button variant="outline" className="mt-3" onClick={() => { setSkillForm(emptySkillForm); setDialogOpen(true); }}>
-                <Plus className="h-4 w-4 mr-1" /> Kreiraj veštinu
-              </Button>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredSkills.map((skill) => {
-                const catInfo = getCategoryInfo(skill.category)
-                return (
-                  <Card key={skill.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: catInfo?.color + '20' }}>
-                            <span style={{ color: catInfo?.color }}>{catInfo?.icon || <Zap className="h-4 w-4" />}</span>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium">{skill.name}</h3>
-                            <p className="text-xs text-muted-foreground">{catInfo?.name}</p>
-                          </div>
-                        </div>
-                        <Badge variant={skill.isActive ? 'default' : 'secondary'} className="text-xs">
-                          {skill.isActive ? 'Aktivna' : 'Neaktivna'}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{skill.description}</p>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {skill.employeeCount} zaposlenih</span>
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(skill); setDetailOpen(true); }}>
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteSkill(skill.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* ─── Certifikati Tab ─────────────────────────────────────────── */}
-        <TabsContent value="certifications" className="space-y-4">
-          <div className="flex justify-end">
-            <Button size="sm" onClick={() => { setCertForm(emptyCertForm); setCertDialogOpen(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> Novi sertifikat
-            </Button>
-          </div>
-
-          {certifications.length === 0 ? (
-            <Card className="p-8 text-center">
-              <GraduationCap className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema sertifikata</p>
-            </Card>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50">
-                  <tr className="text-left text-xs text-muted-foreground">
-                    <th className="p-3">Sertifikat</th>
-                    <th className="p-3">Zaposleni</th>
-                    <th className="p-3 hidden md:table-cell">Veština</th>
-                    <th className="p-3 hidden md:table-cell">Izdavač</th>
-                    <th className="p-3 hidden lg:table-cell">Datum</th>
-                    <th className="p-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {certifications.map((cert) => {
-                    const sCfg = certStatusConfig[cert.status]
-                    return (
-                      <tr key={cert.id} className="border-t hover:bg-muted/30">
-                        <td className="p-3">
-                          <div>
-                            <p className="font-medium text-sm">{cert.name}</p>
-                            {cert.certificateNumber && <p className="text-xs text-muted-foreground">#{cert.certificateNumber}</p>}
-                          </div>
-                        </td>
-                        <td className="p-3 text-sm">{cert.employeeName}</td>
-                        <td className="p-3 text-sm hidden md:table-cell">{cert.skillName}</td>
-                        <td className="p-3 text-sm hidden md:table-cell">{cert.issuedBy}</td>
-                        <td className="p-3 text-xs hidden lg:table-cell">
-                          {new Date(cert.issueDate).toLocaleDateString('sr-RS')}
-                          {cert.expiryDate && <span className="text-muted-foreground"> → {new Date(cert.expiryDate).toLocaleDateString('sr-RS')}</span>}
-                        </td>
-                        <td className="p-3">
-                          <Badge variant="outline" className={`text-xs ${sCfg?.color}`}>{sCfg?.label}</Badge>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><Label>Datum izdavanja</Label><Input type="date" value={certForm.issueDate} onChange={(e) => setCertForm({ ...certForm, issueDate: e.target.value })} /></div>
+                      <div className="space-y-2"><Label>Datum isteka</Label><Input type="date" value={certForm.expiryDate} onChange={(e) => setCertForm({ ...certForm, expiryDate: e.target.value })} /></div>
+                    </div>
+                    <div className="space-y-2"><Label>Broj sertifikata</Label><Input value={certForm.certificateNumber} onChange={(e) => setCertForm({ ...certForm, certificateNumber: e.target.value })} placeholder="Br. sertifikata" /></div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => setCertSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateCertification}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ─── Procena Tab ─────────────────────────────────────────────── */}
         <TabsContent value="assessment" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">Procena i praćenje napretka veština zaposlenih</p>
-            <Button size="sm" onClick={() => { setAssessForm(emptyAssessForm); setAssessDialogOpen(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> Nova procena
-            </Button>
-          </div>
+          <Tabs value={assessSubTab} onValueChange={(v) => setAssessSubTab(v as typeof assessSubTab)}>
+            <TabsList>
+              <TabsTrigger value="pregled"><Eye className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-4 w-4 mr-1" /> Dodaj</TabsTrigger>
+            </TabsList>
 
-          {/* Skill Gap Analysis */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Analiza nedostataka veština</CardTitle>
-              <CardDescription>Uporedite zahtevane i trenutne nivoe veština</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {mockGaps.map((gap) => {
-                  const pCfg = gapPriorityConfig[gap.priority]
-                  return (
-                    <div key={gap.skillName} className="p-3 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <p className="text-sm font-medium">{gap.skillName}</p>
-                          <Badge variant="outline" className={`text-xs ${pCfg?.color}`}>{pCfg?.label}</Badge>
-                          <span className="text-xs text-muted-foreground">{gap.employeeCount} zaposlenih</span>
-                        </div>
-                        <span className="text-sm font-bold text-red-600">-{gap.gap.toFixed(1)} nivoa</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs text-muted-foreground w-12">Zahtevano:</span>
-                            <div className="flex-1 bg-muted rounded-full h-2">
-                              <div className="h-2 rounded-full bg-blue-400" style={{ width: `${(gap.requiredLevel / 5) * 100}%` }} />
+            {/* Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">Procena i praćenje napretka veština zaposlenih</p>
+                <Button size="sm" onClick={() => { setAssessForm(emptyAssessForm); setAssessSubTab('dodaj'); }}>
+                  <Plus className="h-4 w-4 mr-1" /> Nova procena
+                </Button>
+              </div>
+
+              {/* Skill Gap Analysis */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Analiza nedostataka veština</CardTitle>
+                  <CardDescription>Uporedite zahtevane i trenutne nivoe veština</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {mockGaps.map((gap) => {
+                      const pCfg = gapPriorityConfig[gap.priority]
+                      return (
+                        <div key={gap.skillName} className="p-3 border rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                              <p className="text-sm font-medium">{gap.skillName}</p>
+                              <Badge variant="outline" className={`text-xs ${pCfg?.color}`}>{pCfg?.label}</Badge>
+                              <span className="text-xs text-muted-foreground">{gap.employeeCount} zaposlenih</span>
                             </div>
-                            <span className="text-xs font-medium w-4">{gap.requiredLevel}</span>
+                            <span className="text-sm font-bold text-red-600">-{gap.gap.toFixed(1)} nivoa</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground w-12">Trenutno:</span>
-                            <div className="flex-1 bg-muted rounded-full h-2">
-                              <div className="h-2 rounded-full bg-orange-400" style={{ width: `${(gap.currentLevel / 5) * 100}%` }} />
+                          <div className="flex items-center gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs text-muted-foreground w-12">Zahtevano:</span>
+                                <div className="flex-1 bg-muted rounded-full h-2">
+                                  <div className="h-2 rounded-full bg-blue-400" style={{ width: `${(gap.requiredLevel / 5) * 100}%` }} />
+                                </div>
+                                <span className="text-xs font-medium w-4">{gap.requiredLevel}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground w-12">Trenutno:</span>
+                                <div className="flex-1 bg-muted rounded-full h-2">
+                                  <div className="h-2 rounded-full bg-orange-400" style={{ width: `${(gap.currentLevel / 5) * 100}%` }} />
+                                </div>
+                                <span className="text-xs font-medium w-4">{gap.currentLevel.toFixed(1)}</span>
+                              </div>
                             </div>
-                            <span className="text-xs font-medium w-4">{gap.currentLevel.toFixed(1)}</span>
                           </div>
                         </div>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Assessment History */}
+              <Card>
+                <CardHeader className="pb-3"><CardTitle className="text-sm">Istorija procena</CardTitle></CardHeader>
+                <CardContent>
+                  {assessments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-8">Nema procena</p>
+                  ) : (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {assessments.map((a) => {
+                        const improved = a.newLevel > a.previousLevel
+                        return (
+                          <div key={a.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${improved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                              {a.previousLevel}→{a.newLevel}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium">{a.employeeName} — {a.skillName}</p>
+                                <span className="text-xs text-muted-foreground">{new Date(a.assessmentDate).toLocaleDateString('sr-RS')}</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">{a.notes}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-muted-foreground">Procenio: {a.assessedBy}</span>
+                                <Badge variant={improved ? 'default' : 'secondary'} className="text-xs">
+                                  {improved ? '🟢 Napredak' : '🟡 Na istom nivou'}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Dodaj — Assessment Form */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-lg">
+                <CardHeader>
+                  <CardTitle>Nova procena</CardTitle>
+                  <CardDescription>Procenite nivo veštine zaposlenog</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><Label>Zaposleni</Label><Input value={assessForm.employeeName} onChange={(e) => setAssessForm({ ...assessForm, employeeName: e.target.value })} placeholder="Ime" /></div>
+                      <div className="space-y-2">
+                        <Label>Veština</Label>
+                        <Select value={assessForm.skillId} onValueChange={(v) => setAssessForm({ ...assessForm, skillId: v })}>
+                          <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                          <SelectContent>
+                            {skills.map((s) => (
+                              <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Assessment History */}
-          <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-sm">Istorija procena</CardTitle></CardHeader>
-            <CardContent>
-              {assessments.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Nema procena</p>
-              ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {assessments.map((a) => {
-                    const improved = a.newLevel > a.previousLevel
-                    return (
-                      <div key={a.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${improved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                          {a.previousLevel}→{a.newLevel}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium">{a.employeeName} — {a.skillName}</p>
-                            <span className="text-xs text-muted-foreground">{new Date(a.assessmentDate).toLocaleDateString('sr-RS')}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">{a.notes}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-muted-foreground">Procenio: {a.assessedBy}</span>
-                            <Badge variant={improved ? 'default' : 'secondary'} className="text-xs">
-                              {improved ? '🟢 Napredak' : '🟡 Na istom nivou'}
-                            </Badge>
-                          </div>
-                        </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Trenutni nivo</Label>
+                        <Select value={String(assessForm.previousLevel)} onValueChange={(v) => setAssessForm({ ...assessForm, previousLevel: parseInt(v) })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {skillLevels.map((l) => (
+                              <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    )
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      <div className="space-y-2">
+                        <Label>Novi nivo</Label>
+                        <Select value={String(assessForm.newLevel)} onValueChange={(v) => setAssessForm({ ...assessForm, newLevel: parseInt(v) })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {skillLevels.map((l) => (
+                              <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2"><Label>Napomene</Label><Textarea value={assessForm.notes} onChange={(e) => setAssessForm({ ...assessForm, notes: e.target.value })} rows={3} placeholder="Napomene o proceni..." /></div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                    <Button variant="outline" onClick={() => setAssessSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateAssessment}><Plus className="h-4 w-4 mr-1" /> Sačuvaj procenu</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
-
-      {/* ─── Create Skill Form ──────────────────────────────────────────── */}
-      {dialogOpen && (
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDialogOpen(false)} /> Nova veština</CardTitle>
-            <CardDescription>Dodajte novu veštinu u bazu</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label>Naziv veštine</Label><Input value={skillForm.name} onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })} placeholder="Naziv veštine" /></div>
-              <div className="space-y-2">
-                <Label>Kategorija</Label>
-                <Select value={skillForm.category} onValueChange={(v) => setSkillForm({ ...skillForm, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {skillCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>Opis</Label><Textarea value={skillForm.description} onChange={(e) => setSkillForm({ ...skillForm, description: e.target.value })} rows={3} /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreateSkill}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ─── Assign Skill Form ──────────────────────────────────────────── */}
-      {empSkillDialogOpen && (
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setEmpSkillDialogOpen(false)} /> Dodeli veštinu</CardTitle>
-            <CardDescription>Dodelite veštinu zaposlenom sa nivom i iskustvom</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label>Zaposleni</Label><Input value={empSkillForm.employeeName} onChange={(e) => setEmpSkillForm({ ...empSkillForm, employeeName: e.target.value })} placeholder="Ime zaposlenog" /></div>
-              <div className="space-y-2">
-                <Label>Veština</Label>
-                <Select value={empSkillForm.skillId} onValueChange={(v) => setEmpSkillForm({ ...empSkillForm, skillId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite veštinu" /></SelectTrigger>
-                  <SelectContent>
-                    {skills.filter((s) => s.isActive).map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nivo (1-5)</Label>
-                  <Select value={String(empSkillForm.level)} onValueChange={(v) => setEmpSkillForm({ ...empSkillForm, level: parseInt(v) })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {skillLevels.map((l) => (
-                        <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2"><Label>Godine iskustva</Label><Input type="number" value={empSkillForm.yearsExperience} onChange={(e) => setEmpSkillForm({ ...empSkillForm, yearsExperience: parseInt(e.target.value) || 0 })} /></div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-              <Button variant="outline" onClick={() => setEmpSkillDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreateEmployeeSkill}><Plus className="h-4 w-4 mr-1" /> Dodeli</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ─── Certification Form ─────────────────────────────────────────── */}
-      {certDialogOpen && (
-        <Card className="max-w-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setCertDialogOpen(false)} /> Novi sertifikat</CardTitle>
-            <CardDescription>Unesite podatke o sertifikatu zaposlenog</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label>Naziv sertifikata</Label><Input value={certForm.name} onChange={(e) => setCertForm({ ...certForm, name: e.target.value })} placeholder="Naziv sertifikata" /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Zaposleni</Label><Input value={certForm.employeeName} onChange={(e) => setCertForm({ ...certForm, employeeName: e.target.value })} placeholder="Ime" /></div>
-                <div className="space-y-2"><Label>Izdavač</Label><Input value={certForm.issuedBy} onChange={(e) => setCertForm({ ...certForm, issuedBy: e.target.value })} placeholder="Organizacija" /></div>
-              </div>
-              <div className="space-y-2">
-                <Label>Veština</Label>
-                <Select value={certForm.skillId} onValueChange={(v) => setCertForm({ ...certForm, skillId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
-                  <SelectContent>
-                    {skills.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Datum izdavanja</Label><Input type="date" value={certForm.issueDate} onChange={(e) => setCertForm({ ...certForm, issueDate: e.target.value })} /></div>
-                <div className="space-y-2"><Label>Datum isteka</Label><Input type="date" value={certForm.expiryDate} onChange={(e) => setCertForm({ ...certForm, expiryDate: e.target.value })} /></div>
-              </div>
-              <div className="space-y-2"><Label>Broj sertifikata</Label><Input value={certForm.certificateNumber} onChange={(e) => setCertForm({ ...certForm, certificateNumber: e.target.value })} placeholder="Br. sertifikata" /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-              <Button variant="outline" onClick={() => setCertDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreateCertification}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ─── Assessment Form ────────────────────────────────────────────── */}
-      {assessDialogOpen && (
-        <Card className="max-w-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setAssessDialogOpen(false)} /> Nova procena</CardTitle>
-            <CardDescription>Procenite nivo veštine zaposlenog</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Zaposleni</Label><Input value={assessForm.employeeName} onChange={(e) => setAssessForm({ ...assessForm, employeeName: e.target.value })} placeholder="Ime" /></div>
-                <div className="space-y-2">
-                  <Label>Veština</Label>
-                  <Select value={assessForm.skillId} onValueChange={(v) => setAssessForm({ ...assessForm, skillId: v })}>
-                    <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
-                    <SelectContent>
-                      {skills.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Trenutni nivo</Label>
-                  <Select value={String(assessForm.previousLevel)} onValueChange={(v) => setAssessForm({ ...assessForm, previousLevel: parseInt(v) })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {skillLevels.map((l) => (
-                        <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Novi nivo</Label>
-                  <Select value={String(assessForm.newLevel)} onValueChange={(v) => setAssessForm({ ...assessForm, newLevel: parseInt(v) })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {skillLevels.map((l) => (
-                        <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2"><Label>Napomene</Label><Textarea value={assessForm.notes} onChange={(e) => setAssessForm({ ...assessForm, notes: e.target.value })} rows={3} placeholder="Napomene o proceni..." /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-              <Button variant="outline" onClick={() => setAssessDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreateAssessment}><Plus className="h-4 w-4 mr-1" /> Sačuvaj procenu</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ─── Skill Detail Card ──────────────────────────────────────────── */}
-      {detailOpen && selected && (
-        <Card className="max-w-lg">
-          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDetailOpen(false)} /> Detalji veštine</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: (getCategoryInfo(selected.category)?.color || '#000') + '20' }}>
-                  <span style={{ color: getCategoryInfo(selected.category)?.color }}>{getCategoryInfo(selected.category)?.icon || <Zap className="h-5 w-5" />}</span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">{selected.name}</h3>
-                  <p className="text-sm text-muted-foreground">{getCategoryName(selected.category)}</p>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground">{selected.description}</p>
-              <Separator />
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Zaposleni sa veštinom:</span> <span className="font-bold">{selected.employeeCount}</span></div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant={selected.isActive ? 'default' : 'secondary'} className="text-xs">{selected.isActive ? 'Aktivna' : 'Neaktivna'}</Badge></div>
-              </div>
-              <Separator />
-              <div>
-                <p className="text-sm font-medium mb-2">Zaposleni sa ovom veštinom</p>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {employeeSkills.filter((es) => es.skillId === selected.id).map((es) => (
-                    <div key={es.id} className="flex items-center justify-between p-2 border rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium">{es.employeeName}</p>
-                        <p className="text-xs text-muted-foreground">{es.employeeDepartment}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className={`text-xs ${getLevelColor(es.level)}`}>{getLevelLabel(es.level)} ({es.level})</Badge>
-                        <p className="text-xs text-muted-foreground mt-1">{es.yearsExperience} god. iskustva</p>
-                      </div>
-                    </div>
-                  ))}
-                  {employeeSkills.filter((es) => es.skillId === selected.id).length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">Nema zaposlenih sa ovom veštinom</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

@@ -24,7 +24,7 @@ import {
   Globe, Shield, ShieldCheck, Zap, TrendingUp, TrendingDown, ArrowUpRight,
   FileText, Image, Mic, Video, MapPin, Link2, Star, Pin, Bookmark,
   Bell, BellOff, Volume2, VolumeX, Check, CheckCheck, AlertCircle,
-  ChevronRight, ChevronDown, ArrowLeft, AtSign, Hash, Smile, Paperclip,
+  ChevronRight, ChevronDown, AtSign, Hash, Smile, Paperclip,
   ThumbsUp, ThumbsDown, HelpCircle, Info, Package, ShoppingCart, Truck,
   Receipt, CreditCard, CalendarDays, Timer, List, LayoutGrid, PieChart,
   Network, Wifi, Smartphone, Monitor, Mail
@@ -262,11 +262,11 @@ export function Messaging() {
   const [replyText, setReplyText] = useState('')
   const [convSearch, setConvSearch] = useState('')
 
-  // Dialogs
-  const [newMsgDialogOpen, setNewMsgDialogOpen] = useState(false)
-  const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
-  const [autoReplyDialogOpen, setAutoReplyDialogOpen] = useState(false)
-  const [campaignDialogOpen, setCampaignDialogOpen] = useState(false)
+  // Sub-tabs
+  const [messagesSubTab, setMessagesSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [templatesSubTab, setTemplatesSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [chatbotSubTab, setChatbotSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [campaignsSubTab, setCampaignsSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingTemplate, setEditingTemplate] = useState<MessagingTemplate | null>(null)
   const [editingAutoReply, setEditingAutoReply] = useState<AutoReply | null>(null)
 
@@ -376,7 +376,7 @@ export function Messaging() {
     setConversations(prev => [newConv, ...prev])
     setNewMsgPhone('')
     setNewMsgText('')
-    setNewMsgDialogOpen(false)
+    setMessagesSubTab('pregled')
     showToast('Poruka poslata')
   }
 
@@ -395,7 +395,8 @@ export function Messaging() {
       lastUsedAt: editingTemplate?.lastUsedAt || null,
     }
     setTemplates(prev => editingTemplate ? prev.map(t => t.id === editingTemplate.id ? tpl : t) : [...prev, tpl])
-    setTemplateDialogOpen(false)
+    setEditingTemplate(null)
+    setTemplatesSubTab('pregled')
     showToast(editingTemplate ? 'Template ažuriran' : 'Template kreiran')
   }
 
@@ -408,7 +409,8 @@ export function Messaging() {
       enabled: autoReplyForm.enabled, matchCount: editingAutoReply?.matchCount || 0, createdAt: new Date().toISOString().split('T')[0],
     }
     setAutoReplies(prev => editingAutoReply ? prev.map(a => a.id === editingAutoReply.id ? ar : a) : [...prev, ar])
-    setAutoReplyDialogOpen(false)
+    setEditingAutoReply(null)
+    setChatbotSubTab('pregled')
     showToast(editingAutoReply ? 'Auto odgovor ažuriran' : 'Auto odgovor kreiran')
   }
 
@@ -444,7 +446,7 @@ export function Messaging() {
           <p className="text-sm text-muted-foreground">Business Poruke integracija za komunikaciju sa klijentima</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button size="sm" onClick={() => setNewMsgDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Nova poruka</Button>
+          <Button size="sm" onClick={() => { setActiveTab('messages'); setMessagesSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Nova poruka</Button>
           <Button variant="outline" size="sm" onClick={loadData}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
         </div>
       </div>
@@ -642,202 +644,356 @@ export function Messaging() {
         </TabsContent>
 
         {/* ===== MESSAGES ===== */}
-        <TabsContent value="messages" className="space-y-0">
-          <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-0 border rounded-lg overflow-hidden h-[calc(100vh-300px)] min-h-[500px]">
-            {/* Conversation list */}
-            <div className="border-r bg-muted/20 flex flex-col">
-              <div className="p-3 space-y-2 border-b">
-                <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži..." className="pl-9 h-8 text-xs" value={convSearch} onChange={(e) => setConvSearch(e.target.value)} /></div>
-                <div className="flex gap-1">
-                  <Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(CONV_STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-                  {stats.allTags.length > 0 && <Select value={filterTag} onValueChange={setFilterTag}><SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi tagovi</SelectItem>{stats.allTags.map(t => <SelectItem key={t} value={t}>#{t}</SelectItem>)}</SelectContent></Select>}
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto">
-                {filteredConvs.map(c => (
-                  <div key={c.id} className={`flex items-start gap-3 p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedConv?.id === c.id ? 'bg-muted' : ''}`} onClick={() => setSelectedConv(c)}>
-                    <div className="relative shrink-0">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(c.contactName)}`}>{getInitials(c.contactName)}</div>
-                      {c.unreadCount > 0 && <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">{c.unreadCount}</div>}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5"><span className="text-xs font-medium truncate">{c.contactName}</span>{c.isStarred && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}</div>
-                        <span className="text-xs text-muted-foreground shrink-0">{formatDate(c.lastMessageTime)}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{c.lastMessage}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Badge variant="outline" className={`text-xs px-1 py-0 ${CONV_STATUS[c.status]?.color}`}>{CONV_STATUS[c.status]?.label}</Badge>
-                        {c.tags.slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="text-xs px-1 py-0">#{tag}</Badge>)}
-                        {c.assignedTo && <span className="text-xs text-muted-foreground ml-auto">{c.assignedTo}</span>}
-                      </div>
+        <TabsContent value="messages" className="space-y-4">
+          <Tabs value={messagesSubTab} onValueChange={(v) => setMessagesSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled"><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> Nova poruka</TabsTrigger>
+            </TabsList>
+
+            {/* Messages Pregled */}
+            <TabsContent value="pregled" className="space-y-0 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-0 border rounded-lg overflow-hidden h-[calc(100vh-340px)] min-h-[500px]">
+                {/* Conversation list */}
+                <div className="border-r bg-muted/20 flex flex-col">
+                  <div className="p-3 space-y-2 border-b">
+                    <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži..." className="pl-9 h-8 text-xs" value={convSearch} onChange={(e) => setConvSearch(e.target.value)} /></div>
+                    <div className="flex gap-1">
+                      <Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi</SelectItem>{Object.entries(CONV_STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+                      {stats.allTags.length > 0 && <Select value={filterTag} onValueChange={setFilterTag}><SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Svi tagovi</SelectItem>{stats.allTags.map(t => <SelectItem key={t} value={t}>#{t}</SelectItem>)}</SelectContent></Select>}
                     </div>
                   </div>
-                ))}
-                {filteredConvs.length === 0 && <div className="p-8 text-center"><MessageSquare className="h-8 w-8 mx-auto mb-2 text-muted-foreground" /><p className="text-xs text-muted-foreground">Nema razgovora</p></div>}
-              </div>
-            </div>
-
-            {/* Chat area */}
-            <div className="flex flex-col bg-background">
-              {selectedConv ? (
-                <>
-                  {/* Chat header */}
-                  <div className="flex items-center justify-between p-3 border-b">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(selectedConv.contactName)}`}>{getInitials(selectedConv.contactName)}</div>
-                      <div>
-                        <p className="text-sm font-medium">{selectedConv.contactName}</p>
-                        <p className="text-xs text-muted-foreground">{selectedConv.contactPhone}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleToggleStar(selectedConv.id)}>{selectedConv.isStarred ? <Star className="h-4 w-4 text-amber-500 fill-amber-500" /> : <Star className="h-4 w-4" />}</Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><PhoneCall className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                    </div>
-                  </div>
-
-                  {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {selectedConv.messages.map(msg => {
-                      const isInbound = msg.direction === 'inbound'
-                      return (
-                        <div key={msg.id} className={`flex ${isInbound ? 'justify-start' : 'justify-end'}`}>
-                          <div className={`max-w-[75%] rounded-lg p-3 ${isInbound ? 'bg-muted' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'}`}>
-                            <p className="text-sm">{msg.content}</p>
-                            <div className="flex items-center gap-1.5 mt-1 justify-end">
-                              <span className="text-xs text-muted-foreground">{new Date(msg.timestamp).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
-                              {!isInbound && <span className="text-xs text-green-600">{STATUS_CONFIG[msg.status]?.icon}</span>}
-                            </div>
+                  <div className="flex-1 overflow-y-auto">
+                    {filteredConvs.map(c => (
+                      <div key={c.id} className={`flex items-start gap-3 p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedConv?.id === c.id ? 'bg-muted' : ''}`} onClick={() => setSelectedConv(c)}>
+                        <div className="relative shrink-0">
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(c.contactName)}`}>{getInitials(c.contactName)}</div>
+                          {c.unreadCount > 0 && <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">{c.unreadCount}</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5"><span className="text-xs font-medium truncate">{c.contactName}</span>{c.isStarred && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}</div>
+                            <span className="text-xs text-muted-foreground shrink-0">{formatDate(c.lastMessageTime)}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">{c.lastMessage}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Badge variant="outline" className={`text-xs px-1 py-0 ${CONV_STATUS[c.status]?.color}`}>{CONV_STATUS[c.status]?.label}</Badge>
+                            {c.tags.slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="text-xs px-1 py-0">#{tag}</Badge>)}
+                            {c.assignedTo && <span className="text-xs text-muted-foreground ml-auto">{c.assignedTo}</span>}
                           </div>
                         </div>
-                      )
-                    })}
+                      </div>
+                    ))}
+                    {filteredConvs.length === 0 && <div className="p-8 text-center"><MessageSquare className="h-8 w-8 mx-auto mb-2 text-muted-foreground" /><p className="text-xs text-muted-foreground">Nema razgovora</p></div>}
                   </div>
+                </div>
 
-                  {/* Reply input */}
-                  <div className="p-3 border-t">
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Input placeholder="Napišite poruku..." className="pr-20" value={replyText} onChange={(e) => setReplyText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendReply() } }} />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                          <Button variant="ghost" size="icon" className="h-6 w-6"><Paperclip className="h-3.5 w-3.5" /></Button>
-                          <Button variant="ghost" size="icon" className="h-6 w-6"><Smile className="h-3.5 w-3.5" /></Button>
+                {/* Chat area */}
+                <div className="flex flex-col bg-background">
+                  {selectedConv ? (
+                    <>
+                      {/* Chat header */}
+                      <div className="flex items-center justify-between p-3 border-b">
+                        <div className="flex items-center gap-3">
+                          <div className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-medium ${getAvatarColor(selectedConv.contactName)}`}>{getInitials(selectedConv.contactName)}</div>
+                          <div>
+                            <p className="text-sm font-medium">{selectedConv.contactName}</p>
+                            <p className="text-xs text-muted-foreground">{selectedConv.contactPhone}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleToggleStar(selectedConv.id)}>{selectedConv.isStarred ? <Star className="h-4 w-4 text-amber-500 fill-amber-500" /> : <Star className="h-4 w-4" />}</Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8"><PhoneCall className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                         </div>
                       </div>
-                      <Button size="icon" onClick={handleSendReply} disabled={!replyText.trim()} className="bg-green-600 hover:bg-green-700"><Send className="h-4 w-4" /></Button>
+
+                      {/* Messages */}
+                      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                        {selectedConv.messages.map(msg => {
+                          const isInbound = msg.direction === 'inbound'
+                          return (
+                            <div key={msg.id} className={`flex ${isInbound ? 'justify-start' : 'justify-end'}`}>
+                              <div className={`max-w-[75%] rounded-lg p-3 ${isInbound ? 'bg-muted' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'}`}>
+                                <p className="text-sm">{msg.content}</p>
+                                <div className="flex items-center gap-1.5 mt-1 justify-end">
+                                  <span className="text-xs text-muted-foreground">{new Date(msg.timestamp).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
+                                  {!isInbound && <span className="text-xs text-green-600">{STATUS_CONFIG[msg.status]?.icon}</span>}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      {/* Reply input */}
+                      <div className="p-3 border-t">
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Input placeholder="Napišite poruku..." className="pr-20" value={replyText} onChange={(e) => setReplyText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendReply() } }} />
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                              <Button variant="ghost" size="icon" className="h-6 w-6"><Paperclip className="h-3.5 w-3.5" /></Button>
+                              <Button variant="ghost" size="icon" className="h-6 w-6"><Smile className="h-3.5 w-3.5" /></Button>
+                            </div>
+                          </div>
+                          <Button size="icon" onClick={handleSendReply} disabled={!replyText.trim()} className="bg-green-600 hover:bg-green-700"><Send className="h-4 w-4" /></Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center"><MessageCircleReply className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Izaberite razgovor</p><p className="text-xs text-muted-foreground mt-1">ili počnite novu konverzaciju</p></div>
                     </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center"><MessageCircleReply className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Izaberite razgovor</p><p className="text-xs text-muted-foreground mt-1">ili počnite novu konverzaciju</p></div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            </TabsContent>
+
+            {/* Messages Dodaj - Nova poruka */}
+            <TabsContent value="dodaj" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Nova poruka</CardTitle>
+                  <CardDescription>Pošaljite poruku novom ili postojećem kontaktu</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2"><Label className="text-xs">Broj primaoca *</Label><Input value={newMsgPhone} onChange={(e) => setNewMsgPhone(e.target.value)} placeholder="+3816XXXXXXXX" /></div>
+                  <div className="space-y-2"><Label className="text-xs">Poruka *</Label><Textarea value={newMsgText} onChange={(e) => setNewMsgText(e.target.value)} rows={4} placeholder="Vaša poruka..." /></div>
+                </CardContent>
+                <div className="flex justify-end gap-2 px-6 pb-6">
+                  <Button variant="outline" onClick={() => setMessagesSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleNewMessage} disabled={!newMsgPhone.trim() || !newMsgText.trim()} className="bg-green-600 hover:bg-green-700"><Send className="h-4 w-4 mr-1" /> Pošalji</Button>
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== TEMPLATES ===== */}
         <TabsContent value="templates" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{templates.length} template-a</p>
-            <Button size="sm" onClick={() => { setEditingTemplate(null); setTemplateForm({ name: '', category: 'utility', language: 'sr', body: '' }); setTemplateDialogOpen(true) }}><Plus className="h-4 w-4 mr-1" /> Novi template</Button>
-          </div>
-          <div className="space-y-3">
-            {templates.map(tpl => {
-              const catCfg = TEMPLATE_CATEGORIES.find(c => c.value === tpl.category)
-              return (
-                <Card key={tpl.id} className="hover:bg-muted/30 transition-colors">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="text-sm font-medium">{tpl.name}</p>
-                          <Badge variant="outline" className={`text-xs ${STATUS_CONFIG[tpl.status === 'approved' ? 'delivered' : tpl.status === 'pending' ? 'pending' : 'failed']?.color}`}>{tpl.status === 'approved' ? '✅ Odobren' : tpl.status === 'pending' ? '⏳ Na čekanju' : '❌ Odbijen'}</Badge>
-                          <Badge variant="secondary" className={`text-xs ${catCfg?.color}`}>{catCfg?.label}</Badge>
+          <Tabs value={templatesSubTab} onValueChange={(v) => setTemplatesSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled"><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> {editingTemplate ? 'Uredi template' : 'Novi template'}</TabsTrigger>
+            </TabsList>
+
+            {/* Templates Pregled */}
+            <TabsContent value="pregled" className="mt-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{templates.length} template-a</p>
+                <Button size="sm" onClick={() => { setEditingTemplate(null); setTemplateForm({ name: '', category: 'utility', language: 'sr', body: '' }); setTemplatesSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Novi template</Button>
+              </div>
+              <div className="space-y-3 mt-4">
+                {templates.map(tpl => {
+                  const catCfg = TEMPLATE_CATEGORIES.find(c => c.value === tpl.category)
+                  return (
+                    <Card key={tpl.id} className="hover:bg-muted/30 transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-medium">{tpl.name}</p>
+                              <Badge variant="outline" className={`text-xs ${STATUS_CONFIG[tpl.status === 'approved' ? 'delivered' : tpl.status === 'pending' ? 'pending' : 'failed']?.color}`}>{tpl.status === 'approved' ? '✅ Odobren' : tpl.status === 'pending' ? '⏳ Na čekanju' : '❌ Odbijen'}</Badge>
+                              <Badge variant="secondary" className={`text-xs ${catCfg?.color}`}>{catCfg?.label}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground bg-muted/30 rounded p-2 mt-1">{tpl.body}</p>
+                            <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
+                              <span>🇷🇸 {tpl.language}</span>
+                              <span>{tpl.variables} promenljivih</span>
+                              <span>Korišćen {tpl.usedCount}x</span>
+                              {tpl.lastUsedAt && <span>Zadnje: {formatDate(tpl.lastUsedAt)}</span>}
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => { setEditingTemplate(tpl); setTemplateForm({ name: tpl.name, category: tpl.category, language: tpl.language, body: tpl.body }); setTemplatesSubTab('dodaj') }}><Edit3 className="h-4 w-4" /></Button>
                         </div>
-                        <p className="text-xs text-muted-foreground bg-muted/30 rounded p-2 mt-1">{tpl.body}</p>
-                        <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                          <span>🇷🇸 {tpl.language}</span>
-                          <span>{tpl.variables} promenljivih</span>
-                          <span>Korišćen {tpl.usedCount}x</span>
-                          {tpl.lastUsedAt && <span>Zadnje: {formatDate(tpl.lastUsedAt)}</span>}
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => { setEditingTemplate(tpl); setTemplateForm({ name: tpl.name, category: tpl.category, language: tpl.language, body: tpl.body }); setTemplateDialogOpen(true) }}><Edit3 className="h-4 w-4" /></Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </TabsContent>
+
+            {/* Templates Dodaj/Uredi */}
+            <TabsContent value="dodaj" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{editingTemplate ? 'Izmeni template' : 'Novi template'}</CardTitle>
+                  <CardDescription>Kreirajte template poruku sa promenljivim</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} placeholder="npr. Potvrda narudžbe" /></div>
+                    <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={templateForm.category} onValueChange={(v) => setTemplateForm({ ...templateForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Jezik</Label><Select value={templateForm.language} onValueChange={(v) => setTemplateForm({ ...templateForm, language: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_LANGUAGES.map(l => <SelectItem key={l} value={l}>{l.toUpperCase()}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-2"><Label className="text-xs">Sadržaj poruke * (koristite {'{{1}}'}, {'{{2}}'} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={4} placeholder="Vaša poruka sa {{1}} i {{2}}..." /></div>
+                  <p className="text-xs text-muted-foreground">Promenljive: {(templateForm.body.match(/\{\{(\d+)\}\}/g) || []).length}</p>
+                </CardContent>
+                <div className="flex justify-end gap-2 px-6 pb-6">
+                  <Button variant="outline" onClick={() => { setEditingTemplate(null); setTemplatesSubTab('pregled') }}>Otkaži</Button>
+                  <Button onClick={handleSaveTemplate}>{editingTemplate ? 'Sačuvaj' : 'Kreiraj'}</Button>
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== CHATBOT ===== */}
         <TabsContent value="chatbot" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{autoReplies.filter(a => a.enabled).length} aktivnih pravila od {autoReplies.length}</p>
-            <Button size="sm" onClick={() => { setEditingAutoReply(null); setAutoReplyForm({ name: '', description: '', trigger: 'keyword', keyword: '', response: '', delaySeconds: '0', enabled: true }); setAutoReplyDialogOpen(true) }}><Plus className="h-4 w-4 mr-1" /> Novo pravilo</Button>
-          </div>
-          <div className="space-y-3">
-            {autoReplies.map(ar => (
-              <Card key={ar.id} className={ar.enabled ? '' : 'opacity-60'}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-medium">{ar.name}</p>
-                        <Badge variant="outline" className="text-xs">Trigger: {TRIGGER_LABELS[ar.trigger]}</Badge>
-                        {ar.enabled ? <Badge variant="secondary" className="text-xs bg-green-100 text-green-700"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Aktivno</Badge> : <Badge variant="secondary" className="text-xs">Neaktivno</Badge>}
+          <Tabs value={chatbotSubTab} onValueChange={(v) => setChatbotSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled"><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> {editingAutoReply ? 'Uredi pravilo' : 'Novo pravilo'}</TabsTrigger>
+            </TabsList>
+
+            {/* Chatbot Pregled */}
+            <TabsContent value="pregled" className="mt-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{autoReplies.filter(a => a.enabled).length} aktivnih pravila od {autoReplies.length}</p>
+                <Button size="sm" onClick={() => { setEditingAutoReply(null); setAutoReplyForm({ name: '', description: '', trigger: 'keyword', keyword: '', response: '', delaySeconds: '0', enabled: true }); setChatbotSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Novo pravilo</Button>
+              </div>
+              <div className="space-y-3 mt-4">
+                {autoReplies.map(ar => (
+                  <Card key={ar.id} className={ar.enabled ? '' : 'opacity-60'}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-sm font-medium">{ar.name}</p>
+                            <Badge variant="outline" className="text-xs">Trigger: {TRIGGER_LABELS[ar.trigger]}</Badge>
+                            {ar.enabled ? <Badge variant="secondary" className="text-xs bg-green-100 text-green-700"><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Aktivno</Badge> : <Badge variant="secondary" className="text-xs">Neaktivno</Badge>}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{ar.description}</p>
+                          {ar.keyword && <p className="text-xs text-muted-foreground mt-1">Ključne reči: {ar.keyword.split(',').map(k => <Badge key={k} variant="secondary" className="text-xs mr-1">#{k.trim()}</Badge>)}</p>}
+                          <p className="text-xs bg-muted/30 rounded p-2 mt-1">{ar.response}</p>
+                          <p className="text-xs text-muted-foreground mt-1">Pokrenuto {ar.matchCount}x {ar.delaySeconds > 0 ? `· Kašnjenje: ${ar.delaySeconds}s` : ''}</p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingAutoReply(ar); setAutoReplyForm({ name: ar.name, description: ar.description, trigger: ar.trigger, keyword: ar.keyword || '', response: ar.response, delaySeconds: String(ar.delaySeconds), enabled: ar.enabled }); setChatbotSubTab('dodaj') }}><Edit3 className="h-4 w-4" /></Button>
+                          <Switch checked={ar.enabled} onCheckedChange={() => handleToggleAutoReply(ar.id)} />
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">{ar.description}</p>
-                      {ar.keyword && <p className="text-xs text-muted-foreground mt-1">Ključne reči: {ar.keyword.split(',').map(k => <Badge key={k} variant="secondary" className="text-xs mr-1">#{k.trim()}</Badge>)}</p>}
-                      <p className="text-xs bg-muted/30 rounded p-2 mt-1">{ar.response}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Pokrenuto {ar.matchCount}x {ar.delaySeconds > 0 ? `· Kašnjenje: ${ar.delaySeconds}s` : ''}</p>
-                    </div>
-                    <Switch checked={ar.enabled} onCheckedChange={() => handleToggleAutoReply(ar.id)} />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* Chatbot Dodaj/Uredi */}
+            <TabsContent value="dodaj" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">{editingAutoReply ? 'Izmeni auto odgovor' : 'Novi auto odgovor'}</CardTitle>
+                  <CardDescription>Definišite trigger i odgovor</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={autoReplyForm.name} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, name: e.target.value })} /></div>
+                  <div className="space-y-2"><Label className="text-xs">Opis</Label><Input value={autoReplyForm.description} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, description: e.target.value })} /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label className="text-xs">Trigger</Label><Select value={autoReplyForm.trigger} onValueChange={(v) => setAutoReplyForm({ ...autoReplyForm, trigger: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TRIGGER_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="space-y-2"><Label className="text-xs">Kašnjenje (s)</Label><Input type="number" value={autoReplyForm.delaySeconds} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, delaySeconds: e.target.value })} /></div>
                   </div>
+                  {autoReplyForm.trigger === 'keyword' && <div className="space-y-2"><Label className="text-xs">Ključne reči (zarezima)</Label><Input value={autoReplyForm.keyword} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, keyword: e.target.value })} placeholder="cena,dostava,katalog" /></div>}
+                  <div className="space-y-2"><Label className="text-xs">Odgovor *</Label><Textarea value={autoReplyForm.response} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, response: e.target.value })} rows={3} placeholder="Automatski odgovor..." /></div>
                 </CardContent>
+                <div className="flex justify-end gap-2 px-6 pb-6">
+                  <Button variant="outline" onClick={() => { setEditingAutoReply(null); setChatbotSubTab('pregled') }}>Otkaži</Button>
+                  <Button onClick={handleSaveAutoReply}>{editingAutoReply ? 'Sačuvaj' : 'Kreiraj'}</Button>
+                </div>
               </Card>
-            ))}
-          </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== CAMPAIGNS ===== */}
         <TabsContent value="campaigns" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{campaigns.length} kampanji</p>
-            <Button size="sm" onClick={() => setCampaignDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Nova kampanja</Button>
-          </div>
-          <div className="space-y-3">
-            {campaigns.map(cmp => {
-              const statusCfg = CAMPAIGN_STATUS[cmp.status]
-              return (
-                <Card key={cmp.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="text-sm font-medium">{cmp.name}</p>
-                          <Badge variant="outline" className={`text-xs ${statusCfg?.color}`}>{statusCfg?.label}</Badge>
+          <Tabs value={campaignsSubTab} onValueChange={(v) => setCampaignsSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList>
+              <TabsTrigger value="pregled"><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> Nova kampanja</TabsTrigger>
+            </TabsList>
+
+            {/* Campaigns Pregled */}
+            <TabsContent value="pregled" className="mt-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{campaigns.length} kampanji</p>
+                <Button size="sm" onClick={() => setCampaignsSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Nova kampanja</Button>
+              </div>
+              <div className="space-y-3 mt-4">
+                {campaigns.map(cmp => {
+                  const statusCfg = CAMPAIGN_STATUS[cmp.status]
+                  return (
+                    <Card key={cmp.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-medium">{cmp.name}</p>
+                              <Badge variant="outline" className={`text-xs ${statusCfg?.color}`}>{statusCfg?.label}</Badge>
+                            </div>
+                            {cmp.scheduledAt && <p className="text-xs text-muted-foreground">Zakazano: {formatDate(cmp.scheduledAt)}</p>}
+                            <div className="grid grid-cols-4 gap-3 mt-3">
+                              <div className="text-center p-2 bg-muted/30 rounded"><p className="text-xs text-muted-foreground">Primaoca</p><p className="text-sm font-bold">{cmp.recipientCount}</p></div>
+                              <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/10 rounded"><p className="text-xs text-muted-foreground">Poslato</p><p className="text-sm font-bold">{cmp.sentCount}</p></div>
+                              <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded"><p className="text-xs text-muted-foreground">Pročitano</p><p className="text-sm font-bold">{cmp.readCount}</p></div>
+                              <div className="text-center p-2 bg-red-50 dark:bg-red-900/10 rounded"><p className="text-xs text-muted-foreground">Greške</p><p className="text-sm font-bold text-red-600">{cmp.failedCount}</p></div>
+                            </div>
+                            {cmp.recipientCount > 0 && <Progress value={(cmp.readCount / cmp.recipientCount) * 100} className="mt-2 h-2" />}
+                          </div>
                         </div>
-                        {cmp.scheduledAt && <p className="text-xs text-muted-foreground">Zakazano: {formatDate(cmp.scheduledAt)}</p>}
-                        <div className="grid grid-cols-4 gap-3 mt-3">
-                          <div className="text-center p-2 bg-muted/30 rounded"><p className="text-xs text-muted-foreground">Primaoca</p><p className="text-sm font-bold">{cmp.recipientCount}</p></div>
-                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/10 rounded"><p className="text-xs text-muted-foreground">Poslato</p><p className="text-sm font-bold">{cmp.sentCount}</p></div>
-                          <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded"><p className="text-xs text-muted-foreground">Pročitano</p><p className="text-sm font-bold">{cmp.readCount}</p></div>
-                          <div className="text-center p-2 bg-red-50 dark:bg-red-900/10 rounded"><p className="text-xs text-muted-foreground">Greške</p><p className="text-sm font-bold text-red-600">{cmp.failedCount}</p></div>
-                        </div>
-                        {cmp.recipientCount > 0 && <Progress value={(cmp.readCount / cmp.recipientCount) * 100} className="mt-2 h-2" />}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </TabsContent>
+
+            {/* Campaigns Dodaj */}
+            <TabsContent value="dodaj" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Nova kampanja</CardTitle>
+                  <CardDescription>Kreirajte broadcast kampanju za masovno slanje poruka</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2"><Label className="text-xs">Naziv kampanje *</Label><Input placeholder="npr. Najama zimskog kataloga" /></div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Template</Label>
+                    <Select>
+                      <SelectTrigger><SelectValue placeholder="Izaberite template" /></SelectTrigger>
+                      <SelectContent>
+                        {templates.filter(t => t.status === 'approved').map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2"><Label className="text-xs">Datum slanja</Label><Input type="datetime-local" /></div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Grupa primalaca</Label>
+                    <Select>
+                      <SelectTrigger><SelectValue placeholder="Izaberite grupu" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Svi kontakti</SelectItem>
+                        <SelectItem value="leads">Lead-ovi</SelectItem>
+                        <SelectItem value="customers">Postojeći klijenti</SelectItem>
+                        <SelectItem value="vip">VIP klijenti</SelectItem>
+                        <SelectItem value="inactive">Neaktivni kontakti (30+ dana)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-amber-700 dark:text-amber-400 text-xs">
+                      Business Poruke dozvoljava broadcast samo za kontakte koji su vas prethodno kontaktirali. Maksimalno 10.000 primalaca po kampanji.
+                    </AlertDescription>
+                  </Alert>
+                </CardContent>
+                <div className="flex justify-end gap-2 px-6 pb-6">
+                  <Button variant="outline" onClick={() => setCampaignsSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={() => { setCampaignsSubTab('pregled'); showToast('Kampanja kreirana') }}>Kreiraj kampanju</Button>
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== SETTINGS ===== */}
@@ -873,110 +1029,6 @@ export function Messaging() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* ===== DIALOGS ===== */}
-
-      {/* New Message */}
-      {newMsgDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setNewMsgDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base">Nova poruka</CardTitle><CardDescription>Pošaljite poruku novom ili postojećem kontaktu</CardDescription></div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Broj primaoca *</Label><Input value={newMsgPhone} onChange={(e) => setNewMsgPhone(e.target.value)} placeholder="+3816XXXXXXXX" /></div>
-            <div className="space-y-2"><Label className="text-xs">Poruka *</Label><Textarea value={newMsgText} onChange={(e) => setNewMsgText(e.target.value)} rows={4} placeholder="Vaša poruka..." /></div>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" onClick={() => setNewMsgDialogOpen(false)}>Otkaži</Button><Button onClick={handleNewMessage} disabled={!newMsgPhone.trim() || !newMsgText.trim()} className="bg-green-600 hover:bg-green-700"><Send className="h-4 w-4 mr-1" /> Pošalji</Button></div>
-        </Card>
-      )}
-
-      {/* New/Edit Template */}
-      {templateDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTemplateDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base">{editingTemplate ? 'Izmeni template' : 'Novi template'}</CardTitle><CardDescription>Kreirajte template poruku sa promenljivim</CardDescription></div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} placeholder="npr. Potvrda narudžbe" /></div>
-              <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={templateForm.category} onValueChange={(v) => setTemplateForm({ ...templateForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="space-y-2"><Label className="text-xs">Jezik</Label><Select value={templateForm.language} onValueChange={(v) => setTemplateForm({ ...templateForm, language: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_LANGUAGES.map(l => <SelectItem key={l} value={l}>{l.toUpperCase()}</SelectItem>)}</SelectContent></Select></div>
-            <div className="space-y-2"><Label className="text-xs">Sadržaj poruke * (koristite {'{{1}}'}, {'{{2}}'} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={4} placeholder="Vaša poruka sa {{1}} i {{2}}..." /></div>
-            <p className="text-xs text-muted-foreground">Promenljive: {(templateForm.body.match(/\{\{(\d+)\}\}/g) || []).length}</p>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button><Button onClick={handleSaveTemplate}>{editingTemplate ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
-        </Card>
-      )}
-
-      {/* New/Edit Auto Reply */}
-      {autoReplyDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAutoReplyDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base">{editingAutoReply ? 'Izmeni auto odgovor' : 'Novi auto odgovor'}</CardTitle><CardDescription>Definišite trigger i odgovor</CardDescription></div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={autoReplyForm.name} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, name: e.target.value })} /></div>
-            <div className="space-y-2"><Label className="text-xs">Opis</Label><Input value={autoReplyForm.description} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, description: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Trigger</Label><Select value={autoReplyForm.trigger} onValueChange={(v) => setAutoReplyForm({ ...autoReplyForm, trigger: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TRIGGER_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-              <div className="space-y-2"><Label className="text-xs">Kašnjenje (s)</Label><Input type="number" value={autoReplyForm.delaySeconds} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, delaySeconds: e.target.value })} /></div>
-            </div>
-            {autoReplyForm.trigger === 'keyword' && <div className="space-y-2"><Label className="text-xs">Ključne reči (zarezima)</Label><Input value={autoReplyForm.keyword} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, keyword: e.target.value })} placeholder="cena,dostava,katalog" /></div>}
-            <div className="space-y-2"><Label className="text-xs">Odgovor *</Label><Textarea value={autoReplyForm.response} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, response: e.target.value })} rows={3} placeholder="Automatski odgovor..." /></div>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" onClick={() => setAutoReplyDialogOpen(false)}>Otkaži</Button><Button onClick={handleSaveAutoReply}>{editingAutoReply ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
-        </Card>
-      )}
-
-      {/* New Campaign */}
-      {campaignDialogOpen && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCampaignDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <div><CardTitle className="text-base">Nova kampanja</CardTitle><CardDescription>Kreirajte broadcast kampanju za masovno slanje poruka</CardDescription></div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv kampanje *</Label><Input placeholder="npr. Najama zimskog kataloga" /></div>
-            <div className="space-y-2">
-              <Label className="text-xs">Template</Label>
-              <Select>
-                <SelectTrigger><SelectValue placeholder="Izaberite template" /></SelectTrigger>
-                <SelectContent>
-                  {templates.filter(t => t.status === 'approved').map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2"><Label className="text-xs">Datum slanja</Label><Input type="datetime-local" /></div>
-            <div className="space-y-2">
-              <Label className="text-xs">Grupa primalaca</Label>
-              <Select>
-                <SelectTrigger><SelectValue placeholder="Izaberite grupu" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Svi kontakti</SelectItem>
-                  <SelectItem value="leads">Lead-ovi</SelectItem>
-                  <SelectItem value="customers">Postojeći klijenti</SelectItem>
-                  <SelectItem value="vip">VIP klijenti</SelectItem>
-                  <SelectItem value="inactive">Neaktivni kontakti (30+ dana)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-700 dark:text-amber-400 text-xs">
-                Business Poruke dozvoljava broadcast samo za kontakte koji su vas prethodno kontaktirali. Maksimalno 10.000 primalaca po kampanji.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-          <div className="flex justify-end gap-2 px-6 pb-6">
-            <Button variant="outline" onClick={() => setCampaignDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={() => { setCampaignDialogOpen(false); showToast('Kampanja kreirana') }}>Kreiraj kampanju</Button>
-          </div>
-        </Card>
-      )}
 
       {/* ===== QUICK STATS BAR (visible on all tabs) ===== */}
       {activeTab !== 'overview' && (

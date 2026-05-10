@@ -55,7 +55,6 @@ export function Prescriptions() {
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [editItem, setEditItem] = useState<Prescription | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Prescription>>({})
@@ -99,10 +98,10 @@ export function Prescriptions() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ prescriptionNo: `REC-2024-${String(data.length + 1).padStart(3, '0')}`, patientName: '', doctor: '', date: new Date().toISOString().split('T')[0], status: 'active', type: 'reimbursable', medications: [], diagnosis: '', totalCost: 0, patientShare: 0, insuranceCoverage: 0, pharmacy: '', validUntil: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0], notes: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
-  const openEdit = (item: Prescription) => { setEditItem(item); setForm({ ...item }); setDialogOpen(true) }
+  const openEdit = (item: Prescription) => { setEditItem(item); setForm({ ...item }); setActiveTab('dodaj') }
 
   const handleSave = async () => {
     if (!form.patientName || !form.doctor) { toast.error('Popunite obavezna polja'); return }
@@ -117,7 +116,8 @@ export function Prescriptions() {
         if (!res.ok) throw new Error('Greška pri kreiranju')
         toast.success('Recept kreiran')
       }
-      setDialogOpen(false)
+      setEditItem(null)
+      setActiveTab('pregled')
       fetchData()
     } catch (err) {
       console.error(err)
@@ -151,6 +151,41 @@ export function Prescriptions() {
         <TabsList><TabsTrigger value="pregled">Pregled</TabsTrigger><TabsTrigger value="dodaj">Dodaj</TabsTrigger><TabsTrigger value="uredi">Uredi</TabsTrigger></TabsList>
 
         <TabsContent value="pregled" className="mt-4">
+          {detailId && detailItem && (
+          <Card className="mb-4">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle className="text-base">Recept — {detailItem.prescriptionNo}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.patientName}</h3>{getTypeBadge(detailItem.type)}{getStatusBadge(detailItem.status)}</div>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    ['Lekar', detailItem.doctor],
+                    ['Datum', formatDate(detailItem.date)],
+                    ['Dijagnoza', detailItem.diagnosis],
+                    ['Vredi do', formatDate(detailItem.validUntil)],
+                    ['Apoteka', detailItem.pharmacy || '—'],
+                    ['Ukupna vrednost', formatRSD(detailItem.totalCost)],
+                    ['Učešće pacijenta', formatRSD(detailItem.patientShare)],
+                    ['Pokriće osiguranja', formatRSD(detailItem.insuranceCoverage)],
+                  ].map(([label, val]) => (
+                    <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                  ))}
+                </div>
+                <div className="p-2 rounded-lg bg-blue-50"><div className="text-xs text-blue-600 mb-2">Propisani lekovi</div>
+                  {detailItem.medications.map((m, i) => (
+                    <div key={i} className="text-xs mb-1"><span className="font-medium">{m.name}</span> — {m.dosage} — {m.frequency} — {m.duration} ({m.quantity})</div>
+                  ))}
+                </div>
+                {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+              </div>
+            </CardContent>
+          </Card>
+          )}
           <Card>
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -233,65 +268,4 @@ export function Prescriptions() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {detailId && detailItem && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="text-base">Recept — {detailItem.prescriptionNo}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.patientName}</h3>{getTypeBadge(detailItem.type)}{getStatusBadge(detailItem.status)}</div>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ['Lekar', detailItem.doctor],
-                  ['Datum', formatDate(detailItem.date)],
-                  ['Dijagnoza', detailItem.diagnosis],
-                  ['Vredi do', formatDate(detailItem.validUntil)],
-                  ['Apoteka', detailItem.pharmacy || '—'],
-                  ['Ukupna vrednost', formatRSD(detailItem.totalCost)],
-                  ['Učešće pacijenta', formatRSD(detailItem.patientShare)],
-                  ['Pokriće osiguranja', formatRSD(detailItem.insuranceCoverage)],
-                ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-                ))}
-              </div>
-              <div className="p-2 rounded-lg bg-blue-50"><div className="text-xs text-blue-600 mb-2">Propisani lekovi</div>
-                {detailItem.medications.map((m, i) => (
-                  <div key={i} className="text-xs mb-1"><span className="font-medium">{m.name}</span> — {m.dosage} — {m.frequency} — {m.duration} ({m.quantity})</div>
-                ))}
-              </div>
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {dialogOpen && (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)} disabled={saving}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="text-base">{editItem ? 'Uredi recept' : 'Novi recept'}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-2"><Label className="text-xs">Pacijent *</Label><Input className="text-xs" value={form.patientName || ''} onChange={e => setForm({ ...form, patientName: e.target.value })} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as Prescription['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="completed">Realizovan</SelectItem><SelectItem value="expired">Istekao</SelectItem><SelectItem value="cancelled">Otkazan</SelectItem></SelectContent></Select></div>
-                <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'reimbursable'} onValueChange={v => setForm({ ...form, type: v as Prescription['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="reimbursable">Reemburzibilni</SelectItem><SelectItem value="private">Privatni</SelectItem><SelectItem value="narcotic">Narkotik</SelectItem><SelectItem value="special">Specijalni</SelectItem></SelectContent></Select></div>
-                <div className="grid gap-2"><Label className="text-xs">Vrednost</Label><Input className="text-xs" type="number" value={form.totalCost || ''} onChange={e => setForm({ ...form, totalCost: Number(e.target.value) })} /></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Otkaži</Button><Button size="sm" disabled={saving} onClick={handleSave}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Sačuvaj</Button></div>
-          </CardContent>
-        </Card>
-      )}
     </div>
-  )
-}

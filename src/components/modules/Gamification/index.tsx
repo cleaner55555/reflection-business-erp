@@ -185,10 +185,12 @@ export function Gamification() {
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [goalDialogOpen, setGoalDialogOpen] = useState(false)
-  const [challengeDialogOpen, setChallengeDialogOpen] = useState(false)
-  const [badgeDialogOpen, setBadgeDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+
+  // Sub-tab states (replacing dialog states)
+  const [goalSubTab, setGoalSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [challengeSubTab, setChallengeSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [badgeSubTab, setBadgeSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+
   const [selected, setSelected] = useState<Goal | null>(null)
 
   const emptyGoalForm = {
@@ -255,7 +257,7 @@ export function Gamification() {
       const json = await res.json()
       if (json.success) {
         toast({ title: 'Uspešno', description: 'Cilj je kreiran' })
-        setGoalDialogOpen(false)
+        setGoalSubTab('pregled')
         setGoalForm(emptyGoalForm)
         loadAll()
       } else {
@@ -277,7 +279,7 @@ export function Gamification() {
       const json = await res.json()
       if (json.success) {
         toast({ title: 'Uspešno', description: 'Izazov je kreiran' })
-        setChallengeDialogOpen(false)
+        setChallengeSubTab('pregled')
         setChallengeForm(emptyChallengeForm)
         loadAll()
       } else {
@@ -299,7 +301,7 @@ export function Gamification() {
       const json = await res.json()
       if (json.success) {
         toast({ title: 'Uspešno', description: 'Značka je kreirana' })
-        setBadgeDialogOpen(false)
+        setBadgeSubTab('pregled')
         setBadgeForm(emptyBadgeForm)
         loadAll()
       } else {
@@ -349,14 +351,20 @@ export function Gamification() {
           <Button variant="outline" size="sm" onClick={() => loadAll()}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => { setGoalForm(emptyGoalForm); setGoalDialogOpen(true); }}>
+          <Button size="sm" onClick={() => { setGoalForm(emptyGoalForm); setActiveTab('goals'); setGoalSubTab('dodaj'); }}>
             <Plus className="h-4 w-4 mr-1" /> Novi cilj
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(v) => {
+        setActiveTab(v)
+        // Reset sub-tabs when switching main tabs
+        if (v === 'goals') setGoalSubTab('pregled')
+        if (v === 'challenges') setChallengeSubTab('pregled')
+        if (v === 'badges') setBadgeSubTab('pregled')
+      }}>
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="goals"><Target className="h-4 w-4 mr-1" /> Ciljevi</TabsTrigger>
@@ -514,181 +522,408 @@ export function Gamification() {
           )}
         </TabsContent>
 
-        {/* ─── Ciljevi Tab ─────────────────────────────────────────────── */}
+        {/* ─── Ciljevi Tab (with sub-tabs) ────────────────────────────── */}
         <TabsContent value="goals" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Pretraži ciljeve..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Sve kategorije" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Sve kategorije</SelectItem>
-                {Object.entries(goalCategoryConfig).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[140px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi statusi</SelectItem>
-                {Object.entries(goalStatusConfig).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Tabs value={goalSubTab} onValueChange={(v) => setGoalSubTab(v as typeof goalSubTab)}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</TabsTrigger>
+              <TabsTrigger value="detalji"><Eye className="h-3.5 w-3.5 mr-1" /> Detalji</TabsTrigger>
+            </TabsList>
 
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : filteredGoals.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Target className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema ciljeva</p>
-              <Button variant="outline" className="mt-3" onClick={() => { setGoalForm(emptyGoalForm); setGoalDialogOpen(true); }}>
-                <Plus className="h-4 w-4 mr-1" /> Kreiraj cilj
-              </Button>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredGoals.map((goal) => {
-                const sCfg = goalStatusConfig[goal.status]
-                const catCfg = goalCategoryConfig[goal.category]
-                return (
-                  <Card key={goal.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-start gap-3 flex-1">
-                          {catCfg?.icon}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="text-sm font-medium truncate">{goal.title}</h3>
-                              <Badge variant="outline" className={`text-xs shrink-0 ${sCfg?.color}`}>{sCfg?.label}</Badge>
+            {/* Goals Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Pretraži ciljeve..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Sve kategorije" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Sve kategorije</SelectItem>
+                    {Object.entries(goalCategoryConfig).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[140px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi statusi</SelectItem>
+                    {Object.entries(goalStatusConfig).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : filteredGoals.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Target className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema ciljeva</p>
+                  <Button variant="outline" className="mt-3" onClick={() => { setGoalForm(emptyGoalForm); setGoalSubTab('dodaj'); }}>
+                    <Plus className="h-4 w-4 mr-1" /> Kreiraj cilj
+                  </Button>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredGoals.map((goal) => {
+                    const sCfg = goalStatusConfig[goal.status]
+                    const catCfg = goalCategoryConfig[goal.category]
+                    return (
+                      <Card key={goal.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-start gap-3 flex-1">
+                              {catCfg?.icon}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="text-sm font-medium truncate">{goal.title}</h3>
+                                  <Badge variant="outline" className={`text-xs shrink-0 ${sCfg?.color}`}>{sCfg?.label}</Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{goal.description}</p>
+                              </div>
                             </div>
-                            <p className="text-xs text-muted-foreground">{goal.description}</p>
+                            <div className="flex gap-1 ml-2">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(goal); setGoalSubTab('detalji'); }}>
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteGoal(goal.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          {/* Progress */}
+                          <div className="space-y-1 mb-3">
+                            <div className="flex items-center justify-between text-xs">
+                              <span>{goal.currentValue}/{goal.targetValue} {goal.unit}</span>
+                              <span className="font-medium">{goal.progress}%</span>
+                            </div>
+                            <Progress value={goal.progress} className="h-2" />
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex gap-2">
+                              <Badge variant="outline" className={`text-xs ${getCategoryColor(goal.category)}`}>{getCategoryLabel(goal.category)}</Badge>
+                              <span>{goal.type === 'team' ? '👥 Timski' : '👤 Individualni'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="flex items-center gap-1"><Gift className="h-3 w-3" /> {goal.points}p</span>
+                              <span>📅 {new Date(goal.deadline).toLocaleDateString('sr-RS')}</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Goals Dodaj */}
+            <TabsContent value="dodaj">
+              <Card className="border">
+                <CardHeader>
+                  <CardTitle className="text-base">Novi cilj</CardTitle>
+                  <CardDescription>Definišite cilj sa metama i nagradnim poenima</CardDescription>
+                </CardHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2"><Label>Naslov</Label><Input value={goalForm.title} onChange={(e) => setGoalForm({ ...goalForm, title: e.target.value })} placeholder="Naslov cilja" /></div>
+                  <div className="space-y-2"><Label>Opis</Label><Textarea value={goalForm.description} onChange={(e) => setGoalForm({ ...goalForm, description: e.target.value })} rows={2} /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Kategorija</Label>
+                      <Select value={goalForm.category} onValueChange={(v) => setGoalForm({ ...goalForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(goalCategoryConfig).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tip</Label>
+                      <Select value={goalForm.type} onValueChange={(v) => setGoalForm({ ...goalForm, type: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="individual">👤 Individualni</SelectItem>
+                          <SelectItem value="team">👥 Timski</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2"><Label>Ciljna vrednost</Label><Input type="number" value={goalForm.targetValue} onChange={(e) => setGoalForm({ ...goalForm, targetValue: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Jedinica</Label><Input value={goalForm.unit} onChange={(e) => setGoalForm({ ...goalForm, unit: e.target.value })} placeholder="kom, sati..." /></div>
+                    <div className="space-y-2"><Label>Poeni</Label><Input type="number" value={goalForm.points} onChange={(e) => setGoalForm({ ...goalForm, points: e.target.value })} /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Rok</Label><Input type="date" value={goalForm.deadline} onChange={(e) => setGoalForm({ ...goalForm, deadline: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Zadužen</Label><Input value={goalForm.assignee} onChange={(e) => setGoalForm({ ...goalForm, assignee: e.target.value })} placeholder="Ime ili tim" /></div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                  <Button variant="outline" onClick={() => setGoalSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleCreateGoal}><Plus className="h-4 w-4 mr-1" /> Kreiraj cilj</Button>
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* Goals Detalji */}
+            <TabsContent value="detalji">
+              <Card className="border">
+                <CardHeader>
+                  <CardTitle className="text-base">Detalji cilja</CardTitle>
+                </CardHeader>
+                {selected ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                        {goalCategoryConfig[selected.category]?.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">{selected.title}</h3>
+                        <div className="flex gap-2">
+                          <Badge variant="outline" className={`text-xs ${getCategoryColor(selected.category)}`}>{getCategoryLabel(selected.category)}</Badge>
+                          <Badge variant="outline" className={`text-xs ${goalStatusConfig[selected.status]?.color}`}>{goalStatusConfig[selected.status]?.label}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{selected.description}</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Napredak</span>
+                        <span className="font-medium">{selected.progress}%</span>
+                      </div>
+                      <Progress value={selected.progress} className="h-3" />
+                      <p className="text-xs text-muted-foreground">{selected.currentValue} / {selected.targetValue} {selected.unit}</p>
+                    </div>
+                    <Separator />
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><span className="text-muted-foreground">Zadužen:</span> <p className="font-medium">{selected.assignee}</p></div>
+                      <div><span className="text-muted-foreground">Tip:</span> <p className="font-medium">{selected.type === 'team' ? '👥 Timski' : '👤 Individualni'}</p></div>
+                      <div><span className="text-muted-foreground">Rok:</span> <p className="font-medium">{new Date(selected.deadline).toLocaleDateString('sr-RS')}</p></div>
+                      <div><span className="text-muted-foreground">Poeni:</span> <p className="font-bold text-green-600">{selected.points}</p></div>
+                    </div>
+                    {selected.status === 'active' && (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Ostalo vam je {selected.targetValue - selected.currentValue} {selected.unit} do cilja. Rok je {new Date(selected.deadline).toLocaleDateString('sr-RS')}.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="flex gap-2 pt-4 border-t">
+                      <Button variant="outline" onClick={() => setGoalSubTab('pregled')}>Nazad</Button>
+                      <Button variant="destructive" onClick={() => { handleDeleteGoal(selected.id); setGoalSubTab('pregled'); }}>
+                        <Trash2 className="h-4 w-4 mr-1" /> Obriši
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nije odabran nijedan cilj</p>
+                )}
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ─── Izazovi Tab (with sub-tabs) ────────────────────────────── */}
+        <TabsContent value="challenges" className="space-y-4">
+          <Tabs value={challengeSubTab} onValueChange={(v) => setChallengeSubTab(v as typeof challengeSubTab)}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Challenges Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => { setChallengeForm(emptyChallengeForm); setChallengeSubTab('dodaj'); }}>
+                  <Plus className="h-4 w-4 mr-1" /> Novi izazov
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {challenges.map((ch) => {
+                  const chSCfg = challengeStatusConfig[ch.status]
+                  const chTCfg = challengeTypeConfig[ch.type]
+                  const dCfg = difficultyConfig[ch.difficulty]
+                  const daysLeft = Math.ceil((new Date(ch.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                  return (
+                    <Card key={ch.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xl">{chTCfg?.icon}</span>
+                          <div className="flex gap-1">
+                            <Badge variant="outline" className={`text-xs ${chSCfg?.color}`}>{chSCfg?.label}</Badge>
+                            <Badge variant="outline" className={`text-xs ${dCfg?.color}`}>{'★'.repeat(dCfg?.stars || 1)}</Badge>
                           </div>
                         </div>
-                        <div className="flex gap-1 ml-2">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(goal); setDetailOpen(true); }}>
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteGoal(goal.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                        <h3 className="text-sm font-medium mb-1">{ch.title}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{ch.description}</p>
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Učesnici</span>
+                            <span className="font-medium">{ch.participantCount}/{ch.maxParticipants}</span>
+                          </div>
+                          <Progress value={(ch.participantCount / ch.maxParticipants) * 100} className="h-1.5" />
+                          {ch.status === 'active' && (
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">Preostalo</span>
+                              <span className="font-medium">{daysLeft > 0 ? `${daysLeft} dana` : 'Završeno'}</span>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      {/* Progress */}
-                      <div className="space-y-1 mb-3">
-                        <div className="flex items-center justify-between text-xs">
-                          <span>{goal.currentValue}/{goal.targetValue} {goal.unit}</span>
-                          <span className="font-medium">{goal.progress}%</span>
+                        <Separator className="my-3" />
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><Gift className="h-3 w-3" /> {ch.rewardPoints}p</span>
+                            <span>✅ {ch.completedCount}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(ch.startDate).toLocaleDateString('sr-RS')} - {new Date(ch.endDate).toLocaleDateString('sr-RS')}
+                          </div>
                         </div>
-                        <Progress value={goal.progress} className="h-2" />
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            </TabsContent>
+
+            {/* Challenges Dodaj */}
+            <TabsContent value="dodaj">
+              <Card className="border">
+                <CardHeader>
+                  <CardTitle className="text-base">Novi izazov</CardTitle>
+                </CardHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2"><Label>Naslov</Label><Input value={challengeForm.title} onChange={(e) => setChallengeForm({ ...challengeForm, title: e.target.value })} placeholder="Naziv izazova" /></div>
+                  <div className="space-y-2"><Label>Opis</Label><Textarea value={challengeForm.description} onChange={(e) => setChallengeForm({ ...challengeForm, description: e.target.value })} rows={2} /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Tip</Label>
+                      <Select value={challengeForm.type} onValueChange={(v) => setChallengeForm({ ...challengeForm, type: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(challengeTypeConfig).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Težina</Label>
+                      <Select value={challengeForm.difficulty} onValueChange={(v) => setChallengeForm({ ...challengeForm, difficulty: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(difficultyConfig).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{'★'.repeat(v.stars)} {v.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Početak</Label><Input type="date" value={challengeForm.startDate} onChange={(e) => setChallengeForm({ ...challengeForm, startDate: e.target.value })} /></div>
+                    <div className="space-y-2"><Label>Kraj</Label><Input type="date" value={challengeForm.endDate} onChange={(e) => setChallengeForm({ ...challengeForm, endDate: e.target.value })} /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Nagrada</Label><Input value={challengeForm.reward} onChange={(e) => setChallengeForm({ ...challengeForm, reward: e.target.value })} placeholder="Opis nagrade" /></div>
+                    <div className="space-y-2"><Label>Poeni za nagradu</Label><Input type="number" value={challengeForm.rewardPoints} onChange={(e) => setChallengeForm({ ...challengeForm, rewardPoints: e.target.value })} /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Kriterijum</Label><Input value={challengeForm.criteria} onChange={(e) => setChallengeForm({ ...challengeForm, criteria: e.target.value })} placeholder="Uslov za završetak" /></div>
+                    <div className="space-y-2"><Label>Max učesnika</Label><Input type="number" value={challengeForm.maxParticipants} onChange={(e) => setChallengeForm({ ...challengeForm, maxParticipants: e.target.value })} /></div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                  <Button variant="outline" onClick={() => setChallengeSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleCreateChallenge}><Plus className="h-4 w-4 mr-1" /> Kreiraj izazov</Button>
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ─── Značke Tab (with sub-tabs) ─────────────────────────────── */}
+        <TabsContent value="badges" className="space-y-4">
+          <Tabs value={badgeSubTab} onValueChange={(v) => setBadgeSubTab(v as typeof badgeSubTab)}>
+            <TabsList>
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Badges Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">Ukupno {badges.length} znački u sistemu</p>
+                <Button size="sm" onClick={() => { setBadgeForm(emptyBadgeForm); setBadgeSubTab('dodaj'); }}>
+                  <Plus className="h-4 w-4 mr-1" /> Nova značka
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {badges.map((badge) => (
+                  <Card key={badge.id} className="hover:shadow-md transition-shadow text-center">
+                    <CardContent className="p-4">
+                      <div className="text-4xl mb-2">{badge.isSecret ? '🔒' : badge.icon}</div>
+                      <h3 className="text-sm font-medium mb-1">{badge.isSecret ? '???' : badge.name}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{badge.isSecret ? 'Tajna značka' : badge.description}</p>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <Badge variant="outline" className={`text-xs ${getCategoryColor(badge.category)}`}>{getCategoryLabel(badge.category)}</Badge>
+                        {badge.isRare && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700">⭐ Retko</Badge>}
                       </div>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <div className="flex gap-2">
-                          <Badge variant="outline" className={`text-xs ${getCategoryColor(goal.category)}`}>{getCategoryLabel(goal.category)}</Badge>
-                          <span>{goal.type === 'team' ? '👥 Timski' : '👤 Individualni'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-1"><Gift className="h-3 w-3" /> {goal.points}p</span>
-                          <span>📅 {new Date(goal.deadline).toLocaleDateString('sr-RS')}</span>
-                        </div>
+                        <span className="flex items-center gap-1"><Gift className="h-3 w-3" /> {badge.points}p</span>
+                        <span>🏆 {badge.earnedBy}</span>
                       </div>
                     </CardContent>
                   </Card>
-                )
-              })}
-            </div>
-          )}
-        </TabsContent>
+                ))}
+              </div>
+            </TabsContent>
 
-        {/* ─── Izazovi Tab ─────────────────────────────────────────────── */}
-        <TabsContent value="challenges" className="space-y-4">
-          <div className="flex justify-end">
-            <Button size="sm" onClick={() => { setChallengeForm(emptyChallengeForm); setChallengeDialogOpen(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> Novi izazov
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {challenges.map((ch) => {
-              const chSCfg = challengeStatusConfig[ch.status]
-              const chTCfg = challengeTypeConfig[ch.type]
-              const dCfg = difficultyConfig[ch.difficulty]
-              const daysLeft = Math.ceil((new Date(ch.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-              return (
-                <Card key={ch.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xl">{chTCfg?.icon}</span>
-                      <div className="flex gap-1">
-                        <Badge variant="outline" className={`text-xs ${chSCfg?.color}`}>{chSCfg?.label}</Badge>
-                        <Badge variant="outline" className={`text-xs ${dCfg?.color}`}>{'★'.repeat(dCfg?.stars || 1)}</Badge>
-                      </div>
+            {/* Badges Dodaj */}
+            <TabsContent value="dodaj">
+              <Card className="border">
+                <CardHeader>
+                  <CardTitle className="text-base">Nova značka</CardTitle>
+                </CardHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2"><Label>Naziv</Label><Input value={badgeForm.name} onChange={(e) => setBadgeForm({ ...badgeForm, name: e.target.value })} placeholder="Naziv značke" /></div>
+                  <div className="space-y-2"><Label>Opis</Label><Textarea value={badgeForm.description} onChange={(e) => setBadgeForm({ ...badgeForm, description: e.target.value })} rows={2} /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Ikonica (emoji)</Label>
+                      <Input value={badgeForm.icon} onChange={(e) => setBadgeForm({ ...badgeForm, icon: e.target.value })} />
                     </div>
-                    <h3 className="text-sm font-medium mb-1">{ch.title}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{ch.description}</p>
-                    <div className="space-y-2 mb-3">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Učesnici</span>
-                        <span className="font-medium">{ch.participantCount}/{ch.maxParticipants}</span>
-                      </div>
-                      <Progress value={(ch.participantCount / ch.maxParticipants) * 100} className="h-1.5" />
-                      {ch.status === 'active' && (
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">Preostalo</span>
-                          <span className="font-medium">{daysLeft > 0 ? `${daysLeft} dana` : 'Završeno'}</span>
-                        </div>
-                      )}
+                    <div className="space-y-2">
+                      <Label>Kategorija</Label>
+                      <Select value={badgeForm.category} onValueChange={(v) => setBadgeForm({ ...badgeForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(goalCategoryConfig).map(([k, v]) => (
+                            <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Separator className="my-3" />
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Gift className="h-3 w-3" /> {ch.rewardPoints}p</span>
-                        <span>✅ {ch.completedCount}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(ch.startDate).toLocaleDateString('sr-RS')} - {new Date(ch.endDate).toLocaleDateString('sr-RS')}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </TabsContent>
-
-        {/* ─── Značke Tab ─────────────────────────────────────────────── */}
-        <TabsContent value="badges" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">Ukupno {badges.length} znački u sistemu</p>
-            <Button size="sm" onClick={() => { setBadgeForm(emptyBadgeForm); setBadgeDialogOpen(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> Nova značka
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {badges.map((badge) => (
-              <Card key={badge.id} className="hover:shadow-md transition-shadow text-center">
-                <CardContent className="p-4">
-                  <div className="text-4xl mb-2">{badge.isSecret ? '🔒' : badge.icon}</div>
-                  <h3 className="text-sm font-medium mb-1">{badge.isSecret ? '???' : badge.name}</h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{badge.isSecret ? 'Tajna značka' : badge.description}</p>
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Badge variant="outline" className={`text-xs ${getCategoryColor(badge.category)}`}>{getCategoryLabel(badge.category)}</Badge>
-                    {badge.isRare && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700">⭐ Retko</Badge>}
                   </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Gift className="h-3 w-3" /> {badge.points}p</span>
-                    <span>🏆 {badge.earnedBy}</span>
-                  </div>
-                </CardContent>
+                  <div className="space-y-2"><Label>Uslov za dobijanje</Label><Input value={badgeForm.requirement} onChange={(e) => setBadgeForm({ ...badgeForm, requirement: e.target.value })} placeholder="Npr. 50 zatvorenih ponuda" /></div>
+                  <div className="space-y-2"><Label>Poeni</Label><Input type="number" value={badgeForm.points} onChange={(e) => setBadgeForm({ ...badgeForm, points: e.target.value })} /></div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                  <Button variant="outline" onClick={() => setBadgeSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleCreateBadge}><Plus className="h-4 w-4 mr-1" /> Kreiraj značku</Button>
+                </div>
               </Card>
-            ))}
-          </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ─── Rang Lista Tab ─────────────────────────────────────────── */}
@@ -743,7 +978,7 @@ export function Gamification() {
         <TabsContent value="templates" className="space-y-4">
           <p className="text-sm text-muted-foreground">Predefinisani šabloni za brzo kreiranje ciljeva</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mockTemplates.map((tpl) => {
+            {templates.map((tpl) => {
               const catCfg = goalCategoryConfig[tpl.category]
               const dCfg = difficultyConfig[tpl.difficulty]
               return (
@@ -770,7 +1005,8 @@ export function Gamification() {
                           category: tpl.category, targetValue: String(tpl.targetValue),
                           unit: tpl.unit, points: String(tpl.points),
                         })
-                        setGoalDialogOpen(true)
+                        setActiveTab('goals')
+                        setGoalSubTab('dodaj')
                       }}>
                         <Plus className="h-3 w-3 mr-1" /> Koristi
                       </Button>
@@ -782,207 +1018,6 @@ export function Gamification() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* ─── Create Goal Dialog ────────────────────────────────────────────── */}
-{goalDialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGoalDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">Novi cilj</CardTitle>
-            <CardDescription>Definišite cilj sa metama i nagradnim poenima</CardDescription>
-          </div>
-            </CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Naslov</Label><Input value={goalForm.title} onChange={(e) => setGoalForm({ ...goalForm, title: e.target.value })} placeholder="Naslov cilja" /></div>
-            <div className="space-y-2"><Label>Opis</Label><Textarea value={goalForm.description} onChange={(e) => setGoalForm({ ...goalForm, description: e.target.value })} rows={2} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Kategorija</Label>
-                <Select value={goalForm.category} onValueChange={(v) => setGoalForm({ ...goalForm, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(goalCategoryConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Tip</Label>
-                <Select value={goalForm.type} onValueChange={(v) => setGoalForm({ ...goalForm, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">👤 Individualni</SelectItem>
-                    <SelectItem value="team">👥 Timski</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2"><Label>Ciljna vrednost</Label><Input type="number" value={goalForm.targetValue} onChange={(e) => setGoalForm({ ...goalForm, targetValue: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Jedinica</Label><Input value={goalForm.unit} onChange={(e) => setGoalForm({ ...goalForm, unit: e.target.value })} placeholder="kom, sati..." /></div>
-              <div className="space-y-2"><Label>Poeni</Label><Input type="number" value={goalForm.points} onChange={(e) => setGoalForm({ ...goalForm, points: e.target.value })} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Rok</Label><Input type="date" value={goalForm.deadline} onChange={(e) => setGoalForm({ ...goalForm, deadline: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Zadužen</Label><Input value={goalForm.assignee} onChange={(e) => setGoalForm({ ...goalForm, assignee: e.target.value })} placeholder="Ime ili tim" /></div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setGoalDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateGoal}><Plus className="h-4 w-4 mr-1" /> Kreiraj cilj</Button>
-          </div>
-</Card>
-)}
-
-      {/* ─── Challenge Dialog ──────────────────────────────────────────────── */}
-{ challengeDialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setChallengeDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">Novi izazov</CardTitle></div>
-            </CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Naslov</Label><Input value={challengeForm.title} onChange={(e) => setChallengeForm({ ...challengeForm, title: e.target.value })} placeholder="Naziv izazova" /></div>
-            <div className="space-y-2"><Label>Opis</Label><Textarea value={challengeForm.description} onChange={(e) => setChallengeForm({ ...challengeForm, description: e.target.value })} rows={2} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Tip</Label>
-                <Select value={challengeForm.type} onValueChange={(v) => setChallengeForm({ ...challengeForm, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(challengeTypeConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Težina</Label>
-                <Select value={challengeForm.difficulty} onValueChange={(v) => setChallengeForm({ ...challengeForm, difficulty: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(difficultyConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{'★'.repeat(v.stars)} {v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Početak</Label><Input type="date" value={challengeForm.startDate} onChange={(e) => setChallengeForm({ ...challengeForm, startDate: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Kraj</Label><Input type="date" value={challengeForm.endDate} onChange={(e) => setChallengeForm({ ...challengeForm, endDate: e.target.value })} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Nagrada</Label><Input value={challengeForm.reward} onChange={(e) => setChallengeForm({ ...challengeForm, reward: e.target.value })} placeholder="Opis nagrade" /></div>
-              <div className="space-y-2"><Label>Poeni za nagradu</Label><Input type="number" value={challengeForm.rewardPoints} onChange={(e) => setChallengeForm({ ...challengeForm, rewardPoints: e.target.value })} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Kriterijum</Label><Input value={challengeForm.criteria} onChange={(e) => setChallengeForm({ ...challengeForm, criteria: e.target.value })} placeholder="Uslov za završetak" /></div>
-              <div className="space-y-2"><Label>Max učesnika</Label><Input type="number" value={challengeForm.maxParticipants} onChange={(e) => setChallengeForm({ ...challengeForm, maxParticipants: e.target.value })} /></div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setChallengeDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateChallenge}><Plus className="h-4 w-4 mr-1" /> Kreiraj izazov</Button>
-          </div>
-</Card>
-)}
-
-      {/* ─── Badge Dialog ──────────────────────────────────────────────────── */}
-{ badgeDialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setBadgeDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">Nova značka</CardTitle></div>
-            </CardHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Naziv</Label><Input value={badgeForm.name} onChange={(e) => setBadgeForm({ ...badgeForm, name: e.target.value })} placeholder="Naziv značke" /></div>
-            <div className="space-y-2"><Label>Opis</Label><Textarea value={badgeForm.description} onChange={(e) => setBadgeForm({ ...badgeForm, description: e.target.value })} rows={2} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Ikonica (emoji)</Label>
-                <Input value={badgeForm.icon} onChange={(e) => setBadgeForm({ ...badgeForm, icon: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Kategorija</Label>
-                <Select value={badgeForm.category} onValueChange={(v) => setBadgeForm({ ...badgeForm, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(goalCategoryConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2"><Label>Uslov za dobijanje</Label><Input value={badgeForm.requirement} onChange={(e) => setBadgeForm({ ...badgeForm, requirement: e.target.value })} placeholder="Npr. 50 zatvorenih ponuda" /></div>
-            <div className="space-y-2"><Label>Poeni</Label><Input type="number" value={badgeForm.points} onChange={(e) => setBadgeForm({ ...badgeForm, points: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-            <Button variant="outline" onClick={() => setBadgeDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateBadge}><Plus className="h-4 w-4 mr-1" /> Kreiraj značku</Button>
-          </div>
-</Card>
-)}
-
-      {/* ─── Goal Detail Dialog ────────────────────────────────────────────── */}
-{ detailOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDetailOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">Detalji cilja</CardTitle></div>
-            </CardHeader>
-          {selected && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  {goalCategoryConfig[selected.category]?.icon}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">{selected.title}</h3>
-                  <div className="flex gap-2">
-                    <Badge variant="outline" className={`text-xs ${getCategoryColor(selected.category)}`}>{getCategoryLabel(selected.category)}</Badge>
-                    <Badge variant="outline" className={`text-xs ${goalStatusConfig[selected.status]?.color}`}>{goalStatusConfig[selected.status]?.label}</Badge>
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground">{selected.description}</p>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Napredak</span>
-                  <span className="font-medium">{selected.progress}%</span>
-                </div>
-                <Progress value={selected.progress} className="h-3" />
-                <p className="text-xs text-muted-foreground">{selected.currentValue} / {selected.targetValue} {selected.unit}</p>
-              </div>
-              <Separator />
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Zadužen:</span> <p className="font-medium">{selected.assignee}</p></div>
-                <div><span className="text-muted-foreground">Tip:</span> <p className="font-medium">{selected.type === 'team' ? '👥 Timski' : '👤 Individualni'}</p></div>
-                <div><span className="text-muted-foreground">Rok:</span> <p className="font-medium">{new Date(selected.deadline).toLocaleDateString('sr-RS')}</p></div>
-                <div><span className="text-muted-foreground">Poeni:</span> <p className="font-bold text-green-600">{selected.points}</p></div>
-              </div>
-              {selected.status === 'active' && (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Ostalo vam je {selected.targetValue - selected.currentValue} {selected.unit} do cilja. Rok je {new Date(selected.deadline).toLocaleDateString('sr-RS')}.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-          )}
-</Card>
-)}
     </div>
   )
 }

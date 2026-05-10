@@ -383,8 +383,7 @@ export function Scheduler() {
   const [employeeFilter, setEmployeeFilter] = useState('all')
   const [projectFilter, setProjectFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [slotsSubTab, setSlotsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [selected, setSelected] = useState<PlanningSlot | null>(null)
   const [employees, setEmployees] = useState<Employee[]>(MOCK_EMPLOYEES)
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS)
@@ -591,7 +590,7 @@ export function Scheduler() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...form, hours }),
       })
-      if (res.ok) { setDialogOpen(false); setForm(emptyForm); loadDashboard() }
+      if (res.ok) { setSlotsSubTab('pregled'); setForm(emptyForm); loadDashboard() }
     } catch { /* silent */ }
   }
 
@@ -620,7 +619,7 @@ export function Scheduler() {
       date: slot.date, startTime: slot.startTime, endTime: slot.endTime,
       task: slot.task || '', notes: slot.notes || '', status: 'planned', priority: slot.priority || 'normal',
     })
-    setDialogOpen(true)
+    setActiveTab('slots'); setSlotsSubTab('dodaj')
   }
 
   const handleBulkAction = async () => {
@@ -667,7 +666,7 @@ export function Scheduler() {
   const handleCellClick = (date: string, hour: string) => {
     const endHour = `${(parseInt(hour, 10) + 1).toString().padStart(2, '0')}:00`
     setForm({ ...emptyForm, date, startTime: hour, endTime: endHour })
-    setDialogOpen(true)
+    setActiveTab('slots'); setSlotsSubTab('dodaj')
   }
 
   // ---- Efficiency metrics ----
@@ -695,7 +694,7 @@ export function Scheduler() {
           <Button variant="outline" size="sm" onClick={loadDashboard}>
             <RefreshCw className="h-4 w-4 mr-1" /> {t('planner.refresh')}
           </Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" onClick={() => { setActiveTab('slots'); setSlotsSubTab('dodaj'); setForm(emptyForm) }}>
             <Plus className="h-4 w-4 mr-1" /> {t('planner.newSlot')}
           </Button>
         </div>
@@ -844,7 +843,7 @@ export function Scheduler() {
                                   key={s.id}
                                   className="text-xs px-1 py-0.5 rounded truncate text-white font-medium"
                                   style={{ backgroundColor: bgColor }}
-                                  onClick={(e) => { e.stopPropagation(); setSelected(s); setDetailOpen(true) }}
+                                  onClick={(e) => { e.stopPropagation(); setSelected(s); setActiveTab('slots'); setSlotsSubTab('detalji') }}
                                 >
                                   {s.employeeName?.split(' ')[0]} · {s.projectName?.split(' ')[0]}
                                 </div>
@@ -863,6 +862,14 @@ export function Scheduler() {
 
         {/* ========== TAB 3: SLOTS LIST ========== */}
         <TabsContent value="slots" className="space-y-4">
+          <Tabs value={slotsSubTab} onValueChange={(v) => setSlotsSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
+            <TabsList>
+              <TabsTrigger value="pregled">{t('planner.tabSlots')}</TabsTrigger>
+              {(slotsSubTab === 'dodaj') && <TabsTrigger value="dodaj">{t('planner.newSlotTitle')}</TabsTrigger>}
+              {(selected && slotsSubTab === 'detalji') && <TabsTrigger value="detalji">{t('planner.slotDetails')}</TabsTrigger>}
+            </TabsList>
+
+            <TabsContent value="pregled" className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -922,7 +929,7 @@ export function Scheduler() {
             <Card className="p-8 text-center">
               <CalendarRange className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground">{t('planner.noSlots')}</p>
-              <Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> {t('planner.createSlot')}</Button>
+              <Button variant="outline" className="mt-3" onClick={() => { setActiveTab('slots'); setSlotsSubTab('dodaj'); setForm(emptyForm) }}><Plus className="h-4 w-4 mr-1" /> {t('planner.createSlot')}</Button>
             </Card>
           ) : (
             <div className="rounded-lg border overflow-hidden">
@@ -964,7 +971,7 @@ export function Scheduler() {
                           <td className="p-3"><Badge variant="outline" className={`text-xs ${priCfg?.color || ''}`}>{priCfg?.label || s.priority}</Badge></td>
                           <td className="p-3">
                             <div className="flex gap-1">
-                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(s); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(s); setSlotsSubTab('detalji') }}><Eye className="h-3.5 w-3.5" /></Button>
                               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDuplicate(s)}><Copy className="h-3.5 w-3.5" /></Button>
                               {s.status === 'planned' && <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleUpdateStatus(s.id, 'in_progress')}><Edit3 className="h-3.5 w-3.5" /></Button>}
                               {s.status === 'in_progress' && <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(s.id, 'completed')}><CheckCircle2 className="h-3.5 w-3.5" /></Button>}
@@ -979,6 +986,56 @@ export function Scheduler() {
               </div>
             </div>
           )}
+            </TabsContent>
+
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-3xl">
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSlotsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle>{t('planner.newSlotTitle')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                <SlotForm form={form} setForm={setForm} employees={employees} projects={projects} t={t} />
+                <div className="flex gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setSlotsSubTab('pregled')}>{t('planner.cancel')}</Button>
+                  <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('planner.create')}</Button>
+                </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="detalji" className="space-y-4">
+              {selected && (
+              <Card className="max-w-3xl">
+                <CardHeader className="flex flex-row items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSlotsSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle>{t('planner.slotDetails')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><span className="text-muted-foreground">{t('planner.employee')}:</span> <span className="font-medium">{selected.employeeName || '-'}</span></div>
+                    <div>
+                      <span className="text-muted-foreground">{t('planner.status')}:</span>{' '}
+                      <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge>
+                    </div>
+                    <div><span className="text-muted-foreground">{t('planner.date')}:</span> {new Date(selected.date).toLocaleDateString('sr-RS')}</div>
+                    <div><span className="text-muted-foreground">{t('planner.time')}:</span> {selected.startTime} - {selected.endTime} ({selected.hours}h)</div>
+                    <div><span className="text-muted-foreground">{t('planner.project')}:</span> {selected.projectName || '-'}</div>
+                    <div>
+                      <span className="text-muted-foreground">{t('planner.priority')}:</span>{' '}
+                      <Badge variant="outline" className={priorityConfig[selected.priority || 'normal']?.color}>{priorityConfig[selected.priority || 'normal']?.label}</Badge>
+                    </div>
+                  </div>
+                  <Separator />
+                  {selected.task && <div className="text-sm"><span className="text-muted-foreground">{t('planner.task')}:</span> {selected.task}</div>}
+                  {selected.notes && <div className="text-sm"><span className="text-muted-foreground">{t('planner.notes')}:</span> {selected.notes}</div>}
+                </div>
+                </CardContent>
+              </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ========== TAB 4: GANTT ========== */}
@@ -1294,55 +1351,6 @@ export function Scheduler() {
         </TabsContent>
       </Tabs>
 
-      {/* ========== CREATE / EDIT FORM ========== */}
-      {dialogOpen && (
-        <Card className="max-w-3xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle>{t('planner.newSlotTitle')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-          <SlotForm form={form} setForm={setForm} employees={employees} projects={projects} t={t} />
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('planner.cancel')}</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('planner.create')}</Button>
-          </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ========== DETAIL VIEW ========== */}
-      {detailOpen && (
-        <Card className="max-w-3xl">
-          <CardHeader className="flex flex-row items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle>{t('planner.slotDetails')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-          {selected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">{t('planner.employee')}:</span> <span className="font-medium">{selected.employeeName || '-'}</span></div>
-                <div>
-                  <span className="text-muted-foreground">{t('planner.status')}:</span>{' '}
-                  <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge>
-                </div>
-                <div><span className="text-muted-foreground">{t('planner.date')}:</span> {new Date(selected.date).toLocaleDateString('sr-RS')}</div>
-                <div><span className="text-muted-foreground">{t('planner.time')}:</span> {selected.startTime} - {selected.endTime} ({selected.hours}h)</div>
-                <div><span className="text-muted-foreground">{t('planner.project')}:</span> {selected.projectName || '-'}</div>
-                <div>
-                  <span className="text-muted-foreground">{t('planner.priority')}:</span>{' '}
-                  <Badge variant="outline" className={priorityConfig[selected.priority || 'normal']?.color}>{priorityConfig[selected.priority || 'normal']?.label}</Badge>
-                </div>
-              </div>
-              <Separator />
-              {selected.task && <div className="text-sm"><span className="text-muted-foreground">{t('planner.task')}:</span> {selected.task}</div>}
-              {selected.notes && <div className="text-sm"><span className="text-muted-foreground">{t('planner.notes')}:</span> {selected.notes}</div>}
-            </div>
-          )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

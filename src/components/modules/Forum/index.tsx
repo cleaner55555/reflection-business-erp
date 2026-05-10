@@ -24,7 +24,7 @@ import {
   Unlock, CircleDot, HelpCircle, Award, Settings2,
   Shield, Flame, Crown, ChevronDown, ChevronUp,
   AlertTriangle, Edit3, X, Filter, Sparkles, Hash,
-  FolderOpen, Zap, Activity, Trophy, Target, Heart, ArrowLeft,
+  FolderOpen, Zap, Activity, Trophy, Target, Heart,
 } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -281,15 +281,14 @@ export function Forum() {
   const [topicSearch, setTopicSearch] = useState('')
   const [topicCatFilter, setTopicCatFilter] = useState('all')
   const [topicSort, setTopicSort] = useState<'newest' | 'popular' | 'most-replies'>('newest')
-  const [topicDialogOpen, setTopicDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [topicSubTab, setTopicSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [selectedTopic, setSelectedTopic] = useState<ForumTopic | null>(null)
   const [topicReplies, setTopicReplies] = useState<ForumReply[]>([])
   const [replyText, setReplyText] = useState('')
 
   // ─── Categories State ──────────────────────────────────────────────────
   const [categories, setCategories] = useState<ForumCategory[]>([])
-  const [catDialogOpen, setCatDialogOpen] = useState(false)
+  const [catSubTab, setCatSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingCategory, setEditingCategory] = useState<ForumCategory | null>(null)
 
   // ─── Questions State ───────────────────────────────────────────────────
@@ -297,13 +296,13 @@ export function Forum() {
   const [qSearch, setQSearch] = useState('')
   const [qFilter, setQFilter] = useState<'all' | 'open' | 'solved'>('all')
   const [selectedQuestion, setSelectedQuestion] = useState<ForumQuestion | null>(null)
-  const [qDetailOpen, setQDetailOpen] = useState(false)
+  const [qSubTab, setQSubTab] = useState<'pregled' | 'detalji'>('pregled')
   const [newAnswerText, setNewAnswerText] = useState('')
 
   // ─── Tags State ────────────────────────────────────────────────────────
   const [tags, setTags] = useState<ForumTag[]>([])
   const [tagSearch, setTagSearch] = useState('')
-  const [tagDialogOpen, setTagDialogOpen] = useState(false)
+  const [tagSubTab, setTagSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [editingTag, setEditingTag] = useState<ForumTag | null>(null)
   const [tagView, setTagView] = useState<'cloud' | 'list'>('cloud')
 
@@ -465,7 +464,7 @@ export function Forum() {
         setTopics(prev => [newTopic, ...prev])
       }
     } catch { /* ignore */ }
-    setTopicDialogOpen(false)
+    setTopicSubTab('pregled')
     setTopicForm(emptyTopicForm)
   }
 
@@ -473,7 +472,7 @@ export function Forum() {
     fetch(`/api/forum-topics?id=${id}`, { method: 'DELETE' }).then(() => {
       setTopics(prev => prev.filter(tp => tp.id !== id))
     })
-    setDetailOpen(false)
+    setTopicSubTab('pregled')
     setSelectedTopic(null)
   }
 
@@ -512,7 +511,8 @@ export function Forum() {
 
   const handleOpenTopicDetail = async (topic: ForumTopic) => {
     setSelectedTopic(topic)
-    setDetailOpen(true)
+    setActiveTab('topics')
+    setTopicSubTab('detalji')
     try {
       const res = await fetch(`/api/forum-replies?topicId=${topic.id}`)
       if (res.ok) {
@@ -570,7 +570,7 @@ export function Forum() {
     }).then((newCat) => {
       if (newCat) setCategories(prev => [...prev, newCat])
     })
-    setCatDialogOpen(false)
+    setCatSubTab('pregled')
     setCatForm(emptyCatForm)
     setEditingCategory(null)
   }
@@ -578,7 +578,7 @@ export function Forum() {
   const handleEditCategory = (cat: ForumCategory) => {
     setEditingCategory(cat)
     setCatForm({ label: cat.label, description: cat.description, color: cat.color, icon: cat.icon })
-    setCatDialogOpen(true)
+    setCatSubTab('dodaj')
   }
 
   const handleDeleteCategory = (id: string) => {
@@ -593,7 +593,7 @@ export function Forum() {
 
   const handleOpenQuestion = (q: ForumQuestion) => {
     setSelectedQuestion(q)
-    setQDetailOpen(true)
+    setQSubTab('detalji')
     setNewAnswerText('')
   }
 
@@ -648,7 +648,7 @@ export function Forum() {
       createdAt: new Date().toISOString(),
     }
     setTags(prev => [...prev, newTag])
-    setTagDialogOpen(false)
+    setTagSubTab('pregled')
     setTagForm(emptyTagForm)
     setEditingTag(null)
   }
@@ -656,7 +656,7 @@ export function Forum() {
   const handleEditTag = (tg: ForumTag) => {
     setEditingTag(tg)
     setTagForm({ name: tg.name, description: tg.description, color: tg.color })
-    setTagDialogOpen(true)
+    setTagSubTab('dodaj')
   }
 
   const handleDeleteTag = (id: string) => {
@@ -666,6 +666,14 @@ export function Forum() {
   const handleSaveSettings = () => {
     setSettingsSaved(true)
     setTimeout(() => setSettingsSaved(false), 3000)
+  }
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setTopicSubTab('pregled')
+    setCatSubTab('pregled')
+    setQSubTab('pregled')
+    setTagSubTab('pregled')
   }
 
   const getCategoryLabel = (key?: string) => categories.find(c => c.key === key)?.label || key || ''
@@ -708,14 +716,14 @@ export function Forum() {
             <Button variant="outline" size="sm" onClick={loadData}>
               <RefreshCw className="h-4 w-4 mr-1.5" /> Osveži
             </Button>
-            <Button size="sm" onClick={() => { setTopicForm(emptyTopicForm); setTopicDialogOpen(true) }}>
+            <Button size="sm" onClick={() => { setTopicForm(emptyTopicForm); setActiveTab('topics'); setTopicSubTab('dodaj') }}>
               <Plus className="h-4 w-4 mr-1.5" /> Nova tema
             </Button>
           </div>
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
             <TabsTrigger value="overview" className="text-xs sm:text-sm">
               <BarChart3 className="h-4 w-4 mr-1 hidden sm:inline" /> Pregled
@@ -878,9 +886,20 @@ export function Forum() {
           </TabsContent>
 
           {/* ═══════════════════════════════════════════════════════════════
-              TAB 2: TEME
+              TAB 2: TEME (Pregled / Dodaj / Detalji)
               ═══════════════════════════════════════════════════════════════ */}
           <TabsContent value="topics" className="space-y-4">
+            {/* Sub-tabs */}
+            <Tabs value={topicSubTab} onValueChange={(v) => setTopicSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
+              <TabsList>
+                <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+                <TabsTrigger value="dodaj" className="text-xs">Dodaj</TabsTrigger>
+                {selectedTopic && <TabsTrigger value="detalji" className="text-xs">Detalji</TabsTrigger>}
+              </TabsList>
+            </Tabs>
+
+            {/* ── Pregled: Topic List ── */}
+            {topicSubTab === 'pregled' && (<>
             {/* Search & Filter Bar */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -996,15 +1015,199 @@ export function Forum() {
                 </Card>
               )}
             </div>
+            </>)}
+
+            {/* ── Dodaj: Create Topic Form ── */}
+            {topicSubTab === 'dodaj' && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Plus className="h-5 w-5" /> Nova tema</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Naslov</Label>
+                    <Input
+                      placeholder="Unesite naslov teme..."
+                      value={topicForm.title}
+                      onChange={(e) => setTopicForm(f => ({ ...f, title: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Kategorija</Label>
+                    <Select value={topicForm.category} onValueChange={(v) => setTopicForm(f => ({ ...f, category: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {categories.map(cat => (
+                          <SelectItem key={cat.id} value={cat.key}>{cat.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tagovi</Label>
+                    <Input
+                      placeholder="npr. faktura, bug, podrška (odvojeni zarezom)"
+                      value={topicForm.tags}
+                      onChange={(e) => setTopicForm(f => ({ ...f, tags: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sadržaj</Label>
+                    <Textarea
+                      placeholder="Opišite svoju temu..."
+                      value={topicForm.content}
+                      onChange={(e) => setTopicForm(f => ({ ...f, content: e.target.value }))}
+                      rows={5}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setTopicSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleCreateTopic} disabled={!topicForm.title.trim()}>
+                    <Plus className="h-4 w-4 mr-1.5" /> Kreiraj temu
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            )}
+
+            {/* ── Detalji: Topic Detail with Replies ── */}
+            {topicSubTab === 'detalji' && selectedTopic && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{selectedTopic.title}</CardTitle></CardHeader>
+              <CardContent className="max-w-2xl">
+                <ScrollArea className="max-h-[65vh] pr-2">
+                    <div className="space-y-4 pb-4">
+                      {/* Topic Meta */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className={getCategoryColor(selectedTopic.category)}>
+                          {getCategoryLabel(selectedTopic.category)}
+                        </Badge>
+                        {selectedTopic.isPinned && <Badge variant="outline"><Pin className="h-3 w-3 mr-1" />Zakačeno</Badge>}
+                        {selectedTopic.isLocked && <Badge variant="outline"><Lock className="h-3 w-3 mr-1" />Zaključano</Badge>}
+                        {selectedTopic.isSolved && <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" />Rešeno</Badge>}
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">{selectedTopic.authorAvatar}</div>
+                          <span className="font-medium">{selectedTopic.authorName}</span>
+                        </div>
+                        <span className="flex items-center gap-0.5"><Eye className="h-3.5 w-3.5" />{selectedTopic.views}</span>
+                        <span className="flex items-center gap-0.5"><MessageSquare className="h-3.5 w-3.5" />{topicReplies.length}</span>
+                        <span className="flex items-center gap-0.5"><ThumbsUp className="h-3.5 w-3.5" />{selectedTopic.likes}</span>
+                        <span>{formatDate(selectedTopic.createdAt)}</span>
+                      </div>
+                      {selectedTopic.tags && selectedTopic.tags.length > 0 && (
+                        <div className="flex gap-1 flex-wrap">
+                          {selectedTopic.tags.map(tg => (
+                            <Badge key={tg} variant="secondary" className="text-xs px-1.5 py-0">#{tg}</Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      <Separator />
+
+                      {/* Topic Content */}
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedTopic.content}</p>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 flex-wrap">
+                        <Button variant="outline" size="sm" onClick={() => handleTogglePin(selectedTopic.id)}>
+                          {selectedTopic.isPinned ? <Unlock className="h-3.5 w-3.5 mr-1" /> : <Pin className="h-3.5 w-3.5 mr-1" />}
+                          {selectedTopic.isPinned ? 'Otvijini' : 'Zakači'}
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleToggleLock(selectedTopic.id)}>
+                          {selectedTopic.isLocked ? <Unlock className="h-3.5 w-3.5 mr-1" /> : <Lock className="h-3.5 w-3.5 mr-1" />}
+                          {selectedTopic.isLocked ? 'Otključaj' : 'Zaključaj'}
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleToggleSolve(selectedTopic.id)}>
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                          {selectedTopic.isSolved ? 'Označi kao nerešeno' : 'Označi kao rešeno'}
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDeleteTopic(selectedTopic.id)}>
+                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši
+                        </Button>
+                      </div>
+
+                      <Separator />
+
+                      {/* Replies */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4" />
+                          Odgovori ({topicReplies.length})
+                        </h3>
+                        {topicReplies.map(reply => (
+                          <div key={reply.id} className={`p-3 rounded-lg border ${reply.isBest ? 'border-emerald-300 bg-emerald-50/50' : ''}`}>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                                  {reply.authorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                </div>
+                                <span className="text-xs font-medium">{reply.authorName}</span>
+                                {reply.isBest && (
+                                  <Badge variant="outline" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
+                                    <Star className="h-2.5 w-2.5 mr-0.5" /> Najbolji odgovor
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-0.5"><ThumbsUp className="h-3 w-3" />{reply.likes}</span>
+                                <span>{formatDate(reply.createdAt)}</span>
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{reply.content}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Reply Input */}
+                      {!selectedTopic.isLocked && (
+                        <div className="space-y-2">
+                          <Label className="text-xs">Vaš odgovor</Label>
+                          <Textarea
+                            placeholder="Napišite odgovor..."
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            rows={3}
+                          />
+                          <div className="flex justify-end">
+                            <Button size="sm" onClick={handleSubmitReply} disabled={!replyText.trim()}>
+                              <MessageSquare className="h-3.5 w-3.5 mr-1" /> Pošalji odgovor
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedTopic.isLocked && (
+                        <div className="p-4 border rounded-lg text-center bg-muted/30">
+                          <Lock className="h-5 w-5 mx-auto mb-1.5 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">Ova tema je zaključana. Nije moguće dodavati nove odgovore.</p>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+              </CardContent>
+            </Card>
+            )}
           </TabsContent>
 
           {/* ═══════════════════════════════════════════════════════════════
-              TAB 3: KATEGORIJE
+              TAB 3: KATEGORIJE (Pregled / Dodaj)
               ═══════════════════════════════════════════════════════════════ */}
           <TabsContent value="categories" className="space-y-4">
+            {/* Sub-tabs */}
+            <Tabs value={catSubTab} onValueChange={(v) => setCatSubTab(v as 'pregled' | 'dodaj')}>
+              <TabsList>
+                <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+                <TabsTrigger value="dodaj" className="text-xs">Dodaj</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            {/* ── Pregled: Category Grid ── */}
+            {catSubTab === 'pregled' && (<>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">{categories.length} kategorija</p>
-              <Button size="sm" variant="outline" onClick={() => { setEditingCategory(null); setCatForm(emptyCatForm); setCatDialogOpen(true) }}>
+              <Button size="sm" variant="outline" onClick={() => { setEditingCategory(null); setCatForm(emptyCatForm); setCatSubTab('dodaj') }}>
                 <Plus className="h-4 w-4 mr-1.5" /> Nova kategorija
               </Button>
             </div>
@@ -1035,12 +1238,73 @@ export function Forum() {
                 </Card>
               ))}
             </div>
+            </>)}
+
+            {/* ── Dodaj: Create / Edit Category Form ── */}
+            {catSubTab === 'dodaj' && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editingCategory ? 'Izmeni kategoriju' : 'Nova kategorija'}</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Naziv</Label>
+                    <Input
+                      placeholder="Naziv kategorije..."
+                      value={catForm.label}
+                      onChange={(e) => setCatForm(f => ({ ...f, label: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Opis</Label>
+                    <Textarea
+                      placeholder="Kratak opis kategorije..."
+                      value={catForm.description}
+                      onChange={(e) => setCatForm(f => ({ ...f, description: e.target.value }))}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Boja</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {TAG_COLORS.map(color => (
+                        <Button
+                          key={color}
+                          variant={catForm.color === color ? 'default' : 'outline'}
+                          size="sm"
+                          className={`text-xs ${catForm.color !== color ? color : ''}`}
+                          onClick={() => setCatForm(f => ({ ...f, color }))}
+                        >
+                          Izaberite
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setCatSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleCreateCategory} disabled={!catForm.label.trim()}>
+                    {editingCategory ? 'Sačuvaj izmene' : 'Kreiraj'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            )}
           </TabsContent>
 
           {/* ═══════════════════════════════════════════════════════════════
-              TAB 4: PITANJA
+              TAB 4: PITANJA (Pregled / Detalji)
               ═══════════════════════════════════════════════════════════════ */}
           <TabsContent value="questions" className="space-y-4">
+            {/* Sub-tabs */}
+            <Tabs value={qSubTab} onValueChange={(v) => setQSubTab(v as 'pregled' | 'detalji')}>
+              <TabsList>
+                <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+                {selectedQuestion && <TabsTrigger value="detalji" className="text-xs">Detalji</TabsTrigger>}
+              </TabsList>
+            </Tabs>
+
+            {/* ── Pregled: Questions List ── */}
+            {qSubTab === 'pregled' && (<>
             {/* Q&A Header */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -1112,12 +1376,123 @@ export function Forum() {
                 </Card>
               )}
             </div>
+            </>)}
+
+            {/* ── Detalji: Question Detail with Answers ── */}
+            {qSubTab === 'detalji' && selectedQuestion && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><HelpCircle className="h-5 w-5" />
+                    {selectedQuestion.title}
+                    {selectedQuestion.hasAccepted && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}</CardTitle></CardHeader>
+              <CardContent className="max-w-2xl">
+                <ScrollArea className="max-h-[65vh] pr-2">
+                  <div className="space-y-4 pb-4">
+                    {/* Question Meta */}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">{selectedQuestion.authorName}</span>
+                      <span>·</span>
+                      <span>Objavljeno {formatDate(selectedQuestion.createdAt)}</span>
+                      <span>·</span>
+                      <span className="flex items-center gap-0.5"><ThumbsUp className="h-3 w-3" />{selectedQuestion.votes} glasova</span>
+                    </div>
+
+                    {/* Question Content */}
+                    <p className="text-sm leading-relaxed">{selectedQuestion.content}</p>
+
+                    <div className="flex gap-1 flex-wrap">
+                      {selectedQuestion.tags.map(tg => (
+                        <Badge key={tg} variant="outline" className="text-xs px-1.5 py-0">#{tg}</Badge>
+                      ))}
+                    </div>
+
+                    <Separator />
+
+                    {/* Answers */}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold">
+                        {selectedQuestion.answers?.length || 0} odgovora
+                      </h3>
+                      {(selectedQuestion.answers || []).map(answer => (
+                        <div key={answer.id} className={`p-3 rounded-lg border ${answer.isAccepted ? 'border-emerald-300 bg-emerald-50/50' : ''}`}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                                {answer.authorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                              </div>
+                              <span className="text-xs font-medium">{answer.authorName}</span>
+                              {answer.isAccepted && (
+                                <Badge variant="outline" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
+                                  <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Prihvaćeno
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground">{formatDate(answer.createdAt)}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{answer.content}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            {!answer.isAccepted && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs h-7"
+                                onClick={() => handleAcceptAnswer(selectedQuestion.id, answer.id)}
+                              >
+                                <CheckCircle2 className="h-3 w-3 mr-1" /> Označi kao rešenje
+                              </Button>
+                            )}
+                            <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                              <ThumbsUp className="h-3 w-3" />{answer.votes}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Answer Input */}
+                    {!selectedQuestion.hasAccepted && (
+                      <div className="space-y-2">
+                        <Label className="text-xs">Vaš odgovor</Label>
+                        <Textarea
+                          placeholder="Napišite odgovor..."
+                          value={newAnswerText}
+                          onChange={(e) => setNewAnswerText(e.target.value)}
+                          rows={3}
+                        />
+                        <div className="flex justify-end">
+                          <Button size="sm" onClick={handleSubmitAnswer} disabled={!newAnswerText.trim()}>
+                            <MessageSquare className="h-3.5 w-3.5 mr-1" /> Pošalji odgovor
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedQuestion.hasAccepted && (
+                      <p className="text-xs text-emerald-600 text-center py-2 bg-emerald-50 rounded-lg">
+                        <CheckCircle2 className="h-3.5 w-3.5 inline mr-1" />
+                        Ovo pitanje ima prihvaćen odgovor
+                      </p>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+            )}
           </TabsContent>
 
           {/* ═══════════════════════════════════════════════════════════════
-              TAB 5: TAGOVI
+              TAB 5: TAGOVI (Pregled / Dodaj)
               ═══════════════════════════════════════════════════════════════ */}
           <TabsContent value="tags" className="space-y-4">
+            {/* Sub-tabs */}
+            <Tabs value={tagSubTab} onValueChange={(v) => setTagSubTab(v as 'pregled' | 'dodaj')}>
+              <TabsList>
+                <TabsTrigger value="pregled" className="text-xs">Pregled</TabsTrigger>
+                <TabsTrigger value="dodaj" className="text-xs">Dodaj</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            {/* ── Pregled: Tag Cloud / List ── */}
+            {tagSubTab === 'pregled' && (<>
             {/* Tags Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="relative flex-1 w-full sm:max-w-xs">
@@ -1138,7 +1513,7 @@ export function Forum() {
                     Lista
                   </Button>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => { setEditingTag(null); setTagForm(emptyTagForm); setTagDialogOpen(true) }}>
+                <Button size="sm" variant="outline" onClick={() => { setEditingTag(null); setTagForm(emptyTagForm); setTagSubTab('dodaj') }}>
                   <Plus className="h-4 w-4 mr-1.5" /> Novi tag
                 </Button>
               </div>
@@ -1193,6 +1568,56 @@ export function Forum() {
                   </div>
                 </CardContent>
               </Card>
+            )}
+            </>)}
+
+            {/* ── Dodaj: Create / Edit Tag Form ── */}
+            {tagSubTab === 'dodaj' && (
+            <Card>
+              <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editingTag ? 'Izmeni tag' : 'Novi tag'}</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Naziv</Label>
+                    <Input
+                      placeholder="Naziv taga..."
+                      value={tagForm.name}
+                      onChange={(e) => setTagForm(f => ({ ...f, name: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Opis</Label>
+                    <Textarea
+                      placeholder="Kratak opis taga..."
+                      value={tagForm.description}
+                      onChange={(e) => setTagForm(f => ({ ...f, description: e.target.value }))}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Boja</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {TAG_COLORS.map(color => (
+                        <Badge
+                          key={color}
+                          variant={tagForm.color === color ? 'default' : 'outline'}
+                          className={`cursor-pointer text-xs ${tagForm.color !== color ? color : ''}`}
+                          onClick={() => setTagForm(f => ({ ...f, color }))}
+                        >
+                          Izaberite
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setTagSubTab('pregled')}>Otkaži</Button>
+                  <Button onClick={handleCreateTag} disabled={!tagForm.name.trim()}>
+                    {editingTag ? 'Sačuvaj izmene' : 'Kreiraj'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
             )}
           </TabsContent>
 
@@ -1370,380 +1795,6 @@ export function Forum() {
             </div>
           </TabsContent>
         </Tabs>
-
-        {/* ═══════════════════════════════════════════════════════════════
-            DIALOG: Create / Edit Topic
-            ═══════════════════════════════════════════════════════════════ */}
-        {topicDialogOpen && (<Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Plus className="h-5 w-5" /> Nova tema<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setTopicDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Naslov</Label>
-                <Input
-                  placeholder="Unesite naslov teme..."
-                  value={topicForm.title}
-                  onChange={(e) => setTopicForm(f => ({ ...f, title: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Kategorija</Label>
-                <Select value={topicForm.category} onValueChange={(v) => setTopicForm(f => ({ ...f, category: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => (
-                      <SelectItem key={cat.id} value={cat.key}>{cat.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Tagovi</Label>
-                <Input
-                  placeholder="npr. faktura, bug, podrška (odvojeni zarezom)"
-                  value={topicForm.tags}
-                  onChange={(e) => setTopicForm(f => ({ ...f, tags: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Sadržaj</Label>
-                <Textarea
-                  placeholder="Opišite svoju temu..."
-                  value={topicForm.content}
-                  onChange={(e) => setTopicForm(f => ({ ...f, content: e.target.value }))}
-                  rows={5}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setTopicDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreateTopic} disabled={!topicForm.title.trim()}>
-                <Plus className="h-4 w-4 mr-1.5" /> Kreiraj temu
-              </Button>
-            </div>
-          </CardContent>
-        </Card>)}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            DIALOG: Topic Detail with Replies
-            ═══════════════════════════════════════════════════════════════ */}
-        {detailOpen && selectedTopic && (<Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{selectedTopic.title}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-          <CardContent className="max-w-2xl">
-            <ScrollArea className="max-h-[65vh] pr-2">
-                <div className="space-y-4 pb-4">
-                  {/* Topic Meta */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className={getCategoryColor(selectedTopic.category)}>
-                      {getCategoryLabel(selectedTopic.category)}
-                    </Badge>
-                    {selectedTopic.isPinned && <Badge variant="outline"><Pin className="h-3 w-3 mr-1" />Zakačeno</Badge>}
-                    {selectedTopic.isLocked && <Badge variant="outline"><Lock className="h-3 w-3 mr-1" />Zaključano</Badge>}
-                    {selectedTopic.isSolved && <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" />Rešeno</Badge>}
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">{selectedTopic.authorAvatar}</div>
-                      <span className="font-medium">{selectedTopic.authorName}</span>
-                    </div>
-                    <span className="flex items-center gap-0.5"><Eye className="h-3.5 w-3.5" />{selectedTopic.views}</span>
-                    <span className="flex items-center gap-0.5"><MessageSquare className="h-3.5 w-3.5" />{topicReplies.length}</span>
-                    <span className="flex items-center gap-0.5"><ThumbsUp className="h-3.5 w-3.5" />{selectedTopic.likes}</span>
-                    <span>{formatDate(selectedTopic.createdAt)}</span>
-                  </div>
-                  {selectedTopic.tags && selectedTopic.tags.length > 0 && (
-                    <div className="flex gap-1 flex-wrap">
-                      {selectedTopic.tags.map(tg => (
-                        <Badge key={tg} variant="secondary" className="text-xs px-1.5 py-0">#{tg}</Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  <Separator />
-
-                  {/* Topic Content */}
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedTopic.content}</p>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 flex-wrap">
-                    <Button variant="outline" size="sm" onClick={() => handleTogglePin(selectedTopic.id)}>
-                      {selectedTopic.isPinned ? <Unlock className="h-3.5 w-3.5 mr-1" /> : <Pin className="h-3.5 w-3.5 mr-1" />}
-                      {selectedTopic.isPinned ? 'Otvijini' : 'Zakači'}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleToggleLock(selectedTopic.id)}>
-                      {selectedTopic.isLocked ? <Unlock className="h-3.5 w-3.5 mr-1" /> : <Lock className="h-3.5 w-3.5 mr-1" />}
-                      {selectedTopic.isLocked ? 'Otključaj' : 'Zaključaj'}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleToggleSolve(selectedTopic.id)}>
-                      <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                      {selectedTopic.isSolved ? 'Označi kao nerešeno' : 'Označi kao rešeno'}
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDeleteTopic(selectedTopic.id)}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši
-                    </Button>
-                  </div>
-
-                  <Separator />
-
-                  {/* Replies */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      Odgovori ({topicReplies.length})
-                    </h3>
-                    {topicReplies.map(reply => (
-                      <div key={reply.id} className={`p-3 rounded-lg border ${reply.isBest ? 'border-emerald-300 bg-emerald-50/50' : ''}`}>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                              {reply.authorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                            </div>
-                            <span className="text-xs font-medium">{reply.authorName}</span>
-                            {reply.isBest && (
-                              <Badge variant="outline" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
-                                <Star className="h-2.5 w-2.5 mr-0.5" /> Najbolji odgovor
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-0.5"><ThumbsUp className="h-3 w-3" />{reply.likes}</span>
-                            <span>{formatDate(reply.createdAt)}</span>
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{reply.content}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Reply Input */}
-                  {!selectedTopic.isLocked && (
-                    <div className="space-y-2">
-                      <Label className="text-xs">Vaš odgovor</Label>
-                      <Textarea
-                        placeholder="Napišite odgovor..."
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        rows={3}
-                      />
-                      <div className="flex justify-end">
-                        <Button size="sm" onClick={handleSubmitReply} disabled={!replyText.trim()}>
-                          <MessageSquare className="h-3.5 w-3.5 mr-1" /> Pošalji odgovor
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedTopic.isLocked && (
-                    <div className="p-4 border rounded-lg text-center bg-muted/30">
-                      <Lock className="h-5 w-5 mx-auto mb-1.5 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Ova tema je zaključana. Nije moguće dodavati nove odgovore.</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-          </CardContent>
-        </Card>)}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            FORM: Create / Edit Category
-            ═══════════════════════════════════════════════════════════════ */}
-        {catDialogOpen && (<Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editingCategory ? 'Izmeni kategoriju' : 'Nova kategorija'}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setCatDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Naziv</Label>
-                <Input
-                  placeholder="Naziv kategorije..."
-                  value={catForm.label}
-                  onChange={(e) => setCatForm(f => ({ ...f, label: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Opis</Label>
-                <Textarea
-                  placeholder="Kratak opis kategorije..."
-                  value={catForm.description}
-                  onChange={(e) => setCatForm(f => ({ ...f, description: e.target.value }))}
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Boja</Label>
-                <div className="flex flex-wrap gap-2">
-                  {TAG_COLORS.map(color => (
-                    <Button
-                      key={color}
-                      variant={catForm.color === color ? 'default' : 'outline'}
-                      size="sm"
-                      className={`text-xs ${catForm.color !== color ? color : ''}`}
-                      onClick={() => setCatForm(f => ({ ...f, color }))}
-                    >
-                      Izaberite
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setCatDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreateCategory} disabled={!catForm.label.trim()}>
-                {editingCategory ? 'Sačuvaj izmene' : 'Kreiraj'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>)}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            DIALOG: Question Detail with Answers
-            ═══════════════════════════════════════════════════════════════ */}
-        {qDetailOpen && selectedQuestion && (<Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><HelpCircle className="h-5 w-5" />
-                {selectedQuestion.title}
-                {selectedQuestion.hasAccepted && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setQDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-          <CardContent className="max-w-2xl">
-            {selectedQuestion && (
-              <ScrollArea className="max-h-[65vh] pr-2">
-                <div className="space-y-4 pb-4">
-                  {/* Question Meta */}
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">{selectedQuestion.authorName}</span>
-                    <span>·</span>
-                    <span>Objavljeno {formatDate(selectedQuestion.createdAt)}</span>
-                    <span>·</span>
-                    <span className="flex items-center gap-0.5"><ThumbsUp className="h-3 w-3" />{selectedQuestion.votes} glasova</span>
-                  </div>
-
-                  {/* Question Content */}
-                  <p className="text-sm leading-relaxed">{selectedQuestion.content}</p>
-
-                  <div className="flex gap-1 flex-wrap">
-                    {selectedQuestion.tags.map(tg => (
-                      <Badge key={tg} variant="outline" className="text-xs px-1.5 py-0">#{tg}</Badge>
-                    ))}
-                  </div>
-
-                  <Separator />
-
-                  {/* Answers */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-semibold">
-                      {selectedQuestion.answers?.length || 0} odgovora
-                    </h3>
-                    {(selectedQuestion.answers || []).map(answer => (
-                      <div key={answer.id} className={`p-3 rounded-lg border ${answer.isAccepted ? 'border-emerald-300 bg-emerald-50/50' : ''}`}>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                              {answer.authorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                            </div>
-                            <span className="text-xs font-medium">{answer.authorName}</span>
-                            {answer.isAccepted && (
-                              <Badge variant="outline" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
-                                <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Prihvaćeno
-                              </Badge>
-                            )}
-                          </div>
-                          <span className="text-xs text-muted-foreground">{formatDate(answer.createdAt)}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{answer.content}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          {!answer.isAccepted && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-xs h-7"
-                              onClick={() => handleAcceptAnswer(selectedQuestion.id, answer.id)}
-                            >
-                              <CheckCircle2 className="h-3 w-3 mr-1" /> Označi kao rešenje
-                            </Button>
-                          )}
-                          <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                            <ThumbsUp className="h-3 w-3" />{answer.votes}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Answer Input */}
-                  {!selectedQuestion.hasAccepted && (
-                    <div className="space-y-2">
-                      <Label className="text-xs">Vaš odgovor</Label>
-                      <Textarea
-                        placeholder="Napišite odgovor..."
-                        value={newAnswerText}
-                        onChange={(e) => setNewAnswerText(e.target.value)}
-                        rows={3}
-                      />
-                      <div className="flex justify-end">
-                        <Button size="sm" onClick={handleSubmitAnswer} disabled={!newAnswerText.trim()}>
-                          <MessageSquare className="h-3.5 w-3.5 mr-1" /> Pošalji odgovor
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedQuestion.hasAccepted && (
-                    <p className="text-xs text-emerald-600 text-center py-2 bg-emerald-50 rounded-lg">
-                      <CheckCircle2 className="h-3.5 w-3.5 inline mr-1" />
-                      Ovo pitanje ima prihvaćen odgovor
-                    </p>
-                  )}
-                </div>
-              </ScrollArea>
-            )}
-          </CardContent>
-        </Card>)}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            DIALOG: Create / Edit Tag
-            ═══════════════════════════════════════════════════════════════ */}
-        {tagDialogOpen && (<Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editingTag ? 'Izmeni tag' : 'Novi tag'}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setTagDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Naziv</Label>
-                <Input
-                  placeholder="Naziv taga..."
-                  value={tagForm.name}
-                  onChange={(e) => setTagForm(f => ({ ...f, name: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Opis</Label>
-                <Textarea
-                  placeholder="Kratak opis taga..."
-                  value={tagForm.description}
-                  onChange={(e) => setTagForm(f => ({ ...f, description: e.target.value }))}
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Boja</Label>
-                <div className="flex flex-wrap gap-2">
-                  {TAG_COLORS.map(color => (
-                    <Badge
-                      key={color}
-                      variant={tagForm.color === color ? 'default' : 'outline'}
-                      className={`cursor-pointer text-xs ${tagForm.color !== color ? color : ''}`}
-                      onClick={() => setTagForm(f => ({ ...f, color }))}
-                    >
-                      Izaberite
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setTagDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleCreateTag} disabled={!tagForm.name.trim()}>
-                {editingTag ? 'Sačuvaj izmene' : 'Kreiraj'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>)}
       </div>
     </TooltipProvider>
   )

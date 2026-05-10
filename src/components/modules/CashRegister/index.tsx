@@ -45,11 +45,11 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   AlertTriangle,
   CheckCircle2,
   Calculator,
   ScanBarcode,
-  ArrowLeft,
 } from 'lucide-react'
 
 import type {
@@ -130,12 +130,11 @@ export function CashRegister() {
     dateTo: todayStr(),
   })
   const [showFilters, setShowFilters] = useState(false)
-  const [viewTxDialog, setViewTxDialog] = useState<CashTransaction | null>(null)
+  const [viewTx, setViewTx] = useState<CashTransaction | null>(null)
 
   // ---- Products Tab State ----
   const [productSearch, setProductSearch] = useState('')
   const [productCategoryFilter, setProductCategoryFilter] = useState<ProductCategory | ''>('')
-  const [productDialogOpen, setProductDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<PosProduct | null>(null)
   const [productForm, setProductForm] = useState<ProductFormData>({
     name: '',
@@ -147,14 +146,12 @@ export function CashRegister() {
     unit: 'kom',
   })
 
-  // ---- Shift Close Dialog State ----
-  const [closeShiftDialog, setCloseShiftDialog] = useState(false)
+  // ---- Shift Close State ----
   const [countedCash, setCountedCash] = useState('')
   const [countedCard, setCountedCard] = useState('')
   const [shiftNotes, setShiftNotes] = useState('')
 
-  // ---- Transaction Dialog State ----
-  const [txDialogOpen, setTxDialogOpen] = useState(false)
+  // ---- Transaction Edit State ----
   const [editingTx, setEditingTx] = useState<CashTransaction | null>(null)
   const [txForm, setTxForm] = useState<TransactionFormData>({
     type: 'izlaz',
@@ -167,6 +164,20 @@ export function CashRegister() {
 
   // ---- Expanded cart view ----
   const [cartExpanded, setCartExpanded] = useState(true)
+
+  // ---- Main Tab + Sub-Tab States ----
+  const [activeTab, setActiveTab] = useState('kasa')
+  const [txSubTab, setTxSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [artikliSubTab, setArtikliSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [zatvaranjeSubTab, setZatvaranjeSubTab] = useState<'pregled' | 'zatvori'>('pregled')
+
+  // ---- Tab change handler (resets sub-tabs) ----
+  const handleMainTabChange = useCallback((val: string) => {
+    setActiveTab(val)
+    setTxSubTab('pregled')
+    setArtikliSubTab('pregled')
+    setZatvaranjeSubTab('pregled')
+  }, [])
 
   // ================================================================
   // LOAD TRANSACTIONS FROM API
@@ -401,7 +412,7 @@ export function CashRegister() {
     }
 
     setShiftOpen(false)
-    setCloseShiftDialog(false)
+    setZatvaranjeSubTab('pregled')
     setCountedCash('')
     setCountedCard('')
     setShiftNotes('')
@@ -431,7 +442,7 @@ export function CashRegister() {
           }),
         })
       }
-      setTxDialogOpen(false)
+      setTxSubTab('pregled')
       setEditingTx(null)
       setTxForm({
         type: 'izlaz',
@@ -469,7 +480,7 @@ export function CashRegister() {
       paymentMethod: tx.paymentMethod as PaymentMethod,
       date: tx.date ? tx.date.split('T')[0] : todayStr(),
     })
-    setTxDialogOpen(true)
+    setTxSubTab('dodaj')
   }, [])
 
   // ================================================================
@@ -508,7 +519,7 @@ export function CashRegister() {
       }
       setProducts((prev) => [newProduct, ...prev])
     }
-    setProductDialogOpen(false)
+    setArtikliSubTab('pregled')
     setEditingProduct(null)
     setProductForm({
       name: '',
@@ -532,7 +543,7 @@ export function CashRegister() {
       stock: String(product.stock),
       unit: product.unit,
     })
-    setProductDialogOpen(true)
+    setArtikliSubTab('dodaj')
   }, [])
 
   const handleDeleteProduct = useCallback((productId: string) => {
@@ -619,7 +630,10 @@ export function CashRegister() {
           ) : (
             <Button
               variant="destructive"
-              onClick={() => setCloseShiftDialog(true)}
+              onClick={() => {
+                setActiveTab('zatvaranje')
+                setZatvaranjeSubTab('zatvori')
+              }}
               className="gap-2"
             >
               <PowerOff className="h-4 w-4" />
@@ -644,8 +658,8 @@ export function CashRegister() {
         />
       )}
 
-      {/* Tabs */}
-      <Tabs defaultValue="kasa" className="space-y-4">
+      {/* Main Tabs */}
+      <Tabs value={activeTab} onValueChange={handleMainTabChange} className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="kasa" className="gap-1.5 text-xs sm:text-sm">
             <ShoppingCart className="h-3.5 w-3.5 hidden sm:inline" />
@@ -934,975 +948,1032 @@ export function CashRegister() {
           </div>
         </TabsContent>
 
-        {/* ==================== TAB: TRANSAKCIJE ==================== */}
+        {/* ==================== TAB: TRANSAKCIJE (with sub-tabs) ==================== */}
         <TabsContent value="transakcije">
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="text-base">Трансакције</CardTitle>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="relative flex-1 min-w-[180px] sm:w-64">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Претрага..."
-                      className="pl-8 h-9"
-                      value={txFilters.search}
-                      onChange={(e) =>
-                        setTxFilters((prev) => ({ ...prev, search: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="gap-1.5"
-                  >
-                    <Filter className="h-3.5 w-3.5" />
-                    Филтери
-                    {showFilters ? (
-                      <ChevronUp className="h-3 w-3" />
-                    ) : (
-                      <ChevronDown className="h-3 w-3" />
-                    )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setEditingTx(null)
-                      setTxForm({
-                        type: 'izlaz',
-                        amount: '',
-                        description: '',
-                        partnerName: '',
-                        paymentMethod: 'gotovina',
-                        date: todayStr(),
-                      })
-                      setTxDialogOpen(true)
-                    }}
-                    className="gap-1.5"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                        Нова трансакција
-                  </Button>
-                </div>
-              </div>
+          <Tabs value={txSubTab} onValueChange={(val) => setTxSubTab(val as typeof txSubTab)}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="pregled">Преглед</TabsTrigger>
+                <TabsTrigger value="dodaj">Додај</TabsTrigger>
+                {txSubTab === 'detalji' && (
+                  <TabsTrigger value="detalji">Детаљи</TabsTrigger>
+                )}
+              </TabsList>
+            </div>
 
-              {/* Expanded Filters */}
-              {showFilters && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 pt-3 border-t">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Тип</Label>
-                    <Select
-                      value={txFilters.type}
-                      onValueChange={(val) =>
-                        setTxFilters((prev) => ({ ...prev, type: val as TransactionType | '' }))
-                      }
-                    >
-                      <SelectTrigger className="h-9">
-                        <SelectValue placeholder="Сви" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">Сви</SelectItem>
-                        {TRANSACTION_TYPES.map((t) => (
-                          <SelectItem key={t.value} value={t.value}>
-                            {t.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Плаћање</Label>
-                    <Select
-                      value={txFilters.paymentMethod}
-                      onValueChange={(val) =>
-                        setTxFilters((prev) => ({ ...prev, paymentMethod: val as PaymentMethod | '' }))
-                      }
-                    >
-                      <SelectTrigger className="h-9">
-                        <SelectValue placeholder="Сва" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">Сва</SelectItem>
-                        {PAYMENT_METHODS.map((pm) => (
-                          <SelectItem key={pm.value} value={pm.value}>
-                            {pm.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Од датума</Label>
-                    <Input
-                      type="date"
-                      className="h-9"
-                      value={txFilters.dateFrom}
-                      onChange={(e) =>
-                        setTxFilters((prev) => ({ ...prev, dateFrom: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">До датума</Label>
-                    <Input
-                      type="date"
-                      className="h-9"
-                      value={txFilters.dateTo}
-                      onChange={(e) =>
-                        setTxFilters((prev) => ({ ...prev, dateTo: e.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-              )}
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
-                  ))}
-                </div>
-              ) : filteredTransactions.length === 0 ? (
-                <EmptyState
-                  icon={<Receipt className="h-12 w-12" />}
-                  title="Нема трансакција"
-                  description="За изабрани период не постоје трансакције. Промените филтере или додајте нову трансакцију."
-                />
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Датум</TableHead>
-                        <TableHead>Тип</TableHead>
-                        <TableHead>Опис</TableHead>
-                        <TableHead className="hidden sm:table-cell">Плаћање</TableHead>
-                        <TableHead className="hidden md:table-cell">Партнер</TableHead>
-                        <TableHead className="text-right">Износ</TableHead>
-                        <TableHead className="text-right">Акције</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredTransactions.map((tx) => {
-                        const txType = TRANSACTION_TYPES.find(
-                          (t) => t.value === tx.type
-                        )
-                        return (
-                          <TableRow key={tx.id}>
-                            <TableCell className="text-xs whitespace-nowrap">
-                              {formatDateTimeSr(tx.date)}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={txType?.color || ''}>
-                                {txType?.label || tx.type}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="max-w-[200px] truncate text-xs">
-                              {tx.description}
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              <div className="flex items-center gap-1.5 text-xs">
-                                <PaymentIcon method={tx.paymentMethod} />
-                                {getPaymentLabel(tx.paymentMethod as PaymentMethod)}
-                              </div>
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell text-xs">
-                              {tx.partnerName || '—'}
-                            </TableCell>
-                            <TableCell className="text-right font-semibold text-xs">
-                              <span
-                                className={
-                                  tx.type === 'ulaz'
-                                    ? 'text-green-600'
-                                    : 'text-red-600'
-                                }
-                              >
-                                {tx.type === 'ulaz' ? '+' : '-'}
-                                {formatRsd(tx.amount)}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => setViewTxDialog(tx)}
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => openEditTx(tx)}
-                                >
-                                  <Printer className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-destructive"
-                                  onClick={() => handleDeleteTransaction(tx.id)}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ==================== TAB: ARTIKLI ==================== */}
-        <TabsContent value="artikli">
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="text-base">Артикли ({products.length})</CardTitle>
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1 min-w-[150px] sm:w-56">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Претрага артикала..."
-                      className="pl-8 h-9"
-                      value={productSearch}
-                      onChange={(e) => setProductSearch(e.target.value)}
-                    />
-                  </div>
-                  <Select
-                    value={productCategoryFilter}
-                    onValueChange={(val) =>
-                      setProductCategoryFilter(val as ProductCategory | '')
-                    }
-                  >
-                    <SelectTrigger className="h-9 w-[130px]">
-                      <SelectValue placeholder="Категорија" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Све</SelectItem>
-                      {PRODUCT_CATEGORIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          {c.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setEditingProduct(null)
-                      setProductForm({
-                        name: '',
-                        barcode: '',
-                        price: '',
-                        pdvRate: 20,
-                        category: 'ostalo',
-                        stock: '0',
-                        unit: 'kom',
-                      })
-                      setProductDialogOpen(true)
-                    }}
-                    className="gap-1.5"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Додај артикал
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {filteredProducts.length === 0 ? (
-                <EmptyState
-                  icon={<Package className="h-12 w-12" />}
-                  title="Нема артикала"
-                  description="Нема артикала који одговарају филтерима."
-                />
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Назив</TableHead>
-                        <TableHead className="hidden sm:table-cell">Баркод</TableHead>
-                        <TableHead className="hidden md:table-cell">Категорија</TableHead>
-                        <TableHead className="text-right">Цена</TableHead>
-                        <TableHead className="hidden sm:table-cell text-center">ПДВ</TableHead>
-                        <TableHead className="hidden sm:table-cell text-right">Залиха</TableHead>
-                        <TableHead className="text-right">Акције</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredProducts.map((product) => (
-                        <TableRow key={product.id}>
-                          <TableCell className="font-medium text-xs">
-                            {product.name}
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell text-xs font-mono">
-                            {product.barcode || '—'}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <Badge variant="outline" className="text-xs">
-                              {getCategoryLabel(product.category)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right font-semibold text-xs">
-                            {formatRsd(product.price)}
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell text-center">
-                            <Badge variant="secondary" className="text-xs">
-                              {product.pdvRate}%
-                            </Badge>
-                          </TableCell>
-                          <TableCell
-                            className={`hidden sm:table-cell text-right text-xs font-medium ${
-                              product.stock <= 5
-                                ? 'text-red-600'
-                                : product.stock <= 15
-                                ? 'text-amber-600'
-                                : 'text-green-600'
-                            }`}
-                          >
-                            {product.stock} {product.unit}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => openEditProduct(product)}
-                              >
-                                <Printer className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-destructive"
-                                onClick={() => handleDeleteProduct(product.id)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ==================== TAB: ZATVARANJE ==================== */}
-        <TabsContent value="zatvaranje">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Shift Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Power className="h-4 w-4" />
-                  Статус смее
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {shiftOpen ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
-                        ● Отворена
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
-                        од {formatDateTimeSr(shiftOpenedAt)}
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Касир</p>
-                        <p className="font-medium">{shiftCashier}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Број рачуна</p>
-                        <p className="font-medium">{shiftTxCount}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Укупна продаја</p>
-                        <p className="font-bold text-emerald-600">
-                          {formatRsd(shiftSales)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Просек по рачуну</p>
-                        <p className="font-medium">
-                          {formatRsd(
-                            shiftTxCount > 0
-                              ? Math.round((shiftSales / shiftTxCount) * 100) / 100
-                              : 0
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="space-y-2 text-sm">
-                      <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                        Плаћања по методу
-                      </p>
-                      {PAYMENT_METHODS.map((pm) => (
-                        <div key={pm.value} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs">
-                            <PaymentIcon method={pm.value} />
-                            {pm.label}
-                          </div>
-                          <span className="font-medium text-xs">
-                            {formatRsd(shiftPayments[pm.value])}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                    <Separator />
-                    <Button
-                      variant="destructive"
-                      className="w-full gap-2"
-                      onClick={() => setCloseShiftDialog(true)}
-                    >
-                      <PowerOff className="h-4 w-4" />
-                      Затвори смееу
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
-                        ● Затворена
-                      </Badge>
-                    </div>
-                    <Separator />
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Касир</Label>
-                        <Input value={shiftCashier} disabled className="h-9" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Почетна готовина (RSD)</Label>
+            {/* ---- Sub-tab: Pregled (transaction list) ---- */}
+            <TabsContent value="pregled">
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <CardTitle className="text-base">Трансакције</CardTitle>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="relative flex-1 min-w-[180px] sm:w-64">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                          type="number"
-                          placeholder="50000"
-                          value={openingCash}
-                          onChange={(e) => setOpeningCash(e.target.value)}
+                          placeholder="Претрага..."
+                          className="pl-8 h-9"
+                          value={txFilters.search}
+                          onChange={(e) =>
+                            setTxFilters((prev) => ({ ...prev, search: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="gap-1.5"
+                      >
+                        <Filter className="h-3.5 w-3.5" />
+                        Филтери
+                        {showFilters ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setEditingTx(null)
+                          setTxForm({
+                            type: 'izlaz',
+                            amount: '',
+                            description: '',
+                            partnerName: '',
+                            paymentMethod: 'gotovina',
+                            date: todayStr(),
+                          })
+                          setTxSubTab('dodaj')
+                        }}
+                        className="gap-1.5"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Нова трансакција
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Expanded Filters */}
+                  {showFilters && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 pt-3 border-t">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Тип</Label>
+                        <Select
+                          value={txFilters.type}
+                          onValueChange={(val) =>
+                            setTxFilters((prev) => ({ ...prev, type: val as TransactionType | '' }))
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Сви" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Сви</SelectItem>
+                            {TRANSACTION_TYPES.map((t) => (
+                              <SelectItem key={t.value} value={t.value}>
+                                {t.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Плаћање</Label>
+                        <Select
+                          value={txFilters.paymentMethod}
+                          onValueChange={(val) =>
+                            setTxFilters((prev) => ({ ...prev, paymentMethod: val as PaymentMethod | '' }))
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Сва" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Сва</SelectItem>
+                            {PAYMENT_METHODS.map((pm) => (
+                              <SelectItem key={pm.value} value={pm.value}>
+                                {pm.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Од датума</Label>
+                        <Input
+                          type="date"
                           className="h-9"
+                          value={txFilters.dateFrom}
+                          onChange={(e) =>
+                            setTxFilters((prev) => ({ ...prev, dateFrom: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">До датума</Label>
+                        <Input
+                          type="date"
+                          className="h-9"
+                          value={txFilters.dateTo}
+                          onChange={(e) =>
+                            setTxFilters((prev) => ({ ...prev, dateTo: e.target.value }))
+                          }
                         />
                       </div>
                     </div>
-                    <Button className="w-full gap-2" onClick={handleOpenShift}>
-                      <Power className="h-4 w-4" />
-                      Отвори смееу
+                  )}
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                      ))}
+                    </div>
+                  ) : filteredTransactions.length === 0 ? (
+                    <EmptyState
+                      icon={<Receipt className="h-12 w-12" />}
+                      title="Нема трансакција"
+                      description="За изабрани период не постоје трансакције. Промените филтере или додајте нову трансакцију."
+                    />
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Датум</TableHead>
+                            <TableHead>Тип</TableHead>
+                            <TableHead>Опис</TableHead>
+                            <TableHead className="hidden sm:table-cell">Плаћање</TableHead>
+                            <TableHead className="hidden md:table-cell">Партнер</TableHead>
+                            <TableHead className="text-right">Износ</TableHead>
+                            <TableHead className="text-right">Акције</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredTransactions.map((tx) => {
+                            const txType = TRANSACTION_TYPES.find(
+                              (t) => t.value === tx.type
+                            )
+                            return (
+                              <TableRow key={tx.id}>
+                                <TableCell className="text-xs whitespace-nowrap">
+                                  {formatDateTimeSr(tx.date)}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={txType?.color || ''}>
+                                    {txType?.label || tx.type}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="max-w-[200px] truncate text-xs">
+                                  {tx.description}
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                  <div className="flex items-center gap-1.5 text-xs">
+                                    <PaymentIcon method={tx.paymentMethod} />
+                                    {getPaymentLabel(tx.paymentMethod as PaymentMethod)}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell text-xs">
+                                  {tx.partnerName || '—'}
+                                </TableCell>
+                                <TableCell className="text-right font-semibold text-xs">
+                                  <span
+                                    className={
+                                      tx.type === 'ulaz'
+                                        ? 'text-green-600'
+                                        : 'text-red-600'
+                                    }
+                                  >
+                                    {tx.type === 'ulaz' ? '+' : '-'}
+                                    {formatRsd(tx.amount)}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      onClick={() => {
+                                        setViewTx(tx)
+                                        setTxSubTab('detalji')
+                                      }}
+                                    >
+                                      <Eye className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      onClick={() => openEditTx(tx)}
+                                    >
+                                      <Printer className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-destructive"
+                                      onClick={() => handleDeleteTransaction(tx.id)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ---- Sub-tab: Dodaj (new/edit transaction form) ---- */}
+            <TabsContent value="dodaj">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" onClick={() => setTxSubTab('pregled')}>
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Назад
+                    </Button>
+                    <CardTitle>{editingTx ? 'Уреди трансакцију' : 'Нова трансакција'}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Тип</Label>
+                        <Select
+                          value={txForm.type}
+                          onValueChange={(val) =>
+                            setTxForm((prev) => ({ ...prev, type: val as TransactionType }))
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TRANSACTION_TYPES.map((t) => (
+                              <SelectItem key={t.value} value={t.value}>
+                                {t.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Плаћање</Label>
+                        <Select
+                          value={txForm.paymentMethod}
+                          onValueChange={(val) =>
+                            setTxForm((prev) => ({ ...prev, paymentMethod: val as PaymentMethod }))
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PAYMENT_METHODS.map((pm) => (
+                              <SelectItem key={pm.value} value={pm.value}>
+                                {pm.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Износ (RSD)</Label>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={txForm.amount}
+                        onChange={(e) =>
+                          setTxForm((prev) => ({ ...prev, amount: e.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Опис</Label>
+                      <Input
+                        placeholder="Опис трансакције..."
+                        value={txForm.description}
+                        onChange={(e) =>
+                          setTxForm((prev) => ({ ...prev, description: e.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Партнер (име)</Label>
+                      <Input
+                        placeholder="Име партнера..."
+                        value={txForm.partnerName}
+                        onChange={(e) =>
+                          setTxForm((prev) => ({ ...prev, partnerName: e.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Датум</Label>
+                      <Input
+                        type="date"
+                        value={txForm.date}
+                        onChange={(e) =>
+                          setTxForm((prev) => ({ ...prev, date: e.target.value }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button variant="outline" onClick={() => setTxSubTab('pregled')}>
+                      Откажи
+                    </Button>
+                    <Button onClick={handleSaveTransaction} disabled={!txForm.amount || !txForm.description}>
+                      Сачувај
                     </Button>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-            {/* Daily Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Calculator className="h-4 w-4" />
-                  Дневни преглед
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border p-3 text-center">
-                      <p className="text-2xl font-bold text-emerald-600">
-                        {formatRsd(dailyStats.dnevniPrihod)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">Дневни приhod</p>
+            {/* ---- Sub-tab: Detalji (transaction detail view) ---- */}
+            <TabsContent value="detalji">
+              {viewTx && (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <Button variant="ghost" size="sm" onClick={() => setTxSubTab('pregled')}>
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Назад
+                      </Button>
+                      <CardTitle>Детаљи трансакције</CardTitle>
                     </div>
-                    <div className="rounded-lg border p-3 text-center">
-                      <p className="text-2xl font-bold">{dailyStats.brojRacuna}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Број рачуна</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-muted-foreground text-xs">Датум</p>
+                          <p className="font-medium">{formatDateTimeSr(viewTx.date)}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs">Тип</p>
+                          <Badge
+                            className={
+                              TRANSACTION_TYPES.find((t) => t.value === viewTx.type)
+                                ?.color || ''
+                            }
+                          >
+                            {getTypeLabel(viewTx.type as TransactionType)}
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs">Износ</p>
+                          <p
+                            className={`font-bold text-lg ${
+                              viewTx.type === 'ulaz'
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                            }`}
+                          >
+                            {formatRsd(viewTx.amount)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs">Плаћање</p>
+                          <div className="flex items-center gap-1.5">
+                            <PaymentIcon method={viewTx.paymentMethod} />
+                            {getPaymentLabel(viewTx.paymentMethod as PaymentMethod)}
+                          </div>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-muted-foreground text-xs">Опис</p>
+                          <p className="font-medium">{viewTx.description}</p>
+                        </div>
+                        {viewTx.partnerName && (
+                          <div className="col-span-2">
+                            <p className="text-muted-foreground text-xs">Партнер</p>
+                            <p className="font-medium">{viewTx.partnerName}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="rounded-lg border p-3 text-center">
-                      <p className="text-2xl font-bold text-amber-600">
-                        {formatRsd(dailyStats.prosek)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">Просек</p>
+                    <div className="flex gap-2 mt-4">
+                      <Button variant="outline" onClick={() => setTxSubTab('pregled')}>
+                        Затвори
+                      </Button>
+                      <Button variant="outline" onClick={() => {
+                        openEditTx(viewTx)
+                      }}>
+                        <Printer className="h-4 w-4 mr-1" />
+                        Уреди
+                      </Button>
                     </div>
-                    <div className="rounded-lg border p-3 text-center">
-                      <p className="text-2xl font-bold text-red-600">
-                        {formatRsd(dailyStats.povrat)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">Поврати</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ==================== TAB: ARTIKLI (with sub-tabs) ==================== */}
+        <TabsContent value="artikli">
+          <Tabs value={artikliSubTab} onValueChange={(val) => setArtikliSubTab(val as typeof artikliSubTab)}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="pregled">Преглед</TabsTrigger>
+                <TabsTrigger value="dodaj">Додај</TabsTrigger>
+              </TabsList>
+            </div>
+
+            {/* ---- Sub-tab: Pregled (product list) ---- */}
+            <TabsContent value="pregled">
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <CardTitle className="text-base">Артикли ({products.length})</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1 min-w-[150px] sm:w-56">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Претрага артикала..."
+                          className="pl-8 h-9"
+                          value={productSearch}
+                          onChange={(e) => setProductSearch(e.target.value)}
+                        />
+                      </div>
+                      <Select
+                        value={productCategoryFilter}
+                        onValueChange={(val) =>
+                          setProductCategoryFilter(val as ProductCategory | '')
+                        }
+                      >
+                        <SelectTrigger className="h-9 w-[130px]">
+                          <SelectValue placeholder="Категорија" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Све</SelectItem>
+                          {PRODUCT_CATEGORIES.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setEditingProduct(null)
+                          setProductForm({
+                            name: '',
+                            barcode: '',
+                            price: '',
+                            pdvRate: 20,
+                            category: 'ostalo',
+                            stock: '0',
+                            unit: 'kom',
+                          })
+                          setArtikliSubTab('dodaj')
+                        }}
+                        className="gap-1.5"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Додај артикал
+                      </Button>
                     </div>
                   </div>
-                  <Separator />
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p className="font-medium uppercase tracking-wider text-foreground mb-2">
-                      ПДВ обрачун
-                    </p>
-                    <div className="flex justify-between">
-                      <span>Ставке са ПДВ 10%:</span>
-                      <span className="font-medium">{formatRsd(dailyStats.pdv10)}</span>
+                </CardHeader>
+                <CardContent>
+                  {filteredProducts.length === 0 ? (
+                    <EmptyState
+                      icon={<Package className="h-12 w-12" />}
+                      title="Нема артикала"
+                      description="Нема артикала који одговарају филтерима."
+                    />
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Назив</TableHead>
+                            <TableHead className="hidden sm:table-cell">Баркод</TableHead>
+                            <TableHead className="hidden md:table-cell">Категорија</TableHead>
+                            <TableHead className="text-right">Цена</TableHead>
+                            <TableHead className="hidden sm:table-cell text-center">ПДВ</TableHead>
+                            <TableHead className="hidden sm:table-cell text-right">Залиха</TableHead>
+                            <TableHead className="text-right">Акције</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredProducts.map((product) => (
+                            <TableRow key={product.id}>
+                              <TableCell className="font-medium text-xs">
+                                {product.name}
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell text-xs font-mono">
+                                {product.barcode || '—'}
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell">
+                                <Badge variant="outline" className="text-xs">
+                                  {getCategoryLabel(product.category)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right font-semibold text-xs">
+                                {formatRsd(product.price)}
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell text-center">
+                                <Badge variant="secondary" className="text-xs">
+                                  {product.pdvRate}%
+                                </Badge>
+                              </TableCell>
+                              <TableCell
+                                className={`hidden sm:table-cell text-right text-xs font-medium ${
+                                  product.stock <= 5
+                                    ? 'text-red-600'
+                                    : product.stock <= 15
+                                    ? 'text-amber-600'
+                                    : 'text-green-600'
+                                }`}
+                              >
+                                {product.stock} {product.unit}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => openEditProduct(product)}
+                                  >
+                                    <Printer className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-destructive"
+                                    onClick={() => handleDeleteProduct(product.id)}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Ставке са ПДВ 20%:</span>
-                      <span className="font-medium">{formatRsd(dailyStats.pdv20)}</span>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ---- Sub-tab: Dodaj (new/edit product form) ---- */}
+            <TabsContent value="dodaj">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" onClick={() => setArtikliSubTab('pregled')}>
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Назад
+                    </Button>
+                    <CardTitle>{editingProduct ? 'Уреди артикал' : 'Нови артикал'}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Назив артикла *</Label>
+                      <Input
+                        placeholder="Унесите назив..."
+                        value={productForm.name}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({ ...prev, name: e.target.value }))
+                        }
+                      />
                     </div>
-                    <Separator className="my-2" />
-                    <div className="flex justify-between font-bold">
-                      <span>Укупан ПДВ:</span>
-                      <span>{formatRsd(dailyStats.pdv10 + dailyStats.pdv20)}</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Баркод</Label>
+                        <Input
+                          placeholder="8606101000"
+                          value={productForm.barcode}
+                          onChange={(e) =>
+                            setProductForm((prev) => ({ ...prev, barcode: e.target.value }))
+                          }
+                          className="font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Категорија</Label>
+                        <Select
+                          value={productForm.category}
+                          onValueChange={(val) =>
+                            setProductForm((prev) => ({
+                              ...prev,
+                              category: val as ProductCategory,
+                            }))
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PRODUCT_CATEGORIES.map((c) => (
+                              <SelectItem key={c.value} value={c.value}>
+                                {c.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Цена (RSD) *</Label>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          value={productForm.price}
+                          onChange={(e) =>
+                            setProductForm((prev) => ({ ...prev, price: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">ПДВ стопа</Label>
+                        <Select
+                          value={String(productForm.pdvRate)}
+                          onValueChange={(val) =>
+                            setProductForm((prev) => ({
+                              ...prev,
+                              pdvRate: parseInt(val) as PdvRate,
+                            }))
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PDV_RATES.map((r) => (
+                              <SelectItem key={r.value} value={String(r.value)}>
+                                {r.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Јединица</Label>
+                        <Select
+                          value={productForm.unit}
+                          onValueChange={(val) =>
+                            setProductForm((prev) => ({ ...prev, unit: val }))
+                          }
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {UNITS.map((u) => (
+                              <SelectItem key={u} value={u}>
+                                {u}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Залиха</Label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={productForm.stock}
+                        onChange={(e) =>
+                          setProductForm((prev) => ({ ...prev, stock: e.target.value }))
+                        }
+                      />
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button variant="outline" onClick={() => setArtikliSubTab('pregled')}>
+                      Откажи
+                    </Button>
+                    <Button
+                      onClick={handleSaveProduct}
+                      disabled={!productForm.name || !productForm.price}
+                    >
+                      Сачувај
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        {/* ==================== TAB: ZATVARANJE (with sub-tabs) ==================== */}
+        <TabsContent value="zatvaranje">
+          <Tabs value={zatvaranjeSubTab} onValueChange={(val) => setZatvaranjeSubTab(val as typeof zatvaranjeSubTab)}>
+            <div className="flex items-center justify-between mb-4">
+              <TabsList>
+                <TabsTrigger value="pregled">Преглед</TabsTrigger>
+                {shiftOpen && (
+                  <TabsTrigger value="zatvori">Затвори смееу</TabsTrigger>
+                )}
+              </TabsList>
+            </div>
+
+            {/* ---- Sub-tab: Pregled (shift status + daily summary) ---- */}
+            <TabsContent value="pregled">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Shift Status */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Power className="h-4 w-4" />
+                      Статус смее
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {shiftOpen ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+                            ● Отворена
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            од {formatDateTimeSr(shiftOpenedAt)}
+                          </span>
+                        </div>
+                        <Separator />
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">Касир</p>
+                            <p className="font-medium">{shiftCashier}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Број рачуна</p>
+                            <p className="font-medium">{shiftTxCount}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Укупна продаја</p>
+                            <p className="font-bold text-emerald-600">
+                              {formatRsd(shiftSales)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Просек по рачуну</p>
+                            <p className="font-medium">
+                              {formatRsd(
+                                shiftTxCount > 0
+                                  ? Math.round((shiftSales / shiftTxCount) * 100) / 100
+                                  : 0
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <Separator />
+                        <div className="space-y-2 text-sm">
+                          <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                            Плаћања по методу
+                          </p>
+                          {PAYMENT_METHODS.map((pm) => (
+                            <div key={pm.value} className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-xs">
+                                <PaymentIcon method={pm.value} />
+                                {pm.label}
+                              </div>
+                              <span className="font-medium text-xs">
+                                {formatRsd(shiftPayments[pm.value])}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <Separator />
+                        <Button
+                          variant="destructive"
+                          className="w-full gap-2"
+                          onClick={() => setZatvaranjeSubTab('zatvori')}
+                        >
+                          <PowerOff className="h-4 w-4" />
+                          Затвори смееу
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
+                            ● Затворена
+                          </Badge>
+                        </div>
+                        <Separator />
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Касир</Label>
+                            <Input value={shiftCashier} disabled className="h-9" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Почетна готовина (RSD)</Label>
+                            <Input
+                              type="number"
+                              placeholder="50000"
+                              value={openingCash}
+                              onChange={(e) => setOpeningCash(e.target.value)}
+                              className="h-9"
+                            />
+                          </div>
+                        </div>
+                        <Button className="w-full gap-2" onClick={handleOpenShift}>
+                          <Power className="h-4 w-4" />
+                          Отвори смееу
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Daily Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Calculator className="h-4 w-4" />
+                      Дневни преглед
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-lg border p-3 text-center">
+                          <p className="text-2xl font-bold text-emerald-600">
+                            {formatRsd(dailyStats.dnevniPrihod)}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">Дневни приhod</p>
+                        </div>
+                        <div className="rounded-lg border p-3 text-center">
+                          <p className="text-2xl font-bold">{dailyStats.brojRacuna}</p>
+                          <p className="text-xs text-muted-foreground mt-1">Број рачуна</p>
+                        </div>
+                        <div className="rounded-lg border p-3 text-center">
+                          <p className="text-2xl font-bold text-amber-600">
+                            {formatRsd(dailyStats.prosek)}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">Просек</p>
+                        </div>
+                        <div className="rounded-lg border p-3 text-center">
+                          <p className="text-2xl font-bold text-red-600">
+                            {formatRsd(dailyStats.povrat)}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">Поврати</p>
+                        </div>
+                      </div>
+                      <Separator />
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p className="font-medium uppercase tracking-wider text-foreground mb-2">
+                          ПДВ обрачун
+                        </p>
+                        <div className="flex justify-between">
+                          <span>Ставке са ПДВ 10%:</span>
+                          <span className="font-medium">{formatRsd(dailyStats.pdv10)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Ставке са ПДВ 20%:</span>
+                          <span className="font-medium">{formatRsd(dailyStats.pdv20)}</span>
+                        </div>
+                        <Separator className="my-2" />
+                        <div className="flex justify-between font-bold">
+                          <span>Укупан ПДВ:</span>
+                          <span>{formatRsd(dailyStats.pdv10 + dailyStats.pdv20)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* ---- Sub-tab: Zatvori (close shift form) ---- */}
+            <TabsContent value="zatvori">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" onClick={() => setZatvaranjeSubTab('pregled')}>
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Назад
+                    </Button>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                      Затварање смее
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Expected amounts */}
+                    <div className="rounded-lg border bg-muted/30 p-3 space-y-2 text-sm">
+                      <p className="font-medium text-xs uppercase tracking-wider text-muted-foreground">
+                        Очекивани износи
+                      </p>
+                      <div className="flex justify-between">
+                        <span>Готовина:</span>
+                        <span className="font-bold">{formatRsd(shiftPayments.gotovina)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Картична плаћања:</span>
+                        <span className="font-bold">{formatRsd(shiftPayments.kartica)}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between">
+                        <span>Укупна продаја:</span>
+                        <span className="font-bold text-emerald-600">
+                          {formatRsd(shiftSales)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actual count */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Бројана готовина (RSD)</Label>
+                        <Input
+                          type="number"
+                          placeholder={String(shiftPayments.gotovina)}
+                          value={countedCash}
+                          onChange={(e) => setCountedCash(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Бројана картица (RSD)</Label>
+                        <Input
+                          type="number"
+                          placeholder={String(shiftPayments.kartica)}
+                          value={countedCard}
+                          onChange={(e) => setCountedCard(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Difference calculation */}
+                    {countedCash && (
+                      <div className={`rounded-lg border p-3 ${
+                        Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01
+                          ? 'bg-green-50 dark:bg-green-950 border-green-200'
+                          : 'bg-amber-50 dark:bg-amber-950 border-amber-200'
+                      }`}>
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Диференца (готовина):</span>
+                          <span className={`font-bold ${
+                            Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01
+                              ? 'text-green-600'
+                              : 'text-amber-600'
+                          }`}>
+                            {formatRsd(
+                              Math.round(
+                                (parseFloat(countedCash) - shiftPayments.gotovina) * 100
+                              ) / 100
+                            )}
+                          </span>
+                        </div>
+                        {Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01 && (
+                          <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Износи се поклапају
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <Label className="text-xs">Напомене</Label>
+                      <Input
+                        placeholder="Опционалне напомене..."
+                        value={shiftNotes}
+                        onChange={(e) => setShiftNotes(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button variant="outline" onClick={() => setZatvaranjeSubTab('pregled')}>
+                      Откажи
+                    </Button>
+                    <Button variant="destructive" onClick={handleCloseShift}>
+                      <PowerOff className="h-4 w-4 mr-1" />
+                      Потврди затварање
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
-
-      {/* ==================== INLINE FORM: NEW/EDIT TRANSACTION ==================== */}
-      {txDialogOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setTxDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle>{editingTx ? 'Уреди трансакцију' : 'Нова трансакција'}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Тип</Label>
-                  <Select
-                    value={txForm.type}
-                    onValueChange={(val) =>
-                      setTxForm((prev) => ({ ...prev, type: val as TransactionType }))
-                    }
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TRANSACTION_TYPES.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Плаћање</Label>
-                  <Select
-                    value={txForm.paymentMethod}
-                    onValueChange={(val) =>
-                      setTxForm((prev) => ({ ...prev, paymentMethod: val as PaymentMethod }))
-                    }
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAYMENT_METHODS.map((pm) => (
-                        <SelectItem key={pm.value} value={pm.value}>
-                          {pm.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Износ (RSD)</Label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={txForm.amount}
-                  onChange={(e) =>
-                    setTxForm((prev) => ({ ...prev, amount: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Опис</Label>
-                <Input
-                  placeholder="Опис трансакције..."
-                  value={txForm.description}
-                  onChange={(e) =>
-                    setTxForm((prev) => ({ ...prev, description: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Партнер (име)</Label>
-                <Input
-                  placeholder="Име партнера..."
-                  value={txForm.partnerName}
-                  onChange={(e) =>
-                    setTxForm((prev) => ({ ...prev, partnerName: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Датум</Label>
-                <Input
-                  type="date"
-                  value={txForm.date}
-                  onChange={(e) =>
-                    setTxForm((prev) => ({ ...prev, date: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setTxDialogOpen(false)}>
-                Откажи
-              </Button>
-              <Button onClick={handleSaveTransaction} disabled={!txForm.amount || !txForm.description}>
-                Сачувај
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ==================== INLINE FORM: NEW/EDIT PRODUCT ==================== */}
-      {productDialogOpen && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setProductDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle>{editingProduct ? 'Уреди артикал' : 'Нови артикал'}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="space-y-1">
-                <Label className="text-xs">Назив артикла *</Label>
-                <Input
-                  placeholder="Унесите назив..."
-                  value={productForm.name}
-                  onChange={(e) =>
-                    setProductForm((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Баркод</Label>
-                  <Input
-                    placeholder="8606101000"
-                    value={productForm.barcode}
-                    onChange={(e) =>
-                      setProductForm((prev) => ({ ...prev, barcode: e.target.value }))
-                    }
-                    className="font-mono"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Категорија</Label>
-                  <Select
-                    value={productForm.category}
-                    onValueChange={(val) =>
-                      setProductForm((prev) => ({
-                        ...prev,
-                        category: val as ProductCategory,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRODUCT_CATEGORIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          {c.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Цена (RSD) *</Label>
-                  <Input
-                    type="number"
-                    placeholder="0.00"
-                    value={productForm.price}
-                    onChange={(e) =>
-                      setProductForm((prev) => ({ ...prev, price: e.target.value }))
-                    }
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">ПДВ стопа</Label>
-                  <Select
-                    value={String(productForm.pdvRate)}
-                    onValueChange={(val) =>
-                      setProductForm((prev) => ({
-                        ...prev,
-                        pdvRate: parseInt(val) as PdvRate,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PDV_RATES.map((r) => (
-                        <SelectItem key={r.value} value={String(r.value)}>
-                          {r.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Јединица</Label>
-                  <Select
-                    value={productForm.unit}
-                    onValueChange={(val) =>
-                      setProductForm((prev) => ({ ...prev, unit: val }))
-                    }
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {UNITS.map((u) => (
-                        <SelectItem key={u} value={u}>
-                          {u}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Залиха</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={productForm.stock}
-                  onChange={(e) =>
-                    setProductForm((prev) => ({ ...prev, stock: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setProductDialogOpen(false)}>
-                Откажи
-              </Button>
-              <Button
-                onClick={handleSaveProduct}
-                disabled={!productForm.name || !productForm.price}
-              >
-                Сачувај
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ==================== INLINE FORM: VIEW TRANSACTION DETAIL ==================== */}
-      {!!viewTxDialog && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setViewTxDialog(null)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle>Детаљи трансакције</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs">Датум</p>
-                  <p className="font-medium">{formatDateTimeSr(viewTxDialog.date)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Тип</p>
-                  <Badge
-                    className={
-                      TRANSACTION_TYPES.find((t) => t.value === viewTxDialog.type)
-                        ?.color || ''
-                    }
-                  >
-                    {getTypeLabel(viewTxDialog.type as TransactionType)}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Износ</p>
-                  <p
-                    className={`font-bold text-lg ${
-                      viewTxDialog.type === 'ulaz'
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }`}
-                  >
-                    {formatRsd(viewTxDialog.amount)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Плаћање</p>
-                  <div className="flex items-center gap-1.5">
-                    <PaymentIcon method={viewTxDialog.paymentMethod} />
-                    {getPaymentLabel(viewTxDialog.paymentMethod as PaymentMethod)}
-                  </div>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-muted-foreground text-xs">Опис</p>
-                  <p className="font-medium">{viewTxDialog.description}</p>
-                </div>
-                {viewTxDialog.partnerName && (
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground text-xs">Партнер</p>
-                    <p className="font-medium">{viewTxDialog.partnerName}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setViewTxDialog(null)}>
-                Затвори
-              </Button>
-              <Button variant="outline" onClick={() => {
-                openEditTx(viewTxDialog)
-                setViewTxDialog(null)
-              }}>
-                <Printer className="h-4 w-4 mr-1" />
-                Уреди
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ==================== INLINE FORM: CLOSE SHIFT ==================== */}
-      {closeShiftDialog && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => setCloseShiftDialog(false)}><ArrowLeft className="h-4 w-4" /></Button>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
-                Затварање смее
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Expected amounts */}
-              <div className="rounded-lg border bg-muted/30 p-3 space-y-2 text-sm">
-                <p className="font-medium text-xs uppercase tracking-wider text-muted-foreground">
-                  Очекивани износи
-                </p>
-                <div className="flex justify-between">
-                  <span>Готовина:</span>
-                  <span className="font-bold">{formatRsd(shiftPayments.gotovina)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Картична плаћања:</span>
-                  <span className="font-bold">{formatRsd(shiftPayments.kartica)}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span>Укупна продаја:</span>
-                  <span className="font-bold text-emerald-600">
-                    {formatRsd(shiftSales)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Actual count */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Бројана готовина (RSD)</Label>
-                  <Input
-                    type="number"
-                    placeholder={String(shiftPayments.gotovina)}
-                    value={countedCash}
-                    onChange={(e) => setCountedCash(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Бројана картица (RSD)</Label>
-                  <Input
-                    type="number"
-                    placeholder={String(shiftPayments.kartica)}
-                    value={countedCard}
-                    onChange={(e) => setCountedCard(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Difference calculation */}
-              {countedCash && (
-                <div className={`rounded-lg border p-3 ${
-                  Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01
-                    ? 'bg-green-50 dark:bg-green-950 border-green-200'
-                    : 'bg-amber-50 dark:bg-amber-950 border-amber-200'
-                }`}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Диференца (готовина):</span>
-                    <span className={`font-bold ${
-                      Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01
-                        ? 'text-green-600'
-                        : 'text-amber-600'
-                    }`}>
-                      {formatRsd(
-                        Math.round(
-                          (parseFloat(countedCash) - shiftPayments.gotovina) * 100
-                        ) / 100
-                      )}
-                    </span>
-                  </div>
-                  {Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01 && (
-                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Износи се поклапају
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div className="space-y-1">
-                <Label className="text-xs">Напомене</Label>
-                <Input
-                  placeholder="Опционалне напомене..."
-                  value={shiftNotes}
-                  onChange={(e) => setShiftNotes(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" onClick={() => setCloseShiftDialog(false)}>
-                Откажи
-              </Button>
-              <Button variant="destructive" onClick={handleCloseShift}>
-                <PowerOff className="h-4 w-4 mr-1" />
-                Потврди затварање
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* ==================== RECEIPT PREVIEW ==================== */}
       <ReceiptPreview

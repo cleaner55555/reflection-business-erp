@@ -239,14 +239,17 @@ export function Visitors() {
   const [visitorsFilterPurpose, setVisitorsFilterPurpose] = useState('all')
   const [visitorsFilterDept, setVisitorsFilterDept] = useState('all')
 
-  // Dialogs
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [checkinDialogOpen, setCheckinDialogOpen] = useState(false)
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  // Sub-tabs
+  const [visitorsSubTab, setVisitorsSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
+  const [checkinSubTab, setCheckinSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null)
 
-  // Pre-registration tab
-  const [preRegDialogOpen, setPreRegDialogOpen] = useState(false)
+  // Tab change handler to reset sub-tabs
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setVisitorsSubTab('pregled')
+    setCheckinSubTab('pregled')
+  }
 
   // Form defaults
   const emptyVisitorForm = {
@@ -369,7 +372,7 @@ export function Visitors() {
       vehiclePlate: visitorForm.vehiclePlate || undefined,
     }
     setVisitors((prev) => [newVisitor, ...prev])
-    setCreateDialogOpen(false)
+    setVisitorsSubTab('pregled')
     setVisitorForm(emptyVisitorForm)
     toast.success(`Posetilac ${newVisitor.firstName} ${newVisitor.lastName} je uspešno kreiran`)
   }
@@ -399,7 +402,6 @@ export function Visitors() {
       idDocument: quickCheckinForm.idDocument || undefined,
     }
     setVisitors((prev) => [newVisitor, ...prev])
-    setCheckinDialogOpen(false)
     setQuickCheckinForm({
       firstName: '', lastName: '', company: '', purpose: 'poseta',
       department: '', hostId: '', phone: '', notes: '', idDocument: '',
@@ -452,13 +454,13 @@ export function Visitors() {
           <Button variant="outline" size="sm" onClick={() => { loadVisitors(); loadKPIs(); }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
+          <Button size="sm" onClick={() => { setActiveTab('visitors'); setVisitorsSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> Novi posetilac
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="visitors"><Users className="h-4 w-4 mr-1" /> Posetioci</TabsTrigger>
@@ -603,174 +605,206 @@ export function Visitors() {
 
         {/* ===== POSETIOCI TAB ===== */}
         <TabsContent value="visitors" className="space-y-4">
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Pretraži po imenu, kompaniji, domaćinu, badge..."
-                className="pl-9"
-                value={visitorsSearch}
-                onChange={(e) => setVisitorsSearch(e.target.value)}
-              />
+          {/* Sub-tab navigation */}
+          <div className="flex items-center gap-2 mb-2">
+            {visitorsSubTab !== 'pregled' && (
+              <Button variant="outline" size="sm" onClick={() => setVisitorsSubTab('pregled')}>
+                <ArrowLeft className="h-4 w-4 mr-1" /> Nazad
+              </Button>
+            )}
+            <div className="flex gap-1">
+              <Button variant={visitorsSubTab === 'pregled' ? 'default' : 'outline'} size="sm" onClick={() => setVisitorsSubTab('pregled')}>
+                Pregled
+              </Button>
+              <Button variant={visitorsSubTab === 'dodaj' ? 'default' : 'outline'} size="sm" onClick={() => setVisitorsSubTab('dodaj')}>
+                <Plus className="h-3.5 w-3.5 mr-1" /> Dodaj
+              </Button>
             </div>
-            <Select value={visitorsFilterStatus} onValueChange={setVisitorsFilterStatus}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi statusi</SelectItem>
-                {Object.entries(statusConfig).map(([key, val]) => (
-                  <SelectItem key={key} value={key}>{val.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={visitorsFilterPurpose} onValueChange={setVisitorsFilterPurpose}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Sve svrhe" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Sve svrhe</SelectItem>
-                {Object.entries(purposeLabels).map(([key, val]) => (
-                  <SelectItem key={key} value={key}>{val}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={visitorsFilterDept} onValueChange={setVisitorsFilterDept}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi sektori" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Svi sektori</SelectItem>
-                {Object.entries(departmentLabels).map(([key, val]) => (
-                  <SelectItem key={key} value={key}>{val}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
-          {/* Visitor list */}
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : filteredVisitors.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Nema posetioca</p>
-              <Button variant="outline" className="mt-3" onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" /> Kreiraj prvog posetioca
-              </Button>
-            </Card>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr className="text-left text-xs text-muted-foreground">
-                      <th className="p-3">Posetilac</th>
-                      <th className="p-3">Kompanija</th>
-                      <th className="p-3">Svrha</th>
-                      <th className="p-3">Sektor</th>
-                      <th className="p-3">Domaćin</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Posete</th>
-                      <th className="p-3">Akcije</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredVisitors.map((v) => {
-                      const cfg = statusConfig[v.status]
-                      return (
-                        <tr key={v.id} className="border-t hover:bg-muted/30">
-                          <td className="p-3">
-                            <div className="flex items-center gap-2">
-                              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-                                {v.firstName[0]}{v.lastName[0]}
-                              </div>
-                              <div>
-                                <div className="font-medium">{v.firstName} {v.lastName}</div>
-                                <div className="text-xs text-muted-foreground">{v.email || v.phone || '-'}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3 text-xs">{v.company || '-'}</td>
-                          <td className="p-3">
-                            <Badge variant="outline" className="text-xs">
-                              {purposeLabels[v.purpose] || v.purpose}
-                            </Badge>
-                          </td>
-                          <td className="p-3 text-xs">{departmentLabels[v.department || ''] || v.department || '-'}</td>
-                          <td className="p-3 text-xs">{v.hostName || '-'}</td>
-                          <td className="p-3">
-                            <Badge variant="outline" className={`text-xs ${cfg.color}`}>
-                              <cfg.icon className="h-3 w-3 mr-1" /> {cfg.label}
-                            </Badge>
-                          </td>
-                          <td className="p-3 text-xs font-medium">{v.visitCount}x</td>
-                          <td className="p-3">
-                            <div className="flex gap-1">
-                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedVisitor(v); setDetailDialogOpen(true) }}>
-                                <Eye className="h-3.5 w-3.5" />
-                              </Button>
-                              {v.status === 'expected' && (
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleCheckIn(v)} title="Prijava">
-                                  <LogIn className="h-3.5 w-3.5" />
-                                </Button>
-                              )}
-                              {v.status === 'checked_in' && (
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-blue-600" onClick={() => handleCheckOut(v)} title="Odjava">
-                                  <LogOut className="h-3.5 w-3.5" />
-                                </Button>
-                              )}
-                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(v)} title="Obriši">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
+          {/* Pregled sub-tab */}
+          {visitorsSubTab === 'pregled' && (
+            <>
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Pretraži po imenu, kompaniji, domaćinu, badge..."
+                    className="pl-9"
+                    value={visitorsSearch}
+                    onChange={(e) => setVisitorsSearch(e.target.value)}
+                  />
+                </div>
+                <Select value={visitorsFilterStatus} onValueChange={setVisitorsFilterStatus}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi statusi" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi statusi</SelectItem>
+                    {Object.entries(statusConfig).map(([key, val]) => (
+                      <SelectItem key={key} value={key}>{val.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={visitorsFilterPurpose} onValueChange={setVisitorsFilterPurpose}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Sve svrhe" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Sve svrhe</SelectItem>
+                    {Object.entries(purposeLabels).map(([key, val]) => (
+                      <SelectItem key={key} value={key}>{val}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={visitorsFilterDept} onValueChange={setVisitorsFilterDept}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Svi sektori" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Svi sektori</SelectItem>
+                    {Object.entries(departmentLabels).map(([key, val]) => (
+                      <SelectItem key={key} value={key}>{val}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-          )}
-        </TabsContent>
 
-        {/* ===== REGISTROVANJE TAB ===== */}
-        <TabsContent value="checkin" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Quick Check-in */}
+              {/* Visitor list */}
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : filteredVisitors.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">Nema posetioca</p>
+                  <Button variant="outline" className="mt-3" onClick={() => setVisitorsSubTab('dodaj')}>
+                    <Plus className="h-4 w-4 mr-1" /> Kreiraj prvog posetioca
+                  </Button>
+                </Card>
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50">
+                        <tr className="text-left text-xs text-muted-foreground">
+                          <th className="p-3">Posetilac</th>
+                          <th className="p-3">Kompanija</th>
+                          <th className="p-3">Svrha</th>
+                          <th className="p-3">Sektor</th>
+                          <th className="p-3">Domaćin</th>
+                          <th className="p-3">Status</th>
+                          <th className="p-3">Posete</th>
+                          <th className="p-3">Akcije</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredVisitors.map((v) => {
+                          const cfg = statusConfig[v.status]
+                          return (
+                            <tr key={v.id} className="border-t hover:bg-muted/30">
+                              <td className="p-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
+                                    {v.firstName[0]}{v.lastName[0]}
+                                  </div>
+                                  <div>
+                                    <div className="font-medium">{v.firstName} {v.lastName}</div>
+                                    <div className="text-xs text-muted-foreground">{v.email || v.phone || '-'}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-3 text-xs">{v.company || '-'}</td>
+                              <td className="p-3">
+                                <Badge variant="outline" className="text-xs">
+                                  {purposeLabels[v.purpose] || v.purpose}
+                                </Badge>
+                              </td>
+                              <td className="p-3 text-xs">{departmentLabels[v.department || ''] || v.department || '-'}</td>
+                              <td className="p-3 text-xs">{v.hostName || '-'}</td>
+                              <td className="p-3">
+                                <Badge variant="outline" className={`text-xs ${cfg.color}`}>
+                                  <cfg.icon className="h-3 w-3 mr-1" /> {cfg.label}
+                                </Badge>
+                              </td>
+                              <td className="p-3 text-xs font-medium">{v.visitCount}x</td>
+                              <td className="p-3">
+                                <div className="flex gap-1">
+                                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedVisitor(v); setVisitorsSubTab('detalji') }}>
+                                    <Eye className="h-3.5 w-3.5" />
+                                  </Button>
+                                  {v.status === 'expected' && (
+                                    <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleCheckIn(v)} title="Prijava">
+                                      <LogIn className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                  {v.status === 'checked_in' && (
+                                    <Button size="icon" variant="ghost" className="h-7 w-7 text-blue-600" onClick={() => handleCheckOut(v)} title="Odjava">
+                                      <LogOut className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(v)} title="Obriši">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Dodaj sub-tab — Create visitor form (moved from dialog) */}
+          {visitorsSubTab === 'dodaj' && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <LogIn className="h-5 w-5 text-green-500" />
-                  Brza prijava posetioca
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">Upišite podatke posetioca za trenutnu prijavu</p>
+                <CardTitle>Novi posetilac</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Ime *</Label>
-                    <Input placeholder="Ime" value={quickCheckinForm.firstName}
-                      onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, firstName: e.target.value })} />
+              <div className="space-y-4">
+                {/* Basic info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Ime *</Label>
+                    <Input placeholder="Ime" value={visitorForm.firstName}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, firstName: e.target.value })} />
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Prezime *</Label>
-                    <Input placeholder="Prezime" value={quickCheckinForm.lastName}
-                      onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, lastName: e.target.value })} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Kompanija</Label>
-                    <Input placeholder="Kompanija" value={quickCheckinForm.company}
-                      onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, company: e.target.value })} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Telefon</Label>
-                    <Input placeholder="+381 6x xxx xxxx" value={quickCheckinForm.phone}
-                      onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, phone: e.target.value })} />
+                  <div className="space-y-2">
+                    <Label>Prezime *</Label>
+                    <Input placeholder="Prezime" value={visitorForm.lastName}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, lastName: e.target.value })} />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Svrha posete</Label>
-                    <Select value={quickCheckinForm.purpose} onValueChange={(v) => setQuickCheckinForm({ ...quickCheckinForm, purpose: v })}>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input type="email" placeholder="email@primer.rs" value={visitorForm.email}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, email: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telefon</Label>
+                    <Input placeholder="+381 6x xxx xxxx" value={visitorForm.phone}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, phone: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Kompanija</Label>
+                    <Input placeholder="Naziv kompanije" value={visitorForm.company}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, company: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Registratske tablice</Label>
+                    <Input placeholder="BG-123-AB" value={visitorForm.vehiclePlate}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, vehiclePlate: e.target.value })} />
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Visit details */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Svrha posete</Label>
+                    <Select value={visitorForm.purpose} onValueChange={(v) => setVisitorForm({ ...visitorForm, purpose: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {Object.entries(purposeLabels).map(([k, val]) => (
@@ -779,9 +813,485 @@ export function Visitors() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-2">
+                    <Label>Sektor</Label>
+                    <Select value={visitorForm.department} onValueChange={(v) => setVisitorForm({ ...visitorForm, department: v })}>
+                      <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(departmentLabels).map(([k, val]) => (
+                          <SelectItem key={k} value={k}>{val}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Domaćin</Label>
+                    <Select value={visitorForm.hostId} onValueChange={(v) => setVisitorForm({ ...visitorForm, hostId: v })}>
+                      <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
+                      <SelectContent>
+                        {mockHosts.map((h) => (
+                          <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Očekivano vreme</Label>
+                    <Input type="datetime-local" value={visitorForm.expectedAt}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, expectedAt: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Lična dokumenta</Label>
+                    <Select value={visitorForm.idDocument} onValueChange={(v) => setVisitorForm({ ...visitorForm, idDocument: v })}>
+                      <SelectTrigger><SelectValue placeholder="Tip dokumenta" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Lična karta">Lična karta</SelectItem>
+                        <SelectItem value="Pasoš">Pasoš</SelectItem>
+                        <SelectItem value="Vozačka dozvola">Vozačka dozvola</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Napomene</Label>
+                  <Textarea placeholder="Dodatne napomene..." value={visitorForm.notes}
+                    onChange={(e) => setVisitorForm({ ...visitorForm, notes: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => { setVisitorForm(emptyVisitorForm); setVisitorsSubTab('pregled') }}>Otkaži</Button>
+                <Button onClick={handleCreateVisitor}>Kreiraj posetioca</Button>
+              </div>
+            </Card>
+          )}
+
+          {/* Detalji sub-tab — Visitor detail (moved from dialog) */}
+          {visitorsSubTab === 'detalji' && selectedVisitor && (() => {
+            const StatusIcon = statusConfig[selectedVisitor.status].icon
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Detalji posetioca</CardTitle>
+                </CardHeader>
+                <div className="space-y-4">
+                  {/* Header */}
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold">
+                      {selectedVisitor.firstName[0]}{selectedVisitor.lastName[0]}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">{selectedVisitor.firstName} {selectedVisitor.lastName}</h3>
+                      <p className="text-sm text-muted-foreground">{selectedVisitor.company || 'Nema kompanije'}</p>
+                    </div>
+                    <Badge variant="outline" className={`ml-auto text-xs ${statusConfig[selectedVisitor.status].color}`}>
+                      <StatusIcon className="h-3 w-3 mr-1" />
+                      {statusConfig[selectedVisitor.status].label}
+                    </Badge>
+                  </div>
+
+                  <Separator />
+
+                  {/* Info grid */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    {selectedVisitor.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span>{selectedVisitor.email}</span>
+                      </div>
+                    )}
+                    {selectedVisitor.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span>{selectedVisitor.phone}</span>
+                      </div>
+                    )}
+                    {selectedVisitor.hostName && (
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span>Domaćin: {selectedVisitor.hostName}</span>
+                      </div>
+                    )}
+                    {selectedVisitor.department && (
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <span>{departmentLabels[selectedVisitor.department] || selectedVisitor.department}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  {/* Visit info */}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Svrha posete</span>
+                      <Badge variant="outline">{purposeLabels[selectedVisitor.purpose] || selectedVisitor.purpose}</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Badge</span>
+                      <span className="font-mono">{selectedVisitor.badgeNumber || 'Nije dodeljen'}</span>
+                    </div>
+                    {selectedVisitor.expectedAt && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Očekivano</span>
+                        <span>{formatDate(selectedVisitor.expectedAt)} {new Date(selectedVisitor.expectedAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    )}
+                    {selectedVisitor.checkedInAt && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Prijava</span>
+                        <span>{formatDate(selectedVisitor.checkedInAt)} {new Date(selectedVisitor.checkedInAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    )}
+                    {selectedVisitor.checkedOutAt && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Odjava</span>
+                        <span>{formatDate(selectedVisitor.checkedOutAt)} {new Date(selectedVisitor.checkedOutAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Ukupno poseta</span>
+                      <span className="font-medium">{selectedVisitor.visitCount}x</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Ukupno vreme</span>
+                      <span className="font-medium">{formatDuration(selectedVisitor.totalDuration || 0)}</span>
+                    </div>
+                    {selectedVisitor.vehiclePlate && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Registracija</span>
+                        <span className="font-mono">{selectedVisitor.vehiclePlate}</span>
+                      </div>
+                    )}
+                    {selectedVisitor.isPreRegistered && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Pre-registracija</span>
+                        <Badge variant="secondary" className="text-xs">Da</Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedVisitor.notes && (
+                    <>
+                      <Separator />
+                      <div>
+                        <span className="text-sm text-muted-foreground">Napomene</span>
+                        <p className="text-sm mt-1 bg-muted/50 p-3 rounded">{selectedVisitor.notes}</p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Actions */}
+                  <Separator />
+                  <div className="flex gap-2">
+                    {selectedVisitor.status === 'expected' && (
+                      <Button className="flex-1" onClick={() => { handleCheckIn(selectedVisitor); setVisitorsSubTab('pregled') }}>
+                        <LogIn className="h-4 w-4 mr-1" /> Prijava
+                      </Button>
+                    )}
+                    {selectedVisitor.status === 'checked_in' && (
+                      <>
+                        <Button variant="outline" className="flex-1" onClick={() => handlePrintBadge(selectedVisitor)}>
+                          <Printer className="h-4 w-4 mr-1" /> Štampaj badge
+                        </Button>
+                        <Button className="flex-1" onClick={() => { handleCheckOut(selectedVisitor); setVisitorsSubTab('pregled') }}>
+                          <LogOut className="h-4 w-4 mr-1" /> Odjavi
+                        </Button>
+                      </>
+                    )}
+                    {selectedVisitor.status === 'checked_out' && selectedVisitor.badgeNumber && (
+                      <Button variant="outline" className="flex-1" onClick={() => handlePrintBadge(selectedVisitor)}>
+                        <Printer className="h-4 w-4 mr-1" /> Štampaj badge
+                      </Button>
+                    )}
+                    <Button variant="destructive" size="sm" onClick={() => { handleDelete(selectedVisitor); setVisitorsSubTab('pregled') }}>
+                      <Trash2 className="h-4 w-4 mr-1" /> Obriši
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )
+          })()}
+        </TabsContent>
+
+        {/* ===== REGISTROVANJE TAB ===== */}
+        <TabsContent value="checkin" className="space-y-6">
+          {/* Sub-tab navigation */}
+          <div className="flex items-center gap-2 mb-2">
+            {checkinSubTab !== 'pregled' && (
+              <Button variant="outline" size="sm" onClick={() => setCheckinSubTab('pregled')}>
+                <ArrowLeft className="h-4 w-4 mr-1" /> Nazad
+              </Button>
+            )}
+            <div className="flex gap-1">
+              <Button variant={checkinSubTab === 'pregled' ? 'default' : 'outline'} size="sm" onClick={() => setCheckinSubTab('pregled')}>
+                Pregled
+              </Button>
+              <Button variant={checkinSubTab === 'dodaj' ? 'default' : 'outline'} size="sm" onClick={() => setCheckinSubTab('dodaj')}>
+                <Plus className="h-3.5 w-3.5 mr-1" /> Pre-registracija
+              </Button>
+            </div>
+          </div>
+
+          {/* Pregled sub-tab */}
+          {checkinSubTab === 'pregled' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Quick Check-in */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <LogIn className="h-5 w-5 text-green-500" />
+                    Brza prijava posetioca
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">Upišite podatke posetioca za trenutnu prijavu</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Ime *</Label>
+                      <Input placeholder="Ime" value={quickCheckinForm.firstName}
+                        onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, firstName: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Prezime *</Label>
+                      <Input placeholder="Prezime" value={quickCheckinForm.lastName}
+                        onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, lastName: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Kompanija</Label>
+                      <Input placeholder="Kompanija" value={quickCheckinForm.company}
+                        onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, company: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Telefon</Label>
+                      <Input placeholder="+381 6x xxx xxxx" value={quickCheckinForm.phone}
+                        onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, phone: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Svrha posete</Label>
+                      <Select value={quickCheckinForm.purpose} onValueChange={(v) => setQuickCheckinForm({ ...quickCheckinForm, purpose: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(purposeLabels).map(([k, val]) => (
+                            <SelectItem key={k} value={k}>{val}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Sektor</Label>
+                      <Select value={quickCheckinForm.department} onValueChange={(v) => setQuickCheckinForm({ ...quickCheckinForm, department: v })}>
+                        <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(departmentLabels).map(([k, val]) => (
+                            <SelectItem key={k} value={k}>{val}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Sektor</Label>
-                    <Select value={quickCheckinForm.department} onValueChange={(v) => setQuickCheckinForm({ ...quickCheckinForm, department: v })}>
+                    <Label className="text-xs">Domaćin (zaposleni)</Label>
+                    <Select value={quickCheckinForm.hostId} onValueChange={(v) => setQuickCheckinForm({ ...quickCheckinForm, hostId: v })}>
+                      <SelectTrigger><SelectValue placeholder="Izaberi domaćina" /></SelectTrigger>
+                      <SelectContent>
+                        {mockHosts.map((h) => (
+                          <SelectItem key={h.id} value={h.id}>{h.name} ({h.department})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Lična dokumenta</Label>
+                      <Select value={quickCheckinForm.idDocument} onValueChange={(v) => setQuickCheckinForm({ ...quickCheckinForm, idDocument: v })}>
+                        <SelectTrigger><SelectValue placeholder="Tip" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Lična karta">Lična karta</SelectItem>
+                          <SelectItem value="Pasoš">Pasoš</SelectItem>
+                          <SelectItem value="Vozačka dozvola">Vozačka dozvola</SelectItem>
+                          <SelectItem value="nema">Nema</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Napomene</Label>
+                      <Input placeholder="Napomene" value={quickCheckinForm.notes}
+                        onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, notes: e.target.value })} />
+                    </div>
+                  </div>
+                  <Button className="w-full" onClick={handleQuickCheckin}>
+                    <LogIn className="h-4 w-4 mr-2" /> Prijava posetioca
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Expected today / Pre-registration */}
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-amber-500" />
+                        Očekivani posetioci ({visitors.filter((v) => v.status === 'expected').length})
+                      </CardTitle>
+                      <Button size="sm" variant="outline" onClick={() => setCheckinSubTab('dodaj')}>
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Pre-registracija
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {visitors.filter((v) => v.status === 'expected').length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-6 text-center">Nema očekivanih posetioca</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {visitors
+                          .filter((v) => v.status === 'expected')
+                          .map((v) => (
+                            <div key={v.id} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center">
+                                  <Clock className="h-4 w-4 text-amber-600" />
+                                </div>
+                                <div>
+                                  <div className="font-medium text-sm">{v.firstName} {v.lastName}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {v.company && <span>{v.company} · </span>}
+                                    {v.expectedAt && <span>{new Date(v.expectedAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {v.isPreRegistered && (
+                                  <Badge variant="secondary" className="text-xs">Pre-reg.</Badge>
+                                )}
+                                <Button size="sm" className="h-7 text-xs" onClick={() => handleCheckIn(v)}>
+                                  <LogIn className="h-3 w-3 mr-1" /> Prijava
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Info card */}
+                <Card className="bg-muted/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <QrCode className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">Badge & QR kod</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Nakon prijave, svakom posetiocu se automatski dodeljuje badge sa jedinstvenim brojem.
+                          Badge se može odštampati sa QR kodom za identifikaciju.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Recently checked out */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <LogOut className="h-4 w-4 text-blue-500" />
+                      Skoro odjavljeni
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {visitors.filter((v) => v.status === 'checked_out').length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-4 text-center">Nema odjavljenih posetioca danas</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {visitors
+                          .filter((v) => v.status === 'checked_out')
+                          .slice(0, 5)
+                          .map((v) => (
+                            <div key={v.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                              <div className="flex items-center gap-2">
+                                <div className="h-7 w-7 rounded-full bg-blue-100 flex items-center justify-center">
+                                  <LogOut className="h-3.5 w-3.5 text-blue-600" />
+                                </div>
+                                <div>
+                                  <div className="text-sm">{v.firstName} {v.lastName}</div>
+                                  <div className="text-xs text-muted-foreground">{v.company}</div>
+                                </div>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {v.checkedOutAt && new Date(v.checkedOutAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Dodaj sub-tab — Pre-registration form (moved from dialog) */}
+          {checkinSubTab === 'dodaj' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Pre-registracija posetioca</CardTitle>
+              </CardHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Ime *</Label>
+                    <Input placeholder="Ime" value={visitorForm.firstName}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, firstName: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Prezime *</Label>
+                    <Input placeholder="Prezime" value={visitorForm.lastName}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, lastName: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input type="email" placeholder="email@primer.rs" value={visitorForm.email}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, email: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telefon</Label>
+                    <Input placeholder="+381 6x xxx xxxx" value={visitorForm.phone}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, phone: e.target.value })} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Kompanija</Label>
+                  <Input placeholder="Naziv kompanije" value={visitorForm.company}
+                    onChange={(e) => setVisitorForm({ ...visitorForm, company: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Svrha posete</Label>
+                    <Select value={visitorForm.purpose} onValueChange={(v) => setVisitorForm({ ...visitorForm, purpose: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(purposeLabels).map(([k, val]) => (
+                          <SelectItem key={k} value={k}>{val}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Sektor</Label>
+                    <Select value={visitorForm.department} onValueChange={(v) => setVisitorForm({ ...visitorForm, department: v })}>
                       <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
                       <SelectContent>
                         {Object.entries(departmentLabels).map(([k, val]) => (
@@ -791,146 +1301,40 @@ export function Visitors() {
                     </Select>
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Domaćin (zaposleni)</Label>
-                  <Select value={quickCheckinForm.hostId} onValueChange={(v) => setQuickCheckinForm({ ...quickCheckinForm, hostId: v })}>
-                    <SelectTrigger><SelectValue placeholder="Izaberi domaćina" /></SelectTrigger>
-                    <SelectContent>
-                      {mockHosts.map((h) => (
-                        <SelectItem key={h.id} value={h.id}>{h.name} ({h.department})</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Lična dokumenta</Label>
-                    <Select value={quickCheckinForm.idDocument} onValueChange={(v) => setQuickCheckinForm({ ...quickCheckinForm, idDocument: v })}>
-                      <SelectTrigger><SelectValue placeholder="Tip" /></SelectTrigger>
+                  <div className="space-y-2">
+                    <Label>Domaćin</Label>
+                    <Select value={visitorForm.hostId} onValueChange={(v) => setVisitorForm({ ...visitorForm, hostId: v })}>
+                      <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Lična karta">Lična karta</SelectItem>
-                        <SelectItem value="Pasoš">Pasoš</SelectItem>
-                        <SelectItem value="Vozačka dozvola">Vozačka dozvola</SelectItem>
-                        <SelectItem value="nema">Nema</SelectItem>
+                        {mockHosts.map((h) => (
+                          <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Napomene</Label>
-                    <Input placeholder="Napomene" value={quickCheckinForm.notes}
-                      onChange={(e) => setQuickCheckinForm({ ...quickCheckinForm, notes: e.target.value })} />
+                  <div className="space-y-2">
+                    <Label>Očekivano vreme</Label>
+                    <Input type="datetime-local" value={visitorForm.expectedAt}
+                      onChange={(e) => setVisitorForm({ ...visitorForm, expectedAt: e.target.value })} />
                   </div>
                 </div>
-                <Button className="w-full" onClick={handleQuickCheckin}>
-                  <LogIn className="h-4 w-4 mr-2" /> Prijava posetioca
-                </Button>
-              </CardContent>
+                <div className="space-y-2">
+                  <Label>Napomene</Label>
+                  <Textarea placeholder="Dodatne napomene..." value={visitorForm.notes}
+                    onChange={(e) => setVisitorForm({ ...visitorForm, notes: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => { setVisitorForm(emptyVisitorForm); setCheckinSubTab('pregled') }}>Otkaži</Button>
+                <Button onClick={() => {
+                  setVisitorForm({ ...visitorForm, isPreRegistered: true })
+                  handleCreateVisitor()
+                  setCheckinSubTab('pregled')
+                }}>Pre-registruj</Button>
+              </div>
             </Card>
-
-            {/* Expected today / Pre-registration */}
-            <div className="space-y-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-amber-500" />
-                      Očekivani posetioci ({visitors.filter((v) => v.status === 'expected').length})
-                    </CardTitle>
-                    <Button size="sm" variant="outline" onClick={() => setPreRegDialogOpen(true)}>
-                      <Plus className="h-3.5 w-3.5 mr-1" /> Pre-registracija
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {visitors.filter((v) => v.status === 'expected').length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-6 text-center">Nema očekivanih posetioca</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {visitors
-                        .filter((v) => v.status === 'expected')
-                        .map((v) => (
-                          <div key={v.id} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center">
-                                <Clock className="h-4 w-4 text-amber-600" />
-                              </div>
-                              <div>
-                                <div className="font-medium text-sm">{v.firstName} {v.lastName}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {v.company && <span>{v.company} · </span>}
-                                  {v.expectedAt && <span>{new Date(v.expectedAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {v.isPreRegistered && (
-                                <Badge variant="secondary" className="text-xs">Pre-reg.</Badge>
-                              )}
-                              <Button size="sm" className="h-7 text-xs" onClick={() => handleCheckIn(v)}>
-                                <LogIn className="h-3 w-3 mr-1" /> Prijava
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Info card */}
-              <Card className="bg-muted/50">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <QrCode className="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Badge & QR kod</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Nakon prijave, svakom posetiocu se automatski dodeljuje badge sa jedinstvenim brojem.
-                        Badge se može odštampati sa QR kodom za identifikaciju.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Recently checked out */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <LogOut className="h-4 w-4 text-blue-500" />
-                    Skoro odjavljeni
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {visitors.filter((v) => v.status === 'checked_out').length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">Nema odjavljenih posetioca danas</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {visitors
-                        .filter((v) => v.status === 'checked_out')
-                        .slice(0, 5)
-                        .map((v) => (
-                          <div key={v.id} className="flex items-center justify-between py-2 border-b last:border-0">
-                            <div className="flex items-center gap-2">
-                              <div className="h-7 w-7 rounded-full bg-blue-100 flex items-center justify-center">
-                                <LogOut className="h-3.5 w-3.5 text-blue-600" />
-                              </div>
-                              <div>
-                                <div className="text-sm">{v.firstName} {v.lastName}</div>
-                                <div className="text-xs text-muted-foreground">{v.company}</div>
-                              </div>
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {v.checkedOutAt && new Date(v.checkedOutAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          )}
         </TabsContent>
 
         {/* ===== IZVEŠTAJI TAB ===== */}
@@ -1091,365 +1495,6 @@ export function Visitors() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* ===== CREATE VISITOR DIALOG ===== */}
-      {createDialogOpen && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Novi posetilac</CardTitle>
-          </CardHeader>
-          <div className="space-y-4">
-            {/* Basic info */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Ime *</Label>
-                <Input placeholder="Ime" value={visitorForm.firstName}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, firstName: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Prezime *</Label>
-                <Input placeholder="Prezime" value={visitorForm.lastName}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, lastName: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input type="email" placeholder="email@primer.rs" value={visitorForm.email}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, email: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Telefon</Label>
-                <Input placeholder="+381 6x xxx xxxx" value={visitorForm.phone}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, phone: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Kompanija</Label>
-                <Input placeholder="Naziv kompanije" value={visitorForm.company}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, company: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Registratske tablice</Label>
-                <Input placeholder="BG-123-AB" value={visitorForm.vehiclePlate}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, vehiclePlate: e.target.value })} />
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Visit details */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Svrha posete</Label>
-                <Select value={visitorForm.purpose} onValueChange={(v) => setVisitorForm({ ...visitorForm, purpose: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(purposeLabels).map(([k, val]) => (
-                      <SelectItem key={k} value={k}>{val}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Sektor</Label>
-                <Select value={visitorForm.department} onValueChange={(v) => setVisitorForm({ ...visitorForm, department: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(departmentLabels).map(([k, val]) => (
-                      <SelectItem key={k} value={k}>{val}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Domaćin</Label>
-                <Select value={visitorForm.hostId} onValueChange={(v) => setVisitorForm({ ...visitorForm, hostId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
-                  <SelectContent>
-                    {mockHosts.map((h) => (
-                      <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Očekivano vreme</Label>
-                <Input type="datetime-local" value={visitorForm.expectedAt}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, expectedAt: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Lična dokumenta</Label>
-                <Select value={visitorForm.idDocument} onValueChange={(v) => setVisitorForm({ ...visitorForm, idDocument: v })}>
-                  <SelectTrigger><SelectValue placeholder="Tip dokumenta" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Lična karta">Lična karta</SelectItem>
-                    <SelectItem value="Pasoš">Pasoš</SelectItem>
-                    <SelectItem value="Vozačka dozvola">Vozačka dozvola</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Napomene</Label>
-              <Textarea placeholder="Dodatne napomene..." value={visitorForm.notes}
-                onChange={(e) => setVisitorForm({ ...visitorForm, notes: e.target.value })} />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateVisitor}>Kreiraj posetioca</Button>
-          </div>
-        </Card>
-      )}
-
-      {/* ===== PRE-REGISTRATION DIALOG ===== */}
-      {preRegDialogOpen && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Pre-registracija posetioca</CardTitle>
-          </CardHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Ime *</Label>
-                <Input placeholder="Ime" value={visitorForm.firstName}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, firstName: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Prezime *</Label>
-                <Input placeholder="Prezime" value={visitorForm.lastName}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, lastName: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input type="email" placeholder="email@primer.rs" value={visitorForm.email}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, email: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Telefon</Label>
-                <Input placeholder="+381 6x xxx xxxx" value={visitorForm.phone}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, phone: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Kompanija</Label>
-              <Input placeholder="Naziv kompanije" value={visitorForm.company}
-                onChange={(e) => setVisitorForm({ ...visitorForm, company: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Svrha posete</Label>
-                <Select value={visitorForm.purpose} onValueChange={(v) => setVisitorForm({ ...visitorForm, purpose: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(purposeLabels).map(([k, val]) => (
-                      <SelectItem key={k} value={k}>{val}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Sektor</Label>
-                <Select value={visitorForm.department} onValueChange={(v) => setVisitorForm({ ...visitorForm, department: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(departmentLabels).map(([k, val]) => (
-                      <SelectItem key={k} value={k}>{val}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Domaćin</Label>
-                <Select value={visitorForm.hostId} onValueChange={(v) => setVisitorForm({ ...visitorForm, hostId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberi" /></SelectTrigger>
-                  <SelectContent>
-                    {mockHosts.map((h) => (
-                      <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Očekivano vreme</Label>
-                <Input type="datetime-local" value={visitorForm.expectedAt}
-                  onChange={(e) => setVisitorForm({ ...visitorForm, expectedAt: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Napomene</Label>
-              <Textarea placeholder="Dodatne napomene..." value={visitorForm.notes}
-                onChange={(e) => setVisitorForm({ ...visitorForm, notes: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setPreRegDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={() => {
-              setVisitorForm({ ...visitorForm, isPreRegistered: true })
-              handleCreateVisitor()
-              setPreRegDialogOpen(false)
-            }}>Pre-registruj</Button>
-          </div>
-        </Card>
-      )}
-
-      {/* ===== DETAIL DIALOG ===== */}
-      {detailDialogOpen && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Detalji posetioca</CardTitle>
-          </CardHeader>
-          {selectedVisitor && (() => {
-            const StatusIcon = statusConfig[selectedVisitor.status].icon
-            return (
-            <div className="space-y-4">
-              {/* Header */}
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold">
-                  {selectedVisitor.firstName[0]}{selectedVisitor.lastName[0]}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{selectedVisitor.firstName} {selectedVisitor.lastName}</h3>
-                  <p className="text-sm text-muted-foreground">{selectedVisitor.company || 'Nema kompanije'}</p>
-                </div>
-                <Badge variant="outline" className={`ml-auto text-xs ${statusConfig[selectedVisitor.status].color}`}>
-                  <StatusIcon className="h-3 w-3 mr-1" />
-                  {statusConfig[selectedVisitor.status].label}
-                </Badge>
-              </div>
-
-              <Separator />
-
-              {/* Info grid */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                {selectedVisitor.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{selectedVisitor.email}</span>
-                  </div>
-                )}
-                {selectedVisitor.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{selectedVisitor.phone}</span>
-                  </div>
-                )}
-                {selectedVisitor.hostName && (
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span>Domaćin: {selectedVisitor.hostName}</span>
-                  </div>
-                )}
-                {selectedVisitor.department && (
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <span>{departmentLabels[selectedVisitor.department] || selectedVisitor.department}</span>
-                  </div>
-                )}
-              </div>
-
-              <Separator />
-
-              {/* Visit info */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Svrha posete</span>
-                  <Badge variant="outline">{purposeLabels[selectedVisitor.purpose] || selectedVisitor.purpose}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Badge</span>
-                  <span className="font-mono">{selectedVisitor.badgeNumber || 'Nije dodeljen'}</span>
-                </div>
-                {selectedVisitor.expectedAt && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Očekivano</span>
-                    <span>{formatDate(selectedVisitor.expectedAt)} {new Date(selectedVisitor.expectedAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                )}
-                {selectedVisitor.checkedInAt && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Prijava</span>
-                    <span>{formatDate(selectedVisitor.checkedInAt)} {new Date(selectedVisitor.checkedInAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                )}
-                {selectedVisitor.checkedOutAt && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Odjava</span>
-                    <span>{formatDate(selectedVisitor.checkedOutAt)} {new Date(selectedVisitor.checkedOutAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Ukupno poseta</span>
-                  <span className="font-medium">{selectedVisitor.visitCount}x</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Ukupno vreme</span>
-                  <span className="font-medium">{formatDuration(selectedVisitor.totalDuration || 0)}</span>
-                </div>
-                {selectedVisitor.vehiclePlate && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Registracija</span>
-                    <span className="font-mono">{selectedVisitor.vehiclePlate}</span>
-                  </div>
-                )}
-                {selectedVisitor.isPreRegistered && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Pre-registracija</span>
-                    <Badge variant="secondary" className="text-xs">Da</Badge>
-                  </div>
-                )}
-              </div>
-
-              {selectedVisitor.notes && (
-                <>
-                  <Separator />
-                  <div>
-                    <span className="text-sm text-muted-foreground">Napomene</span>
-                    <p className="text-sm mt-1 bg-muted/50 p-3 rounded">{selectedVisitor.notes}</p>
-                  </div>
-                </>
-              )}
-
-              {/* Actions */}
-              <Separator />
-              <div className="flex gap-2">
-                {selectedVisitor.status === 'expected' && (
-                  <Button className="flex-1" onClick={() => { handleCheckIn(selectedVisitor); setDetailDialogOpen(false) }}>
-                    <LogIn className="h-4 w-4 mr-1" /> Prijava
-                  </Button>
-                )}
-                {selectedVisitor.status === 'checked_in' && (
-                  <>
-                    <Button variant="outline" className="flex-1" onClick={() => handlePrintBadge(selectedVisitor)}>
-                      <Printer className="h-4 w-4 mr-1" /> Štampaj badge
-                    </Button>
-                    <Button className="flex-1" onClick={() => { handleCheckOut(selectedVisitor); setDetailDialogOpen(false) }}>
-                      <LogOut className="h-4 w-4 mr-1" /> Odjavi
-                    </Button>
-                  </>
-                )}
-                {selectedVisitor.status === 'checked_out' && selectedVisitor.badgeNumber && (
-                  <Button variant="outline" className="flex-1" onClick={() => handlePrintBadge(selectedVisitor)}>
-                    <Printer className="h-4 w-4 mr-1" /> Štampaj badge
-                  </Button>
-                )}
-              </div>
-            </div>
-            )
-          })()}
-        </Card>
-      )}
     </div>
   )
 }

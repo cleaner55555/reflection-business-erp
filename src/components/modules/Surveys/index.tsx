@@ -62,9 +62,7 @@ export function Surveys() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [questionDialogOpen, setQuestionDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [surveysSubTab, setSurveysSubTab] = useState<'pregled' | 'dodaj' | 'detalji'>('pregled')
   const [selected, setSelected] = useState<Survey | null>(null)
 
   const emptySurveyForm = { name: '', description: '', status: 'draft' }
@@ -103,7 +101,7 @@ export function Surveys() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...surveyForm, questionCount: questions.length, responseCount: 0 }),
       })
-      if (res.ok) { setDialogOpen(false); setSurveyForm(emptySurveyForm); setQuestions([]); loadSurveys() }
+      if (res.ok) { setSurveyForm(emptySurveyForm); setQuestions([]); setSurveysSubTab('pregled'); loadSurveys() }
     } catch { /* silent */ }
   }
 
@@ -118,11 +116,15 @@ export function Surveys() {
   const addQuestion = () => {
     setQuestions([...questions, { id: `temp-${Date.now()}`, ...questionForm, options: questionForm.type.includes('choice') ? questionForm.options : undefined }])
     setQuestionForm(emptyQuestionForm)
-    setQuestionDialogOpen(false)
   }
 
   const removeQuestion = (index: number) => {
     setQuestions(questions.filter((_, i) => i !== index))
+  }
+
+  const handleMainTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setSurveysSubTab('pregled')
   }
 
   return (
@@ -134,11 +136,11 @@ export function Surveys() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={loadSurveys}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Nova anketa</Button>
+          <Button size="sm" onClick={() => { setActiveTab('surveys'); setSurveysSubTab('dodaj'); }}><Plus className="h-4 w-4 mr-1" /> Nova anketa</Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleMainTabChange}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview"><BarChart3 className="h-4 w-4 mr-1" /> Pregled</TabsTrigger>
           <TabsTrigger value="surveys"><ClipboardCheck className="h-4 w-4 mr-1" /> Ankete</TabsTrigger>
@@ -167,9 +169,16 @@ export function Surveys() {
         </TabsContent>
 
         <TabsContent value="surveys" className="space-y-4">
+          <Tabs value={surveysSubTab} onValueChange={setSurveysSubTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj">Dodaj</Trigger>
+              {selected && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="pregled" className="space-y-4">
           <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži ankete..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
           {loading ? (<div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>) : filtered.length === 0 ? (
-            <Card className="p-8 text-center"><ClipboardCheck className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema anketa</p><Button variant="outline" className="mt-3" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Kreiraj anketu</Button></Card>
+            <Card className="p-8 text-center"><ClipboardCheck className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema anketa</p><Button variant="outline" className="mt-3" onClick={() => setSurveysSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj anketu</Button></Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map((s) => {
@@ -189,7 +198,7 @@ export function Surveys() {
                         <span>{s.responseCount} odgovora</span>
                       </div>
                       <div className="flex gap-1 pt-2">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(s); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(s); setSurveysSubTab('detalji') }}><Eye className="h-3.5 w-3.5" /></Button>
                         <Button size="sm" variant="outline" className="h-7 text-xs"><Share2 className="h-3 w-3 mr-1" /> Podeli</Button>
                         <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(s.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
@@ -199,6 +208,69 @@ export function Surveys() {
               })}
             </div>
           )}
+        </TabsContent>
+            </TabsContent>
+
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card>
+                <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSurveysSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Nova anketa</CardTitle></div></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Naziv</Label><Input value={surveyForm.name} onChange={(e) => setSurveyForm({ ...surveyForm, name: e.target.value })} placeholder="Naziv ankete" /></div>
+                    <div className="space-y-2"><Label>Status</Label><Select value={surveyForm.status} onValueChange={(v) => setSurveyForm({ ...surveyForm, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Nacrt</SelectItem><SelectItem value="active">Aktivna</SelectItem></SelectContent></Select></div>
+                  </div>
+                  <div className="space-y-2"><Label>Opis</Label><Textarea value={surveyForm.description} onChange={(e) => setSurveyForm({ ...surveyForm, description: e.target.value })} rows={2} /></div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Pitanja ({questions.length})</Label>
+                    <Button size="sm" variant="outline" onClick={() => setQuestionForm({ question: '', type: 'single_choice', required: true, options: [''] })}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj pitanje</Button>
+                  </div>
+                  {questions.length === 0 ? (
+                    <div className="p-6 border border-dashed rounded-lg text-center">
+                      <ListChecks className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Niste dodali nijedno pitanje</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {questions.map((q, i) => (
+                        <div key={q.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium">{i + 1}. {q.question}</p>
+                            <div className="flex gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">{questionTypeConfig[q.type]?.label}</Badge>
+                              {q.required && <Badge variant="outline" className="text-xs bg-red-50 text-red-600">Obavezno</Badge>}
+                            </div>
+                          </div>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setQuestions(questions.filter((_, idx) => idx !== i))}><Trash2 className="h-3.5 w-3.5" /></Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setSurveysSubTab('pregled')}>Otkaži</Button>
+                    <Button onClick={handleCreateSurvey}><Plus className="h-4 w-4 mr-1" /> Kreiraj anketu</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="detalji" className="space-y-4">
+              {selected && (<Card>
+                <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSurveysSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Detalji ankete</CardTitle></div></CardHeader>
+                {selected && (
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><span className="text-muted-foreground">Naziv:</span> <span className="font-medium">{selected.name}</span></div>
+                      <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
+                      <div><span className="text-muted-foreground">Pitanja:</span> {selected.questionCount}</div>
+                      <div><span className="text-muted-foreground">Odgovori:</span> {selected.responseCount}</div>
+                    </div>
+                    {selected.description && <p className="text-sm text-muted-foreground">{selected.description}</p>}
+                  </CardContent>
+                )}
+              </Card>)}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="results" className="space-y-4">
@@ -210,88 +282,6 @@ export function Surveys() {
         </TabsContent>
       </Tabs>
 
-      {dialogOpen && (<Card className="max-w-2xl">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Nova anketa</CardTitle></div></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Naziv</Label><Input value={surveyForm.name} onChange={(e) => setSurveyForm({ ...surveyForm, name: e.target.value })} placeholder="Naziv ankete" /></div>
-            <div className="space-y-2"><Label>Status</Label><Select value={surveyForm.status} onValueChange={(v) => setSurveyForm({ ...surveyForm, status: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Nacrt</SelectItem><SelectItem value="active">Aktivna</SelectItem></SelectContent></Select></div>
-          </div>
-          <div className="space-y-2"><Label>Opis</Label><Textarea value={surveyForm.description} onChange={(e) => setSurveyForm({ ...surveyForm, description: e.target.value })} rows={2} /></div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Pitanja ({questions.length})</Label>
-            <Button size="sm" variant="outline" onClick={() => setQuestionDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Dodaj pitanje</Button>
-          </div>
-          {questions.length === 0 ? (
-            <div className="p-6 border border-dashed rounded-lg text-center">
-              <ListChecks className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Niste dodali nijedno pitanje</p>
-            </div>
-          ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {questions.map((q, i) => (
-                <div key={q.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium">{i + 1}. {q.question}</p>
-                    <div className="flex gap-2 mt-1">
-                      <Badge variant="outline" className="text-xs">{questionTypeConfig[q.type]?.label}</Badge>
-                      {q.required && <Badge variant="outline" className="text-xs bg-red-50 text-red-600">Obavezno</Badge>}
-                    </div>
-                  </div>
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeQuestion(i)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateSurvey}><Plus className="h-4 w-4 mr-1" /> Kreiraj anketu</Button>
-          </div>
-        </CardContent>
-      </Card>)}
-
-      {questionDialogOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQuestionDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Novo pitanje</CardTitle></div></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2"><Label>Pitanje</Label><Input value={questionForm.question} onChange={(e) => setQuestionForm({ ...questionForm, question: e.target.value })} placeholder="Vaše pitanje..." /></div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Tip</Label><Select value={questionForm.type} onValueChange={(v) => setQuestionForm({ ...questionForm, type: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(questionTypeConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}</SelectContent></Select></div>
-            <div className="flex items-center gap-2 pt-6"><input type="checkbox" checked={questionForm.required} onChange={(e) => setQuestionForm({ ...questionForm, required: e.target.checked })} className="rounded" /><Label>Obavezno</Label></div>
-          </div>
-          {questionForm.type.includes('choice') && (
-            <div className="space-y-2">
-              <Label>Opcije</Label>
-              {questionForm.options.map((opt, i) => (
-                <div key={i} className="flex gap-2">
-                  <Input value={opt} onChange={(e) => { const opts = [...questionForm.options]; opts[i] = e.target.value; setQuestionForm({ ...questionForm, options: opts }) }} placeholder={`Opcija ${i + 1}`} />
-                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setQuestionForm({ ...questionForm, options: questionForm.options.filter((_, j) => j !== i) })}><Trash2 className="h-3.5 w-3.5" /></Button>
-                </div>
-              ))}
-              <Button size="sm" variant="outline" onClick={() => setQuestionForm({ ...questionForm, options: [...questionForm.options, ''] })}><Plus className="h-3 w-3 mr-1" /> Dodaj opciju</Button>
-            </div>
-          )}
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setQuestionDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={addQuestion}>Dodaj pitanje</Button>
-          </div>
-        </CardContent>
-      </Card>)}
-
-      {detailOpen && (<Card className="max-w-lg">
-        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Detalji ankete</CardTitle></div></CardHeader>
-        {selected && (
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><span className="text-muted-foreground">Naziv:</span> <span className="font-medium">{selected.name}</span></div>
-              <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-              <div><span className="text-muted-foreground">Pitanja:</span> {selected.questionCount}</div>
-              <div><span className="text-muted-foreground">Odgovori:</span> {selected.responseCount}</div>
-            </div>
-            {selected.description && <p className="text-sm text-muted-foreground">{selected.description}</p>}
-          </CardContent>
-        )}
-      </Card>)}
     </div>
   )
 }

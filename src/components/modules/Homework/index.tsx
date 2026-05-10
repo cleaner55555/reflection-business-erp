@@ -72,7 +72,7 @@ export function Homework() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [subjectFilter, setSubjectFilter] = useState('')
-  const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editItem, setEditItem] = useState<Homework | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Homework>>({})
@@ -115,13 +115,13 @@ export function Homework() {
   const openCreate = () => {
     setEditItem(null)
     setForm({ title: '', subject: '', classGroup: '', teacher: '', type: 'essay', status: 'assigned', dueDate: '', assignedDate: new Date().toISOString().split('T')[0], maxPoints: 20, avgScore: 0, submittedCount: 0, totalStudents: 30, description: '', instructions: '' })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const openEdit = (item: Homework) => {
     setEditItem(item)
     setForm({ ...item })
-    setDialogOpen(true)
+    setActiveTab('dodaj')
   }
 
   const handleSave = async () => {
@@ -138,7 +138,7 @@ export function Homework() {
         setData(prev => [{ ...created, dueDate: created.dueDate ? new Date(created.dueDate).toISOString().split('T')[0] : '', assignedDate: created.assignedDate ? new Date(created.assignedDate).toISOString().split('T')[0] : '' } as Homework, ...prev])
         toast.success('Obaveza kreirana')
       }
-      setDialogOpen(false)
+      setActiveTab('pregled'); setEditItem(null)
     } catch { toast.error('Greška pri čuvanju') }
   }
 
@@ -283,26 +283,7 @@ export function Homework() {
 </Card>
 )}
 
-{ dialogOpen && (
-<Card className="border">
-<CardHeader className="flex flex-row items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDialogOpen(false)}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-0 flex-1"><CardTitle className="text-base">{editItem ? 'Uredi obavezu' : 'Nova obaveza'}</CardTitle></div>
-            </CardHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Naslov *</Label><Input className="text-xs" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'assigned'} onValueChange={v => setForm({ ...form, status: v as Homework['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="assigned">Dodeljena</SelectItem><SelectItem value="submitted">Predana</SelectItem><SelectItem value="graded">Ocenjena</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="returned">Vraćena</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Max bodova</Label><Input className="text-xs" type="number" value={form.maxPoints || ''} onChange={e => setForm({ ...form, maxPoints: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Rok</Label><Input className="text-xs" type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Opis</Label><Input className="text-xs" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
-</Card>
-)}
+
     </div>
   )
 }

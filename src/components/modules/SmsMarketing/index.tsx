@@ -206,12 +206,11 @@ export function SmsMarketing() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
 
-  // Dialogs
-  const [campaignDialogOpen, setCampaignDialogOpen] = useState(false)
-  const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
-  const [contactDialogOpen, setContactDialogOpen] = useState(false)
-  const [keywordDialogOpen, setKeywordDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  // Sub-tabs
+  const [campaignsSubTab, setCampaignsSubTab] = useState<'pregled' | 'dodaj' | 'uredi'>('pregled')
+  const [templatesSubTab, setTemplatesSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [contactsSubTab, setContactsSubTab] = useState<'pregled' | 'dodaj'>('pregled')
+  const [keywordsSubTab, setKeywordsSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [selectedCampaign, setSelectedCampaign] = useState<SmsCampaign | null>(null)
 
   // Forms
@@ -286,7 +285,7 @@ export function SmsMarketing() {
       tags: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     }
     setCampaigns(prev => [newCampaign, ...prev])
-    setCampaignDialogOpen(false)
+    setCampaignsSubTab('pregled')
     setCampaignForm({ name: '', content: '', category: 'marketing', scheduledDate: '', senderId: 'REFLECTION' })
     showToast('Kampanja kreirana')
   }
@@ -296,7 +295,7 @@ export function SmsMarketing() {
     const vars = (templateForm.body.match(/\{(\w+)\}/g) || []).map(v => v.replace(/[{}]/g, ''))
     const tpl: SmsTemplate = { id: `st-${Date.now()}`, name: templateForm.name, category: templateForm.category, body: templateForm.body, variables: vars, isDefault: false, usedCount: 0, createdAt: new Date().toISOString().split('T')[0] }
     setTemplates(prev => [...prev, tpl])
-    setTemplateDialogOpen(false)
+    setTemplatesSubTab('pregled')
     showToast('Template kreiran')
   }
 
@@ -304,7 +303,7 @@ export function SmsMarketing() {
     if (!contactForm.name.trim() || !contactForm.phone.trim()) { showToast('Naziv i telefon su obavezni'); return }
     const contact: SmsContact = { id: `sc-${Date.now()}`, name: contactForm.name, phone: contactForm.phone, groups: [contactForm.groups], status: 'active', totalReceived: 0, totalSent: 0, lastActivity: null, createdAt: new Date().toISOString().split('T')[0] }
     setContacts(prev => [...prev, contact])
-    setContactDialogOpen(false)
+    setContactsSubTab('pregled')
     setContactForm({ name: '', phone: '', groups: 'Svi klijenti' })
     showToast('Kontakt dodat')
   }
@@ -313,7 +312,7 @@ export function SmsMarketing() {
     if (!keywordForm.keyword.trim()) { showToast('Ključna reč je obavezna'); return }
     const kw: SmsKeyword = { id: `k-${Date.now()}`, keyword: keywordForm.keyword.toUpperCase(), response: keywordForm.response, autoReply: keywordForm.autoReply, forwardTo: keywordForm.forwardTo || null, matchCount: 0, enabled: true, createdAt: new Date().toISOString().split('T')[0] }
     setKeywords(prev => [...prev, kw])
-    setKeywordDialogOpen(false)
+    setKeywordsSubTab('pregled')
     setKeywordForm({ keyword: '', response: '', autoReply: true, forwardTo: '' })
     showToast('Ključna reč kreirana')
   }
@@ -339,7 +338,7 @@ export function SmsMarketing() {
           <p className="text-sm text-muted-foreground">Kampanje, template-i i transakcione SMS poruke</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button size="sm" onClick={() => setCampaignDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Nova kampanja</Button>
+          <Button size="sm" onClick={() => { setActiveTab('campaigns'); setCampaignsSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Nova kampanja</Button>
           <Button variant="outline" size="sm" onClick={loadData}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
         </div>
       </div>
@@ -414,7 +413,7 @@ export function SmsMarketing() {
               <CardContent>
                 <div className="space-y-2">
                   {campaigns.slice(0, 5).map(c => (
-                    <div key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedCampaign(c); setDetailOpen(true) }}>
+                    <div key={c.id} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer" onClick={() => { setSelectedCampaign(c); setActiveTab('campaigns'); setCampaignsSubTab('uredi') }}>
                       <div className="flex-1 min-w-0"><p className="text-xs font-medium truncate">{c.name}</p><p className="text-xs text-muted-foreground">{c.recipientCount} primalaca</p></div>
                       <Badge variant="outline" className={`text-xs ${STATUS_CONFIG[c.status]?.color}`}>{STATUS_CONFIG[c.status]?.label}</Badge>
                     </div>
@@ -512,6 +511,15 @@ export function SmsMarketing() {
 
         {/* ===== CAMPAIGNS ===== */}
         <TabsContent value="campaigns" className="space-y-4">
+          <Tabs value={campaignsSubTab} onValueChange={(v) => setCampaignsSubTab(v as 'pregled' | 'dodaj' | 'uredi')}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3 w-3 mr-1" /> Dodaj</TabsTrigger>
+              {selectedCampaign && <TabsTrigger value="uredi"><Eye className="h-3 w-3 mr-1" /> Detalji</TabsTrigger>}
+            </TabsList>
+
+            {/* Campaigns Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
           <Card className="p-3">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži kampanje..." className="pl-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
@@ -562,7 +570,7 @@ export function SmsMarketing() {
           </Card>
 
           {filteredCampaigns.length === 0 ? (
-            <Card className="p-8 text-center"><Megaphone className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema SMS kampanja</p><Button className="mt-3" onClick={() => setCampaignDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Kreiraj kampanju</Button></Card>
+            <Card className="p-8 text-center"><Megaphone className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema SMS kampanja</p><Button className="mt-3" onClick={() => setCampaignsSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj kampanju</Button></Card>
           ) : (
             <>
               {/* Drafts */}
@@ -575,7 +583,7 @@ export function SmsMarketing() {
                         <div key={c.id} className="flex items-center justify-between p-3 border border-dashed rounded-lg">
                           <div><p className="text-xs font-medium">{c.name}</p><p className="text-xs text-muted-foreground">{c.content.length} znakova</p></div>
                           <div className="flex gap-1">
-                            <Button variant="outline" size="sm" className="text-xs" onClick={() => { setSelectedCampaign(c); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</Button>
+                            <Button variant="outline" size="sm" className="text-xs" onClick={() => { setSelectedCampaign(c); setCampaignsSubTab('uredi') }}><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</Button>
                             <Button size="sm" className="text-xs"><Send className="h-3.5 w-3.5 mr-1" /> Pošalji</Button>
                           </div>
                         </div>
@@ -594,7 +602,7 @@ export function SmsMarketing() {
                         <div key={c.id} className="flex items-center justify-between p-3 border border-blue-200 bg-blue-50/50 rounded-lg">
                           <div><p className="text-xs font-medium">{c.name}</p><p className="text-xs text-muted-foreground">📅 {c.scheduledDate ? formatDate(c.scheduledDate) : '-'} · {c.recipientCount} primalaca</p></div>
                           <div className="flex gap-1">
-                            <Button variant="outline" size="sm" className="text-xs" onClick={() => { setSelectedCampaign(c); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</Button>
+                            <Button variant="outline" size="sm" className="text-xs" onClick={() => { setSelectedCampaign(c); setCampaignsSubTab('uredi') }}><Eye className="h-3.5 w-3.5 mr-1" /> Pregled</Button>
                             <Button variant="outline" size="sm" className="text-xs text-red-600"><X className="h-3.5 w-3.5 mr-1" /> Otkaži</Button>
                           </div>
                         </div>
@@ -628,7 +636,7 @@ export function SmsMarketing() {
                         {c.recipientCount > 0 && <Progress value={(c.deliveredCount / c.recipientCount) * 100} className="mt-2 h-1.5" />}
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSelectedCampaign(c); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSelectedCampaign(c); setCampaignsSubTab('uredi') }}><Eye className="h-3.5 w-3.5" /></Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7"><Copy className="h-3.5 w-3.5" /></Button>
                       </div>
                     </div>
@@ -638,11 +646,77 @@ export function SmsMarketing() {
             </div>
           </>
           )}
+            </TabsContent>
+
+            {/* Campaigns Dodaj */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-2xl">
+                <CardHeader><CardTitle>Nova SMS kampanja</CardTitle><CardDescription>Kreirajte novu SMS kampanju</CardDescription></CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2"><Label className="text-xs">Naziv kampanje *</Label><Input value={campaignForm.name} onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })} placeholder="npr. Zimska rasprodaja" /></div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={campaignForm.category} onValueChange={(v) => setCampaignForm({ ...campaignForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                      <div className="space-y-2"><Label className="text-xs">Datum slanja</Label><Input type="datetime-local" value={campaignForm.scheduledDate} onChange={(e) => setCampaignForm({ ...campaignForm, scheduledDate: e.target.value })} /></div>
+                    </div>
+                    <div className="space-y-2"><Label className="text-xs">Sender ID</Label><Input value={campaignForm.senderId} onChange={(e) => setCampaignForm({ ...campaignForm, senderId: e.target.value })} maxLength={11} /></div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Sadržaj poruke * (max {SMS_MAX_CHARS} znakova)</Label>
+                      <Textarea value={campaignForm.content} onChange={(e) => setCampaignForm({ ...campaignForm, content: e.target.value })} rows={3} placeholder="Vaša poruka..." />
+                      <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{campaignForm.content.length} znakova</span><span>{Math.ceil(campaignForm.content.length / SMS_MAX_CHARS)} SMS-a · {formatRSD(Math.ceil(campaignForm.content.length / SMS_MAX_CHARS) * 3.5)}</span></div>
+                      <Progress value={Math.min(100, (campaignForm.content.length / SMS_MAX_CHARS) * 100)} className="h-1.5" />
+                    </div>
+                    <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800"><AlertCircle className="h-4 w-4 text-amber-600" /><AlertDescription className="text-amber-700 dark:text-amber-400 text-xs">Podsetite se na STOP opciju za marketinške kampanje.</AlertDescription></Alert>
+                    <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setCampaignsSubTab('pregled')}>Otkaži</Button><Button onClick={handleCreateCampaign} disabled={!campaignForm.name.trim() || !campaignForm.content.trim()}>Kreiraj kampanju</Button></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Campaigns Uredi / Detalji */}
+            <TabsContent value="uredi" className="space-y-4">
+              {selectedCampaign && (
+                <Card className="max-w-2xl">
+                  <CardHeader><CardTitle>{selectedCampaign.name}</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div><span className="text-xs text-muted-foreground">Status</span><br /><Badge variant="outline" className={STATUS_CONFIG[selectedCampaign.status]?.color}>{STATUS_CONFIG[selectedCampaign.status]?.label}</Badge></div>
+                        <div><span className="text-xs text-muted-foreground">Kategorija</span><br /><Badge variant="secondary">{selectedCampaign.category}</Badge></div>
+                        <div><span className="text-xs text-muted-foreground">Kreirano</span><br /><span className="text-xs">{formatDate(selectedCampaign.createdAt)}</span></div>
+                        <div><span className="text-xs text-muted-foreground">Sender ID</span><br /><span className="text-xs">{selectedCampaign.senderId || '-'}</span></div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        <div className="text-center p-2 bg-muted/30 rounded"><p className="text-xs text-muted-foreground">Primalaca</p><p className="text-sm font-bold">{selectedCampaign.recipientCount}</p></div>
+                        <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded"><p className="text-xs text-muted-foreground">Isporučeno</p><p className="text-sm font-bold">{selectedCampaign.deliveredCount}</p></div>
+                        <div className="text-center p-2 bg-red-50 dark:bg-red-900/10 rounded"><p className="text-xs text-muted-foreground">Greške</p><p className="text-sm font-bold text-red-600">{selectedCampaign.failedCount}</p></div>
+                        <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/10 rounded"><p className="text-xs text-muted-foreground">Odgovori</p><p className="text-sm font-bold">{selectedCampaign.replyCount}</p></div>
+                      </div>
+                      <Progress value={selectedCampaign.recipientCount > 0 ? (selectedCampaign.deliveredCount / selectedCampaign.recipientCount) * 100 : 0} className="h-2" />
+                      <p className="text-xs text-muted-foreground text-center">Dostava: {selectedCampaign.recipientCount > 0 ? Math.round((selectedCampaign.deliveredCount / selectedCampaign.recipientCount) * 100) : 0}%</p>
+                      <Separator />
+                      <div><span className="text-xs text-muted-foreground">Sadržaj poruke</span><p className="text-sm mt-1 p-3 bg-muted/30 rounded">{selectedCampaign.content}</p></div>
+                      <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Trošak</span><span className="font-medium">{formatRSD(selectedCampaign.totalCost)}</span></div>
+                      <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setCampaignsSubTab('pregled')}>Nazad</Button></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== TEMPLATES ===== */}
         <TabsContent value="templates" className="space-y-4">
-          <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">{templates.length} template-a · {templates.filter(t => t.isDefault).length} podrazumevanih · Ukupno {templates.reduce((s, t) => s + t.usedCount, 0)} korišćenja</p><Button size="sm" onClick={() => setTemplateDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Novi template</Button></div>
+          <Tabs value={templatesSubTab} onValueChange={(v) => setTemplatesSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3 w-3 mr-1" /> Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Templates Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+          <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">{templates.length} template-a · {templates.filter(t => t.isDefault).length} podrazumevanih · Ukupno {templates.reduce((s, t) => s + t.usedCount, 0)} korišćenja</p><Button size="sm" onClick={() => setTemplatesSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Novi template</Button></div>
 
           {/* Template stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -685,17 +759,44 @@ export function SmsMarketing() {
                       {tpl.variables.length > 0 && <div className="flex gap-1 mt-2">{tpl.variables.map(v => <Badge key={v} variant="secondary" className="text-xs">{v}</Badge>)}</div>}
                       <p className="text-xs text-muted-foreground mt-1">Korišćen {tpl.usedCount}x · {tpl.body.length}/{SMS_MAX_CHARS} znakova</p>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setTemplateForm({ name: tpl.name, category: tpl.category, body: tpl.body }); setTemplateDialogOpen(true) }}><Edit3 className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setTemplateForm({ name: tpl.name, category: tpl.category, body: tpl.body }); setTemplatesSubTab('dodaj') }}><Edit3 className="h-3.5 w-3.5" /></Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
+            </TabsContent>
+
+            {/* Templates Dodaj */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-2xl">
+                <CardHeader><CardTitle>Novi SMS template</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} /></div>
+                      <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={templateForm.category} onValueChange={(v) => setTemplateForm({ ...templateForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                    </div>
+                    <div className="space-y-2"><Label className="text-xs">Sadržaj * (koristite {'{ime}'}, {'{broj}'} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={3} /><p className="text-xs text-muted-foreground">{templateForm.body.length}/{SMS_MAX_CHARS} znakova · {(templateForm.body.match(/\{(\w+)\}/g) || []).length} promenljivih</p></div>
+                    <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setTemplatesSubTab('pregled')}>Otkaži</Button><Button onClick={handleCreateTemplate}>Kreiraj template</Button></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== CONTACTS ===== */}
         <TabsContent value="contacts" className="space-y-4">
-          <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">{contacts.length} kontakata · {stats.activeContacts} aktivnih · {stats.unsubscribed} odjavljenih</p><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => showToast('Uvoz kontakata - CSV format podržan')}><Upload className="h-4 w-4 mr-1" /> Uvoz</Button><Button variant="outline" size="sm" onClick={() => showToast('Izvoz kontakata - CSV skinut')}><Download className="h-4 w-4 mr-1" /> Izvoz</Button><Button size="sm" onClick={() => setContactDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Novi kontakt</Button></div></div>
+          <Tabs value={contactsSubTab} onValueChange={(v) => setContactsSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3 w-3 mr-1" /> Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Contacts Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+          <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">{contacts.length} kontakata · {stats.activeContacts} aktivnih · {stats.unsubscribed} odjavljenih</p><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => showToast('Uvoz kontakata - CSV format podržan')}><Upload className="h-4 w-4 mr-1" /> Uvoz</Button><Button variant="outline" size="sm" onClick={() => showToast('Izvoz kontakata - CSV skinut')}><Download className="h-4 w-4 mr-1" /> Izvoz</Button><Button size="sm" onClick={() => setContactsSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Novi kontakt</Button></div></div>
 
           {/* Contact Stats */}
           <div className="grid grid-cols-3 gap-3">
@@ -740,6 +841,23 @@ export function SmsMarketing() {
               </table>
             </div>
           </Card>
+            </TabsContent>
+
+            {/* Contacts Dodaj */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-md">
+                <CardHeader><CardTitle>Novi kontakt</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} /></div>
+                    <div className="space-y-2"><Label className="text-xs">Telefon *</Label><Input value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} placeholder="+3816XXXXXXXX" /></div>
+                    <div className="space-y-2"><Label className="text-xs">Grupa</Label><Select value={contactForm.groups} onValueChange={(v) => setContactForm({ ...contactForm, groups: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CONTACT_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent></Select></div>
+                    <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setContactsSubTab('pregled')}>Otkaži</Button><Button onClick={handleCreateContact}>Dodaj kontakt</Button></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== LOG ===== */}
@@ -784,7 +902,15 @@ export function SmsMarketing() {
 
         {/* ===== KEYWORDS ===== */}
         <TabsContent value="keywords" className="space-y-4">
-          <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">{keywords.filter(k => k.enabled).length} aktivnih od {keywords.length}</p><Button size="sm" onClick={() => setKeywordDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> Nova ključna reč</Button></div>
+          <Tabs value={keywordsSubTab} onValueChange={(v) => setKeywordsSubTab(v as 'pregled' | 'dodaj')}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pregled">Pregled</TabsTrigger>
+              <TabsTrigger value="dodaj"><Plus className="h-3 w-3 mr-1" /> Dodaj</TabsTrigger>
+            </TabsList>
+
+            {/* Keywords Pregled */}
+            <TabsContent value="pregled" className="space-y-4">
+          <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">{keywords.filter(k => k.enabled).length} aktivnih od {keywords.length}</p><Button size="sm" onClick={() => setKeywordsSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Nova ključna reč</Button></div>
 
           {/* Keyword Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -832,6 +958,24 @@ export function SmsMarketing() {
               </Card>
             ))}
           </div>
+            </TabsContent>
+
+            {/* Keywords Dodaj */}
+            <TabsContent value="dodaj" className="space-y-4">
+              <Card className="max-w-md">
+                <CardHeader><CardTitle>Nova ključna reč</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2"><Label className="text-xs">Ključna reč *</Label><Input value={keywordForm.keyword} onChange={(e) => setKeywordForm({ ...keywordForm, keyword: e.target.value })} placeholder="npr. INFO" /></div>
+                    <div className="space-y-2"><Label className="text-xs">Auto odgovor</Label><div className="flex items-center gap-2"><Switch checked={keywordForm.autoReply} onCheckedChange={(v) => setKeywordForm({ ...keywordForm, autoReply: v })} /><Label className="text-xs">{keywordForm.autoReply ? 'Aktivno' : 'Neaktivno'}</Label></div></div>
+                    {keywordForm.autoReply && <div className="space-y-2"><Label className="text-xs">Odgovor</Label><Textarea value={keywordForm.response} onChange={(e) => setKeywordForm({ ...keywordForm, response: e.target.value })} rows={3} /></div>}
+                    <div className="space-y-2"><Label className="text-xs">Prosledi na (opcionalno)</Label><Input value={keywordForm.forwardTo} onChange={(e) => setKeywordForm({ ...keywordForm, forwardTo: e.target.value })} placeholder="email@primer.rs" /></div>
+                    <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setKeywordsSubTab('pregled')}>Otkaži</Button><Button onClick={handleCreateKeyword}>Kreiraj</Button></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* ===== SETTINGS ===== */}
@@ -894,109 +1038,6 @@ export function SmsMarketing() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* ===== FORMS ===== */}
-
-      {/* New Campaign */}
-      {campaignDialogOpen && (
-        <Card className="max-w-lg">
-          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setCampaignDialogOpen(false)} /> Nova SMS kampanja</CardTitle><CardDescription>Kreirajte novu SMS kampanju</CardDescription></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label className="text-xs">Naziv kampanje *</Label><Input value={campaignForm.name} onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })} placeholder="npr. Zimska rasprodaja" /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={campaignForm.category} onValueChange={(v) => setCampaignForm({ ...campaignForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
-                <div className="space-y-2"><Label className="text-xs">Datum slanja</Label><Input type="datetime-local" value={campaignForm.scheduledDate} onChange={(e) => setCampaignForm({ ...campaignForm, scheduledDate: e.target.value })} /></div>
-              </div>
-              <div className="space-y-2"><Label className="text-xs">Sender ID</Label><Input value={campaignForm.senderId} onChange={(e) => setCampaignForm({ ...campaignForm, senderId: e.target.value })} maxLength={11} /></div>
-              <div className="space-y-2">
-                <Label className="text-xs">Sadržaj poruke * (max {SMS_MAX_CHARS} znakova)</Label>
-                <Textarea value={campaignForm.content} onChange={(e) => setCampaignForm({ ...campaignForm, content: e.target.value })} rows={3} placeholder="Vaša poruka..." />
-                <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{campaignForm.content.length} znakova</span><span>{Math.ceil(campaignForm.content.length / SMS_MAX_CHARS)} SMS-a · {formatRSD(Math.ceil(campaignForm.content.length / SMS_MAX_CHARS) * 3.5)}</span></div>
-                <Progress value={Math.min(100, (campaignForm.content.length / SMS_MAX_CHARS) * 100)} className="h-1.5" />
-              </div>
-              <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800"><AlertCircle className="h-4 w-4 text-amber-600" /><AlertDescription className="text-amber-700 dark:text-amber-400 text-xs">Podsetite se na STOP opciju za marketinške kampanje.</AlertDescription></Alert>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setCampaignDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateCampaign} disabled={!campaignForm.name.trim() || !campaignForm.content.trim()}>Kreiraj kampanju</Button></div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* New Template */}
-      {templateDialogOpen && (
-        <Card className="max-w-lg">
-          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setTemplateDialogOpen(false)} /> Novi SMS template</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} /></div>
-                <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={templateForm.category} onValueChange={(v) => setTemplateForm({ ...templateForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
-              </div>
-              <div className="space-y-2"><Label className="text-xs">Sadržaj * (koristite {'{ime}'}, {'{broj}'} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={3} /><p className="text-xs text-muted-foreground">{templateForm.body.length}/{SMS_MAX_CHARS} znakova · {(templateForm.body.match(/\{(\w+)\}/g) || []).length} promenljivih</p></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateTemplate}>Kreiraj template</Button></div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* New Contact */}
-      {contactDialogOpen && (
-        <Card className="max-w-md">
-          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setContactDialogOpen(false)} /> Novi kontakt</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} /></div>
-              <div className="space-y-2"><Label className="text-xs">Telefon *</Label><Input value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} placeholder="+3816XXXXXXXX" /></div>
-              <div className="space-y-2"><Label className="text-xs">Grupa</Label><Select value={contactForm.groups} onValueChange={(v) => setContactForm({ ...contactForm, groups: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CONTACT_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setContactDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateContact}>Dodaj kontakt</Button></div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* New Keyword */}
-      {keywordDialogOpen && (
-        <Card className="max-w-md">
-          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setKeywordDialogOpen(false)} /> Nova ključna reč</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2"><Label className="text-xs">Ključna reč *</Label><Input value={keywordForm.keyword} onChange={(e) => setKeywordForm({ ...keywordForm, keyword: e.target.value })} placeholder="npr. INFO" /></div>
-              <div className="space-y-2"><Label className="text-xs">Auto odgovor</Label><div className="flex items-center gap-2"><Switch checked={keywordForm.autoReply} onCheckedChange={(v) => setKeywordForm({ ...keywordForm, autoReply: v })} /><Label className="text-xs">{keywordForm.autoReply ? 'Aktivno' : 'Neaktivno'}</Label></div></div>
-              {keywordForm.autoReply && <div className="space-y-2"><Label className="text-xs">Odgovor</Label><Textarea value={keywordForm.response} onChange={(e) => setKeywordForm({ ...keywordForm, response: e.target.value })} rows={3} /></div>}
-              <div className="space-y-2"><Label className="text-xs">Prosledi na (opcionalno)</Label><Input value={keywordForm.forwardTo} onChange={(e) => setKeywordForm({ ...keywordForm, forwardTo: e.target.value })} placeholder="email@primer.rs" /></div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setKeywordDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateKeyword}>Kreiraj</Button></div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Campaign Detail */}
-      {detailOpen && selectedCampaign && (
-        <Card className="max-w-lg">
-          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDetailOpen(false)} /> {selectedCampaign.name}</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-xs text-muted-foreground">Status</span><br /><Badge variant="outline" className={STATUS_CONFIG[selectedCampaign.status]?.color}>{STATUS_CONFIG[selectedCampaign.status]?.label}</Badge></div>
-                <div><span className="text-xs text-muted-foreground">Kategorija</span><br /><Badge variant="secondary">{selectedCampaign.category}</Badge></div>
-                <div><span className="text-xs text-muted-foreground">Kreirano</span><br /><span className="text-xs">{formatDate(selectedCampaign.createdAt)}</span></div>
-                <div><span className="text-xs text-muted-foreground">Sender ID</span><br /><span className="text-xs">{selectedCampaign.senderId || '-'}</span></div>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                <div className="text-center p-2 bg-muted/30 rounded"><p className="text-xs text-muted-foreground">Primalaca</p><p className="text-sm font-bold">{selectedCampaign.recipientCount}</p></div>
-                <div className="text-center p-2 bg-green-50 dark:bg-green-900/10 rounded"><p className="text-xs text-muted-foreground">Isporučeno</p><p className="text-sm font-bold">{selectedCampaign.deliveredCount}</p></div>
-                <div className="text-center p-2 bg-red-50 dark:bg-red-900/10 rounded"><p className="text-xs text-muted-foreground">Greške</p><p className="text-sm font-bold text-red-600">{selectedCampaign.failedCount}</p></div>
-                <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/10 rounded"><p className="text-xs text-muted-foreground">Odgovori</p><p className="text-sm font-bold">{selectedCampaign.replyCount}</p></div>
-              </div>
-              <Progress value={selectedCampaign.recipientCount > 0 ? (selectedCampaign.deliveredCount / selectedCampaign.recipientCount) * 100 : 0} className="h-2" />
-              <p className="text-xs text-muted-foreground text-center">Dostava: {selectedCampaign.recipientCount > 0 ? Math.round((selectedCampaign.deliveredCount / selectedCampaign.recipientCount) * 100) : 0}%</p>
-              <Separator />
-              <div><span className="text-xs text-muted-foreground">Sadržaj poruke</span><p className="text-sm mt-1 p-3 bg-muted/30 rounded">{selectedCampaign.content}</p></div>
-              <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Trošak</span><span className="font-medium">{formatRSD(selectedCampaign.totalCost)}</span></div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
