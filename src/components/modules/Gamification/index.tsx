@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +20,7 @@ import {
   Trophy, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users, Star,
   TrendingUp, Target, Zap, Award, Medal, Crown,
-  Flame, Gift, Lock, Unlock, ArrowUp, ArrowDown,
+  Flame, Gift, Lock, Unlock, ArrowUp, ArrowDown, ArrowLeft,
   CalendarDays, Settings, UsersRound, Swords, Shield,
   Sparkles, ChevronRight, Heart, Brain, Rocket, Gem,
   AlertCircle
@@ -785,12 +784,16 @@ export function Gamification() {
       </Tabs>
 
       {/* ─── Create Goal Dialog ────────────────────────────────────────────── */}
-      <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Novi cilj</DialogTitle>
-            <DialogDescription>Definišite cilj sa metama i nagradnim poenima</DialogDescription>
-          </DialogHeader>
+{goalDialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGoalDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">Novi cilj</CardTitle>
+            <CardDescription>Definišite cilj sa metama i nagradnim poenima</CardDescription>
+          </div>
+            </CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Naslov</Label><Input value={goalForm.title} onChange={(e) => setGoalForm({ ...goalForm, title: e.target.value })} placeholder="Naslov cilja" /></div>
             <div className="space-y-2"><Label>Opis</Label><Textarea value={goalForm.description} onChange={(e) => setGoalForm({ ...goalForm, description: e.target.value })} rows={2} /></div>
@@ -827,17 +830,22 @@ export function Gamification() {
               <div className="space-y-2"><Label>Zadužen</Label><Input value={goalForm.assignee} onChange={(e) => setGoalForm({ ...goalForm, assignee: e.target.value })} placeholder="Ime ili tim" /></div>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setGoalDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateGoal}><Plus className="h-4 w-4 mr-1" /> Kreiraj cilj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* ─── Challenge Dialog ──────────────────────────────────────────────── */}
-      <Dialog open={challengeDialogOpen} onOpenChange={setChallengeDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novi izazov</DialogTitle></DialogHeader>
+{ challengeDialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setChallengeDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">Novi izazov</CardTitle></div>
+            </CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Naslov</Label><Input value={challengeForm.title} onChange={(e) => setChallengeForm({ ...challengeForm, title: e.target.value })} placeholder="Naziv izazova" /></div>
             <div className="space-y-2"><Label>Opis</Label><Textarea value={challengeForm.description} onChange={(e) => setChallengeForm({ ...challengeForm, description: e.target.value })} rows={2} /></div>
@@ -878,17 +886,22 @@ export function Gamification() {
               <div className="space-y-2"><Label>Max učesnika</Label><Input type="number" value={challengeForm.maxParticipants} onChange={(e) => setChallengeForm({ ...challengeForm, maxParticipants: e.target.value })} /></div>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setChallengeDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateChallenge}><Plus className="h-4 w-4 mr-1" /> Kreiraj izazov</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* ─── Badge Dialog ──────────────────────────────────────────────────── */}
-      <Dialog open={badgeDialogOpen} onOpenChange={setBadgeDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Nova značka</DialogTitle></DialogHeader>
+{ badgeDialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setBadgeDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">Nova značka</CardTitle></div>
+            </CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Naziv</Label><Input value={badgeForm.name} onChange={(e) => setBadgeForm({ ...badgeForm, name: e.target.value })} placeholder="Naziv značke" /></div>
             <div className="space-y-2"><Label>Opis</Label><Textarea value={badgeForm.description} onChange={(e) => setBadgeForm({ ...badgeForm, description: e.target.value })} rows={2} /></div>
@@ -912,17 +925,22 @@ export function Gamification() {
             <div className="space-y-2"><Label>Uslov za dobijanje</Label><Input value={badgeForm.requirement} onChange={(e) => setBadgeForm({ ...badgeForm, requirement: e.target.value })} placeholder="Npr. 50 zatvorenih ponuda" /></div>
             <div className="space-y-2"><Label>Poeni</Label><Input type="number" value={badgeForm.points} onChange={(e) => setBadgeForm({ ...badgeForm, points: e.target.value })} /></div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setBadgeDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateBadge}><Plus className="h-4 w-4 mr-1" /> Kreiraj značku</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* ─── Goal Detail Dialog ────────────────────────────────────────────── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji cilja</DialogTitle></DialogHeader>
+{ detailOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDetailOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">Detalji cilja</CardTitle></div>
+            </CardHeader>
           {selected && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -963,8 +981,8 @@ export function Gamification() {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+</Card>
+)}
     </div>
   )
 }

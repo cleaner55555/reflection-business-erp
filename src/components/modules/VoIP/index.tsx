@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,6 +22,7 @@ import {
   Search, Eye, Trash2, Edit3, RefreshCw, CheckCircle2, Clock,
   BarChart3, Users, AlertCircle, Settings, Download, Play, Pause,
   Volume2, Mic, Headphones, Radio, Mail, Calendar, Filter,
+  ArrowLeft
 } from 'lucide-react'
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -622,11 +622,11 @@ export function VoIP() {
       </div>
 
       {/* Call Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('voip.dialog.callDetails')}</DialogTitle>
-          </DialogHeader>
+      {detailOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('voip.dialog.callDetails')}</CardTitle>
+          </CardHeader>
           {selectedCall && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -660,12 +660,12 @@ export function VoIP() {
               </div>
             </div>
           )}
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDetailOpen(false)}>{t('voip.action.close')}</Button>
             <Button onClick={handleSaveCallNotes}>{t('voip.action.saveNotes')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
     </div>
   )
 
@@ -737,11 +737,11 @@ export function VoIP() {
       </div>
 
       {/* Extension Dialog */}
-      <Dialog open={extDialogOpen} onOpenChange={setExtDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingExt ? t('voip.ext.edit') : t('voip.ext.addNew')}</DialogTitle>
-          </DialogHeader>
+      {extDialogOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{editingExt ? t('voip.ext.edit') : t('voip.ext.addNew')}</CardTitle>
+          </CardHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1"><Label className="text-xs">{t('voip.ext.number')}</Label><Input defaultValue={editingExt?.number ?? ''} placeholder="101" /></div>
@@ -773,12 +773,12 @@ export function VoIP() {
             </div>
             <div className="space-y-1"><Label className="text-xs">{t('voip.ext.device')}</Label><Input defaultValue={editingExt?.device ?? ''} placeholder="Yealink T46S" /></div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setExtDialogOpen(false)}>{t('voip.action.close')}</Button>
             <Button onClick={() => setExtDialogOpen(false)}>{t('voip.action.save')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
     </div>
   )
 
@@ -867,11 +867,11 @@ export function VoIP() {
       </Card>
 
       {/* IVR Edit Dialog */}
-      <Dialog open={ivrDialogOpen} onOpenChange={setIvrDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingIvr ? t('voip.ivr.editMenu') : t('voip.ivr.createMenu')}</DialogTitle>
-          </DialogHeader>
+      {ivrDialogOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{editingIvr ? t('voip.ivr.editMenu') : t('voip.ivr.createMenu')}</CardTitle>
+          </CardHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1"><Label className="text-xs">{t('voip.ivr.menuName')}</Label><Input defaultValue={editingIvr?.name ?? ''} placeholder={t('voip.ivr.menuNamePlaceholder')} /></div>
@@ -926,12 +926,12 @@ export function VoIP() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setIvrDialogOpen(false)}>{t('voip.action.close')}</Button>
             <Button onClick={() => setIvrDialogOpen(false)}>{t('voip.action.save')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
     </div>
   )
 

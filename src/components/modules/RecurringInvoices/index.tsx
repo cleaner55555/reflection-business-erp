@@ -9,13 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,6 +28,7 @@ import {
   CheckCircle2,
   FileText,
   Zap,
+  ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate, formatRSD } from '@/lib/helpers'
@@ -610,17 +604,20 @@ function RecurringInvoicesContent() {
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) { setDialogOpen(false); resetForm() } else { setDialogOpen(true) } }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Repeat className="h-5 w-5" />
-              {editing ? t('recurring.editTitle') : t('recurring.createTitle')}
-            </DialogTitle>
-          </DialogHeader>
+      {/* Create/Edit Inline Form */}
+      {dialogOpen && (
+        <Card className="max-w-2xl">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDialogOpen(false); resetForm() }}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="flex items-center gap-2">
+                <Repeat className="h-5 w-5" />
+                {editing ? t('recurring.editTitle') : t('recurring.createTitle')}
+              </CardTitle>
+            </div>
+          </CardHeader>
 
-          <div className="space-y-4 mt-2">
+          <CardContent className="space-y-4 max-h-[90vh] overflow-y-auto">
             {/* Name */}
             <div className="space-y-2">
               <Label className="text-xs">{t('recurring.nameLabel')} *</Label>
@@ -815,9 +812,9 @@ function RecurringInvoicesContent() {
                 {t('common.cancel')}
               </Button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

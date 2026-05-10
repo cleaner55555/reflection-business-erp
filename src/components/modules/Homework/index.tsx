@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, BookOpen, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, BookOpen, CheckCircle2, Clock, AlertCircle, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -250,9 +249,14 @@ export function Homework() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader><DialogTitle>Detalji obaveze</DialogTitle></DialogHeader>
+{detailId && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDetailId(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">Detalji obaveze</CardTitle></div>
+            </CardHeader>
           {detailItem && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">{detailItem.title}</h3>
@@ -276,12 +280,17 @@ export function Homework() {
               {detailItem.instructions && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Uputstva</div><div className="text-xs">{detailItem.instructions}</div></div>}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+</Card>
+)}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi obavezu' : 'Nova obaveza'}</DialogTitle></DialogHeader>
+{ dialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">{editItem ? 'Uredi obavezu' : 'Nova obaveza'}</CardTitle></div>
+            </CardHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2"><Label className="text-xs">Naslov *</Label><Input className="text-xs" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
@@ -291,9 +300,9 @@ export function Homework() {
             </div>
             <div className="grid gap-2"><Label className="text-xs">Opis</Label><Input className="text-xs" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
+</Card>
+)}
     </div>
   )
 }

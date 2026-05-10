@@ -22,7 +22,7 @@ import {
   BarChart3, TrendingDown, ArrowUpRight, ArrowDownRight, X,
   Tag, Clock, MapPin, Building, Car, Laptop, Cpu, Printer,
   Sofa, HardHat, Truck, ScanBarcode, QrCode, Settings, Info,
-  FileText, Copy, Filter, Grid3X3, List, Zap, Shield, History, ChevronRight
+  FileText, Copy, Filter, Grid3X3, List, Zap, Shield, History, ChevronRight, ArrowLeft
 } from 'lucide-react'
 import { formatDate, formatRSD } from '@/lib/helpers'
 
@@ -488,7 +488,7 @@ export function Assets() {
       {/* Form Tab */}
       <TabsContent value="form" className="space-y-4">
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base">{editingAsset ? 'Izmeni sredstvo' : 'Novo sredstvo'}</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingAsset(null); setAssetForm(emptyForm); setActiveTab('all') }}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editingAsset ? 'Izmeni sredstvo' : 'Novo sredstvo'}</CardTitle></div></CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-2"><Label className="text-xs">Naziv sredstva *</Label><Input value={assetForm.name} onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })} placeholder="Naziv..." /></div>
@@ -531,7 +531,7 @@ export function Assets() {
       <TabsContent value="detail" className="space-y-4">
         {selectedAsset && (<>
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Package className="h-5 w-5" /> {selectedAsset.name}</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setActiveTab('all')}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base flex items-center gap-2"><Package className="h-5 w-5" /> {selectedAsset.name}</CardTitle></div></CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">

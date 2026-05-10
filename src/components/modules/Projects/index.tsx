@@ -15,12 +15,7 @@ import { AlertTriangle, BarChart3, CheckCircle2, Circle, Clock, FolderKanban, Pe
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+
 
 // ─── Interfaces ──────────────────────────────────────────────────────────
 
@@ -733,22 +728,23 @@ function ProjectsList() {
         </Card>
       )}
 
-      {/* Project Detail Dialog */}
-      <Dialog open={!!detailProject} onOpenChange={() => setDetailProject(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          {detailProject && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  {detailProject.color && <div className="w-3 h-3 rounded-full" style={{ backgroundColor: detailProject.color }} />}
-                  {tc(detailProject.name)}
-                </DialogTitle>
-              </DialogHeader>
-              <ProjectDetailView project={detailProject} onClose={() => setDetailProject(null)} onEdit={() => { setDetailProject(null); handleEdit(detailProject) }} />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Project Detail */}
+      {!!detailProject && (
+        <Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDetailProject(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="flex items-center gap-2">
+                {detailProject.color && <div className="w-3 h-3 rounded-full" style={{ backgroundColor: detailProject.color }} />}
+                {tc(detailProject.name)}
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ProjectDetailView project={detailProject} onClose={() => setDetailProject(null)} onEdit={() => { setDetailProject(null); handleEdit(detailProject) }} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

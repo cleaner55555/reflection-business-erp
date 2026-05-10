@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,7 +22,7 @@ import {
   FileText, TrendingDown, TrendingUp, ArrowRight, CalendarDays,
   Users, Package, CreditCard, RotateCcw, Truck, Shield,
   ChevronRight, ChevronDown, BarChart3, PieChart, Star,
-  Send, Camera, Paperclip, X, Copy, Printer
+  Send, Camera, Paperclip, X, Copy, Printer, ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -370,7 +369,7 @@ export function Complaints() {
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState('all')
 
-  // Dialogs
+  // Views
   const [detailOpen, setDetailOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [resolveOpen, setResolveOpen] = useState(false)
@@ -876,19 +875,22 @@ export function Complaints() {
         ))}
       </Tabs>
 
-      {/* ─── DETAIL DIALOG ─── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh]">
-          <ScrollArea className="max-h-[75vh] pr-4">
-            {selected && (
+      {/* ─── DETAIL CARD ─── */}
+      {detailOpen && selected && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div className="flex items-center gap-3 min-w-0">
+                <CardTitle className="text-lg truncate">{selected.number} — {selected.subject}</CardTitle>
+                <Badge variant="outline" className={`${STATUS_CONFIG[selected.status]?.color} shrink-0`}>{STATUS_CONFIG[selected.status]?.icon} {STATUS_CONFIG[selected.status]?.label}</Badge>
+              </div>
+            </div>
+            <CardDescription className="ml-11">{selected.partnerName} · {selected.partnerEmail} · {selected.partnerPhone}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="max-h-[65vh]">
               <div className="space-y-6">
-                <DialogHeader>
-                  <div className="flex items-center gap-3">
-                    <DialogTitle className="text-lg">{selected.number} — {selected.subject}</DialogTitle>
-                    <Badge variant="outline" className={`${STATUS_CONFIG[selected.status]?.color}`}>{STATUS_CONFIG[selected.status]?.icon} {STATUS_CONFIG[selected.status]?.label}</Badge>
-                  </div>
-                  <DialogDescription>{selected.partnerName} · {selected.partnerEmail} · {selected.partnerPhone}</DialogDescription>
-                </DialogHeader>
 
                 {/* Status Flow */}
                 <div className="flex items-center gap-1 overflow-x-auto pb-2">
@@ -1015,18 +1017,24 @@ export function Complaints() {
                   </div>
                 )}
               </div>
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ─── CREATE DIALOG ─── */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Nova reklamacija</DialogTitle>
-            <DialogDescription>Unesite podatke o reklamaciji kupca</DialogDescription>
-          </DialogHeader>
+      {/* ─── CREATE CARD ─── */}
+      {createOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setCreateOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle>Nova reklamacija</CardTitle>
+                <CardDescription>Unesite podatke o reklamaciji kupca</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1111,22 +1119,29 @@ export function Complaints() {
               <Input type="number" value={form.amountRequested} onChange={(e) => setForm({ ...form, amountRequested: e.target.value })} placeholder="0" />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex gap-2 mt-4">
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate} disabled={!form.subject.trim() || !form.partnerName.trim()}>
               <Plus className="h-4 w-4 mr-1" /> Kreiraj reklamaciju
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ─── RESOLVE DIALOG ─── */}
-      <Dialog open={resolveOpen} onOpenChange={setResolveOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reši reklamaciju</DialogTitle>
-            <DialogDescription>{selected?.number} — {selected?.subject}</DialogDescription>
-          </DialogHeader>
+      {/* ─── RESOLVE CARD ─── */}
+      {resolveOpen && selected && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setResolveOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle>Reši reklamaciju</CardTitle>
+                <CardDescription>{selected?.number} — {selected?.subject}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Tip rešenja</Label>
@@ -1154,14 +1169,15 @@ export function Complaints() {
               <Textarea rows={2} value={resolveForm.customerNote} onChange={(e) => setResolveForm({ ...resolveForm, customerNote: e.target.value })} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex gap-2 mt-4">
             <Button variant="outline" onClick={() => setResolveOpen(false)}>Otkaži</Button>
             <Button className="bg-green-600 hover:bg-green-700" onClick={handleResolve}>
               <CheckCircle2 className="h-4 w-4 mr-1" /> Potvrdi rešenje
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

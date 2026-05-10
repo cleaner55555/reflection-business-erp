@@ -6,12 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Search, Trash2, Eye, RotateCcw, TrendingUp, BarChart3 } from 'lucide-react'
+import { Plus, Search, Trash2, Eye, RotateCcw, TrendingUp, BarChart3, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -343,92 +342,97 @@ export function Returns() {
         </TabsContent>
       </Tabs>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji povrata</DialogTitle></DialogHeader>
-          {detailItem && (() => {
-            const items = parseItems(detailItem.items)
-            return (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.returnNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderNumber}</p></div><div>{getStatusBadge(detailItem.status)}</div></div>
+      {/* Detail View */}
+      {detailId && detailItem && (() => {
+        const items = parseItems(detailItem.items)
+        return (
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-3">
+              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">Detalji povrata</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.returnNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderNumber}</p></div><div>{getStatusBadge(detailItem.status)}</div></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Kupac</div><p className="text-xs font-medium">{detailItem.customerName}</p><p className="text-xs text-muted-foreground">{detailItem.customerEmail}</p><p className="text-xs text-muted-foreground">{detailItem.customerPhone}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Razlog</div><p className="text-xs font-medium">{REASONS[detailItem.returnReason]?.label}</p><p className="text-xs text-muted-foreground">Način: {REFUND_METHODS[detailItem.refundMethod]?.label}</p><p className="text-xs text-muted-foreground">{detailItem.requestedDate && `Datum: ${formatDate(detailItem.requestedDate)}`}</p></div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Refund</div><p className="text-xs font-bold">{formatCurrency(detailItem.refundAmount)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Transport</div><p className="text-xs font-bold">{formatCurrency(detailItem.shippingCost)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Restocking</div><p className="text-xs font-bold">{formatCurrency(detailItem.restockingFee)}</p></div>
+                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Neto refund</div><p className="text-xs font-bold text-emerald-700">{formatCurrency(detailItem.netRefund)}</p></div>
+              </div>
+
+              {items.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium">Stavke:</p>
+                  <Table><TableHeader><TableRow><TableHead className="text-xs">Proizvod</TableHead><TableHead className="text-xs">SKU</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Cena</TableHead><TableHead className="text-xs">Stanje</TableHead></TableRow></TableHeader>
+                  <TableBody>{items.map((item, idx) => (
+                    <TableRow key={idx}><TableCell className="text-xs">{item.productName}</TableCell><TableCell className="text-xs font-mono">{item.sku}</TableCell><TableCell className="text-xs">{item.quantity}</TableCell><TableCell className="text-xs">{formatCurrency(item.unitPrice)}</TableCell><TableCell className="text-xs"><Badge variant="outline" className="text-xs">{item.condition}</Badge></TableCell></TableRow>
+                  ))}</TableBody></Table>
+                </div>
+              )}
+
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Napomena kupca</p><p className="text-xs">{detailItem.notes}</p></div>}
+              {detailItem.internalNotes && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-600 mb-1">Interna beleška</p><p className="text-xs">{detailItem.internalNotes}</p></div>}
+
+              <div className="flex items-center gap-3">
+                <Label className="text-xs">Promeni status:</Label>
+                <Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v)}><SelectTrigger className="h-8 text-xs w-40"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
+
+      {/* Create Form */}
+      {showCreate && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShowCreate(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Novi povrat robe</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs">Broj narudžbe</Label><Input className="h-8 text-xs mt-1" value={formOrderNumber} onChange={e => setFormOrderNumber(e.target.value)} placeholder="ORD-..." /></div>
+                <div><Label className="text-xs">Razlog povrata</Label><Select value={formReason} onValueChange={setFormReason}><SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(REASONS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs">Ime kupca *</Label><Input className="h-8 text-xs mt-1" value={formCustomerName} onChange={e => setFormCustomerName(e.target.value)} /></div>
+                <div><Label className="text-xs">Telefon</Label><Input className="h-8 text-xs mt-1" value={formCustomerPhone} onChange={e => setFormCustomerPhone(e.target.value)} /></div>
+              </div>
+              <div><Label className="text-xs">Email</Label><Input className="h-8 text-xs mt-1" value={formCustomerEmail} onChange={e => setFormCustomerEmail(e.target.value)} /></div>
+
+              <div className="border-t pt-3"><p className="text-xs font-medium mb-2">Artikal</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Kupac</div><p className="text-xs font-medium">{detailItem.customerName}</p><p className="text-xs text-muted-foreground">{detailItem.customerEmail}</p><p className="text-xs text-muted-foreground">{detailItem.customerPhone}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Razlog</div><p className="text-xs font-medium">{REASONS[detailItem.returnReason]?.label}</p><p className="text-xs text-muted-foreground">Način: {REFUND_METHODS[detailItem.refundMethod]?.label}</p><p className="text-xs text-muted-foreground">{detailItem.requestedDate && `Datum: ${formatDate(detailItem.requestedDate)}`}</p></div>
+                  <div><Label className="text-xs">Naziv proizvoda</Label><Input className="h-8 text-xs mt-1" value={formProductName} onChange={e => setFormProductName(e.target.value)} /></div>
+                  <div><Label className="text-xs">SKU</Label><Input className="h-8 text-xs mt-1" value={formSku} onChange={e => setFormSku(e.target.value)} /></div>
+                  <div><Label className="text-xs">Količina</Label><Input type="number" className="h-8 text-xs mt-1" value={formQty} onChange={e => setFormQty(e.target.value)} /></div>
+                  <div><Label className="text-xs">Cena (RSD)</Label><Input type="number" className="h-8 text-xs mt-1" value={formUnitPrice} onChange={e => setFormUnitPrice(e.target.value)} /></div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Refund</div><p className="text-xs font-bold">{formatCurrency(detailItem.refundAmount)}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Transport</div><p className="text-xs font-bold">{formatCurrency(detailItem.shippingCost)}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Restocking</div><p className="text-xs font-bold">{formatCurrency(detailItem.restockingFee)}</p></div>
-                  <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Neto refund</div><p className="text-xs font-bold text-emerald-700">{formatCurrency(detailItem.netRefund)}</p></div>
-                </div>
+                <div className="mt-2"><Label className="text-xs">Stanje artikla</Label><Select value={formCondition} onValueChange={setFormCondition}><SelectTrigger className="h-8 text-xs mt-1 w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="new">Nov</SelectItem><SelectItem value="used">Korišćen</SelectItem><SelectItem value="damaged">Oštećen</SelectItem><SelectItem value="missing">Nedostaje</SelectItem></SelectContent></Select></div>
+              </div>
 
-                {items.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium">Stavke:</p>
-                    <Table><TableHeader><TableRow><TableHead className="text-xs">Proizvod</TableHead><TableHead className="text-xs">SKU</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Cena</TableHead><TableHead className="text-xs">Stanje</TableHead></TableRow></TableHeader>
-                    <TableBody>{items.map((item, idx) => (
-                      <TableRow key={idx}><TableCell className="text-xs">{item.productName}</TableCell><TableCell className="text-xs font-mono">{item.sku}</TableCell><TableCell className="text-xs">{item.quantity}</TableCell><TableCell className="text-xs">{formatCurrency(item.unitPrice)}</TableCell><TableCell className="text-xs"><Badge variant="outline" className="text-xs">{item.condition}</Badge></TableCell></TableRow>
-                    ))}</TableBody></Table>
-                  </div>
-                )}
-
-                {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Napomena kupca</p><p className="text-xs">{detailItem.notes}</p></div>}
-                {detailItem.internalNotes && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-600 mb-1">Interna beleška</p><p className="text-xs">{detailItem.internalNotes}</p></div>}
-
-                <div className="flex items-center gap-3">
-                  <Label className="text-xs">Promeni status:</Label>
-                  <Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v)}><SelectTrigger className="h-8 text-xs w-40"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+              <div className="border-t pt-3"><p className="text-xs font-medium mb-2">Refundacija</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label className="text-xs">Iznos refundacije</Label><Input type="number" className="h-8 text-xs mt-1" value={formRefundAmount} onChange={e => setFormRefundAmount(e.target.value)} /></div>
+                  <div><Label className="text-xs">Način</Label><Select value={formRefundMethod} onValueChange={setFormRefundMethod}><SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(REFUND_METHODS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                  <div><Label className="text-xs">Trošak transporta</Label><Input type="number" className="h-8 text-xs mt-1" value={formShippingCost} onChange={e => setFormShippingCost(e.target.value)} /></div>
+                  <div><Label className="text-xs">Restocking fee</Label><Input type="number" className="h-8 text-xs mt-1" value={formRestockingFee} onChange={e => setFormRestockingFee(e.target.value)} /></div>
                 </div>
               </div>
-            )
-          })()}
-        </DialogContent>
-      </Dialog>
 
-      {/* Create Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Novi povrat robe</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-xs">Broj narudžbe</Label><Input className="h-8 text-xs mt-1" value={formOrderNumber} onChange={e => setFormOrderNumber(e.target.value)} placeholder="ORD-..." /></div>
-              <div><Label className="text-xs">Razlog povrata</Label><Select value={formReason} onValueChange={setFormReason}><SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(REASONS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label className="text-xs">Napomena</Label><Textarea className="text-xs mt-1" value={formNotes} onChange={e => setFormNotes(e.target.value)} rows={2} /></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-xs">Ime kupca *</Label><Input className="h-8 text-xs mt-1" value={formCustomerName} onChange={e => setFormCustomerName(e.target.value)} /></div>
-              <div><Label className="text-xs">Telefon</Label><Input className="h-8 text-xs mt-1" value={formCustomerPhone} onChange={e => setFormCustomerPhone(e.target.value)} /></div>
-            </div>
-            <div><Label className="text-xs">Email</Label><Input className="h-8 text-xs mt-1" value={formCustomerEmail} onChange={e => setFormCustomerEmail(e.target.value)} /></div>
-
-            <div className="border-t pt-3"><p className="text-xs font-medium mb-2">Artikal</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-xs">Naziv proizvoda</Label><Input className="h-8 text-xs mt-1" value={formProductName} onChange={e => setFormProductName(e.target.value)} /></div>
-                <div><Label className="text-xs">SKU</Label><Input className="h-8 text-xs mt-1" value={formSku} onChange={e => setFormSku(e.target.value)} /></div>
-                <div><Label className="text-xs">Količina</Label><Input type="number" className="h-8 text-xs mt-1" value={formQty} onChange={e => setFormQty(e.target.value)} /></div>
-                <div><Label className="text-xs">Cena (RSD)</Label><Input type="number" className="h-8 text-xs mt-1" value={formUnitPrice} onChange={e => setFormUnitPrice(e.target.value)} /></div>
-              </div>
-              <div className="mt-2"><Label className="text-xs">Stanje artikla</Label><Select value={formCondition} onValueChange={setFormCondition}><SelectTrigger className="h-8 text-xs mt-1 w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="new">Nov</SelectItem><SelectItem value="used">Korišćen</SelectItem><SelectItem value="damaged">Oštećen</SelectItem><SelectItem value="missing">Nedostaje</SelectItem></SelectContent></Select></div>
-            </div>
-
-            <div className="border-t pt-3"><p className="text-xs font-medium mb-2">Refundacija</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-xs">Iznos refundacije</Label><Input type="number" className="h-8 text-xs mt-1" value={formRefundAmount} onChange={e => setFormRefundAmount(e.target.value)} /></div>
-                <div><Label className="text-xs">Način</Label><Select value={formRefundMethod} onValueChange={setFormRefundMethod}><SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(REFUND_METHODS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-                <div><Label className="text-xs">Trošak transporta</Label><Input type="number" className="h-8 text-xs mt-1" value={formShippingCost} onChange={e => setFormShippingCost(e.target.value)} /></div>
-                <div><Label className="text-xs">Restocking fee</Label><Input type="number" className="h-8 text-xs mt-1" value={formRestockingFee} onChange={e => setFormRestockingFee(e.target.value)} /></div>
-              </div>
-            </div>
-
-            <div><Label className="text-xs">Napomena</Label><Textarea className="text-xs mt-1" value={formNotes} onChange={e => setFormNotes(e.target.value)} rows={2} /></div>
-
-            <DialogFooter>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
               <Button variant="outline" size="sm" onClick={() => setShowCreate(false)}>Otkaži</Button>
               <Button size="sm" onClick={handleCreate} disabled={creating}>{creating ? 'Čuvanje...' : 'Kreiraj povrat'}</Button>
-            </DialogFooter>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

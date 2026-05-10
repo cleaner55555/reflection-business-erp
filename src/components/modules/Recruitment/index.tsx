@@ -8,14 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
   UserPlus, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users,
-  TrendingUp, AlertCircle, Briefcase, MapPin
+  TrendingUp, AlertCircle, Briefcase, MapPin, ArrowLeft
 } from 'lucide-react'
 
 interface JobPosting {
@@ -310,10 +309,15 @@ export function Recruitment() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novi oglas za posao</DialogTitle></DialogHeader>
-          <div className="space-y-4">
+      {dialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle>Novi oglas za posao</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Naziv pozicije</Label>
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="npr. Senior Developer" />
@@ -355,38 +359,41 @@ export function Recruitment() {
               <Label>Zahtevi</Label>
               <Textarea rows={2} value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} placeholder="Zahtevi za kandidate..." />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji oglasa</DialogTitle></DialogHeader>
-          {selected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Naziv:</span> <span className="font-medium">{selected.title}</span></div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">Department:</span> {selected.department}</div>
-                <div><span className="text-muted-foreground">Lokacija:</span> {selected.location}</div>
-                <div><span className="text-muted-foreground">Tip:</span> {typeLabels[selected.type] || selected.type}</div>
-                <div><span className="text-muted-foreground">Kandidati:</span> <span className="font-bold">{selected.applicantCount}</span></div>
-                {selected.salaryMin && <div><span className="text-muted-foreground">Plata:</span> {selected.salaryMin.toLocaleString()} - {selected.salaryMax?.toLocaleString()} RSD</div>}
-              </div>
-              {selected.description && (
-                <div className="text-sm"><span className="text-muted-foreground">Opis:</span> {selected.description}</div>
-              )}
-              {selected.requirements && (
-                <div className="text-sm"><span className="text-muted-foreground">Zahtevi:</span> {selected.requirements}</div>
-              )}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
+
+      {detailOpen && selected && (
+        <Card className="max-w-lg">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle>Detalji oglasa</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><span className="text-muted-foreground">Naziv:</span> <span className="font-medium">{selected.title}</span></div>
+              <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
+              <div><span className="text-muted-foreground">Department:</span> {selected.department}</div>
+              <div><span className="text-muted-foreground">Lokacija:</span> {selected.location}</div>
+              <div><span className="text-muted-foreground">Tip:</span> {typeLabels[selected.type] || selected.type}</div>
+              <div><span className="text-muted-foreground">Kandidati:</span> <span className="font-bold">{selected.applicantCount}</span></div>
+              {selected.salaryMin && <div><span className="text-muted-foreground">Plata:</span> {selected.salaryMin.toLocaleString()} - {selected.salaryMax?.toLocaleString()} RSD</div>}
+            </div>
+            {selected.description && (
+              <div className="text-sm"><span className="text-muted-foreground">Opis:</span> {selected.description}</div>
+            )}
+            {selected.requirements && (
+              <div className="text-sm"><span className="text-muted-foreground">Zahtevi:</span> {selected.requirements}</div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

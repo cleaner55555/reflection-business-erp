@@ -7,11 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Search, Trash2, Eye, Star, ThumbsUp, ThumbsDown, TrendingUp, BarChart3, Reply, CheckCircle2, RefreshCw } from 'lucide-react'
+import { Search, Trash2, Eye, Star, ThumbsUp, ThumbsDown, TrendingUp, BarChart3, Reply, CheckCircle2, RefreshCw, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -235,10 +234,17 @@ export function Reviews() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji recenzije</DialogTitle><DialogDescription>Pregled detalja recenzije</DialogDescription></DialogHeader>
-          {detailItem && (
+      {/* Detail View */}
+      {detailId && detailItem && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">Detalji recenzije</CardTitle>
+              <p className="text-xs text-muted-foreground">Pregled detalja recenzije</p>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-sm font-bold">{detailItem.customerName}</p><p className="text-xs text-muted-foreground">{detailItem.customerEmail || '—'}</p></div><div className="flex items-center gap-2">{getStatusBadge(detailItem.status)}<Badge variant="outline" className="text-xs">{SOURCES[detailItem.source]?.label}</Badge></div></div>
               <div className="p-4 rounded-lg border space-y-2">
@@ -255,22 +261,32 @@ export function Reviews() {
               </div>
               {detailItem.responseText && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-600 mb-1">Odgovor od {detailItem.respondedBy} ({formatDate(detailItem.respondedAt)})</p><p className="text-xs">{detailItem.responseText}</p></div>}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={!!responseDialogId} onOpenChange={() => setResponseDialogId(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Odgovor na recenziju</DialogTitle><DialogDescription>Pišite odgovor na recenziju korisnika</DialogDescription></DialogHeader>
-          {responseItem && (
+      {/* Response Form */}
+      {responseDialogId && responseItem && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setResponseDialogId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">Odgovor na recenziju</CardTitle>
+              <p className="text-xs text-muted-foreground">Pišite odgovor na recenziju korisnika</p>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs font-medium">{responseItem.customerName} — {responseItem.productName}</p><p className="text-xs text-muted-foreground mt-1">&quot;{responseItem.title}&quot;</p></div>
               <div className="grid gap-2"><Label className="text-xs">Vaš odgovor</Label><Textarea placeholder="Napišite odgovor na recenziju..." className="text-sm min-h-[100px]" value={responseText} onChange={e => setResponseText(e.target.value)} /></div>
             </div>
-          )}
-          <DialogFooter><Button variant="outline" onClick={() => setResponseDialogId(null)}>Otkaži</Button><Button onClick={handleResponse}>Pošalji odgovor</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => setResponseDialogId(null)}>Otkaži</Button>
+              <Button onClick={handleResponse}>Pošalji odgovor</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

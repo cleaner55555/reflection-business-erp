@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -26,7 +25,7 @@ import {
   ArrowRight, ChevronRight, LayoutGrid, List, Copy,
   Gift, Zap, FileText, CreditCard, Globe, Mail, Bell,
   MousePointerClick, ArrowUpRight, ArrowDownRight, Minus,
-  Filter, MoreVertical
+  Filter, MoreVertical, ArrowLeft
 } from 'lucide-react'
 
 // ============ INTERFACES ============
@@ -807,14 +806,15 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
         </Card>
       )}
 
-      {/* Product Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingProduct ? 'Izmeni proizvod' : 'Dodaj proizvod'}</DialogTitle>
-            <DialogDescription>{editingProduct ? 'Ažurirajte podatke o proizvodu' : 'Popunite podatke za novi proizvod'}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6">
+      {/* Product Form */}
+      {dialogOpen && (<Card className="max-w-2xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editingProduct ? 'Izmeni proizvod' : 'Dodaj proizvod'}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
             {/* Basic Info */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold flex items-center gap-2"><Package className="h-4 w-4" /> Osnovne informacije</h3>
@@ -923,29 +923,31 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
                 <Label>Istaknuti proizvod</Label>
               </div>
             </div>
-          </div>
-          <DialogFooter>
+          <div className="flex gap-2 pt-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSave} disabled={!form.name}>
               {editingProduct ? 'Sačuvaj izmene' : 'Dodaj proizvod'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
       {/* Delete Confirmation */}
-      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Brisanje proizvoda</DialogTitle>
-            <DialogDescription>Da li ste sigurni da želite da obrišete ovaj proizvod? Ova akcija je nepovratna.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
+      {!!deleteConfirm && (<Card className="max-w-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirm(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Brisanje proizvoda</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">Da li ste sigurni da želite da obrišete ovaj proizvod? Ova akcija je nepovratna.</p>
+          <div className="flex gap-2">
             <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Otkaži</Button>
             <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Obriši</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }
@@ -1048,22 +1050,21 @@ function OrdersTab({ orders, setOrders }: { orders: StoreOrder[]; setOrders: Rea
         </div>
       )}
 
-      {/* Order Detail Dialog */}
-      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          {selectedOrder && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  Porudžbina {selectedOrder.orderNumber}
-                  <Badge variant="outline" className={orderStatusConfig[selectedOrder.status]?.color}>
-                    {orderStatusConfig[selectedOrder.status]?.label}
-                  </Badge>
-                </DialogTitle>
-                <DialogDescription>Kreirana: {formatDate(selectedOrder.createdAt)}</DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-6">
+      {/* Order Detail Card */}
+      {!!selectedOrder && (<Card className="max-w-3xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedOrder(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base flex items-center gap-2">
+              Porudžbina {selectedOrder.orderNumber}
+              <Badge variant="outline" className={orderStatusConfig[selectedOrder.status]?.color}>
+                {orderStatusConfig[selectedOrder.status]?.label}
+              </Badge>
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <p className="text-xs text-muted-foreground">Kreirana: {formatDate(selectedOrder.createdAt)}</p>
                 {/* Status & Actions */}
                 <div className="flex flex-wrap items-center gap-2">
                   {orderStatusFlow.map((s, i) => {
@@ -1200,11 +1201,8 @@ function OrdersTab({ orders, setOrders }: { orders: StoreOrder[]; setOrders: Rea
                     </CardContent>
                   </Card>
                 )}
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }
@@ -1312,48 +1310,52 @@ function CategoriesTab({ categories, setCategories }: { categories: Category[]; 
         </div>
       )}
 
-      {/* Category Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingCat ? 'Izmeni kategoriju' : 'Nova kategorija'}</DialogTitle>
-            <DialogDescription>{editingCat ? 'Ažurirajte podatke o kategoriji' : 'Kreirajte novu kategoriju za proizvode'}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Naziv kategorije *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="npr. Audio oprema" />
-            </div>
-            <div className="space-y-2">
-              <Label>URL slug</Label>
-              <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="npr. audio-oprema" />
-              <p className="text-xs text-muted-foreground">Auto-generisan iz naziva ako se ostavi prazno</p>
-            </div>
-            <div className="space-y-2">
-              <Label>Opis</Label>
-              <Textarea value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Kratak opis kategorije..." rows={2} />
-            </div>
+      {/* Category Form */}
+      {dialogOpen && (<Card className="max-w-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editingCat ? 'Izmeni kategoriju' : 'Nova kategorija'}</CardTitle>
           </div>
-          <DialogFooter>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">{editingCat ? 'Ažurirajte podatke o kategoriji' : 'Kreirajte novu kategoriju za proizvode'}</p>
+          <div className="space-y-2">
+            <Label>Naziv kategorije *</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="npr. Audio oprema" />
+          </div>
+          <div className="space-y-2">
+            <Label>URL slug</Label>
+            <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="npr. audio-oprema" />
+            <p className="text-xs text-muted-foreground">Auto-generisan iz naziva ako se ostavi prazno</p>
+          </div>
+          <div className="space-y-2">
+            <Label>Opis</Label>
+            <Textarea value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Kratak opis kategorije..." rows={2} />
+          </div>
+          <div className="flex gap-2 pt-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSave} disabled={!form.name}>{editingCat ? 'Sačuvaj' : 'Kreiraj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
       {/* Delete Confirmation */}
-      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Brisanje kategorije</DialogTitle>
-            <DialogDescription>Da li ste sigurni? Proizvodi u ovoj kategoriji neće biti obrisani.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
+      {!!deleteConfirm && (<Card className="max-w-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirm(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Brisanje kategorije</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">Da li ste sigurni? Proizvodi u ovoj kategoriji neće biti obrisani.</p>
+          <div className="flex gap-2">
             <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Otkaži</Button>
             <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Obriši</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }
@@ -1481,73 +1483,74 @@ function CouponsTab({ coupons, setCoupons }: { coupons: Coupon[]; setCoupons: Re
         </div>
       )}
 
-      {/* Coupon Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingCoupon ? 'Izmeni kupon' : 'Novi kupon'}</DialogTitle>
-            <DialogDescription>{editingCoupon ? 'Ažurirajte detalje kupona' : 'Kreirajte novi kupon za popust'}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Kupon kod *</Label>
-              <div className="flex gap-2">
-                <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="npr. POPUST20" className="font-mono uppercase" />
-                <Button variant="outline" size="icon" onClick={() => setForm({ ...form, code: Math.random().toString(36).substring(2, 8).toUpperCase() })}><Zap className="h-4 w-4" /></Button>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Tip kupona</Label>
-                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as Coupon['type'] })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="procenat">Procenat (%)</SelectItem>
-                    <SelectItem value="fiksni_iznos">Fiksni iznos (RSD)</SelectItem>
-                    <SelectItem value="besplatna_dostava">Besplatna dostava</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Vrednost</Label>
-                <Input type="number" value={form.value || ''} onChange={(e) => setForm({ ...form, value: parseFloat(e.target.value) || 0 })} disabled={form.type === 'besplatna_dostava'} placeholder={form.type === 'procenat' ? '%' : 'RSD'} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Min. narudžbina (RSD)</Label>
-                <Input type="number" value={form.minOrder || ''} onChange={(e) => setForm({ ...form, minOrder: parseFloat(e.target.value) || 0 })} placeholder="0" />
-              </div>
-              <div className="space-y-2">
-                <Label>Max. popust (RSD)</Label>
-                <Input type="number" value={form.maxDiscount || ''} onChange={(e) => setForm({ ...form, maxDiscount: parseFloat(e.target.value) || 0 })} placeholder="0" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Važi od</Label>
-                <Input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Važi do</Label>
-                <Input type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Max. korišćenja</Label>
-              <Input type="number" value={form.maxUses || ''} onChange={(e) => setForm({ ...form, maxUses: parseInt(e.target.value) || 0 })} placeholder="0 = neograničeno" />
-            </div>
-            <div className="space-y-2">
-              <Label>Primenjuje se na</Label>
-              <Input value={form.appliesTo || ''} onChange={(e) => setForm({ ...form, appliesTo: e.target.value })} placeholder="npr. Svi proizvodi, Određena kategorija" />
+      {/* Coupon Form */}
+      {dialogOpen && (<Card className="max-w-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editingCoupon ? 'Izmeni kupon' : 'Novi kupon'}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">{editingCoupon ? 'Ažurirajte detalje kupona' : 'Kreirajte novi kupon za popust'}</p>
+          <div className="space-y-2">
+            <Label>Kupon kod *</Label>
+            <div className="flex gap-2">
+              <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="npr. POPUST20" className="font-mono uppercase" />
+              <Button variant="outline" size="icon" onClick={() => setForm({ ...form, code: Math.random().toString(36).substring(2, 8).toUpperCase() })}><Zap className="h-4 w-4" /></Button>
             </div>
           </div>
-          <DialogFooter>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Tip kupona</Label>
+              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as Coupon['type'] })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="procenat">Procenat (%)</SelectItem>
+                  <SelectItem value="fiksni_iznos">Fiksni iznos (RSD)</SelectItem>
+                  <SelectItem value="besplatna_dostava">Besplatna dostava</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Vrednost</Label>
+              <Input type="number" value={form.value || ''} onChange={(e) => setForm({ ...form, value: parseFloat(e.target.value) || 0 })} disabled={form.type === 'besplatna_dostava'} placeholder={form.type === 'procenat' ? '%' : 'RSD'} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Min. narudžbina (RSD)</Label>
+              <Input type="number" value={form.minOrder || ''} onChange={(e) => setForm({ ...form, minOrder: parseFloat(e.target.value) || 0 })} placeholder="0" />
+            </div>
+            <div className="space-y-2">
+              <Label>Max. popust (RSD)</Label>
+              <Input type="number" value={form.maxDiscount || ''} onChange={(e) => setForm({ ...form, maxDiscount: parseFloat(e.target.value) || 0 })} placeholder="0" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Važi od</Label>
+              <Input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Važi do</Label>
+              <Input type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Max. korišćenja</Label>
+            <Input type="number" value={form.maxUses || ''} onChange={(e) => setForm({ ...form, maxUses: parseInt(e.target.value) || 0 })} placeholder="0 = neograničeno" />
+          </div>
+          <div className="space-y-2">
+            <Label>Primenjuje se na</Label>
+            <Input value={form.appliesTo || ''} onChange={(e) => setForm({ ...form, appliesTo: e.target.value })} placeholder="npr. Svi proizvodi, Određena kategorija" />
+          </div>
+          <div className="flex gap-2 pt-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSave} disabled={!form.code}>{editingCoupon ? 'Sačuvaj' : 'Kreiraj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }

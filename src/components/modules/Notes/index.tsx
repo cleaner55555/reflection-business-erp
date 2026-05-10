@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,7 +21,7 @@ import {
   CheckCircle2, Clock, BarChart3, Users, Pin, PinOff,
   Tag, FolderOpen, Star, MoreHorizontal, FileText,
   Palette, Settings, Share2, Archive, BookOpen,
-  Lightbulb, AlertCircle, ChevronDown, X, Filter
+  Lightbulb, AlertCircle, ChevronDown, X, Filter, ArrowLeft
 } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -925,14 +924,14 @@ export function Notes() {
         </TabsContent>
       </Tabs>
 
-      {/* ─── Create Note Dialog ──────────────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nova beleška</DialogTitle>
-            <DialogDescription>Kreirajte novu belešku sa naslovom, sadržajem i tagovima</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
+      {/* ─── Create Note ──────────────────────────────────────────── */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base">Nova beleška</CardTitle><CardDescription>Kreirajte novu belešku sa naslovom, sadržajem i tagovima</CardDescription></div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Naslov</Label>
               <Input value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} placeholder="Naslov beleške..." />
@@ -1003,109 +1002,111 @@ export function Notes() {
                 <Label className="text-sm">Označi zvezdicom</Label>
               </div>
             </div>
-          </div>
-          <DialogFooter>
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateNote}><Plus className="h-4 w-4 mr-1" /> Kreiraj belešku</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
-      {/* ─── Edit Note Dialog (Detail) ───────────────────────────────────── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Uredi belešku</DialogTitle>
-            <DialogDescription>Izmenite naslov, sadržaj, kategoriju i tagove</DialogDescription>
-          </DialogHeader>
-          {selected && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Naslov</Label>
-                <Input value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {/* ─── Edit Note (Detail) ───────────────────────────────────── */}
+      {detailOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDetailOpen(false); setSelected(null); }}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base">Uredi belešku</CardTitle><CardDescription>Izmenite naslov, sadržaj, kategoriju i tagove</CardDescription></div>
+          </CardHeader>
+          <CardContent>
+            {selected && (
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Kategorija</Label>
-                  <Select value={noteForm.categoryId} onValueChange={(v) => setNoteForm({ ...noteForm, categoryId: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Naslov</Label>
+                  <Input value={noteForm.title} onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <Label>Prioritet</Label>
-                  <Select value={noteForm.priority} onValueChange={(v) => setNoteForm({ ...noteForm, priority: v as Note['priority'] })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(priorityConfig).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Kategorija</Label>
+                    <Select value={noteForm.categoryId} onValueChange={(v) => setNoteForm({ ...noteForm, categoryId: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>{cat.icon} {cat.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Prioritet</Label>
+                    <Select value={noteForm.priority} onValueChange={(v) => setNoteForm({ ...noteForm, priority: v as Note['priority'] })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(priorityConfig).map(([k, v]) => (
+                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Boja</Label>
+                    <div className="flex gap-1 flex-wrap">
+                      {noteColors.map((c) => (
+                        <button key={c.value} className="w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform"
+                          style={{ backgroundColor: c.value, borderColor: noteForm.color === c.value ? '#000' : '#e5e7eb' }}
+                          onClick={() => setNoteForm({ ...noteForm, color: c.value })}
+                        />
                       ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Boja</Label>
-                  <div className="flex gap-1 flex-wrap">
-                    {noteColors.map((c) => (
-                      <button key={c.value} className="w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform"
-                        style={{ backgroundColor: c.value, borderColor: noteForm.color === c.value ? '#000' : '#e5e7eb' }}
-                        onClick={() => setNoteForm({ ...noteForm, color: c.value })}
-                      />
-                    ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Sadržaj</Label>
-                <Textarea value={noteForm.content} onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })} rows={8} />
-              </div>
-              <div className="space-y-2">
-                <Label>Tagovi</Label>
-                <div className="flex gap-2">
-                  <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Dodaj tag..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} className="flex-1" />
-                  <Button size="sm" variant="outline" onClick={addTag}><Plus className="h-4 w-4" /></Button>
+                <div className="space-y-2">
+                  <Label>Sadržaj</Label>
+                  <Textarea value={noteForm.content} onChange={(e) => setNoteForm({ ...noteForm, content: e.target.value })} rows={8} />
                 </div>
-                {noteForm.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {noteForm.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        #{tag} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag(tag)} />
-                      </Badge>
-                    ))}
+                <div className="space-y-2">
+                  <Label>Tagovi</Label>
+                  <div className="flex gap-2">
+                    <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Dodaj tag..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} className="flex-1" />
+                    <Button size="sm" variant="outline" onClick={addTag}><Plus className="h-4 w-4" /></Button>
+                  </div>
+                  {noteForm.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {noteForm.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          #{tag} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag(tag)} />
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                  <div>Kreirano: {new Date(selected.createdAt).toLocaleString('sr-RS')}</div>
+                  <div>Ažurirano: {new Date(selected.updatedAt).toLocaleString('sr-RS')}</div>
+                </div>
+                {selected.sharedWith.length > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    Podeljeno sa: {selected.sharedWith.join(', ')}
                   </div>
                 )}
               </div>
-              <Separator />
-              <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-                <div>Kreirano: {new Date(selected.createdAt).toLocaleString('sr-RS')}</div>
-                <div>Ažurirano: {new Date(selected.updatedAt).toLocaleString('sr-RS')}</div>
-              </div>
-              {selected.sharedWith.length > 0 && (
-                <div className="text-xs text-muted-foreground">
-                  Podeljeno sa: {selected.sharedWith.join(', ')}
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter>
+            )}
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6">
             <Button variant="outline" onClick={() => { setDetailOpen(false); setSelected(null); }}>Otkaži</Button>
             <Button onClick={handleUpdateNote}><Edit3 className="h-4 w-4 mr-1" /> Sačuvaj izmene</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
-      {/* ─── Category Dialog ─────────────────────────────────────────────── */}
-      <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nova kategorija</DialogTitle>
-            <DialogDescription>Kreirajte novu kategoriju za beleške</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
+      {/* ─── Category ─────────────────────────────────────────────── */}
+      {categoryDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCategoryDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base">Nova kategorija</CardTitle><CardDescription>Kreirajte novu kategoriju za beleške</CardDescription></div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Naziv</Label>
               <Input value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} placeholder="Naziv kategorije" />
@@ -1134,22 +1135,22 @@ export function Notes() {
                 ))}
               </div>
             </div>
-          </div>
-          <DialogFooter>
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6">
             <Button variant="outline" onClick={() => setCategoryDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateCategory}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
-      {/* ─── Template Dialog ─────────────────────────────────────────────── */}
-      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Novi šablon</DialogTitle>
-            <DialogDescription>Kreirajte šablon za brzo kreiranje beleški</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
+      {/* ─── Template ─────────────────────────────────────────────── */}
+      {templateDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTemplateDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base">Novi šablon</CardTitle><CardDescription>Kreirajte šablon za brzo kreiranje beleški</CardDescription></div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Naziv šablona</Label>
               <Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} placeholder="Naziv šablona" />
@@ -1169,13 +1170,13 @@ export function Notes() {
               <Label>Sadržaj šablona</Label>
               <Textarea value={templateForm.content} onChange={(e) => setTemplateForm({ ...templateForm, content: e.target.value })} rows={6} placeholder="Predložak sadržaja..." />
             </div>
-          </div>
-          <DialogFooter>
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6">
             <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateTemplate}><Plus className="h-4 w-4 mr-1" /> Kreiraj šablon</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

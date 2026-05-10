@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -25,7 +24,7 @@ import {
   Archive, Unlock, Lock, Copy, Link2, Share2, Printer,
   BarChart3, PieChart, TrendingUp, TrendingDown, File, FileSpreadsheet,
   FileImage, FileVideo, FileAudio, FileType2, X, ChevronRight,
-  ChevronDown, Folder, TagIcon, Calendar, Users, HardDrive
+  ChevronDown, Folder, TagIcon, Calendar, Users, HardDrive, ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -735,102 +734,102 @@ export function Documents() {
         </TabsContent>
       </Tabs>
 
-      {/* ===== DIALOGS ===== */}
+      {/* ===== INLINE FORMS ===== */}
 
       {/* New/Edit Document */}
-      <Dialog open={docDialogOpen} onOpenChange={setDocDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingDoc ? 'Izmeni dokument' : 'Novi dokument'}</DialogTitle>
-            <DialogDescription>{editingDoc ? 'Izmenite podatke o dokumentu' : 'Popunite podatke za novi dokument'}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
+      {docDialogOpen && (<Card className="max-w-lg">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDocDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editingDoc ? 'Izmeni dokument' : 'Novi dokument'}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">{editingDoc ? 'Izmenite podatke o dokumentu' : 'Popunite podatke za novi dokument'}</p>
+          <div className="space-y-2">
+            <Label className="text-xs">Naziv dokumenta *</Label>
+            <Input value={docForm.title} onChange={(e) => setDocForm({ ...docForm, title: e.target.value })} placeholder="Unesite naziv..." />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs">Naziv dokumenta *</Label>
-              <Input value={docForm.title} onChange={(e) => setDocForm({ ...docForm, title: e.target.value })} placeholder="Unesite naziv..." />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Tip</Label>
-                <Select value={docForm.type} onValueChange={(v) => setDocForm({ ...docForm, type: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite tip" /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Status</Label>
-                <Select value={docForm.status} onValueChange={(v) => setDocForm({ ...docForm, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Kategorija</Label>
-                <Select value={docForm.category} onValueChange={(v) => setDocForm({ ...docForm, category: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Bez kategorije</SelectItem>
-                    {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Fascikla</Label>
-                <Select value={docForm.folder} onValueChange={(v) => setDocForm({ ...docForm, folder: v })}>
-                  <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Bez fascikle</SelectItem>
-                    {folders.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">Naziv datoteke</Label>
-                <Input value={docForm.fileName} onChange={(e) => setDocForm({ ...docForm, fileName: e.target.value })} placeholder="faktura.pdf" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Datum isteka</Label>
-                <Input type="date" value={docForm.expiresAt} onChange={(e) => setDocForm({ ...docForm, expiresAt: e.target.value })} />
-              </div>
+              <Label className="text-xs">Tip</Label>
+              <Select value={docForm.type} onValueChange={(v) => setDocForm({ ...docForm, type: v })}>
+                <SelectTrigger><SelectValue placeholder="Izaberite tip" /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Oznake (tagovi, zarezom odvojene)</Label>
-              <Input value={docForm.tags} onChange={(e) => setDocForm({ ...docForm, tags: e.target.value })} placeholder="važno, 2025, računi" />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Napomene</Label>
-              <Textarea value={docForm.notes} onChange={(e) => setDocForm({ ...docForm, notes: e.target.value })} placeholder="Dodatne napomene..." rows={3} />
+              <Label className="text-xs">Status</Label>
+              <Select value={docForm.status} onValueChange={(v) => setDocForm({ ...docForm, status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <DialogFooter className="gap-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs">Kategorija</Label>
+              <Select value={docForm.category} onValueChange={(v) => setDocForm({ ...docForm, category: v })}>
+                <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Bez kategorije</SelectItem>
+                  {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Fascikla</Label>
+              <Select value={docForm.folder} onValueChange={(v) => setDocForm({ ...docForm, folder: v })}>
+                <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Bez fascikle</SelectItem>
+                  {folders.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs">Naziv datoteke</Label>
+              <Input value={docForm.fileName} onChange={(e) => setDocForm({ ...docForm, fileName: e.target.value })} placeholder="faktura.pdf" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Datum isteka</Label>
+              <Input type="date" value={docForm.expiresAt} onChange={(e) => setDocForm({ ...docForm, expiresAt: e.target.value })} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Oznake (tagovi, zarezom odvojene)</Label>
+            <Input value={docForm.tags} onChange={(e) => setDocForm({ ...docForm, tags: e.target.value })} placeholder="važno, 2025, računi" />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Napomene</Label>
+            <Textarea value={docForm.notes} onChange={(e) => setDocForm({ ...docForm, notes: e.target.value })} placeholder="Dodatne napomene..." rows={3} />
+          </div>
+          <div className="flex gap-2 pt-2">
             <Button variant="outline" onClick={() => setDocDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSubmitDoc} disabled={submitting || !docForm.title.trim()}>
               {submitting ? 'Čuvanje...' : editingDoc ? 'Ažuriraj' : 'Kreiraj'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
       {/* Document Detail */}
-      <Dialog open={docDetailOpen} onOpenChange={setDocDetailOpen}>
-        <DialogContent className="max-w-lg">
-          {selectedDoc && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" /> {selectedDoc.title}
-                </DialogTitle>
-                <DialogDescription>Detalji dokumenta</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
+      {docDetailOpen && selectedDoc && (<Card className="max-w-lg">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDocDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-5 w-5" /> {selectedDoc.title}
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div><span className="text-xs text-muted-foreground">Tip:</span><br /><Badge variant="secondary" className="text-xs">{TYPE_LABELS[selectedDoc.type || ''] || selectedDoc.type || '-'}</Badge></div>
                   <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-xs ${STATUS_COLORS[selectedDoc.status] || ''}`}>{STATUS_LABELS[selectedDoc.status] || selectedDoc.status}</Badge></div>
@@ -876,55 +875,54 @@ export function Documents() {
                     <Button size="sm" variant="outline" className="text-destructive" onClick={() => { setDeleteConfirmOpen(true); setDocDetailOpen(false) }}><Trash2 className="h-3.5 w-3.5 mr-1" /> Obriši</Button>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>)}
 
       {/* Delete Confirmation */}
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5" /> Potvrda brisanja</DialogTitle>
-            <DialogDescription>
-              Da li ste sigurni da želite obrisati dokument &quot;{selectedDoc?.title}&quot;? Ova radnja je nepovratna.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
+      {deleteConfirmOpen && (<Card className="max-w-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteConfirmOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5" /> Potvrda brisanja</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">Da li ste sigurni da želite obrisati dokument &quot;{selectedDoc?.title}&quot;? Ova radnja je nepovratna.</p>
+          <div className="flex gap-2">
             <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
             <Button variant="destructive" onClick={handleDeleteDoc}>Obriši</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
       {/* New Folder */}
-      <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><FolderPlus className="h-5 w-5" /> Nova fascikla</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs">Naziv fascikle *</Label>
-              <Input value={folderForm.name} onChange={(e) => setFolderForm({ ...folderForm, name: e.target.value })} placeholder="Unesite naziv..." />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Boja</Label>
-              <div className="flex gap-2 flex-wrap">
-                {['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#6b7280', '#ec4899', '#06b6d4'].map(c => (
-                  <button key={c} className={`h-8 w-8 rounded-full border-2 transition-transform ${folderForm.color === c ? 'scale-110 border-primary' : 'border-transparent hover:scale-105'}`}
-                    style={{ backgroundColor: c }} onClick={() => setFolderForm({ ...folderForm, color: c })} />
-                ))}
-              </div>
+      {folderDialogOpen && (<Card className="max-w-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFolderDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base flex items-center gap-2"><FolderPlus className="h-5 w-5" /> Nova fascikla</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs">Naziv fascikle *</Label>
+            <Input value={folderForm.name} onChange={(e) => setFolderForm({ ...folderForm, name: e.target.value })} placeholder="Unesite naziv..." />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Boja</Label>
+            <div className="flex gap-2 flex-wrap">
+              {['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#6b7280', '#ec4899', '#06b6d4'].map(c => (
+                <button key={c} className={`h-8 w-8 rounded-full border-2 transition-transform ${folderForm.color === c ? 'scale-110 border-primary' : 'border-transparent hover:scale-105'}`}
+                  style={{ backgroundColor: c }} onClick={() => setFolderForm({ ...folderForm, color: c })} />
+              ))}
             </div>
           </div>
-          <DialogFooter className="gap-2">
+          <div className="flex gap-2 pt-2">
             <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateFolder} disabled={!folderForm.name.trim()}>Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
       {/* Info */}
       <Card>

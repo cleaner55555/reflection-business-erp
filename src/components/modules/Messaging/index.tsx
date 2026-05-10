@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -878,22 +877,28 @@ export function Messaging() {
       {/* ===== DIALOGS ===== */}
 
       {/* New Message */}
-      <Dialog open={newMsgDialogOpen} onOpenChange={setNewMsgDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova poruka</DialogTitle><DialogDescription>Pošaljite poruku novom ili postojećem kontaktu</DialogDescription></DialogHeader>
-          <div className="space-y-4">
+      {newMsgDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setNewMsgDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base">Nova poruka</CardTitle><CardDescription>Pošaljite poruku novom ili postojećem kontaktu</CardDescription></div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Broj primaoca *</Label><Input value={newMsgPhone} onChange={(e) => setNewMsgPhone(e.target.value)} placeholder="+3816XXXXXXXX" /></div>
             <div className="space-y-2"><Label className="text-xs">Poruka *</Label><Textarea value={newMsgText} onChange={(e) => setNewMsgText(e.target.value)} rows={4} placeholder="Vaša poruka..." /></div>
-          </div>
-          <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setNewMsgDialogOpen(false)}>Otkaži</Button><Button onClick={handleNewMessage} disabled={!newMsgPhone.trim() || !newMsgText.trim()} className="bg-green-600 hover:bg-green-700"><Send className="h-4 w-4 mr-1" /> Pošalji</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" onClick={() => setNewMsgDialogOpen(false)}>Otkaži</Button><Button onClick={handleNewMessage} disabled={!newMsgPhone.trim() || !newMsgText.trim()} className="bg-green-600 hover:bg-green-700"><Send className="h-4 w-4 mr-1" /> Pošalji</Button></div>
+        </Card>
+      )}
 
       {/* New/Edit Template */}
-      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editingTemplate ? 'Izmeni template' : 'Novi template'}</DialogTitle><DialogDescription>Kreirajte template poruku sa promenljivim</DialogDescription></DialogHeader>
-          <div className="space-y-4">
+      {templateDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTemplateDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base">{editingTemplate ? 'Izmeni template' : 'Novi template'}</CardTitle><CardDescription>Kreirajte template poruku sa promenljivim</CardDescription></div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} placeholder="npr. Potvrda narudžbe" /></div>
               <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={templateForm.category} onValueChange={(v) => setTemplateForm({ ...templateForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
@@ -901,16 +906,19 @@ export function Messaging() {
             <div className="space-y-2"><Label className="text-xs">Jezik</Label><Select value={templateForm.language} onValueChange={(v) => setTemplateForm({ ...templateForm, language: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_LANGUAGES.map(l => <SelectItem key={l} value={l}>{l.toUpperCase()}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label className="text-xs">Sadržaj poruke * (koristite {'{{1}}'}, {'{{2}}'} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={4} placeholder="Vaša poruka sa {{1}} i {{2}}..." /></div>
             <p className="text-xs text-muted-foreground">Promenljive: {(templateForm.body.match(/\{\{(\d+)\}\}/g) || []).length}</p>
-          </div>
-          <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button><Button onClick={handleSaveTemplate}>{editingTemplate ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button><Button onClick={handleSaveTemplate}>{editingTemplate ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+        </Card>
+      )}
 
       {/* New/Edit Auto Reply */}
-      <Dialog open={autoReplyDialogOpen} onOpenChange={setAutoReplyDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editingAutoReply ? 'Izmeni auto odgovor' : 'Novi auto odgovor'}</DialogTitle><DialogDescription>Definišite trigger i odgovor</DialogDescription></DialogHeader>
-          <div className="space-y-4">
+      {autoReplyDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAutoReplyDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base">{editingAutoReply ? 'Izmeni auto odgovor' : 'Novi auto odgovor'}</CardTitle><CardDescription>Definišite trigger i odgovor</CardDescription></div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={autoReplyForm.name} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, name: e.target.value })} /></div>
             <div className="space-y-2"><Label className="text-xs">Opis</Label><Input value={autoReplyForm.description} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
@@ -919,16 +927,19 @@ export function Messaging() {
             </div>
             {autoReplyForm.trigger === 'keyword' && <div className="space-y-2"><Label className="text-xs">Ključne reči (zarezima)</Label><Input value={autoReplyForm.keyword} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, keyword: e.target.value })} placeholder="cena,dostava,katalog" /></div>}
             <div className="space-y-2"><Label className="text-xs">Odgovor *</Label><Textarea value={autoReplyForm.response} onChange={(e) => setAutoReplyForm({ ...autoReplyForm, response: e.target.value })} rows={3} placeholder="Automatski odgovor..." /></div>
-          </div>
-          <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setAutoReplyDialogOpen(false)}>Otkaži</Button><Button onClick={handleSaveAutoReply}>{editingAutoReply ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" onClick={() => setAutoReplyDialogOpen(false)}>Otkaži</Button><Button onClick={handleSaveAutoReply}>{editingAutoReply ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+        </Card>
+      )}
 
       {/* New Campaign */}
-      <Dialog open={campaignDialogOpen} onOpenChange={setCampaignDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova kampanja</DialogTitle><DialogDescription>Kreirajte broadcast kampanju za masovno slanje poruka</DialogDescription></DialogHeader>
-          <div className="space-y-4">
+      {campaignDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCampaignDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="text-base">Nova kampanja</CardTitle><CardDescription>Kreirajte broadcast kampanju za masovno slanje poruka</CardDescription></div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Naziv kampanje *</Label><Input placeholder="npr. Najama zimskog kataloga" /></div>
             <div className="space-y-2">
               <Label className="text-xs">Template</Label>
@@ -959,13 +970,13 @@ export function Messaging() {
                 Business Poruke dozvoljava broadcast samo za kontakte koji su vas prethodno kontaktirali. Maksimalno 10.000 primalaca po kampanji.
               </AlertDescription>
             </Alert>
-          </div>
-          <DialogFooter className="gap-2">
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6">
             <Button variant="outline" onClick={() => setCampaignDialogOpen(false)}>Otkaži</Button>
             <Button onClick={() => { setCampaignDialogOpen(false); showToast('Kampanja kreirana') }}>Kreiraj kampanju</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
       {/* ===== QUICK STATS BAR (visible on all tabs) ===== */}
       {activeTab !== 'overview' && (

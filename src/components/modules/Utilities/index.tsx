@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, Zap, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Zap, AlertTriangle, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 import { useAppStore } from '@/lib/store'
@@ -82,7 +81,43 @@ export function Utilities() {
       <TabsContent value="dodaj" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Novi račun</CardTitle></CardHeader><CardContent><div className="grid gap-4"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Dobavljač</Label><Input className="text-xs" value={form.provider || ''} onChange={e => setForm({ ...form, provider: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'electricity'} onValueChange={v => setForm({ ...form, type: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Mesečni iznos</Label><Input className="text-xs" type="number" value={form.monthlyAmount || ''} onChange={e => setForm({ ...form, monthlyAmount: Number(e.target.value) })} /></div><div className="grid gap-2"><Label className="text-xs">Lokacija</Label><Input className="text-xs" value={form.location || ''} onChange={e => setForm({ ...form, location: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Br. računa</Label><Input className="text-xs" value={form.accountNo || ''} onChange={e => setForm({ ...form, accountNo: e.target.value })} /></div></div><Button size="sm" className="w-fit gap-2" onClick={handleSave}><Plus className="h-4 w-4" />Dodaj</Button></div></CardContent></Card></TabsContent>
       <TabsContent value="uredi" className="mt-4"><Card><CardHeader><CardTitle className="text-base">Uredi</CardTitle></CardHeader><CardContent><div className="max-h-[500px] overflow-y-auto space-y-3">{data.map(item => (<div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg"><div className="flex-1 min-w-0"><div className="flex items-center gap-2"><span className="text-xs font-medium">{item.name}</span>{getStatusBadge(item.status)}<Badge className="text-xs bg-muted">{TYPES[item.type]}</Badge></div><p className="text-xs text-muted-foreground truncate">{item.provider} — {formatRSD(item.monthlyAmount)}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => openEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 shrink-0" onClick={() => handleDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div>))}</div></CardContent></Card></TabsContent>
     </Tabs>
-    <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>Detalji</DialogTitle></DialogHeader>{detailItem && (<div className="space-y-3"><h3 className="text-sm font-semibold">{detailItem.name}</h3><div className="grid grid-cols-2 gap-3">{[['Dobavljač', detailItem.provider],['Br. računa', detailItem.accountNo],['Tip', TYPES[detailItem.type]],['Mesečni iznos', formatRSD(detailItem.monthlyAmount)],['Zadnji račun', detailItem.lastBillAmount ? formatRSD(detailItem.lastBillAmount) : '—'],['Datum računa', formatDate(detailItem.lastBillDate)],['Rok plaćanja', detailItem.dueDate ? formatDate(detailItem.dueDate) : '—'],['Plaćeno', detailItem.paidDate ? formatDate(detailItem.paidDate) : 'Ne'],['Lokacija', detailItem.location]].map(([l, v]) => (<div key={l} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{l}</div><div className="text-xs font-medium">{v || '—'}</div></div>))}</div><div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div></div>)}</DialogContent></Dialog>
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="sm:max-w-[500px]"><DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Novi'}</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="grid grid-cols-2 gap-3"><div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div><div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="disconnected">Isključeno</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div><div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input className="text-xs" type="number" value={form.monthlyAmount || ''} onChange={e => setForm({ ...form, monthlyAmount: Number(e.target.value) })} /></div><div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'electricity'} onValueChange={v => setForm({ ...form, type: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div></div></div><DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
+    {!!detailId && detailItem && (
+    <Card className="sm:max-w-[500px]">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+          <CardTitle className="text-base">Detalji</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold">{detailItem.name}</h3>
+          <div className="grid grid-cols-2 gap-3">{[['Dobavljač', detailItem.provider],['Br. računa', detailItem.accountNo],['Tip', TYPES[detailItem.type]],['Mesečni iznos', formatRSD(detailItem.monthlyAmount)],['Zadnji račun', detailItem.lastBillAmount ? formatRSD(detailItem.lastBillAmount) : '—'],['Datum računa', formatDate(detailItem.lastBillDate)],['Rok plaćanja', detailItem.dueDate ? formatDate(detailItem.dueDate) : '—'],['Plaćeno', detailItem.paidDate ? formatDate(detailItem.paidDate) : 'Ne'],['Lokacija', detailItem.location]].map(([l, v]) => (<div key={l} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{l}</div><div className="text-xs font-medium">{v || '—'}</div></div>))}</div>
+          <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
+        </div>
+      </CardContent>
+    </Card>
+    )}
+    {dialogOpen && (
+    <Card className="sm:max-w-[500px]">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+          <CardTitle className="text-base">{editItem ? 'Uredi' : 'Novi'}</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="overdue">Kasni</SelectItem><SelectItem value="disconnected">Isključeno</SelectItem><SelectItem value="pending">Na čekanju</SelectItem></SelectContent></Select></div>
+            <div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input className="text-xs" type="number" value={form.monthlyAmount || ''} onChange={e => setForm({ ...form, monthlyAmount: Number(e.target.value) })} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'electricity'} onValueChange={v => setForm({ ...form, type: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
+      </CardContent>
+    </Card>
+    )}
   </div>)
 }

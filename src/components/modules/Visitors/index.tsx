@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -19,7 +18,8 @@ import {
   Users, UserCheck, UserPlus, LogIn, LogOut, Clock, Search, Plus,
   Eye, Trash2, BarChart3, Phone, Mail, Building2, QrCode,
   BadgeCheck, CalendarDays, TrendingUp, Hourglass, ArrowRight,
-  RefreshCw, ClipboardCheck, FileText, Printer
+  RefreshCw, ClipboardCheck, FileText, Printer,
+  ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -1093,11 +1093,11 @@ export function Visitors() {
       </Tabs>
 
       {/* ===== CREATE VISITOR DIALOG ===== */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Novi posetilac</DialogTitle>
-          </DialogHeader>
+      {createDialogOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Novi posetilac</CardTitle>
+          </CardHeader>
           <div className="space-y-4">
             {/* Basic info */}
             <div className="grid grid-cols-2 gap-4">
@@ -1202,19 +1202,19 @@ export function Visitors() {
             </div>
           </div>
 
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateVisitor}>Kreiraj posetioca</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
       {/* ===== PRE-REGISTRATION DIALOG ===== */}
-      <Dialog open={preRegDialogOpen} onOpenChange={setPreRegDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Pre-registracija posetioca</DialogTitle>
-          </DialogHeader>
+      {preRegDialogOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Pre-registracija posetioca</CardTitle>
+          </CardHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
@@ -1293,23 +1293,23 @@ export function Visitors() {
                 onChange={(e) => setVisitorForm({ ...visitorForm, notes: e.target.value })} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setPreRegDialogOpen(false)}>Otkaži</Button>
             <Button onClick={() => {
               setVisitorForm({ ...visitorForm, isPreRegistered: true })
               handleCreateVisitor()
               setPreRegDialogOpen(false)
             }}>Pre-registruj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
       {/* ===== DETAIL DIALOG ===== */}
-      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Detalji posetioca</DialogTitle>
-          </DialogHeader>
+      {detailDialogOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Detalji posetioca</CardTitle>
+          </CardHeader>
           {selectedVisitor && (() => {
             const StatusIcon = statusConfig[selectedVisitor.status].icon
             return (
@@ -1448,8 +1448,8 @@ export function Visitors() {
             </div>
             )
           })()}
-        </DialogContent>
-      </Dialog>
+        </Card>
+      )}
     </div>
   )
 }

@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -25,7 +24,7 @@ import {
   Unlock, CircleDot, HelpCircle, Award, Settings2,
   Shield, Flame, Crown, ChevronDown, ChevronUp,
   AlertTriangle, Edit3, X, Filter, Sparkles, Hash,
-  FolderOpen, Zap, Activity, Trophy, Target, Heart
+  FolderOpen, Zap, Activity, Trophy, Target, Heart, ArrowLeft,
 } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -1375,13 +1374,9 @@ export function Forum() {
         {/* ═══════════════════════════════════════════════════════════════
             DIALOG: Create / Edit Topic
             ═══════════════════════════════════════════════════════════════ */}
-        <Dialog open={topicDialogOpen} onOpenChange={setTopicDialogOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5" /> Nova tema
-              </DialogTitle>
-            </DialogHeader>
+        {topicDialogOpen && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><Plus className="h-5 w-5" /> Nova tema<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setTopicDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Naslov</Label>
@@ -1420,25 +1415,22 @@ export function Forum() {
                 />
               </div>
             </div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setTopicDialogOpen(false)}>Otkaži</Button>
               <Button onClick={handleCreateTopic} disabled={!topicForm.title.trim()}>
                 <Plus className="h-4 w-4 mr-1.5" /> Kreiraj temu
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          </CardContent>
+        </Card>)}
 
         {/* ═══════════════════════════════════════════════════════════════
             DIALOG: Topic Detail with Replies
             ═══════════════════════════════════════════════════════════════ */}
-        <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-          <DialogContent className="max-w-2xl max-h-[85vh]">
-            <DialogHeader>
-              <DialogTitle className="text-base">{selectedTopic?.title}</DialogTitle>
-            </DialogHeader>
-            {selectedTopic && (
-              <ScrollArea className="max-h-[65vh] pr-2">
+        {detailOpen && selectedTopic && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{selectedTopic.title}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent className="max-w-2xl">
+            <ScrollArea className="max-h-[65vh] pr-2">
                 <div className="space-y-4 pb-4">
                   {/* Topic Meta */}
                   <div className="flex items-center gap-2 flex-wrap">
@@ -1549,18 +1541,15 @@ export function Forum() {
                   )}
                 </div>
               </ScrollArea>
-            )}
-          </DialogContent>
-        </Dialog>
+          </CardContent>
+        </Card>)}
 
         {/* ═══════════════════════════════════════════════════════════════
-            DIALOG: Create / Edit Category
+            FORM: Create / Edit Category
             ═══════════════════════════════════════════════════════════════ */}
-        <Dialog open={catDialogOpen} onOpenChange={setCatDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>{editingCategory ? 'Izmeni kategoriju' : 'Nova kategorija'}</DialogTitle>
-            </DialogHeader>
+        {catDialogOpen && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editingCategory ? 'Izmeni kategoriju' : 'Nova kategorija'}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setCatDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Naziv</Label>
@@ -1596,27 +1585,23 @@ export function Forum() {
                 </div>
               </div>
             </div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setCatDialogOpen(false)}>Otkaži</Button>
               <Button onClick={handleCreateCategory} disabled={!catForm.label.trim()}>
                 {editingCategory ? 'Sačuvaj izmene' : 'Kreiraj'}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          </CardContent>
+        </Card>)}
 
         {/* ═══════════════════════════════════════════════════════════════
             DIALOG: Question Detail with Answers
             ═══════════════════════════════════════════════════════════════ */}
-        <Dialog open={qDetailOpen} onOpenChange={setQDetailOpen}>
-          <DialogContent className="max-w-2xl max-h-[85vh]">
-            <DialogHeader>
-              <DialogTitle className="text-base flex items-center gap-2">
-                <HelpCircle className="h-5 w-5" />
-                {selectedQuestion?.title}
-                {selectedQuestion?.hasAccepted && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
-              </DialogTitle>
-            </DialogHeader>
+        {qDetailOpen && selectedQuestion && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><HelpCircle className="h-5 w-5" />
+                {selectedQuestion.title}
+                {selectedQuestion.hasAccepted && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setQDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent className="max-w-2xl">
             {selectedQuestion && (
               <ScrollArea className="max-h-[65vh] pr-2">
                 <div className="space-y-4 pb-4">
@@ -1708,17 +1693,15 @@ export function Forum() {
                 </div>
               </ScrollArea>
             )}
-          </DialogContent>
-        </Dialog>
+          </CardContent>
+        </Card>)}
 
         {/* ═══════════════════════════════════════════════════════════════
             DIALOG: Create / Edit Tag
             ═══════════════════════════════════════════════════════════════ */}
-        <Dialog open={tagDialogOpen} onOpenChange={setTagDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>{editingTag ? 'Izmeni tag' : 'Novi tag'}</DialogTitle>
-            </DialogHeader>
+        {tagDialogOpen && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editingTag ? 'Izmeni tag' : 'Novi tag'}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setTagDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Naziv</Label>
@@ -1753,15 +1736,21 @@ export function Forum() {
                 </div>
               </div>
             </div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setTagDialogOpen(false)}>Otkaži</Button>
               <Button onClick={handleCreateTag} disabled={!tagForm.name.trim()}>
                 {editingTag ? 'Sačuvaj izmene' : 'Kreiraj'}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          </CardContent>
+        </Card>)}
       </div>
     </TooltipProvider>
   )
 }
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setCatDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreateCategory} disabled={!catForm.label.trim()}>
+                {editingCategory ? 'Sačuvaj izmene' : 'Kreiraj'}
+              </Button>
+            </div>

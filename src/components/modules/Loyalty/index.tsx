@@ -9,14 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import {
+import {ArrowLeft, 
   Plus, Search, Eye, Trash2, RefreshCw, Filter,
   CheckCircle2, Clock, XCircle, AlertTriangle, Gift, Star,
   TrendingUp, CalendarDays, Users, Crown, Award, Percent,
@@ -600,15 +600,12 @@ export function Loyalty() {
       </Tabs>
 
       {/* ===== DETAIL DIALOG ===== */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh]">
+      {detailOpen && (
+<Card className="max-w-lg max-h-[85vh]">
           <ScrollArea className="max-h-[75vh] pr-4">
             {selectedItem && 'cardNumber' in selectedItem && (
               <div className="space-y-4">
-                <DialogHeader>
-                  <DialogTitle>{(selectedItem as LoyaltyMember).partnerName}</DialogTitle>
-                  <DialogDescription>{(selectedItem as LoyaltyMember).cardNumber} · {(selectedItem as LoyaltyMember).email}</DialogDescription>
-                </DialogHeader>
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{(selectedItem as LoyaltyMember).partnerName}</CardTitle></CardHeader>
                 <div className="flex gap-2">
                   <Badge variant="outline" className={TIER_CONFIG[(selectedItem as LoyaltyMember).tier]?.bgColor}>{TIER_CONFIG[(selectedItem as LoyaltyMember).tier]?.icon} {TIER_CONFIG[(selectedItem as LoyaltyMember).tier]?.label}</Badge>
                   <Badge variant={selectedItem.status === 'active' ? 'default' : 'secondary'} className="text-xs">{selectedItem.status === 'active' ? 'Aktivan' : 'Neaktivan'}</Badge>
@@ -628,10 +625,7 @@ export function Loyalty() {
             )}
             {selectedItem && 'budget' in selectedItem && (
               <div className="space-y-4">
-                <DialogHeader>
-                  <DialogTitle>{(selectedItem as PromoCampaign).name}</DialogTitle>
-                  <DialogDescription>{(selectedItem as PromoCampaign).description}</DialogDescription>
-                </DialogHeader>
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{(selectedItem as PromoCampaign).name}</CardTitle></CardHeader>
                 <div className="flex gap-2">
                   <Badge variant="outline" className={PROMO_STATUS[(selectedItem as PromoCampaign).status]?.color}>{PROMO_STATUS[(selectedItem as PromoCampaign).status]?.label}</Badge>
                 </div>
@@ -644,16 +638,13 @@ export function Loyalty() {
               </div>
             )}
           </ScrollArea>
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ===== CREATE DIALOG ===== */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{createType === 'member' ? 'Novi član programa' : createType === 'reward' ? 'Nova nagrada' : 'Nova kampanja'}</DialogTitle>
-            <DialogDescription>Popunite podatke</DialogDescription>
-          </DialogHeader>
+      {createOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setCreateOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{createType === 'member' ? 'Novi član programa' : createType === 'reward' ? 'Nova nagrada' : 'Nova kampanja'}</CardTitle></CardHeader>
           <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2">
             {createType === 'member' && (
               <>
@@ -703,12 +694,12 @@ export function Loyalty() {
               </>
             )}
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+          )}
     </div>
   )
 }

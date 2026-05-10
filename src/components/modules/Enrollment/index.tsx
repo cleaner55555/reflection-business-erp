@@ -5,11 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, UserPlus, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, UserPlus, CheckCircle2, Clock, AlertCircle, Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -191,9 +190,9 @@ export function Enrollment() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader><DialogTitle>Detalji prijave</DialogTitle></DialogHeader>
+      {detailId && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">Detalji prijave<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent>
           {detailItem && (
             <div className="space-y-3">
               <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.applicantName}</h3>{getStatusBadge(detailItem.status)}</div>
@@ -218,12 +217,12 @@ export function Enrollment() {
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>)}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi prijavu' : 'Nova prijava'}</DialogTitle></DialogHeader>
+      {dialogOpen && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editItem ? 'Uredi prijavu' : 'Nova prijava'}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-xs" value={form.applicantName || ''} onChange={e => setForm({ ...form, applicantName: e.target.value })} /></div>
@@ -233,9 +232,9 @@ export function Enrollment() {
             </div>
             <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex justify-end gap-2 pt-4 border-t"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }

@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,7 +22,7 @@ import {
   CalendarRange, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users, AlertCircle, X,
   ChevronLeft, ChevronRight, Copy, Download, AlertTriangle,
-  Calendar, GanttChart, LayoutGrid, List, TrendingUp, Filter,
+  Calendar, GanttChart, LayoutGrid, List, TrendingUp, Filter, ArrowLeft,
 } from 'lucide-react'
 
 // ====================== TYPES ======================
@@ -1295,22 +1294,31 @@ export function Scheduler() {
         </TabsContent>
       </Tabs>
 
-      {/* ========== CREATE / EDIT DIALOG ========== */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('planner.newSlotTitle')}</DialogTitle></DialogHeader>
+      {/* ========== CREATE / EDIT FORM ========== */}
+      {dialogOpen && (
+        <Card className="max-w-3xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>{t('planner.newSlotTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent>
           <SlotForm form={form} setForm={setForm} employees={employees} projects={projects} t={t} />
-          <DialogFooter>
+          <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('planner.cancel')}</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('planner.create')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ========== DETAIL DIALOG ========== */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('planner.slotDetails')}</DialogTitle></DialogHeader>
+      {/* ========== DETAIL VIEW ========== */}
+      {detailOpen && (
+        <Card className="max-w-3xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>{t('planner.slotDetails')}</CardTitle>
+          </CardHeader>
+          <CardContent>
           {selected && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1332,8 +1340,9 @@ export function Scheduler() {
               {selected.notes && <div className="text-sm"><span className="text-muted-foreground">{t('planner.notes')}:</span> {selected.notes}</div>}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

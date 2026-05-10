@@ -4,12 +4,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,7 +16,7 @@ import { Progress } from '@/components/ui/progress'
 import {
   Plus, Search, Eye, Trash2, RefreshCw, CheckCircle2, Clock,
   AlertTriangle, BarChart3, CalendarDays, Users, TrendingUp,
-  Heart, FileText, Download, DollarSign, ShieldCheck
+  Heart, FileText, Download, DollarSign, ShieldCheck, ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -809,18 +808,22 @@ export function HealthFund() {
       </Tabs>
 
       {/* ===== DETAIL DIALOG ===== */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
+{detailOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDetailOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">
               {selectedItem && 'employeeName' in selectedItem && 'claimNumber' in selectedItem
                 ? `Zahtev ${selectedItem.claimNumber}`
                 : selectedItem && 'employeeName' in selectedItem
                   ? `Doprinos - ${selectedItem.employeeName}`
                   : 'Detalji'}
-            </DialogTitle>
-            <DialogDescription>Pregled detalja izabranog zapisa</DialogDescription>
-          </DialogHeader>
+            </CardTitle>
+            <CardDescription>Pregled detalja izabranog zapisa</CardDescription>
+          </div>
+            </CardHeader>
           {selectedItem && 'claimNumber' in selectedItem && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -857,25 +860,29 @@ export function HealthFund() {
               </div>
             </div>
           )}
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setDetailOpen(false)}>Zatvori</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* ===== CREATE DIALOG ===== */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
+{createOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCreateOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">
               {createType === 'contribution' ? 'Novi doprinos' : 'Novi zdravstveni zahtev'}
-            </DialogTitle>
-            <DialogDescription>
+            </CardTitle>
+            <CardDescription>
               {createType === 'contribution'
                 ? 'Unesite podatke o zdravstvenom doprinosu za zaposlenog'
                 : 'Podnesite novi zahtev za refundaciju zdravstvenih troškova'}
-            </DialogDescription>
-          </DialogHeader>
+            </CardDescription>
+          </div>
+            </CardHeader>
 
           {createType === 'contribution' && (
             <div className="space-y-4">
@@ -968,14 +975,14 @@ export function HealthFund() {
             </div>
           )}
 
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
             <Button onClick={createType === 'contribution' ? handleCreateContribution : handleCreateClaim}>
               {createType === 'contribution' ? 'Kreiraj doprinos' : 'Podnesi zahtev'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
     </div>
   )
 }

@@ -8,14 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Headphones, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users,
-  TrendingUp, AlertCircle, MessageSquare, AlertTriangle
+  TrendingUp, AlertCircle, MessageSquare, AlertTriangle, ArrowLeft
 } from 'lucide-react'
 
 interface Ticket {
@@ -318,78 +317,74 @@ export function Support() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novi tiket</DialogTitle></DialogHeader>
-          <div className="space-y-4">
+      {dialogOpen && (<Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Novi tiket</CardTitle></div></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Naslov</Label>
+            <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Kratak opis problema" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Naslov</Label>
-              <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Kratak opis problema" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Klijent</Label>
-                <Input value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} placeholder="Ime klijenta" />
-              </div>
-              <div className="space-y-2">
-                <Label>Kategorija</Label>
-                <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(categoryLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Prioritet</Label>
-                <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(priorityConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Zaduzeni</Label>
-                <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ime agenta" />
-              </div>
+              <Label>Klijent</Label>
+              <Input value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} placeholder="Ime klijenta" />
             </div>
             <div className="space-y-2">
-              <Label>Opis</Label>
-              <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Detaljan opis problema..." />
+              <Label>Kategorija</Label>
+              <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(categoryLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <DialogFooter>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Prioritet</Label>
+              <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(priorityConfig).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Zaduzeni</Label>
+              <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ime agenta" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Opis</Label>
+            <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Detaljan opis problema..." />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji tiketa</DialogTitle></DialogHeader>
-          {selected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Broj:</span> <span className="font-mono">{selected.ticketNumber}</span></div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">Klijent:</span> {selected.customerName}</div>
-                <div><span className="text-muted-foreground">Kategorija:</span> {categoryLabels[selected.category] || selected.category}</div>
-                <div><span className="text-muted-foreground">Prioritet:</span> <Badge variant="outline" className={priorityConfig[selected.priority]?.color}>{priorityConfig[selected.priority]?.label}</Badge></div>
-                {selected.assignedTo && <div><span className="text-muted-foreground">Zaduzeni:</span> {selected.assignedTo}</div>}
-                <div><span className="text-muted-foreground">Kreiran:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
-                {selected.resolvedAt && <div><span className="text-muted-foreground">Rešen:</span> {new Date(selected.resolvedAt).toLocaleDateString('sr-RS')}</div>}
-              </div>
-              {selected.description && (
-                <div className="text-sm"><span className="text-muted-foreground">Opis:</span> {selected.description}</div>
-              )}
+      {detailOpen && (<Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Detalji tiketa</CardTitle></div></CardHeader>
+        {selected && (
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><span className="text-muted-foreground">Broj:</span> <span className="font-mono">{selected.ticketNumber}</span></div>
+              <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
+              <div><span className="text-muted-foreground">Klijent:</span> {selected.customerName}</div>
+              <div><span className="text-muted-foreground">Kategorija:</span> {categoryLabels[selected.category] || selected.category}</div>
+              <div><span className="text-muted-foreground">Prioritet:</span> <Badge variant="outline" className={priorityConfig[selected.priority]?.color}>{priorityConfig[selected.priority]?.label}</Badge></div>
+              {selected.assignedTo && <div><span className="text-muted-foreground">Zaduzeni:</span> {selected.assignedTo}</div>}
+              <div><span className="text-muted-foreground">Kreiran:</span> {new Date(selected.createdAt).toLocaleDateString('sr-RS')}</div>
+              {selected.resolvedAt && <div><span className="text-muted-foreground">Rešen:</span> {new Date(selected.resolvedAt).toLocaleDateString('sr-RS')}</div>}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            {selected.description && (
+              <div className="text-sm"><span className="text-muted-foreground">Opis:</span> {selected.description}</div>
+            )}
+          </CardContent>
+        )}
+      </Card>)}
     </div>
   )
 }

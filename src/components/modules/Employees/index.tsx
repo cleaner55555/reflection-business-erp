@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
 import {
   Plus, Search, Pencil, Trash2, UserCog, Users, ArrowLeft, Printer,
   BarChart3, Building2, DollarSign, Calendar, Clock, TrendingUp, Award,
@@ -534,102 +534,101 @@ function ZaposleniListTab() {
         </CardContent>
       </Card>
 
-      {/* Employee Detail Dialog */}
-      <Dialog open={!!detailEmployee} onOpenChange={(open) => { if (!open) setDetailEmployee(null) }}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          {detailEmployee && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-lg">{tc(detailEmployee.firstName)} {tc(detailEmployee.lastName)}</DialogTitle>
-              </DialogHeader>
-              {detailLoading ? (
-                <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Info */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                    <div><span className="text-muted-foreground">Pozicija:</span><p className="font-medium">{tc(detailEmployee.position || '-')}</p></div>
-                    <div><span className="text-muted-foreground">Departman:</span><p className="font-medium">{detailEmployee.department || '-'}</p></div>
-                    <div><span className="text-muted-foreground">Plata:</span><p className="font-medium">{formatRSD(detailEmployee.baseSalary)}</p></div>
-                    <div><span className="text-muted-foreground">Email:</span><p className="font-medium">{detailEmployee.email || '-'}</p></div>
-                    <div><span className="text-muted-foreground">Telefon:</span><p className="font-medium">{detailEmployee.phone || '-'}</p></div>
-                    <div><span className="text-muted-foreground">Zaposlen od:</span><p className="font-medium">{formatDate(detailEmployee.hireDate)}</p></div>
+      {/* Employee Detail Card */}
+      {!!detailEmployee && (<Card className="max-w-2xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailEmployee(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-lg">{detailEmployee.firstName} {detailEmployee.lastName}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {detailLoading ? (
+            <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div>
+          ) : (
+            <div className="space-y-4">
+              {/* Info */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                <div><span className="text-muted-foreground">Pozicija:</span><p className="font-medium">{tc(detailEmployee.position || '-')}</p></div>
+                <div><span className="text-muted-foreground">Departman:</span><p className="font-medium">{detailEmployee.department || '-'}</p></div>
+                <div><span className="text-muted-foreground">Plata:</span><p className="font-medium">{formatRSD(detailEmployee.baseSalary)}</p></div>
+                <div><span className="text-muted-foreground">Email:</span><p className="font-medium">{detailEmployee.email || '-'}</p></div>
+                <div><span className="text-muted-foreground">Telefon:</span><p className="font-medium">{detailEmployee.phone || '-'}</p></div>
+                <div><span className="text-muted-foreground">Zaposlen od:</span><p className="font-medium">{formatDate(detailEmployee.hireDate)}</p></div>
+              </div>
+
+              <Separator />
+
+              {/* Recent payrolls */}
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Plate ({detailPayrolls.length})</h4>
+                {detailPayrolls.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Nema obračunatih plata.</p>
+                ) : (
+                  <div className="max-h-40 overflow-y-auto">
+                    <Table>
+                      <TableHeader><TableRow>
+                        <TableHead className="text-xs">Mesec</TableHead>
+                        <TableHead className="text-xs text-right">Neto</TableHead>
+                        <TableHead className="text-xs text-center">Status</TableHead>
+                      </TableRow></TableHeader>
+                      <TableBody>
+                        {detailPayrolls.slice(0, 6).map((p) => (
+                          <TableRow key={p.id}>
+                            <TableCell className="text-xs">{MONTHS[p.month - 1]} {p.year}</TableCell>
+                            <TableCell className="text-xs text-right font-medium">{formatRSD(p.netSalary)}</TableCell>
+                            <TableCell className="text-xs text-center">
+                              <Badge variant={p.status === 'isplaceno' ? 'default' : 'outline'} className="text-xs">
+                                {p.status === 'nacrt' ? 'Nacrt' : p.status === 'odobreno' ? 'Odobreno' : 'Isplaćeno'}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
+                )}
+              </div>
 
-                  <Separator />
+              <Separator />
 
-                  {/* Recent payrolls */}
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2">Plate ({detailPayrolls.length})</h4>
-                    {detailPayrolls.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">Nema obračunatih plata.</p>
-                    ) : (
-                      <div className="max-h-40 overflow-y-auto">
-                        <Table>
-                          <TableHeader><TableRow>
-                            <TableHead className="text-xs">Mesec</TableHead>
-                            <TableHead className="text-xs text-right">Neto</TableHead>
-                            <TableHead className="text-xs text-center">Status</TableHead>
-                          </TableRow></TableHeader>
-                          <TableBody>
-                            {detailPayrolls.slice(0, 6).map((p) => (
-                              <TableRow key={p.id}>
-                                <TableCell className="text-xs">{MONTHS[p.month - 1]} {p.year}</TableCell>
-                                <TableCell className="text-xs text-right font-medium">{formatRSD(p.netSalary)}</TableCell>
-                                <TableCell className="text-xs text-center">
-                                  <Badge variant={p.status === 'isplaceno' ? 'default' : 'outline'} className="text-xs">
-                                    {p.status === 'nacrt' ? 'Nacrt' : p.status === 'odobreno' ? 'Odobreno' : 'Isplaćeno'}
-                                  </Badge>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
+              {/* Recent attendance */}
+              <div>
+                <h4 className="text-sm font-semibold mb-2">Prisustvo ({detailAttendances.length})</h4>
+                {detailAttendances.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Nema evidentiranog prisustva.</p>
+                ) : (
+                  <div className="max-h-40 overflow-y-auto">
+                    <Table>
+                      <TableHeader><TableRow>
+                        <TableHead className="text-xs">Datum</TableHead>
+                        <TableHead className="text-xs text-center">Sati</TableHead>
+                        <TableHead className="text-xs">Tip</TableHead>
+                      </TableRow></TableHeader>
+                      <TableBody>
+                        {detailAttendances.slice(0, 8).map((a) => {
+                          const typeInfo = ATTENDANCE_TYPES.find((at) => at.value === a.type)
+                          return (
+                            <TableRow key={a.id}>
+                              <TableCell className="text-xs">{formatDate(a.date)}</TableCell>
+                              <TableCell className="text-xs text-center">{a.hoursWorked}h</TableCell>
+                              <TableCell className="text-xs">
+                                <Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo?.color || ''}`}>
+                                  {typeInfo?.label || a.type}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
-
-                  <Separator />
-
-                  {/* Recent attendance */}
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2">Prisustvo ({detailAttendances.length})</h4>
-                    {detailAttendances.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">Nema evidentiranog prisustva.</p>
-                    ) : (
-                      <div className="max-h-40 overflow-y-auto">
-                        <Table>
-                          <TableHeader><TableRow>
-                            <TableHead className="text-xs">Datum</TableHead>
-                            <TableHead className="text-xs text-center">Sati</TableHead>
-                            <TableHead className="text-xs">Tip</TableHead>
-                          </TableRow></TableHeader>
-                          <TableBody>
-                            {detailAttendances.slice(0, 8).map((a) => {
-                              const typeInfo = ATTENDANCE_TYPES.find((at) => at.value === a.type)
-                              return (
-                                <TableRow key={a.id}>
-                                  <TableCell className="text-xs">{formatDate(a.date)}</TableCell>
-                                  <TableCell className="text-xs text-center">{a.hoursWorked}h</TableCell>
-                                  <TableCell className="text-xs">
-                                    <Badge variant="outline" className={`text-xs px-2 py-0 ${typeInfo?.color || ''}`}>
-                                      {typeInfo?.label || a.type}
-                                    </Badge>
-                                  </TableCell>
-                                </TableRow>
-                              )
-                            })}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </>
+                )}
+              </div>
+            </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>)}
     </>
   )
 }

@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,7 +16,8 @@ import { Separator } from '@/components/ui/separator'
 import {
   Share2, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, TrendingUp, Heart,
-  MessageSquare, Users, Globe2, ExternalLink, CalendarDays
+  MessageSquare, Users, Globe2, ExternalLink, CalendarDays,
+  ArrowLeft
 } from 'lucide-react'
 
 interface SocialPost {
@@ -250,9 +250,10 @@ export function SocialMedia() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova objava</DialogTitle></DialogHeader>
+      {dialogOpen && (
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDialogOpen(false)} /> Nova objava</CardTitle></CardHeader>
+          <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Platforma</Label>
@@ -264,17 +265,18 @@ export function SocialMedia() {
             <div className="space-y-2"><Label>Sadržaj</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={5} placeholder="Napišite sadržaj objave..." /></div>
             <div className="space-y-2"><Label>Datum objave (opcionalno)</Label><Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} /></div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji objave</DialogTitle></DialogHeader>
-          {selected && (
+      {detailOpen && selected && (
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDetailOpen(false)} /> Detalji objave</CardTitle></CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <span className="text-lg">{platformConfig[selected.platform]?.icon}</span>
@@ -289,9 +291,9 @@ export function SocialMedia() {
                 <div><p className="text-lg font-bold">{selected.shares || 0}</p><p className="text-xs text-muted-foreground">Deljenja</p></div>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

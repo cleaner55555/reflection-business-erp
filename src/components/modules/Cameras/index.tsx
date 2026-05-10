@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+// Dialog removed - converted to inline Card
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -19,7 +19,7 @@ import {
   Camera, Plus, Search, Eye, Trash2, RefreshCw, CheckCircle2, Clock,
   AlertTriangle, BarChart3, CalendarDays, Users, Star, TrendingUp,
   FileText, Download, Filter, Video, VideoOff, HardDrive,
-  Settings, Monitor, Circle, Aperture, Wifi, WifiOff, Volume2, VolumeX
+  Settings, Monitor, Circle, Aperture, Wifi, WifiOff, Volume2, VolumeX, ArrowLeft
 } from 'lucide-react'
 
 // ============ TYPES ============
@@ -716,120 +716,126 @@ export function Cameras() {
         </TabsContent>
       </Tabs>
 
-      {/* Camera Dialog (New/Edit) */}
-      <Dialog open={cameraDialogOpen} onOpenChange={setCameraDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingCamera ? 'Izmeni kameru' : 'Nova kamera'}</DialogTitle>
-            <DialogDescription>{editingCamera ? 'Ažurirajte postavke kamere' : 'Dodajte novu kameru u sistem'}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-            <div>
-              <Label className="text-xs">Naziv kamere</Label>
-              <Input value={cameraForm.name} onChange={(e) => setCameraForm({ ...cameraForm, name: e.target.value })} placeholder="npr. Ulaz - glavna vrata" />
+      {/* Camera Form (New/Edit) */}
+      {cameraDialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setCameraDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div><CardTitle className="text-base font-semibold">{editingCamera ? 'Izmeni kameru' : 'Nova kamera'}</CardTitle></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
               <div>
-                <Label className="text-xs">Lokacija</Label>
-                <Input value={cameraForm.location} onChange={(e) => setCameraForm({ ...cameraForm, location: e.target.value })} placeholder="npr. Glavni ulaz" />
+                <Label className="text-xs">Naziv kamere</Label>
+                <Input value={cameraForm.name} onChange={(e) => setCameraForm({ ...cameraForm, name: e.target.value })} placeholder="npr. Ulaz - glavna vrata" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Lokacija</Label>
+                  <Input value={cameraForm.location} onChange={(e) => setCameraForm({ ...cameraForm, location: e.target.value })} placeholder="npr. Glavni ulaz" />
+                </div>
+                <div>
+                  <Label className="text-xs">Tip</Label>
+                  <Select value={cameraForm.type} onValueChange={(v) => setCameraForm({ ...cameraForm, type: v as 'indoor' | 'outdoor' | 'parking' })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="indoor">Interna</SelectItem>
+                      <SelectItem value="outdoor">Spoljašnja</SelectItem>
+                      <SelectItem value="parking">Parking</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">IP adresa</Label>
+                  <Input value={cameraForm.ipAddress} onChange={(e) => setCameraForm({ ...cameraForm, ipAddress: e.target.value })} placeholder="192.168.1.100" />
+                </div>
+                <div>
+                  <Label className="text-xs">Port</Label>
+                  <Input type="number" value={cameraForm.port} onChange={(e) => setCameraForm({ ...cameraForm, port: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Rezolucija</Label>
+                  <Select value={cameraForm.resolution} onValueChange={(v) => setCameraForm({ ...cameraForm, resolution: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1280x720">720p (1280x720)</SelectItem>
+                      <SelectItem value="1920x1080">1080p (1920x1080)</SelectItem>
+                      <SelectItem value="2560x1440">1440p (2560x1440)</SelectItem>
+                      <SelectItem value="3840x2160">4K (3840x2160)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Režim snimanja</Label>
+                  <Select value={cameraForm.recordingMode} onValueChange={(v) => setCameraForm({ ...cameraForm, recordingMode: v as 'continuous' | 'motion' | 'scheduled' })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="continuous">Kontinualno</SelectItem>
+                      <SelectItem value="motion">Po pokretu</SelectItem>
+                      <SelectItem value="scheduled">Planirano</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Osetljivost na pokret ({cameraForm.sensitivity}%)</Label>
+                  <Input type="range" min="10" max="100" value={cameraForm.sensitivity} onChange={(e) => setCameraForm({ ...cameraForm, sensitivity: e.target.value })} className="cursor-pointer" />
+                </div>
+                <div>
+                  <Label className="text-xs">Zadržavanje snimaka (dana)</Label>
+                  <Input type="number" value={cameraForm.retentionDays} onChange={(e) => setCameraForm({ ...cameraForm, retentionDays: e.target.value })} min="1" max="365" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Raspored od</Label>
+                  <Input type="time" value={cameraForm.scheduleStart} onChange={(e) => setCameraForm({ ...cameraForm, scheduleStart: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Raspored do</Label>
+                  <Input type="time" value={cameraForm.scheduleEnd} onChange={(e) => setCameraForm({ ...cameraForm, scheduleEnd: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" checked={cameraForm.nightVision} onChange={(e) => setCameraForm({ ...cameraForm, nightVision: e.target.checked })} className="rounded" />
+                  Noćni vid
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" checked={cameraForm.audioEnabled} onChange={(e) => setCameraForm({ ...cameraForm, audioEnabled: e.target.checked })} className="rounded" />
+                  Audio
+                </label>
               </div>
               <div>
-                <Label className="text-xs">Tip</Label>
-                <Select value={cameraForm.type} onValueChange={(v) => setCameraForm({ ...cameraForm, type: v as 'indoor' | 'outdoor' | 'parking' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="indoor">Interna</SelectItem>
-                    <SelectItem value="outdoor">Spoljašnja</SelectItem>
-                    <SelectItem value="parking">Parking</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs">Napomene</Label>
+                <Textarea value={cameraForm.notes} onChange={(e) => setCameraForm({ ...cameraForm, notes: e.target.value })} placeholder="Opcionalne napomene..." rows={2} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">IP adresa</Label>
-                <Input value={cameraForm.ipAddress} onChange={(e) => setCameraForm({ ...cameraForm, ipAddress: e.target.value })} placeholder="192.168.1.100" />
-              </div>
-              <div>
-                <Label className="text-xs">Port</Label>
-                <Input type="number" value={cameraForm.port} onChange={(e) => setCameraForm({ ...cameraForm, port: e.target.value })} />
-              </div>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setCameraDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleSaveCamera}>{editingCamera ? 'Sačuvaj izmene' : 'Kreiraj kameru'}</Button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Rezolucija</Label>
-                <Select value={cameraForm.resolution} onValueChange={(v) => setCameraForm({ ...cameraForm, resolution: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1280x720">720p (1280x720)</SelectItem>
-                    <SelectItem value="1920x1080">1080p (1920x1080)</SelectItem>
-                    <SelectItem value="2560x1440">1440p (2560x1440)</SelectItem>
-                    <SelectItem value="3840x2160">4K (3840x2160)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs">Režim snimanja</Label>
-                <Select value={cameraForm.recordingMode} onValueChange={(v) => setCameraForm({ ...cameraForm, recordingMode: v as 'continuous' | 'motion' | 'scheduled' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="continuous">Kontinualno</SelectItem>
-                    <SelectItem value="motion">Po pokretu</SelectItem>
-                    <SelectItem value="scheduled">Planirano</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Osetljivost na pokret ({cameraForm.sensitivity}%)</Label>
-                <Input type="range" min="10" max="100" value={cameraForm.sensitivity} onChange={(e) => setCameraForm({ ...cameraForm, sensitivity: e.target.value })} className="cursor-pointer" />
-              </div>
-              <div>
-                <Label className="text-xs">Zadržavanje snimaka (dana)</Label>
-                <Input type="number" value={cameraForm.retentionDays} onChange={(e) => setCameraForm({ ...cameraForm, retentionDays: e.target.value })} min="1" max="365" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Raspored od</Label>
-                <Input type="time" value={cameraForm.scheduleStart} onChange={(e) => setCameraForm({ ...cameraForm, scheduleStart: e.target.value })} />
-              </div>
-              <div>
-                <Label className="text-xs">Raspored do</Label>
-                <Input type="time" value={cameraForm.scheduleEnd} onChange={(e) => setCameraForm({ ...cameraForm, scheduleEnd: e.target.value })} />
-              </div>
-            </div>
-            <div className="flex items-center gap-6">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={cameraForm.nightVision} onChange={(e) => setCameraForm({ ...cameraForm, nightVision: e.target.checked })} className="rounded" />
-                Noćni vid
-              </label>
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={cameraForm.audioEnabled} onChange={(e) => setCameraForm({ ...cameraForm, audioEnabled: e.target.checked })} className="rounded" />
-                Audio
-              </label>
-            </div>
-            <div>
-              <Label className="text-xs">Napomene</Label>
-              <Textarea value={cameraForm.notes} onChange={(e) => setCameraForm({ ...cameraForm, notes: e.target.value })} placeholder="Opcionalne napomene..." rows={2} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCameraDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSaveCamera}>{editingCamera ? 'Sačuvaj izmene' : 'Kreiraj kameru'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Camera Detail Dialog */}
-      <Dialog open={cameraDetailOpen} onOpenChange={setCameraDetailOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedCamera?.name}</DialogTitle>
-            <DialogDescription>Detalji kamere i status</DialogDescription>
-          </DialogHeader>
-          {selectedCamera && (
+      {/* Camera Detail */}
+      {cameraDetailOpen && selectedCamera && (
+        <Card className="max-w-md">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setCameraDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base font-semibold">{selectedCamera.name}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="relative h-40 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg flex items-center justify-center">
                 {selectedCamera.status === 'offline' ? (
@@ -908,27 +914,32 @@ export function Cameras() {
                 </div>
               )}
             </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCameraDetailOpen(false)}>Zatvori</Button>
-            <Button onClick={() => { setCameraDetailOpen(false); if (selectedCamera) openEditCamera(selectedCamera) }}>Uredi postavke</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setCameraDetailOpen(false)}>Zatvori</Button>
+              <Button onClick={() => { setCameraDetailOpen(false); if (selectedCamera) openEditCamera(selectedCamera) }}>Uredi postavke</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Delete Confirm Dialog */}
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Brisanje kamere</DialogTitle>
-            <DialogDescription>Da li ste sigurni da želite da obrišete kameru &quot;{selectedCamera?.name}&quot;? Svi snimci će biti zadržani.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
-            <Button variant="destructive" onClick={handleDeleteCamera}>Obriši</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Delete Confirmation */}
+      {deleteConfirmOpen && (
+        <Card className="max-w-sm">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDeleteConfirmOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base font-semibold">Brisanje kamere</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Da li ste sigurni da želite da obrišete kameru &quot;{selectedCamera?.name}&quot;? Svi snimci će biti zadržani.</p>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
+              <Button variant="destructive" onClick={handleDeleteCamera}>Obriši</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

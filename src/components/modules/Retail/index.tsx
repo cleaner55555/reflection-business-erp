@@ -9,13 +9,6 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import {
   Search,
   Plus,
   Minus,
@@ -25,7 +18,6 @@ import {
   Banknote,
   Receipt,
   Printer,
-  ChevronLeft,
   Clock,
   Package,
   TrendingUp,
@@ -36,6 +28,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Calculator,
+  ArrowLeft,
 } from 'lucide-react'
 
 interface POSProduct {
@@ -509,115 +502,117 @@ function POSTerminal({ companyId }: { companyId: string | null }) {
         </CardContent>
       </Card>
 
-      {/* Payment Dialog */}
-      <Dialog open={showPayment} onOpenChange={setShowPayment}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Naplata</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold">
-                {total.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
-              </div>
-              <div className="text-sm text-muted-foreground mt-1">{itemsCount} stavki</div>
-            </div>
-
-            {/* Payment method selection */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: 'gotovina', icon: Banknote, label: 'Gotovina' },
-                { id: 'kartica', icon: CreditCard, label: 'Kartica' },
-                { id: 'transakcioni_racun', icon: Receipt, label: 'Transakcija' },
-              ].map(pm => (
-                <button
-                  key={pm.id}
-                  onClick={() => setPaymentMethod(pm.id)}
-                  className={`p-3 rounded-lg border text-center transition-colors ${
-                    paymentMethod === pm.id
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'hover:bg-accent'
-                  }`}
-                >
-                  <pm.icon className="h-5 w-5 mx-auto mb-1" />
-                  <span className="text-xs font-medium">{pm.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Amount input for cash */}
-            {paymentMethod === 'gotovina' && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Unesite iznos:</label>
-                <Input
-                  type="number"
-                  value={paidAmount}
-                  onChange={e => setPaidAmount(e.target.value)}
-                  className="text-lg text-center font-mono"
-                  autoFocus
-                />
-                {/* Quick amount buttons */}
-                <div className="grid grid-cols-4 gap-1">
-                  {[total, Math.ceil(total / 100) * 100, Math.ceil(total / 500) * 500, Math.ceil(total / 1000) * 1000].map((amt, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setPaidAmount(amt.toFixed(2))}
-                      className="py-1.5 text-xs rounded bg-muted hover:bg-muted/80"
-                    >
-                      {Math.round(amt).toLocaleString('sr-RS')}
-                    </button>
-                  ))}
+      {/* Payment Form */}
+      {showPayment && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShowPayment(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Naplata</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold">
+                  {total.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
                 </div>
-                {change > 0 && (
-                  <div className="text-center p-2 rounded bg-green-100 dark:bg-green-900/20">
-                    <span className="text-sm text-muted-foreground">Kusur: </span>
-                    <span className="text-lg font-bold text-green-700 dark:text-green-400">
-                      {change.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
-                    </span>
-                  </div>
-                )}
+                <div className="text-sm text-muted-foreground mt-1">{itemsCount} stavki</div>
               </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPayment(false)}>
-              <ChevronLeft className="h-4 w-4 mr-1" /> Nazad
-            </Button>
-            <Button size="lg" onClick={processPayment}>
-              <CheckCircle2 className="h-4 w-4 mr-1.5" />
-              Potvrdi plaćanje
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* Receipt Dialog */}
-      <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-center">Račun uspešno</DialogTitle>
-          </DialogHeader>
-          <div className="text-center space-y-4 py-4">
-            <div className="p-4 rounded-full bg-green-100 dark:bg-green-900/20 mx-auto w-fit">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
+              {/* Payment method selection */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'gotovina', icon: Banknote, label: 'Gotovina' },
+                  { id: 'kartica', icon: CreditCard, label: 'Kartica' },
+                  { id: 'transakcioni_racun', icon: Receipt, label: 'Transakcija' },
+                ].map(pm => (
+                  <button
+                    key={pm.id}
+                    onClick={() => setPaymentMethod(pm.id)}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      paymentMethod === pm.id
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'hover:bg-accent'
+                    }`}
+                  >
+                    <pm.icon className="h-5 w-5 mx-auto mb-1" />
+                    <span className="text-xs font-medium">{pm.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Amount input for cash */}
+              {paymentMethod === 'gotovina' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Unesite iznos:</label>
+                  <Input
+                    type="number"
+                    value={paidAmount}
+                    onChange={e => setPaidAmount(e.target.value)}
+                    className="text-lg text-center font-mono"
+                  />
+                  {/* Quick amount buttons */}
+                  <div className="grid grid-cols-4 gap-1">
+                    {[total, Math.ceil(total / 100) * 100, Math.ceil(total / 500) * 500, Math.ceil(total / 1000) * 1000].map((amt, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setPaidAmount(amt.toFixed(2))}
+                        className="py-1.5 text-xs rounded bg-muted hover:bg-muted/80"
+                      >
+                        {Math.round(amt).toLocaleString('sr-RS')}
+                      </button>
+                    ))}
+                  </div>
+                  {change > 0 && (
+                    <div className="text-center p-2 rounded bg-green-100 dark:bg-green-900/20">
+                      <span className="text-sm text-muted-foreground">Kusur: </span>
+                      <span className="text-lg font-bold text-green-700 dark:text-green-400">
+                        {change.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            <div>
-              <div className="text-2xl font-mono font-bold">{receiptOrder?.orderNumber}</div>
-              <div className="text-sm text-muted-foreground mt-1">
-                {receiptOrder?.totalAmount?.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button size="lg" onClick={processPayment}>
+                <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                Potvrdi plaćanje
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Receipt Confirmation */}
+      {showReceipt && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShowReceipt(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Račun uspešno</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center space-y-4">
+              <div className="p-4 rounded-full bg-green-100 dark:bg-green-900/20 mx-auto w-fit">
+                <CheckCircle2 className="h-10 w-10 text-green-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-mono font-bold">{receiptOrder?.orderNumber}</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {receiptOrder?.totalAmount?.toLocaleString('sr-RS', { minimumFractionDigits: 2 })} RSD
+                </div>
+              </div>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" size="sm">
+                  <Printer className="h-4 w-4 mr-1" /> Štampaj
+                </Button>
+                <Button size="sm" onClick={() => setShowReceipt(false)}>
+                  Novi račun
+                </Button>
               </div>
             </div>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" size="sm">
-                <Printer className="h-4 w-4 mr-1" /> Štampaj
-              </Button>
-              <Button size="sm" onClick={() => setShowReceipt(false)}>
-                Novi račun
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
@@ -762,42 +757,45 @@ function ShiftManager({ companyId }: { companyId: string | null }) {
         })}
       </div>
 
-      {/* Open shift dialog */}
-      <Dialog open={showOpen} onOpenChange={setShowOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Otvori novu smenu</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <label className="text-sm font-medium">Početni saldo (RSD)</label>
-              <Input
-                type="number"
-                value={openBalance}
-                onChange={e => setOpenBalance(e.target.value)}
-                placeholder="0.00"
-                className="mt-1.5"
-                autoFocus
-              />
+      {/* Open shift form */}
+      {showOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShowOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Otvori novu smenu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Početni saldo (RSD)</label>
+                <Input
+                  type="number"
+                  value={openBalance}
+                  onChange={e => setOpenBalance(e.target.value)}
+                  placeholder="0.00"
+                  className="mt-1.5"
+                />
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowOpen(false)}>Otkaži</Button>
-            <Button onClick={openShift}>
-              <LogIn className="h-4 w-4 mr-1.5" /> Otvori smenu
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => setShowOpen(false)}>Otkaži</Button>
+              <Button onClick={openShift}>
+                <LogIn className="h-4 w-4 mr-1.5" /> Otvori smenu
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Close shift dialog */}
-      <Dialog open={showClose} onOpenChange={setShowClose}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Zatvori smenu #{selectedShift?.number}</DialogTitle>
-          </DialogHeader>
-          {selectedShift && (
-            <div className="space-y-4 py-4">
+      {/* Close shift form */}
+      {showClose && selectedShift && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShowClose(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Zatvori smenu #{selectedShift.number}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="text-muted-foreground">Početni saldo:</div>
                 <div className="font-medium text-right">{selectedShift.openingBalance.toLocaleString('sr-RS')} RSD</div>
@@ -813,7 +811,6 @@ function ShiftManager({ companyId }: { companyId: string | null }) {
                   onChange={e => setCloseBalance(e.target.value)}
                   placeholder="0.00"
                   className="mt-1.5"
-                  autoFocus
                 />
               </div>
               <div>
@@ -826,15 +823,15 @@ function ShiftManager({ companyId }: { companyId: string | null }) {
                 />
               </div>
             </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowClose(false)}>Otkaži</Button>
-            <Button variant="destructive" onClick={closeShift}>
-              <LogOut className="h-4 w-4 mr-1.5" /> Zatvori smenu
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => setShowClose(false)}>Otkaži</Button>
+              <Button variant="destructive" onClick={closeShift}>
+                <LogOut className="h-4 w-4 mr-1.5" /> Zatvori smenu
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

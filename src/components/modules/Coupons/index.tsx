@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
-import { Plus, Search, Trash2, Pencil, Eye, Tag, Percent, DollarSign, Gift, Ticket, Clock, CheckCircle2, RefreshCw } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Tag, Percent, DollarSign, Gift, Ticket, Clock, CheckCircle2, RefreshCw, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -231,10 +231,10 @@ export function Coupons() {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader><DialogTitle>Detalji kupona</DialogTitle><DialogDescription>Pregled detalja kupona</DialogDescription></DialogHeader>
+      {/* Detail Card */}
+      {!!detailId && (<Card className="sm:max-w-[550px]">
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">Detalji kupona<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent>
           {detailItem && (
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Badge className="bg-emerald-100 text-emerald-700 font-mono text-sm px-3">{detailItem.code}</Badge><span className="text-sm font-medium">{detailItem.name}</span></div>{getStatusBadge(detailItem.status)}</div>
@@ -254,13 +254,13 @@ export function Coupons() {
               <div className="flex flex-wrap gap-1">{parseJSON(detailItem.applicableCategories).map((c: string) => <Badge key={c} variant="outline" className="text-xs">{c}</Badge>)}{parseJSON(detailItem.customerGroups).map((g: string) => <Badge key={g} variant="outline" className="text-xs">{g}</Badge>)}</div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>)}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={open => { setDialogOpen(open); if (!open) setEditItem(null) }}>
-        <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi kupon' : 'Novi kupon'}</DialogTitle><DialogDescription>{editItem ? 'Izmenite podatke kupona' : 'Kreirajte novi kupon'}</DialogDescription></DialogHeader>
+      {/* Create/Edit Card */}
+      {dialogOpen && (<Card className="sm:max-w-[500px]">
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{editItem ? 'Uredi kupon' : 'Novi kupon'}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent className="max-h-[85vh] overflow-y-auto">
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2"><Label className="text-xs">Kod *</Label><Input placeholder="SUMMER24" className="text-sm font-mono uppercase" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value.toUpperCase() }))} /></div>
@@ -282,9 +282,9 @@ export function Coupons() {
               <div className="grid gap-2"><Label className="text-xs">Do</Label><Input type="date" className="text-sm" value={formData.endDate} onChange={e => setFormData(p => ({ ...p, endDate: e.target.value }))} /></div>
             </div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex gap-2 pt-4"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }

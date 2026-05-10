@@ -9,9 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -24,7 +21,7 @@ import {
   CalendarCheck, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users, TrendingUp, AlertCircle,
   CalendarDays, XCircle, ChevronLeft, ChevronRight, Settings,
-  Phone, Mail, Star, Timer, Bell, UserPlus, Layers,
+  Phone, Mail, Star, Timer, Bell, UserPlus, Layers, ArrowLeft,
 } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -274,11 +271,11 @@ export function Appointments() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [loading, setLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [appointmentFormOpen, setAppointmentFormOpen] = useState(false)
+  const [appointmentDetailOpen, setAppointmentDetailOpen] = useState(false)
   const [selected, setSelected] = useState<Appointment | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [rescheduleOpen, setRescheduleOpen] = useState(false)
+  const [rescheduleFormOpen, setRescheduleFormOpen] = useState(false)
   const [rescheduleDate, setRescheduleDate] = useState('')
   const [rescheduleTime, setRescheduleTime] = useState('')
   const [calendarWeek, setCalendarWeek] = useState(0)
@@ -290,13 +287,13 @@ export function Appointments() {
   const [staff, setStaff] = useState<StaffMember[]>(MOCK_STAFF)
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [clientSearch, setClientSearch] = useState('')
-  const [clientDetailOpen, setClientDetailOpen] = useState(false)
+  const [clientDetailCardOpen, setClientDetailCardOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
-  const [serviceDialogOpen, setServiceDialogOpen] = useState(false)
+  const [serviceFormOpen, setServiceFormOpen] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
-  const [staffDialogOpen, setStaffDialogOpen] = useState(false)
+  const [staffFormOpen, setStaffFormOpen] = useState(false)
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null)
-  const [newClientDialogOpen, setNewClientDialogOpen] = useState(false)
+  const [newClientFormOpen, setNewClientFormOpen] = useState(false)
 
   const emptyForm = {
     title: '', clientName: '', clientPhone: '', clientEmail: '',
@@ -357,7 +354,7 @@ export function Appointments() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: activeCompanyId, ...form }),
       })
-      if (res.ok) { setDialogOpen(false); setForm(emptyForm); loadItems(); loadDashboard() }
+      if (res.ok) { setAppointmentFormOpen(false); setForm(emptyForm); loadItems(); loadDashboard() }
     } catch { /* silent */ }
   }
 
@@ -398,13 +395,13 @@ export function Appointments() {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selected.id, date: rescheduleDate, time: rescheduleTime }),
       })
-      if (res.ok) { setRescheduleOpen(false); loadItems(); loadDashboard() }
+      if (res.ok) { setRescheduleFormOpen(false); loadItems(); loadDashboard() }
     } catch { /* silent */ }
   }
 
   const handleCreateAppointmentFromSlot = (date: string, time: string) => {
     setForm({ ...emptyForm, date, time })
-    setDialogOpen(true)
+    setAppointmentFormOpen(true)
   }
 
   const toggleSelect = (id: string) => {
@@ -430,7 +427,7 @@ export function Appointments() {
     } else {
       setServices(prev => [...prev, { ...serviceForm, id: `s${Date.now()}`, bookingCount: 0 }])
     }
-    setServiceDialogOpen(false)
+    setServiceFormOpen(false)
     setEditingService(null)
     setServiceForm(emptyServiceForm)
   }
@@ -449,7 +446,7 @@ export function Appointments() {
     } else {
       setStaff(prev => [...prev, { ...staffForm, id: `st${Date.now()}` }])
     }
-    setStaffDialogOpen(false)
+    setStaffFormOpen(false)
     setEditingStaff(null)
     setStaffForm(emptyStaffForm)
   }
@@ -462,7 +459,7 @@ export function Appointments() {
       ...clientForm, id: `c${Date.now()}`, appointmentCount: 0,
       totalSpent: 0, lastVisit: '', isVip: false,
     }])
-    setNewClientDialogOpen(false)
+    setNewClientFormOpen(false)
     setClientForm(emptyClientForm)
   }
 
@@ -533,7 +530,7 @@ export function Appointments() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadItems() }}>
             <RefreshCw className="h-4 w-4 mr-1" /> {t('appointments.refresh') || 'Osveži'}
           </Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" onClick={() => setAppointmentFormOpen(true)}>
             <Plus className="h-4 w-4 mr-1" /> {t('appointments.newAppointment') || 'Novi termin'}
           </Button>
         </div>
@@ -608,7 +605,7 @@ export function Appointments() {
                       <p className="text-sm text-muted-foreground py-4 text-center">{t('appointments.noToday') || 'Nema zakazanih termina za danas'}</p>
                     ) : (
                       todayAppointments.map((a) => (
-                        <div key={a.id} className="flex items-center gap-3 p-2 rounded-lg border hover:bg-muted/30 cursor-pointer" onClick={() => { setSelected(a); setDetailOpen(true) }}>
+                        <div key={a.id} className="flex items-center gap-3 p-2 rounded-lg border hover:bg-muted/30 cursor-pointer" onClick={() => { setSelected(a); setAppointmentDetailOpen(true) }}>
                           <div className="text-sm font-mono font-medium w-16 text-center bg-muted rounded px-2 py-1">{a.time}</div>
                           <div className="w-1 h-8 rounded-full" style={{ backgroundColor: TYPE_COLORS[a.type] || '#6b7280' }} />
                           <div className="flex-1 min-w-0">
@@ -724,7 +721,7 @@ export function Appointments() {
                             key={a.id}
                             className="text-xs leading-tight rounded px-1 py-0.5 mb-0.5 truncate cursor-pointer text-white"
                             style={{ backgroundColor: TYPE_COLORS[a.type] || '#6b7280', height: `${Math.max((a.duration / 30) * 24, 24)}px` }}
-                            onClick={(e) => { e.stopPropagation(); setSelected(a); setDetailOpen(true) }}
+                            onClick={(e) => { e.stopPropagation(); setSelected(a); setAppointmentDetailOpen(true) }}
                           >
                             <div className="font-medium truncate">{a.time} {a.clientName}</div>
                           </div>
@@ -740,219 +737,524 @@ export function Appointments() {
 
         {/* ─── Tab 3: Appointments List ────────────────────────────────────── */}
         <TabsContent value="appointments" className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t('appointments.searchPlaceholder') || 'Pretraži zakazivanja...'} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('appointments.allStatuses') || 'Svi statusi'} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('appointments.allStatuses') || 'Svi statusi'}</SelectItem>
-                {Object.entries(STATUS_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('appointments.allTypes') || 'Svi tipovi'} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('appointments.allTypes') || 'Svi tipovi'}</SelectItem>
-                {Object.entries(TYPE_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-              </SelectContent>
-            </Select>
-            <Input type="date" className="w-[140px]" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-            <Input type="date" className="w-[140px]" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-          </div>
-
-          {/* Bulk Actions */}
-          {selectedIds.size > 0 && (
-            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm font-medium">{selectedIds.size} {t('appointments.selected') || 'odabrano'}</span>
-              <Button size="sm" variant="outline" onClick={() => handleBulkAction('confirmed')}><CheckCircle2 className="h-3.5 w-3.5 mr-1" />{t('appointments.confirmSelected') || 'Potvrdi'}</Button>
-              <Button size="sm" variant="outline" onClick={() => handleBulkAction('cancelled')}><XCircle className="h-3.5 w-3.5 mr-1" />{t('appointments.cancelSelected') || 'Otkaži'}</Button>
-              <Button size="sm" variant="outline" className="text-destructive" onClick={() => handleBulkAction('delete')}><Trash2 className="h-3.5 w-3.5 mr-1" />{t('appointments.deleteSelected') || 'Obriši'}</Button>
-            </div>
+          {/* ── Inline: Create/Edit Appointment Form ──────────────────────── */}
+          {appointmentFormOpen && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => { setAppointmentFormOpen(false); setForm(emptyForm) }}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-base font-semibold">{t('appointments.newAppointment') || 'Novi termin'}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('appointments.titleCol') || 'Naslov'}</Label>
+                    <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t('appointments.titlePlaceholder') || 'Naslov termina'} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('appointments.clientCol') || 'Klijent'}</Label>
+                      <Input value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} placeholder={t('appointments.clientPlaceholder') || 'Ime klijenta'} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('appointments.phoneCol') || 'Telefon'}</Label>
+                      <Input value={form.clientPhone} onChange={(e) => setForm({ ...form, clientPhone: e.target.value })} placeholder={t('appointments.phonePlaceholder') || 'Broj telefona'} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('appointments.dateCol') || 'Datum'}</Label>
+                      <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('appointments.timeCol') || 'Vreme'}</Label>
+                      <Input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('appointments.durationCol') || 'Trajanje (min)'}</Label>
+                      <Input type="number" value={form.duration} onChange={(e) => setForm({ ...form, duration: parseInt(e.target.value) || 30 })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('appointments.typeCol') || 'Tip'}</Label>
+                      <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(TYPE_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('appointments.staffCol') || 'Zaduzeni'}</Label>
+                      <Select value={form.assignedTo} onValueChange={(v) => setForm({ ...form, assignedTo: v })}>
+                        <SelectTrigger><SelectValue placeholder={t('appointments.selectStaff') || 'Izaberite'} /></SelectTrigger>
+                        <SelectContent>
+                          {staff.filter(s => s.isActive).map(s => (<SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('appointments.notes') || 'Napomene'}</Label>
+                    <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button variant="outline" className="flex-1" onClick={() => { setAppointmentFormOpen(false); setForm(emptyForm) }}>{t('appointments.cancel') || 'Otkaži'}</Button>
+                  <Button className="flex-1" onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('appointments.create') || 'Kreiraj'}</Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
-          {loading ? (
-            <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : items.length === 0 ? (
-            <EmptyState
-              icon={<CalendarCheck className="h-12 w-12 mx-auto text-muted-foreground" />}
-              message={t('appointments.noAppointments') || 'Nema zakazivanja'}
-              actionLabel={t('appointments.createFirst') || 'Kreiraj termin'}
-              onAction={() => setDialogOpen(true)}
-            />
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
-                    <th className="p-3 w-8"><Checkbox checked={selectedIds.size === items.length && items.length > 0} onCheckedChange={toggleSelectAll} /></th>
-                    <th className="p-3">{t('appointments.titleCol') || 'Naslov'}</th>
-                    <th className="p-3">{t('appointments.clientCol') || 'Klijent'}</th>
-                    <th className="p-3 hidden lg:table-cell">{t('appointments.phoneCol') || 'Telefon'}</th>
-                    <th className="p-3">{t('appointments.dateCol') || 'Datum'}</th>
-                    <th className="p-3">{t('appointments.timeCol') || 'Vreme'}</th>
-                    <th className="p-3 hidden md:table-cell">{t('appointments.durationCol') || 'Trajanje'}</th>
-                    <th className="p-3 hidden md:table-cell">{t('appointments.typeCol') || 'Tip'}</th>
-                    <th className="p-3 hidden xl:table-cell">{t('appointments.staffCol') || 'Zaposleni'}</th>
-                    <th className="p-3">{t('appointments.statusCol') || 'Status'}</th>
-                    <th className="p-3">{t('appointments.actionsCol') || 'Akcije'}</th>
-                  </tr></thead>
-                  <tbody>{items.map((a) => (
-                    <tr key={a.id} className="border-t hover:bg-muted/30">
-                      <td className="p-3"><Checkbox checked={selectedIds.has(a.id)} onCheckedChange={() => toggleSelect(a.id)} /></td>
-                      <td className="p-3 font-medium">{a.title}</td>
-                      <td className="p-3">{a.clientName}</td>
-                      <td className="p-3 text-xs hidden lg:table-cell">{a.clientPhone || '—'}</td>
-                      <td className="p-3 text-xs">{new Date(a.date).toLocaleDateString('sr-RS')}</td>
-                      <td className="p-3 text-xs">{a.time}</td>
-                      <td className="p-3 text-xs hidden md:table-cell">{a.duration} min</td>
-                      <td className="p-3 hidden md:table-cell"><Badge variant="outline" className="text-xs" style={{ borderColor: TYPE_COLORS[a.type], color: TYPE_COLORS[a.type] }}>{TYPE_LABELS[a.type] || a.type}</Badge></td>
-                      <td className="p-3 text-xs hidden xl:table-cell">{a.assignedTo || '—'}</td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-0.5">
-                          <StatusBadge status={a.status} />
-                          <ReminderBadge status={a.reminderStatus} />
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex gap-0.5">
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(a); setDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
-                          {STATUS_CONFIG[a.status]?.nextStatus && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(a.id, STATUS_CONFIG[a.status].nextStatus!)}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
-                          )}
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(a); setRescheduleOpen(true); setRescheduleDate(a.date); setRescheduleTime(a.time) }}><Edit3 className="h-3.5 w-3.5" /></Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(a.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}</tbody>
-                </table>
+          {/* ── Inline: Appointment Detail ─────────────────────────────────── */}
+          {appointmentDetailOpen && selected && !appointmentFormOpen && !rescheduleFormOpen && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => setAppointmentDetailOpen(false)}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-base font-semibold">{t('appointments.appointmentDetails') || 'Detalji termina'}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><span className="text-muted-foreground">{t('appointments.titleCol') || 'Naslov'}:</span> <span className="font-medium">{selected.title}</span></div>
+                    <div><span className="text-muted-foreground">{t('appointments.statusCol') || 'Status'}:</span> <StatusBadge status={selected.status} /></div>
+                    <div><span className="text-muted-foreground">{t('appointments.clientCol') || 'Klijent'}:</span> {selected.clientName}</div>
+                    <div><span className="text-muted-foreground">{t('appointments.typeCol') || 'Tip'}:</span> {TYPE_LABELS[selected.type] || selected.type}</div>
+                    <div><span className="text-muted-foreground">{t('appointments.dateCol') || 'Datum'}:</span> {new Date(selected.date).toLocaleDateString('sr-RS')}</div>
+                    <div><span className="text-muted-foreground">{t('appointments.timeCol') || 'Vreme'}:</span> {selected.time} ({selected.duration} min)</div>
+                    {selected.assignedTo && (
+                      <div><span className="text-muted-foreground">{t('appointments.staffCol') || 'Zaduzeni'}:</span> {selected.assignedTo}</div>
+                    )}
+                    {selected.clientPhone && (
+                      <div className="flex items-center gap-1"><span className="text-muted-foreground">{t('appointments.phoneCol') || 'Telefon'}:</span><Phone className="h-3 w-3" /> {selected.clientPhone}</div>
+                    )}
+                    {selected.clientEmail && (
+                      <div className="flex items-center gap-1"><span className="text-muted-foreground">{t('appointments.clientEmail') || 'Email'}:</span><Mail className="h-3 w-3" /> {selected.clientEmail}</div>
+                    )}
+                  </div>
+                  <Separator />
+                  {selected.notes && (
+                    <div className="text-sm"><span className="text-muted-foreground">{t('appointments.notes') || 'Napomene'}:</span> {selected.notes}</div>
+                  )}
+                  <div className="flex gap-2">
+                    {STATUS_CONFIG[selected.status]?.nextStatus && (
+                      <Button size="sm" className="flex-1" onClick={() => { handleUpdateStatus(selected.id, STATUS_CONFIG[selected.status].nextStatus!); setAppointmentDetailOpen(false) }}>
+                        <CheckCircle2 className="h-4 w-4 mr-1" /> {STATUS_CONFIG[STATUS_CONFIG[selected.status].nextStatus!]?.label || 'Napred'}
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => { setAppointmentDetailOpen(false); setRescheduleFormOpen(true); setRescheduleDate(selected.date); setRescheduleTime(selected.time) }}>
+                      <Edit3 className="h-4 w-4 mr-1" /> {t('appointments.reschedule') || 'Prebaci'}
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => { handleDelete(selected.id); setAppointmentDetailOpen(false) }}>
+                      <Trash2 className="h-4 w-4 mr-1" /> {t('appointments.delete') || 'Obriši'}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ── Inline: Reschedule Form ────────────────────────────────────── */}
+          {rescheduleFormOpen && selected && !appointmentFormOpen && !appointmentDetailOpen && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => setRescheduleFormOpen(false)}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-base font-semibold">{t('appointments.reschedule') || 'Premesti termin'}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('appointments.dateCol') || 'Datum'}</Label>
+                    <Input type="date" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('appointments.timeCol') || 'Vreme'}</Label>
+                    <Input type="time" value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button variant="outline" className="flex-1" onClick={() => setRescheduleFormOpen(false)}>{t('appointments.cancel') || 'Otkaži'}</Button>
+                  <Button className="flex-1" onClick={handleReschedule}>{t('appointments.save') || 'Sačuvaj'}</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ── Default: Filters + Table (shown when no inline form is open) ── */}
+          {!appointmentFormOpen && !appointmentDetailOpen && !rescheduleFormOpen && (
+            <>
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder={t('appointments.searchPlaceholder') || 'Pretraži zakazivanja...'} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('appointments.allStatuses') || 'Svi statusi'} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('appointments.allStatuses') || 'Svi statusi'}</SelectItem>
+                    {Object.entries(STATUS_CONFIG).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('appointments.allTypes') || 'Svi tipovi'} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('appointments.allTypes') || 'Svi tipovi'}</SelectItem>
+                    {Object.entries(TYPE_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+                <Input type="date" className="w-[140px]" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                <Input type="date" className="w-[140px]" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
               </div>
-            </div>
+
+              {/* Bulk Actions */}
+              {selectedIds.size > 0 && (
+                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">{selectedIds.size} {t('appointments.selected') || 'odabrano'}</span>
+                  <Button size="sm" variant="outline" onClick={() => handleBulkAction('confirmed')}><CheckCircle2 className="h-3.5 w-3.5 mr-1" />{t('appointments.confirmSelected') || 'Potvrdi'}</Button>
+                  <Button size="sm" variant="outline" onClick={() => handleBulkAction('cancelled')}><XCircle className="h-3.5 w-3.5 mr-1" />{t('appointments.cancelSelected') || 'Otkaži'}</Button>
+                  <Button size="sm" variant="outline" className="text-destructive" onClick={() => handleBulkAction('delete')}><Trash2 className="h-3.5 w-3.5 mr-1" />{t('appointments.deleteSelected') || 'Obriši'}</Button>
+                </div>
+              )}
+
+              {loading ? (
+                <div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : items.length === 0 ? (
+                <EmptyState
+                  icon={<CalendarCheck className="h-12 w-12 mx-auto text-muted-foreground" />}
+                  message={t('appointments.noAppointments') || 'Nema zakazivanja'}
+                  actionLabel={t('appointments.createFirst') || 'Kreiraj termin'}
+                  onAction={() => setAppointmentFormOpen(true)}
+                />
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
+                        <th className="p-3 w-8"><Checkbox checked={selectedIds.size === items.length && items.length > 0} onCheckedChange={toggleSelectAll} /></th>
+                        <th className="p-3">{t('appointments.titleCol') || 'Naslov'}</th>
+                        <th className="p-3">{t('appointments.clientCol') || 'Klijent'}</th>
+                        <th className="p-3 hidden lg:table-cell">{t('appointments.phoneCol') || 'Telefon'}</th>
+                        <th className="p-3">{t('appointments.dateCol') || 'Datum'}</th>
+                        <th className="p-3">{t('appointments.timeCol') || 'Vreme'}</th>
+                        <th className="p-3 hidden md:table-cell">{t('appointments.durationCol') || 'Trajanje'}</th>
+                        <th className="p-3 hidden md:table-cell">{t('appointments.typeCol') || 'Tip'}</th>
+                        <th className="p-3 hidden xl:table-cell">{t('appointments.staffCol') || 'Zaposleni'}</th>
+                        <th className="p-3">{t('appointments.statusCol') || 'Status'}</th>
+                        <th className="p-3">{t('appointments.actionsCol') || 'Akcije'}</th>
+                      </tr></thead>
+                      <tbody>{items.map((a) => (
+                        <tr key={a.id} className="border-t hover:bg-muted/30">
+                          <td className="p-3"><Checkbox checked={selectedIds.has(a.id)} onCheckedChange={() => toggleSelect(a.id)} /></td>
+                          <td className="p-3 font-medium">{a.title}</td>
+                          <td className="p-3">{a.clientName}</td>
+                          <td className="p-3 text-xs hidden lg:table-cell">{a.clientPhone || '—'}</td>
+                          <td className="p-3 text-xs">{new Date(a.date).toLocaleDateString('sr-RS')}</td>
+                          <td className="p-3 text-xs">{a.time}</td>
+                          <td className="p-3 text-xs hidden md:table-cell">{a.duration} min</td>
+                          <td className="p-3 hidden md:table-cell"><Badge variant="outline" className="text-xs" style={{ borderColor: TYPE_COLORS[a.type], color: TYPE_COLORS[a.type] }}>{TYPE_LABELS[a.type] || a.type}</Badge></td>
+                          <td className="p-3 text-xs hidden xl:table-cell">{a.assignedTo || '—'}</td>
+                          <td className="p-3">
+                            <div className="flex items-center gap-0.5">
+                              <StatusBadge status={a.status} />
+                              <ReminderBadge status={a.reminderStatus} />
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex gap-0.5">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(a); setAppointmentDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
+                              {STATUS_CONFIG[a.status]?.nextStatus && (
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={() => handleUpdateStatus(a.id, STATUS_CONFIG[a.status].nextStatus!)}><CheckCircle2 className="h-3.5 w-3.5" /></Button>
+                              )}
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelected(a); setRescheduleFormOpen(true); setRescheduleDate(a.date); setRescheduleTime(a.time) }}><Edit3 className="h-3.5 w-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDelete(a.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}</tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
         {/* ─── Tab 4: Clients ──────────────────────────────────────────────── */}
         <TabsContent value="clients" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t('appointments.searchClients') || 'Pretraži klijente...'} className="pl-9" value={clientSearch} onChange={(e) => setClientSearch(e.target.value)} />
-            </div>
-            <Button size="sm" onClick={() => setNewClientDialogOpen(true)}>
-              <UserPlus className="h-4 w-4 mr-1" /> {t('appointments.addClient') || 'Dodaj klijenta'}
-            </Button>
-          </div>
-
-          {filteredClients.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">{t('appointments.noClients') || 'Nema klijenata'}</p>
+          {/* ── Inline: Client Detail ──────────────────────────────────────── */}
+          {clientDetailCardOpen && selectedClient && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => setClientDetailCardOpen(false)}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-base font-semibold">{t('appointments.clientDetails') || 'Detalji klijenta'}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg">{selectedClient.name}</h3>
+                      {selectedClient.isVip && <Badge className="bg-amber-100 text-amber-700 text-xs mt-1"><Star className="h-3 w-3 mr-0.5" />VIP</Badge>}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-muted-foreground" />{selectedClient.phone}</div>
+                    <div className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-muted-foreground" />{selectedClient.email}</div>
+                  </div>
+                  <Separator />
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div><div className="text-xs text-muted-foreground">{t('appointments.clientAppointments') || 'Termini'}</div><div className="text-lg font-bold">{selectedClient.appointmentCount}</div></div>
+                    <div><div className="text-xs text-muted-foreground">{t('appointments.clientSpent') || 'Potrošeno'}</div><div className="text-lg font-bold">{formatRSD(selectedClient.totalSpent)}</div></div>
+                    <div><div className="text-xs text-muted-foreground">{t('appointments.clientLastVisit') || 'Poslednja poseta'}</div><div className="text-sm font-bold">{selectedClient.lastVisit ? new Date(selectedClient.lastVisit).toLocaleDateString('sr-RS') : '—'}</div></div>
+                  </div>
+                  <Separator />
+                  {selectedClient.notes && (
+                    <div className="text-sm"><span className="text-muted-foreground">{t('appointments.notes') || 'Napomene'}:</span> {selectedClient.notes}</div>
+                  )}
+                  {selectedClient.preferences && (
+                    <div className="text-sm"><span className="text-muted-foreground">{t('appointments.preferences') || 'Preferencije'}:</span> {selectedClient.preferences}</div>
+                  )}
+                </div>
+              </CardContent>
             </Card>
-          ) : (
-            <div className="rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
-                    <th className="p-3">{t('appointments.clientName') || 'Ime'}</th>
-                    <th className="p-3 hidden md:table-cell">{t('appointments.clientPhone') || 'Telefon'}</th>
-                    <th className="p-3 hidden lg:table-cell">{t('appointments.clientEmail') || 'Email'}</th>
-                    <th className="p-3">{t('appointments.clientAppointments') || 'Termini'}</th>
-                    <th className="p-3 hidden md:table-cell">{t('appointments.clientSpent') || 'Potrošeno'}</th>
-                    <th className="p-3 hidden lg:table-cell">{t('appointments.clientLastVisit') || 'Poslednja poseta'}</th>
-                    <th className="p-3">{t('appointments.clientType') || 'Tip'}</th>
-                    <th className="p-3">{t('appointments.actionsCol') || 'Akcije'}</th>
-                  </tr></thead>
-                  <tbody>{filteredClients.map((c) => (
-                    <tr key={c.id} className="border-t hover:bg-muted/30">
-                      <td className="p-3 font-medium">{c.name}</td>
-                      <td className="p-3 text-xs hidden md:table-cell">{c.phone}</td>
-                      <td className="p-3 text-xs hidden lg:table-cell">{c.email}</td>
-                      <td className="p-3">{c.appointmentCount}</td>
-                      <td className="p-3 hidden md:table-cell">{formatRSD(c.totalSpent)}</td>
-                      <td className="p-3 text-xs hidden lg:table-cell">{c.lastVisit ? new Date(c.lastVisit).toLocaleDateString('sr-RS') : '—'}</td>
-                      <td className="p-3">
-                        {c.isVip ? (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-700 text-xs"><Star className="h-2.5 w-2.5 mr-0.5" />VIP</Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-xs">{t('appointments.regular') || 'Redovan'}</Badge>
-                        )}
-                      </td>
-                      <td className="p-3">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedClient(c); setClientDetailOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
-                      </td>
-                    </tr>
-                  ))}</tbody>
-                </table>
+          )}
+
+          {/* ── Inline: New Client Form ────────────────────────────────────── */}
+          {newClientFormOpen && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => { setNewClientFormOpen(false); setClientForm(emptyClientForm) }}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-base font-semibold">{t('appointments.addClient') || 'Dodaj klijenta'}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('appointments.clientName') || 'Ime'}</Label>
+                    <Input value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('appointments.clientPhone') || 'Telefon'}</Label>
+                      <Input value={clientForm.phone} onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('appointments.clientEmail') || 'Email'}</Label>
+                      <Input value={clientForm.email} onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('appointments.notes') || 'Napomene'}</Label>
+                    <Textarea value={clientForm.notes} onChange={(e) => setClientForm({ ...clientForm, notes: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('appointments.preferences') || 'Preferencije'}</Label>
+                    <Textarea value={clientForm.preferences} onChange={(e) => setClientForm({ ...clientForm, preferences: e.target.value })} />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button variant="outline" className="flex-1" onClick={() => { setNewClientFormOpen(false); setClientForm(emptyClientForm) }}>{t('appointments.cancel') || 'Otkaži'}</Button>
+                  <Button className="flex-1" onClick={handleSaveNewClient}>{t('appointments.save') || 'Sačuvaj'}</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ── Default: Client List (shown when no inline form is open) ───── */}
+          {!clientDetailCardOpen && !newClientFormOpen && (
+            <>
+              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder={t('appointments.searchClients') || 'Pretraži klijente...'} className="pl-9" value={clientSearch} onChange={(e) => setClientSearch(e.target.value)} />
+                </div>
+                <Button size="sm" onClick={() => setNewClientFormOpen(true)}>
+                  <UserPlus className="h-4 w-4 mr-1" /> {t('appointments.addClient') || 'Dodaj klijenta'}
+                </Button>
               </div>
-            </div>
+
+              {filteredClients.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">{t('appointments.noClients') || 'Nema klijenata'}</p>
+                </Card>
+              ) : (
+                <div className="rounded-lg border overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50"><tr className="text-left text-xs text-muted-foreground">
+                        <th className="p-3">{t('appointments.clientName') || 'Ime'}</th>
+                        <th className="p-3 hidden md:table-cell">{t('appointments.clientPhone') || 'Telefon'}</th>
+                        <th className="p-3 hidden lg:table-cell">{t('appointments.clientEmail') || 'Email'}</th>
+                        <th className="p-3">{t('appointments.clientAppointments') || 'Termini'}</th>
+                        <th className="p-3 hidden md:table-cell">{t('appointments.clientSpent') || 'Potrošeno'}</th>
+                        <th className="p-3 hidden lg:table-cell">{t('appointments.clientLastVisit') || 'Poslednja poseta'}</th>
+                        <th className="p-3">{t('appointments.clientType') || 'Tip'}</th>
+                        <th className="p-3">{t('appointments.actionsCol') || 'Akcije'}</th>
+                      </tr></thead>
+                      <tbody>{filteredClients.map((c) => (
+                        <tr key={c.id} className="border-t hover:bg-muted/30">
+                          <td className="p-3 font-medium">{c.name}</td>
+                          <td className="p-3 text-xs hidden md:table-cell">{c.phone}</td>
+                          <td className="p-3 text-xs hidden lg:table-cell">{c.email}</td>
+                          <td className="p-3">{c.appointmentCount}</td>
+                          <td className="p-3 hidden md:table-cell">{formatRSD(c.totalSpent)}</td>
+                          <td className="p-3 text-xs hidden lg:table-cell">{c.lastVisit ? new Date(c.lastVisit).toLocaleDateString('sr-RS') : '—'}</td>
+                          <td className="p-3">
+                            {c.isVip ? (
+                              <Badge variant="outline" className="bg-amber-100 text-amber-700 text-xs"><Star className="h-2.5 w-2.5 mr-0.5" />VIP</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">{t('appointments.regular') || 'Redovan'}</Badge>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedClient(c); setClientDetailCardOpen(true) }}><Eye className="h-3.5 w-3.5" /></Button>
+                          </td>
+                        </tr>
+                      ))}</tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
         {/* ─── Tab 5: Services ─────────────────────────────────────────────── */}
         <TabsContent value="services" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{t('appointments.servicesCount') || `Ukupno usluga: ${services.length}`}</p>
-            <Button size="sm" onClick={() => { setEditingService(null); setServiceForm(emptyServiceForm); setServiceDialogOpen(true) }}>
-              <Plus className="h-4 w-4 mr-1" /> {t('appointments.addService') || 'Dodaj uslugu'}
-            </Button>
-          </div>
-
-          {/* Category Legend */}
-          <div className="flex flex-wrap gap-3">
-            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-              <div key={key} className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: CATEGORY_COLORS[key] }} />
-                <span className="text-xs text-muted-foreground">{label}</span>
-              </div>
-            ))}
-          </div>
-
-          {services.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Layers className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">{t('appointments.noServices') || 'Nema usluga'}</p>
+          {/* ── Inline: Service Form ───────────────────────────────────────── */}
+          {serviceFormOpen && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => { setServiceFormOpen(false); setEditingService(null); setServiceForm(emptyServiceForm) }}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-base font-semibold">{editingService ? (t('appointments.editService') || 'Izmeni uslugu') : (t('appointments.addService') || 'Dodaj uslugu')}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('appointments.serviceName') || 'Naziv'}</Label>
+                    <Input value={serviceForm.name} onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('appointments.serviceDesc') || 'Opis'}</Label>
+                    <Textarea value={serviceForm.description} onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('appointments.durationCol') || 'Trajanje (min)'}</Label>
+                      <Input type="number" value={serviceForm.duration} onChange={(e) => setServiceForm({ ...serviceForm, duration: parseInt(e.target.value) || 30 })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('appointments.price') || 'Cena (RSD)'}</Label>
+                      <Input type="number" value={serviceForm.price} onChange={(e) => setServiceForm({ ...serviceForm, price: parseInt(e.target.value) || 0 })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{t('appointments.category') || 'Kategorija'}</Label>
+                      <Select value={serviceForm.category} onValueChange={(v) => setServiceForm({ ...serviceForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(CATEGORY_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button variant="outline" className="flex-1" onClick={() => { setServiceFormOpen(false); setEditingService(null); setServiceForm(emptyServiceForm) }}>{t('appointments.cancel') || 'Otkaži'}</Button>
+                  <Button className="flex-1" onClick={handleSaveService}>{t('appointments.save') || 'Sačuvaj'}</Button>
+                </div>
+              </CardContent>
             </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {services.map((s) => (
-                <Card key={s.id} className="overflow-hidden">
-                  <div className="h-1.5" style={{ backgroundColor: CATEGORY_COLORS[s.category] || '#6b7280' }} />
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-medium text-sm">{s.name}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditingService(s); setServiceForm({ name: s.name, description: s.description, duration: s.duration, price: s.price, category: s.category }); setServiceDialogOpen(true) }}><Edit3 className="h-3.5 w-3.5" /></Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteService(s.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div>
-                        <div className="text-xs text-muted-foreground">{t('appointments.duration') || 'Trajanje'}</div>
-                        <div className="text-sm font-medium">{s.duration} min</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">{t('appointments.price') || 'Cena'}</div>
-                        <div className="text-sm font-medium">{formatRSD(s.price)}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">{t('appointments.bookings') || 'Rezervacije'}</div>
-                        <div className="text-sm font-medium">{s.bookingCount}</div>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="text-xs" style={{ borderColor: CATEGORY_COLORS[s.category], color: CATEGORY_COLORS[s.category] }}>
-                      {CATEGORY_LABELS[s.category] || s.category}
-                    </Badge>
-                  </CardContent>
+          )}
+
+          {/* ── Default: Service List (shown when no inline form is open) ──── */}
+          {!serviceFormOpen && (
+            <>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{t('appointments.servicesCount') || `Ukupno usluga: ${services.length}`}</p>
+                <Button size="sm" onClick={() => { setEditingService(null); setServiceForm(emptyServiceForm); setServiceFormOpen(true) }}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('appointments.addService') || 'Dodaj uslugu'}
+                </Button>
+              </div>
+
+              {/* Category Legend */}
+              <div className="flex flex-wrap gap-3">
+                {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                  <div key={key} className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: CATEGORY_COLORS[key] }} />
+                    <span className="text-xs text-muted-foreground">{label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {services.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Layers className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">{t('appointments.noServices') || 'Nema usluga'}</p>
                 </Card>
-              ))}
-            </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {services.map((s) => (
+                    <Card key={s.id} className="overflow-hidden">
+                      <div className="h-1.5" style={{ backgroundColor: CATEGORY_COLORS[s.category] || '#6b7280' }} />
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-medium text-sm">{s.name}</h3>
+                            <p className="text-xs text-muted-foreground mt-0.5">{s.description}</p>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditingService(s); setServiceForm({ name: s.name, description: s.description, duration: s.duration, price: s.price, category: s.category }); setServiceFormOpen(true) }}><Edit3 className="h-3.5 w-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => handleDeleteService(s.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                          </div>
+                        </div>
+                        <Separator />
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div>
+                            <div className="text-xs text-muted-foreground">{t('appointments.duration') || 'Trajanje'}</div>
+                            <div className="text-sm font-medium">{s.duration} min</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">{t('appointments.price') || 'Cena'}</div>
+                            <div className="text-sm font-medium">{formatRSD(s.price)}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">{t('appointments.bookings') || 'Rezervacije'}</div>
+                            <div className="text-sm font-medium">{s.bookingCount}</div>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs" style={{ borderColor: CATEGORY_COLORS[s.category], color: CATEGORY_COLORS[s.category] }}>
+                          {CATEGORY_LABELS[s.category] || s.category}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -1066,333 +1368,101 @@ export function Appointments() {
             </CardContent>
           </Card>
 
-          {/* Staff Management */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm">{t('appointments.staffManagement') || 'Upravljanje zaposlenima'}</CardTitle>
-              <Button size="sm" onClick={() => { setEditingStaff(null); setStaffForm(emptyStaffForm); setStaffDialogOpen(true) }}>
-                <Plus className="h-4 w-4 mr-1" /> {t('appointments.addStaff') || 'Dodaj'}
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {staff.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{s.name}</span>
-                        <Badge variant="outline" className={`text-xs ${s.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                          {s.isActive ? (t('appointments.active') || 'Aktivan') : (t('appointments.inactive') || 'Neaktivan')}
-                        </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {t('appointments.specialties') || 'Specijalizacije'}: {s.specialties}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {s.workingDays.map(d => DAYS_SR[d]).join(', ')} · {t('appointments.maxPerDay') || 'Max/dan'}: {s.maxPerDay}
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditingStaff(s); setStaffForm({ name: s.name, specialties: s.specialties, workingDays: [...s.workingDays], maxPerDay: s.maxPerDay, isActive: s.isActive }); setStaffDialogOpen(true) }}><Edit3 className="h-3.5 w-3.5" /></Button>
+          {/* ── Staff Management ────────────────────────────────────────────── */}
+          {staffFormOpen ? (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => { setStaffFormOpen(false); setEditingStaff(null); setStaffForm(emptyStaffForm) }}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <CardTitle className="text-base font-semibold">{editingStaff ? (t('appointments.editStaff') || 'Izmeni zaposlenog') : (t('appointments.addStaff') || 'Dodaj zaposlenog')}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('appointments.staffName') || 'Ime'}</Label>
+                    <Input value={staffForm.name} onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('appointments.specialties') || 'Specijalizacije'}</Label>
+                    <Input value={staffForm.specialties} onChange={(e) => setStaffForm({ ...staffForm, specialties: e.target.value })} placeholder="Konsultacije, Tretmani..." />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('appointments.workingDays') || 'Radni dani'}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {WEEK_DAYS.map(day => (
+                        <label key={day} className="flex items-center gap-1.5 cursor-pointer">
+                          <Checkbox
+                            checked={staffForm.workingDays.includes(day)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setStaffForm(prev => ({ ...prev, workingDays: [...prev.workingDays, day] }))
+                              } else {
+                                setStaffForm(prev => ({ ...prev, workingDays: prev.workingDays.filter(d => d !== day) }))
+                              }
+                            }}
+                          />
+                          <span className="text-sm">{DAYS_FULL[day]}</span>
+                        </label>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{t('appointments.maxPerDay') || 'Max termina/dan'}</Label>
+                      <Input type="number" value={staffForm.maxPerDay} onChange={(e) => setStaffForm({ ...staffForm, maxPerDay: parseInt(e.target.value) || 8 })} />
+                    </div>
+                    <div className="flex items-center gap-2 pt-6">
+                      <Switch checked={staffForm.isActive} onCheckedChange={(v) => setStaffForm({ ...staffForm, isActive: v })} />
+                      <Label>{t('appointments.active') || 'Aktivan'}</Label>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Button variant="outline" className="flex-1" onClick={() => { setStaffFormOpen(false); setEditingStaff(null); setStaffForm(emptyStaffForm) }}>{t('appointments.cancel') || 'Otkaži'}</Button>
+                  <Button className="flex-1" onClick={handleSaveStaff}>{t('appointments.save') || 'Sačuvaj'}</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-sm">{t('appointments.staffManagement') || 'Upravljanje zaposlenima'}</CardTitle>
+                <Button size="sm" onClick={() => { setEditingStaff(null); setStaffForm(emptyStaffForm); setStaffFormOpen(true) }}>
+                  <Plus className="h-4 w-4 mr-1" /> {t('appointments.addStaff') || 'Dodaj'}
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {staff.map((s) => (
+                    <div key={s.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{s.name}</span>
+                          <Badge variant="outline" className={`text-xs ${s.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {s.isActive ? (t('appointments.active') || 'Aktivan') : (t('appointments.inactive') || 'Neaktivan')}
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {t('appointments.specialties') || 'Specijalizacije'}: {s.specialties}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {s.workingDays.map(d => DAYS_SR[d]).join(', ')} · {t('appointments.maxPerDay') || 'Max/dan'}: {s.maxPerDay}
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditingStaff(s); setStaffForm({ name: s.name, specialties: s.specialties, workingDays: [...s.workingDays], maxPerDay: s.maxPerDay, isActive: s.isActive }); setStaffFormOpen(true) }}><Edit3 className="h-3.5 w-3.5" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
-
-      {/* ─── Create/Edit Appointment Dialog ─────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('appointments.newAppointment') || 'Novi termin'}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('appointments.titleCol') || 'Naslov'}</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t('appointments.titlePlaceholder') || 'Naslov termina'} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('appointments.clientCol') || 'Klijent'}</Label>
-                <Input value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} placeholder={t('appointments.clientPlaceholder') || 'Ime klijenta'} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('appointments.phoneCol') || 'Telefon'}</Label>
-                <Input value={form.clientPhone} onChange={(e) => setForm({ ...form, clientPhone: e.target.value })} placeholder={t('appointments.phonePlaceholder') || 'Broj telefona'} />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{t('appointments.dateCol') || 'Datum'}</Label>
-                <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('appointments.timeCol') || 'Vreme'}</Label>
-                <Input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('appointments.durationCol') || 'Trajanje (min)'}</Label>
-                <Input type="number" value={form.duration} onChange={(e) => setForm({ ...form, duration: parseInt(e.target.value) || 30 })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('appointments.typeCol') || 'Tip'}</Label>
-                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(TYPE_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('appointments.staffCol') || 'Zaduzeni'}</Label>
-                <Select value={form.assignedTo} onValueChange={(v) => setForm({ ...form, assignedTo: v })}>
-                  <SelectTrigger><SelectValue placeholder={t('appointments.selectStaff') || 'Izaberite'} /></SelectTrigger>
-                  <SelectContent>
-                    {staff.filter(s => s.isActive).map(s => (<SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('appointments.notes') || 'Napomene'}</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('appointments.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('appointments.create') || 'Kreiraj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Detail Dialog ─────────────────────────────────────────────────── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('appointments.appointmentDetails') || 'Detalji termina'}</DialogTitle></DialogHeader>
-          {selected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">{t('appointments.titleCol') || 'Naslov'}:</span> <span className="font-medium">{selected.title}</span></div>
-                <div><span className="text-muted-foreground">{t('appointments.statusCol') || 'Status'}:</span> <StatusBadge status={selected.status} /></div>
-                <div><span className="text-muted-foreground">{t('appointments.clientCol') || 'Klijent'}:</span> {selected.clientName}</div>
-                <div><span className="text-muted-foreground">{t('appointments.typeCol') || 'Tip'}:</span> {TYPE_LABELS[selected.type] || selected.type}</div>
-                <div><span className="text-muted-foreground">{t('appointments.dateCol') || 'Datum'}:</span> {new Date(selected.date).toLocaleDateString('sr-RS')}</div>
-                <div><span className="text-muted-foreground">{t('appointments.timeCol') || 'Vreme'}:</span> {selected.time} ({selected.duration} min)</div>
-                {selected.assignedTo && (
-                  <div><span className="text-muted-foreground">{t('appointments.staffCol') || 'Zaduzeni'}:</span> {selected.assignedTo}</div>
-                )}
-                {selected.clientPhone && (
-                  <div className="flex items-center gap-1"><span className="text-muted-foreground">{t('appointments.phoneCol') || 'Telefon'}:</span><Phone className="h-3 w-3" /> {selected.clientPhone}</div>
-                )}
-                {selected.clientEmail && (
-                  <div className="flex items-center gap-1"><span className="text-muted-foreground">{t('appointments.clientEmail') || 'Email'}:</span><Mail className="h-3 w-3" /> {selected.clientEmail}</div>
-                )}
-              </div>
-              <Separator />
-              {selected.notes && (
-                <div className="text-sm"><span className="text-muted-foreground">{t('appointments.notes') || 'Napomene'}:</span> {selected.notes}</div>
-              )}
-              <div className="flex gap-2">
-                {STATUS_CONFIG[selected.status]?.nextStatus && (
-                  <Button size="sm" className="flex-1" onClick={() => { handleUpdateStatus(selected.id, STATUS_CONFIG[selected.status].nextStatus!); setDetailOpen(false) }}>
-                    <CheckCircle2 className="h-4 w-4 mr-1" /> {STATUS_CONFIG[STATUS_CONFIG[selected.status].nextStatus!]?.label || 'Napred'}
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => { setDetailOpen(false); setRescheduleOpen(true); setRescheduleDate(selected.date); setRescheduleTime(selected.time) }}>
-                  <Edit3 className="h-4 w-4 mr-1" /> {t('appointments.reschedule') || 'Prebaci'}
-                </Button>
-                <Button size="sm" variant="outline" className="text-destructive" onClick={() => { handleDelete(selected.id); setDetailOpen(false) }}>
-                  <Trash2 className="h-4 w-4 mr-1" /> {t('appointments.delete') || 'Obriši'}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Reschedule Dialog ─────────────────────────────────────────────── */}
-      <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>{t('appointments.reschedule') || 'Premesti termin'}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('appointments.dateCol') || 'Datum'}</Label>
-              <Input type="date" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('appointments.timeCol') || 'Vreme'}</Label>
-              <Input type="time" value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRescheduleOpen(false)}>{t('appointments.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleReschedule}>{t('appointments.save') || 'Sačuvaj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Client Detail Dialog ──────────────────────────────────────────── */}
-      <Dialog open={clientDetailOpen} onOpenChange={setClientDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('appointments.clientDetails') || 'Detalji klijenta'}</DialogTitle></DialogHeader>
-          {selectedClient && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg">{selectedClient.name}</h3>
-                  {selectedClient.isVip && <Badge className="bg-amber-100 text-amber-700 text-xs mt-1"><Star className="h-3 w-3 mr-0.5" />VIP</Badge>}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-muted-foreground" />{selectedClient.phone}</div>
-                <div className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-muted-foreground" />{selectedClient.email}</div>
-              </div>
-              <Separator />
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div><div className="text-xs text-muted-foreground">{t('appointments.clientAppointments') || 'Termini'}</div><div className="text-lg font-bold">{selectedClient.appointmentCount}</div></div>
-                <div><div className="text-xs text-muted-foreground">{t('appointments.clientSpent') || 'Potrošeno'}</div><div className="text-lg font-bold">{formatRSD(selectedClient.totalSpent)}</div></div>
-                <div><div className="text-xs text-muted-foreground">{t('appointments.clientLastVisit') || 'Poslednja poseta'}</div><div className="text-sm font-bold">{selectedClient.lastVisit ? new Date(selectedClient.lastVisit).toLocaleDateString('sr-RS') : '—'}</div></div>
-              </div>
-              <Separator />
-              {selectedClient.notes && (
-                <div className="text-sm"><span className="text-muted-foreground">{t('appointments.notes') || 'Napomene'}:</span> {selectedClient.notes}</div>
-              )}
-              {selectedClient.preferences && (
-                <div className="text-sm"><span className="text-muted-foreground">{t('appointments.preferences') || 'Preferencije'}:</span> {selectedClient.preferences}</div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── New Client Dialog ─────────────────────────────────────────────── */}
-      <Dialog open={newClientDialogOpen} onOpenChange={setNewClientDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{t('appointments.addClient') || 'Dodaj klijenta'}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('appointments.clientName') || 'Ime'}</Label>
-              <Input value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('appointments.clientPhone') || 'Telefon'}</Label>
-                <Input value={clientForm.phone} onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('appointments.clientEmail') || 'Email'}</Label>
-                <Input value={clientForm.email} onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('appointments.notes') || 'Napomene'}</Label>
-              <Textarea value={clientForm.notes} onChange={(e) => setClientForm({ ...clientForm, notes: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('appointments.preferences') || 'Preferencije'}</Label>
-              <Textarea value={clientForm.preferences} onChange={(e) => setClientForm({ ...clientForm, preferences: e.target.value })} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNewClientDialogOpen(false)}>{t('appointments.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleSaveNewClient}>{t('appointments.save') || 'Sačuvaj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Service Dialog ────────────────────────────────────────────────── */}
-      <Dialog open={serviceDialogOpen} onOpenChange={setServiceDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editingService ? (t('appointments.editService') || 'Izmeni uslugu') : (t('appointments.addService') || 'Dodaj uslugu')}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('appointments.serviceName') || 'Naziv'}</Label>
-              <Input value={serviceForm.name} onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('appointments.serviceDesc') || 'Opis'}</Label>
-              <Textarea value={serviceForm.description} onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{t('appointments.durationCol') || 'Trajanje (min)'}</Label>
-                <Input type="number" value={serviceForm.duration} onChange={(e) => setServiceForm({ ...serviceForm, duration: parseInt(e.target.value) || 30 })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('appointments.price') || 'Cena (RSD)'}</Label>
-                <Input type="number" value={serviceForm.price} onChange={(e) => setServiceForm({ ...serviceForm, price: parseInt(e.target.value) || 0 })} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('appointments.category') || 'Kategorija'}</Label>
-                <Select value={serviceForm.category} onValueChange={(v) => setServiceForm({ ...serviceForm, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(CATEGORY_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setServiceDialogOpen(false)}>{t('appointments.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleSaveService}>{t('appointments.save') || 'Sačuvaj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Staff Dialog ──────────────────────────────────────────────────── */}
-      <Dialog open={staffDialogOpen} onOpenChange={setStaffDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editingStaff ? (t('appointments.editStaff') || 'Izmeni zaposlenog') : (t('appointments.addStaff') || 'Dodaj zaposlenog')}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('appointments.staffName') || 'Ime'}</Label>
-              <Input value={staffForm.name} onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('appointments.specialties') || 'Specijalizacije'}</Label>
-              <Input value={staffForm.specialties} onChange={(e) => setStaffForm({ ...staffForm, specialties: e.target.value })} placeholder="Konsultacije, Tretmani..." />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('appointments.workingDays') || 'Radni dani'}</Label>
-              <div className="flex flex-wrap gap-2">
-                {WEEK_DAYS.map(day => (
-                  <label key={day} className="flex items-center gap-1.5 cursor-pointer">
-                    <Checkbox
-                      checked={staffForm.workingDays.includes(day)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setStaffForm(prev => ({ ...prev, workingDays: [...prev.workingDays, day] }))
-                        } else {
-                          setStaffForm(prev => ({ ...prev, workingDays: prev.workingDays.filter(d => d !== day) }))
-                        }
-                      }}
-                    />
-                    <span className="text-sm">{DAYS_FULL[day]}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('appointments.maxPerDay') || 'Max termina/dan'}</Label>
-                <Input type="number" value={staffForm.maxPerDay} onChange={(e) => setStaffForm({ ...staffForm, maxPerDay: parseInt(e.target.value) || 8 })} />
-              </div>
-              <div className="flex items-center gap-2 pt-6">
-                <Switch checked={staffForm.isActive} onCheckedChange={(v) => setStaffForm({ ...staffForm, isActive: v })} />
-                <Label>{t('appointments.active') || 'Aktivan'}</Label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setStaffDialogOpen(false)}>{t('appointments.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleSaveStaff}>{t('appointments.save') || 'Sačuvaj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

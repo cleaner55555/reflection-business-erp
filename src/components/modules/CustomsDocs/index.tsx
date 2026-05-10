@@ -6,13 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
-import { Plus, Search, Trash2, Pencil, Eye, FileText, Globe, Stamp, AlertTriangle, CheckCircle2, Clock, Package, Scale, Truck, Download, Upload, BarChart3 } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, FileText, Globe, Stamp, AlertTriangle, CheckCircle2, Clock, Package, Scale, Truck, Download, Upload, BarChart3, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -256,77 +255,81 @@ export function CustomsDocs() {
         </TabsContent>
       </Tabs>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji carinske prijave</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.declarationNumber}</p><p className="text-xs text-muted-foreground">Ref: {detailItem.referenceNumber || 'N/A'}</p></div><div className="flex gap-2">{getDocTypeBadge(detailItem.docType)}{getStatusBadge(detailItem.status)}</div></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Deklarant</div><p className="text-xs font-medium">{detailItem.declarantName}</p><p className="text-xs text-muted-foreground">PIB: {detailItem.declarantPIB}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Država / Granica</div><p className="text-xs font-medium">{detailItem.country}</p><p className="text-xs text-muted-foreground">{detailItem.borderCrossing}</p></div>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Opis robe</div><p className="text-xs font-medium">{detailItem.goodsDescription}</p><p className="text-xs text-muted-foreground">HS kod: {detailItem.hsCode} · Vozilo: {detailItem.vehiclePlate}</p></div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vrednost</div><p className="text-xs font-bold">{formatCurrency(detailItem.totalValue)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Carinska vred.</div><p className="text-xs font-bold">{formatCurrency(detailItem.customsValue)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Carine</div><p className="text-xs font-bold">{formatCurrency(detailItem.dutiesAmount)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">PDV</div><p className="text-xs font-bold">{formatCurrency(detailItem.vatAmount)}</p></div>
-              </div>
-              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Ukupne carinske obaveze</div><p className="text-sm font-bold text-emerald-700">{formatCurrency(detailItem.totalDues)}</p></div>
-              {detailItem.items.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium">Stavke robe:</p>
-                  <Table><TableHeader><TableRow><TableHead className="text-xs">HS</TableHead><TableHead className="text-xs">Opis</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Vrednost</TableHead><TableHead className="text-xs">Carina%</TableHead></TableRow></TableHeader>
-                  <TableBody>{detailItem.items.map((item, idx) => <TableRow key={idx}><TableCell className="text-xs font-mono">{item.hsCode}</TableCell><TableCell className="text-xs">{item.description}</TableCell><TableCell className="text-xs">{item.quantity} {item.unit}</TableCell><TableCell className="text-xs">{formatCurrency(item.totalValue)}</TableCell><TableCell className="text-xs">{item.dutyRate}%</TableCell></TableRow>)}</TableBody></Table>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div><span className="text-muted-foreground">Datum podnošenja:</span> {detailItem.submissionDate ? formatDate(detailItem.submissionDate) : 'N/A'}</div>
-                <div><span className="text-muted-foreground">Datum oslobađanja:</span> {detailItem.clearanceDate ? formatDate(detailItem.clearanceDate) : 'N/A'}</div>
-              </div>
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+      {/* Detail Card */}
+      {!!detailId && detailItem && (<Card className="max-w-[700px]">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Detalji carinske prijave</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.declarationNumber}</p><p className="text-xs text-muted-foreground">Ref: {detailItem.referenceNumber || 'N/A'}</p></div><div className="flex gap-2">{getDocTypeBadge(detailItem.docType)}{getStatusBadge(detailItem.status)}</div></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Deklarant</div><p className="text-xs font-medium">{detailItem.declarantName}</p><p className="text-xs text-muted-foreground">PIB: {detailItem.declarantPIB}</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Država / Granica</div><p className="text-xs font-medium">{detailItem.country}</p><p className="text-xs text-muted-foreground">{detailItem.borderCrossing}</p></div>
+          </div>
+          <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Opis robe</div><p className="text-xs font-medium">{detailItem.goodsDescription}</p><p className="text-xs text-muted-foreground">HS kod: {detailItem.hsCode} · Vozilo: {detailItem.vehiclePlate}</p></div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vrednost</div><p className="text-xs font-bold">{formatCurrency(detailItem.totalValue)}</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Carinska vred.</div><p className="text-xs font-bold">{formatCurrency(detailItem.customsValue)}</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Carine</div><p className="text-xs font-bold">{formatCurrency(detailItem.dutiesAmount)}</p></div>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">PDV</div><p className="text-xs font-bold">{formatCurrency(detailItem.vatAmount)}</p></div>
+          </div>
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="text-xs text-emerald-600 mb-1">Ukupne carinske obaveze</div><p className="text-sm font-bold text-emerald-700">{formatCurrency(detailItem.totalDues)}</p></div>
+          {detailItem.items.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium">Stavke robe:</p>
+              <Table><TableHeader><TableRow><TableHead className="text-xs">HS</TableHead><TableHead className="text-xs">Opis</TableHead><TableHead className="text-xs">Kol.</TableHead><TableHead className="text-xs">Vrednost</TableHead><TableHead className="text-xs">Carina%</TableHead></TableRow></TableHeader>
+              <TableBody>{detailItem.items.map((item, idx) => <TableRow key={idx}><TableCell className="text-xs font-mono">{item.hsCode}</TableCell><TableCell className="text-xs">{item.description}</TableCell><TableCell className="text-xs">{item.quantity} {item.unit}</TableCell><TableCell className="text-xs">{formatCurrency(item.totalValue)}</TableCell><TableCell className="text-xs">{item.dutyRate}%</TableCell></TableRow>)}</TableBody></Table>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={open => { setDialogOpen(open); if (!open) setEditItem(null) }}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi prijavu' : 'Nova carinska prijava'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Broj prijave</Label><Input placeholder="CU-2024-00001" className="text-xs font-mono" value={formData.declarationNumber} onChange={e => setFormData(p => ({ ...p, declarationNumber: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.docType} onValueChange={v => setFormData(p => ({ ...p, docType: v as CustomsDocument['docType'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(DOC_TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Deklarant *</Label><Input placeholder="Naziv firme" className="text-xs" value={formData.declarantName} onChange={e => setFormData(p => ({ ...p, declarantName: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">PIB</Label><Input placeholder="100000000" className="text-xs" value={formData.declarantPIB} onChange={e => setFormData(p => ({ ...p, declarantPIB: e.target.value }))} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Država porekla</Label><Input placeholder="Nemačka" className="text-xs" value={formData.country} onChange={e => setFormData(p => ({ ...p, country: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Granični prelaz</Label><Input placeholder="Šid" className="text-xs" value={formData.borderCrossing} onChange={e => setFormData(p => ({ ...p, borderCrossing: e.target.value }))} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Opis robe *</Label><Input placeholder="Elektronska oprema" className="text-xs" value={formData.goodsDescription} onChange={e => setFormData(p => ({ ...p, goodsDescription: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">HS kod</Label><Input placeholder="8471.30" className="text-xs font-mono" value={formData.hsCode} onChange={e => setFormData(p => ({ ...p, hsCode: e.target.value }))} /></div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Vrednost (EUR)</Label><Input type="number" className="text-xs" value={formData.totalValue || ''} onChange={e => setFormData(p => ({ ...p, totalValue: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" className="text-xs" value={formData.totalWeight || ''} onChange={e => setFormData(p => ({ ...p, totalWeight: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Vozilo</Label><Input placeholder="BG-111-AB" className="text-xs" value={formData.vehiclePlate} onChange={e => setFormData(p => ({ ...p, vehiclePlate: e.target.value }))} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Referentni broj</Label><Input placeholder="REF-DE-2024-001" className="text-xs font-mono" value={formData.referenceNumber} onChange={e => setFormData(p => ({ ...p, referenceNumber: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Valuta</Label><Select value={formData.currency} onValueChange={v => setFormData(p => ({ ...p, currency: v }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EUR">EUR</SelectItem><SelectItem value="USD">USD</SelectItem><SelectItem value="RSD">RSD</SelectItem></SelectContent></Select></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Napomene..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div><span className="text-muted-foreground">Datum podnošenja:</span> {detailItem.submissionDate ? formatDate(detailItem.submissionDate) : 'N/A'}</div>
+            <div><span className="text-muted-foreground">Datum oslobađanja:</span> {detailItem.clearanceDate ? formatDate(detailItem.clearanceDate) : 'N/A'}</div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+        </CardContent>
+      </Card>)}
+
+      {/* Create/Edit Card */}
+      {dialogOpen && (<Card className="max-w-[600px]">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editItem ? 'Uredi prijavu' : 'Nova carinska prijava'}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2"><Label className="text-xs">Broj prijave</Label><Input placeholder="CU-2024-00001" className="text-xs font-mono" value={formData.declarationNumber} onChange={e => setFormData(p => ({ ...p, declarationNumber: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.docType} onValueChange={v => setFormData(p => ({ ...p, docType: v as CustomsDocument['docType'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(DOC_TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2"><Label className="text-xs">Deklarant *</Label><Input placeholder="Naziv firme" className="text-xs" value={formData.declarantName} onChange={e => setFormData(p => ({ ...p, declarantName: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">PIB</Label><Input placeholder="100000000" className="text-xs" value={formData.declarantPIB} onChange={e => setFormData(p => ({ ...p, declarantPIB: e.target.value }))} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2"><Label className="text-xs">Država porekla</Label><Input placeholder="Nemačka" className="text-xs" value={formData.country} onChange={e => setFormData(p => ({ ...p, country: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Granični prelaz</Label><Input placeholder="Šid" className="text-xs" value={formData.borderCrossing} onChange={e => setFormData(p => ({ ...p, borderCrossing: e.target.value }))} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2"><Label className="text-xs">Opis robe *</Label><Input placeholder="Elektronska oprema" className="text-xs" value={formData.goodsDescription} onChange={e => setFormData(p => ({ ...p, goodsDescription: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">HS kod</Label><Input placeholder="8471.30" className="text-xs font-mono" value={formData.hsCode} onChange={e => setFormData(p => ({ ...p, hsCode: e.target.value }))} /></div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="grid gap-2"><Label className="text-xs">Vrednost (EUR)</Label><Input type="number" className="text-xs" value={formData.totalValue || ''} onChange={e => setFormData(p => ({ ...p, totalValue: Number(e.target.value) }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" className="text-xs" value={formData.totalWeight || ''} onChange={e => setFormData(p => ({ ...p, totalWeight: Number(e.target.value) }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Vozilo</Label><Input placeholder="BG-111-AB" className="text-xs" value={formData.vehiclePlate} onChange={e => setFormData(p => ({ ...p, vehiclePlate: e.target.value }))} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2"><Label className="text-xs">Referentni broj</Label><Input placeholder="REF-DE-2024-001" className="text-xs font-mono" value={formData.referenceNumber} onChange={e => setFormData(p => ({ ...p, referenceNumber: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Valuta</Label><Select value={formData.currency} onValueChange={v => setFormData(p => ({ ...p, currency: v }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EUR">EUR</SelectItem><SelectItem value="USD">USD</SelectItem><SelectItem value="RSD">RSD</SelectItem></SelectContent></Select></div>
+          </div>
+          <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Napomene..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
+          <div className="flex gap-2 pt-2"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }

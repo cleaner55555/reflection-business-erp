@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, BookOpen, BookCopy, Users } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, BookOpen, BookCopy, Users, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -253,51 +252,55 @@ export function Library() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader><DialogTitle>Detalji knjige</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold">{detailItem.title}</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ['Autor', detailItem.author],
-                  ['ISBN', detailItem.isbn],
-                  ['Izdavač', detailItem.publisher],
-                  ['Godina', String(detailItem.year)],
-                  ['Kategorija', CATEGORIES[detailItem.category]?.label],
-                  ['Jezik', detailItem.language],
-                  ['Strana', String(detailItem.pages)],
-                  ['Primeraka', `${detailItem.availableCopies} / ${detailItem.totalCopies}`],
-                  ['Pozajmica', String(detailItem.borrowedCount)],
-                  ['Lokacija', detailItem.location],
-                  ['Dodana', formatDate(detailItem.addedDate)],
-                ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-                ))}
+      {!!detailId && (
+        <Card className="sm:max-w-[550px]">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>Detalji knjige</CardTitle></CardHeader>
+          <CardContent>
+            {detailItem && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold">{detailItem.title}</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    ['Autor', detailItem.author],
+                    ['ISBN', detailItem.isbn],
+                    ['Izdavač', detailItem.publisher],
+                    ['Godina', String(detailItem.year)],
+                    ['Kategorija', CATEGORIES[detailItem.category]?.label],
+                    ['Jezik', detailItem.language],
+                    ['Strana', String(detailItem.pages)],
+                    ['Primeraka', `${detailItem.availableCopies} / ${detailItem.totalCopies}`],
+                    ['Pozajmica', String(detailItem.borrowedCount)],
+                    ['Lokacija', detailItem.location],
+                    ['Dodana', formatDate(detailItem.addedDate)],
+                  ].map(([label, val]) => (
+                    <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+                  ))}
+                </div>
+                <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
+                {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
               </div>
-              <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi knjigu' : 'Nova knjiga'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Naslov *</Label><Input className="text-xs" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Autor *</Label><Input className="text-xs" value={form.author || ''} onChange={e => setForm({ ...form, author: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'available'} onValueChange={v => setForm({ ...form, status: v as Book['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">Dostupna</SelectItem><SelectItem value="limited">Ograničena</SelectItem><SelectItem value="reference_only">Samo čitanje</SelectItem><SelectItem value="lost">Izgubljena</SelectItem><SelectItem value="damaged">Oštećena</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Primeraka</Label><Input className="text-xs" type="number" value={form.totalCopies || ''} onChange={e => setForm({ ...form, totalCopies: Number(e.target.value) })} /></div>
+      {dialogOpen && (
+        <Card className="sm:max-w-[500px]">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>{editItem ? 'Uredi knjigu' : 'Nova knjiga'}</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2"><Label className="text-xs">Naslov *</Label><Input className="text-xs" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Autor *</Label><Input className="text-xs" value={form.author || ''} onChange={e => setForm({ ...form, author: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'available'} onValueChange={v => setForm({ ...form, status: v as Book['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">Dostupna</SelectItem><SelectItem value="limited">Ograničena</SelectItem><SelectItem value="reference_only">Samo čitanje</SelectItem><SelectItem value="lost">Izgubljena</SelectItem><SelectItem value="damaged">Oštećena</SelectItem></SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Primeraka</Label><Input className="text-xs" type="number" value={form.totalCopies || ''} onChange={e => setForm({ ...form, totalCopies: Number(e.target.value) })} /></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
             </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-2"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

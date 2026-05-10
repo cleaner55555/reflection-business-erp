@@ -8,9 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
-} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
-  Globe2, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
+  Globe2, Plus, Search, Eye, Trash2, Edit3, RefreshCw, ArrowLeft,
   CheckCircle2, Clock, BarChart3, ExternalLink, FileCode,
   Layout, Palette, Type, Image, Settings, Zap, Shield,
   TrendingUp, Users, ArrowUpRight, ArrowDownRight, Minus,
@@ -1299,13 +1296,17 @@ export function WebsiteBuilder() {
       {/* DIALOGS                                                              */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
 
-      {/* Page Create/Edit Dialog */}
-      <Dialog open={pageDialogOpen} onOpenChange={setPageDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingPage ? 'Uredi stranicu' : 'Nova stranica'}</DialogTitle>
-            <DialogDescription>{editingPage ? 'Izmenite podešavanja postojeće stranice' : 'Kreirajte novu stranicu za vaš sajt'}</DialogDescription>
-          </DialogHeader>
+      {/* Page Create/Edit Form */}
+      {pageDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPageDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">{editingPage ? 'Uredi stranicu' : 'Nova stranica'}</CardTitle>
+              <CardDescription>{editingPage ? 'Izmenite podešavanja postojeće stranice' : 'Kreirajte novu stranicu za vaš sajt'}</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="max-w-2xl space-y-5">
           <div className="space-y-5">
             {/* Basic Info */}
             <div className="space-y-3">
@@ -1389,20 +1390,25 @@ export function WebsiteBuilder() {
               )}
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setPageDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSavePage}>{editingPage ? 'Sačuvaj izmene' : 'Kreiraj stranicu'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Add Section Dialog */}
-      <Dialog open={sectionDialogOpen} onOpenChange={setSectionDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Dodaj sekciju</DialogTitle>
-            <DialogDescription>Izaberite tip sekcije koji želite da dodate na stranicu</DialogDescription>
-          </DialogHeader>
+      {/* Add Section Picker */}
+      {sectionDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSectionDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">Dodaj sekciju</CardTitle>
+              <CardDescription>Izaberite tip sekcije koji želite da dodate na stranicu</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
           <ScrollArea className="max-h-[400px]">
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(sectionTypes).map(([key, sec]) => (
@@ -1414,16 +1420,21 @@ export function WebsiteBuilder() {
               ))}
             </div>
           </ScrollArea>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* SEO Edit Dialog */}
-      <Dialog open={seoDialogOpen} onOpenChange={setSeoDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>SEO podešavanja — {selectedPageSeo?.title}</DialogTitle>
-            <DialogDescription>Optimizujte stranicu za pretraživače</DialogDescription>
-          </DialogHeader>
+      {/* SEO Edit Form */}
+      {seoDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSeoDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">SEO podešavanja — {selectedPageSeo?.title}</CardTitle>
+              <CardDescription>Optimizujte stranicu za pretraživače</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -1502,20 +1513,25 @@ export function WebsiteBuilder() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setSeoDialogOpen(false)}>Otkaži</Button>
             <Button onClick={() => { setSeoDialogOpen(false); loadPages() }}>Sačuvaj SEO</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Menu Item Create/Edit Dialog */}
-      <Dialog open={menuDialogOpen} onOpenChange={setMenuDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingMenu ? 'Uredi stavku menija' : 'Nova stavka menija'}</DialogTitle>
-            <DialogDescription>Podesite navigacionu stavku sajta</DialogDescription>
-          </DialogHeader>
+            {/* Menu Item Create/Edit Form */}
+      {menuDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMenuDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">{editingMenu ? 'Uredi stavku menija' : 'Nova stavka menija'}</CardTitle>
+              <CardDescription>Podesite navigacionu stavku sajta</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-xs">Naziv (label)</Label>
@@ -1565,20 +1581,26 @@ export function WebsiteBuilder() {
               <Switch checked={menuForm.visible} onCheckedChange={(v) => setMenuForm({ ...menuForm, visible: v })} />
             </div>
           </div>
-          <DialogFooter>
+                    <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setMenuDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSaveMenu}>{editingMenu ? 'Sačuvaj' : 'Dodaj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Upload Media Dialog */}
-      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Upload medija</DialogTitle>
-            <DialogDescription>Dodajte slike, video ili dokumente u biblioteku</DialogDescription>
-          </DialogHeader>
+
+            {/* Upload Media Form */}
+      {uploadDialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setUploadDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">Upload medija</CardTitle>
+              <CardDescription>Dodajte slike, video ili dokumente u biblioteku</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
             <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
               <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
@@ -1591,17 +1613,22 @@ export function WebsiteBuilder() {
               <p>Podržani formati: JPG, PNG, GIF, SVG, WebP, MP4, PDF, DOC, DOCX</p>
               <p>Maksimalna veličina: 10MB po fajlu</p>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+                    </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Media Detail Dialog */}
-      <Dialog open={mediaDetailOpen} onOpenChange={setMediaDetailOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Detalji medija</DialogTitle>
-            <DialogDescription>Informacije o izabranom fajlu</DialogDescription>
-          </DialogHeader>
+      {/* Media Detail Form */}
+      {mediaDetailOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMediaDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">Detalji medija</CardTitle>
+              <CardDescription>Informacije o izabranom fajlu</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
           {selectedMedia && (
             <div className="space-y-4">
               <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
@@ -1630,15 +1657,14 @@ export function WebsiteBuilder() {
               </div>
             </div>
           )}
-          <DialogFooter>
+                    <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => { if (selectedMedia) navigator.clipboard.writeText(selectedMedia.url) }}>Kopiraj URL</Button>
             <Button variant="destructive" onClick={() => { setMediaDetailOpen(false) }}>Obriši</Button>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setMediaDetailOpen(false)}>Zatvori</Button>
-            </DialogFooter>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <Button variant="outline" onClick={() => setMediaDetailOpen(false)}>Zatvori</Button>
+          </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +20,7 @@ import {
   CheckCircle2, Clock, XCircle, AlertTriangle, FileText,
   TrendingUp, CalendarDays, ShieldCheck, Users, ClipboardCheck,
   BarChart3, ChevronRight, AlertOctagon, Download, Upload,
-  ListChecks, GraduationCap, Target, Zap, CircleDot
+  ListChecks, GraduationCap, Target, Zap, CircleDot, ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -788,18 +787,22 @@ export function Compliance() {
         </TabsContent>
       </Tabs>
 
-      {/* ===== DETAIL DIALOG ===== */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh]">
-          <ScrollArea className="max-h-[75vh] pr-4">
+      {/* ===== DETAIL CARD ===== */}
+      {!!selectedItem && detailOpen && (<Card className="max-w-2xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-lg">
+                {'number' in selectedItem ? `${(selectedItem as { number: string }).number}` : ''} — {(selectedItem as { title: string }).title}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">{'department' in selectedItem ? (selectedItem as { department: string }).department : ''} · {'owner' in selectedItem ? (selectedItem as { owner: string }).owner : ''}</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="max-h-[75vh] overflow-y-auto">
             {selectedItem && 'owner' in selectedItem && 'description' in selectedItem && (
               <div className="space-y-6">
-                <DialogHeader>
-                  <DialogTitle className="text-lg">
-                    {'number' in selectedItem ? `${(selectedItem as { number: string }).number}` : ''} — {(selectedItem as { title: string }).title}
-                  </DialogTitle>
-                  <DialogDescription>{'department' in selectedItem ? (selectedItem as { department: string }).department : ''} · {'owner' in selectedItem ? (selectedItem as { owner: string }).owner : ''}</DialogDescription>
-                </DialogHeader>
 
                 {/* Requirement detail */}
                 {'regulation' in selectedItem && (
@@ -902,19 +905,23 @@ export function Compliance() {
                 )}
               </div>
             )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>)}
 
-      {/* ===== CREATE DIALOG ===== */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {createType === 'requirement' ? 'Novi zahtev usklađenosti' : createType === 'nc' ? 'Nova neusklađenost' : createType === 'capa' ? 'Novi CAPA' : 'Nova procena rizika'}
-            </DialogTitle>
-            <DialogDescription>Popunite podatke za novi zapis</DialogDescription>
-          </DialogHeader>
+      {/* ===== CREATE CARD ===== */}
+      {createOpen && (<Card className="max-w-lg">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCreateOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle>
+                {createType === 'requirement' ? 'Novi zahtev usklađenosti' : createType === 'nc' ? 'Nova neusklađenost' : createType === 'capa' ? 'Novi CAPA' : 'Nova procena rizika'}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">Popunite podatke za novi zapis</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2">
             {createType === 'requirement' && (
               <>
@@ -992,12 +999,12 @@ export function Compliance() {
               </>
             )}
           </div>
-          <DialogFooter>
+          <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }

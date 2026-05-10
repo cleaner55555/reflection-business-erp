@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -26,8 +25,9 @@ import {
   CheckCircle2, Clock, BarChart3, TrendingUp, AlertCircle,
   GitBranch, GitCommit, FileText, FolderOpen, Upload, Download,
   Copy, ArrowRight, Users, Calendar, Filter, History, Package,
-  Cog, Shield, Target, Zap,
+  Cog, Shield, Target, Zap, ArrowLeft,
 } from 'lucide-react'
+
 import { toast } from 'sonner'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -1284,9 +1284,9 @@ export function PLM() {
       {/* ====== DIALOGS ====== */}
 
       {/* New Product Dialog */}
-      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('plm.newProduct')}</DialogTitle></DialogHeader>
+      { productDialogOpen && (
+      <Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setProductDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.newProduct')}</CardTitle></div></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>{t('plm.name')}</Label><Input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
@@ -1325,17 +1325,17 @@ export function PLM() {
             </div>
             <div className="space-y-2"><Label>{t('plm.description')}</Label><Textarea value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} rows={3} /></div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setProductDialogOpen(false)}>{t('plm.cancel')}</Button>
             <Button onClick={handleCreateProduct}><Plus className="h-4 w-4 mr-1" /> {t('plm.create')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+      </Card>
+    ) }
 
       {/* Product Detail Dialog */}
-      <Dialog open={productDetailOpen} onOpenChange={setProductDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{selectedProduct?.name}</DialogTitle></DialogHeader>
+      { productDetailOpen && (
+      <Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setProductDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{selectedProduct?.name}</CardTitle></div></CardHeader>
           {selectedProduct && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -1413,13 +1413,13 @@ export function PLM() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+      </Card>
+    ) }
 
       {/* New Revision Dialog */}
-      <Dialog open={revisionDialogOpen} onOpenChange={setRevisionDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('plm.newRevision')}</DialogTitle></DialogHeader>
+      { revisionDialogOpen && (
+      <Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setRevisionDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.newRevision')}</CardTitle></div></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>{t('plm.product')}</Label>
               <Select value={revisionForm.productId} onValueChange={(v) => setRevisionForm({ ...revisionForm, productId: v })}>
@@ -1445,17 +1445,17 @@ export function PLM() {
             <div className="space-y-2"><Label>{t('plm.description')}</Label><Textarea value={revisionForm.description} onChange={(e) => setRevisionForm({ ...revisionForm, description: e.target.value })} rows={3} /></div>
             <div className="space-y-2"><Label>{t('plm.affectedComponents')}</Label><Input value={revisionForm.affectedComponents} onChange={(e) => setRevisionForm({ ...revisionForm, affectedComponents: e.target.value })} placeholder="npr. U9, R12, C5" /></div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setRevisionDialogOpen(false)}>{t('plm.cancel')}</Button>
             <Button onClick={handleCreateRevision}><Plus className="h-4 w-4 mr-1" /> {t('plm.createRevision')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+      </Card>
+    ) }
 
       {/* New Document Dialog */}
-      <Dialog open={docDialogOpen} onOpenChange={setDocDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('plm.newDocument')}</DialogTitle></DialogHeader>
+      { docDialogOpen && (
+      <Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDocDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.newDocument')}</CardTitle></div></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>{t('plm.title')}</Label><Input value={docForm.title} onChange={(e) => setDocForm({ ...docForm, title: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
@@ -1495,17 +1495,17 @@ export function PLM() {
               <Button variant="outline" size="sm" className="ml-auto"><FolderOpen className="h-3.5 w-3.5 mr-1" /> {t('plm.browse')}</Button>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDocDialogOpen(false)}>{t('plm.cancel')}</Button>
             <Button onClick={handleCreateDoc}><Plus className="h-4 w-4 mr-1" /> {t('plm.create')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+      </Card>
+    ) }
 
       {/* New ECR Dialog */}
-      <Dialog open={ecrDialogOpen} onOpenChange={setEcrDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('plm.newECR')}</DialogTitle></DialogHeader>
+      { ecrDialogOpen && (
+      <Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEcrDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.newECR')}</CardTitle></div></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>{t('plm.product')}</Label>
               <Select value={ecrForm.productId} onValueChange={(v) => setEcrForm({ ...ecrForm, productId: v })}>
@@ -1529,17 +1529,17 @@ export function PLM() {
             </div>
             <div className="space-y-2"><Label>{t('plm.justification')}</Label><Textarea value={ecrForm.justification} onChange={(e) => setEcrForm({ ...ecrForm, justification: e.target.value })} rows={3} /></div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setEcrDialogOpen(false)}>{t('plm.cancel')}</Button>
             <Button onClick={handleCreateEcr}><Plus className="h-4 w-4 mr-1" /> {t('plm.createECR')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+      </Card>
+    ) }
 
       {/* ECO Detail Dialog */}
-      <Dialog open={ecoDialogOpen} onOpenChange={setEcoDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('plm.ecoDetails')}</DialogTitle></DialogHeader>
+      { ecoDialogOpen && (
+      <Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEcoDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('plm.ecoDetails')}</CardTitle></div></CardHeader>
           {selectedEco && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1573,8 +1573,8 @@ export function PLM() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+      </Card>
+    ) }
     </div>
   )
 }

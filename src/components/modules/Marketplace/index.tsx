@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,7 +17,7 @@ import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import {
+import {ArrowLeft, 
   Store, ShoppingCart, Users, Package, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, AlertCircle, Clock, ArrowRight, BarChart3, TrendingUp,
   DollarSign, Star, Globe2, Boxes, UserCheck, Shield, FileText, Check,
@@ -1013,8 +1013,9 @@ export function Marketplace() {
       </Tabs>
 
       {/* ===== NEW VENDOR DIALOG ===== */}
-      <Dialog open={vendorDialogOpen} onOpenChange={setVendorDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Nova Veleprodaja</DialogTitle><DialogDescription>Registrujte novog dobavljača na marketplace</DialogDescription></DialogHeader>
+      {vendorDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setVendorDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">Nova Veleprodaja</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Partner ID</Label><Input value={vendorForm.partnerId} onChange={(e) => setVendorForm({ ...vendorForm, partnerId: e.target.value })} placeholder="ID partnera iz modula Partneri" /></div>
             <div className="space-y-2"><Label>Opis</Label><Textarea value={vendorForm.description} onChange={(e) => setVendorForm({ ...vendorForm, description: e.target.value })} rows={2} /></div>
@@ -1043,17 +1044,18 @@ export function Marketplace() {
                 <Label className="text-sm">Besplatna dostava</Label>
               </div>
             </div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
               <Button variant="outline" onClick={() => { setVendorDialogOpen(false); setVendorForm(emptyVendor) }}>Otkaži</Button>
               <Button onClick={handleCreateVendor}>Kreiraj</Button>
-            </DialogFooter>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ===== NEW ORDER DIALOG ===== */}
-      <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto"><DialogHeader><DialogTitle>Nova Narudžba</DialogTitle><DialogDescription>Kreirajte novu narudžbu na marketplace</DialogDescription></DialogHeader>
+      {orderDialogOpen && (
+<Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setOrderDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">Nova Narudžba</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Veleprodaja *</Label>
               <Select value={orderForm.vendorId} onValueChange={(e) => setOrderForm({ ...orderForm, vendorId: e.target.value })}>
@@ -1097,17 +1099,18 @@ export function Marketplace() {
               </div>
             )}
             <div className="space-y-2"><Label>Napomene</Label><Textarea value={orderForm.notes} onChange={(e) => setOrderForm({ ...orderForm, notes: e.target.value })} rows={2} /></div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
               <Button variant="outline" onClick={() => { setOrderDialogOpen(false); setOrderForm(emptyOrder); setOrderItems([]) }}>Otkaži</Button>
               <Button onClick={handleCreateOrder} disabled={!orderForm.vendorId || orderItems.length === 0}>Kreiraj narudžbu</Button>
-            </DialogFooter>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ===== NEW PRODUCT DIALOG ===== */}
-      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Novi Proizvod</DialogTitle><DialogDescription>Dodajte proizvod u katalog marketplace</DialogDescription></DialogHeader>
+      {productDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setProductDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">Novi Proizvod</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Naziv *</Label><Input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-4">
@@ -1136,17 +1139,18 @@ export function Marketplace() {
               <Switch checked={productForm.isFeatured} onCheckedChange={(checked) => setProductForm({ ...productForm, isFeatured: checked })} />
               <Label className="text-sm">Istaknuti proizvod</Label>
             </div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
               <Button variant="outline" onClick={() => { setProductDialogOpen(false); setProductForm(emptyProduct) }}>Otkaži</Button>
               <Button onClick={handleCreateProduct}>Dodaj proizvod</Button>
-            </DialogFooter>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ===== NEW COUPON DIALOG ===== */}
-      <Dialog open={couponDialogOpen} onOpenChange={setCouponDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Novi Kupon</DialogTitle><DialogDescription>Kreirajte promo kod za popust na marketplace</DialogDescription></DialogHeader>
+      {couponDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setCouponDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">Novi Kupon</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Kupon kod *</Label><Input value={couponForm.code} onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })} placeholder="POPUST20" /></div>
@@ -1184,28 +1188,27 @@ export function Marketplace() {
               </div>
             </div>
             <div className="space-y-2"><Label>Opis</Label><Textarea value={couponForm.description} onChange={(e) => setCouponForm({ ...couponForm, description: e.target.value })} rows={2} /></div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
               <Button variant="outline" onClick={() => { setCouponDialogOpen(false); setCouponForm(emptyCoupon) }}>Otkaži</Button>
               <Button onClick={handleCreateCoupon}>Kreiraj kupon</Button>
-            </DialogFooter>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ===== VENDOR DETAIL DIALOG (NEW) ===== */}
-      <Dialog open={vendorDetailOpen} onOpenChange={setVendorDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      {vendorDetailOpen && (
+<Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
           {selectedItem && (
             <>
-              <DialogHeader>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">{selectedItem.slug?.[0]?.toUpperCase()}</div>
-                  <div>
-                    <DialogTitle>{selectedItem.slug}</DialogTitle>
-                    <DialogDescription>Status: <Badge variant="outline" className={`ml-2 text-xs ${statusColor(selectedItem.status)}`}>{statusLabel(selectedItem.status)}</Badge></DialogDescription>
-                  </div>
+              <CardHeader className="flex flex-row items-center gap-3">
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setVendorDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">{selectedItem.slug?.[0]?.toUpperCase()}</div>
+                <div>
+                  <CardTitle>{selectedItem.slug}</CardTitle>
+                  <p className="text-xs text-muted-foreground">Status: <Badge variant="outline" className={`ml-2 text-xs ${statusColor(selectedItem.status)}`}>{statusLabel(selectedItem.status)}</Badge></p>
                 </div>
-              </DialogHeader>
+              </CardHeader>
               <div className="space-y-6 mt-4">
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1246,18 +1249,19 @@ export function Marketplace() {
               </div>
               </>
             )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ===== ORDER DETAIL DIALOG (NEW) ===== */}
-      <Dialog open={orderDetailOpen} onOpenChange={setOrderDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      {orderDetailOpen && (
+<Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
           {selectedItem && (
             <>
-              <DialogHeader>
-                <DialogTitle>Narudžba #{selectedItem.number}</DialogTitle>
-                <DialogDescription>Status: <Badge variant="outline" className={`ml-2 text-xs ${statusColor(selectedItem.status)}`}>{statusLabel(selectedItem.status)}</Badge></DialogDescription>
-              </DialogHeader>
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setOrderDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+                <CardTitle className="text-sm flex-1">Narudžba #{selectedItem.number}</CardTitle>
+                <Badge variant="outline" className={`text-xs ${statusColor(selectedItem.status)}`}>{statusLabel(selectedItem.status)}</Badge>
+              </CardHeader>
               <div className="space-y-6 mt-4">
                 {/* Order Info */}
                 <Card>
@@ -1347,12 +1351,13 @@ export function Marketplace() {
               </div>
               </>
             )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ===== REVIEW DIALOG ===== */}
-      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Nova Recenzija</DialogTitle><DialogDescription>Ocenite veleprodaju</DialogDescription></DialogHeader>
+      {reviewDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setReviewDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">Nova Recenzija</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Veleprodaja *</Label>
               <Select value={reviewForm.vendorId} onValueChange={(e) => setReviewForm({ ...reviewForm, vendorId: e.target.value })}>
@@ -1372,17 +1377,18 @@ export function Marketplace() {
             </div>
             <div className="space-y-2"><Label>Naslov</Label><Input value={reviewForm.title} onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })} placeholder="Naslov recenzije" /></div>
             <div className="space-y-2"><Label>Komentar</Label><Textarea value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} rows={3} /></div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
               <Button variant="outline" onClick={() => { setReviewDialogOpen(false); setReviewForm(emptyReview) }}>Otkaži</Button>
               <Button onClick={handleCreateReview}>Pošalji recenziju</Button>
-            </DialogFooter>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ===== DISPUTE DIALOG ===== */}
-      <Dialog open={disputeDialogOpen} onOpenChange={setDisputeDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Novi Spor</DialogTitle><DialogDescription>Prijavite spor na marketplace</DialogDescription></DialogHeader>
+      {disputeDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDisputeDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">Novi Spor</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Narudžba *</Label>
               <Select value={disputeForm.orderId} onValueChange={(e) => setDisputeForm({ ...disputeForm, orderId: e.target.value })}>
@@ -1417,13 +1423,13 @@ export function Marketplace() {
               </div>
             </div>
             <div className="space-y-2"><Label>Opis spora</Label><Textarea value={disputeForm.description} onChange={(e) => setDisputeForm({ ...disputeForm, description: e.target.value })} rows={3} /></div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
               <Button variant="outline" onClick={() => { setDisputeDialogOpen(false); setDisputeForm(emptyDispute) }}>Otkaži</Button>
               <Button onClick={handleCreateDispute}>Prijavi spor</Button>
-            </DialogFooter>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
     </div>
   )
 }

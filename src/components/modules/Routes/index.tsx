@@ -6,13 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
-import { Plus, Search, Trash2, Pencil, Eye, Filter, MapPin, Truck, Clock, Fuel, Navigation, Route, BarChart3, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Filter, MapPin, Truck, Clock, Fuel, Navigation, Route, BarChart3, AlertTriangle, CheckCircle2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 import { useAppStore } from '@/lib/store'
@@ -349,11 +348,14 @@ export function Routes() {
         </TabsContent>
       </Tabs>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji rute</DialogTitle></DialogHeader>
-          {detailItem && (
+      {/* Detail View */}
+      {detailId && detailItem && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Detalji rute</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div><p className="text-lg font-bold">{detailItem.name}</p><p className="text-xs text-muted-foreground">{detailItem.code}</p></div>
@@ -409,39 +411,47 @@ export function Routes() {
 
               {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={open => { setDialogOpen(open); if (!open) setEditItem(null) }}>
-        <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi rutu' : 'Nova ruta'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Kod rute</Label><Input placeholder="RT-2024-001" className="text-xs" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v as RouteItem['priority'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+      {/* Create/Edit Form */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editItem ? 'Uredi rutu' : 'Nova ruta'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Kod rute</Label><Input placeholder="RT-2024-001" className="text-xs" value={formData.code} onChange={e => setFormData(p => ({ ...p, code: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v as RouteItem['priority'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Naziv rute *</Label><Input placeholder="Beograd - Novi Sad" className="text-xs" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Polazište *</Label><Input placeholder="Beograd" className="text-xs" value={formData.origin} onChange={e => setFormData(p => ({ ...p, origin: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Odredište *</Label><Input placeholder="Novi Sad" className="text-xs" value={formData.destination} onChange={e => setFormData(p => ({ ...p, destination: e.target.value }))} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Vozač *</Label><Select value={formData.driver} onValueChange={v => setFormData(p => ({ ...p, driver: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozača" /></SelectTrigger><SelectContent>{DRIVERS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Vozilo</Label><Select value={formData.vehicle} onValueChange={v => setFormData(p => ({ ...p, vehicle: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozilo" /></SelectTrigger><SelectContent>{VEHICLES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Udaljenost (km)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.totalDistance || ''} onChange={e => setFormData(p => ({ ...p, totalDistance: Number(e.target.value) }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Procenjeno vreme</Label><Input placeholder="2h 30m" className="text-xs" value={formData.estimatedTime} onChange={e => setFormData(p => ({ ...p, estimatedTime: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Trošak goriva (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.fuelCost || ''} onChange={e => setFormData(p => ({ ...p, fuelCost: Number(e.target.value) }))} /></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Putarine (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.tollCost || ''} onChange={e => setFormData(p => ({ ...p, tollCost: Number(e.target.value) }))} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Dodatne informacije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
             </div>
-            <div className="grid gap-2"><Label className="text-xs">Naziv rute *</Label><Input placeholder="Beograd - Novi Sad" className="text-xs" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Polazište *</Label><Input placeholder="Beograd" className="text-xs" value={formData.origin} onChange={e => setFormData(p => ({ ...p, origin: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Odredište *</Label><Input placeholder="Novi Sad" className="text-xs" value={formData.destination} onChange={e => setFormData(p => ({ ...p, destination: e.target.value }))} /></div>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button>
+              <Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Vozač *</Label><Select value={formData.driver} onValueChange={v => setFormData(p => ({ ...p, driver: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozača" /></SelectTrigger><SelectContent>{DRIVERS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Vozilo</Label><Select value={formData.vehicle} onValueChange={v => setFormData(p => ({ ...p, vehicle: v }))}><SelectTrigger className="text-xs"><SelectValue placeholder="Izaberi vozilo" /></SelectTrigger><SelectContent>{VEHICLES.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Udaljenost (km)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.totalDistance || ''} onChange={e => setFormData(p => ({ ...p, totalDistance: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Procenjeno vreme</Label><Input placeholder="2h 30m" className="text-xs" value={formData.estimatedTime} onChange={e => setFormData(p => ({ ...p, estimatedTime: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Trošak goriva (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.fuelCost || ''} onChange={e => setFormData(p => ({ ...p, fuelCost: Number(e.target.value) }))} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Putarine (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.tollCost || ''} onChange={e => setFormData(p => ({ ...p, tollCost: Number(e.target.value) }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Dodatne informacije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

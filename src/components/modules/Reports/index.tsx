@@ -17,13 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import {
   Table,
   TableBody,
   TableCell,
@@ -65,6 +58,7 @@ import {
   Plus,
   Trash2,
   Eye,
+  ArrowLeft,
 } from 'lucide-react'
 import { formatRSD, formatRSDShort, getStatusLabel, getMonthLabel } from '@/lib/helpers'
 import { useTranslation } from '@/lib/i18n'
@@ -1619,48 +1613,49 @@ export function Reports() {
                   <Play className="h-3.5 w-3.5" />
                   {t('reports.generateReport')}
                 </Button>
-                <Dialog open={customDialogOpen} onOpenChange={setCustomDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1.5">
-                      <Save className="h-3.5 w-3.5" />
-                      {t('reports.saveReport')}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{t('reports.saveReportTitle')}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-2">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">{t('reports.reportName')}</Label>
-                        <Input
-                          value={customReportName}
-                          onChange={(e) => setCustomReportName(e.target.value)}
-                          placeholder={t('reports.reportNamePlaceholder')}
-                          className="h-9 text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">{t('reports.reportDescription')}</Label>
-                        <Input
-                          value={customReportDesc}
-                          onChange={(e) => setCustomReportDesc(e.target.value)}
-                          placeholder={t('reports.reportDescPlaceholder')}
-                          className="h-9 text-sm"
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCustomDialogOpen(false)}>
-                          {t('common.cancel') || 'Otkaži'}
-                        </Button>
-                        <Button size="sm" onClick={handleSaveReport} disabled={!customReportName.trim()}>
-                          <Save className="h-3.5 w-3.5 mr-1" />
-                          {t('common.save') || 'Sačuvaj'}
-                        </Button>
-                      </div>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setCustomDialogOpen(true)}>
+                  <Save className="h-3.5 w-3.5" />
+                  {t('reports.saveReport')}
+                </Button>
+              {customDialogOpen && (
+                <Card className="mt-4">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCustomDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+                      <CardTitle>{t('reports.saveReportTitle')}</CardTitle>
                     </div>
-                  </DialogContent>
-                </Dialog>
+                  </CardHeader>
+                  <CardContent className="space-y-4 py-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">{t('reports.reportName')}</Label>
+                      <Input
+                        value={customReportName}
+                        onChange={(e) => setCustomReportName(e.target.value)}
+                        placeholder={t('reports.reportNamePlaceholder')}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">{t('reports.reportDescription')}</Label>
+                      <Input
+                        value={customReportDesc}
+                        onChange={(e) => setCustomReportDesc(e.target.value)}
+                        placeholder={t('reports.reportDescPlaceholder')}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setCustomDialogOpen(false)}>
+                        {t('common.cancel') || 'Otkaži'}
+                      </Button>
+                      <Button size="sm" onClick={handleSaveReport} disabled={!customReportName.trim()}>
+                        <Save className="h-3.5 w-3.5 mr-1" />
+                        {t('common.save') || 'Sačuvaj'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               </div>
             </SectionCard>
 

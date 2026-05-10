@@ -14,11 +14,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from '@/components/ui/dialog'
-import {
   ScanBarcode, QrCode, Package, Plus, Trash2, Pencil, Play, Lock,
-  CheckCircle2, AlertTriangle, Clock, ArrowDownToLine, MapPin,
+  CheckCircle2, AlertTriangle, Clock, ArrowDownToLine, ArrowLeft, MapPin,
   Warehouse, Printer, Download, BarChart3, TrendingUp, TrendingDown,
   ArrowRightLeft, Search, Eye, ChevronRight, Layers
 } from 'lucide-react'

@@ -7,12 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Search, Trash2, Pencil, Eye, Shield, AlertTriangle, CheckCircle2, Clock, FileText } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Shield, AlertTriangle, CheckCircle2, Clock, FileText, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
@@ -309,10 +308,14 @@ export function Safety() {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji incidenta</DialogTitle></DialogHeader>
+      {/* Detail View */}
+      {!!detailId && (
+        <Card className="max-w-3xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Detalji incidenta</CardTitle>
+          </CardHeader>
+          <CardContent className="max-h-[85vh] overflow-y-auto">
           {detailItem && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -356,15 +359,18 @@ export function Safety() {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={createOpen} onOpenChange={(open) => { if (!open) { setEditItem(null); setCreateOpen(false) } }}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editItem ? 'Uredi incident' : 'Novi incident'}</DialogTitle>
-          </DialogHeader>
+      {/* Create/Edit Form */}
+      {createOpen && (
+        <Card className="max-w-3xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditItem(null); setCreateOpen(false) }}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>{editItem ? 'Uredi incident' : 'Novi incident'}</CardTitle>
+          </CardHeader>
+          <CardContent className="max-h-[85vh] overflow-y-auto">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -468,8 +474,9 @@ export function Safety() {
               </Button>
             </div>
           </form>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

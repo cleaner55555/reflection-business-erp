@@ -5,12 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Search, Trash2, Pencil, Eye, FileCheck, Award, AlertTriangle, CheckCircle2, Clock, CalendarDays, BookOpen, Target, ListChecks, Shield } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, FileCheck, Award, AlertTriangle, CheckCircle2, Clock, CalendarDays, BookOpen, Target, ListChecks, Shield, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -182,40 +181,38 @@ export function Standards() {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji standarda</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between"><div><p className="text-lg font-bold">{detailItem.code}</p><p className="text-xs text-muted-foreground">{detailItem.name}</p></div><div className="flex gap-2">{getCategoryBadge(detailItem.category)}{getStatusBadge(detailItem.status)}</div></div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Verzija</div><p className="text-xs font-medium">{detailItem.version}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Izdavalac</div><p className="text-xs font-medium">{detailItem.issuingBody}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Važi od</div><p className="text-xs">{detailItem.validFrom ? formatDate(detailItem.validFrom) : '-'}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Važi do</div><p className="text-xs">{detailItem.validUntil ? formatDate(detailItem.validUntil) : '-'}</p></div>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Opseg</div><p className="text-xs">{detailItem.scope}</p><p className="text-xs text-muted-foreground mt-1">Auditor: {detailItem.auditor || 'Nije dodeljen'} · Zadnji: {detailItem.lastAudit ? formatDate(detailItem.lastAudit) : 'N/A'} · Sledeći: {detailItem.nextAudit ? formatDate(detailItem.nextAudit) : 'N/A'}</p></div>
-              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="flex justify-between items-center"><span className="text-xs text-emerald-600">Nivo usklađenosti</span><span className="text-lg font-bold text-emerald-700">{detailItem.compliance}%</span></div></div>
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
-              {detailItem.findings.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium">Nalazi audita:</p>
-                  {detailItem.findings.map(f => (
-                    <div key={f.id} className="p-2 rounded-lg border space-y-1">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Badge className={`${f.type === 'major' ? 'bg-red-100 text-red-700' : f.type === 'minor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'} text-xs`}>{f.type}</Badge><Badge className={`${f.status === 'open' ? 'bg-red-100 text-red-600' : f.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'} text-xs`}>{f.status === 'open' ? 'Otvoren' : f.status === 'in_progress' ? 'U toku' : 'Zatvoren'}</Badge></div>
-                        <span className="text-xs text-muted-foreground">{f.deadline ? formatDate(f.deadline) : ''}</span>
-                      </div>
-                      <p className="text-xs">{f.description}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+      {/* Detail Card */}
+      {!!detailId && detailItem && (
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDetailId(null)} /> Detalji standarda</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between"><div><p className="text-lg font-bold">{detailItem.code}</p><p className="text-xs text-muted-foreground">{detailItem.name}</p></div><div className="flex gap-2">{getCategoryBadge(detailItem.category)}{getStatusBadge(detailItem.status)}</div></div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Verzija</div><p className="text-xs font-medium">{detailItem.version}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Izdavalac</div><p className="text-xs font-medium">{detailItem.issuingBody}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Važi od</div><p className="text-xs">{detailItem.validFrom ? formatDate(detailItem.validFrom) : '-'}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Važi do</div><p className="text-xs">{detailItem.validUntil ? formatDate(detailItem.validUntil) : '-'}</p></div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Opseg</div><p className="text-xs">{detailItem.scope}</p><p className="text-xs text-muted-foreground mt-1">Auditor: {detailItem.auditor || 'Nije dodeljen'} · Zadnji: {detailItem.lastAudit ? formatDate(detailItem.lastAudit) : 'N/A'} · Sledeći: {detailItem.nextAudit ? formatDate(detailItem.nextAudit) : 'N/A'}</p></div>
+            <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20"><div className="flex justify-between items-center"><span className="text-xs text-emerald-600">Nivo usklađenosti</span><span className="text-lg font-bold text-emerald-700">{detailItem.compliance}%</span></div></div>
+            {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+            {detailItem.findings.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium">Nalazi audita:</p>
+                {detailItem.findings.map(f => (
+                  <div key={f.id} className="p-2 rounded-lg border space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2"><Badge className={`${f.type === 'major' ? 'bg-red-100 text-red-700' : f.type === 'minor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'} text-xs`}>{f.type}</Badge><Badge className={`${f.status === 'open' ? 'bg-red-100 text-red-600' : f.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'} text-xs`}>{f.status === 'open' ? 'Otvoren' : f.status === 'in_progress' ? 'U toku' : 'Zatvoren'}</Badge></div>
+                      <span className="text-xs text-muted-foreground">{f.deadline ? formatDate(f.deadline) : ''}</span>
+                    </div>
+                    <p className="text-xs">{f.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

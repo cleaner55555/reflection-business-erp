@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,6 +17,7 @@ import {
   Plus, Search, Eye, Trash2, RefreshCw, CheckCircle2, Clock,
   AlertTriangle, BarChart3, CalendarDays, Users, Star, TrendingUp,
   Target, Award, FileText, ChevronRight,
+  ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -863,12 +863,12 @@ export function Valuation() {
       </Tabs>
 
       {/* ═══════ CREATE APPRAISAL DIALOG ═══════ */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Novo ocenjivanje</DialogTitle>
-            <DialogDescription>Ocenite radni učink zaposlenog za izabrani period</DialogDescription>
-          </DialogHeader>
+      {createOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Novo ocenjivanje</CardTitle>
+            <p className="text-sm text-muted-foreground">Ocenite radni učink zaposlenog za izabrani period</p>
+          </CardHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -937,25 +937,25 @@ export function Valuation() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate}>Sačuvaj ocenjivanje</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
       {/* ═══════ VIEW APPRAISAL DIALOG ═══════ */}
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {viewOpen && (
+        <Card>
           {selected && (
             <>
-              <DialogHeader>
+              <CardHeader>
                 <div className="flex items-center gap-3">
-                  <DialogTitle>{selected.employeeName}</DialogTitle>
+                  <CardTitle>{selected.employeeName}</CardTitle>
                   <Badge variant="outline" className={STATUS_CONFIG[selected.status]?.color}>{STATUS_CONFIG[selected.status]?.label}</Badge>
                 </div>
-                <DialogDescription>{selected.department} · {selected.period} · {selected.evaluatedBy && `Evaluirao: ${selected.evaluatedBy}`}</DialogDescription>
-              </DialogHeader>
+                <p className="text-sm text-muted-foreground">{selected.department} · {selected.period} · {selected.evaluatedBy && `Evaluirao: ${selected.evaluatedBy}`}</p>
+              </CardHeader>
               <div className="space-y-4 py-2">
                 {/* Overall Rating */}
                 {selected.status === 'zavrseno' && (
@@ -1017,8 +1017,8 @@ export function Valuation() {
               </div>
             </>
           )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+      )}
     </div>
   )
 }

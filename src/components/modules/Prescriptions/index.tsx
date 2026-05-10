@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, Pill, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Pill, CheckCircle2, Clock, AlertCircle, Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -235,10 +234,15 @@ export function Prescriptions() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader><DialogTitle>Recept — {detailItem?.prescriptionNo}</DialogTitle></DialogHeader>
-          {detailItem && (
+      {detailId && detailItem && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">Recept — {detailItem.prescriptionNo}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
               <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.patientName}</h3>{getTypeBadge(detailItem.type)}{getStatusBadge(detailItem.status)}</div>
               <div className="grid grid-cols-2 gap-3">
@@ -262,25 +266,32 @@ export function Prescriptions() {
               </div>
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi recept' : 'Novi recept'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Pacijent *</Label><Input className="text-xs" value={form.patientName || ''} onChange={e => setForm({ ...form, patientName: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as Prescription['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="completed">Realizovan</SelectItem><SelectItem value="expired">Istekao</SelectItem><SelectItem value="cancelled">Otkazan</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'reimbursable'} onValueChange={v => setForm({ ...form, type: v as Prescription['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="reimbursable">Reemburzibilni</SelectItem><SelectItem value="private">Privatni</SelectItem><SelectItem value="narcotic">Narkotik</SelectItem><SelectItem value="special">Specijalni</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Vrednost</Label><Input className="text-xs" type="number" value={form.totalCost || ''} onChange={e => setForm({ ...form, totalCost: Number(e.target.value) })} /></div>
+      {dialogOpen && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)} disabled={saving}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">{editItem ? 'Uredi recept' : 'Novi recept'}</CardTitle>
             </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Otkaži</Button><Button size="sm" disabled={saving} onClick={handleSave}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Sačuvaj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2"><Label className="text-xs">Pacijent *</Label><Input className="text-xs" value={form.patientName || ''} onChange={e => setForm({ ...form, patientName: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as Prescription['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivan</SelectItem><SelectItem value="completed">Realizovan</SelectItem><SelectItem value="expired">Istekao</SelectItem><SelectItem value="cancelled">Otkazan</SelectItem></SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'reimbursable'} onValueChange={v => setForm({ ...form, type: v as Prescription['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="reimbursable">Reemburzibilni</SelectItem><SelectItem value="private">Privatni</SelectItem><SelectItem value="narcotic">Narkotik</SelectItem><SelectItem value="special">Specijalni</SelectItem></SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Vrednost</Label><Input className="text-xs" type="number" value={form.totalCost || ''} onChange={e => setForm({ ...form, totalCost: Number(e.target.value) })} /></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Otkaži</Button><Button size="sm" disabled={saving} onClick={handleSave}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Sačuvaj</Button></div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

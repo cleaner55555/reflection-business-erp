@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,7 +22,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts'
-import {
+import {ArrowLeft, 
   Factory, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, DollarSign,
   TrendingUp, AlertCircle, Settings, AlertTriangle, Calendar,
@@ -1062,9 +1062,9 @@ export function Manufacturing() {
       </Tabs>
 
       {/* ====== CREATE ORDER DIALOG ====== */}
-      <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('production.newOrder')}</DialogTitle></DialogHeader>
+      {orderDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setOrderDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('production.newOrder')}</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('production.product')}</Label>
@@ -1104,17 +1104,17 @@ export function Manufacturing() {
               <Textarea value={orderForm.notes} onChange={(e) => setOrderForm(f => ({ ...f, notes: e.target.value }))} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setOrderDialogOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={handleCreateOrder}><Plus className="h-4 w-4 mr-1" /> {t('production.createOrder')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+          )}
 
       {/* ====== ORDER DETAIL DIALOG ====== */}
-      <Dialog open={orderDetailOpen} onOpenChange={setOrderDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{t('production.orderDetails')}</DialogTitle></DialogHeader>
+      {orderDetailOpen && (
+<Card className="max-w-2xl max-h-[80vh] overflow-y-auto">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setOrderDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('production.orderDetails')}</CardTitle></CardHeader>
           {selectedOrder && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -1229,13 +1229,13 @@ export function Manufacturing() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ====== BOM DIALOG ====== */}
-      <Dialog open={bomDialogOpen} onOpenChange={setBomDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{selectedBom ? t('production.editBom') : t('production.newBom')}</DialogTitle></DialogHeader>
+      {bomDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setBomDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{selectedBom ? t('production.editBom') : t('production.newBom')}</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('production.product')}</Label>
@@ -1276,17 +1276,17 @@ export function Manufacturing() {
               {t('production.totalCost')}: {formatRSD((selectedBom?.components || MOCK_BOM_COMPONENTS.slice(0, 2)).reduce((s, c) => s + c.costPerUnit * c.requiredQty, 0))}
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => { setBomDialogOpen(false); setSelectedBom(null) }}>{t('common.cancel')}</Button>
             <Button onClick={() => { setBomDialogOpen(false); setSelectedBom(null) }}>{t('common.save')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+          )}
 
       {/* ====== BOM DETAIL DIALOG ====== */}
-      <Dialog open={bomDetailOpen} onOpenChange={setBomDetailOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{t('production.bomDetails')}</DialogTitle></DialogHeader>
+      {bomDetailOpen && (
+<Card className="max-w-lg max-h-[80vh] overflow-y-auto">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setBomDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('production.bomDetails')}</CardTitle></CardHeader>
           {selectedBom && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1327,13 +1327,13 @@ export function Manufacturing() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ====== ADD MACHINE DIALOG ====== */}
-      <Dialog open={machineDialogOpen} onOpenChange={setMachineDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('production.addMachine')}</DialogTitle></DialogHeader>
+      {machineDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setMachineDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('production.addMachine')}</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('common.name')}</Label>
@@ -1359,12 +1359,12 @@ export function Manufacturing() {
               <Input type="number" value={machineForm.capacityPerHour} onChange={(e) => setMachineForm(f => ({ ...f, capacityPerHour: parseInt(e.target.value) || 50 }))} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setMachineDialogOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={handleAddMachine}><Plus className="h-4 w-4 mr-1" /> {t('production.addMachine')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+          )}
 
       {/* Hidden: suppress unused imports warnings for icons used conceptually */}
       <span className="hidden">

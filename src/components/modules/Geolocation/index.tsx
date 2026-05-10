@@ -3,12 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -19,7 +18,7 @@ import {
   MapPin, Plus, Search, Eye, Trash2, RefreshCw, CheckCircle2, Clock,
   AlertTriangle, BarChart3, CalendarDays, Users, Filter, Globe,
   Battery, BatteryWarning, BatteryFull, Navigation, Shield, Bell,
-  TrendingUp, Map, Crosshair, Circle, Hexagon, Target
+  TrendingUp, Map, Crosshair, Circle, Hexagon, Target, ArrowLeft
 } from 'lucide-react'
 
 // ============ TYPES ============
@@ -720,12 +719,16 @@ export function Geolocation() {
       </Tabs>
 
       {/* Geofence Dialog */}
-      <Dialog open={geofenceDialogOpen} onOpenChange={setGeofenceDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedGeofence ? 'Izmeni geo-ograničenje' : 'Novo geo-ograničenje'}</DialogTitle>
-            <DialogDescription>{selectedGeofence ? 'Ažurirajte podatke o geo-ograničenju' : 'Definišite novo geo-ograničenje za praćenje'}</DialogDescription>
-          </DialogHeader>
+{geofenceDialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGeofenceDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">{selectedGeofence ? 'Izmeni geo-ograničenje' : 'Novo geo-ograničenje'}</CardTitle>
+            <CardDescription>{selectedGeofence ? 'Ažurirajte podatke o geo-ograničenju' : 'Definišite novo geo-ograničenje za praćenje'}</CardDescription>
+          </div>
+            </CardHeader>
           <div className="space-y-3">
             <div>
               <Label className="text-xs">Naziv</Label>
@@ -801,20 +804,24 @@ export function Geolocation() {
               <Textarea value={geofenceForm.notes} onChange={(e) => setGeofenceForm({ ...geofenceForm, notes: e.target.value })} placeholder="Opcionalne napomene..." rows={2} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setGeofenceDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSaveGeofence}>{selectedGeofence ? 'Sačuvaj izmene' : 'Kreiraj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* Employee Detail Dialog */}
-      <Dialog open={employeeDetailOpen} onOpenChange={setEmployeeDetailOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedEmployee?.name}</DialogTitle>
-            <DialogDescription>Detalji praćenja zaposlenog</DialogDescription>
-          </DialogHeader>
+{ employeeDetailOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setEmployeeDetailOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">{selectedEmployee?.name}</CardTitle>
+            <CardDescription>Detalji praćenja zaposlenog</CardDescription>
+          </div>
+            </CardHeader>
           {selectedEmployee && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -877,25 +884,29 @@ export function Geolocation() {
               )}
             </div>
           )}
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setEmployeeDetailOpen(false)}>Zatvori</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* Delete Confirm Dialog */}
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Brisanje geo-ograničenja</DialogTitle>
-            <DialogDescription>Da li ste sigurni da želite da obrišete &quot;{selectedGeofence?.name}&quot;? Ova radnja je nepovratna.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
+{ deleteConfirmOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDeleteConfirmOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">Brisanje geo-ograničenja</CardTitle>
+            <CardDescription>Da li ste sigurni da želite da obrišete &quot;{selectedGeofence?.name}&quot;? Ova radnja je nepovratna.</CardDescription>
+          </div>
+            </CardHeader>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
             <Button variant="destructive" onClick={handleDeleteGeofence}>Obriši</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
     </div>
   )
 }

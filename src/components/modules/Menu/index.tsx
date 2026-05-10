@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, UtensilsCrossed, Star } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, UtensilsCrossed, Star, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
 type MenuItem = {
@@ -244,10 +243,13 @@ export function Menu() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader><DialogTitle>{detailItem?.name}</DialogTitle></DialogHeader>
-          {detailItem && (
+      {detailId && detailItem && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{detailItem.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{detailItem.description}</p>
               <div className="grid grid-cols-2 gap-3">
@@ -267,14 +269,17 @@ export function Menu() {
               <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Sastojci</div><div className="flex flex-wrap gap-1">{detailItem.ingredients.map(ing => <Badge key={ing} className="text-xs bg-muted">{ing}</Badge>)}</div></div>
               {detailItem.allergens.length > 0 && <div className="p-2 rounded-lg bg-amber-50"><div className="text-xs text-amber-600 mb-1">⚠ Alergeni</div><div className="flex flex-wrap gap-1">{detailItem.allergens.map(a => <Badge key={a} className="text-xs bg-amber-100 text-amber-700">{a}</Badge>)}</div></div>}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi' : 'Novo jelo'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
+      {dialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editItem ? 'Uredi' : 'Novo jelo'}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
               <div className="grid gap-2"><Label className="text-xs">Cena</Label><Input className="text-xs" type="number" value={form.price || ''} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></div>
@@ -282,10 +287,10 @@ export function Menu() {
               <div className="grid gap-2"><Label className="text-xs">Dostupno</Label><Select value={form.isAvailable ? 'yes' : 'no'} onValueChange={v => setForm({ ...form, isAvailable: v === 'yes' })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yes">Da</SelectItem><SelectItem value="no">Ne</SelectItem></SelectContent></Select></div>
             </div>
             <div className="grid gap-2"><Label className="text-xs">Opis</Label><Input className="text-xs" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
+        </Card>
+      )}
     </div>
   )
 }

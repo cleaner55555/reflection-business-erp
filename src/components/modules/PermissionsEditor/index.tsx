@@ -9,14 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Table,
   TableBody,
   TableCell,
@@ -52,6 +44,7 @@ import {
   Unlock,
   Users,
   Copy,
+  ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -625,199 +618,215 @@ export function PermissionsEditor() {
         })}
       </div>
 
-      {/* ============ EDIT ROLE DIALOG ============ */}
+      {/* ============ EDIT ROLE ============ */}
 
-      <Dialog open={editDialogOpen} onOpenChange={(open) => {
-        setEditDialogOpen(open)
-        if (!open) setViewMode('list')
-      }}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              {viewMode === 'edit' ? `Izmeni ulogu: ${editDisplayName}` : editDisplayName}
-            </DialogTitle>
-            <DialogDescription>
-              {viewMode === 'edit'
-                ? 'Podesite permisije za svaki modul i akciju'
-                : `Pregled permisija za ulogu ${editDisplayName}`}
-            </DialogDescription>
-          </DialogHeader>
-
-          {viewMode === 'edit' ? (
-            <div className="space-y-6">
-              {/* Role info */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-xs">Naziv (displayName)</Label>
-                  <Input
-                    value={editDisplayName}
-                    onChange={(e) => setEditDisplayName(e.target.value)}
-                    placeholder="npr. Knjigovođa"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Opis</Label>
-                  <Input
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    placeholder="Kratak opis uloge"
-                  />
-                </div>
+      {editDialogOpen && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditDialogOpen(false); setViewMode('list') }}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  {viewMode === 'edit' ? `Izmeni ulogu: ${editDisplayName}` : editDisplayName}
+                </CardTitle>
+                <CardDescription className="text-xs mt-1">
+                  {viewMode === 'edit'
+                    ? 'Podesite permisije za svaki modul i akciju'
+                    : `Pregled permisija za ulogu ${editDisplayName}`}
+                </CardDescription>
               </div>
-
-              {/* Permission matrix */}
-              <div className="max-h-[450px] overflow-y-auto">
-                <PermissionMatrix
-                  permissions={editPerms}
-                  onChange={setEditPerms}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => {
-                  setViewMode('list')
-                }}>
-                  Pregled
-                </Button>
-                <div className="flex-1" />
-                <Button variant="outline" onClick={() => {
-                  setEditDialogOpen(false)
-                  setViewMode('list')
-                }}>
-                  Otkaži
-                </Button>
-                <Button onClick={handleSaveEdit} disabled={saving} className="gap-2">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  Sačuvaj
-                </Button>
-              </DialogFooter>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Read-only permission matrix */}
-              <div className="max-h-[450px] overflow-y-auto">
-                <PermissionMatrix
-                  permissions={editPerms}
-                  onChange={() => {}}
-                  readOnly
-                />
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => {
-                  setEditDialogOpen(false)
-                  setViewMode('list')
-                }}>
-                  Zatvori
-                </Button>
-                <Button onClick={() => setViewMode('edit')} className="gap-2">
-                  <Pencil className="h-4 w-4" />
-                  Izmeni
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* ============ NEW ROLE DIALOG ============ */}
-
-      <Dialog open={newDialogOpen} onOpenChange={setNewDialogOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
-              Nova uloga
-            </DialogTitle>
-            <DialogDescription>
-              Kreirajte novu ulogu i podesite permisije
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            {/* Clone from existing */}
-            <Card className="border-dashed">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-3">
-                  <Copy className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1">
-                    <Label className="text-xs">Kopiraj permisije iz postojeće uloge (opciono)</Label>
-                    <Select value={cloneFromRole} onValueChange={handleCloneFrom}>
-                      <SelectTrigger className="h-8 mt-1">
-                        <SelectValue placeholder="Izaberite ulogu za kopiranje..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map((r) => (
-                          <SelectItem key={r.id} value={r.id}>
-                            {r.displayName} ({r.name})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+          </CardHeader>
+          <CardContent className="max-h-[90vh] overflow-y-auto">
+            {viewMode === 'edit' ? (
+              <div className="space-y-6">
+                {/* Role info */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Naziv (displayName)</Label>
+                    <Input
+                      value={editDisplayName}
+                      onChange={(e) => setEditDisplayName(e.target.value)}
+                      placeholder="npr. Knjigovođa"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Opis</Label>
+                    <Input
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      placeholder="Kratak opis uloge"
+                    />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Role info */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-xs">Ključ (name) *</Label>
-                <Input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value.replace(/[^a-z_0-9]/g, '_'))}
-                  placeholder="npr. prodavac_vip"
-                  className="font-mono text-xs"
-                />
-                <p className="text-xs text-muted-foreground">Samo mala slova, brojevi i _</p>
+                {/* Permission matrix */}
+                <div className="max-h-[450px] overflow-y-auto">
+                  <PermissionMatrix
+                    permissions={editPerms}
+                    onChange={setEditPerms}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => {
+                    setViewMode('list')
+                  }}>
+                    Pregled
+                  </Button>
+                  <div className="flex-1" />
+                  <Button variant="outline" onClick={() => {
+                    setEditDialogOpen(false)
+                    setViewMode('list')
+                  }}>
+                    Otkaži
+                  </Button>
+                  <Button onClick={handleSaveEdit} disabled={saving} className="gap-2">
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                    Sačuvaj
+                  </Button>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Naziv (displayName) *</Label>
-                <Input
-                  value={newDisplayName}
-                  onChange={(e) => setNewDisplayName(e.target.value)}
-                  placeholder="npr. VIP Prodavac"
-                />
+            ) : (
+              <div className="space-y-4">
+                {/* Read-only permission matrix */}
+                <div className="max-h-[450px] overflow-y-auto">
+                  <PermissionMatrix
+                    permissions={editPerms}
+                    onChange={() => {}}
+                    readOnly
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => {
+                    setEditDialogOpen(false)
+                    setViewMode('list')
+                  }}>
+                    Zatvori
+                  </Button>
+                  <Button onClick={() => setViewMode('edit')} className="gap-2">
+                    <Pencil className="h-4 w-4" />
+                    Izmeni
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-            <div className="space-y-2">
-              <Label className="text-xs">Opis</Label>
-              <Input
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                placeholder="Kratak opis uloge"
-              />
-            </div>
+      {/* ============ NEW ROLE ============ */}
 
-            {/* Permission matrix */}
-            <div className="max-h-[400px] overflow-y-auto">
-              <PermissionMatrix
-                permissions={newPerms}
-                onChange={setNewPerms}
-              />
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => {
+      {newDialogOpen && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
                 setNewDialogOpen(false)
                 setNewName('')
                 setNewDisplayName('')
                 setNewDescription('')
                 setNewPerms({})
                 setCloneFromRole('')
-              }}>
-                Otkaži
-              </Button>
-              <Button onClick={handleCreate} disabled={newSaving} className="gap-2">
-                {newSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                Kreiraj ulogu
-              </Button>
-            </DialogFooter>
-          </div>
-        </DialogContent>
-      </Dialog>
+              }}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Plus className="h-5 w-5 text-primary" />
+                  Nova uloga
+                </CardTitle>
+                <CardDescription className="text-xs mt-1">
+                  Kreirajte novu ulogu i podesite permisije
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="max-h-[90vh] overflow-y-auto">
+            <div className="space-y-6">
+              {/* Clone from existing */}
+              <Card className="border-dashed">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <Copy className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="flex-1">
+                      <Label className="text-xs">Kopiraj permisije iz postojeće uloge (opciono)</Label>
+                      <Select value={cloneFromRole} onValueChange={handleCloneFrom}>
+                        <SelectTrigger className="h-8 mt-1">
+                          <SelectValue placeholder="Izaberite ulogu za kopiranje..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roles.map((r) => (
+                            <SelectItem key={r.id} value={r.id}>
+                              {r.displayName} ({r.name})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Role info */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-xs">Ključ (name) *</Label>
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value.replace(/[^a-z_0-9]/g, '_'))}
+                    placeholder="npr. prodavac_vip"
+                    className="font-mono text-xs"
+                  />
+                  <p className="text-xs text-muted-foreground">Samo mala slova, brojevi i _</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Naziv (displayName) *</Label>
+                  <Input
+                    value={newDisplayName}
+                    onChange={(e) => setNewDisplayName(e.target.value)}
+                    placeholder="npr. VIP Prodavac"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs">Opis</Label>
+                <Input
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder="Kratak opis uloge"
+                />
+              </div>
+
+              {/* Permission matrix */}
+              <div className="max-h-[400px] overflow-y-auto">
+                <PermissionMatrix
+                  permissions={newPerms}
+                  onChange={setNewPerms}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => {
+                  setNewDialogOpen(false)
+                  setNewName('')
+                  setNewDisplayName('')
+                  setNewDescription('')
+                  setNewPerms({})
+                  setCloneFromRole('')
+                }}>
+                  Otkaži
+                </Button>
+                <Button onClick={handleCreate} disabled={newSaving} className="gap-2">
+                  {newSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  Kreiraj ulogu
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ============ DELETE CONFIRMATION ============ */}
 

@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,7 +21,7 @@ import {
   Eye, Trash2, Edit3, RefreshCw, FileText, Filter,
   ChevronRight, MessageSquare, Send, AlertCircle,
   CalendarDays, TrendingUp, UserCheck, UserX, ThumbsUp,
-  ArrowRight, Copy, ListChecks, Settings, FileSignature
+  ArrowRight, ArrowLeft, Copy, ListChecks, Settings, FileSignature
 } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -805,95 +804,107 @@ export function Approvals() {
         </TabsContent>
       </Tabs>
 
-      {/* ─── Create Request Dialog ────────────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Novi zahtev za odobrenje</DialogTitle>
-            <DialogDescription>Popunite formu za podnošenje zahteva</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Naslov zahteva</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Naslov zahteva..." />
+      {/* ─── Create Request Form ──────────────────────────────────────────── */}
+      {dialogOpen && (
+        <Card className="max-w-2xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle>Novi zahtev za odobrenje</CardTitle>
+              <CardDescription>Popunite formu za podnošenje zahteva</CardDescription>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Tip</Label>
-                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(typeConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Naslov zahteva</Label>
+                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Naslov zahteva..." />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Tip</Label>
+                  <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(typeConfig).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Prioritet</Label>
+                  <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(priorityConfig).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Zahtevač</Label>
+                  <Input value={form.requestedBy} onChange={(e) => setForm({ ...form, requestedBy: e.target.value })} placeholder="Ime" />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>Prioritet</Label>
-                <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(priorityConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Opis</Label>
+                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} placeholder="Detaljan opis zahteva..." />
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label>Iznos</Label>
+                  <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Valuta</Label>
+                  <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RSD">RSD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="USD">USD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Datum početka</Label>
+                  <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Datum završetka</Label>
+                  <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>Zahtevač</Label>
-                <Input value={form.requestedBy} onChange={(e) => setForm({ ...form, requestedBy: e.target.value })} placeholder="Ime" />
+                <Label>Odobritelj</Label>
+                <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ko odobrava?" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Opis</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} placeholder="Detaljan opis zahteva..." />
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreate}><Send className="h-4 w-4 mr-1" /> Podnesi zahtev</Button>
             </div>
-            <Separator />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label>Iznos</Label>
-                <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" />
-              </div>
-              <div className="space-y-2">
-                <Label>Valuta</Label>
-                <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="RSD">RSD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Datum početka</Label>
-                <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Datum završetka</Label>
-                <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Odobritelj</Label>
-              <Input value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} placeholder="Ko odobrava?" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Send className="h-4 w-4 mr-1" /> Podnesi zahtev</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ─── Detail Dialog ────────────────────────────────────────────────── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Detalji zahteva</DialogTitle>
-          </DialogHeader>
-          {selected && (
+      {/* ─── Detail View ──────────────────────────────────────────────────── */}
+      {detailOpen && selected && (
+        <Card className="max-w-2xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => { setDetailOpen(false); setSelected(null); }}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle>Detalji zahteva</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-6">
               {/* Status Header */}
               <div className="flex items-center justify-between">
@@ -1021,37 +1032,44 @@ export function Approvals() {
                 </>
               )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ─── Reject Dialog ────────────────────────────────────────────────── */}
-      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Odbij zahtev</DialogTitle>
-            <DialogDescription>Navedite razlog odbijanja zahteva</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Odbijanje zahteva će obavestiti zahtevača. Razlog će biti vidljiv u istoriji.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <Label>Razlog odbijanja</Label>
-              <Textarea value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} rows={3} placeholder="Razlog odbijanja..." />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Otkaži</Button>
-            <Button className="bg-red-600 hover:bg-red-700" onClick={handleReject}>
-              <XCircle className="h-4 w-4 mr-1" /> Potvrdi odbijanje
+      {/* ─── Reject Form ─────────────────────────────────────────────────── */}
+      {rejectDialogOpen && selected && (
+        <Card className="max-w-md">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => setRejectDialogOpen(false)}>
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div>
+              <CardTitle>Odbij zahtev</CardTitle>
+              <CardDescription>Navedite razlog odbijanja zahteva</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Odbijanje zahteva će obavestiti zahtevača. Razlog će biti vidljiv u istoriji.
+                </AlertDescription>
+              </Alert>
+              <div className="space-y-2">
+                <Label>Razlog odbijanja</Label>
+                <Textarea value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} rows={3} placeholder="Razlog odbijanja..." />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Otkaži</Button>
+              <Button className="bg-red-600 hover:bg-red-700" onClick={handleReject}>
+                <XCircle className="h-4 w-4 mr-1" /> Potvrdi odbijanje
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

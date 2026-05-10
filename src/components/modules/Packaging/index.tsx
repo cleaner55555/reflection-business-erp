@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Search, Trash2, Pencil, Eye, Package, Box, CheckCircle2, ScanBarcode, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Package, Box, CheckCircle2, ScanBarcode, AlertTriangle, ArrowLeft } from 'lucide-react'
+
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 import { useAppStore } from '@/lib/store'
@@ -264,9 +264,10 @@ export function Packaging() {
       </Card>
 
       {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[750px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji naloga za pakovanje</DialogTitle></DialogHeader>
+      { detailId && (
+      <Card className="sm:max-w-[750px] max-h-[85vh] overflow-y-auto">
+
+          <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">Detalji naloga za pakovanje</CardTitle></div></CardHeader>
           {detailItem && (
             <div className="space-y-4">
               <div className="flex items-center justify-between"><div><p className="text-lg font-bold font-mono">{detailItem.orderNumber}</p><p className="text-xs text-muted-foreground">Narudžba: {detailItem.orderId} · {detailItem.customerName}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}{getPackTypeBadge(detailItem.packagingType)}</div></div>
@@ -313,13 +314,14 @@ export function Packaging() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+      </Card>
+    ) }
 
       {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={open => { setDialogOpen(open); if (!open) setEditItem(null) }}>
-        <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi nalog' : 'Novi nalog za pakovanje'}</DialogTitle></DialogHeader>
+      { dialogOpen && (
+      <Card className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
+
+          <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editItem ? 'Uredi nalog' : 'Novi nalog za pakovanje'}</CardTitle></div></CardHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2"><Label className="text-xs">Broj naloga *</Label><Input placeholder="PKG-2024-001" className="text-xs" value={formData.orderNumber} onChange={e => setFormData(p => ({ ...p, orderNumber: e.target.value }))} /></div>
@@ -333,9 +335,9 @@ export function Packaging() {
             </div>
             <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Textarea placeholder="Instrukcije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex justify-end gap-2 pt-4"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+      </Card>
+    ) }
     </div>
   )
 }

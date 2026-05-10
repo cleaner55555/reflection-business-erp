@@ -7,12 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Bot, Plus, Search, Pencil, Trash2, Play, Pause, Clock, AlertTriangle, CheckCircle2, XCircle, Zap, RefreshCw, Settings, FileText, Filter } from 'lucide-react'
+import { Bot, Plus, Search, Pencil, Trash2, Play, Pause, Clock, AlertTriangle, CheckCircle2, XCircle, Zap, RefreshCw, Settings, FileText, Filter, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatRSD, formatDate } from '@/lib/helpers'
 
@@ -320,27 +319,34 @@ export function Automation() {
         </TabsContent>
       </Tabs>
 
-      {/* Form Dialog */}
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Измени правило' : 'Ново правило аутоматизације'}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2"><Label className="text-xs">Назив *</Label><Input placeholder="Унесите назив..." value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Опис</Label><Input placeholder="Опис правила..." value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Окидач *</Label><Select value={formData.trigger} onValueChange={v => setFormData(p => ({ ...p, trigger: v }))}><SelectTrigger><SelectValue placeholder="Изабери" /></SelectTrigger><SelectContent>{TRIGGERS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Акција *</Label><Select value={formData.action} onValueChange={v => setFormData(p => ({ ...p, action: v }))}><SelectTrigger><SelectValue placeholder="Изабери" /></SelectTrigger><SelectContent>{ACTIONS.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent></Select></div>
+      {/* Form Inline */}
+      {formOpen && (
+        <Card className="sm:max-w-[500px]">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setFormOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <CardTitle className="text-base font-semibold">{editing ? 'Измени правило' : 'Ново правило аутоматизације'}</CardTitle>
             </div>
-            <div className="grid gap-2"><Label className="text-xs">Статус</Label><Select value={formData.status} onValueChange={v => setFormData(p => ({ ...p, status: v as AutomationRule['status'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Нацрт</SelectItem><SelectItem value="active">Активна</SelectItem><SelectItem value="paused">Паузирана</SelectItem></SelectContent></Select></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>Откажи</Button>
-            <Button onClick={handleSave} disabled={submitting}>{submitting ? 'Чување...' : 'Сачувај'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid gap-2"><Label className="text-xs">Назив *</Label><Input placeholder="Унесите назив..." value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Опис</Label><Input placeholder="Опис правила..." value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Окидач *</Label><Select value={formData.trigger} onValueChange={v => setFormData(p => ({ ...p, trigger: v }))}><SelectTrigger><SelectValue placeholder="Изабери" /></SelectTrigger><SelectContent>{TRIGGERS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Акција *</Label><Select value={formData.action} onValueChange={v => setFormData(p => ({ ...p, action: v }))}><SelectTrigger><SelectValue placeholder="Изабери" /></SelectTrigger><SelectContent>{ACTIONS.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Статус</Label><Select value={formData.status} onValueChange={v => setFormData(p => ({ ...p, status: v as AutomationRule['status'] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Нацрт</SelectItem><SelectItem value="active">Активна</SelectItem><SelectItem value="paused">Паузирана</SelectItem></SelectContent></Select></div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setFormOpen(false)}>Откажи</Button>
+              <Button onClick={handleSave} disabled={submitting}>{submitting ? 'Чување...' : 'Сачувај'}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

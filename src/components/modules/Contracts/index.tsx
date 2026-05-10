@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +20,8 @@ import {
   CheckCircle2, Clock, BarChart3, Users, AlertCircle,
   CalendarDays, TrendingUp, XCircle, FileText, Download,
   Upload, Shield, Briefcase, UserCheck, ArrowRight,
-  Timer, Building2, DollarSign, FolderOpen, Copy, History
+  Timer, Building2, DollarSign, FolderOpen, Copy, History,
+  ArrowLeft
 } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -795,13 +795,18 @@ export function Contracts() {
         </TabsContent>
       </Tabs>
 
-      {/* ─── Create Contract Dialog ────────────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Novi ugovor</DialogTitle>
-            <DialogDescription>Kreirajte novi radni ugovor za zaposlenog</DialogDescription>
-          </DialogHeader>
+      {/* ─── Create Contract Card ────────────────────────────────────────── */}
+      {dialogOpen && (<Card className="max-w-2xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle>Novi ugovor</CardTitle>
+              <p className="text-xs text-muted-foreground">Kreirajte novi radni ugovor za zaposlenog</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="max-h-[90vh] overflow-y-auto">
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="space-y-2"><Label>Zaposleni</Label><Input value={form.employeeName} onChange={(e) => setForm({ ...form, employeeName: e.target.value })} placeholder="Ime i prezime" /></div>
@@ -846,17 +851,22 @@ export function Contracts() {
             </div>
             <div className="space-y-2"><Label>Napomene</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Dodatne napomene..." /></div>
           </div>
-          <DialogFooter>
+          <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj ugovor</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
-      {/* ─── Detail Dialog ────────────────────────────────────────────────── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji ugovora</DialogTitle></DialogHeader>
+      {/* ─── Detail Card ────────────────────────────────────────────────── */}
+      {!!selected && detailOpen && (<Card className="max-w-2xl">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Detalji ugovora</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="max-h-[90vh] overflow-y-auto">
           {selected && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -935,16 +945,21 @@ export function Contracts() {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>)}
 
-      {/* ─── Renewal Dialog ────────────────────────────────────────────────── */}
-      <Dialog open={renewalDialogOpen} onOpenChange={setRenewalDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Obnavljanje ugovora</DialogTitle>
-            <DialogDescription>Kreirajte zahtev za obnavljanje ugovora</DialogDescription>
-          </DialogHeader>
+      {/* ─── Renewal Card ────────────────────────────────────────────────── */}
+      {renewalDialogOpen && (<Card className="max-w-md">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setRenewalDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle>Obnavljanje ugovora</CardTitle>
+              <p className="text-xs text-muted-foreground">Kreirajte zahtev za obnavljanje ugovora</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Zaposleni</Label>
@@ -971,12 +986,12 @@ export function Contracts() {
             </div>
             <div className="space-y-2"><Label>Napomene</Label><Textarea value={renewalForm.notes} onChange={(e) => setRenewalForm({ ...renewalForm, notes: e.target.value })} rows={3} placeholder="Razlog obnavljanja..." /></div>
           </div>
-          <DialogFooter>
+          <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => setRenewalDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleRenewalCreate}><Plus className="h-4 w-4 mr-1" /> Podnesi zahtev</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
       {/* ─── Contract Statistics Panel ────────────────────────────────────── */}
       {activeTab === 'contracts' && filteredContracts.length > 0 && (

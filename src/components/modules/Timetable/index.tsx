@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, Calendar, Clock, MapPin } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Calendar, Clock, MapPin, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -266,36 +265,47 @@ export function Timetable() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Detalji rasporeda</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold">{detailItem.subject}</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ['Dan', DAY_LABELS[detailItem.dayOfWeek]],
-                  ['Vreme', `${detailItem.timeStart} - ${detailItem.timeEnd}`],
-                  ['Nastavnik', detailItem.teacher],
-                  ['Sala', detailItem.room],
-                  ['Odjeljenje', detailItem.classGroup],
-                  ['Tip', TYPES[detailItem.type]?.label],
-                  ['Semestar', detailItem.semester],
-                ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
-                ))}
-              </div>
-              <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
-              {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+      {!!detailId && detailItem && (
+      <Card className="sm:max-w-[500px]">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Detalji rasporeda</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">{detailItem.subject}</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                ['Dan', DAY_LABELS[detailItem.dayOfWeek]],
+                ['Vreme', `${detailItem.timeStart} - ${detailItem.timeEnd}`],
+                ['Nastavnik', detailItem.teacher],
+                ['Sala', detailItem.room],
+                ['Odjeljenje', detailItem.classGroup],
+                ['Tip', TYPES[detailItem.type]?.label],
+                ['Semestar', detailItem.semester],
+              ].map(([label, val]) => (
+                <div key={label} className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">{label}</div><div className="text-xs font-medium">{val}</div></div>
+              ))}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Status</div>{getStatusBadge(detailItem.status)}</div>
+            {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
+          </div>
+        </CardContent>
+      </Card>
+      )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi unos' : 'Novi unos'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
+      {dialogOpen && (
+      <Card className="sm:max-w-[500px]">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editItem ? 'Uredi unos' : 'Novi unos'}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2"><Label className="text-xs">Predmet *</Label><Input className="text-xs" value={form.subject || ''} onChange={e => setForm({ ...form, subject: e.target.value })} /></div>
               <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({ ...form, status: v as ScheduleEntry['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Aktivno</SelectItem><SelectItem value="cancelled">Otkazano</SelectItem><SelectItem value="rescheduled">Pomeren</SelectItem><SelectItem value="completed">Završeno</SelectItem></SelectContent></Select></div>
@@ -304,9 +314,10 @@ export function Timetable() {
             </div>
             <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex justify-end gap-2 mt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></div>
+        </CardContent>
+      </Card>
+      )}
     </div>
   )
 }

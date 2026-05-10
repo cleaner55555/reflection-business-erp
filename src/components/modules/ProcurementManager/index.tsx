@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -20,7 +19,7 @@ import {
   AlertTriangle, BarChart3, CalendarDays, Users, Star, FileText,
   Download, Filter, Truck, TrendingDown, Globe, PackageSearch,
   ArrowUpRight, ArrowDownRight, DollarSign, ShoppingCart, Building2,
-  Phone, Mail, MapPin, ChevronRight, Timer, BarChart
+  Phone, Mail, MapPin, ChevronRight, Timer, BarChart, ArrowLeft
 } from 'lucide-react'
 
 // ============ TYPES ============
@@ -771,14 +770,19 @@ export function ProcurementManager() {
         </TabsContent>
       </Tabs>
 
-      {/* PR Detail Dialog */}
-      <Dialog open={prDetailOpen} onOpenChange={setPrDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{selectedPR?.prNumber} - {selectedPR?.title}</DialogTitle>
-            <DialogDescription>Detalji zahteva za nabavku</DialogDescription>
-          </DialogHeader>
-          {selectedPR && (
+      {/* PR Detail Card */}
+      {prDetailOpen && selectedPR && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPrDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle className="text-base">{selectedPR.prNumber} - {selectedPR.title}</CardTitle>
+                <p className="text-xs text-muted-foreground">Detalji zahteva za nabavku</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Badge className={PR_STATUS_CONFIG[selectedPR.status].color}>{PR_STATUS_CONFIG[selectedPR.status].label}</Badge>
@@ -817,26 +821,31 @@ export function ProcurementManager() {
                 </div>
               )}
             </div>
-          )}
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setPrDetailOpen(false)}>Zatvori</Button>
-            {selectedPR && ['draft', 'submitted', 'approved', 'ordered'].includes(selectedPR.status) && (
-              <Button onClick={() => { handleAdvanceStatus(selectedPR); setPrDetailOpen(false) }}>
-                <ChevronRight className="h-4 w-4 mr-1" /> {PR_STATUS_CONFIG[selectedPR.status].label} → {PR_STATUS_CONFIG[{ draft: 'submitted', submitted: 'approved', approved: 'ordered', ordered: 'received' }[selectedPR.status] as string]?.label}
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setPrDetailOpen(false)}>Zatvori</Button>
+              {['draft', 'submitted', 'approved', 'ordered'].includes(selectedPR.status) && (
+                <Button onClick={() => { handleAdvanceStatus(selectedPR); setPrDetailOpen(false) }}>
+                  <ChevronRight className="h-4 w-4 mr-1" /> {PR_STATUS_CONFIG[selectedPR.status].label} → {PR_STATUS_CONFIG[{ draft: 'submitted', submitted: 'approved', approved: 'ordered', ordered: 'received' }[selectedPR.status] as string]?.label}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Supplier Detail Dialog */}
-      <Dialog open={supplierDetailOpen} onOpenChange={setSupplierDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{selectedSupplier?.name}</DialogTitle>
-            <DialogDescription>Profil dobavljača - {selectedSupplier?.code}</DialogDescription>
-          </DialogHeader>
-          {selectedSupplier && (
+      {/* Supplier Detail Card */}
+      {supplierDetailOpen && selectedSupplier && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSupplierDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <CardTitle className="text-base">{selectedSupplier.name}</CardTitle>
+                <p className="text-xs text-muted-foreground">Profil dobavljača - {selectedSupplier.code}</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Badge className={SUPPLIER_STATUS_CONFIG[selectedSupplier.status].color}>{SUPPLIER_STATUS_CONFIG[selectedSupplier.status].label}</Badge>
@@ -879,94 +888,106 @@ export function ProcurementManager() {
                 <div className="border-t pt-3"><span className="text-xs text-muted-foreground">Napomene</span><p className="text-sm mt-1">{selectedSupplier.notes}</p></div>
               )}
             </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSupplierDetailOpen(false)}>Zatvori</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setSupplierDetailOpen(false)}>Zatvori</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* New/Edit PR Dialog */}
-      <Dialog open={prDialogOpen} onOpenChange={setPrDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingPR ? 'Izmeni zahtev' : 'Novi zahtev za nabavku'}</DialogTitle>
-            <DialogDescription>{editingPR ? 'Ažurirajte podatke zahteva' : 'Kreirajte novi zahtev za nabavku robe ili usluga'}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs">Naziv zahteva *</Label>
-              <Input value={prForm.title} onChange={(e) => setPrForm({ ...prForm, title: e.target.value })} placeholder="npr. Kancelarijski materijal" />
-            </div>
-            <div>
-              <Label className="text-xs">Opis</Label>
-              <Textarea value={prForm.description} onChange={(e) => setPrForm({ ...prForm, description: e.target.value })} placeholder="Detaljan opis potrebe..." rows={3} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+      {/* New/Edit PR Form */}
+      {prDialogOpen && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPrDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
               <div>
-                <Label className="text-xs">Prioritet</Label>
-                <Select value={prForm.priority} onValueChange={(v) => setPrForm({ ...prForm, priority: v as 'low' | 'medium' | 'high' | 'urgent' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Nizak</SelectItem>
-                    <SelectItem value="medium">Srednji</SelectItem>
-                    <SelectItem value="high">Visok</SelectItem>
-                    <SelectItem value="urgent">Hitan</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs">Departman</Label>
-                <Select value={prForm.department} onValueChange={(v) => setPrForm({ ...prForm, department: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Izaberite...</SelectItem>
-                    {stats.departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <CardTitle className="text-base">{editingPR ? 'Izmeni zahtev' : 'Novi zahtev za nabavku'}</CardTitle>
+                <p className="text-xs text-muted-foreground">{editingPR ? 'Ažurirajte podatke zahteva' : 'Kreirajte novi zahtev za nabavku robe ili usluga'}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
               <div>
-                <Label className="text-xs">Dobavljač</Label>
-                <Select value={prForm.supplierId} onValueChange={(v) => setPrForm({ ...prForm, supplierId: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Izaberite...</SelectItem>
-                    {suppliers.filter(s => s.status === 'active').map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs">Naziv zahteva *</Label>
+                <Input value={prForm.title} onChange={(e) => setPrForm({ ...prForm, title: e.target.value })} placeholder="npr. Kancelarijski materijal" />
               </div>
               <div>
-                <Label className="text-xs">Potreban do</Label>
-                <Input type="date" value={prForm.requiredByDate} onChange={(e) => setPrForm({ ...prForm, requiredByDate: e.target.value })} />
+                <Label className="text-xs">Opis</Label>
+                <Textarea value={prForm.description} onChange={(e) => setPrForm({ ...prForm, description: e.target.value })} placeholder="Detaljan opis potrebe..." rows={3} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Prioritet</Label>
+                  <Select value={prForm.priority} onValueChange={(v) => setPrForm({ ...prForm, priority: v as 'low' | 'medium' | 'high' | 'urgent' })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Nizak</SelectItem>
+                      <SelectItem value="medium">Srednji</SelectItem>
+                      <SelectItem value="high">Visok</SelectItem>
+                      <SelectItem value="urgent">Hitan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Departman</Label>
+                  <Select value={prForm.department} onValueChange={(v) => setPrForm({ ...prForm, department: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Izaberite...</SelectItem>
+                      {stats.departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Dobavljač</Label>
+                  <Select value={prForm.supplierId} onValueChange={(v) => setPrForm({ ...prForm, supplierId: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Izaberite...</SelectItem>
+                      {suppliers.filter(s => s.status === 'active').map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Potreban do</Label>
+                  <Input type="date" value={prForm.requiredByDate} onChange={(e) => setPrForm({ ...prForm, requiredByDate: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Napomene</Label>
+                <Textarea value={prForm.notes} onChange={(e) => setPrForm({ ...prForm, notes: e.target.value })} placeholder="Opcionalne napomene..." rows={2} />
               </div>
             </div>
-            <div>
-              <Label className="text-xs">Napomene</Label>
-              <Textarea value={prForm.notes} onChange={(e) => setPrForm({ ...prForm, notes: e.target.value })} placeholder="Opcionalne napomene..." rows={2} />
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setPrDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleSavePR}>{editingPR ? 'Sačuvaj izmene' : 'Kreiraj zahtev'}</Button>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPrDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSavePR}>{editingPR ? 'Sačuvaj izmene' : 'Kreiraj zahtev'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Delete Confirm Dialog */}
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Brisanje zahteva</DialogTitle>
-            <DialogDescription>Da li ste sigurni da želite da obrišete &quot;{selectedPR?.prNumber} - {selectedPR?.title}&quot;?</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
-            <Button variant="destructive" onClick={handleDeletePR}>Obriši</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Delete Confirm Card */}
+      {deleteConfirmOpen && selectedPR && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeleteConfirmOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">Brisanje zahteva</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Da li ste sigurni da želite da obrišete &quot;{selectedPR.prNumber} - {selectedPR.title}&quot;?</p>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
+              <Button variant="destructive" onClick={handleDeletePR}>Obriši</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -6,13 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
-import { Plus, Search, Trash2, Pencil, Eye, Warehouse, Truck, Clock, Package, ArrowDownToLine, ArrowUpFromLine, Timer, AlertTriangle, CheckCircle2, CalendarDays, Scale, ClipboardList } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Warehouse, Truck, Clock, Package, ArrowDownToLine, ArrowUpFromLine, Timer, AlertTriangle, CheckCircle2, CalendarDays, Scale, ClipboardList, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -338,66 +337,69 @@ export function LoadingDock() {
         </TabsContent>
       </Tabs>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader><DialogTitle>Detalji termina</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between"><div><p className="text-lg font-bold">Rampa {detailItem.dockNumber}</p><p className="text-xs text-muted-foreground">{formatDate(detailItem.appointmentDate)} · {detailItem.scheduledTime}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-bold">{detailItem.vehiclePlate}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.driverName}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Firma</div><p className="text-xs font-medium">{detailItem.companyName}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Tip</div><p className="text-xs">{DOCK_TYPES[detailItem.dockType]?.label}</p></div>
+      {!!detailId && (
+        <Card className="sm:max-w-[600px]">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>Detalji termina</CardTitle></CardHeader>
+          <CardContent>
+            {detailItem && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between"><div><p className="text-lg font-bold">Rampa {detailItem.dockNumber}</p><p className="text-xs text-muted-foreground">{formatDate(detailItem.appointmentDate)} · {detailItem.scheduledTime}</p></div><div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozilo</div><p className="text-xs font-bold">{detailItem.vehiclePlate}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.driverName}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Firma</div><p className="text-xs font-medium">{detailItem.companyName}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Tip</div><p className="text-xs">{DOCK_TYPES[detailItem.dockType]?.label}</p></div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Roba</div><p className="text-xs font-medium">{detailItem.cargoType}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.cargoWeight} {detailItem.cargoUnit}</p></div>
+                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Palete</div><p className="text-xs font-medium">{detailItem.palletCount}</p></div>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vrata</div><p className="text-xs font-medium">{detailItem.doorAssignment}</p><div className="text-xs text-muted-foreground mt-1">Instrukcije: {detailItem.handlingInstructions}</div></div>
+                {detailItem.actualStart && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-700">Početak: {detailItem.actualStart} {detailItem.actualEnd ? `· Kraj: ${detailItem.actualEnd}` : ''}</p></div>}
+                {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+                <div className="flex gap-2"><Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v as DockAppointment['status'])}><SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Roba</div><p className="text-xs font-medium">{detailItem.cargoType}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.cargoWeight} {detailItem.cargoUnit}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Palete</div><p className="text-xs font-medium">{detailItem.palletCount}</p></div>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vrata</div><p className="text-xs font-medium">{detailItem.doorAssignment}</p><div className="text-xs text-muted-foreground mt-1">Instrukcije: {detailItem.handlingInstructions}</div></div>
-              {detailItem.actualStart && <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20"><p className="text-xs text-blue-700">Početak: {detailItem.actualStart} {detailItem.actualEnd ? `· Kraj: ${detailItem.actualEnd}` : ''}</p></div>}
-              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
-              <div className="flex gap-2"><Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v as DockAppointment['status'])}><SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={open => { setDialogOpen(open); if (!open) setEditItem(null) }}>
-        <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi termin' : 'Novi termin'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Rampa</Label><Input placeholder="R-01" className="text-xs" value={formData.dockNumber} onChange={e => setFormData(p => ({ ...p, dockNumber: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.dockType} onValueChange={v => setFormData(p => ({ ...p, dockType: v as DockAppointment['dockType'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(DOCK_TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+      {/* Create/Edit Form */}
+      {dialogOpen && (
+        <Card className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>{editItem ? 'Uredi termin' : 'Novi termin'}</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Rampa</Label><Input placeholder="R-01" className="text-xs" value={formData.dockNumber} onChange={e => setFormData(p => ({ ...p, dockNumber: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={formData.dockType} onValueChange={v => setFormData(p => ({ ...p, dockType: v as DockAppointment['dockType'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(DOCK_TYPES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Reg. broj *</Label><Input placeholder="BG-123-AB" className="text-xs" value={formData.vehiclePlate} onChange={e => setFormData(p => ({ ...p, vehiclePlate: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Vozač *</Label><Input placeholder="Ime vozača" className="text-xs" value={formData.driverName} onChange={e => setFormData(p => ({ ...p, driverName: e.target.value }))} /></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Firma *</Label><Input placeholder="Naziv firme" className="text-xs" value={formData.companyName} onChange={e => setFormData(p => ({ ...p, companyName: e.target.value }))} /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input type="date" className="text-xs" value={formData.appointmentDate} onChange={e => setFormData(p => ({ ...p, appointmentDate: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Vreme *</Label><Input type="time" className="text-xs" value={formData.scheduledTime} onChange={e => setFormData(p => ({ ...p, scheduledTime: e.target.value }))} /></div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Roba</Label><Input placeholder="Tip robe" className="text-xs" value={formData.cargoType} onChange={e => setFormData(p => ({ ...p, cargoType: e.target.value }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" className="text-xs" value={formData.cargoWeight || ''} onChange={e => setFormData(p => ({ ...p, cargoWeight: Number(e.target.value) }))} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Palete</Label><Input type="number" className="text-xs" value={formData.palletCount || ''} onChange={e => setFormData(p => ({ ...p, palletCount: Number(e.target.value) }))} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v as DockAppointment['priority'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Vrata</Label><Input placeholder="Vrata 1" className="text-xs" value={formData.doorAssignment} onChange={e => setFormData(p => ({ ...p, doorAssignment: e.target.value }))} /></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Instrukcije</Label><Textarea placeholder="Uputstva za rukovanje..." className="text-xs" value={formData.handlingInstructions} onChange={e => setFormData(p => ({ ...p, handlingInstructions: e.target.value }))} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Dodatne beleške..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Reg. broj *</Label><Input placeholder="BG-123-AB" className="text-xs" value={formData.vehiclePlate} onChange={e => setFormData(p => ({ ...p, vehiclePlate: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Vozač *</Label><Input placeholder="Ime vozača" className="text-xs" value={formData.driverName} onChange={e => setFormData(p => ({ ...p, driverName: e.target.value }))} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Firma *</Label><Input placeholder="Naziv firme" className="text-xs" value={formData.companyName} onChange={e => setFormData(p => ({ ...p, companyName: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input type="date" className="text-xs" value={formData.appointmentDate} onChange={e => setFormData(p => ({ ...p, appointmentDate: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Vreme *</Label><Input type="time" className="text-xs" value={formData.scheduledTime} onChange={e => setFormData(p => ({ ...p, scheduledTime: e.target.value }))} /></div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Roba</Label><Input placeholder="Tip robe" className="text-xs" value={formData.cargoType} onChange={e => setFormData(p => ({ ...p, cargoType: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" className="text-xs" value={formData.cargoWeight || ''} onChange={e => setFormData(p => ({ ...p, cargoWeight: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Palete</Label><Input type="number" className="text-xs" value={formData.palletCount || ''} onChange={e => setFormData(p => ({ ...p, palletCount: Number(e.target.value) }))} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v as DockAppointment['priority'] }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Vrata</Label><Input placeholder="Vrata 1" className="text-xs" value={formData.doorAssignment} onChange={e => setFormData(p => ({ ...p, doorAssignment: e.target.value }))} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Instrukcije</Label><Textarea placeholder="Uputstva za rukovanje..." className="text-xs" value={formData.handlingInstructions} onChange={e => setFormData(p => ({ ...p, handlingInstructions: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Dodatne beleške..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-2"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave}>{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -31,7 +30,7 @@ import {
   RadioTower, Router, Server, Database, Globe, Network,
   QrCode, ScanLine, Satellite, Blinds, DoorOpen, DoorClosed,
   Power, Plug, Timer, CalendarDays, Users, Target,
-  LayoutGrid, List, PieChart, LineChart, CircleDot
+  LayoutGrid, List, PieChart, LineChart, CircleDot, ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -1245,12 +1244,16 @@ export function IoT() {
       {/* ===== DIALOGS ===== */}
 
       {/* New/Edit Sensor */}
-      <Dialog open={sensorDialogOpen} onOpenChange={setSensorDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingSensor ? 'Izmeni senzor' : 'Novi senzor'}</DialogTitle>
-            <DialogDescription>{editingSensor ? 'Izmenite podatke o senzoru' : 'Dodajte novi IoT senzor'}</DialogDescription>
-          </DialogHeader>
+{sensorDialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setSensorDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingSensor ? 'Izmeni senzor' : 'Novi senzor'}</CardTitle>
+            <CardDescription>{editingSensor ? 'Izmenite podatke o senzoru' : 'Dodajte novi IoT senzor'}</CardDescription>
+          </div>
+            </CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Naziv senzora *</Label><Input value={sensorForm.name} onChange={(e) => setSensorForm({ ...sensorForm, name: e.target.value })} placeholder="npr. Hladnjača A1" /></div>
             <div className="grid grid-cols-2 gap-4">
@@ -1301,25 +1304,29 @@ export function IoT() {
             <div className="flex items-center gap-2"><Switch checked={sensorForm.alertEnabled} onCheckedChange={(v) => setSensorForm({ ...sensorForm, alertEnabled: v })} /><Label className="text-xs">Omogući alerte za ovaj senzor</Label></div>
             <div className="space-y-2"><Label className="text-xs">Napomene</Label><Textarea value={sensorForm.notes} onChange={(e) => setSensorForm({ ...sensorForm, notes: e.target.value })} placeholder="Dodatne informacije..." rows={2} /></div>
           </div>
-          <DialogFooter className="gap-2">
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setSensorDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSubmitSensor} disabled={submitting || !sensorForm.name.trim()}>{submitting ? 'Čuvanje...' : 'Sačuvaj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* Sensor Detail */}
-      <Dialog open={sensorDetailOpen} onOpenChange={setSensorDetailOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          {selectedSensor && (
+{sensorDetailOpen && (
+<Card className="border">
+{selectedSensor && (
             <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+              <CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setSensorDetailOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base flex items-center gap-2">
                   <span className="text-xl">{SENSOR_TYPE_CONFIG[selectedSensor.type]?.icon}</span>
                   {selectedSensor.name}
-                </DialogTitle>
-                <DialogDescription>{SENSOR_TYPE_CONFIG[selectedSensor.type]?.label} · {selectedSensor.location}</DialogDescription>
-              </DialogHeader>
+                </CardTitle>
+                <CardDescription>{SENSOR_TYPE_CONFIG[selectedSensor.type]?.label} · {selectedSensor.location}</CardDescription>
+              </div>
+            </CardHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-xs text-muted-foreground">Status:</span><br /><Badge variant="outline" className={`text-xs ${STATUS_CONFIG[selectedSensor.status]?.color}`}>{STATUS_CONFIG[selectedSensor.status]?.label}</Badge></div>
@@ -1392,16 +1399,20 @@ export function IoT() {
               </div>
             </>
           )}
-        </DialogContent>
-      </Dialog>
+</Card>
+)}
 
       {/* New/Edit Alert Rule */}
-      <Dialog open={ruleDialogOpen} onOpenChange={setRuleDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingRule ? 'Izmeni pravilo' : 'Novo pravilo upozorenja'}</DialogTitle>
-            <DialogDescription>Definišite uslove za automatska upozorenja</DialogDescription>
-          </DialogHeader>
+{ruleDialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setRuleDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingRule ? 'Izmeni pravilo' : 'Novo pravilo upozorenja'}</CardTitle>
+            <CardDescription>Definišite uslove za automatska upozorenja</CardDescription>
+          </div>
+            </CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Naziv pravila *</Label><Input value={ruleForm.name} onChange={(e) => setRuleForm({ ...ruleForm, name: e.target.value })} placeholder="npr. Visoka temperatura" /></div>
             <div className="grid grid-cols-2 gap-4">
@@ -1446,20 +1457,24 @@ export function IoT() {
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2">
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setRuleDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSaveRule}>{editingRule ? 'Sačuvaj izmene' : 'Kreiraj pravilo'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* New/Edit Automation */}
-      <Dialog open={automationDialogOpen} onOpenChange={setAutomationDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingAutomation ? 'Izmeni automatizaciju' : 'Nova automatizacija'}</DialogTitle>
-            <DialogDescription>Definišite trigger i akciju za automatizaciju</DialogDescription>
-          </DialogHeader>
+{ automationDialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setAutomationDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingAutomation ? 'Izmeni automatizaciju' : 'Nova automatizacija'}</CardTitle>
+            <CardDescription>Definišite trigger i akciju za automatizaciju</CardDescription>
+          </div>
+            </CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={autoForm.name} onChange={(e) => setAutoForm({ ...autoForm, name: e.target.value })} placeholder="npr. Alert na visoku temp" /></div>
             <div className="space-y-2"><Label className="text-xs">Opis</Label><Textarea value={autoForm.description} onChange={(e) => setAutoForm({ ...autoForm, description: e.target.value })} placeholder="Opis automatizacije..." rows={2} /></div>
@@ -1493,43 +1508,52 @@ export function IoT() {
               <div className="space-y-2"><Label className="text-xs">Webhook URL</Label><Input value={autoForm.actionConfig} onChange={(e) => setAutoForm({ ...autoForm, actionConfig: e.target.value })} placeholder="https://..." /></div>
             )}
           </div>
-          <DialogFooter className="gap-2">
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setAutomationDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSaveAutomation}>{editingAutomation ? 'Sačuvaj' : 'Kreiraj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* New Group */}
-      <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Nova grupa uređaja</DialogTitle><DialogDescription>Grupišite senzore po lokaciji ili funkciji</DialogDescription></DialogHeader>
+{ groupDialogOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGroupDialogOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">Nova grupa uređaja</CardTitle><CardDescription>Grupišite senzore po lokaciji ili funkciji</CardDescription></div>
+            </CardHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label className="text-xs">Naziv grupe *</Label><Input value={groupForm.name} onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })} placeholder="npr. Magacini" /></div>
             <div className="space-y-2"><Label className="text-xs">Opis</Label><Input value={groupForm.description} onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })} placeholder="Opcionalno" /></div>
             <div className="space-y-2"><Label className="text-xs">Lokacija</Label><Input value={groupForm.location} onChange={(e) => setGroupForm({ ...groupForm, location: e.target.value })} placeholder="npr. Magacin 1" /></div>
             <div className="space-y-2"><Label className="text-xs">Boja</Label><Input type="color" value={groupForm.color} onChange={(e) => setGroupForm({ ...groupForm, color: e.target.value })} className="h-8 w-16" /></div>
           </div>
-          <DialogFooter className="gap-2">
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setGroupDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateGroup} disabled={!groupForm.name.trim()}>Kreiraj grupu</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
 
       {/* Delete Confirm */}
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-base">Obriši senzor</DialogTitle>
-            <DialogDescription>Da li ste sigurni da želite da obrišete senzor &quot;{selectedSensor?.name}&quot;? Ova akcija je nepovratna.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
+{ deleteConfirmOpen && (
+<Card className="border">
+<CardHeader className="flex flex-row items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDeleteConfirmOpen(false)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0 flex-1"><CardTitle className="text-base">Obriši senzor</CardTitle>
+            <CardDescription>Da li ste sigurni da želite da obrišete senzor &quot;{selectedSensor?.name}&quot;? Ova akcija je nepovratna.</CardDescription>
+          </div>
+            </CardHeader>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>Otkaži</Button>
             <Button variant="destructive" onClick={handleDeleteSensor}>Obriši</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+</Card>
+)}
     </div>
   )
 }

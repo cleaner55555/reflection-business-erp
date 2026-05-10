@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -24,6 +23,7 @@ import {
   Clock, ArrowRight, BarChart3, DollarSign, TrendingUp, AlertCircle, Send,
   X, Copy, Printer, FileBarChart, BookTemplate, History, Percent,
   Calculator, Users, Package,
+  ArrowLeft
 } from 'lucide-react'
 
 // ==================== TYPES ====================
@@ -1180,9 +1180,10 @@ export function Offers() {
   // ==================== RENDER: OFFER FORM DIALOG ====================
 
   const renderOfferDialog = () => (
-    <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) resetForm() }}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{editingOrder ? t('offers.editOffer') : t('offers.newOffer')}</DialogTitle></DialogHeader>
+    dialogOpen && (
+      <Card className="max-w-3xl max-h-[90vh] overflow-y-auto">
+
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editingOrder ? t('offers.editOffer') : t('offers.newOffer')}</CardTitle></div></CardHeader>
         <div className="space-y-4">
           {/* Partner + Payment Terms */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1293,20 +1294,20 @@ export function Offers() {
           </div>
         </div>
 
-        <DialogFooter>
+        <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm() }}>{t('common.cancel')}</Button>
           <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('offers.createOffer')}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </Card>
+    )
   )
 
   // ==================== RENDER: DETAIL DIALOG ====================
 
   const renderDetailDialog = () => (
-    <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>{t('offers.offerDetails')}</DialogTitle></DialogHeader>
+    detailOpen && (
+      <Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('offers.offerDetails')}</CardTitle></div></CardHeader>
         {selectedOrder && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1334,16 +1335,16 @@ export function Offers() {
             )}
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </Card>
+    )
   )
 
   // ==================== RENDER: PRICE LIST DIALOG ====================
 
   const renderPriceListDialog = () => (
-    <Dialog open={priceListDialogOpen} onOpenChange={setPriceListDialogOpen}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>{editingPriceList ? t('offers.editPriceList') : t('offers.newPriceList')}</DialogTitle></DialogHeader>
+    priceListDialogOpen && (
+      <Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPriceListDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{editingPriceList ? t('offers.editPriceList') : t('offers.newPriceList')}</CardTitle></div></CardHeader>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t('offers.priceListName')}</Label>
@@ -1373,20 +1374,20 @@ export function Offers() {
             <Label>{t('offers.active')}</Label>
           </div>
         </div>
-        <DialogFooter>
+        <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={() => setPriceListDialogOpen(false)}>{t('common.cancel')}</Button>
           <Button onClick={handleSavePriceList}>{t('common.save')}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </Card>
+    )
   )
 
   // ==================== RENDER: TEMPLATE DIALOG ====================
 
   const renderTemplateDialog = () => (
-    <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{t('offers.newTemplate')}</DialogTitle></DialogHeader>
+    templateDialogOpen && (
+      <Card className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setTemplateDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('offers.newTemplate')}</CardTitle></div></CardHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -1449,20 +1450,20 @@ export function Offers() {
             </div>
           </div>
         </div>
-        <DialogFooter>
+        <div className="flex justify-end gap-2 pt-4">
           <Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>{t('common.cancel')}</Button>
           <Button onClick={handleSaveTemplate}>{t('common.save')}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </Card>
+    )
   )
 
   // ==================== RENDER: TEMPLATE PREVIEW DIALOG ====================
 
   const renderTemplatePreviewDialog = () => (
-    <Dialog open={templatePreviewOpen} onOpenChange={setTemplatePreviewOpen}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>{t('offers.templatePreview')}</DialogTitle></DialogHeader>
+    templatePreviewOpen && (
+      <Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setTemplatePreviewOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('offers.templatePreview')}</CardTitle></div></CardHeader>
         {selectedTemplate && (
           <div className="space-y-4">
             <div>
@@ -1501,8 +1502,8 @@ export function Offers() {
             </div>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </Card>
+    )
   )
 
   // ==================== MAIN RENDER ====================

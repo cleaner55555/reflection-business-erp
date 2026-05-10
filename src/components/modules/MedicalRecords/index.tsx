@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, FileText, ClipboardList, Loader2 } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, FileText, ClipboardList, Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -238,10 +237,13 @@ export function MedicalRecords() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader><DialogTitle>Medicinski karton — {detailItem?.recordNo}</DialogTitle></DialogHeader>
-          {detailItem && (
+      {detailId && detailItem && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Medicinski karton — {detailItem.recordNo}</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
               <div className="flex items-center gap-2"><h3 className="text-sm font-semibold">{detailItem.patientName}</h3>{getTypeBadge(detailItem.type)}</div>
               <div className="grid grid-cols-2 gap-3">
@@ -262,14 +264,17 @@ export function MedicalRecords() {
               {detailItem.prescribedMeds.length > 0 && <div className="p-2 rounded-lg bg-blue-50"><div className="text-xs text-blue-600 mb-1">Propisani lekovi</div><div className="flex flex-wrap gap-1">{detailItem.prescribedMeds.map(m => <Badge key={m} className="text-xs bg-blue-100 text-blue-700">{m}</Badge>)}</div></div>}
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi zapis' : 'Novi zapis'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
+      {dialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editItem ? 'Uredi zapis' : 'Novi zapis'}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2"><Label className="text-xs">Pacijent *</Label><Input className="text-xs" value={form.patientName || ''} onChange={e => setForm({ ...form, patientName: e.target.value })} /></div>
               <div className="grid gap-2"><Label className="text-xs">Tip</Label><Select value={form.type || 'checkup'} onValueChange={v => setForm({ ...form, type: v as MedicalRecord['type'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="checkup">Pregled</SelectItem><SelectItem value="follow_up">Kontrola</SelectItem><SelectItem value="emergency">Hitno</SelectItem><SelectItem value="lab_result">Lab.</SelectItem><SelectItem value="surgery">Operacija</SelectItem><SelectItem value="referral">Uput</SelectItem><SelectItem value="discharge">Otpust</SelectItem></SelectContent></Select></div>
@@ -277,10 +282,10 @@ export function MedicalRecords() {
               <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input className="text-xs" type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
             </div>
             <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+          <div className="flex justify-end gap-2 px-6 pb-6"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)} disabled={saving}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}{editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+        </Card>
+      )}
     </div>
   )
 }

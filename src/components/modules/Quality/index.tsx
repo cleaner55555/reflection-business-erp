@@ -8,14 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
   ShieldCheck, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, AlertTriangle,
-  TrendingDown, AlertCircle, FileText, Award
+  TrendingDown, AlertCircle, FileText, Award, ArrowLeft
 } from 'lucide-react'
 
 interface Inspection {
@@ -311,59 +311,71 @@ export function Quality() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova inspekcija</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Naslov inspekcije</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Naslov inspekcije" />
+      {dialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">Nova inspekcija</CardTitle>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Tip kontrole</Label>
-                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                  </SelectContent>
-                </Select>
+                <Label>Naslov inspekcije</Label>
+                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Naslov inspekcije" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tip kontrole</Label>
+                  <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Inspektor</Label>
+                  <Input value={form.inspectorName} onChange={(e) => setForm({ ...form, inspectorName: e.target.value })} placeholder="Ime inspektora" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Proizvod</Label>
+                  <Input value={form.productName} onChange={(e) => setForm({ ...form, productName: e.target.value })} placeholder="Naziv proizvoda" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Batch broj</Label>
+                  <Input value={form.batchNumber} onChange={(e) => setForm({ ...form, batchNumber: e.target.value })} placeholder="Broj serije" />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>Inspektor</Label>
-                <Input value={form.inspectorName} onChange={(e) => setForm({ ...form, inspectorName: e.target.value })} placeholder="Ime inspektora" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Proizvod</Label>
-                <Input value={form.productName} onChange={(e) => setForm({ ...form, productName: e.target.value })} placeholder="Naziv proizvoda" />
+                <Label>Broj defekata</Label>
+                <Input type="number" value={form.defects || ''} onChange={(e) => setForm({ ...form, defects: parseInt(e.target.value) || 0 })} />
               </div>
               <div className="space-y-2">
-                <Label>Batch broj</Label>
-                <Input value={form.batchNumber} onChange={(e) => setForm({ ...form, batchNumber: e.target.value })} placeholder="Broj serije" />
+                <Label>Napomene</Label>
+                <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+                <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Broj defekata</Label>
-              <Input type="number" value={form.defects || ''} onChange={(e) => setForm({ ...form, defects: parseInt(e.target.value) || 0 })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Napomene</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji inspekcije</DialogTitle></DialogHeader>
-          {selected && (
+      {detailOpen && selected && (
+        <Card className="max-w-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">Detalji inspekcije</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div><span className="text-muted-foreground">Naslov:</span> <span className="font-medium">{selected.title}</span></div>
@@ -379,9 +391,9 @@ export function Quality() {
                 <div className="text-sm"><span className="text-muted-foreground">Napomene:</span> {selected.notes}</div>
               )}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

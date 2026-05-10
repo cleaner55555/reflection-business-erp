@@ -9,17 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import {
   Plus, Search, Eye, Trash2, Edit3, RefreshCw, Filter,
   AlertTriangle, CheckCircle2, Clock, XCircle, FileText,
-  TrendingUp, ArrowRight, CalendarDays, Users, Gavel,
+  TrendingUp, ArrowRight, ArrowLeft, CalendarDays, Users, Gavel,
   ChevronRight, BarChart3, Copy, ExternalLink, Star,
   Send, X, Banknote, Building2, Trophy, Target
 } from 'lucide-react'
@@ -579,19 +577,19 @@ export function Tenders() {
         ))}
       </Tabs>
 
-      {/* DETAIL DIALOG */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh]">
-          <ScrollArea className="max-h-[75vh] pr-4">
-            {selected && (
-              <div className="space-y-6">
-                <DialogHeader>
-                  <div className="flex items-center gap-3">
-                    <DialogTitle className="text-lg">{selected.number} — {selected.title}</DialogTitle>
-                    <Badge variant="outline" className={STATUS_CONFIG[selected.status]?.color}>{STATUS_CONFIG[selected.status]?.label}</Badge>
-                  </div>
-                  <DialogDescription>{TYPE_CONFIG[selected.type]?.icon} {TYPE_CONFIG[selected.type]?.label} · {PROCEDURE_CONFIG[selected.procedureType]?.label} · {SECTOR_CONFIG[selected.sector]?.label}</DialogDescription>
-                </DialogHeader>
+      {/* DETAIL */}
+      {detailOpen && selected && (
+      <Card className="max-w-3xl">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setDetailOpen(false); setSelected(null); }}><ArrowLeft className="h-4 w-4" /></Button>
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-lg">{selected.number} — {selected.title}</CardTitle>
+              <Badge variant="outline" className={STATUS_CONFIG[selected.status]?.color}>{STATUS_CONFIG[selected.status]?.label}</Badge>
+            </div>
+          </div>
+          <CardDescription className="mb-4">{TYPE_CONFIG[selected.type]?.icon} {TYPE_CONFIG[selected.type]?.label} · {PROCEDURE_CONFIG[selected.procedureType]?.label} · {SECTOR_CONFIG[selected.sector]?.label}</CardDescription>
+            <div className="space-y-6">
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Naručilac</p><p className="text-xs font-medium">{selected.buyerName}</p><p className="text-xs text-muted-foreground">PIB: {selected.buyerPib}</p></div>
@@ -697,16 +695,21 @@ export function Tenders() {
                   <Button size="sm" onClick={() => { handleStatusChange(selected, 'published'); setSelected(null); setDetailOpen(false); }}><Send className="h-4 w-4 mr-1" /> Objavi tender</Button>
                 )}
               </div>
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
+      )}
 
-      {/* CREATE DIALOG */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novi tender</DialogTitle><DialogDescription>Unesite podatke o novom tenderu</DialogDescription></DialogHeader>
-          <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2">
+      {/* CREATE */}
+      {createOpen && (
+      <Card className="max-w-lg">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCreateOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle>Novi tender</CardTitle><CardDescription>Unesite podatke o novom tenderu</CardDescription></div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
             <div className="space-y-2"><Label>Naziv *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
             <div className="space-y-2"><Label>Opis</Label><Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="grid grid-cols-3 gap-3">
@@ -726,22 +729,30 @@ export function Tenders() {
             <div className="space-y-2"><Label>Rok za podnošenje ponuda</Label><Input type="datetime-local" value={form.deadlineSubmission} onChange={(e) => setForm({ ...form, deadlineSubmission: e.target.value })} /></div>
             <div className="space-y-2"><Label>Napomene</Label><Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button><Button onClick={handleCreate} disabled={!form.title.trim()}><Plus className="h-4 w-4 mr-1" /> Kreiraj tender</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex justify-end gap-2 mt-4"><Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button><Button onClick={handleCreate} disabled={!form.title.trim()}><Plus className="h-4 w-4 mr-1" /> Kreiraj tender</Button></div>
+        </CardContent>
+      </Card>
+      )}
 
-      {/* BIDDER DIALOG */}
-      <Dialog open={bidderOpen} onOpenChange={setBidderOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Dodaj ponuđača</DialogTitle></DialogHeader>
+      {/* BIDDER */}
+      {bidderOpen && (
+      <Card className="max-w-sm">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setBidderOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Dodaj ponuđača</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Naziv firme *</Label><Input value={bidderForm.name} onChange={(e) => setBidderForm({ ...bidderForm, name: e.target.value })} /></div>
             <div className="space-y-2"><Label>PIB</Label><Input value={bidderForm.pib} onChange={(e) => setBidderForm({ ...bidderForm, pib: e.target.value })} /></div>
             <div className="space-y-2"><Label>Ponuđena cena (RSD)</Label><Input type="number" value={bidderForm.price} onChange={(e) => setBidderForm({ ...bidderForm, price: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setBidderOpen(false)}>Otkaži</Button><Button onClick={handleAddBidder} disabled={!bidderForm.name.trim()}><Plus className="h-4 w-4 mr-1" /> Dodaj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex justify-end gap-2 mt-4"><Button variant="outline" onClick={() => setBidderOpen(false)}>Otkaži</Button><Button onClick={handleAddBidder} disabled={!bidderForm.name.trim()}><Plus className="h-4 w-4 mr-1" /> Dodaj</Button></div>
+        </CardContent>
+      </Card>
+      )}
     </div>
   )
 }

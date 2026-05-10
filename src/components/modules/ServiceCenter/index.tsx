@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +20,7 @@ import {
   CheckCircle2, Clock, XCircle, AlertTriangle, FileText,
   TrendingUp, CalendarDays, Wrench, Users, Package,
   Truck, Phone, BarChart3, ChevronRight, ClipboardCheck,
-  CreditCard, Timer, MapPin, Star, Send
+  CreditCard, Timer, MapPin, Star, Send, ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -465,16 +464,18 @@ export function ServiceCenter() {
         ))}
       </Tabs>
 
-      {/* DETAIL DIALOG */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh]">
-          <ScrollArea className="max-h-[75vh] pr-4">
+      {/* DETAIL VIEW */}
+      {detailOpen && (
+        <Card className="max-w-3xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-lg">{selected?.number} — {selected?.productBrand} {selected?.productModel}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="max-h-[75vh] pr-4">
             {selected && (
               <div className="space-y-6">
-                <DialogHeader>
-                  <DialogTitle className="text-lg">{selected.number} — {selected.productBrand} {selected.productModel}</DialogTitle>
-                  <DialogDescription>{selected.clientName} · {selected.clientPhone}</DialogDescription>
-                </DialogHeader>
+                <p className="text-sm text-muted-foreground">{selected.clientName} · {selected.clientPhone}</p>
 
                 <div className="flex gap-2">
                   <Badge variant="outline" className={STATUS_CONFIG[selected.status]?.color}>{STATUS_CONFIG[selected.status]?.label}</Badge>
@@ -522,14 +523,19 @@ export function ServiceCenter() {
                 )}
               </div>
             )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* CREATE DIALOG */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novi servisni nalog</DialogTitle><DialogDescription>Podaci o klijentu i uređaju</DialogDescription></DialogHeader>
+      {/* CREATE FORM */}
+      {createOpen && (
+        <Card className="max-w-2xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCreateOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Novi servisni nalog</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2"><Label>Klijent *</Label><Input value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} /></div>
@@ -554,9 +560,13 @@ export function ServiceCenter() {
               <div className="space-y-2"><Label>Procena (RSD)</Label><Input type="number" value={form.estimatedCost} onChange={(e) => setForm({ ...form, estimatedCost: e.target.value })} /></div>
             </div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button><Button onClick={handleCreate} disabled={!form.clientName.trim()}><Plus className="h-4 w-4 mr-1" /> Kreiraj nalog</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex gap-2 pt-4">
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
+            <Button onClick={handleCreate} disabled={!form.clientName.trim()}><Plus className="h-4 w-4 mr-1" /> Kreiraj nalog</Button>
+          </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

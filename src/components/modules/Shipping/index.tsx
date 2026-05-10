@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,7 +16,7 @@ import { Separator } from '@/components/ui/separator'
 import {
   Truck, Package, MapPin, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, AlertCircle, Clock, ArrowRight, BarChart3, Globe2,
-  Phone, Mail, FileText, DollarSign, Shield, TrendingUp, X
+  Phone, Mail, FileText, DollarSign, Shield, TrendingUp, X, ArrowLeft
 } from 'lucide-react'
 
 // ============ TYPES ============
@@ -734,12 +733,14 @@ export function Shipping() {
         </TabsContent>
       </Tabs>
 
-      {/* ===== NEW ORDER DIALOG ===== */}
-      <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Nova pošiljka</DialogTitle>
-          </DialogHeader>
+      {/* ===== NEW ORDER FORM ===== */}
+      {orderDialogOpen && (
+        <Card className="max-w-3xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setOrderDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Nova pošiljka</CardTitle>
+          </CardHeader>
+          <CardContent className="max-h-[90vh] overflow-y-auto">
           <div className="space-y-4">
             {/* Kurir & Partner */}
             <div className="grid grid-cols-2 gap-4">
@@ -871,20 +872,22 @@ export function Shipping() {
             </div>
           </div>
 
-          <DialogFooter>
+          <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => setOrderDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateOrder}>Kreiraj pošiljku</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ===== NEW CARRIER DIALOG ===== */}
-      <Dialog open={carrierDialogOpen} onOpenChange={setCarrierDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Novi kurir</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
+      {/* ===== NEW CARRIER FORM ===== */}
+      {carrierDialogOpen && (
+        <Card className="max-w-3xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCarrierDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Novi kurir</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Naziv</Label>
@@ -946,20 +949,22 @@ export function Shipping() {
               <Label className="text-xs">Napomene</Label>
               <Textarea value={carrierForm.notes} onChange={(e) => setCarrierForm({ ...carrierForm, notes: e.target.value })} rows={2} />
             </div>
-          </div>
-          <DialogFooter>
+          <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => setCarrierDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreateCarrier}>Dodaj kurira</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ===== TRACKING DETAIL DIALOG ===== */}
-      <Dialog open={trackingDialogOpen} onOpenChange={setTrackingDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Praćenje pošiljke {selectedOrder?.number}</DialogTitle>
-          </DialogHeader>
+      {/* ===== TRACKING DETAIL VIEW ===== */}
+      {trackingDialogOpen && (
+        <Card className="max-w-3xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTrackingDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Praćenje pošiljke {selectedOrder?.number}</CardTitle>
+          </CardHeader>
+          <CardContent>
           {selectedOrder && (
             <div className="space-y-4">
               {/* Status header */}
@@ -1021,8 +1026,9 @@ export function Shipping() {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

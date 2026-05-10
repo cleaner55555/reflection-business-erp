@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+// Dialog removed - converted to inline Card
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,7 +22,7 @@ import {
 import {
   FileText, Plus, Search, Eye, Trash2, Edit3, RefreshCw, CheckCircle2, Clock,
   BarChart3, TrendingUp, Users, Calendar, Tag, MessageSquare, Globe,
-  Star, ArrowRight, Filter, Share2, AlertCircle
+  Star, ArrowRight, Filter, Share2, AlertCircle, ArrowLeft
 } from 'lucide-react'
 
 // ============ INTERFACES ============
@@ -646,84 +646,39 @@ function ClanciTab({ posts, setPosts, categories, tags }: {
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingPost ? (t('blog.editPost') || 'Izmeni članak') : (t('blog.newPost') || 'Novi članak')}</DialogTitle>
-            <DialogDescription>{editingPost ? (t('blog.editPostDesc') || 'Izmenite podatke članka') : (t('blog.newPostDesc') || 'Popunite podatke za novi članak')}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('blog.form.title') || 'Naslov'}</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{t('blog.form.category') || 'Kategorija'}</Label>
-                <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{categories.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('blog.form.author') || 'Autor'}</Label>
-                <Select value={form.authorId} onValueChange={(v) => setForm({ ...form, authorId: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{mockAuthors.map((a) => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('blog.form.status') || 'Status'}</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as BlogPost['status'] })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(postStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}</SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('blog.form.content') || 'Sadržaj'}</Label>
-              <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder={t('blog.form.contentPlaceholder') || 'Sadržaj članka...'} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('blog.form.tags') || 'Tagovi'}</Label>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <Badge key={tag.id} variant={form.tags.includes(tag.id) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag.id)}>
-                    {tag.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
             <div className="flex items-center gap-3">
-              <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
-              <Label className="text-sm">{t('blog.form.featured') || 'Istaknuti članak'}</Label>
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div><CardTitle>{editingPost ? (t('blog.editPost') || 'Izmeni članak') : (t('blog.newPost') || 'Novi članak')}</CardTitle><CardDescription>{editingPost ? (t('blog.editPostDesc') || 'Izmenite podatke članka') : (t('blog.newPostDesc') || 'Popunite podatke za novi članak')}</CardDescription></div>
             </div>
-            <Separator />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t('blog.form.seoTitle') || 'SEO naslov'}</Label>
-                <Input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2"><Label>{t('blog.form.title') || 'Naslov'}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2"><Label>{t('blog.form.category') || 'Kategorija'}</Label><Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{categories.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}</SelectContent></Select></div>
+                <div className="space-y-2"><Label>{t('blog.form.author') || 'Autor'}</Label><Select value={form.authorId} onValueChange={(v) => setForm({ ...form, authorId: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{mockAuthors.map((a) => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}</SelectContent></Select></div>
+                <div className="space-y-2"><Label>{t('blog.form.status') || 'Status'}</Label><Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as BlogPost['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(postStatusConfig).map(([key, cfg]) => (<SelectItem key={key} value={key}>{cfg.label}</SelectItem>))}</SelectContent></Select></div>
               </div>
-              <div className="space-y-2">
-                <Label>{t('blog.form.seoDescription') || 'SEO opis'}</Label>
-                <Input value={form.seoDescription} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} />
+              <div className="space-y-2"><Label>{t('blog.form.content') || 'Sadržaj'}</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={6} placeholder={t('blog.form.contentPlaceholder') || 'Sadržaj članka...'} /></div>
+              <div className="space-y-2"><Label>{t('blog.form.tags') || 'Tagovi'}</Label><div className="flex flex-wrap gap-2">{tags.map((tag) => (<Badge key={tag.id} variant={form.tags.includes(tag.id) ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => toggleTag(tag.id)}>{tag.name}</Badge>))}</div></div>
+              <div className="flex items-center gap-3"><Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} /><Label className="text-sm">{t('blog.form.featured') || 'Istaknuti članak'}</Label></div>
+              <Separator />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>{t('blog.form.seoTitle') || 'SEO naslov'}</Label><Input value={form.seoTitle} onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} /></div>
+                <div className="space-y-2"><Label>{t('blog.form.seoDescription') || 'SEO opis'}</Label><Input value={form.seoDescription} onChange={(e) => setForm({ ...form, seoDescription: e.target.value })} /></div>
               </div>
+              {form.status === 'scheduled' && (<div className="space-y-2"><Label>{t('blog.form.publishDate') || 'Datum objave'}</Label><Input type="datetime-local" value={form.publishedAt} onChange={(e) => setForm({ ...form, publishedAt: e.target.value })} /></div>)}
             </div>
-            {form.status === 'scheduled' && (
-              <div className="space-y-2">
-                <Label>{t('blog.form.publishDate') || 'Datum objave'}</Label>
-                <Input type="datetime-local" value={form.publishedAt} onChange={(e) => setForm({ ...form, publishedAt: e.target.value })} />
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleSave} disabled={!form.title}>
-              <Plus className="h-4 w-4 mr-1" /> {editingPost ? (t('blog.save') || 'Sačuvaj') : (t('blog.create') || 'Kreiraj')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
+              <Button onClick={handleSave} disabled={!form.title}><Plus className="h-4 w-4 mr-1" /> {editingPost ? (t('blog.save') || 'Sačuvaj') : (t('blog.create') || 'Kreiraj')}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
@@ -835,38 +790,43 @@ function KategorijeTab({ categories, setCategories, posts }: {
         </CardContent>
       </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editing ? (t('blog.editCategory') || 'Izmeni kategoriju') : (t('blog.newCategory') || 'Nova kategorija')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('blog.form.name') || 'Naziv'}</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} />
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div><CardTitle>{editing ? (t('blog.editCategory') || 'Izmeni kategoriju') : (t('blog.newCategory') || 'Nova kategorija')}</CardTitle></div>
             </div>
-            <div className="space-y-2">
-              <Label>Slug</Label>
-              <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('blog.form.description') || 'Opis'}</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('blog.form.color') || 'Boja'}</Label>
-              <div className="flex items-center gap-3">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="h-10 w-10 rounded cursor-pointer border" />
-                <Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="flex-1" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>{t('blog.form.name') || 'Naziv'}</Label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Slug</Label>
+                <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('blog.form.description') || 'Opis'}</Label>
+                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('blog.form.color') || 'Boja'}</Label>
+                <div className="flex items-center gap-3">
+                  <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="h-10 w-10 rounded cursor-pointer border" />
+                  <Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="flex-1" />
+                </div>
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleSave} disabled={!form.name}>{t('blog.save') || 'Sačuvaj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
+              <Button onClick={handleSave} disabled={!form.name}>{t('blog.save') || 'Sačuvaj'}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
@@ -1029,27 +989,32 @@ function KomentariTab({ comments, setComments, posts }: {
         </div>
       )}
 
-      <Dialog open={!!replyDialog} onOpenChange={() => setReplyDialog(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('blog.replyTo') || 'Odgovori na'} — {replyDialog?.authorName}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="p-3 bg-muted rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1">{replyDialog?.postTitle}</p>
-              <p className="text-sm">{replyDialog?.content}</p>
+      {replyDialog && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setReplyDialog(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div><CardTitle>{t('blog.replyTo') || 'Odgovori na'} — {replyDialog?.authorName}</CardTitle></div>
             </div>
-            <div className="space-y-2">
-              <Label>{t('blog.form.reply') || 'Vaš odgovor'}</Label>
-              <Textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={4} placeholder={t('blog.form.replyPlaceholder') || 'Napišite odgovor...'} />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">{replyDialog?.postTitle}</p>
+                <p className="text-sm">{replyDialog?.content}</p>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('blog.form.reply') || 'Vaš odgovor'}</Label>
+                <Textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={4} placeholder={t('blog.form.replyPlaceholder') || 'Napišite odgovor...'} />
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReplyDialog(null)}>{t('blog.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleReply} disabled={!replyText.trim()}>{t('blog.sendReply') || 'Pošalji odgovor'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setReplyDialog(null)}>{t('blog.cancel') || 'Otkaži'}</Button>
+              <Button onClick={handleReply} disabled={!replyText.trim()}>{t('blog.sendReply') || 'Pošalji odgovor'}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
@@ -1201,27 +1166,32 @@ function TagoviTab({ tags, setTags, posts }: {
         </Card>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editing ? (t('blog.editTag') || 'Izmeni tag') : (t('blog.newTag') || 'Novi tag')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('blog.form.name') || 'Naziv'}</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} />
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div><CardTitle>{editing ? (t('blog.editTag') || 'Izmeni tag') : (t('blog.newTag') || 'Novi tag')}</CardTitle></div>
             </div>
-            <div className="space-y-2">
-              <Label>Slug</Label>
-              <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>{t('blog.form.name') || 'Naziv'}</Label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Slug</Label>
+                <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
-            <Button onClick={handleSave} disabled={!form.name}>{t('blog.save') || 'Sačuvaj'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('blog.cancel') || 'Otkaži'}</Button>
+              <Button onClick={handleSave} disabled={!form.name}>{t('blog.save') || 'Sačuvaj'}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

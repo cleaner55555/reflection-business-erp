@@ -8,13 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -67,6 +60,7 @@ import {
   XCircle,
   Check,
   AlertCircle,
+  ArrowLeft,
 } from 'lucide-react'
 
 // ==================== TYPES ====================
@@ -1353,14 +1347,15 @@ export function KnowledgeBase() {
         </TabsContent>
       </Tabs>
 
-      {/* ==================== ARTICLE CREATE/EDIT DIALOG ==================== */}
-      <Dialog open={articleDialogOpen} onOpenChange={setArticleDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingArticleId ? t('knowledge.editArticle') : t('knowledge.createArticle')}
-            </DialogTitle>
-          </DialogHeader>
+      {/* ==================== ARTICLE CREATE/EDIT CARD ==================== */}
+      {articleDialogOpen && (
+        <Card className="border">
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setArticleDialogOpen(false)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingArticleId ? t('knowledge.editArticle') : t('knowledge.createArticle')}</CardTitle></div>
+          </CardHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('knowledge.articleTitle')}</Label>
@@ -1454,7 +1449,7 @@ export function KnowledgeBase() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setArticleDialogOpen(false)}>
               {t('knowledge.cancel')}
             </Button>
@@ -1462,16 +1457,19 @@ export function KnowledgeBase() {
               <Plus className="h-4 w-4 mr-1" />
               {editingArticleId ? t('knowledge.save') : t('knowledge.createArticle')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
-      {/* ==================== ARTICLE DETAIL DIALOG ==================== */}
-      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{selectedArticle?.title}</DialogTitle>
-          </DialogHeader>
+      {/* ==================== ARTICLE DETAIL CARD ==================== */}
+      {detailDialogOpen && (
+        <Card className="border">
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setDetailDialogOpen(false)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="min-w-0 flex-1"><CardTitle className="text-base">{selectedArticle?.title}</CardTitle></div>
+          </CardHeader>
           {selectedArticle && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 flex-wrap">
@@ -1538,17 +1536,18 @@ export function KnowledgeBase() {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+      )}
 
-      {/* ==================== CATEGORY CREATE/EDIT DIALOG ==================== */}
-      <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {editingCategoryId ? t('knowledge.editCategory') : t('knowledge.createCategory')}
-            </DialogTitle>
-          </DialogHeader>
+      {/* ==================== CATEGORY CREATE/EDIT CARD ==================== */}
+      {categoryDialogOpen && (
+        <Card className="border">
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setCategoryDialogOpen(false)}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="min-w-0 flex-1"><CardTitle className="text-base">{editingCategoryId ? t('knowledge.editCategory') : t('knowledge.createCategory')}</CardTitle></div>
+          </CardHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1595,7 +1594,7 @@ export function KnowledgeBase() {
               />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setCategoryDialogOpen(false)}>
               {t('knowledge.cancel')}
             </Button>
@@ -1603,9 +1602,9 @@ export function KnowledgeBase() {
               <Plus className="h-4 w-4 mr-1" />
               {t('knowledge.save')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

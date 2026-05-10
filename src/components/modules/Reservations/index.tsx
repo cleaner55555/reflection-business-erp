@@ -7,12 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Search, Trash2, Pencil, Eye, Calendar, Clock, Users, RefreshCw } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Calendar, Clock, Users, RefreshCw, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -359,85 +358,91 @@ export function Reservations() {
         </TabsContent>
       </Tabs>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader><DialogTitle>Detalji rezervacije</DialogTitle></DialogHeader>
-          {detailItem && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold">{detailItem.guestName}</h3>
-                {getStatusBadge(detailItem.status)}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ['Br. rezervacije', detailItem.reservationNo],
-                  ['Telefon', detailItem.phone || '—'],
-                  ['Email', detailItem.email || '—'],
-                  ['Datum', formatDate(detailItem.date)],
-                  ['Vreme', detailItem.time],
-                  ['Trajanje', `${detailItem.duration} min`],
-                  ['Osoba', String(detailItem.partySize)],
-                  ['Sto', detailItem.tableNo || 'Nije dodeljen'],
-                  ['Zona', AREAS[detailItem.area]?.label],
-                  ['Povod', detailItem.occasion || '—'],
-                  ['Izvor', SOURCES[detailItem.source]?.label || detailItem.source],
-                  ['Depozit', detailItem.deposit > 0 ? formatRSD(detailItem.deposit) : 'Nema'],
-                ].map(([label, val]) => (
-                  <div key={label} className="p-2 rounded-lg bg-muted/50">
-                    <div className="text-xs text-muted-foreground">{label}</div>
-                    <div className="text-sm font-medium">{val}</div>
-                  </div>
-                ))}
-              </div>
-              {detailItem.specialRequests && (
-                <div className="p-2 rounded-lg bg-muted/50">
-                  <div className="text-xs text-muted-foreground mb-1">Specijalni zahtevi</div>
-                  <div className="text-sm">{detailItem.specialRequests}</div>
-                </div>
-              )}
-              {detailItem.notes && (
-                <div className="p-2 rounded-lg bg-muted/50">
-                  <div className="text-xs text-muted-foreground mb-1">Napomene</div>
-                  <div className="text-sm">{detailItem.notes}</div>
-                </div>
-              )}
+      {/* Detail View */}
+      {detailId && detailItem && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Detalji rezervacije</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold">{detailItem.guestName}</h3>
+              {getStatusBadge(detailItem.status)}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit/Create Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{editItem ? 'Uredi rezervaciju' : 'Nova rezervacija'}</DialogTitle>
-            <DialogDescription>{editItem ? 'Izmenite podatke rezervacije' : 'Popunite podatke za novu rezervaciju'}</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-sm" value={form.guestName || ''} onChange={e => setForm({ ...form, guestName: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input className="text-sm" value={form.phone || ''} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label>
-                <Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(STATUSES).map(([key, cfg]) => <SelectItem key={key} value={key}>{cfg.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Sto</Label><Input className="text-sm" value={form.tableNo || ''} onChange={e => setForm({ ...form, tableNo: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input className="text-sm" type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Vreme</Label><Input className="text-sm" type="time" value={form.time || ''} onChange={e => setForm({ ...form, time: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Osoba</Label><Input className="text-sm" type="number" value={form.partySize || ''} onChange={e => setForm({ ...form, partySize: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Depozit (RSD)</Label><Input className="text-sm" type="number" value={form.deposit || ''} onChange={e => setForm({ ...form, deposit: Number(e.target.value) })} /></div>
+              {[
+                ['Br. rezervacije', detailItem.reservationNo],
+                ['Telefon', detailItem.phone || '—'],
+                ['Email', detailItem.email || '—'],
+                ['Datum', formatDate(detailItem.date)],
+                ['Vreme', detailItem.time],
+                ['Trajanje', `${detailItem.duration} min`],
+                ['Osoba', String(detailItem.partySize)],
+                ['Sto', detailItem.tableNo || 'Nije dodeljen'],
+                ['Zona', AREAS[detailItem.area]?.label],
+                ['Povod', detailItem.occasion || '—'],
+                ['Izvor', SOURCES[detailItem.source]?.label || detailItem.source],
+                ['Depozit', detailItem.deposit > 0 ? formatRSD(detailItem.deposit) : 'Nema'],
+              ].map(([label, val]) => (
+                <div key={label} className="p-2 rounded-lg bg-muted/50">
+                  <div className="text-xs text-muted-foreground">{label}</div>
+                  <div className="text-sm font-medium">{val}</div>
+                </div>
+              ))}
             </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Textarea className="text-sm" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button size="sm" onClick={handleSave}>Sačuvaj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            {detailItem.specialRequests && (
+              <div className="p-2 rounded-lg bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">Specijalni zahtevi</div>
+                <div className="text-sm">{detailItem.specialRequests}</div>
+              </div>
+            )}
+            {detailItem.notes && (
+              <div className="p-2 rounded-lg bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">Napomene</div>
+                <div className="text-sm">{detailItem.notes}</div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Edit/Create Form */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">{editItem ? 'Uredi rezervaciju' : 'Nova rezervacija'}</CardTitle>
+              <p className="text-xs text-muted-foreground">{editItem ? 'Izmenite podatke rezervacije' : 'Popunite podatke za novu rezervaciju'}</p>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input className="text-sm" value={form.guestName || ''} onChange={e => setForm({ ...form, guestName: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input className="text-sm" value={form.phone || ''} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Status</Label>
+                  <Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}>
+                    <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>{Object.entries(STATUSES).map(([key, cfg]) => <SelectItem key={key} value={key}>{cfg.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2"><Label className="text-xs">Sto</Label><Input className="text-sm" value={form.tableNo || ''} onChange={e => setForm({ ...form, tableNo: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Datum</Label><Input className="text-sm" type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Vreme</Label><Input className="text-sm" type="time" value={form.time || ''} onChange={e => setForm({ ...form, time: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Osoba</Label><Input className="text-sm" type="number" value={form.partySize || ''} onChange={e => setForm({ ...form, partySize: Number(e.target.value) })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Depozit (RSD)</Label><Input className="text-sm" type="number" value={form.deposit || ''} onChange={e => setForm({ ...form, deposit: Number(e.target.value) })} /></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Textarea className="text-sm" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} /></div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button size="sm" onClick={handleSave}>Sačuvaj</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

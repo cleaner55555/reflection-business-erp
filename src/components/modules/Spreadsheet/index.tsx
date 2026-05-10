@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -27,7 +26,8 @@ import {
   ChevronRight, ChevronLeft, MoreHorizontal, Lock, Unlock,
   ArrowUpDown, Minus, Columns3, Rows3, XCircle, AlertCircle,
   Info, Sparkles, LayoutTemplate, Printer, Share2, Star,
-  Clock, CalendarDays, MousePointer, Zap, ArrowUp, ArrowDown
+  Clock, CalendarDays, MousePointer, Zap, ArrowUp, ArrowDown,
+  ArrowLeft
 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
@@ -1493,111 +1493,123 @@ export function Spreadsheet() {
         </TabsContent>
       </Tabs>
 
-      {/* ===== DIALOGS ===== */}
+      {/* ===== FORMS ===== */}
 
       {/* Find & Replace */}
-      <Dialog open={findReplaceOpen} onOpenChange={setFindReplaceOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Search className="h-5 w-5" /> Pronađi i zameni</DialogTitle>
-            <DialogDescription>Pronađite tekst u ćelijama i zamenite ga</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Pronađi</Label>
-              <div className="flex gap-2">
-                <Input value={findText} onChange={(e) => setFindText(e.target.value)} placeholder="Tekst za pretragu..." className="flex-1" onKeyDown={(e) => e.key === 'Enter' && handleFind()} />
-                <Button size="sm" onClick={handleFind}>Traži</Button>
+      {findReplaceOpen && (
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setFindReplaceOpen(false)} /> <Search className="h-5 w-5" /> Pronađi i zameni</CardTitle>
+            <CardDescription>Pronađite tekst u ćelijama i zamenite ga</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Pronađi</Label>
+                <div className="flex gap-2">
+                  <Input value={findText} onChange={(e) => setFindText(e.target.value)} placeholder="Tekst za pretragu..." className="flex-1" onKeyDown={(e) => e.key === 'Enter' && handleFind()} />
+                  <Button size="sm" onClick={handleFind}>Traži</Button>
+                </div>
+                {findResults.length > 0 && (
+                  <p className="text-xs text-muted-foreground">{findResults.length} rezultata · {findIdx + 1}/{findResults.length}</p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Zameni sa</Label>
+                <Input value={replaceText} onChange={(e) => setReplaceText(e.target.value)} placeholder="Tekst za zamenu..." />
               </div>
               {findResults.length > 0 && (
-                <p className="text-xs text-muted-foreground">{findResults.length} rezultata · {findIdx + 1}/{findResults.length}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => { setFindIdx(prev => (prev + 1) % findResults.length); setSelectedCell(findResults[(findIdx + 1) % findResults.length]) }}>Sledeći</Button>
+                  <Button size="sm" variant="outline" onClick={handleReplace}>Zameni</Button>
+                  <Button size="sm" onClick={handleReplaceAll}>Zameni sve</Button>
+                </div>
               )}
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Zameni sa</Label>
-              <Input value={replaceText} onChange={(e) => setReplaceText(e.target.value)} placeholder="Tekst za zamenu..." />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Save Form */}
+      {saveDialogOpen && (
+        <Card className="max-w-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setSaveDialogOpen(false)} /> <Save className="h-5 w-5" /> Sačuvaj dokument</CardTitle>
+            <CardDescription>Unesite naziv pod kojim želite sačuvati</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <Input value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="Naziv dokumenta..." onKeyDown={(e) => e.key === 'Enter' && handleSave()} />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>Otkaži</Button>
+                <Button onClick={handleSave} disabled={!saveName.trim()}>Sačuvaj</Button>
+              </div>
             </div>
-            {findResults.length > 0 && (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => { setFindIdx(prev => (prev + 1) % findResults.length); setSelectedCell(findResults[(findIdx + 1) % findResults.length]) }}>Sledeći</Button>
-                <Button size="sm" variant="outline" onClick={handleReplace}>Zameni</Button>
-                <Button size="sm" onClick={handleReplaceAll}>Zameni sve</Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Load Form */}
+      {loadDialogOpen && (
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setLoadDialogOpen(false)} /> <Upload className="h-5 w-5" /> Učitaj dokument</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {savedList.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">Nemate sačuvanih dokumenata</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {savedList.map(doc => (
+                  <div key={doc.name} className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer" onClick={() => handleLoad(doc.name)}>
+                    <div className="flex items-center gap-2">
+                      <FileSpreadsheet className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">{doc.name}</span>
+                    </div>
+                    <Button size="sm" variant="ghost">Učitaj</Button>
+                  </div>
+                ))}
               </div>
             )}
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Save Dialog */}
-      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Save className="h-5 w-5" /> Sačuvaj dokument</DialogTitle>
-            <DialogDescription>Unesite naziv pod kojim želite sačuvati</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <Input value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="Naziv dokumenta..." onKeyDown={(e) => e.key === 'Enter' && handleSave()} />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSave} disabled={!saveName.trim()}>Sačuvaj</Button>
+      {/* Export Form */}
+      {exportDialogOpen && (
+        <Card className="max-w-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setExportDialogOpen(false)} /> <Download className="h-5 w-5" /> Izvezi podatke</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <Button className="w-full justify-start" onClick={() => { exportCSV(); setExportDialogOpen(false) }}><FileDown className="h-4 w-4 mr-2" /> CSV format (Excel kompatibilan)</Button>
+              <Button className="w-full justify-start" variant="outline" onClick={() => { exportJSON(); setExportDialogOpen(false) }}><FileDown className="h-4 w-4 mr-2" /> JSON format</Button>
+              <Separator />
+              <label className="block">
+                <Button className="w-full justify-start" variant="outline" asChild><span><FileUp className="h-4 w-4 mr-2" /> Uvezi CSV datoteku</span></Button>
+                <input type="file" accept=".csv" className="hidden" onChange={(e) => { importCSV(e); setExportDialogOpen(false) }} />
+              </label>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Load Dialog */}
-      <Dialog open={loadDialogOpen} onOpenChange={setLoadDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Upload className="h-5 w-5" /> Učitaj dokument</DialogTitle>
-          </DialogHeader>
-          {savedList.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">Nemate sačuvanih dokumenata</p>
-          ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {savedList.map(doc => (
-                <div key={doc.name} className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer" onClick={() => handleLoad(doc.name)}>
-                  <div className="flex items-center gap-2">
-                    <FileSpreadsheet className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">{doc.name}</span>
-                  </div>
-                  <Button size="sm" variant="ghost">Učitaj</Button>
-                </div>
-              ))}
+      {/* Rename Sheet Form */}
+      {!!renameSheetId && (
+        <Card className="max-w-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setRenameSheetId(null)} /> Preimenuj list</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input value={renameSheetName} onChange={(e) => setRenameSheetName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') renameSheet(sheets.findIndex(s => s.id === renameSheetId), renameSheetName) }} />
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => setRenameSheetId(null)}>Otkaži</Button>
+              <Button onClick={() => renameSheet(sheets.findIndex(s => s.id === renameSheetId), renameSheetName)} disabled={!renameSheetName.trim()}>Preimenuj</Button>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Export Dialog */}
-      <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Download className="h-5 w-5" /> Izvezi podatke</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <Button className="w-full justify-start" onClick={() => { exportCSV(); setExportDialogOpen(false) }}><FileDown className="h-4 w-4 mr-2" /> CSV format (Excel kompatibilan)</Button>
-            <Button className="w-full justify-start" variant="outline" onClick={() => { exportJSON(); setExportDialogOpen(false) }}><FileDown className="h-4 w-4 mr-2" /> JSON format</Button>
-            <Separator />
-            <label className="block">
-              <Button className="w-full justify-start" variant="outline" asChild><span><FileUp className="h-4 w-4 mr-2" /> Uvezi CSV datoteku</span></Button>
-              <input type="file" accept=".csv" className="hidden" onChange={(e) => { importCSV(e); setExportDialogOpen(false) }} />
-            </label>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Rename Sheet Dialog */}
-      <Dialog open={!!renameSheetId} onOpenChange={() => setRenameSheetId(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Preimenuj list</DialogTitle></DialogHeader>
-          <Input value={renameSheetName} onChange={(e) => setRenameSheetName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') renameSheet(sheets.findIndex(s => s.id === renameSheetId), renameSheetName) }} />
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setRenameSheetId(null)}>Otkaži</Button>
-            <Button onClick={() => renameSheet(sheets.findIndex(s => s.id === renameSheetId), renameSheetName)} disabled={!renameSheetName.trim()}>Preimenuj</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Info Card */}
       <Card>

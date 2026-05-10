@@ -8,14 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
   CalendarOff, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, Users,
-  TrendingUp, AlertCircle, CalendarDays, XCircle
+  TrendingUp, AlertCircle, CalendarDays, XCircle, ArrowLeft
 } from 'lucide-react'
 
 interface LeaveRequest {
@@ -306,66 +305,70 @@ export function Leave() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novi zahtev za odsustvo</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Zaposleni</Label>
-              <Input value={form.employeeName} onChange={(e) => setForm({ ...form, employeeName: e.target.value })} placeholder="Ime i prezime zaposlenog" />
-            </div>
-            <div className="space-y-2">
-              <Label>Tip odsustva</Label>
-              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Datum početka</Label>
-                <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Datum završetka</Label>
-                <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Razlog</Label>
-              <Textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Razlog odsustva..." />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Podnesi</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji zahteva</DialogTitle></DialogHeader>
-          {selected && (
+      {dialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>Novi zahtev za odsustvo</CardTitle></CardHeader>
+          <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><span className="text-muted-foreground">Zaposleni:</span> <span className="font-medium">{selected.employeeName}</span></div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
-                <div><span className="text-muted-foreground">Tip:</span> {typeLabels[selected.type] || selected.type}</div>
-                <div><span className="text-muted-foreground">Dani:</span> <span className="font-bold">{selected.daysCount}</span></div>
-                <div><span className="text-muted-foreground">Od:</span> {new Date(selected.startDate).toLocaleDateString('sr-RS')}</div>
-                <div><span className="text-muted-foreground">Do:</span> {new Date(selected.endDate).toLocaleDateString('sr-RS')}</div>
-                {selected.approvedBy && <div><span className="text-muted-foreground">Odobrio:</span> {selected.approvedBy}</div>}
+              <div className="space-y-2">
+                <Label>Zaposleni</Label>
+                <Input value={form.employeeName} onChange={(e) => setForm({ ...form, employeeName: e.target.value })} placeholder="Ime i prezime zaposlenog" />
               </div>
-              {selected.reason && (
-                <div className="text-sm"><span className="text-muted-foreground">Razlog:</span> {selected.reason}</div>
-              )}
+              <div className="space-y-2">
+                <Label>Tip odsustva</Label>
+                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(typeLabels).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Datum početka</Label>
+                  <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Datum završetka</Label>
+                  <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Razlog</Label>
+                <Textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Razlog odsustva..." />
+              </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Podnesi</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {detailOpen && (
+        <Card className="max-w-lg">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>Detalji zahteva</CardTitle></CardHeader>
+          <CardContent>
+            {selected && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><span className="text-muted-foreground">Zaposleni:</span> <span className="font-medium">{selected.employeeName}</span></div>
+                  <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={statusConfig[selected.status]?.color}>{statusConfig[selected.status]?.label}</Badge></div>
+                  <div><span className="text-muted-foreground">Tip:</span> {typeLabels[selected.type] || selected.type}</div>
+                  <div><span className="text-muted-foreground">Dani:</span> <span className="font-bold">{selected.daysCount}</span></div>
+                  <div><span className="text-muted-foreground">Od:</span> {new Date(selected.startDate).toLocaleDateString('sr-RS')}</div>
+                  <div><span className="text-muted-foreground">Do:</span> {new Date(selected.endDate).toLocaleDateString('sr-RS')}</div>
+                  {selected.approvedBy && <div><span className="text-muted-foreground">Odobrio:</span> {selected.approvedBy}</div>}
+                </div>
+                {selected.reason && (
+                  <div className="text-sm"><span className="text-muted-foreground">Razlog:</span> {selected.reason}</div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

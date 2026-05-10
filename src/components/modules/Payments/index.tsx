@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, CreditCard, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, CreditCard, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -148,11 +147,16 @@ export function Payments() {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{detailItem?.invoiceNo}</DialogTitle></DialogHeader>
-          {detailItem && (
+      {/* Detail Card */}
+      {detailId && detailItem && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">{detailItem.invoiceNo}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
               <div className="flex items-center gap-2">{getStatusBadge(detailItem.status)}<Badge className="text-xs bg-muted">{CATEGORIES[detailItem.category] || detailItem.category}</Badge></div>
               <div className="grid grid-cols-2 gap-3">
@@ -162,33 +166,40 @@ export function Payments() {
               </div>
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi plaćanje' : 'Novo plaćanje'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Klijent *</Label><Input className="text-xs" value={form.client || ''} onChange={e => setForm({ ...form, client: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'invoice'} onValueChange={v => setForm({ ...form, category: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input type="number" className="text-xs" value={form.amount || ''} onChange={e => setForm({ ...form, amount: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Valuta</Label><Select value={form.currency || 'RSD'} onValueChange={v => setForm({ ...form, currency: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="RSD">RSD</SelectItem><SelectItem value="EUR">EUR</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Br. fakture</Label><Input className="text-xs" value={form.invoiceNo || ''} onChange={e => setForm({ ...form, invoiceNo: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Datum fakture</Label><Input type="date" className="text-xs" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Rok plaćanja</Label><Input type="date" className="text-xs" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Datum plaćanja</Label><Input type="date" className="text-xs" value={form.paidDate || ''} onChange={e => setForm({ ...form, paidDate: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Način plaćanja</Label><Select value={form.method || 'bank_transfer'} onValueChange={v => setForm({ ...form, method: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(METHODS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-              <div className="grid gap-2 col-span-2"><Label className="text-xs">Referenca</Label><Input className="text-xs" value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} /></div>
-              <div className="grid gap-2 col-span-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+      {/* Create/Edit Form */}
+      {dialogOpen && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">{editItem ? 'Uredi plaćanje' : 'Novo plaćanje'}</CardTitle>
             </div>
-          </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2"><Label className="text-xs">Klijent *</Label><Input className="text-xs" value={form.client || ''} onChange={e => setForm({ ...form, client: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Kategorija</Label><Select value={form.category || 'invoice'} onValueChange={v => setForm({ ...form, category: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Iznos</Label><Input type="number" className="text-xs" value={form.amount || ''} onChange={e => setForm({ ...form, amount: Number(e.target.value) })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Valuta</Label><Select value={form.currency || 'RSD'} onValueChange={v => setForm({ ...form, currency: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="RSD">RSD</SelectItem><SelectItem value="EUR">EUR</SelectItem></SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Br. fakture</Label><Input className="text-xs" value={form.invoiceNo || ''} onChange={e => setForm({ ...form, invoiceNo: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Datum fakture</Label><Input type="date" className="text-xs" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Rok plaćanja</Label><Input type="date" className="text-xs" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Datum plaćanja</Label><Input type="date" className="text-xs" value={form.paidDate || ''} onChange={e => setForm({ ...form, paidDate: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Način plaćanja</Label><Select value={form.method || 'bank_transfer'} onValueChange={v => setForm({ ...form, method: v })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(METHODS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+                <div className="grid gap-2 col-span-2"><Label className="text-xs">Referenca</Label><Input className="text-xs" value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} /></div>
+                <div className="grid gap-2 col-span-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4"><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

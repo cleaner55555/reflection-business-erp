@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -26,7 +25,7 @@ import {
   FileText, Smartphone, Network, Wifi, ArrowUpRight, ArrowDownRight,
   Bell, BellOff, Volume2, VolumeX, List, LayoutGrid, PieChart,
   Settings, Info, Link2, ExternalLink, Archive, Lock, Unlock,
-  ChevronRight, ChevronDown, Hash, AtSign, Star, Pin
+  ChevronRight, ChevronDown, Hash, AtSign, Star, Pin, ArrowLeft
 } from 'lucide-react'
 import { formatDate, formatRSD } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -896,74 +895,86 @@ export function SmsMarketing() {
         </TabsContent>
       </Tabs>
 
-      {/* ===== DIALOGS ===== */}
+      {/* ===== FORMS ===== */}
 
       {/* New Campaign */}
-      <Dialog open={campaignDialogOpen} onOpenChange={setCampaignDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Nova SMS kampanja</DialogTitle><DialogDescription>Kreirajte novu SMS kampanju</DialogDescription></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv kampanje *</Label><Input value={campaignForm.name} onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })} placeholder="npr. Zimska rasprodaja" /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={campaignForm.category} onValueChange={(v) => setCampaignForm({ ...campaignForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
-              <div className="space-y-2"><Label className="text-xs">Datum slanja</Label><Input type="datetime-local" value={campaignForm.scheduledDate} onChange={(e) => setCampaignForm({ ...campaignForm, scheduledDate: e.target.value })} /></div>
+      {campaignDialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setCampaignDialogOpen(false)} /> Nova SMS kampanja</CardTitle><CardDescription>Kreirajte novu SMS kampanju</CardDescription></CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2"><Label className="text-xs">Naziv kampanje *</Label><Input value={campaignForm.name} onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })} placeholder="npr. Zimska rasprodaja" /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={campaignForm.category} onValueChange={(v) => setCampaignForm({ ...campaignForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+                <div className="space-y-2"><Label className="text-xs">Datum slanja</Label><Input type="datetime-local" value={campaignForm.scheduledDate} onChange={(e) => setCampaignForm({ ...campaignForm, scheduledDate: e.target.value })} /></div>
+              </div>
+              <div className="space-y-2"><Label className="text-xs">Sender ID</Label><Input value={campaignForm.senderId} onChange={(e) => setCampaignForm({ ...campaignForm, senderId: e.target.value })} maxLength={11} /></div>
+              <div className="space-y-2">
+                <Label className="text-xs">Sadržaj poruke * (max {SMS_MAX_CHARS} znakova)</Label>
+                <Textarea value={campaignForm.content} onChange={(e) => setCampaignForm({ ...campaignForm, content: e.target.value })} rows={3} placeholder="Vaša poruka..." />
+                <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{campaignForm.content.length} znakova</span><span>{Math.ceil(campaignForm.content.length / SMS_MAX_CHARS)} SMS-a · {formatRSD(Math.ceil(campaignForm.content.length / SMS_MAX_CHARS) * 3.5)}</span></div>
+                <Progress value={Math.min(100, (campaignForm.content.length / SMS_MAX_CHARS) * 100)} className="h-1.5" />
+              </div>
+              <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800"><AlertCircle className="h-4 w-4 text-amber-600" /><AlertDescription className="text-amber-700 dark:text-amber-400 text-xs">Podsetite se na STOP opciju za marketinške kampanje.</AlertDescription></Alert>
             </div>
-            <div className="space-y-2"><Label className="text-xs">Sender ID</Label><Input value={campaignForm.senderId} onChange={(e) => setCampaignForm({ ...campaignForm, senderId: e.target.value })} maxLength={11} /></div>
-            <div className="space-y-2">
-              <Label className="text-xs">Sadržaj poruke * (max {SMS_MAX_CHARS} znakova)</Label>
-              <Textarea value={campaignForm.content} onChange={(e) => setCampaignForm({ ...campaignForm, content: e.target.value })} rows={3} placeholder="Vaša poruka..." />
-              <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{campaignForm.content.length} znakova</span><span>{Math.ceil(campaignForm.content.length / SMS_MAX_CHARS)} SMS-a · {formatRSD(Math.ceil(campaignForm.content.length / SMS_MAX_CHARS) * 3.5)}</span></div>
-              <Progress value={Math.min(100, (campaignForm.content.length / SMS_MAX_CHARS) * 100)} className="h-1.5" />
-            </div>
-            <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800"><AlertCircle className="h-4 w-4 text-amber-600" /><AlertDescription className="text-amber-700 dark:text-amber-400 text-xs">Podsetite se na STOP opciju za marketinške kampanje.</AlertDescription></Alert>
-          </div>
-          <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setCampaignDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateCampaign} disabled={!campaignForm.name.trim() || !campaignForm.content.trim()}>Kreiraj kampanju</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setCampaignDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateCampaign} disabled={!campaignForm.name.trim() || !campaignForm.content.trim()}>Kreiraj kampanju</Button></div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* New Template */}
-      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Novi SMS template</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} /></div>
-              <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={templateForm.category} onValueChange={(v) => setTemplateForm({ ...templateForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+      {templateDialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setTemplateDialogOpen(false)} /> Novi SMS template</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={templateForm.name} onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })} /></div>
+                <div className="space-y-2"><Label className="text-xs">Kategorija</Label><Select value={templateForm.category} onValueChange={(v) => setTemplateForm({ ...templateForm, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{TEMPLATE_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+              </div>
+              <div className="space-y-2"><Label className="text-xs">Sadržaj * (koristite {'{ime}'}, {'{broj}'} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={3} /><p className="text-xs text-muted-foreground">{templateForm.body.length}/{SMS_MAX_CHARS} znakova · {(templateForm.body.match(/\{(\w+)\}/g) || []).length} promenljivih</p></div>
             </div>
-            <div className="space-y-2"><Label className="text-xs">Sadržaj * (koristite {ime}, {broj} za promenljive)</Label><Textarea value={templateForm.body} onChange={(e) => setTemplateForm({ ...templateForm, body: e.target.value })} rows={3} /><p className="text-xs text-muted-foreground">{templateForm.body.length}/{SMS_MAX_CHARS} znakova · {(templateForm.body.match(/\{(\w+)\}/g) || []).length} promenljivih</p></div>
-          </div>
-          <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateTemplate}>Kreiraj template</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setTemplateDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateTemplate}>Kreiraj template</Button></div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* New Contact */}
-      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
-        <DialogContent className="max-w-md"><DialogHeader><DialogTitle>Novi kontakt</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} /></div>
-            <div className="space-y-2"><Label className="text-xs">Telefon *</Label><Input value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} placeholder="+3816XXXXXXXX" /></div>
-            <div className="space-y-2"><Label className="text-xs">Grupa</Label><Select value={contactForm.groups} onValueChange={(v) => setContactForm({ ...contactForm, groups: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CONTACT_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent></Select></div>
-          </div>
-          <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setContactDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateContact}>Dodaj kontakt</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {contactDialogOpen && (
+        <Card className="max-w-md">
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setContactDialogOpen(false)} /> Novi kontakt</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2"><Label className="text-xs">Naziv *</Label><Input value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} /></div>
+              <div className="space-y-2"><Label className="text-xs">Telefon *</Label><Input value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} placeholder="+3816XXXXXXXX" /></div>
+              <div className="space-y-2"><Label className="text-xs">Grupa</Label><Select value={contactForm.groups} onValueChange={(v) => setContactForm({ ...contactForm, groups: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CONTACT_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setContactDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateContact}>Dodaj kontakt</Button></div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* New Keyword */}
-      <Dialog open={keywordDialogOpen} onOpenChange={setKeywordDialogOpen}>
-        <DialogContent className="max-w-md"><DialogHeader><DialogTitle>Nova ključna reč</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label className="text-xs">Ključna reč *</Label><Input value={keywordForm.keyword} onChange={(e) => setKeywordForm({ ...keywordForm, keyword: e.target.value })} placeholder="npr. INFO" /></div>
-            <div className="space-y-2"><Label className="text-xs">Auto odgovor</Label><div className="flex items-center gap-2"><Switch checked={keywordForm.autoReply} onCheckedChange={(v) => setKeywordForm({ ...keywordForm, autoReply: v })} /><Label className="text-xs">{keywordForm.autoReply ? 'Aktivno' : 'Neaktivno'}</Label></div></div>
-            {keywordForm.autoReply && <div className="space-y-2"><Label className="text-xs">Odgovor</Label><Textarea value={keywordForm.response} onChange={(e) => setKeywordForm({ ...keywordForm, response: e.target.value })} rows={3} /></div>}
-            <div className="space-y-2"><Label className="text-xs">Prosledi na (opcionalno)</Label><Input value={keywordForm.forwardTo} onChange={(e) => setKeywordForm({ ...keywordForm, forwardTo: e.target.value })} placeholder="email@primer.rs" /></div>
-          </div>
-          <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setKeywordDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateKeyword}>Kreiraj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {keywordDialogOpen && (
+        <Card className="max-w-md">
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setKeywordDialogOpen(false)} /> Nova ključna reč</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2"><Label className="text-xs">Ključna reč *</Label><Input value={keywordForm.keyword} onChange={(e) => setKeywordForm({ ...keywordForm, keyword: e.target.value })} placeholder="npr. INFO" /></div>
+              <div className="space-y-2"><Label className="text-xs">Auto odgovor</Label><div className="flex items-center gap-2"><Switch checked={keywordForm.autoReply} onCheckedChange={(v) => setKeywordForm({ ...keywordForm, autoReply: v })} /><Label className="text-xs">{keywordForm.autoReply ? 'Aktivno' : 'Neaktivno'}</Label></div></div>
+              {keywordForm.autoReply && <div className="space-y-2"><Label className="text-xs">Odgovor</Label><Textarea value={keywordForm.response} onChange={(e) => setKeywordForm({ ...keywordForm, response: e.target.value })} rows={3} /></div>}
+              <div className="space-y-2"><Label className="text-xs">Prosledi na (opcionalno)</Label><Input value={keywordForm.forwardTo} onChange={(e) => setKeywordForm({ ...keywordForm, forwardTo: e.target.value })} placeholder="email@primer.rs" /></div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4"><Button variant="outline" onClick={() => setKeywordDialogOpen(false)}>Otkaži</Button><Button onClick={handleCreateKeyword}>Kreiraj</Button></div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Campaign Detail */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          {selectedCampaign && (<>
-            <DialogHeader><DialogTitle>{selectedCampaign.name}</DialogTitle></DialogHeader>
+      {detailOpen && selectedCampaign && (
+        <Card className="max-w-lg">
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDetailOpen(false)} /> {selectedCampaign.name}</CardTitle></CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-xs text-muted-foreground">Status</span><br /><Badge variant="outline" className={STATUS_CONFIG[selectedCampaign.status]?.color}>{STATUS_CONFIG[selectedCampaign.status]?.label}</Badge></div>
@@ -983,9 +994,9 @@ export function SmsMarketing() {
               <div><span className="text-xs text-muted-foreground">Sadržaj poruke</span><p className="text-sm mt-1 p-3 bg-muted/30 rounded">{selectedCampaign.content}</p></div>
               <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Trošak</span><span className="font-medium">{formatRSD(selectedCampaign.totalCost)}</span></div>
             </div>
-          </>)}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -26,14 +26,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog'
-import {
   Table,
   TableBody,
   TableCell,
@@ -82,6 +74,7 @@ import {
   Timer,
   TrendingUp,
   GripVertical,
+  ArrowLeft,
   ArrowUpDown,
   FileText,
   ArrowUpRight,

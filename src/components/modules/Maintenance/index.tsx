@@ -14,12 +14,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import {
+import {ArrowLeft, 
   Wrench, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, DollarSign,
   TrendingUp, AlertCircle, Settings, AlertTriangle, Calendar,
@@ -1089,9 +1089,9 @@ export function Maintenance() {
       </Tabs>
 
       {/* ==================== CREATE ORDER DIALOG ==================== */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{t('maintenance.newOrder')}</DialogTitle></DialogHeader>
+      {dialogOpen && (
+<Card className="max-w-lg max-h-[90vh] overflow-y-auto">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.newOrder')}</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('maintenance.equipmentName')}</Label>
@@ -1159,19 +1159,19 @@ export function Maintenance() {
               <Textarea value={orderForm.safetyNotes} onChange={(e) => setOrderForm({ ...orderForm, safetyNotes: e.target.value })} rows={2} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => { setDialogOpen(false); setOrderForm(emptyOrderForm) }}>{t('maintenance.cancel')}</Button>
             <Button onClick={handleCreateOrder}><Plus className="h-4 w-4 mr-1" /> {t('maintenance.createOrder')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+          )}
 
       {/* ==================== ORDER DETAIL DIALOG ==================== */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle>{t('maintenance.orderDetails')}</DialogTitle>
+      {detailOpen && (
+<Card className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-sm flex-1">{t('maintenance.orderDetails')}</CardTitle>
               {selected && getNextStatusValue(selected.status) && (
                 <Button size="sm" variant="outline" className="text-amber-600"
                   onClick={() => { handleUpdateStatus(selected.id, getNextStatusValue(selected.status)!)
@@ -1180,8 +1180,8 @@ export function Maintenance() {
                   {t(`maintenance.${getNextStatusLabel(selected.status)}`)}
                 </Button>
               )}
-            </div>
-          </DialogHeader>
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+          </CardHeader>
           {selected && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1255,13 +1255,13 @@ export function Maintenance() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ==================== EQUIPMENT ADD/EDIT DIALOG ==================== */}
-      <Dialog open={equipDialogOpen} onOpenChange={setEquipDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{t('maintenance.addEquipment')}</DialogTitle></DialogHeader>
+      {equipDialogOpen && (
+<Card className="max-w-lg max-h-[90vh] overflow-y-auto">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setEquipDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.addEquipment')}</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('maintenance.equipmentName')}</Label>
@@ -1312,17 +1312,17 @@ export function Maintenance() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setEquipDialogOpen(false)}>{t('maintenance.cancel')}</Button>
             <Button onClick={() => setEquipDialogOpen(false)}>{t('maintenance.createOrder')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+          )}
 
       {/* ==================== EQUIPMENT DETAIL DIALOG ==================== */}
-      <Dialog open={equipDetailOpen} onOpenChange={setEquipDetailOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{t('maintenance.equipmentDetails')}</DialogTitle></DialogHeader>
+      {equipDetailOpen && (
+<Card className="max-w-lg max-h-[90vh] overflow-y-auto">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setEquipDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.equipmentDetails')}</CardTitle></CardHeader>
           {selectedEquip && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1364,13 +1364,13 @@ export function Maintenance() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+          )}
 
       {/* ==================== ADD PLAN DIALOG ==================== */}
-      <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('maintenance.addPlan')}</DialogTitle></DialogHeader>
+      {planDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setPlanDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.addPlan')}</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('maintenance.equipmentName')}</Label>
@@ -1402,20 +1402,20 @@ export function Maintenance() {
               <Label>{t('maintenance.autoCreate')}</Label>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setPlanDialogOpen(false)}>{t('maintenance.cancel')}</Button>
             <Button onClick={() => {
               setPlans([...plans, { id: `p${plans.length + 1}`, equipmentId: '', equipmentName: planForm.equipmentName, planName: planForm.planName, frequency: planForm.frequency, nextDue: planForm.nextDue, autoCreate: planForm.autoCreate, completedDates: [] }])
               setPlanDialogOpen(false)
             }}>{t('maintenance.createOrder')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+          )}
 
       {/* ==================== ADD PART DIALOG ==================== */}
-      <Dialog open={partDialogOpen} onOpenChange={setPartDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('maintenance.addPart')}</DialogTitle></DialogHeader>
+      {partDialogOpen && (
+<Card className="max-w-lg">
+<CardHeader className="flex flex-row items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setPartDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-sm flex-1">{t('maintenance.addPart')}</CardTitle></CardHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{t('maintenance.partName')}</Label>
@@ -1457,12 +1457,12 @@ export function Maintenance() {
               <Input value={partForm.location} onChange={(e) => setPartForm({ ...partForm, location: e.target.value })} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setPartDialogOpen(false)}>{t('maintenance.cancel')}</Button>
             <Button onClick={() => setPartDialogOpen(false)}>{t('maintenance.createOrder')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+          )}
     </div>
   )
 }

@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -20,7 +20,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import {
-  CreditCard, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
+  CreditCard, Plus, Search, Eye, Trash2, Edit3, RefreshCw, ArrowLeft,
   CheckCircle2, Clock, BarChart3, DollarSign, TrendingUp,
   TrendingDown, AlertCircle, Users, Calendar, Tag, Gift,
   Percent, Crown, Zap, ArrowRight,
@@ -735,72 +735,65 @@ function PretplateTab() {
         )}
       </Card>
 
-      {/* Create Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('subscriptions.newSubscription')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
+      {/* Create Form */}
+      {dialogOpen && (<Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.newSubscription')}</CardTitle></div></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs">{t('subscriptions.customer')} *</Label>
+            <Input value={form.customer} onChange={(e) => setForm({ ...form, customer: e.target.value })} placeholder={t('subscriptions.customerPlaceholder')} />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">{t('subscriptions.plan')}</Label>
+            <Select value={form.planId} onValueChange={(v) => setForm({ ...form, planId: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {plans.filter(p => p.isActive).map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.name} - {formatRSD(p.price)}/{CYCLE_LABELS[p.billingCycle]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.customer')} *</Label>
-              <Input value={form.customer} onChange={(e) => setForm({ ...form, customer: e.target.value })} placeholder={t('subscriptions.customerPlaceholder')} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.plan')}</Label>
-              <Select value={form.planId} onValueChange={(v) => setForm({ ...form, planId: v })}>
+              <Label className="text-xs">{t('subscriptions.billingCycle')}</Label>
+              <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v as 'monthly' | 'quarterly' | 'annually' })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {plans.filter(p => p.isActive).map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.name} - {formatRSD(p.price)}/{CYCLE_LABELS[p.billingCycle]}</SelectItem>
-                  ))}
+                  <SelectItem value="monthly">{t('subscriptions.monthly')}</SelectItem>
+                  <SelectItem value="quarterly">{t('subscriptions.quarterly')}</SelectItem>
+                  <SelectItem value="annually">{t('subscriptions.annually')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.billingCycle')}</Label>
-                <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v as 'monthly' | 'quarterly' | 'annually' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="monthly">{t('subscriptions.monthly')}</SelectItem>
-                    <SelectItem value="quarterly">{t('subscriptions.quarterly')}</SelectItem>
-                    <SelectItem value="annually">{t('subscriptions.annually')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.trialDays')}</Label>
-                <Input type="number" min={0} value={form.trialDays || ''} onChange={(e) => setForm({ ...form, trialDays: parseInt(e.target.value) || 0 })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.amount')} (RSD)</Label>
-                <Input type="number" value={form.amount || ''} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} placeholder={t('subscriptions.amountPlaceholder')} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.startDate')}</Label>
-                <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-              </div>
+            <div className="space-y-2">
+              <Label className="text-xs">{t('subscriptions.trialDays')}</Label>
+              <Input type="number" min={0} value={form.trialDays || ''} onChange={(e) => setForm({ ...form, trialDays: parseInt(e.target.value) || 0 })} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs">{t('common.amount')} (RSD)</Label>
+              <Input type="number" value={form.amount || ''} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} placeholder={t('subscriptions.amountPlaceholder')} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">{t('subscriptions.startDate')}</Label>
+              <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={handleCreate} disabled={!form.customer}>
               <Plus className="h-4 w-4 mr-1" /> {t('subscriptions.createSubscription')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
-      {/* Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('subscriptions.subscriptionDetails')}</DialogTitle>
-          </DialogHeader>
-          {selected && (
+      {/* Detail View */}
+      {detailOpen && (<Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.subscriptionDetails')}</CardTitle></div></CardHeader>
+        {selected && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -876,8 +869,8 @@ function PretplateTab() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+      )}
     </div>
   )
 }
@@ -1037,61 +1030,57 @@ function PlanoviTab() {
         ))}
       </div>
 
-      {/* Create/Edit Plan Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{isEditing ? t('subscriptions.editPlan') : t('subscriptions.newPlan')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
+      {/* Create/Edit Plan Form */}
+      {dialogOpen && (<Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{isEditing ? t('subscriptions.editPlan') : t('subscriptions.newPlan')}</CardTitle></div></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs">{t('common.name')} *</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">{t('common.description')}</Label>
+            <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs">{t('common.name')} *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">{t('common.description')}</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('common.price')} (RSD)</Label>
-                <Input type="number" value={form.price || ''} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.billingCycle')}</Label>
-                <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v as 'monthly' | 'quarterly' | 'annually' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="monthly">{t('subscriptions.monthly')}</SelectItem>
-                    <SelectItem value="quarterly">{t('subscriptions.quarterly')}</SelectItem>
-                    <SelectItem value="annually">{t('subscriptions.annually')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.trialPeriod')} ({t('subscriptions.days')})</Label>
-                <Input type="number" min={0} value={form.trialPeriod || ''} onChange={(e) => setForm({ ...form, trialPeriod: parseInt(e.target.value) || 0 })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.setupFee')} (RSD)</Label>
-                <Input type="number" min={0} value={form.setupFee || ''} onChange={(e) => setForm({ ...form, setupFee: parseFloat(e.target.value) || 0 })} />
-              </div>
+              <Label className="text-xs">{t('common.price')} (RSD)</Label>
+              <Input type="number" value={form.price || ''} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.features')} ({t('subscriptions.onePerLine')})</Label>
-              <Textarea value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} rows={5} placeholder={t('subscriptions.featuresPlaceholder')} />
+              <Label className="text-xs">{t('subscriptions.billingCycle')}</Label>
+              <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v as 'monthly' | 'quarterly' | 'annually' })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">{t('subscriptions.monthly')}</SelectItem>
+                  <SelectItem value="quarterly">{t('subscriptions.quarterly')}</SelectItem>
+                  <SelectItem value="annually">{t('subscriptions.annually')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <DialogFooter>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs">{t('subscriptions.trialPeriod')} ({t('subscriptions.days')})</Label>
+              <Input type="number" min={0} value={form.trialPeriod || ''} onChange={(e) => setForm({ ...form, trialPeriod: parseInt(e.target.value) || 0 })} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">{t('subscriptions.setupFee')} (RSD)</Label>
+              <Input type="number" min={0} value={form.setupFee || ''} onChange={(e) => setForm({ ...form, setupFee: parseFloat(e.target.value) || 0 })} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">{t('subscriptions.features')} ({t('subscriptions.onePerLine')})</Label>
+            <Textarea value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} rows={5} placeholder={t('subscriptions.featuresPlaceholder')} />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={handleSave} disabled={!form.name}>
               {isEditing ? t('common.save') : t('subscriptions.createPlan')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }
@@ -1406,64 +1395,57 @@ function KuponiTab() {
         </div>
       </Card>
 
-      {/* Create/Edit Coupon Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{isEditing ? t('subscriptions.editCoupon') : t('subscriptions.newCoupon')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
+      {/* Create/Edit Coupon Form */}
+      {dialogOpen && (<Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{isEditing ? t('subscriptions.editCoupon') : t('subscriptions.newCoupon')}</CardTitle></div></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs">{t('subscriptions.code')} *</Label>
+            <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder={t('subscriptions.codePlaceholder')} className="uppercase font-mono" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.code')} *</Label>
-              <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder={t('subscriptions.codePlaceholder')} className="uppercase font-mono" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.discountType')}</Label>
-                <Select value={form.discountType} onValueChange={(v) => setForm({ ...form, discountType: v as 'percentage' | 'fixed' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">{t('subscriptions.percentage')}</SelectItem>
-                    <SelectItem value="fixed">{t('subscriptions.fixedAmount')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.discountValue')}</Label>
-                <Input type="number" min={0} value={form.discountValue || ''} onChange={(e) => setForm({ ...form, discountValue: parseFloat(e.target.value) || 0 })} />
-              </div>
+              <Label className="text-xs">{t('subscriptions.discountType')}</Label>
+              <Select value={form.discountType} onValueChange={(v) => setForm({ ...form, discountType: v as 'percentage' | 'fixed' })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percentage">{t('subscriptions.percentage')}</SelectItem>
+                  <SelectItem value="fixed">{t('subscriptions.fixedAmount')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">{t('subscriptions.maxUses')} (0 = {t('subscriptions.unlimited')})</Label>
-              <Input type="number" min={0} value={form.maxUses || ''} onChange={(e) => setForm({ ...form, maxUses: parseInt(e.target.value) || 0 })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.validFrom')}</Label>
-                <Input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">{t('subscriptions.validTo')}</Label>
-                <Input type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
-              </div>
+              <Label className="text-xs">{t('subscriptions.discountValue')}</Label>
+              <Input type="number" min={0} value={form.discountValue || ''} onChange={(e) => setForm({ ...form, discountValue: parseFloat(e.target.value) || 0 })} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="space-y-2">
+            <Label className="text-xs">{t('subscriptions.maxUses')} (0 = {t('subscriptions.unlimited')})</Label>
+            <Input type="number" min={0} value={form.maxUses || ''} onChange={(e) => setForm({ ...form, maxUses: parseInt(e.target.value) || 0 })} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-xs">{t('subscriptions.validFrom')}</Label>
+              <Input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">{t('subscriptions.validTo')}</Label>
+              <Input type="date" value={form.validTo} onChange={(e) => setForm({ ...form, validTo: e.target.value })} />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={handleSave} disabled={!form.code}>
               {isEditing ? t('common.save') : t('subscriptions.createCoupon')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
-      {/* Usage Log Dialog */}
-      <Dialog open={usageLogOpen} onOpenChange={setUsageLogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('subscriptions.usageLog')} - {selectedCoupon?.code}</DialogTitle>
-          </DialogHeader>
-          {selectedCoupon && (
+      {/* Usage Log View */}
+      {usageLogOpen && (<Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setUsageLogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base">{t('subscriptions.usageLog')} - {selectedCoupon?.code}</CardTitle></div></CardHeader>
+        {selectedCoupon && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -1502,8 +1484,8 @@ function KuponiTab() {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </Card>
+      )}
     </div>
   )
 }

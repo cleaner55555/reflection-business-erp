@@ -15,7 +15,6 @@ import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import { Progress } from '@/components/ui/progress'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -26,7 +25,7 @@ import {
   TrendingUp, TrendingDown, AlertTriangle, FileText,
   Calendar, CreditCard, Building2, Users, Filter,
   Download, Printer, ArrowRight, X, Wallet, PiggyBank,
-  Shield, Settings,
+  Shield, Settings, ArrowLeft,
 } from 'lucide-react'
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -856,12 +855,10 @@ function ExpensesTab() {
         )}
       </Card>
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{isEditing ? t('expenses.editExpense') : t('expenses.newExpense')}</DialogTitle>
-          </DialogHeader>
+      {/* Create/Edit Form */}
+      {dialogOpen && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{isEditing ? t('expenses.editExpense') : t('expenses.newExpense')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent className="max-h-[90vh] overflow-y-auto">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-xs">{t('expenses.description')} *</Label>
@@ -915,20 +912,19 @@ function ExpensesTab() {
               <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('expenses.cancel')}</Button>
             <Button onClick={handleSave}>
               <Plus className="h-4 w-4 mr-1" /> {isEditing ? t('expenses.save') : t('expenses.create')}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
-      {/* Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('expenses.expenseDetails')}</DialogTitle></DialogHeader>
-          {selected && (
+      {/* Detail View */}
+      {detailOpen && selected && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.expenseDetails')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -985,9 +981,8 @@ function ExpensesTab() {
                 </Button>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+      </Card>)}
     </div>
   )
 }
@@ -1145,10 +1140,10 @@ function ReportsTab() {
         </div>
       )}
 
-      {/* Create Report Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('expenses.newReport')}</DialogTitle></DialogHeader>
+      {/* Create Report Form */}
+      {dialogOpen && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newReport')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-xs">{t('expenses.reportTitle')} *</Label>
@@ -1178,26 +1173,17 @@ function ReportsTab() {
               <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('expenses.cancel')}</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('expenses.create')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
-      {/* Report Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center gap-2">
-              <DialogTitle>{selectedReport?.title}</DialogTitle>
-              {selectedReport && (
-                <Badge variant="outline" className={STATUS_CONFIG[selectedReport.status]?.color}>
-                  {STATUS_CONFIG[selectedReport.status]?.label}
-                </Badge>
-              )}
-            </div>
-          </DialogHeader>
+      {/* Report Detail View */}
+      {detailOpen && selectedReport && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><div className="flex items-center gap-2"><span>{selectedReport.title}</span>{selectedReport && (<Badge variant="outline" className={STATUS_CONFIG[selectedReport.status]?.color}>{STATUS_CONFIG[selectedReport.status]?.label}</Badge>)}</div><Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent className="max-h-[90vh] overflow-y-auto">
           {selectedReport && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1270,8 +1256,8 @@ function ReportsTab() {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+      </Card>)}
     </div>
   )
 }
@@ -1413,10 +1399,10 @@ function BudgetsTab() {
         </CardContent>
       </Card>
 
-      {/* Create Budget Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('expenses.newBudget')}</DialogTitle></DialogHeader>
+      {/* Create Budget Form */}
+      {dialogOpen && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newBudget')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-xs">{t('expenses.budgetName')} *</Label>
@@ -1455,12 +1441,12 @@ function BudgetsTab() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('expenses.cancel')}</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('expenses.create')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }
@@ -1619,10 +1605,10 @@ function PoliciesTab() {
         </CardContent>
       </Card>
 
-      {/* Create Policy Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{t('expenses.newPolicy')}</DialogTitle></DialogHeader>
+      {/* Create Policy Form */}
+      {dialogOpen && (<Card>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newPolicy')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-xs">{t('expenses.policyName')} *</Label>
@@ -1666,12 +1652,12 @@ function PoliciesTab() {
               <Label className="text-xs">{t('expenses.active')}</Label>
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4 border-t">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{t('expenses.cancel')}</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> {t('expenses.create')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }

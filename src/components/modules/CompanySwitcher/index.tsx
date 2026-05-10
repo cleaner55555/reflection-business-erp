@@ -14,18 +14,10 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Building2, Plus, ChevronRight, Check, Settings, Users, Loader2 } from 'lucide-react'
+import { Building2, Plus, ChevronRight, Check, Settings, Users, Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Company {
@@ -169,96 +161,93 @@ export function CompanySwitcher() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* New Company Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              Nova kompanija
-            </DialogTitle>
-            <DialogDescription>
-              Kreirajte novu kompaniju za upravljanje poslovanjem
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="company-name">Naziv kompanije *</Label>
-              <Input
-                id="company-name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Moja Firma doo"
-              />
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Nova kompanija
+              </CardTitle>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="company-pib">PIB</Label>
+                <Label htmlFor="company-name">Naziv kompanije *</Label>
                 <Input
-                  id="company-pib"
-                  value={newPib}
-                  onChange={(e) => setNewPib(e.target.value)}
-                  placeholder="123456789"
+                  id="company-name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Moja Firma doo"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="company-city">Grad</Label>
-                <Input
-                  id="company-city"
-                  value={newCity}
-                  onChange={(e) => setNewCity(e.target.value)}
-                  placeholder="Beograd"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="company-address">Adresa</Label>
-              <Input
-                id="company-address"
-                value={newAddress}
-                onChange={(e) => setNewAddress(e.target.value)}
-                placeholder="Bulevar Mihajla Pupina 10"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="company-email">Email</Label>
-                <Input
-                  id="company-email"
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="info@firma.rs"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="company-pib">PIB</Label>
+                  <Input
+                    id="company-pib"
+                    value={newPib}
+                    onChange={(e) => setNewPib(e.target.value)}
+                    placeholder="123456789"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="company-city">Grad</Label>
+                  <Input
+                    id="company-city"
+                    value={newCity}
+                    onChange={(e) => setNewCity(e.target.value)}
+                    placeholder="Beograd"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="company-phone">Telefon</Label>
+                <Label htmlFor="company-address">Adresa</Label>
                 <Input
-                  id="company-phone"
-                  type="tel"
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  placeholder="+381 11 123 4567"
+                  id="company-address"
+                  value={newAddress}
+                  onChange={(e) => setNewAddress(e.target.value)}
+                  placeholder="Bulevar Mihajla Pupina 10"
                 />
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="company-email">Email</Label>
+                  <Input
+                    id="company-email"
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="info@firma.rs"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="company-phone">Telefon</Label>
+                  <Input
+                    id="company-phone"
+                    type="tel"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    placeholder="+381 11 123 4567"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Otkaži
-            </Button>
-            <Button onClick={handleCreateCompany} disabled={creating || !newName.trim()}>
-              {creating ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Kreiranje...</>
-              ) : (
-                <><Plus className="mr-2 h-4 w-4" /> Kreiraj kompaniju</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreateCompany} disabled={creating || !newName.trim()}>
+                {creating ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Kreiranje...</>
+                ) : (
+                  <><Plus className="mr-2 h-4 w-4" /> Kreiraj kompaniju</>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </>
   )
 }

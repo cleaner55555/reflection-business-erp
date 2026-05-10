@@ -15,6 +15,7 @@ import {
   Loader2,
   Check,
   X,
+  ArrowLeft,
 } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
@@ -26,14 +27,6 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -156,8 +149,8 @@ export function ApiKeyManagement() {
   const [loading, setLoading] = useState(true)
   const [usersLoading, setUsersLoading] = useState(true)
 
-  // Dialog state
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  // View state
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [creating, setCreating] = useState(false)
   const [newKey, setNewKey] = useState<string | null>(null)
 
@@ -266,6 +259,7 @@ export function ApiKeyManagement() {
       setForm({ name: '', userId: '', permissions: ['read'], expiresAt: undefined })
       await fetchApiKeys()
       toast.success('API ključ je uspešno kreiran')
+      // Stay in form view to show the key
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Greška pri kreiranju API ključa')
     } finally {
@@ -327,7 +321,7 @@ export function ApiKeyManagement() {
           </div>
         </div>
         <Button
-          onClick={() => setCreateDialogOpen(true)}
+          onClick={() => { setViewMode('form'); setNewKey(null); setForm({ name: '', userId: '', permissions: ['read'], expiresAt: undefined }) }}
           className="shrink-0 gap-2"
         >
           <Plus className="h-4 w-4" />
@@ -462,7 +456,7 @@ export function ApiKeyManagement() {
                 <Button
                   variant="outline"
                   className="mt-4 gap-2"
-                  onClick={() => setCreateDialogOpen(true)}
+                  onClick={() => { setViewMode('form'); setNewKey(null); setForm({ name: '', userId: '', permissions: ['read'], expiresAt: undefined }) }}
                 >
                   <Plus className="h-4 w-4" />
                   Kreirajte prvi ključ
@@ -588,222 +582,181 @@ export function ApiKeyManagement() {
         </Card>
       </motion.div>
 
-      {/* ============ CREATE KEY DIALOG ============ */}
-      <Dialog open={createDialogOpen} onOpenChange={(open) => {
-        if (!open) {
-          setCreateDialogOpen(false)
-          setNewKey(null)
-          setForm({ name: '', userId: '', permissions: ['read'], expiresAt: undefined })
-        }
-      }}>
-        <DialogContent className="sm:max-w-[500px]">
-          <AnimatePresence mode="wait">
+      {/* ============ CREATE KEY INLINE FORM ============ */}
+      {viewMode === 'form' && (
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => { setViewMode('list'); setNewKey(null); setForm({ name: '', userId: '', permissions: ['read'], expiresAt: undefined }) }}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Key className="h-4 w-4 text-primary" />
+                  {newKey ? 'API ključ kreiran' : 'Novi API ključ'}
+                </CardTitle>
+                <CardDescription>
+                  {newKey
+                    ? 'Uspešno ste kreirali novi API ključ.'
+                    : 'Kreirajte novi API ključ za pristup REST API-ju.'}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
             {newKey ? (
-              /* ---- NEW KEY REVEALED ---- */
-              <motion.div
-                key="reveal"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-              >
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    API ključ kreiran
-                  </DialogTitle>
-                  <DialogDescription>
-                    Uspešno ste kreirali novi API ključ.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="mt-4 space-y-4">
-                  <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
-                    <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                    <AlertDescription className="text-amber-800 dark:text-amber-200 text-sm font-medium">
-                      Sačuvajte ovaj ključ! Nećete ga moći videti ponovo.
-                    </AlertDescription>
-                  </Alert>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Vaš API ključ:</Label>
-                    <div className="relative">
-                      <pre className="overflow-x-auto rounded-lg bg-muted border p-3 text-sm font-mono break-all pr-12">
-                        {newKey}
-                      </pre>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="absolute top-2 right-2 h-7 w-7"
-                        onClick={() => copyToClipboard(newKey, 'new-key')}
-                      >
-                        {copiedId === 'new-key' ? (
-                          <Check className="h-3.5 w-3.5 text-green-500" />
-                        ) : (
-                          <Copy className="h-3.5 w-3.5" />
-                        )}
-                      </Button>
-                    </div>
+              <div className="space-y-4">
+                <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <AlertDescription className="text-amber-800 dark:text-amber-200 text-sm font-medium">
+                    Sačuvajte ovaj ključ! Nećete ga moći videti ponovo.
+                  </AlertDescription>
+                </Alert>
+                <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Vaš API ključ:</Label>
+                  <div className="relative">
+                    <pre className="overflow-x-auto rounded-lg bg-muted border p-3 text-sm font-mono break-all pr-12">
+                      {newKey}
+                    </pre>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="absolute top-2 right-2 h-7 w-7"
+                      onClick={() => copyToClipboard(newKey, 'new-key')}
+                    >
+                      {copiedId === 'new-key' ? (
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
                   </div>
                 </div>
-
-                <DialogFooter className="mt-6">
-                  <Button onClick={() => {
-                    setNewKey(null)
-                    setCreateDialogOpen(false)
-                  }}>
+                <div className="flex gap-2">
+                  <Button onClick={() => { setNewKey(null); setViewMode('list'); setForm({ name: '', userId: '', permissions: ['read'], expiresAt: undefined }) }}>
                     Zatvori
                   </Button>
-                </DialogFooter>
-              </motion.div>
+                </div>
+              </div>
             ) : (
-              /* ---- CREATE FORM ---- */
-              <motion.div
-                key="form"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-              >
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Key className="h-5 w-5 text-primary" />
-                    Novi API ključ
-                  </DialogTitle>
-                  <DialogDescription>
-                    Kreirajte novi API ključ za pristup REST API-ju.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="mt-4 space-y-5">
-                  {/* Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="key-name">Naziv</Label>
-                    <Input
-                      id="key-name"
-                      placeholder="npr. WooCommerce integracija"
-                      value={form.name}
-                      onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                      disabled={creating}
-                    />
-                  </div>
-
-                  {/* User select */}
-                  <div className="space-y-2">
-                    <Label htmlFor="key-user">Korisnik</Label>
-                    <Select
-                      value={form.userId}
-                      onValueChange={(val) => setForm((prev) => ({ ...prev, userId: val }))}
-                      disabled={usersLoading || creating}
-                    >
-                      <SelectTrigger id="key-user">
-                        <SelectValue placeholder={usersLoading ? 'Učitavanje...' : 'Izaberite korisnika'} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {users.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>
-                            <span className="flex items-center gap-2">
-                              <span>{user.firstName} {user.lastName}</span>
-                              <span className="text-xs text-muted-foreground">({user.email})</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Permissions */}
-                  <div className="space-y-3">
-                    <Label>Dozvole</Label>
-                    <div className="flex flex-wrap gap-4">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox
-                          checked={form.permissions.includes('read')}
-                          onCheckedChange={(checked) => {
-                            setForm((prev) => ({
-                              ...prev,
-                              permissions: checked
-                                ? [...prev.permissions, 'read']
-                                : prev.permissions.filter((p) => p !== 'read'),
-                            }))
-                          }}
-                          disabled={creating}
-                        />
-                        <span className="text-sm">Čitanje (read)</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox
-                          checked={form.permissions.includes('write')}
-                          onCheckedChange={(checked) => {
-                            setForm((prev) => ({
-                              ...prev,
-                              permissions: checked
-                                ? [...prev.permissions, 'write']
-                                : prev.permissions.filter((p) => p !== 'write'),
-                            }))
-                          }}
-                          disabled={creating}
-                        />
-                        <span className="text-sm">Pisanje (write)</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Expiration date */}
-                  <div className="space-y-2">
-                    <Label>Ističe (opcionalno)</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left font-normal"
-                          disabled={creating}
-                        >
-                          {form.expiresAt ? (
-                            formatDate(form.expiresAt.toISOString())
-                          ) : (
-                            <span className="text-muted-foreground">Bez roka važenja</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={form.expiresAt}
-                          onSelect={(date) => setForm((prev) => ({ ...prev, expiresAt: date }))}
-                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                          initialFocus
-                        />
-                        {form.expiresAt && (
-                          <div className="border-t px-3 py-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full text-xs"
-                              onClick={() => setForm((prev) => ({ ...prev, expiresAt: undefined }))}
-                            >
-                              <X className="h-3 w-3 mr-1" />
-                              Ukloni datum
-                            </Button>
-                          </div>
-                        )}
-                      </PopoverContent>
-                    </Popover>
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="key-name">Naziv</Label>
+                  <Input
+                    id="key-name"
+                    placeholder="npr. WooCommerce integracija"
+                    value={form.name}
+                    onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                    disabled={creating}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="key-user">Korisnik</Label>
+                  <Select
+                    value={form.userId}
+                    onValueChange={(val) => setForm((prev) => ({ ...prev, userId: val }))}
+                    disabled={usersLoading || creating}
+                  >
+                    <SelectTrigger id="key-user">
+                      <SelectValue placeholder={usersLoading ? 'Učitavanje...' : 'Izaberite korisnika'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          <span className="flex items-center gap-2">
+                            <span>{user.firstName} {user.lastName}</span>
+                            <span className="text-xs text-muted-foreground">({user.email})</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-3">
+                  <Label>Dozvole</Label>
+                  <div className="flex flex-wrap gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={form.permissions.includes('read')}
+                        onCheckedChange={(checked) => {
+                          setForm((prev) => ({
+                            ...prev,
+                            permissions: checked
+                              ? [...prev.permissions, 'read']
+                              : prev.permissions.filter((p) => p !== 'read'),
+                          }))
+                        }}
+                        disabled={creating}
+                      />
+                      <span className="text-sm">Čitanje (read)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={form.permissions.includes('write')}
+                        onCheckedChange={(checked) => {
+                          setForm((prev) => ({
+                            ...prev,
+                            permissions: checked
+                              ? [...prev.permissions, 'write']
+                              : prev.permissions.filter((p) => p !== 'write'),
+                          }))
+                        }}
+                        disabled={creating}
+                      />
+                      <span className="text-sm">Pisanje (write)</span>
+                    </label>
                   </div>
                 </div>
-
-                <DialogFooter className="mt-6 gap-2">
+                <div className="space-y-2">
+                  <Label>Ističe (opcionalno)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal"
+                        disabled={creating}
+                      >
+                        {form.expiresAt ? (
+                          formatDate(form.expiresAt.toISOString())
+                        ) : (
+                          <span className="text-muted-foreground">Bez roka važenja</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={form.expiresAt}
+                        onSelect={(date) => setForm((prev) => ({ ...prev, expiresAt: date }))}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        initialFocus
+                      />
+                      {form.expiresAt && (
+                        <div className="border-t px-3 py-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full text-xs"
+                            onClick={() => setForm((prev) => ({ ...prev, expiresAt: undefined }))}
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Ukloni datum
+                          </Button>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      setCreateDialogOpen(false)
-                      setForm({ name: '', userId: '', permissions: ['read'], expiresAt: undefined })
-                    }}
+                    className="flex-1"
+                    onClick={() => { setViewMode('list'); setForm({ name: '', userId: '', permissions: ['read'], expiresAt: undefined }) }}
                     disabled={creating}
                   >
                     Otkaži
                   </Button>
-                  <Button onClick={handleCreateKey} disabled={creating || !form.name.trim() || !form.userId}>
+                  <Button className="flex-1" onClick={handleCreateKey} disabled={creating || !form.name.trim() || !form.userId}>
                     {creating ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -816,12 +769,12 @@ export function ApiKeyManagement() {
                       </>
                     )}
                   </Button>
-                </DialogFooter>
-              </motion.div>
+                </div>
+              </div>
             )}
-          </AnimatePresence>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ============ REVOKE CONFIRMATION ============ */}
       <AlertDialog open={revokeDialogOpen} onOpenChange={setRevokeDialogOpen}>

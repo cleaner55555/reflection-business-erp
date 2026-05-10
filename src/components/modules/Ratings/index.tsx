@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,7 +22,7 @@ import {
   CheckCircle2, Clock, BarChart3, Users, ThumbsUp,
   TrendingUp, TrendingDown, Minus, AlertCircle,
   MessageSquare, CalendarDays, Filter, Award, Target,
-  PieChart, LineChart, BarChart2, Zap, Heart, Shield
+  PieChart, LineChart, BarChart2, Zap, Heart, Shield, ArrowLeft
 } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -766,81 +766,91 @@ export function Ratings() {
         </TabsContent>
       </Tabs>
 
-      {/* ─── Create Rating Dialog ──────────────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Nova ocena</DialogTitle>
-            <DialogDescription>Ocenite partnera, dobavljača ili zaposlenog</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Tip</Label>
-                <Select value={form.targetType} onValueChange={(v) => setForm({ ...form, targetType: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(targetTypeConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Kategorija</Label>
-                <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(categoryConfig).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* ─── Create Rating Form ──────────────────────────────────────────── */}
+      {dialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">Nova ocena</CardTitle>
             </div>
-            <div className="space-y-2">
-              <Label>Naziv</Label>
-              <Input value={form.targetName} onChange={(e) => setForm({ ...form, targetName: e.target.value })} placeholder="Naziv partnera/dobavljača/zaposlenog" />
-            </div>
-            <Separator />
+            <CardDescription>Ocenite partnera, dobavljača ili zaposlenog</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
-              <p className="text-sm font-medium">Ocene (1-5)</p>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">Kvalitet (30%)</Label>
-                  <StarRating value={form.quality} interactive onChange={(v) => setForm({ ...form, quality: v })} />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tip</Label>
+                  <Select value={form.targetType} onValueChange={(v) => setForm({ ...form, targetType: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(targetTypeConfig).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">Usluga (25%)</Label>
-                  <StarRating value={form.service} interactive onChange={(v) => setForm({ ...form, service: v })} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">Cena (20%)</Label>
-                  <StarRating value={form.price} interactive onChange={(v) => setForm({ ...form, price: v })} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">Vreme (15%)</Label>
-                  <StarRating value={form.time} interactive onChange={(v) => setForm({ ...form, time: v })} />
+                <div className="space-y-2">
+                  <Label>Kategorija</Label>
+                  <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(categoryConfig).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label>Naziv</Label>
+                <Input value={form.targetName} onChange={(e) => setForm({ ...form, targetName: e.target.value })} placeholder="Naziv partnera/dobavljača/zaposlenog" />
+              </div>
+              <Separator />
+              <div className="space-y-4">
+                <p className="text-sm font-medium">Ocene (1-5)</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Kvalitet (30%)</Label>
+                    <StarRating value={form.quality} interactive onChange={(v) => setForm({ ...form, quality: v })} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Usluga (25%)</Label>
+                    <StarRating value={form.service} interactive onChange={(v) => setForm({ ...form, service: v })} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Cena (20%)</Label>
+                    <StarRating value={form.price} interactive onChange={(v) => setForm({ ...form, price: v })} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">Vreme (15%)</Label>
+                    <StarRating value={form.time} interactive onChange={(v) => setForm({ ...form, time: v })} />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Komentar</Label>
+                <Textarea value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} rows={3} placeholder="Ostavite komentar..." />
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+                <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Sačuvaj ocenu</Button>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Komentar</Label>
-              <Textarea value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} rows={3} placeholder="Ostavite komentar..." />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Sačuvaj ocenu</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ─── Detail Dialog ────────────────────────────────────────────────── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji ocene</DialogTitle></DialogHeader>
-          {selected && (
+      {/* ─── Detail Card ────────────────────────────────────────────────── */}
+      {detailOpen && selected && (
+        <Card className="max-w-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">Detalji ocene</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -900,15 +910,20 @@ export function Ratings() {
                 <span>{new Date(selected.ratedAt).toLocaleString('sr-RS')}</span>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ─── Report Detail Dialog ─────────────────────────────────────────── */}
-      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Izveštaj: {selectedReport?.period}</DialogTitle></DialogHeader>
-          {selectedReport && (
+      {/* ─── Report Detail Card ─────────────────────────────────────────── */}
+      {reportOpen && selectedReport && (
+        <Card className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setReportOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base">Izveštaj: {selectedReport.period}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-6">
               {/* Summary Stats */}
               <div className="grid grid-cols-5 gap-3">
@@ -1008,9 +1023,9 @@ export function Ratings() {
                 </Card>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

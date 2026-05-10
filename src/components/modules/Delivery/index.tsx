@@ -6,13 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
-import { Plus, Search, Trash2, Pencil, Eye, Package, Truck, Clock, MapPin, CheckCircle2, AlertTriangle, XCircle, BarChart3, FileText, CalendarDays, User, Phone } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Package, Truck, Clock, MapPin, CheckCircle2, AlertTriangle, XCircle, BarChart3, FileText, CalendarDays, User, Phone, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -334,80 +333,86 @@ export function Delivery() {
         </TabsContent>
       </Tabs>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Detalji pošiljke</DialogTitle></DialogHeader>
-          {detailItem && (() => {
-            const history = parseHistory(detailItem.history)
-            return (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div><p className="text-lg font-bold font-mono">{detailItem.trackingNumber}</p><p className="text-xs text-muted-foreground">{formatDate(detailItem.estimatedDelivery)}</p></div>
-                  <div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg border space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p><p className="text-xs font-medium">{detailItem.senderName}</p><p className="text-xs text-muted-foreground">{detailItem.senderPhone}</p><p className="text-xs text-muted-foreground">{detailItem.senderAddress}</p></div>
-                  <div className="p-3 rounded-lg border space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p><p className="text-xs font-medium">{detailItem.recipientName}</p><p className="text-xs text-muted-foreground">{detailItem.recipientPhone}</p><p className="text-xs text-muted-foreground">{detailItem.recipientAddress}</p></div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.weight} kg</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Dimenzije</div><p className="text-xs font-medium">{detailItem.dimensions}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Trošak</div><p className="text-xs font-medium">{formatCurrency(detailItem.shippingCost)}</p></div>
-                  <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">COD</div><p className="text-xs font-bold">{detailItem.codAmount > 0 ? formatCurrency(detailItem.codAmount) : 'Nema'}</p></div>
-                </div>
-                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.assignedDriver || 'Nije dodeljen'}</p><p className="text-xs text-muted-foreground mt-1">Trenutna lokacija: {detailItem.currentLocation}</p></div>
-                <div className="space-y-3">
-                  <p className="text-xs font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Istorija praćenja</p>
-                  <div className="space-y-2">
-                    {[...history].reverse().map((h, idx) => (
-                      <div key={idx} className="flex items-start gap-3">
-                        <div className="flex flex-col items-center"><div className="h-6 w-6 rounded-full flex items-center justify-center bg-muted">{getStatusIcon(h.status)}</div>{idx < history.length - 1 && <div className="w-px h-4 bg-border mt-1" />}</div>
-                        <div className="pb-2"><div className="flex items-center gap-2"><span className="text-xs text-muted-foreground">{h.date}</span>{getStatusBadge(h.status)}</div><p className="text-xs">{h.location}</p>{h.note && <p className="text-xs text-muted-foreground">{h.note}</p>}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
-                <div className="flex gap-2">
-                  <Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v)}><SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
-                </div>
-              </div>
-            )
-          })()}
-        </DialogContent>
-      </Dialog>
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={open => { setDialogOpen(open); if (!open) setEditItem(null) }}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi dostavu' : 'Nova dostava'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="p-3 rounded-lg border space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p>
-              <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Naziv firme ili ime" className="text-xs" value={formData.senderName} onChange={e => setFormData(p => ({ ...p, senderName: e.target.value }))} /></div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.senderPhone} onChange={e => setFormData(p => ({ ...p, senderPhone: e.target.value }))} /></div>
-                <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-              </div>
-              <div className="grid gap-2"><Label className="text-xs">Adresa</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.senderAddress} onChange={e => setFormData(p => ({ ...p, senderAddress: e.target.value }))} /></div>
-            </div>
-            <div className="p-3 rounded-lg border space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p>
-              <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Ime primaoca" className="text-xs" value={formData.recipientName} onChange={e => setFormData(p => ({ ...p, recipientName: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.recipientPhone} onChange={e => setFormData(p => ({ ...p, recipientPhone: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Adresa *</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.recipientAddress} onChange={e => setFormData(p => ({ ...p, recipientAddress: e.target.value }))} /></div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.weight || ''} onChange={e => setFormData(p => ({ ...p, weight: Number(e.target.value) }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Dimenzije</Label><Input placeholder="40x30x20 cm" className="text-xs" value={formData.dimensions} onChange={e => setFormData(p => ({ ...p, dimensions: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">COD (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.codAmount || ''} onChange={e => setFormData(p => ({ ...p, codAmount: Number(e.target.value) }))} /></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Posebne instrukcije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
+      {/* Detail Card */}
+      {!!detailId && detailItem && (<Card className="max-w-[700px]">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">Detalji pošiljke</CardTitle>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </CardHeader>
+        <CardContent>{(() => {
+          const history = parseHistory(detailItem.history)
+          return (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div><p className="text-lg font-bold font-mono">{detailItem.trackingNumber}</p><p className="text-xs text-muted-foreground">{formatDate(detailItem.estimatedDelivery)}</p></div>
+                <div className="flex gap-2">{getStatusBadge(detailItem.status)}{getPriorityBadge(detailItem.priority)}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 rounded-lg border space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p><p className="text-xs font-medium">{detailItem.senderName}</p><p className="text-xs text-muted-foreground">{detailItem.senderPhone}</p><p className="text-xs text-muted-foreground">{detailItem.senderAddress}</p></div>
+                <div className="p-3 rounded-lg border space-y-1"><p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p><p className="text-xs font-medium">{detailItem.recipientName}</p><p className="text-xs text-muted-foreground">{detailItem.recipientPhone}</p><p className="text-xs text-muted-foreground">{detailItem.recipientAddress}</p></div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Težina</div><p className="text-xs font-medium">{detailItem.weight} kg</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Dimenzije</div><p className="text-xs font-medium">{detailItem.dimensions}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Trošak</div><p className="text-xs font-medium">{formatCurrency(detailItem.shippingCost)}</p></div>
+                <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">COD</div><p className="text-xs font-bold">{detailItem.codAmount > 0 ? formatCurrency(detailItem.codAmount) : 'Nema'}</p></div>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Vozač</div><p className="text-xs font-medium">{detailItem.assignedDriver || 'Nije dodeljen'}</p><p className="text-xs text-muted-foreground mt-1">Trenutna lokacija: {detailItem.currentLocation}</p></div>
+              <div className="space-y-3">
+                <p className="text-xs font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Istorija praćenja</p>
+                <div className="space-y-2">
+                  {[...history].reverse().map((h, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <div className="flex flex-col items-center"><div className="h-6 w-6 rounded-full flex items-center justify-center bg-muted">{getStatusIcon(h.status)}</div>{idx < history.length - 1 && <div className="w-px h-4 bg-border mt-1" />}</div>
+                      <div className="pb-2"><div className="flex items-center gap-2"><span className="text-xs text-muted-foreground">{h.date}</span>{getStatusBadge(h.status)}</div><p className="text-xs">{h.location}</p>{h.note && <p className="text-xs text-muted-foreground">{h.note}</p>}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {detailItem.notes && <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30"><p className="text-xs text-amber-600 mb-1">Beleške</p><p className="text-xs">{detailItem.notes}</p></div>}
+              <div className="flex gap-2">
+                <Select value={detailItem.status} onValueChange={v => handleStatusChange(detailItem.id, v)}><SelectTrigger className="h-8 text-xs w-48"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(STATUSES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select>
+              </div>
+            </div>
+          )
+        })()}</CardContent>
+      </Card>)}
+
+      {/* Create/Edit Card */}
+      {dialogOpen && (<Card className="max-w-[600px]">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle className="text-base">{editItem ? 'Uredi dostavu' : 'Nova dostava'}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="p-3 rounded-lg border space-y-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p>
+            <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Naziv firme ili ime" className="text-xs" value={formData.senderName} onChange={e => setFormData(p => ({ ...p, senderName: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.senderPhone} onChange={e => setFormData(p => ({ ...p, senderPhone: e.target.value }))} /></div>
+              <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div className="grid gap-2"><Label className="text-xs">Adresa</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.senderAddress} onChange={e => setFormData(p => ({ ...p, senderAddress: e.target.value }))} /></div>
+          </div>
+          <div className="p-3 rounded-lg border space-y-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p>
+            <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Ime primaoca" className="text-xs" value={formData.recipientName} onChange={e => setFormData(p => ({ ...p, recipientName: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.recipientPhone} onChange={e => setFormData(p => ({ ...p, recipientPhone: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Adresa *</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.recipientAddress} onChange={e => setFormData(p => ({ ...p, recipientAddress: e.target.value }))} /></div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.weight || ''} onChange={e => setFormData(p => ({ ...p, weight: Number(e.target.value) }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">Dimenzije</Label><Input placeholder="40x30x20 cm" className="text-xs" value={formData.dimensions} onChange={e => setFormData(p => ({ ...p, dimensions: e.target.value }))} /></div>
+            <div className="grid gap-2"><Label className="text-xs">COD (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.codAmount || ''} onChange={e => setFormData(p => ({ ...p, codAmount: Number(e.target.value) }))} /></div>
+          </div>
+          <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Posebne instrukcije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
+          <div className="flex gap-2 pt-2"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }

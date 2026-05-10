@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+// Dialog removed - converted to inline Card
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Trash2, Pencil, Eye, Users, Monitor, School, MapPin } from 'lucide-react'
+import { Plus, Search, Trash2, Pencil, Eye, Users, Monitor, School, MapPin, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/helpers'
 
@@ -252,10 +252,15 @@ export function Classroom() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!detailId} onOpenChange={() => setDetailId(null)}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader><DialogTitle>Detalji učionice</DialogTitle></DialogHeader>
-          {detailItem && (
+      {!!detailId && detailItem && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDetailId(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle>Detalji učionice</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -283,25 +288,35 @@ export function Classroom() {
               </div>
               {detailItem.notes && <div className="p-2 rounded-lg bg-muted/50"><div className="text-xs text-muted-foreground mb-1">Napomene</div><div className="text-xs">{detailItem.notes}</div></div>}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>{editItem ? 'Uredi učionicu' : 'Nova učionica'}</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'available'} onValueChange={v => setForm({ ...form, status: v as Classroom['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">Slobodna</SelectItem><SelectItem value="occupied">Zauzeta</SelectItem><SelectItem value="maintenance">Održavanje</SelectItem><SelectItem value="reserved">Rezervisana</SelectItem></SelectContent></Select></div>
-              <div className="grid gap-2"><Label className="text-xs">Kapacitet</Label><Input className="text-xs" type="number" value={form.capacity || ''} onChange={e => setForm({ ...form, capacity: Number(e.target.value) })} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Odgovoran</Label><Input className="text-xs" value={form.responsible || ''} onChange={e => setForm({ ...form, responsible: e.target.value })} /></div>
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle>{editItem ? 'Uredi učionicu' : 'Nova učionica'}</CardTitle>
             </div>
-            <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button><Button size="sm" onClick={handleSave}>Sačuvaj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2"><Label className="text-xs">Naziv *</Label><Input className="text-xs" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Status</Label><Select value={form.status || 'available'} onValueChange={v => setForm({ ...form, status: v as Classroom['status'] })}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="available">Slobodna</SelectItem><SelectItem value="occupied">Zauzeta</SelectItem><SelectItem value="maintenance">Održavanje</SelectItem><SelectItem value="reserved">Rezervisana</SelectItem></SelectContent></Select></div>
+                <div className="grid gap-2"><Label className="text-xs">Kapacitet</Label><Input className="text-xs" type="number" value={form.capacity || ''} onChange={e => setForm({ ...form, capacity: Number(e.target.value) })} /></div>
+                <div className="grid gap-2"><Label className="text-xs">Odgovoran</Label><Input className="text-xs" value={form.responsible || ''} onChange={e => setForm({ ...form, responsible: e.target.value })} /></div>
+              </div>
+              <div className="grid gap-2"><Label className="text-xs">Napomene</Label><Input className="text-xs" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button size="sm" onClick={handleSave}>Sačuvaj</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

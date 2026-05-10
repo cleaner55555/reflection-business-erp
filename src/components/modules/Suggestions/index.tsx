@@ -9,13 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import {
-  Plus, Search, Eye, Trash2, RefreshCw,
+  Plus, Search, Eye, Trash2, RefreshCw, ArrowLeft,
   CheckCircle2, Clock, AlertTriangle, BarChart3, CalendarDays, Users,
   Star, TrendingUp, Lightbulb, MessageSquare, ChevronRight, Filter,
   ThumbsUp, ThumbsDown, Send
@@ -945,59 +945,54 @@ export function Suggestions() {
         </TabsContent>
       </Tabs>
 
-      {/* ===== CREATE DIALOG ===== */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Lightbulb className="h-5 w-5" /> Novi predlog</DialogTitle>
-            <DialogDescription>Podelite svoju ideju za poboljšanje poslovanja kompanije</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
+      {/* ===== CREATE FORM ===== */}
+      {createOpen && (<Card className="max-w-lg">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCreateOpen(false)}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base flex items-center gap-2"><Lightbulb className="h-5 w-5" /> Novi predlog</CardTitle></div><p className="text-xs text-muted-foreground mt-1">Podelite svoju ideju za poboljšanje poslovanja kompanije</p></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Naslov *</Label>
+            <Input placeholder="Kratak opis predloga..." value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Detaljan opis *</Label>
+            <Textarea placeholder="Opišite predlog u detaljima, uključujući problem i predloženo rešenje..." rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Naslov *</Label>
-              <Input placeholder="Kratak opis predloga..." value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <Label>Kategorija</Label>
+              <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label>Detaljan opis *</Label>
-              <Textarea placeholder="Opišite predlog u detaljima, uključujući problem i predloženo rešenje..." rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Kategorija</Label>
-                <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(CATEGORY_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Prioritet</Label>
-                <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PRIORITY_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Procenjena godišnja ušteda (RSD)</Label>
-              <Input type="number" placeholder="npr. 500000" value={form.estimatedSaving} onChange={(e) => setForm({ ...form, estimatedSaving: e.target.value })} />
+              <Label>Prioritet</Label>
+              <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PRIORITY_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <DialogFooter>
+          <div className="space-y-2">
+            <Label>Procenjena godišnja ušteda (RSD)</Label>
+            <Input type="number" placeholder="npr. 500000" value={form.estimatedSaving} onChange={(e) => setForm({ ...form, estimatedSaving: e.target.value })} />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate} disabled={!form.title.trim() || !form.description.trim()}>
               <Send className="h-4 w-4 mr-1" /> Pošalji predlog
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
 
-      {/* ===== DETAIL DIALOG ===== */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      {/* ===== DETAIL VIEW ===== */}
+      {detailOpen && (<Card className="max-w-2xl">
+        <CardContent className="max-h-[85vh] overflow-y-auto">
           {selectedSuggestion && (() => {
             const s = selectedSuggestion
             const sc = STATUS_CONFIG[s.status]
@@ -1007,21 +1002,22 @@ export function Suggestions() {
             const approvalPct = totalVotes > 0 ? Math.round((s.votesFor / totalVotes) * 100) : 0
             return (
               <>
-                <DialogHeader>
+                <CardHeader className="px-0 pt-0">
                   <div className="flex items-center gap-2 flex-wrap">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
                     <Badge variant="outline" className={`text-xs ${sc?.color}`}>{sc?.icon} {sc?.label}</Badge>
                     <Badge variant="outline" className={`text-xs ${cc?.bgColor} ${cc?.color}`}>{cc?.label}</Badge>
                     <Badge variant="outline" className={`text-xs ${pc?.color}`}>{pc?.label}</Badge>
                   </div>
-                  <DialogTitle className="text-lg">{s.title}</DialogTitle>
-                  <DialogDescription>
+                  <CardTitle className="text-lg">{s.title}</CardTitle>
+                  <p className="text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Users className="h-3 w-3" />{s.authorName}</span>
                     <span className="mx-2">·</span>
                     <span>{s.authorDept}</span>
                     <span className="mx-2">·</span>
                     <span>{formatDate(s.createdAt)}</span>
-                  </DialogDescription>
-                </DialogHeader>
+                  </p>
+                </CardHeader>
                 <div className="space-y-4">
                   <div>
                     <h4 className="text-sm font-medium mb-2">Opis</h4>
@@ -1109,27 +1105,22 @@ export function Suggestions() {
               </>
             )
           })()}
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>)}
 
-      {/* ===== COMMENT DIALOG ===== */}
-      <Dialog open={commentOpen} onOpenChange={setCommentOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5" /> Dodaj komentar</DialogTitle>
-            <DialogDescription>{commentingSuggestion?.title}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Textarea placeholder="Napišite vaš komentar..." rows={4} value={commentText} onChange={(e) => setCommentText(e.target.value)} />
-          </div>
-          <DialogFooter>
+      {/* ===== COMMENT FORM ===== */}
+      {commentOpen && (<Card className="max-w-md">
+        <CardHeader><div className="flex items-center gap-2"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setCommentOpen(false); setCommentText('') }}><ArrowLeft className="h-4 w-4" /></Button><CardTitle className="text-base flex items-center gap-2"><MessageSquare className="h-5 w-5" /> Dodaj komentar</CardTitle></div><p className="text-xs text-muted-foreground mt-1">{commentingSuggestion?.title}</p></CardHeader>
+        <CardContent className="space-y-4">
+          <Textarea placeholder="Napišite vaš komentar..." rows={4} value={commentText} onChange={(e) => setCommentText(e.target.value)} />
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => { setCommentOpen(false); setCommentText('') }}>Otkaži</Button>
             <Button onClick={handleAddComment} disabled={!commentText.trim()}>
               <Send className="h-4 w-4 mr-1" /> Pošalji
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </CardContent>
+      </Card>)}
     </div>
   )
 }

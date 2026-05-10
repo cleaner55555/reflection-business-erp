@@ -9,9 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -24,7 +21,7 @@ import {
 import {
   Calendar, MapPin, Users, Ticket, DollarSign, BarChart3, TrendingUp,
   Plus, Search, Eye, Trash2, Edit3, RefreshCw, CheckCircle2, Clock,
-  QrCode, Building2, Star, UserCheck, UserX, Mail, XCircle, ChevronRight,
+  QrCode, Building2, Star, UserCheck, UserX, Mail, XCircle, ChevronRight, ArrowLeft,
 } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -736,77 +733,70 @@ export function Events() {
           </div>
         )}
 
-        {/* Event Detail Dialog */}
-        <Dialog open={eventDetailOpen} onOpenChange={setEventDetailOpen}>
-          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{t('events.eventDetails')}</DialogTitle>
-            </DialogHeader>
-            {selectedEvent && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <StatusBadge statusKey={t(TYPE_KEYS[selectedEvent.type])} colorMap={TYPE_COLORS} />
-                  <StatusBadge statusKey={t(STATUS_KEYS[selectedEvent.status])} colorMap={STATUS_COLORS} />
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><span className="text-muted-foreground">{t('events.startDate')}:</span> {selectedEvent.startDate}</div>
-                  <div><span className="text-muted-foreground">{t('events.endDate')}:</span> {selectedEvent.endDate}</div>
-                  <div><span className="text-muted-foreground">{t('events.startTime')}:</span> {selectedEvent.startTime}</div>
-                  <div><span className="text-muted-foreground">{t('events.endTime')}:</span> {selectedEvent.endTime}</div>
-                  <div><span className="text-muted-foreground">{t('events.venueCol')}:</span> {selectedEvent.venue}</div>
-                  <div><span className="text-muted-foreground">{t('events.organizer')}:</span> {selectedEvent.organizer}</div>
-                  <div><span className="text-muted-foreground">{t('events.capacityCol')}:</span> {selectedEvent.registered}/{selectedEvent.capacity}</div>
-                  <div><span className="text-muted-foreground">{t('events.revenueCol')}:</span> {formatRSD(selectedEvent.registered * selectedEvent.price)}</div>
-                </div>
-                {selectedEvent.description && (
-                  <p className="text-sm text-muted-foreground">{selectedEvent.description}</p>
-                )}
+        {eventDetailOpen && selectedEvent && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('events.eventDetails')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setEventDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent className="max-h-[80vh] overflow-y-auto">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <StatusBadge statusKey={t(TYPE_KEYS[selectedEvent.type])} colorMap={TYPE_COLORS} />
+                <StatusBadge statusKey={t(STATUS_KEYS[selectedEvent.status])} colorMap={STATUS_COLORS} />
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div><span className="text-muted-foreground">{t('events.startDate')}:</span> {selectedEvent.startDate}</div>
+                <div><span className="text-muted-foreground">{t('events.endDate')}:</span> {selectedEvent.endDate}</div>
+                <div><span className="text-muted-foreground">{t('events.startTime')}:</span> {selectedEvent.startTime}</div>
+                <div><span className="text-muted-foreground">{t('events.endTime')}:</span> {selectedEvent.endTime}</div>
+                <div><span className="text-muted-foreground">{t('events.venueCol')}:</span> {selectedEvent.venue}</div>
+                <div><span className="text-muted-foreground">{t('events.organizer')}:</span> {selectedEvent.organizer}</div>
+                <div><span className="text-muted-foreground">{t('events.capacityCol')}:</span> {selectedEvent.registered}/{selectedEvent.capacity}</div>
+                <div><span className="text-muted-foreground">{t('events.revenueCol')}:</span> {formatRSD(selectedEvent.registered * selectedEvent.price)}</div>
+              </div>
+              {selectedEvent.description && (
+                <p className="text-sm text-muted-foreground">{selectedEvent.description}</p>
+              )}
 
-                {/* Status workflow buttons */}
-                {selectedEvent.status === 'draft' && (
-                  <Button size="sm" onClick={() => { changeEventStatus(selectedEvent.id, 'published'); setSelectedEvent({ ...selectedEvent, status: 'published' }) }}>
-                    <CheckCircle2 className="h-4 w-4 mr-1" /> {t('events.statusPublished')}
+              {/* Status workflow buttons */}
+              {selectedEvent.status === 'draft' && (
+                <Button size="sm" onClick={() => { changeEventStatus(selectedEvent.id, 'published'); setSelectedEvent({ ...selectedEvent, status: 'published' }) }}>
+                  <CheckCircle2 className="h-4 w-4 mr-1" /> {t('events.statusPublished')}
+                </Button>
+              )}
+              {selectedEvent.status === 'published' && (
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => { changeEventStatus(selectedEvent.id, 'completed'); setSelectedEvent({ ...selectedEvent, status: 'completed' }) }}>
+                    <CheckCircle2 className="h-4 w-4 mr-1" /> {t('events.statusCompleted')}
                   </Button>
-                )}
-                {selectedEvent.status === 'published' && (
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => { changeEventStatus(selectedEvent.id, 'completed'); setSelectedEvent({ ...selectedEvent, status: 'completed' }) }}>
-                      <CheckCircle2 className="h-4 w-4 mr-1" /> {t('events.statusCompleted')}
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => { changeEventStatus(selectedEvent.id, 'cancelled'); setSelectedEvent({ ...selectedEvent, status: 'cancelled' }) }}>
-                      <XCircle className="h-4 w-4 mr-1" /> {t('events.statusCancelled')}
-                    </Button>
-                  </div>
-                )}
+                  <Button size="sm" variant="destructive" onClick={() => { changeEventStatus(selectedEvent.id, 'cancelled'); setSelectedEvent({ ...selectedEvent, status: 'cancelled' }) }}>
+                    <XCircle className="h-4 w-4 mr-1" /> {t('events.statusCancelled')}
+                  </Button>
+                </div>
+              )}
 
-                {/* Registration list */}
-                <div className="border-t pt-4">
-                  <h4 className="text-sm font-semibold mb-3">{t('events.registrationList')}</h4>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {getRegListForEvent(selectedEvent.id).map((r) => (
-                      <div key={r.id} className="flex items-center justify-between py-1.5 border-b last:border-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">{r.attendee}</span>
-                          <Badge variant="outline" className={`text-xs ${REG_STATUS_COLORS[r.status]}`}>
-                            {t(REG_STATUS_KEYS[r.status])}
-                          </Badge>
-                        </div>
-                        <span className="text-xs text-muted-foreground">{r.ticketType}</span>
+              {/* Registration list */}
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-semibold mb-3">{t('events.registrationList')}</h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {getRegListForEvent(selectedEvent.id).map((r) => (
+                    <div key={r.id} className="flex items-center justify-between py-1.5 border-b last:border-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{r.attendee}</span>
+                        <Badge variant="outline" className={`text-xs ${REG_STATUS_COLORS[r.status]}`}>
+                          {t(REG_STATUS_KEYS[r.status])}
+                        </Badge>
                       </div>
-                    ))}
-                  </div>
+                      <span className="text-xs text-muted-foreground">{r.ticketType}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
+            </div>
+          </CardContent>
+        </Card>)}
 
-        {/* Create/Edit Event Dialog */}
-        <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
-          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{isEditing ? t('events.editEvent') : t('events.newEvent')}</DialogTitle>
-            </DialogHeader>
+        {/* Create/Edit Event Form */}
+        {eventDialogOpen && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{isEditing ? t('events.editEvent') : t('events.newEvent')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setEventDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent className="max-h-[80vh] overflow-y-auto">
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('events.eventTitle')}</Label>
@@ -879,12 +869,12 @@ export function Events() {
                 <Textarea value={eventForm.notes} onChange={(e) => setEventForm({ ...eventForm, notes: e.target.value })} rows={2} />
               </div>
             </div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setEventDialogOpen(false)}>{t('common.cancel')}</Button>
               <Button onClick={saveEvent}>{t('common.save')}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          </CardContent>
+        </Card>)}
       </div>
     )
   }
@@ -1029,12 +1019,10 @@ export function Events() {
           </div>
         )}
 
-        {/* Venue Dialog */}
-        <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
-          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{isEditing ? t('events.editVenue') : t('events.newVenue')}</DialogTitle>
-            </DialogHeader>
+        {/* Venue Form */}
+        {venueDialogOpen && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{isEditing ? t('events.editVenue') : t('events.newVenue')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setVenueDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent className="max-h-[80vh] overflow-y-auto">
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('events.venueName')}</Label>
@@ -1071,12 +1059,12 @@ export function Events() {
                 </div>
               </div>
             </div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setVenueDialogOpen(false)}>{t('common.cancel')}</Button>
               <Button onClick={saveVenue}>{t('common.save')}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          </CardContent>
+        </Card>)}
       </div>
     )
   }
@@ -1146,12 +1134,10 @@ export function Events() {
           </div>
         )}
 
-        {/* Ticket Dialog placeholder */}
-        <Dialog open={ticketDialogOpen} onOpenChange={setTicketDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>{t('events.newTicket')}</DialogTitle>
-            </DialogHeader>
+        {/* Ticket Form */}
+        {ticketDialogOpen && (<Card>
+          <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('events.newTicket')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setTicketDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('events.ticketTypeCol')}</Label>
@@ -1175,12 +1161,12 @@ export function Events() {
                 </div>
               </div>
             </div>
-            <DialogFooter>
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setTicketDialogOpen(false)}>{t('common.cancel')}</Button>
               <Button onClick={() => setTicketDialogOpen(false)}>{t('common.save')}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          </CardContent>
+        </Card>)}
       </div>
     )
   }

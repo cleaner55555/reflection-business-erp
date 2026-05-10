@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +20,8 @@ import {
   Plus, Search, Eye, Trash2, Edit3, RefreshCw, Filter,
   CheckCircle2, Clock, XCircle, AlertTriangle, FileText,
   TrendingUp, ArrowRight, CalendarDays, Shield, ShieldCheck,
-  BarChart3, Printer, Download, Package, Wrench, ChevronRight
+  BarChart3, Printer, Download, Package, Wrench, ChevronRight,
+  ArrowLeft
 } from 'lucide-react'
 import { formatDate } from '@/lib/helpers'
 import { toast } from 'sonner'
@@ -462,15 +462,15 @@ export function Warranty() {
       </Tabs>
 
       {/* DETAIL DIALOG */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh]">
+      {detailOpen && (
+        <Card>
           <ScrollArea className="max-h-[75vh] pr-4">
             {selected && (
               <div className="space-y-6">
-                <DialogHeader>
-                  <DialogTitle className="text-lg">{selected.number} — {selected.productName}</DialogTitle>
-                  <DialogDescription>{selected.productCode} · S/N: {selected.serialNumber || 'N/A'}</DialogDescription>
-                </DialogHeader>
+                <CardHeader>
+                  <CardTitle className="text-lg">{selected.number} — {selected.productName}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{selected.productCode} · S/N: {selected.serialNumber || 'N/A'}</p>
+                </CardHeader>
 
                 <div className="flex gap-2">
                   <Badge variant="outline" className={STATUS_CONFIG[selected.status]?.color}>{STATUS_CONFIG[selected.status]?.label}</Badge>
@@ -513,13 +513,13 @@ export function Warranty() {
               </div>
             )}
           </ScrollArea>
-        </DialogContent>
-      </Dialog>
+        </Card>
+      )}
 
       {/* CREATE DIALOG */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova garancija</DialogTitle><DialogDescription>Registrujte novu garanciju</DialogDescription></DialogHeader>
+      {createOpen && (
+        <Card>
+          <CardHeader><CardTitle>Nova garancija</CardTitle><p className="text-sm text-muted-foreground">Registrujte novu garanciju</p></CardHeader>
           <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2"><Label>Proizvod *</Label><Input value={form.productName} onChange={(e) => setForm({ ...form, productName: e.target.value })} /></div>
@@ -557,9 +557,9 @@ export function Warranty() {
             </div>
             <div className="space-y-2"><Label>Pokriće</Label><Textarea rows={2} value={form.coverageDescription} onChange={(e) => setForm({ ...form, coverageDescription: e.target.value })} /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button><Button onClick={handleCreate} disabled={!form.productName.trim()}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex justify-end gap-2 pt-4"><Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button><Button onClick={handleCreate} disabled={!form.productName.trim()}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button></div>
+        </Card>
+      )}
     </div>
   )
 }

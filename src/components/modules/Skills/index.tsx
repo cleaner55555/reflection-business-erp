@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,7 +22,7 @@ import {
   TrendingUp, AlertCircle, Target, BookOpen, Star,
   Lightbulb, ChevronRight, Zap, Shield, Code, Database,
   Globe, Palette, Brain, Wrench, UserCheck, BarChart2,
-  ListChecks, FileCheck
+  ListChecks, FileCheck, ArrowLeft
 } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -961,127 +960,98 @@ export function Skills() {
         </TabsContent>
       </Tabs>
 
-      {/* ─── Create Skill Dialog ──────────────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nova veština</DialogTitle>
-            <DialogDescription>Dodajte novu veštinu u bazu</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Naziv veštine</Label><Input value={skillForm.name} onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })} placeholder="Naziv veštine" /></div>
-            <div className="space-y-2">
-              <Label>Kategorija</Label>
-              <Select value={skillForm.category} onValueChange={(v) => setSkillForm({ ...skillForm, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {skillCategories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2"><Label>Opis</Label><Textarea value={skillForm.description} onChange={(e) => setSkillForm({ ...skillForm, description: e.target.value })} rows={3} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateSkill}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Assign Skill Dialog ──────────────────────────────────────────── */}
-      <Dialog open={empSkillDialogOpen} onOpenChange={setEmpSkillDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Dodeli veštinu</DialogTitle>
-            <DialogDescription>Dodelite veštinu zaposlenom sa nivom i iskustvom</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Zaposleni</Label><Input value={empSkillForm.employeeName} onChange={(e) => setEmpSkillForm({ ...empSkillForm, employeeName: e.target.value })} placeholder="Ime zaposlenog" /></div>
-            <div className="space-y-2">
-              <Label>Veština</Label>
-              <Select value={empSkillForm.skillId} onValueChange={(v) => setEmpSkillForm({ ...empSkillForm, skillId: v })}>
-                <SelectTrigger><SelectValue placeholder="Izaberite veštinu" /></SelectTrigger>
-                <SelectContent>
-                  {skills.filter((s) => s.isActive).map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+      {/* ─── Create Skill Form ──────────────────────────────────────────── */}
+      {dialogOpen && (
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDialogOpen(false)} /> Nova veština</CardTitle>
+            <CardDescription>Dodajte novu veštinu u bazu</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2"><Label>Naziv veštine</Label><Input value={skillForm.name} onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })} placeholder="Naziv veštine" /></div>
               <div className="space-y-2">
-                <Label>Nivo (1-5)</Label>
-                <Select value={String(empSkillForm.level)} onValueChange={(v) => setEmpSkillForm({ ...empSkillForm, level: parseInt(v) })}>
+                <Label>Kategorija</Label>
+                <Select value={skillForm.category} onValueChange={(v) => setSkillForm({ ...skillForm, category: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {skillLevels.map((l) => (
-                      <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
+                    {skillCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2"><Label>Godine iskustva</Label><Input type="number" value={empSkillForm.yearsExperience} onChange={(e) => setEmpSkillForm({ ...empSkillForm, yearsExperience: parseInt(e.target.value) || 0 })} /></div>
+              <div className="space-y-2"><Label>Opis</Label><Textarea value={skillForm.description} onChange={(e) => setSkillForm({ ...skillForm, description: e.target.value })} rows={3} /></div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEmpSkillDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateEmployeeSkill}><Plus className="h-4 w-4 mr-1" /> Dodeli</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreateSkill}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ─── Certification Dialog ─────────────────────────────────────────── */}
-      <Dialog open={certDialogOpen} onOpenChange={setCertDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Novi sertifikat</DialogTitle>
-            <DialogDescription>Unesite podatke o sertifikatu zaposlenog</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2"><Label>Naziv sertifikata</Label><Input value={certForm.name} onChange={(e) => setCertForm({ ...certForm, name: e.target.value })} placeholder="Naziv sertifikata" /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Zaposleni</Label><Input value={certForm.employeeName} onChange={(e) => setCertForm({ ...certForm, employeeName: e.target.value })} placeholder="Ime" /></div>
-              <div className="space-y-2"><Label>Izdavač</Label><Input value={certForm.issuedBy} onChange={(e) => setCertForm({ ...certForm, issuedBy: e.target.value })} placeholder="Organizacija" /></div>
-            </div>
-            <div className="space-y-2">
-              <Label>Veština</Label>
-              <Select value={certForm.skillId} onValueChange={(v) => setCertForm({ ...certForm, skillId: v })}>
-                <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
-                <SelectContent>
-                  {skills.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Datum izdavanja</Label><Input type="date" value={certForm.issueDate} onChange={(e) => setCertForm({ ...certForm, issueDate: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Datum isteka</Label><Input type="date" value={certForm.expiryDate} onChange={(e) => setCertForm({ ...certForm, expiryDate: e.target.value })} /></div>
-            </div>
-            <div className="space-y-2"><Label>Broj sertifikata</Label><Input value={certForm.certificateNumber} onChange={(e) => setCertForm({ ...certForm, certificateNumber: e.target.value })} placeholder="Br. sertifikata" /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCertDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateCertification}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ─── Assessment Dialog ────────────────────────────────────────────── */}
-      <Dialog open={assessDialogOpen} onOpenChange={setAssessDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Nova procena</DialogTitle>
-            <DialogDescription>Procenite nivo veštine zaposlenog</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Zaposleni</Label><Input value={assessForm.employeeName} onChange={(e) => setAssessForm({ ...assessForm, employeeName: e.target.value })} placeholder="Ime" /></div>
+      {/* ─── Assign Skill Form ──────────────────────────────────────────── */}
+      {empSkillDialogOpen && (
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setEmpSkillDialogOpen(false)} /> Dodeli veštinu</CardTitle>
+            <CardDescription>Dodelite veštinu zaposlenom sa nivom i iskustvom</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2"><Label>Zaposleni</Label><Input value={empSkillForm.employeeName} onChange={(e) => setEmpSkillForm({ ...empSkillForm, employeeName: e.target.value })} placeholder="Ime zaposlenog" /></div>
               <div className="space-y-2">
                 <Label>Veština</Label>
-                <Select value={assessForm.skillId} onValueChange={(v) => setAssessForm({ ...assessForm, skillId: v })}>
+                <Select value={empSkillForm.skillId} onValueChange={(v) => setEmpSkillForm({ ...empSkillForm, skillId: v })}>
+                  <SelectTrigger><SelectValue placeholder="Izaberite veštinu" /></SelectTrigger>
+                  <SelectContent>
+                    {skills.filter((s) => s.isActive).map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nivo (1-5)</Label>
+                  <Select value={String(empSkillForm.level)} onValueChange={(v) => setEmpSkillForm({ ...empSkillForm, level: parseInt(v) })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {skillLevels.map((l) => (
+                        <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Godine iskustva</Label><Input type="number" value={empSkillForm.yearsExperience} onChange={(e) => setEmpSkillForm({ ...empSkillForm, yearsExperience: parseInt(e.target.value) || 0 })} /></div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => setEmpSkillDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreateEmployeeSkill}><Plus className="h-4 w-4 mr-1" /> Dodeli</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ─── Certification Form ─────────────────────────────────────────── */}
+      {certDialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setCertDialogOpen(false)} /> Novi sertifikat</CardTitle>
+            <CardDescription>Unesite podatke o sertifikatu zaposlenog</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2"><Label>Naziv sertifikata</Label><Input value={certForm.name} onChange={(e) => setCertForm({ ...certForm, name: e.target.value })} placeholder="Naziv sertifikata" /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>Zaposleni</Label><Input value={certForm.employeeName} onChange={(e) => setCertForm({ ...certForm, employeeName: e.target.value })} placeholder="Ime" /></div>
+                <div className="space-y-2"><Label>Izdavač</Label><Input value={certForm.issuedBy} onChange={(e) => setCertForm({ ...certForm, issuedBy: e.target.value })} placeholder="Organizacija" /></div>
+              </div>
+              <div className="space-y-2">
+                <Label>Veština</Label>
+                <Select value={certForm.skillId} onValueChange={(v) => setCertForm({ ...certForm, skillId: v })}>
                   <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
                   <SelectContent>
                     {skills.map((s) => (
@@ -1090,45 +1060,82 @@ export function Skills() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Trenutni nivo</Label>
-                <Select value={String(assessForm.previousLevel)} onValueChange={(v) => setAssessForm({ ...assessForm, previousLevel: parseInt(v) })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {skillLevels.map((l) => (
-                      <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>Datum izdavanja</Label><Input type="date" value={certForm.issueDate} onChange={(e) => setCertForm({ ...certForm, issueDate: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Datum isteka</Label><Input type="date" value={certForm.expiryDate} onChange={(e) => setCertForm({ ...certForm, expiryDate: e.target.value })} /></div>
               </div>
-              <div className="space-y-2">
-                <Label>Novi nivo</Label>
-                <Select value={String(assessForm.newLevel)} onValueChange={(v) => setAssessForm({ ...assessForm, newLevel: parseInt(v) })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {skillLevels.map((l) => (
-                      <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <div className="space-y-2"><Label>Broj sertifikata</Label><Input value={certForm.certificateNumber} onChange={(e) => setCertForm({ ...certForm, certificateNumber: e.target.value })} placeholder="Br. sertifikata" /></div>
             </div>
-            <div className="space-y-2"><Label>Napomene</Label><Textarea value={assessForm.notes} onChange={(e) => setAssessForm({ ...assessForm, notes: e.target.value })} rows={3} placeholder="Napomene o proceni..." /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAssessDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateAssessment}><Plus className="h-4 w-4 mr-1" /> Sačuvaj procenu</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => setCertDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreateCertification}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ─── Skill Detail Dialog ──────────────────────────────────────────── */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji veštine</DialogTitle></DialogHeader>
-          {selected && (
+      {/* ─── Assessment Form ────────────────────────────────────────────── */}
+      {assessDialogOpen && (
+        <Card className="max-w-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setAssessDialogOpen(false)} /> Nova procena</CardTitle>
+            <CardDescription>Procenite nivo veštine zaposlenog</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>Zaposleni</Label><Input value={assessForm.employeeName} onChange={(e) => setAssessForm({ ...assessForm, employeeName: e.target.value })} placeholder="Ime" /></div>
+                <div className="space-y-2">
+                  <Label>Veština</Label>
+                  <Select value={assessForm.skillId} onValueChange={(v) => setAssessForm({ ...assessForm, skillId: v })}>
+                    <SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger>
+                    <SelectContent>
+                      {skills.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Trenutni nivo</Label>
+                  <Select value={String(assessForm.previousLevel)} onValueChange={(v) => setAssessForm({ ...assessForm, previousLevel: parseInt(v) })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {skillLevels.map((l) => (
+                        <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Novi nivo</Label>
+                  <Select value={String(assessForm.newLevel)} onValueChange={(v) => setAssessForm({ ...assessForm, newLevel: parseInt(v) })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {skillLevels.map((l) => (
+                        <SelectItem key={l.id} value={String(l.value)}>{l.value} - {l.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2"><Label>Napomene</Label><Textarea value={assessForm.notes} onChange={(e) => setAssessForm({ ...assessForm, notes: e.target.value })} rows={3} placeholder="Napomene o proceni..." /></div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+              <Button variant="outline" onClick={() => setAssessDialogOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreateAssessment}><Plus className="h-4 w-4 mr-1" /> Sačuvaj procenu</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ─── Skill Detail Card ──────────────────────────────────────────── */}
+      {detailOpen && selected && (
+        <Card className="max-w-lg">
+          <CardHeader><CardTitle className="flex items-center gap-2"><ArrowLeft className="h-4 w-4 cursor-pointer" onClick={() => setDetailOpen(false)} /> Detalji veštine</CardTitle></CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: (getCategoryInfo(selected.category)?.color || '#000') + '20' }}>
@@ -1167,9 +1174,9 @@ export function Skills() {
                 </div>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

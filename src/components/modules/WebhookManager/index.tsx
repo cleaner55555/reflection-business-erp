@@ -9,14 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -38,6 +30,7 @@ import {
   AlertCircle,
   Copy,
   ExternalLink,
+  ArrowLeft
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
@@ -484,19 +477,19 @@ export function WebhookManager() {
 
       {/* ============ CREATE/EDIT DIALOG ============ */}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+      {dialogOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
               <Webhook className="h-5 w-5 text-primary" />
               {editingWebhook ? 'Izmeni webhook' : 'Novi webhook'}
-            </DialogTitle>
-            <DialogDescription>
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
               {editingWebhook
                 ? 'Podesite webhook za automatska obaveštenja'
                 : 'Definišite URL i događaje za automatska obaveštenja'}
-            </DialogDescription>
-          </DialogHeader>
+            </p>
+          </CardHeader>
 
           <div className="space-y-5">
             {/* Name */}
@@ -619,7 +612,7 @@ export function WebhookManager() {
             </div>
           </div>
 
-          <DialogFooter>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Otkaži
             </Button>
@@ -627,9 +620,9 @@ export function WebhookManager() {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               {editingWebhook ? 'Sačuvaj' : 'Kreiraj'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </Card>
+      )}
 
       {/* ============ DELETE CONFIRMATION ============ */}
 

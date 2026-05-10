@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+// Dialog removed - converted to inline Card
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -538,24 +538,39 @@ function PipelineTab() {
             </div>
           )}
 
-          {/* Deal Detail Dialog */}
-          <Dialog open={!!selectedDeal} onOpenChange={() => setSelectedDeal(null)}>
-            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-              {selectedDeal && <DealDetail deal={selectedDeal} contacts={contacts} partners={partners} onClose={() => setSelectedDeal(null)} onEdit={() => { const d = selectedDeal; setSelectedDeal(null); handleEdit(d) }} onDelete={() => { setSelectedDeal(null); handleDelete(selectedDeal.id) }} onMove={(stage) => { setSelectedDeal(null); moveDeal(selectedDeal.id, stage) }} onRefresh={fetchDeals} />}
-            </DialogContent>
-          </Dialog>
+          {/* Deal Detail */}
+          {!!selectedDeal && (
+            <Card className="max-w-lg max-h-[85vh] overflow-y-auto">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedDeal(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle className="text-base font-semibold">{t('crm.dealDetail')}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <DealDetail deal={selectedDeal} contacts={contacts} partners={partners} onClose={() => setSelectedDeal(null)} onEdit={() => { const d = selectedDeal; setSelectedDeal(null); handleEdit(d) }} onDelete={() => { setSelectedDeal(null); handleDelete(selectedDeal.id) }} onMove={(stage) => { setSelectedDeal(null); moveDeal(selectedDeal.id, stage) }} onRefresh={fetchDeals} />
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Lost Reason Dialog */}
-          <Dialog open={!!lostDialog} onOpenChange={() => setLostDialog(null)}>
-            <DialogContent className="max-w-sm">
-              <DialogHeader><DialogTitle>{t('crm.lostReason')}</DialogTitle></DialogHeader>
-              <Input placeholder={t('crm.lostReasonPlaceholder')} value={lostDialog?.reason || ''} onChange={(e) => setLostDialog({ dealId: lostDialog?.dealId || '', reason: e.target.value })} />
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setLostDialog(null)}>{t('common.cancel')}</Button>
-                <Button variant="destructive" onClick={confirmLost}>{t('crm.lost')}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          {/* Lost Reason */}
+          {!!lostDialog && (
+            <Card className="max-w-sm">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Button variant="ghost" size="icon" onClick={() => setLostDialog(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                  <CardTitle className="text-base font-semibold">{t('crm.lostReason')}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Input placeholder={t('crm.lostReasonPlaceholder')} value={lostDialog?.reason || ''} onChange={(e) => setLostDialog({ dealId: lostDialog?.dealId || '', reason: e.target.value })} />
+                <div className="flex gap-2 mt-4">
+                  <Button variant="outline" onClick={() => setLostDialog(null)}>{t('common.cancel')}</Button>
+                  <Button variant="destructive" onClick={confirmLost}>{t('crm.lost')}</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>
@@ -1095,10 +1110,16 @@ function KontaktiTab() {
         </div>
       )}
 
-      {/* Contact Detail Dialog */}
-      <Dialog open={!!selectedContact} onOpenChange={() => setSelectedContact(null)}>
-        <DialogContent className="max-w-md">
-          {selectedContact && (
+      {/* Contact Detail */}
+      {!!selectedContact && (
+        <Card className="max-w-md">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setSelectedContact(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="text-base font-semibold">{tc(`${selectedContact.firstName} ${selectedContact.lastName}`)}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold ${avatarColor(selectedContact.firstName + selectedContact.lastName)}`}>{initials(selectedContact.firstName, selectedContact.lastName)}</div>
@@ -1126,9 +1147,9 @@ function KontaktiTab() {
                 {selectedContact.notes && <div className="mt-2 p-2 rounded bg-muted/50"><p className="text-muted-foreground">{selectedContact.notes}</p></div>}
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

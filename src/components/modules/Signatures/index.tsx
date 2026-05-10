@@ -8,14 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import {
   PenTool, Plus, Search, Eye, Trash2, Edit3, RefreshCw,
   CheckCircle2, Clock, BarChart3, FileSignature,
-  TrendingUp, AlertCircle, Users, ArrowRight
+  TrendingUp, AlertCircle, Users, ArrowRight, ArrowLeft
 } from 'lucide-react'
 
 interface SigningRequest {
@@ -317,9 +316,14 @@ export function Signatures() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Novi zahtev za potpis</DialogTitle></DialogHeader>
+      {/* CREATE FORM */}
+      {dialogOpen && (
+        <Card className="max-w-2xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Novi zahtev za potpis</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Naslov dokumenta</Label>
@@ -354,16 +358,22 @@ export function Signatures() {
               <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleCreate}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Detalji zahteva</DialogTitle></DialogHeader>
+      {/* DETAIL VIEW */}
+      {detailOpen && (
+        <Card className="max-w-2xl">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <CardTitle>Detalji zahteva</CardTitle>
+          </CardHeader>
+          <CardContent>
           {selected && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -380,8 +390,9 @@ export function Signatures() {
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

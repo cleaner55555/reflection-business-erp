@@ -9,14 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import {
-  Plus, Search, Eye, Trash2, RefreshCw,
+  Plus, Search, Eye, Trash2, RefreshCw, ArrowLeft,
   CheckCircle2, Clock, XCircle, AlertTriangle,
   TrendingUp, CalendarDays, Users, UserCog, BarChart3,
   ChevronLeft, ChevronRight, Copy, Palette
@@ -486,34 +485,41 @@ export function WorkforcePlanner() {
         </TabsContent>
       </Tabs>
 
-      {/* ===== DETAIL DIALOG ===== */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          {selectedEmployee && (
-            <div className="space-y-4">
-              <DialogHeader>
-                <DialogTitle>{selectedEmployee.name}</DialogTitle>
-                <DialogDescription>{selectedEmployee.department} · {selectedEmployee.position}</DialogDescription>
-              </DialogHeader>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Max sati</p><p className="text-sm font-medium">{selectedEmployee.maxHours}h</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Trenutno</p><p className={`text-sm font-bold ${selectedEmployee.currentHours > selectedEmployee.maxHours ? 'text-red-600' : ''}`}>{selectedEmployee.currentHours}h</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Satnica</p><p className="text-sm font-medium">{formatCurrency(selectedEmployee.hourlyRate)}</p></div>
-                <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Dostupnost</p><p className="text-sm font-medium">{selectedEmployee.availability === 'full' ? 'Puno radno vreme' : 'Part-time'}</p></div>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground mb-1">Veštine</p><div className="flex flex-wrap gap-1">{selectedEmployee.skills.length > 0 ? selectedEmployee.skills.map((sk) => <Badge key={sk} variant="outline" className="text-xs">{sk}</Badge>) : <span className="text-xs text-muted-foreground">Nije definisano</span>}</div></div>
-              <div><p className="text-sm font-medium mb-2">Smene ({getShiftsForEmployee(selectedEmployee.id).length})</p><ScrollArea className="max-h-[200px]"><div className="space-y-1">{getShiftsForEmployee(selectedEmployee.id).map((s) => { const st = SHIFT_TYPES[s.type]; return <div key={s.id} className="flex items-center justify-between p-2 rounded border text-xs"><div className="flex items-center gap-2"><Badge variant="outline" className={`text-xs ${st?.color}`}>{st?.label}</Badge><span>{formatDate(s.date)}</span><span>{s.startTime}-{s.endTime}</span><span className="text-muted-foreground">{s.location}</span></div><Badge variant="outline" className="text-xs">{s.status === 'confirmed' ? 'Potvrđena' : s.status === 'pending' ? 'Na čekanju' : 'Nacrt'}</Badge></div> })}</div></ScrollArea></div>
-              <div><p className="text-sm font-medium mb-2">Kontakt</p><p className="text-xs text-muted-foreground">{selectedEmployee.email} · {selectedEmployee.phone}</p></div>
+      {/* ===== DETAIL VIEW ===== */}
+      {detailOpen && selectedEmployee && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">{selectedEmployee.name}</CardTitle>
+              <p className="text-xs text-muted-foreground">{selectedEmployee.department} · {selectedEmployee.position}</p>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Max sati</p><p className="text-sm font-medium">{selectedEmployee.maxHours}h</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Trenutno</p><p className={`text-sm font-bold ${selectedEmployee.currentHours > selectedEmployee.maxHours ? 'text-red-600' : ''}`}>{selectedEmployee.currentHours}h</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Satnica</p><p className="text-sm font-medium">{formatCurrency(selectedEmployee.hourlyRate)}</p></div>
+              <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Dostupnost</p><p className="text-sm font-medium">{selectedEmployee.availability === 'full' ? 'Puno radno vreme' : 'Part-time'}</p></div>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground mb-1">Veštine</p><div className="flex flex-wrap gap-1">{selectedEmployee.skills.length > 0 ? selectedEmployee.skills.map((sk) => <Badge key={sk} variant="outline" className="text-xs">{sk}</Badge>) : <span className="text-xs text-muted-foreground">Nije definisano</span>}</div></div>
+            <div><p className="text-sm font-medium mb-2">Smene ({getShiftsForEmployee(selectedEmployee.id).length})</p><ScrollArea className="max-h-[200px]"><div className="space-y-1">{getShiftsForEmployee(selectedEmployee.id).map((s) => { const st = SHIFT_TYPES[s.type]; return <div key={s.id} className="flex items-center justify-between p-2 rounded border text-xs"><div className="flex items-center gap-2"><Badge variant="outline" className={`text-xs ${st?.color}`}>{st?.label}</Badge><span>{formatDate(s.date)}</span><span>{s.startTime}-{s.endTime}</span><span className="text-muted-foreground">{s.location}</span></div><Badge variant="outline" className="text-xs">{s.status === 'confirmed' ? 'Potvrđena' : s.status === 'pending' ? 'Na čekanju' : 'Nacrt'}</Badge></div> })}</div></ScrollArea></div>
+            <div><p className="text-sm font-medium mb-2">Kontakt</p><p className="text-xs text-muted-foreground">{selectedEmployee.email} · {selectedEmployee.phone}</p></div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ===== CREATE SHIFT DIALOG ===== */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Nova smena</DialogTitle><DialogDescription>Dodeli smenu zaposlenom</DialogDescription></DialogHeader>
-          <div className="space-y-4">
+      {/* ===== CREATE SHIFT FORM ===== */}
+      {createOpen && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCreateOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+            <div>
+              <CardTitle className="text-base">Nova smena</CardTitle>
+              <p className="text-xs text-muted-foreground">Dodeli smenu zaposlenom</p>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2"><Label>Zaposleni *</Label><Select value={shiftForm.employeeId} onValueChange={(v) => { const emp = employees.find((e) => e.id === v); setShiftForm({ ...shiftForm, employeeId: v, department: emp?.department || DEPARTMENTS[0] }) }}><SelectTrigger><SelectValue placeholder="Izaberite" /></SelectTrigger><SelectContent>{activeEmps.map((e) => <SelectItem key={e.id} value={e.id}>{e.name} - {e.department}</SelectItem>)}</SelectContent></Select></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2"><Label>Datum *</Label><Input type="date" value={shiftForm.date} onChange={(e) => setShiftForm({ ...shiftForm, date: e.target.value })} /></div>
@@ -528,13 +534,13 @@ export function WorkforcePlanner() {
               <div className="space-y-2"><Label>Pauza (min)</Label><Input type="number" value={shiftForm.breakMinutes} onChange={(e) => setShiftForm({ ...shiftForm, breakMinutes: e.target.value })} /></div>
             </div>
             <div className="space-y-2"><Label>Napomene</Label><Textarea rows={2} value={shiftForm.notes} onChange={(e) => setShiftForm({ ...shiftForm, notes: e.target.value })} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
-            <Button onClick={handleCreateShift} disabled={!shiftForm.employeeId || !shiftForm.date}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setCreateOpen(false)}>Otkaži</Button>
+              <Button onClick={handleCreateShift} disabled={!shiftForm.employeeId || !shiftForm.date}><Plus className="h-4 w-4 mr-1" /> Kreiraj</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

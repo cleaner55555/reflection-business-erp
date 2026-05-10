@@ -11,14 +11,6 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog'
-import {
   Table,
   TableBody,
   TableCell,
@@ -57,6 +49,7 @@ import {
   CheckCircle2,
   Calculator,
   ScanBarcode,
+  ArrowLeft,
 } from 'lucide-react'
 
 import type {
@@ -1480,265 +1473,264 @@ export function CashRegister() {
         </TabsContent>
       </Tabs>
 
-      {/* ==================== DIALOG: NEW/EDIT TRANSACTION ==================== */}
-      <Dialog open={txDialogOpen} onOpenChange={setTxDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editingTx ? 'Уреди трансакцију' : 'Нова трансакција'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingTx
-                ? 'Измените податке о трансакцији'
-                : 'Унесите податке за нову трансакцију'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Тип</Label>
-                <Select
-                  value={txForm.type}
-                  onValueChange={(val) =>
-                    setTxForm((prev) => ({ ...prev, type: val as TransactionType }))
-                  }
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TRANSACTION_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      {/* ==================== INLINE FORM: NEW/EDIT TRANSACTION ==================== */}
+      {txDialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setTxDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle>{editingTx ? 'Уреди трансакцију' : 'Нова трансакција'}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Тип</Label>
+                  <Select
+                    value={txForm.type}
+                    onValueChange={(val) =>
+                      setTxForm((prev) => ({ ...prev, type: val as TransactionType }))
+                    }
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRANSACTION_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Плаћање</Label>
+                  <Select
+                    value={txForm.paymentMethod}
+                    onValueChange={(val) =>
+                      setTxForm((prev) => ({ ...prev, paymentMethod: val as PaymentMethod }))
+                    }
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_METHODS.map((pm) => (
+                        <SelectItem key={pm.value} value={pm.value}>
+                          {pm.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Плаћање</Label>
-                <Select
-                  value={txForm.paymentMethod}
-                  onValueChange={(val) =>
-                    setTxForm((prev) => ({ ...prev, paymentMethod: val as PaymentMethod }))
-                  }
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAYMENT_METHODS.map((pm) => (
-                      <SelectItem key={pm.value} value={pm.value}>
-                        {pm.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Износ (RSD)</Label>
-              <Input
-                type="number"
-                placeholder="0.00"
-                value={txForm.amount}
-                onChange={(e) =>
-                  setTxForm((prev) => ({ ...prev, amount: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Опис</Label>
-              <Input
-                placeholder="Опис трансакције..."
-                value={txForm.description}
-                onChange={(e) =>
-                  setTxForm((prev) => ({ ...prev, description: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Партнер (име)</Label>
-              <Input
-                placeholder="Име партнера..."
-                value={txForm.partnerName}
-                onChange={(e) =>
-                  setTxForm((prev) => ({ ...prev, partnerName: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Датум</Label>
-              <Input
-                type="date"
-                value={txForm.date}
-                onChange={(e) =>
-                  setTxForm((prev) => ({ ...prev, date: e.target.value }))
-                }
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTxDialogOpen(false)}>
-              Откажи
-            </Button>
-            <Button onClick={handleSaveTransaction} disabled={!txForm.amount || !txForm.description}>
-              Сачувај
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ==================== DIALOG: NEW/EDIT PRODUCT ==================== */}
-      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editingProduct ? 'Уреди артикал' : 'Нови артикал'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingProduct
-                ? 'Измените податке о артиклу'
-                : 'Унесите податке за нови артикал'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="space-y-1">
-              <Label className="text-xs">Назив артикла *</Label>
-              <Input
-                placeholder="Унесите назив..."
-                value={productForm.name}
-                onChange={(e) =>
-                  setProductForm((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Баркод</Label>
-                <Input
-                  placeholder="8606101000"
-                  value={productForm.barcode}
-                  onChange={(e) =>
-                    setProductForm((prev) => ({ ...prev, barcode: e.target.value }))
-                  }
-                  className="font-mono"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Категорија</Label>
-                <Select
-                  value={productForm.category}
-                  onValueChange={(val) =>
-                    setProductForm((prev) => ({
-                      ...prev,
-                      category: val as ProductCategory,
-                    }))
-                  }
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRODUCT_CATEGORIES.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Цена (RSD) *</Label>
+                <Label className="text-xs">Износ (RSD)</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
-                  value={productForm.price}
+                  value={txForm.amount}
                   onChange={(e) =>
-                    setProductForm((prev) => ({ ...prev, price: e.target.value }))
+                    setTxForm((prev) => ({ ...prev, amount: e.target.value }))
                   }
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">ПДВ стопа</Label>
-                <Select
-                  value={String(productForm.pdvRate)}
-                  onValueChange={(val) =>
-                    setProductForm((prev) => ({
-                      ...prev,
-                      pdvRate: parseInt(val) as PdvRate,
-                    }))
+                <Label className="text-xs">Опис</Label>
+                <Input
+                  placeholder="Опис трансакције..."
+                  value={txForm.description}
+                  onChange={(e) =>
+                    setTxForm((prev) => ({ ...prev, description: e.target.value }))
                   }
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PDV_RATES.map((r) => (
-                      <SelectItem key={r.value} value={String(r.value)}>
-                        {r.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Јединица</Label>
-                <Select
-                  value={productForm.unit}
-                  onValueChange={(val) =>
-                    setProductForm((prev) => ({ ...prev, unit: val }))
+                <Label className="text-xs">Партнер (име)</Label>
+                <Input
+                  placeholder="Име партнера..."
+                  value={txForm.partnerName}
+                  onChange={(e) =>
+                    setTxForm((prev) => ({ ...prev, partnerName: e.target.value }))
                   }
-                >
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {UNITS.map((u) => (
-                      <SelectItem key={u} value={u}>
-                        {u}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Датум</Label>
+                <Input
+                  type="date"
+                  value={txForm.date}
+                  onChange={(e) =>
+                    setTxForm((prev) => ({ ...prev, date: e.target.value }))
+                  }
+                />
               </div>
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Залиха</Label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={productForm.stock}
-                onChange={(e) =>
-                  setProductForm((prev) => ({ ...prev, stock: e.target.value }))
-                }
-              />
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setTxDialogOpen(false)}>
+                Откажи
+              </Button>
+              <Button onClick={handleSaveTransaction} disabled={!txForm.amount || !txForm.description}>
+                Сачувај
+              </Button>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setProductDialogOpen(false)}>
-              Откажи
-            </Button>
-            <Button
-              onClick={handleSaveProduct}
-              disabled={!productForm.name || !productForm.price}
-            >
-              Сачувај
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* ==================== DIALOG: VIEW TRANSACTION DETAIL ==================== */}
-      <Dialog open={!!viewTxDialog} onOpenChange={() => setViewTxDialog(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Детаљи трансакције</DialogTitle>
-          </DialogHeader>
-          {viewTxDialog && (
-            <div className="space-y-4 py-2">
+      {/* ==================== INLINE FORM: NEW/EDIT PRODUCT ==================== */}
+      {productDialogOpen && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setProductDialogOpen(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle>{editingProduct ? 'Уреди артикал' : 'Нови артикал'}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs">Назив артикла *</Label>
+                <Input
+                  placeholder="Унесите назив..."
+                  value={productForm.name}
+                  onChange={(e) =>
+                    setProductForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Баркод</Label>
+                  <Input
+                    placeholder="8606101000"
+                    value={productForm.barcode}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({ ...prev, barcode: e.target.value }))
+                    }
+                    className="font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Категорија</Label>
+                  <Select
+                    value={productForm.category}
+                    onValueChange={(val) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        category: val as ProductCategory,
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRODUCT_CATEGORIES.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Цена (RSD) *</Label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={productForm.price}
+                    onChange={(e) =>
+                      setProductForm((prev) => ({ ...prev, price: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">ПДВ стопа</Label>
+                  <Select
+                    value={String(productForm.pdvRate)}
+                    onValueChange={(val) =>
+                      setProductForm((prev) => ({
+                        ...prev,
+                        pdvRate: parseInt(val) as PdvRate,
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PDV_RATES.map((r) => (
+                        <SelectItem key={r.value} value={String(r.value)}>
+                          {r.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Јединица</Label>
+                  <Select
+                    value={productForm.unit}
+                    onValueChange={(val) =>
+                      setProductForm((prev) => ({ ...prev, unit: val }))
+                    }
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {UNITS.map((u) => (
+                        <SelectItem key={u} value={u}>
+                          {u}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Залиха</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={productForm.stock}
+                  onChange={(e) =>
+                    setProductForm((prev) => ({ ...prev, stock: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setProductDialogOpen(false)}>
+                Откажи
+              </Button>
+              <Button
+                onClick={handleSaveProduct}
+                disabled={!productForm.name || !productForm.price}
+              >
+                Сачувај
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ==================== INLINE FORM: VIEW TRANSACTION DETAIL ==================== */}
+      {!!viewTxDialog && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setViewTxDialog(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle>Детаљи трансакције</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs">Датум</p>
@@ -1786,12 +1778,10 @@ export function CashRegister() {
                 )}
               </div>
             </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setViewTxDialog(null)}>
-              Затвори
-            </Button>
-            {viewTxDialog && (
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setViewTxDialog(null)}>
+                Затвори
+              </Button>
               <Button variant="outline" onClick={() => {
                 openEditTx(viewTxDialog)
                 setViewTxDialog(null)
@@ -1799,118 +1789,120 @@ export function CashRegister() {
                 <Printer className="h-4 w-4 mr-1" />
                 Уреди
               </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ==================== DIALOG: CLOSE SHIFT ==================== */}
-      <Dialog open={closeShiftDialog} onOpenChange={setCloseShiftDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Затварање смее
-            </DialogTitle>
-            <DialogDescription>
-              Пребројте готовину пре затварања смее. Упоредите са очекиваним износом.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            {/* Expected amounts */}
-            <div className="rounded-lg border bg-muted/30 p-3 space-y-2 text-sm">
-              <p className="font-medium text-xs uppercase tracking-wider text-muted-foreground">
-                Очекивани износи
-              </p>
-              <div className="flex justify-between">
-                <span>Готовина:</span>
-                <span className="font-bold">{formatRsd(shiftPayments.gotovina)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Картична плаћања:</span>
-                <span className="font-bold">{formatRsd(shiftPayments.kartica)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span>Укупна продаја:</span>
-                <span className="font-bold text-emerald-600">
-                  {formatRsd(shiftSales)}
-                </span>
-              </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
 
-            {/* Actual count */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs">Бројана готовина (RSD)</Label>
-                <Input
-                  type="number"
-                  placeholder={String(shiftPayments.gotovina)}
-                  value={countedCash}
-                  onChange={(e) => setCountedCash(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Бројана картица (RSD)</Label>
-                <Input
-                  type="number"
-                  placeholder={String(shiftPayments.kartica)}
-                  value={countedCard}
-                  onChange={(e) => setCountedCard(e.target.value)}
-                />
-              </div>
+      {/* ==================== INLINE FORM: CLOSE SHIFT ==================== */}
+      {closeShiftDialog && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => setCloseShiftDialog(false)}><ArrowLeft className="h-4 w-4" /></Button>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                Затварање смее
+              </CardTitle>
             </div>
-
-            {/* Difference calculation */}
-            {countedCash && (
-              <div className={`rounded-lg border p-3 ${
-                Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01
-                  ? 'bg-green-50 dark:bg-green-950 border-green-200'
-                  : 'bg-amber-50 dark:bg-amber-950 border-amber-200'
-              }`}>
-                <div className="flex items-center justify-between text-sm">
-                  <span>Диференца (готовина):</span>
-                  <span className={`font-bold ${
-                    Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01
-                      ? 'text-green-600'
-                      : 'text-amber-600'
-                  }`}>
-                    {formatRsd(
-                      Math.round(
-                        (parseFloat(countedCash) - shiftPayments.gotovina) * 100
-                      ) / 100
-                    )}
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Expected amounts */}
+              <div className="rounded-lg border bg-muted/30 p-3 space-y-2 text-sm">
+                <p className="font-medium text-xs uppercase tracking-wider text-muted-foreground">
+                  Очекивани износи
+                </p>
+                <div className="flex justify-between">
+                  <span>Готовина:</span>
+                  <span className="font-bold">{formatRsd(shiftPayments.gotovina)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Картична плаћања:</span>
+                  <span className="font-bold">{formatRsd(shiftPayments.kartica)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between">
+                  <span>Укупна продаја:</span>
+                  <span className="font-bold text-emerald-600">
+                    {formatRsd(shiftSales)}
                   </span>
                 </div>
-                {Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01 && (
-                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Износи се поклапају
-                  </p>
-                )}
               </div>
-            )}
 
-            <div className="space-y-1">
-              <Label className="text-xs">Напомене</Label>
-              <Input
-                placeholder="Опционалне напомене..."
-                value={shiftNotes}
-                onChange={(e) => setShiftNotes(e.target.value)}
-              />
+              {/* Actual count */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Бројана готовина (RSD)</Label>
+                  <Input
+                    type="number"
+                    placeholder={String(shiftPayments.gotovina)}
+                    value={countedCash}
+                    onChange={(e) => setCountedCash(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Бројана картица (RSD)</Label>
+                  <Input
+                    type="number"
+                    placeholder={String(shiftPayments.kartica)}
+                    value={countedCard}
+                    onChange={(e) => setCountedCard(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Difference calculation */}
+              {countedCash && (
+                <div className={`rounded-lg border p-3 ${
+                  Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01
+                    ? 'bg-green-50 dark:bg-green-950 border-green-200'
+                    : 'bg-amber-50 dark:bg-amber-950 border-amber-200'
+                }`}>
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Диференца (готовина):</span>
+                    <span className={`font-bold ${
+                      Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01
+                        ? 'text-green-600'
+                        : 'text-amber-600'
+                    }`}>
+                      {formatRsd(
+                        Math.round(
+                          (parseFloat(countedCash) - shiftPayments.gotovina) * 100
+                        ) / 100
+                      )}
+                    </span>
+                  </div>
+                  {Math.abs(parseFloat(countedCash) - shiftPayments.gotovina) < 0.01 && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Износи се поклапају
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <Label className="text-xs">Напомене</Label>
+                <Input
+                  placeholder="Опционалне напомене..."
+                  value={shiftNotes}
+                  onChange={(e) => setShiftNotes(e.target.value)}
+                />
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCloseShiftDialog(false)}>
-              Откажи
-            </Button>
-            <Button variant="destructive" onClick={handleCloseShift}>
-              <PowerOff className="h-4 w-4 mr-1" />
-              Потврди затварање
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setCloseShiftDialog(false)}>
+                Откажи
+              </Button>
+              <Button variant="destructive" onClick={handleCloseShift}>
+                <PowerOff className="h-4 w-4 mr-1" />
+                Потврди затварање
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ==================== RECEIPT PREVIEW ==================== */}
       <ReceiptPreview

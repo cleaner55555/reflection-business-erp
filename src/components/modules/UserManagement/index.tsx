@@ -17,12 +17,13 @@ import {
   Building2,
   Clock,
   Search,
+  ArrowLeft,
 } from 'lucide-react'
 
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -37,14 +38,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -695,266 +688,57 @@ export function UserManagement() {
         </motion.div>
       )}
 
-      {/* ============ ADD USER DIALOG ============ */}
-
-      <Dialog open={addDialogOpen} onOpenChange={(open) => {
-        if (!open) {
-          setAddForm({ ...EMPTY_FORM })
-        }
-        setAddDialogOpen(open)
-      }}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
-              Dodaj novog korisnika
-            </DialogTitle>
-            <DialogDescription>
-              Popunite podatke da biste dodali novog korisnika u kompaniju.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-2">
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="add-email" className="flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                Email <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="add-email"
-                type="email"
-                placeholder="korisnik@firma.rs"
-                value={addForm.email}
-                onChange={(e) => setAddForm((p) => ({ ...p, email: e.target.value }))}
-              />
-            </div>
-
-            {/* First + Last Name */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="add-firstName" className="flex items-center gap-1.5">
-                  <UserCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  Ime <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="add-firstName"
-                  placeholder="Unesite ime"
-                  value={addForm.firstName}
-                  onChange={(e) => setAddForm((p) => ({ ...p, firstName: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="add-lastName" className="flex items-center gap-1.5">
-                  <UserCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  Prezime <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="add-lastName"
-                  placeholder="Unesite prezime"
-                  value={addForm.lastName}
-                  onChange={(e) => setAddForm((p) => ({ ...p, lastName: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="add-password">
-                Lozinka <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="add-password"
-                type="password"
-                placeholder="Minimalno 8 karaktera"
-                value={addForm.password}
-                onChange={(e) => setAddForm((p) => ({ ...p, password: e.target.value }))}
-              />
-              <p className="text-xs text-muted-foreground">
-                Lozinka mora imati minimum 8 karaktera
-              </p>
-            </div>
-
-            {/* Phone + Job Title */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="add-phone">Telefon</Label>
-                <Input
-                  id="add-phone"
-                  type="tel"
-                  placeholder="+381 6x xxx xxxx"
-                  value={addForm.phone}
-                  onChange={(e) => setAddForm((p) => ({ ...p, phone: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="add-jobTitle" className="flex items-center gap-1.5">
-                  <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                  Radno mesto
-                </Label>
-                <Input
-                  id="add-jobTitle"
-                  placeholder="npr. Direktor"
-                  value={addForm.jobTitle}
-                  onChange={(e) => setAddForm((p) => ({ ...p, jobTitle: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            {/* Role */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5">
-                <Shield className="h-3.5 w-3.5 text-muted-foreground" />
-                Uloga <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={addForm.roleId}
-                onValueChange={(val) => setAddForm((p) => ({ ...p, roleId: val }))}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Izaberite ulogu" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.length === 0 && (
-                    <SelectItem value="_loading" disabled>
-                      Učitavanje uloga...
-                    </SelectItem>
-                  )}
-                  {roles.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      <span className="flex items-center gap-2">
-                        <Badge
-                          variant="secondary"
-                          className={cn('text-xs py-0 px-1.5', getRoleBadgeClasses(role.name))}
-                        >
-                          {role.displayName}
-                        </Badge>
-                        {role.description && (
-                          <span className="text-xs text-muted-foreground">{role.description}</span>
-                        )}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {/* ============ ADD USER ============ */}
+      {addDialogOpen && (
+      <Card className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setAddForm({ ...EMPTY_FORM }); setAddDialogOpen(false); }}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5 text-primary" />Dodaj novog korisnika</CardTitle><CardDescription>Popunite podatke da biste dodali novog korisnika u kompaniju.</CardDescription></div>
           </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setAddForm({ ...EMPTY_FORM })
-                setAddDialogOpen(false)
-              }}
-              disabled={addSubmitting}
-            >
-              Otkaži
-            </Button>
-            <Button onClick={handleAddUser} disabled={addSubmitting} className="gap-2">
-              {addSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-              Dodaj korisnika
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ============ EDIT ROLE DIALOG ============ */}
-
-      <Dialog open={editDialogOpen} onOpenChange={(open) => {
-        if (!open) {
-          setEditingUser(null)
-          setEditRoleId('')
-        }
-        setEditDialogOpen(open)
-      }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Promeni ulogu
-            </DialogTitle>
-            <DialogDescription>
-              {editingUser && (
-                <>
-                  Izaberite novu ulogu za korisnika{' '}
-                  <span className="font-medium text-foreground">
-                    {editingUser.firstName} {editingUser.lastName}
-                  </span>
-                </>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-2">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 mb-4">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={editingUser?.avatar || undefined} />
-                <AvatarFallback className="text-xs font-semibold">
-                  {editingUser ? getInitials(editingUser.firstName, editingUser.lastName) : '?'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="text-sm font-medium">
-                  {editingUser?.firstName} {editingUser?.lastName}
-                </p>
-                <p className="text-xs text-muted-foreground">{editingUser?.email}</p>
-              </div>
-              <Badge
-                variant="secondary"
-                className={cn(
-                  'ml-auto text-xs shrink-0',
-                  editingUser ? getRoleBadgeClasses(editingUser.roleName) : ''
-                )}
-              >
-                {editingUser?.roleDisplayName}
-              </Badge>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
+            <div className="space-y-2"><Label htmlFor="add-email" className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 text-muted-foreground" />Email <span className="text-destructive">*</span></Label><Input id="add-email" type="email" placeholder="korisnik@firma.rs" value={addForm.email} onChange={(e) => setAddForm((p) => ({ ...p, email: e.target.value }))} /></div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2"><Label htmlFor="add-firstName" className="flex items-center gap-1.5"><UserCircle className="h-3.5 w-3.5 text-muted-foreground" />Ime <span className="text-destructive">*</span></Label><Input id="add-firstName" placeholder="Unesite ime" value={addForm.firstName} onChange={(e) => setAddForm((p) => ({ ...p, firstName: e.target.value }))} /></div>
+              <div className="space-y-2"><Label htmlFor="add-lastName" className="flex items-center gap-1.5"><UserCircle className="h-3.5 w-3.5 text-muted-foreground" />Prezime <span className="text-destructive">*</span></Label><Input id="add-lastName" placeholder="Unesite prezime" value={addForm.lastName} onChange={(e) => setAddForm((p) => ({ ...p, lastName: e.target.value }))} /></div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Nova uloga</Label>
-              <Select value={editRoleId} onValueChange={setEditRoleId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Izaberite ulogu" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-2"><Label htmlFor="add-password">Lozinka <span className="text-destructive">*</span></Label><Input id="add-password" type="password" placeholder="Minimalno 8 karaktera" value={addForm.password} onChange={(e) => setAddForm((p) => ({ ...p, password: e.target.value }))} /><p className="text-xs text-muted-foreground">Lozinka mora imati minimum 8 karaktera</p></div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2"><Label htmlFor="add-phone">Telefon</Label><Input id="add-phone" type="tel" placeholder="+381 6x xxx xxxx" value={addForm.phone} onChange={(e) => setAddForm((p) => ({ ...p, phone: e.target.value }))} /></div>
+              <div className="space-y-2"><Label htmlFor="add-jobTitle" className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5 text-muted-foreground" />Radno mesto</Label><Input id="add-jobTitle" placeholder="npr. Direktor" value={addForm.jobTitle} onChange={(e) => setAddForm((p) => ({ ...p, jobTitle: e.target.value }))} /></div>
             </div>
+            <div className="space-y-2"><Label className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-muted-foreground" />Uloga <span className="text-destructive">*</span></Label><Select value={addForm.roleId} onValueChange={(val) => setAddForm((p) => ({ ...p, roleId: val }))}><SelectTrigger className="w-full"><SelectValue placeholder="Izaberite ulogu" /></SelectTrigger><SelectContent>{roles.length === 0 && (<SelectItem value="_loading" disabled>Učitavanje uloga...</SelectItem>)}{roles.map((role) => (<SelectItem key={role.id} value={role.id}><span className="flex items-center gap-2"><Badge variant="secondary" className={cn('text-xs py-0 px-1.5', getRoleBadgeClasses(role.name))}>{role.displayName}</Badge>{role.description && (<span className="text-xs text-muted-foreground">{role.description}</span>)}</span></SelectItem>))}</SelectContent></Select></div>
           </div>
+          <div className="flex justify-end gap-2 mt-4"><Button variant="outline" onClick={() => { setAddForm({ ...EMPTY_FORM }); setAddDialogOpen(false); }} disabled={addSubmitting}>Otkaži</Button><Button onClick={handleAddUser} disabled={addSubmitting} className="gap-2">{addSubmitting ? (<Loader2 className="h-4 w-4 animate-spin" />) : (<Plus className="h-4 w-4" />)}Dodaj korisnika</Button></div>
+        </CardContent>
+      </Card>
+      )}
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditDialogOpen(false)
-                setEditingUser(null)
-                setEditRoleId('')
-              }}
-              disabled={editSubmitting}
-            >
-              Otkaži
-            </Button>
-            <Button onClick={handleEditRole} disabled={editSubmitting || editRoleId === editingUser?.roleId} className="gap-2">
-              {editSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Pencil className="h-4 w-4" />
-              )}
-              Sačuvaj izmene
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* ============ EDIT ROLE ============ */}
+      {editDialogOpen && (
+      <Card className="sm:max-w-md">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditDialogOpen(false); setEditingUser(null); setEditRoleId(''); }}><ArrowLeft className="h-4 w-4" /></Button>
+            <div><CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Promeni ulogu</CardTitle><CardDescription>{editingUser && (<>Izaberite novu ulogu za korisnika <span className="font-medium text-foreground">{editingUser.firstName} {editingUser.lastName}</span></>)}</CardDescription></div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 mb-4">
+            <Avatar className="h-10 w-10"><AvatarImage src={editingUser?.avatar || undefined} /><AvatarFallback className="text-xs font-semibold">{editingUser ? getInitials(editingUser.firstName, editingUser.lastName) : '?'}</AvatarFallback></Avatar>
+            <div className="min-w-0"><p className="text-sm font-medium">{editingUser?.firstName} {editingUser?.lastName}</p><p className="text-xs text-muted-foreground">{editingUser?.email}</p></div>
+            <Badge variant="secondary" className={cn('ml-auto text-xs shrink-0', editingUser ? getRoleBadgeClasses(editingUser.roleName) : '')}>{editingUser?.roleDisplayName}</Badge>
+          </div>
+          <div className="space-y-2">
+            <Label>Nova uloga</Label>
+            <Select value={editRoleId} onValueChange={setEditRoleId}><SelectTrigger className="w-full"><SelectValue placeholder="Izaberite ulogu" /></SelectTrigger><SelectContent>{roles.map((role) => (<SelectItem key={role.id} value={role.id}>{role.displayName}</SelectItem>))}</SelectContent></Select>
+          </div>
+          <div className="flex justify-end gap-2 mt-4"><Button variant="outline" onClick={() => { setEditDialogOpen(false); setEditingUser(null); setEditRoleId(''); }} disabled={editSubmitting}>Otkaži</Button><Button onClick={handleEditRole} disabled={editSubmitting || editRoleId === editingUser?.roleId} className="gap-2">{editSubmitting ? (<Loader2 className="h-4 w-4 animate-spin" />) : (<Pencil className="h-4 w-4" />)}Sačuvaj izmene</Button></div>
+        </CardContent>
+      </Card>
+      )}
 
       {/* ============ DELETE CONFIRMATION DIALOG ============ */}
 
