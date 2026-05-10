@@ -187,6 +187,7 @@ model Company {
   voipCallLogs        VoipCallLog[]
   voipExtensions      VoipExtension[]
   plmProducts          PlmProduct[]
+  utilities            Utility[]
 }
 
 // ============ NARUDŽBE (GENERALNE) ============
@@ -4030,4 +4031,29 @@ model PlmProduct {
   company Company @relation(fields: [companyId], references: [id])
 
   @@unique([companyId, sku])
+}
+
+// ============ KOMUNALIJE ============
+
+model Utility {
+  id             String   @id @default(cuid())
+  companyId      String
+  name           String
+  provider       String   @default("")
+  accountNo      String   @default("")
+  type           String   @default("electricity") // electricity, water, gas, heating, internet, phone, waste, tv
+  status         String   @default("active")      // active, disconnected, overdue, pending
+  monthlyAmount  Float    @default(0)
+  lastReading    Float    @default(0)
+  lastReadingDate String  @default("")
+  lastBillDate   String   @default("")
+  lastBillAmount Float    @default(0)
+  dueDate        String   @default("")
+  paidDate       String   @default("")
+  location       String   @default("")
+  notes          String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
 }
