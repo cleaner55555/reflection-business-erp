@@ -172,7 +172,7 @@ export function Surveys() {
           <Tabs value={surveysSubTab} onValueChange={setSurveysSubTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="pregled">Pregled</TabsTrigger>
-              <TabsTrigger value="dodaj">Dodaj</Trigger>
+              <TabsTrigger value="dodaj">Dodaj</TabsTrigger>
               {selected && <TabsTrigger value="detalji">Detalji</TabsTrigger>}
             </TabsList>
             <TabsContent value="pregled" className="space-y-4">

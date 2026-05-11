@@ -3,7 +3,7 @@
 import { useCallback, useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useWindowManager, type WindowState, type SnapZone, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
-import { moduleComponents } from '@/lib/moduleMap'
+import { ModuleRenderer } from '@/lib/moduleMap'
 import { menuGroups } from '@/components/modules/AppSidebar'
 import {
   Minus,
@@ -391,14 +391,7 @@ export function WindowFrame({ windowData }: WindowFrameProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-4 bg-background rounded-b-xl">
-          {(() => {
-            const Module = moduleComponents[windowData.moduleId]
-            return Module ? <Module /> : (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                Modul &quot;{windowData.moduleId}&quot; nije pronađen
-              </div>
-            )
-          })()}
+          <ModuleRenderer moduleKey={windowData.moduleId} />
         </div>
 
         {/* Resize handles */}

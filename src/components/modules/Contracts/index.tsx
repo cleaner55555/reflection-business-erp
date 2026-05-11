@@ -819,7 +819,7 @@ export function Contracts() {
             <TabsContent value="pregled" className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">Zahtevi za obnavljanje ugovora</p>
-            <Button size="sm" onClick={() => { setRenewalForm(emptyRenewalForm); setRenewalsSubTab('dodaj'); }}
+            <Button size="sm" onClick={() => { setRenewalForm(emptyRenewalForm); setRenewalsSubTab('dodaj'); }}>
               <Plus className="h-4 w-4 mr-1" /> Novo obnavljanje
             </Button>
           </div>

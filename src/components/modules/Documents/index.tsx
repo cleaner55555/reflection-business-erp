@@ -659,7 +659,7 @@ export function Documents() {
               {selectedDoc && (<Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAllDocsSubTab('pregled'); setSelectedDoc(null)}><ArrowLeft className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setAllDocsSubTab('pregled'); setSelectedDoc(null) }}><ArrowLeft className="h-4 w-4" /></Button>
                     <CardTitle className="text-base flex items-center gap-2">
                       <FileText className="h-5 w-5" /> {selectedDoc.title}
                     </CardTitle>

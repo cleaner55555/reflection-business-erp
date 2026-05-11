@@ -137,7 +137,7 @@ export function MarketingAutomation() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={loadWorkflows}><RefreshCw className="h-4 w-4 mr-1" /> Osveži</Button>
-          <Button size="sm" onClick={() => setActiveTab('workflows'); setSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Novi workflow</Button>
+          <Button size="sm" onClick={() => { setActiveTab('workflows'); setSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Novi workflow</Button>
         </div>
       </div>
 
@@ -200,7 +200,7 @@ export function MarketingAutomation() {
 
           <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Pretraži workflow-e..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
           {loading ? (<div className="flex justify-center py-20"><RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" /></div>) : filtered.length === 0 ? (
-            <Card className="p-8 text-center"><Workflow className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema workflow-a</p><Button variant="outline" className="mt-3" onClick={() => setActiveTab('workflows'); setSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj workflow</Button></Card>
+            <Card className="p-8 text-center"><Workflow className="h-12 w-12 mx-auto mb-3 text-muted-foreground" /><p className="text-muted-foreground">Nema workflow-a</p><Button variant="outline" className="mt-3" onClick={() => { setActiveTab('workflows'); setSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Kreiraj workflow</Button></Card>
           ) : (
             <div className="space-y-3">
               {filtered.map((w) => {

@@ -1618,7 +1618,7 @@ export function Reports() {
                   {t('reports.saveReport')}
                 </Button>
               </div>
-            </div>
+            </SectionCard>
             {customSubTab === 'dodaj' && (
               <Card className="mt-4">
                 <CardHeader>
@@ -1658,8 +1658,6 @@ export function Reports() {
                 </CardContent>
               </Card>
             )}
-              </div>
-            </SectionCard>
 
             {/* Custom Report Results */}
             {customGenerated && customResults && (

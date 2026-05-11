@@ -1108,7 +1108,6 @@ function ExpensesTab() {
             </Card>
           )}
         </TabsContent>
-      </Tabs>
 
       {/* Detail View */}
       <TabsContent value="detalji">
@@ -1174,7 +1173,7 @@ function ExpensesTab() {
           </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>}
+        </Tabs>
     </div>
   )
 }

@@ -303,7 +303,6 @@ function AccountsTab() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
 
         {/* Account cards */}
         <Card>

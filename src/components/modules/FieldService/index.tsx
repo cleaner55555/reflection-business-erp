@@ -151,7 +151,7 @@ export function FieldService() {
           <Button variant="outline" size="sm" onClick={() => { loadDashboard(); loadItems() }}>
             <RefreshCw className="h-4 w-4 mr-1" /> Osveži
           </Button>
-          <Button size="sm" onClick={() => setActiveTab('orders'); setSubTab('dodaj')}>
+          <Button size="sm" onClick={() => { setActiveTab('orders'); setSubTab('dodaj') }}>
             <Plus className="h-4 w-4 mr-1" /> Novi nalog
           </Button>
         </div>
@@ -280,7 +280,7 @@ export function FieldService() {
             <Card className="p-8 text-center">
               <Truck className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="text-muted-foreground">Nema terenskih naloga</p>
-              <Button variant="outline" className="mt-3" onClick={() => setActiveTab('orders'); setSubTab('dodaj')}><Plus className="h-4 w-4 mr-1" /> Kreiraj nalog</Button>
+              <Button variant="outline" className="mt-3" onClick={() => { setActiveTab('orders'); setSubTab('dodaj') }}><Plus className="h-4 w-4 mr-1" /> Kreiraj nalog</Button>
             </Card>
           ) : (
             <div className="rounded-lg border overflow-hidden">

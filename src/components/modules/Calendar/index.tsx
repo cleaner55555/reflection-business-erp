@@ -488,7 +488,7 @@ export function Calendar() {
         </TabsContent>
 
         {/* ===== LIST VIEW ===== */}
-        <TabsContent value="list" className="space-y-4"> className="space-y-4">
+        <TabsContent value="list" className="space-y-4">
           <Tabs value={eventSubTab} onValueChange={v => setEventSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
             <TabsList>
               <TabsTrigger value="pregled">Pregled</TabsTrigger>
