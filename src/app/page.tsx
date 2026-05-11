@@ -96,7 +96,9 @@ function AppContent() {
   const showAuth = !currentUser
 
   const [seeded, setSeeded] = useState(false)
-  if (!seeded) { setSeeded(true); fetch('/api/seed', { method: 'POST' }).catch(() => {}) }
+  useEffect(() => {
+    if (!seeded) { setSeeded(true); fetch('/api/seed', { method: 'POST' }).catch(() => {}) }
+  }, [seeded])
 
   useEffect(() => {
     if (!currentUser || !activeCompanyId) return
