@@ -1,29 +1,29 @@
 'use client'
-import React from 'react'
+import type { ComponentType } from 'react'
 
-export const medicalModules: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
-  'patients': React.lazy(() => import('@/components/modules/Patients')),
-  'medical-records': React.lazy(() => import('@/components/modules/MedicalRecords')),
-  'prescriptions': React.lazy(() => import('@/components/modules/Prescriptions')),
-  'lab': React.lazy(() => import('@/components/modules/Lab')),
-  'health-fund': React.lazy(() => import('@/components/modules/HealthFund')),
+export const medicalModules: Record<string, () => Promise<ComponentType>> = {
+  'patients': () => import('@/components/modules/Patients').then(m => m.Patients),
+  'medical-records': () => import('@/components/modules/MedicalRecords').then(m => m.MedicalRecords),
+  'prescriptions': () => import('@/components/modules/Prescriptions').then(m => m.Prescriptions),
+  'lab': () => import('@/components/modules/Lab').then(m => m.Lab),
+  'health-fund': () => import('@/components/modules/HealthFund').then(m => m.HealthFund),
 }
 
-export const servicesModules: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
-  'service-center': React.lazy(() => import('@/components/modules/ServiceCenter')),
-  'field-service': React.lazy(() => import('@/components/modules/FieldService')),
-  'appointments': React.lazy(() => import('@/components/modules/Appointments')),
-  'scheduler': React.lazy(() => import('@/components/modules/Scheduler')),
-  'compliance': React.lazy(() => import('@/components/modules/Compliance')),
+export const servicesModules: Record<string, () => Promise<ComponentType>> = {
+  'service-center': () => import('@/components/modules/ServiceCenter').then(m => m.ServiceCenter),
+  'field-service': () => import('@/components/modules/FieldService').then(m => m.FieldService),
+  'appointments': () => import('@/components/modules/Appointments').then(m => m.Appointments),
+  'scheduler': () => import('@/components/modules/Scheduler').then(m => m.Scheduler),
+  'compliance': () => import('@/components/modules/Compliance').then(m => m.Compliance),
 }
 
-export const retailModules: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
-  'stores': React.lazy(() => import('@/components/modules/Stores')),
-  'client-portal': React.lazy(() => import('@/components/modules/ClientPortal')),
-  'seo': React.lazy(() => import('@/components/modules/SEO')),
-  'reviews': React.lazy(() => import('@/components/modules/Reviews')),
-  'cms': React.lazy(() => import('@/components/modules/CMS')),
-  'geolocation': React.lazy(() => import('@/components/modules/Geolocation')),
-  'cameras': React.lazy(() => import('@/components/modules/Cameras')),
-  'messaging': React.lazy(() => import('@/components/modules/Messaging')),
+export const retailModules: Record<string, () => Promise<ComponentType>> = {
+  'stores': () => import('@/components/modules/Stores').then(m => m.Stores),
+  'client-portal': () => import('@/components/modules/ClientPortal').then(m => m.ClientPortal),
+  'seo': () => import('@/components/modules/SEO').then(m => m.SEO),
+  'reviews': () => import('@/components/modules/Reviews').then(m => m.Reviews),
+  'cms': () => import('@/components/modules/CMS').then(m => m.CMS),
+  'geolocation': () => import('@/components/modules/Geolocation').then(m => m.Geolocation),
+  'cameras': () => import('@/components/modules/Cameras').then(m => m.Cameras),
+  'messaging': () => import('@/components/modules/Messaging').then(m => m.Messaging),
 }

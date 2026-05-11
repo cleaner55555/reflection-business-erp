@@ -1,9 +1,9 @@
 'use client'
-import React from 'react'
+import type { ComponentType } from 'react'
 
-export const constructionModules: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
-  'construction-site': React.lazy(() => import('@/components/modules/ConstructionSite')),
-  'blueprints': React.lazy(() => import('@/components/modules/Blueprints')),
-  'subcontractors': React.lazy(() => import('@/components/modules/Subcontractors')),
-  'safety': React.lazy(() => import('@/components/modules/Safety')),
+export const constructionModules: Record<string, () => Promise<ComponentType>> = {
+  'construction-site': () => import('@/components/modules/ConstructionSite').then(m => m.ConstructionSite),
+  'blueprints': () => import('@/components/modules/Blueprints').then(m => m.Blueprints),
+  'subcontractors': () => import('@/components/modules/Subcontractors').then(m => m.Subcontractors),
+  'safety': () => import('@/components/modules/Safety').then(m => m.Safety),
 }

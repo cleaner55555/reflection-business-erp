@@ -1,9 +1,10 @@
 // Lazy ModuleRenderer - loads module group files on demand
-// Each group file contains ~12 React.lazy() imports, keeping the bundler happy
+// Each group file contains loader functions for named exports, keeping the bundler happy
 
 'use client'
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react'
+import type { ComponentType } from 'react'
 import { moduleGroupMap } from './module-groups/index'
 
 const Loader = () => (
@@ -15,7 +16,7 @@ const Loader = () => (
   </div>
 )
 
-type ModuleMap = Record<string, React.LazyExoticComponent<React.ComponentType>>
+type ModuleMap = Record<string, () => Promise<ComponentType>>
 
 // Cache for loaded module groups
 const groupCache = new Map<string, ModuleMap>()
@@ -38,7 +39,7 @@ const groupLoaders: Record<string, () => Promise<ModuleMap>> = {
 }
 
 export function ModuleRenderer({ moduleKey }: { moduleKey: string }) {
-  const [Component, setComponent] = useState<React.LazyExoticComponent<React.ComponentType> | null>(null)
+  const [Component, setComponent] = useState<ComponentType | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -68,13 +69,15 @@ export function ModuleRenderer({ moduleKey }: { moduleKey: string }) {
         groupCache.set(groupName, groupModules)
       }
 
-      const Mod = groupModules[key]
-      if (!Mod) {
+      const moduleLoader = groupModules[key]
+      if (!moduleLoader) {
         setError(`Modul "${key}" nije pronađen u grupi`)
         setLoading(false)
         return
       }
 
+      // Call the loader function to resolve the named export
+      const Mod = await moduleLoader()
       setComponent(() => Mod)
       setLoading(false)
     } catch (err) {

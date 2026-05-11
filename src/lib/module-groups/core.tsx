@@ -1,17 +1,17 @@
 'use client'
-import React from 'react'
+import type { ComponentType } from 'react'
 
-export const coreModules: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
-  'dashboard': React.lazy(() => import('@/components/modules/Dashboard')),
-  'finance': React.lazy(() => import('@/components/modules/Finance')),
-  'invoices': React.lazy(() => import('@/components/modules/Invoices')),
-  'inventory': React.lazy(() => import('@/components/modules/Inventory')),
-  'contacts': React.lazy(() => import('@/components/modules/Contacts')),
-  'reports': React.lazy(() => import('@/components/modules/Reports')),
-  'settings': React.lazy(() => import('@/components/modules/Settings')),
-  'calendar': React.lazy(() => import('@/components/modules/Calendar')),
-  'documents': React.lazy(() => import('@/components/modules/Documents')),
-  'offers': React.lazy(() => import('@/components/modules/Offers')),
-  'expenses': React.lazy(() => import('@/components/modules/Expenses')),
-  'automation': React.lazy(() => import('@/components/modules/Automation')),
+export const coreModules: Record<string, () => Promise<ComponentType>> = {
+  'dashboard': () => import('@/components/modules/Dashboard').then(m => m.Dashboard),
+  'finance': () => import('@/components/modules/Finance').then(m => m.Finance),
+  'invoices': () => import('@/components/modules/Invoices').then(m => m.Invoices),
+  'inventory': () => import('@/components/modules/Inventory').then(m => m.Inventory),
+  'contacts': () => import('@/components/modules/Contacts').then(m => m.Contacts),
+  'reports': () => import('@/components/modules/Reports').then(m => m.Reports),
+  'settings': () => import('@/components/modules/Settings').then(m => m.Settings),
+  'calendar': () => import('@/components/modules/Calendar').then(m => m.Calendar),
+  'documents': () => import('@/components/modules/Documents').then(m => m.Documents),
+  'offers': () => import('@/components/modules/Offers').then(m => m.Offers),
+  'expenses': () => import('@/components/modules/Expenses').then(m => m.Expenses),
+  'automation': () => import('@/components/modules/Automation').then(m => m.Automation),
 }

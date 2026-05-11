@@ -1,17 +1,17 @@
 'use client'
-import React from 'react'
+import type { ComponentType } from 'react'
 
-export const hrModules: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
-  'employees': React.lazy(() => import('@/components/modules/Employees')),
-  'recruitment': React.lazy(() => import('@/components/modules/Recruitment')),
-  'leave': React.lazy(() => import('@/components/modules/Leave')),
-  'skills': React.lazy(() => import('@/components/modules/Skills')),
-  'approvals': React.lazy(() => import('@/components/modules/Approvals')),
-  'workforce-planner': React.lazy(() => import('@/components/modules/WorkforcePlanner')),
-  'visitors': React.lazy(() => import('@/components/modules/Visitors')),
-  'suggestions': React.lazy(() => import('@/components/modules/Suggestions')),
-  'time-tracking': React.lazy(() => import('@/components/modules/TimeTracking')),
-  'time-billing': React.lazy(() => import('@/components/modules/TimeBilling')),
-  'gamification': React.lazy(() => import('@/components/modules/Gamification')),
-  'signatures': React.lazy(() => import('@/components/modules/Signatures')),
+export const hrModules: Record<string, () => Promise<ComponentType>> = {
+  'employees': () => import('@/components/modules/Employees').then(m => m.Employees),
+  'recruitment': () => import('@/components/modules/Recruitment').then(m => m.Recruitment),
+  'leave': () => import('@/components/modules/Leave').then(m => m.Leave),
+  'skills': () => import('@/components/modules/Skills').then(m => m.Skills),
+  'approvals': () => import('@/components/modules/Approvals').then(m => m.Approvals),
+  'workforce-planner': () => import('@/components/modules/WorkforcePlanner').then(m => m.WorkforcePlanner),
+  'visitors': () => import('@/components/modules/Visitors').then(m => m.Visitors),
+  'suggestions': () => import('@/components/modules/Suggestions').then(m => m.Suggestions),
+  'time-tracking': () => import('@/components/modules/TimeTracking').then(m => m.TimeTracking),
+  'time-billing': () => import('@/components/modules/TimeBilling').then(m => m.TimeBilling),
+  'gamification': () => import('@/components/modules/Gamification').then(m => m.Gamification),
+  'signatures': () => import('@/components/modules/Signatures').then(m => m.Signatures),
 }
