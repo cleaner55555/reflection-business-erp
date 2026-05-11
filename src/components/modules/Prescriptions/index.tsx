@@ -269,3 +269,5 @@ export function Prescriptions() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}

@@ -209,7 +209,6 @@ export function Surveys() {
             </div>
           )}
         </TabsContent>
-            </TabsContent>
 
             <TabsContent value="dodaj" className="space-y-4">
               <Card>

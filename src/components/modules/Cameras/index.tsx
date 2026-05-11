@@ -438,7 +438,7 @@ export function Cameras() {
         </TabsContent>
 
         {/* ===== KAMERE ===== */}
-        <TabsContent value="cameras" className="space-y-4"> className="space-y-4">
+        <TabsContent value="cameras" className="space-y-4">
           <Tabs value={camerasSubTab} onValueChange={v => setCamerasSubTab(v as 'pregled' | 'dodaj' | 'detalji')}>
             <TabsList>
               <TabsTrigger value="pregled">Pregled</TabsTrigger>
@@ -536,7 +536,7 @@ export function Cameras() {
         
             </TabsContent>
           </Tabs>
-        </TabsContent></TabsContent>
+        </TabsContent>
 
         {/* ===== SNIMCI ===== */}
         <TabsContent value="recordings" className="space-y-4">

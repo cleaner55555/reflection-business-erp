@@ -71,6 +71,7 @@ export function CustomsDocs() {
   const [detailId, setDetailId] = useState<string | null>(null)
   const [editItem, setEditItem] = useState<CustomsDocument | null>(null)
   const [activeTab, setActiveTab] = useState('list')
+  const [subTab, setSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const [formData, setFormData] = useState({ declarationNumber: '', docType: 'import' as CustomsDocument['docType'], country: '', borderCrossing: '', declarantName: '', declarantPIB: '', goodsDescription: '', hsCode: '', totalValue: 0, totalWeight: 0, currency: 'EUR', vehiclePlate: '', referenceNumber: '', notes: '' })
 
   const fetchData = useCallback(async () => {
@@ -231,7 +232,6 @@ export function CustomsDocs() {
             </CardContent>
           </Card>
         </TabsContent>
-            </TabsContent>
 
         <TabsContent value="dodaj" className="space-y-4">
           <Card className="max-w-[600px]">

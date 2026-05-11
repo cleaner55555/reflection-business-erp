@@ -243,7 +243,6 @@ export function MarketingAutomation() {
             </div>
           )}
         </TabsContent>
-            </TabsContent>
           </Tabs>
         </TabsContent>
 

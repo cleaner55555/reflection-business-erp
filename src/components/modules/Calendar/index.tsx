@@ -569,7 +569,7 @@ export function Calendar() {
         
             </TabsContent>
           </Tabs>
-        </TabsContent></TabsContent>
+        </TabsContent>
 
         {/* ===== OVERVIEW TAB ===== */}
         <TabsContent value="overview" className="space-y-4">

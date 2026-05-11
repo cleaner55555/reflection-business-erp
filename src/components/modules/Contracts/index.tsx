@@ -902,7 +902,6 @@ export function Contracts() {
           </Card>
         </TabsContent>
           </Tabs>
-          )}
           {(renewalsSubTab === 'pregled' || renewalsSubTab === 'dodaj') && (<>
           {/* Expiring Timeline */}
           <Card>
@@ -938,8 +937,7 @@ export function Contracts() {
               </div>
             </CardContent>
           </Card>
-          </>
-          </Tabs>
+          </>)}
         </TabsContent>
 
         {/* ─── Dokumenta Tab ──────────────────────────────────────────── */}

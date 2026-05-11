@@ -268,7 +268,6 @@ export function LoadingDock() {
             </CardContent>
           </Card>
         </TabsContent>
-            </TabsContent>
           </Tabs>
         </TabsContent>
 

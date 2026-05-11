@@ -411,7 +411,6 @@ function AccountsTab() {
             )}
           </CardContent>
         </Card>
-      </div>
           </TabsContent>
 
           {/* Dodaj Sub-tab - Add/Edit Form */}
@@ -465,6 +464,7 @@ function AccountsTab() {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
@@ -906,7 +906,6 @@ function TransactionsTab() {
             )}
           </CardContent>
         </Card>
-      </div>
           </TabsContent>
 
           {/* Import Sub-tab */}

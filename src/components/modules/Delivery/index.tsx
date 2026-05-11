@@ -435,37 +435,3 @@ export function Delivery() {
     </div>
   )
 }
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDialogOpen(false); setEditItem(null) }}><ArrowLeft className="h-4 w-4" /></Button>
-            <CardTitle className="text-base">{editItem ? 'Uredi dostavu' : 'Nova dostava'}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="p-3 rounded-lg border space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase">Pošiljalac</p>
-            <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Naziv firme ili ime" className="text-xs" value={formData.senderName} onChange={e => setFormData(p => ({ ...p, senderName: e.target.value }))} /></div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.senderPhone} onChange={e => setFormData(p => ({ ...p, senderPhone: e.target.value }))} /></div>
-              <div className="grid gap-2"><Label className="text-xs">Prioritet</Label><Select value={formData.priority} onValueChange={v => setFormData(p => ({ ...p, priority: v }))}><SelectTrigger className="text-xs"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(PRIORITIES).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid gap-2"><Label className="text-xs">Adresa</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.senderAddress} onChange={e => setFormData(p => ({ ...p, senderAddress: e.target.value }))} /></div>
-          </div>
-          <div className="p-3 rounded-lg border space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase">Primalac</p>
-            <div className="grid gap-2"><Label className="text-xs">Ime *</Label><Input placeholder="Ime primaoca" className="text-xs" value={formData.recipientName} onChange={e => setFormData(p => ({ ...p, recipientName: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Telefon</Label><Input placeholder="+381..." className="text-xs" value={formData.recipientPhone} onChange={e => setFormData(p => ({ ...p, recipientPhone: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Adresa *</Label><Input placeholder="Ulica i broj, grad" className="text-xs" value={formData.recipientAddress} onChange={e => setFormData(p => ({ ...p, recipientAddress: e.target.value }))} /></div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="grid gap-2"><Label className="text-xs">Težina (kg)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.weight || ''} onChange={e => setFormData(p => ({ ...p, weight: Number(e.target.value) }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">Dimenzije</Label><Input placeholder="40x30x20 cm" className="text-xs" value={formData.dimensions} onChange={e => setFormData(p => ({ ...p, dimensions: e.target.value }))} /></div>
-            <div className="grid gap-2"><Label className="text-xs">COD (RSD)</Label><Input type="number" placeholder="0" className="text-xs" value={formData.codAmount || ''} onChange={e => setFormData(p => ({ ...p, codAmount: Number(e.target.value) }))} /></div>
-          </div>
-          <div className="grid gap-2"><Label className="text-xs">Beleške</Label><Textarea placeholder="Posebne instrukcije..." className="text-xs" value={formData.notes} onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} /></div>
-          <div className="flex gap-2 pt-2"><Button variant="outline" onClick={() => { setDialogOpen(false); setEditItem(null) }}>Otkaži</Button><Button onClick={handleSave} disabled={saving}>{saving ? 'Čuvanje...' : editItem ? 'Sačuvaj' : 'Kreiraj'}</Button></div>
-        </CardContent>
-      </Card>)}
-    </div>
-  )
-}

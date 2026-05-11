@@ -1050,7 +1050,7 @@ function ExpensesTab() {
                 </div>
               </CardContent>
             </Card>
-          ) : (
+        ) : (
             <Card>
               <CardContent className="p-4">
                 {loading ? (
@@ -1106,8 +1106,8 @@ function ExpensesTab() {
                 )}
               </CardContent>
             </Card>
-          )}
-        </TabsContent>
+        )}
+      </TabsContent>
 
       {/* Detail View */}
       <TabsContent value="detalji">
@@ -1172,6 +1172,7 @@ function ExpensesTab() {
             </div>
           </CardContent>
             </Card>
+          )}
           </TabsContent>
         </Tabs>
     </div>
@@ -1336,11 +1337,12 @@ function ReportsTab() {
             )
           })}
         </div>
+          )}
           </TabsContent>
 
           {/* Dodaj Sub-tab - Create Report */}
           <TabsContent value="dodaj" className="space-y-4">
-      (<Card>
+      <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newReport')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -1379,12 +1381,11 @@ function ReportsTab() {
         </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>}
 
           {/* Detalji Sub-tab - Report Detail View */}
           <TabsContent value="detalji" className="space-y-4">
       {selectedReport && (<Card>
-        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><div className="flex items-center gap-2"><span>{selectedReport.title}</span>{selectedReport && (<Badge variant="outline" className={STATUS_CONFIG[selectedReport.status]?.color}>{STATUS_CONFIG[selectedReport.status]?.label}</Badge>)}</div><Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setSubTab('pregled'); setSelectedReport(null)}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
+        <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><div className="flex items-center gap-2"><span>{selectedReport.title}</span>{selectedReport && (<Badge variant="outline" className={STATUS_CONFIG[selectedReport.status]?.color}>{STATUS_CONFIG[selectedReport.status]?.label}</Badge>)}</div><Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => { setSubTab('pregled'); setSelectedReport(null) }}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent className="max-h-[90vh] overflow-y-auto">
           {selectedReport && (
             <div className="space-y-4">
@@ -1460,8 +1461,7 @@ function ReportsTab() {
           )}
           </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>}
+          )}
           </TabsContent>
         </Tabs>
       </div>
@@ -1605,10 +1605,7 @@ function BudgetsTab() {
         </CardContent>
       </Card>
 
-      </Card>
-
           {/* Dodaj Sub-tab - Create Budget Form */}
-          <TabsContent value="dodaj" className="space-y-4">
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newBudget')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>
@@ -1656,8 +1653,6 @@ function BudgetsTab() {
           </div>
         </CardContent>
       </Card>
-          </TabsContent>
-        </Tabs>
     </div>
   )
 }
@@ -1818,7 +1813,7 @@ function PoliciesTab() {
       </Card>
 
       {/* Create Policy Form */}
-      (<Card>
+      <Card>
         <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">{t('expenses.newPolicy')}<Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => setSubTab('pregled')}><ArrowLeft className="h-4 w-4" /></Button></CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -1870,8 +1865,7 @@ function PoliciesTab() {
           </div>
         </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>}
+        </Tabs>
     </div>
   )
 }

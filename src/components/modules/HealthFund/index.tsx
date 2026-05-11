@@ -588,8 +588,6 @@ export function HealthFund() {
           </div>
         </TabsContent>
 
-            </TabsContent>
-
             {/* DODAJ - Contribution form */}
             <TabsContent value="dodaj" className="mt-4">
               <Card>
@@ -772,7 +770,6 @@ export function HealthFund() {
                         </SelectContent></Select>
                       </div>
                     </div>
-                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2"><Label>Šifra dijagnoze</Label><Input placeholder="npr. J06.9" value={claimForm.diagnosisCode} onChange={e => setClaimForm(p => ({ ...p, diagnosisCode: e.target.value }))} /></div>
                     <div className="space-y-2"><Label>Naziv dijagnoze</Label><Input placeholder="Naziv bolesti" value={claimForm.diagnosisName} onChange={e => setClaimForm(p => ({ ...p, diagnosisName: e.target.value }))} /></div>

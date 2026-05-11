@@ -14,11 +14,10 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-'use client'
 
 import { useState } from 'react'
 
-import { AlertCircle, ArrowRight, ArrowUpRight, BarChart3, Bell, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, DollarSign, Edit, Filter, Gift, Globe, LayoutGrid, List, Mail, MousePointerClick, Package, Plus, Search, Settings, ShoppingBag, ShoppingCart, Star, Tag, Trash2, TrendingUp, Truck, Users, Zap } from 'lucide-react'
+import { AlertCircle, ArrowRight, ArrowUpRight, BarChart3, Bell, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, DollarSign, Edit, Filter, Gift, Globe, LayoutGrid, List, Mail, MousePointerClick, Package, Plus, Search, Settings, ShoppingBag, ShoppingCart, Star, Tag, Trash2, TrendingUp, Truck, Users, Zap, Settings } from 'lucide-react'
 import type { StoreProduct, OrderItem, StoreOrder, Category, Coupon, StoreSettings } from './types'
 
 function RevenueChart({ data }: { data: { label: string; value: number }[] }) {
@@ -431,7 +430,6 @@ function ProductsTab({ products, setProducts, categories }: { products: StorePro
         </Card>
       )}
 
-      )}
     </div>
   )
 }
@@ -532,7 +530,6 @@ function OrdersTab({ orders, setOrders }: { orders: StoreOrder[]; setOrders: Rea
         </div>
       )}
 
-      )}
     </div>
   )
 }
@@ -638,7 +635,6 @@ function CategoriesTab({ categories, setCategories }: { categories: Category[]; 
         </div>
       )}
 
-      )}
     </div>
   )
 }

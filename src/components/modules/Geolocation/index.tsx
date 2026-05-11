@@ -579,7 +579,7 @@ export function Geolocation() {
               </div>
             </CardContent>
           </Card>
-          </>}
+          </>)}
 
           {/* Detalji sub-tab — Employee detail (moved from dialog) */}
           {employeesSubTab === 'detalji' && selectedEmployee && (

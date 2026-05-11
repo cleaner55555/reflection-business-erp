@@ -319,7 +319,6 @@ export function FieldService() {
             </div>
           )}
         </TabsContent>
-            </TabsContent>
           </Tabs>
         </TabsContent>
       </Tabs>
