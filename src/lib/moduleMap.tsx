@@ -1,9 +1,10 @@
-// Lazy module loader using next/dynamic - modules loaded on demand only
+// Lazy ModuleRenderer - loads module group files on demand
+// Each group file contains ~12 React.lazy() imports, keeping the bundler happy
 
 'use client'
 
-import dynamic from 'next/dynamic'
-import React from 'react'
+import React, { useState, useEffect, useCallback, Suspense } from 'react'
+import { moduleGroupMap } from './module-groups/index'
 
 const Loader = () => (
   <div className="flex items-center justify-center h-64">
@@ -14,135 +15,103 @@ const Loader = () => (
   </div>
 )
 
-const modules: Record<string, React.ComponentType> = {
-  'dashboard': dynamic(() => import('@/components/modules/Dashboard'), { loading: Loader, ssr: false }),
-  'finance': dynamic(() => import('@/components/modules/Finance'), { loading: Loader, ssr: false }),
-  'invoices': dynamic(() => import('@/components/modules/Invoices'), { loading: Loader, ssr: false }),
-  'inventory': dynamic(() => import('@/components/modules/Inventory'), { loading: Loader, ssr: false }),
-  'contacts': dynamic(() => import('@/components/modules/Contacts'), { loading: Loader, ssr: false }),
-  'procurement': dynamic(() => import('@/components/modules/Procurement'), { loading: Loader, ssr: false }),
-  'reports': dynamic(() => import('@/components/modules/Reports'), { loading: Loader, ssr: false }),
-  'crm': dynamic(() => import('@/components/modules/CRM'), { loading: Loader, ssr: false }),
-  'calendar': dynamic(() => import('@/components/modules/Calendar'), { loading: Loader, ssr: false }),
-  'employees': dynamic(() => import('@/components/modules/Employees'), { loading: Loader, ssr: false }),
-  'projects': dynamic(() => import('@/components/modules/Projects'), { loading: Loader, ssr: false }),
-  'assets': dynamic(() => import('@/components/modules/Assets'), { loading: Loader, ssr: false }),
-  'documents': dynamic(() => import('@/components/modules/Documents'), { loading: Loader, ssr: false }),
-  'accounting': dynamic(() => import('@/components/modules/Accounting'), { loading: Loader, ssr: false }),
-  'protocol': dynamic(() => import('@/components/modules/Protocol'), { loading: Loader, ssr: false }),
-  'education': dynamic(() => import('@/components/modules/Education'), { loading: Loader, ssr: false }),
-  'fleet': dynamic(() => import('@/components/modules/Fleet'), { loading: Loader, ssr: false }),
-  'restaurant': dynamic(() => import('@/components/modules/Restaurant'), { loading: Loader, ssr: false }),
-  'email-marketing': dynamic(() => import('@/components/modules/EmailMarketing'), { loading: Loader, ssr: false }),
-  'rent-a-car': dynamic(() => import('@/components/modules/CarRental'), { loading: Loader, ssr: false }),
-  'settings': dynamic(() => import('@/components/modules/Settings'), { loading: Loader, ssr: false }),
-  'integrations': dynamic(() => import('@/components/modules/Integracije'), { loading: Loader, ssr: false }),
-  'bank-sync': dynamic(() => import('@/components/modules/BankSync'), { loading: Loader, ssr: false }),
-  'laws': dynamic(() => import('@/components/modules/Laws'), { loading: Loader, ssr: false }),
-  'pos': dynamic(() => import('@/components/modules/Retail'), { loading: Loader, ssr: false }),
-  'shipping': dynamic(() => import('@/components/modules/Shipping'), { loading: Loader, ssr: false }),
-  'marketplace': dynamic(() => import('@/components/modules/Marketplace'), { loading: Loader, ssr: false }),
-  'offers': dynamic(() => import('@/components/modules/Offers'), { loading: Loader, ssr: false }),
-  'subscriptions': dynamic(() => import('@/components/modules/Subscriptions'), { loading: Loader, ssr: false }),
-  'expenses': dynamic(() => import('@/components/modules/Expenses'), { loading: Loader, ssr: false }),
-  'signatures': dynamic(() => import('@/components/modules/Signatures'), { loading: Loader, ssr: false }),
-  'manufacturing': dynamic(() => import('@/components/modules/Manufacturing'), { loading: Loader, ssr: false }),
-  'quality': dynamic(() => import('@/components/modules/Quality'), { loading: Loader, ssr: false }),
-  'maintenance': dynamic(() => import('@/components/modules/Maintenance'), { loading: Loader, ssr: false }),
-  'recruitment': dynamic(() => import('@/components/modules/Recruitment'), { loading: Loader, ssr: false }),
-  'leave': dynamic(() => import('@/components/modules/Leave'), { loading: Loader, ssr: false }),
-  'referrals': dynamic(() => import('@/components/modules/Referrals'), { loading: Loader, ssr: false }),
-  'support': dynamic(() => import('@/components/modules/Support'), { loading: Loader, ssr: false }),
-  'field-service': dynamic(() => import('@/components/modules/FieldService'), { loading: Loader, ssr: false }),
-  'appointments': dynamic(() => import('@/components/modules/Appointments'), { loading: Loader, ssr: false }),
-  'scheduler': dynamic(() => import('@/components/modules/Scheduler'), { loading: Loader, ssr: false }),
-  'social-media': dynamic(() => import('@/components/modules/SocialMedia'), { loading: Loader, ssr: false }),
-  'sms-marketing': dynamic(() => import('@/components/modules/SmsMarketing'), { loading: Loader, ssr: false }),
-  'events': dynamic(() => import('@/components/modules/Events'), { loading: Loader, ssr: false }),
-  'marketing-automation': dynamic(() => import('@/components/modules/MarketingAutomation'), { loading: Loader, ssr: false }),
-  'surveys': dynamic(() => import('@/components/modules/Surveys'), { loading: Loader, ssr: false }),
-  'chat': dynamic(() => import('@/components/modules/Chat'), { loading: Loader, ssr: false }),
-  'knowledge-base': dynamic(() => import('@/components/modules/KnowledgeBase'), { loading: Loader, ssr: false }),
-  'website': dynamic(() => import('@/components/modules/WebsiteBuilder'), { loading: Loader, ssr: false }),
-  'blog': dynamic(() => import('@/components/modules/Blog'), { loading: Loader, ssr: false }),
-  'voip': dynamic(() => import('@/components/modules/VoIP'), { loading: Loader, ssr: false }),
-  'iot': dynamic(() => import('@/components/modules/IoT'), { loading: Loader, ssr: false }),
-  'messaging': dynamic(() => import('@/components/modules/Messaging'), { loading: Loader, ssr: false }),
-  'forum': dynamic(() => import('@/components/modules/Forum'), { loading: Loader, ssr: false }),
-  'plm': dynamic(() => import('@/components/modules/PLM'), { loading: Loader, ssr: false }),
-  'ecommerce': dynamic(() => import('@/components/modules/ECommerce'), { loading: Loader, ssr: false }),
-  'spreadsheet': dynamic(() => import('@/components/modules/Spreadsheet'), { loading: Loader, ssr: false }),
-  'notes': dynamic(() => import('@/components/modules/Notes'), { loading: Loader, ssr: false }),
-  'approvals': dynamic(() => import('@/components/modules/Approvals'), { loading: Loader, ssr: false }),
-  'skills': dynamic(() => import('@/components/modules/Skills'), { loading: Loader, ssr: false }),
-  'contracts': dynamic(() => import('@/components/modules/Contracts'), { loading: Loader, ssr: false }),
-  'ratings': dynamic(() => import('@/components/modules/Ratings'), { loading: Loader, ssr: false }),
-  'gamification': dynamic(() => import('@/components/modules/Gamification'), { loading: Loader, ssr: false }),
-  'complaints': dynamic(() => import('@/components/modules/Complaints'), { loading: Loader, ssr: false }),
-  'tenders': dynamic(() => import('@/components/modules/Tenders'), { loading: Loader, ssr: false }),
-  'warranty': dynamic(() => import('@/components/modules/Warranty'), { loading: Loader, ssr: false }),
-  'service-center': dynamic(() => import('@/components/modules/ServiceCenter'), { loading: Loader, ssr: false }),
-  'compliance': dynamic(() => import('@/components/modules/Compliance'), { loading: Loader, ssr: false }),
-  'loyalty': dynamic(() => import('@/components/modules/Loyalty'), { loading: Loader, ssr: false }),
-  'workforce-planner': dynamic(() => import('@/components/modules/WorkforcePlanner'), { loading: Loader, ssr: false }),
-  'visitors': dynamic(() => import('@/components/modules/Visitors'), { loading: Loader, ssr: false }),
-  'suggestions': dynamic(() => import('@/components/modules/Suggestions'), { loading: Loader, ssr: false }),
-  'valuation': dynamic(() => import('@/components/modules/Valuation'), { loading: Loader, ssr: false }),
-  'health-fund': dynamic(() => import('@/components/modules/HealthFund'), { loading: Loader, ssr: false }),
-  'geolocation': dynamic(() => import('@/components/modules/Geolocation'), { loading: Loader, ssr: false }),
-  'cameras': dynamic(() => import('@/components/modules/Cameras'), { loading: Loader, ssr: false }),
-  'procurement-manager': dynamic(() => import('@/components/modules/ProcurementManager'), { loading: Loader, ssr: false }),
-  'cms': dynamic(() => import('@/components/modules/CMS'), { loading: Loader, ssr: false }),
-  'homework': dynamic(() => import('@/components/modules/Homework'), { loading: Loader, ssr: false }),
-  'enrollment': dynamic(() => import('@/components/modules/Enrollment'), { loading: Loader, ssr: false }),
-  'timetable': dynamic(() => import('@/components/modules/Timetable'), { loading: Loader, ssr: false }),
-  'library': dynamic(() => import('@/components/modules/Library'), { loading: Loader, ssr: false }),
-  'classroom': dynamic(() => import('@/components/modules/Classroom'), { loading: Loader, ssr: false }),
-  'tuition': dynamic(() => import('@/components/modules/Tuition'), { loading: Loader, ssr: false }),
-  'patients': dynamic(() => import('@/components/modules/Patients'), { loading: Loader, ssr: false }),
-  'medical-records': dynamic(() => import('@/components/modules/MedicalRecords'), { loading: Loader, ssr: false }),
-  'prescriptions': dynamic(() => import('@/components/modules/Prescriptions'), { loading: Loader, ssr: false }),
-  'lab': dynamic(() => import('@/components/modules/Lab'), { loading: Loader, ssr: false }),
-  'reservations': dynamic(() => import('@/components/modules/Reservations'), { loading: Loader, ssr: false }),
-  'menu': dynamic(() => import('@/components/modules/Menu'), { loading: Loader, ssr: false }),
-  'kitchen': dynamic(() => import('@/components/modules/Kitchen'), { loading: Loader, ssr: false }),
-  'orders': dynamic(() => import('@/components/modules/Orders'), { loading: Loader, ssr: false }),
-  'delivery': dynamic(() => import('@/components/modules/Delivery'), { loading: Loader, ssr: false }),
-  'construction-site': dynamic(() => import('@/components/modules/ConstructionSite'), { loading: Loader, ssr: false }),
-  'blueprints': dynamic(() => import('@/components/modules/Blueprints'), { loading: Loader, ssr: false }),
-  'subcontractors': dynamic(() => import('@/components/modules/Subcontractors'), { loading: Loader, ssr: false }),
-  'measurements': dynamic(() => import('@/components/modules/Measurements'), { loading: Loader, ssr: false }),
-  'safety': dynamic(() => import('@/components/modules/Safety'), { loading: Loader, ssr: false }),
-  'routes': dynamic(() => import('@/components/modules/Routes'), { loading: Loader, ssr: false }),
-  'loading-dock': dynamic(() => import('@/components/modules/LoadingDock'), { loading: Loader, ssr: false }),
-  'customs-docs': dynamic(() => import('@/components/modules/CustomsDocs'), { loading: Loader, ssr: false }),
-  'trucks': dynamic(() => import('@/components/modules/Trucks'), { loading: Loader, ssr: false }),
-  'packaging': dynamic(() => import('@/components/modules/Packaging'), { loading: Loader, ssr: false }),
-  'property': dynamic(() => import('@/components/modules/Property'), { loading: Loader, ssr: false }),
-  'rentals': dynamic(() => import('@/components/modules/Rentals'), { loading: Loader, ssr: false }),
-  'property-viewings': dynamic(() => import('@/components/modules/PropertyViewings'), { loading: Loader, ssr: false }),
-  'utilities': dynamic(() => import('@/components/modules/Utilities'), { loading: Loader, ssr: false }),
-  'work-orders': dynamic(() => import('@/components/modules/WorkOrders'), { loading: Loader, ssr: false }),
-  'standards': dynamic(() => import('@/components/modules/Standards'), { loading: Loader, ssr: false }),
-  'labels': dynamic(() => import('@/components/modules/Labels'), { loading: Loader, ssr: false }),
-  'barcode': dynamic(() => import('@/components/modules/Barcode'), { loading: Loader, ssr: false }),
-  'price-lists': dynamic(() => import('@/components/modules/PriceLists'), { loading: Loader, ssr: false }),
-  'coupons': dynamic(() => import('@/components/modules/Coupons'), { loading: Loader, ssr: false }),
-  'reviews': dynamic(() => import('@/components/modules/Reviews'), { loading: Loader, ssr: false }),
-  'seo': dynamic(() => import('@/components/modules/SEO'), { loading: Loader, ssr: false }),
-  'payments': dynamic(() => import('@/components/modules/Payments'), { loading: Loader, ssr: false }),
-  'returns': dynamic(() => import('@/components/modules/Returns'), { loading: Loader, ssr: false }),
-  'cash-register': dynamic(() => import('@/components/modules/CashRegister'), { loading: Loader, ssr: false }),
-  'time-tracking': dynamic(() => import('@/components/modules/TimeTracking'), { loading: Loader, ssr: false }),
-  'time-billing': dynamic(() => import('@/components/modules/TimeBilling'), { loading: Loader, ssr: false }),
-  'client-portal': dynamic(() => import('@/components/modules/ClientPortal'), { loading: Loader, ssr: false }),
-  'automation': dynamic(() => import('@/components/modules/Automation'), { loading: Loader, ssr: false }),
-  'stores': dynamic(() => import('@/components/modules/Stores'), { loading: Loader, ssr: false }),
-  'backup': dynamic(() => import('@/components/modules/Backup'), { loading: Loader, ssr: false }),
+type ModuleMap = Record<string, React.LazyExoticComponent<React.ComponentType>>
+
+// Cache for loaded module groups
+const groupCache = new Map<string, ModuleMap>()
+
+const groupLoaders: Record<string, () => Promise<ModuleMap>> = {
+  core: () => import('./module-groups/core').then(m => m.coreModules),
+  hr: () => import('./module-groups/hr').then(m => m.hrModules),
+  finance: () => import('./module-groups/finance').then(m => m.financeModules),
+  sales: () => import('./module-groups/sales').then(m => m.salesModules),
+  projects: () => import('./module-groups/projects').then(m => m.projectModules),
+  it: () => import('./module-groups/it').then(m => m.itModules),
+  logistics: () => import('./module-groups/logistics').then(m => m.logisticsModules),
+  education: () => import('./module-groups/education').then(m => m.educationModules),
+  hospitality: () => import('./module-groups/hospitality').then(m => m.hospitalityModules),
+  construction: () => import('./module-groups/construction').then(m => m.constructionModules),
+  property: () => import('./module-groups/property').then(m => m.propertyModules),
+  medical: () => import('./module-groups/other').then(m => m.medicalModules),
+  services: () => import('./module-groups/other').then(m => m.servicesModules),
+  retail: () => import('./module-groups/other').then(m => m.retailModules),
 }
 
 export function ModuleRenderer({ moduleKey }: { moduleKey: string }) {
-  const Mod = modules[moduleKey]
-  if (!Mod) return <div className="p-8 text-center text-destructive text-sm">Modul &quot;{moduleKey}&quot; nije pronađen</div>
-  return <Mod />
+  const [Component, setComponent] = useState<React.LazyExoticComponent<React.ComponentType> | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const loadModule = useCallback(async (key: string) => {
+    setComponent(null)
+    setError(null)
+    setLoading(true)
+
+    try {
+      const groupName = moduleGroupMap[key]
+      if (!groupName) {
+        setError(`Modul "${key}" nije pronađen`)
+        setLoading(false)
+        return
+      }
+
+      let groupModules = groupCache.get(groupName)
+
+      if (!groupModules) {
+        const loader = groupLoaders[groupName]
+        if (!loader) {
+          setError(`Grupa "${groupName}" nije pronađena`)
+          setLoading(false)
+          return
+        }
+        groupModules = await loader()
+        groupCache.set(groupName, groupModules)
+      }
+
+      const Mod = groupModules[key]
+      if (!Mod) {
+        setError(`Modul "${key}" nije pronađen u grupi`)
+        setLoading(false)
+        return
+      }
+
+      setComponent(() => Mod)
+      setLoading(false)
+    } catch (err) {
+      console.error(`Failed to load module "${key}":`, err)
+      setError(`Greška učitavanja: ${key}`)
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadModule(moduleKey)
+  }, [moduleKey, loadModule])
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="rounded-full bg-destructive/10 p-3">
+          <svg className="h-6 w-6 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        <p className="text-sm text-destructive font-medium">{error}</p>
+        <button
+          onClick={() => loadModule(moduleKey)}
+          className="text-xs text-primary hover:underline"
+        >
+          Pokušaj ponovo
+        </button>
+      </div>
+    )
+  }
+
+  if (loading || !Component) return <Loader />
+
+  return (
+    <Suspense fallback={<Loader />}>
+      <Component />
+    </Suspense>
+  )
 }
