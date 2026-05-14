@@ -78,3 +78,30 @@ Stage Summary:
 - SocialMedia component now correctly matches Prisma schema field names and status values
 - DELETE requests use correct URL format (/api/social/posts/${id})
 - Server running stable, page compiles in ~7s
+
+---
+Task ID: 4
+Agent: main
+Task: Implement Industry Templates (Namene) system - 99 Odoo-like industry presets
+
+Work Log:
+- Fetched and analyzed Odoo industry pages (odoo.com/industries/*) to understand the pattern
+- Confirmed Odoo industries = marketing pages + pre-configured module sets (not separate apps)
+- Added IndustryTemplate Prisma model (name, slug, description, icon, category, modules JSON, featured, sortOrder)
+- Pushed schema to DB with db:push
+- Created comprehensive seed data: /home/z/my-project/src/lib/industry-templates-data.ts with 99 industry templates
+- Created API route: /api/industry-templates (GET list with search/filter/featured, POST to apply template)
+- API auto-seeds all 99 templates on first GET (idempotent)
+- Created UI component: /src/components/modules/IndustryTemplates/index.tsx
+  - Browse/Featured tabs, category filter pills, search
+  - Card grid layout with icons, module count, category badge
+  - Dialog to preview modules and confirm apply
+  - Apply updates company.modules field
+- Added "Namene" tab to Settings module (10th tab with Compass icon)
+- Used next/dynamic for lazy loading in Settings
+
+Stage Summary:
+- 99 industry templates across 11 categories fully functional
+- Categories: Biznis servisi (10), Kultura i umetnost (8), Obrazovanje (4), Događaji i zajednica (9), Hrana i piće (10), Zdravlje i wellness (9), Ugostiteljstvo i turizam (10), Proizvodnja i logistika (9), Nekretnine i građevina (9), Trgovina (13), Zanati i kućni servisi (8)
+- 13 featured industries highlighted
+- Server compiles and API returns all templates correctly

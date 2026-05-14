@@ -4057,3 +4057,19 @@ model Utility {
 
   company Company @relation(fields: [companyId], references: [id])
 }
+
+// ============ INDUSTRY TEMPLATES (NAMENE) ============
+
+model IndustryTemplate {
+  id            String   @id @default(cuid())
+  name          String                        // e.g. "Pekara", "Hotel"
+  slug          String   @unique               // e.g. "bakery", "hotel"
+  description   String                        // Short description
+  icon          String   @default("Building2") // Lucide icon name
+  category      String                        // e.g. "Ugostiteljstvo", "Trgovina"
+  modules       String                        // JSON array of module keys
+  featured      Boolean  @default(false)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

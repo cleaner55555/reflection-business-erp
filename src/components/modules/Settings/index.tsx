@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Settings as SettingsIcon, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook, Sparkles } from 'lucide-react'
+import { Settings as SettingsIcon, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook, Sparkles, Compass } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/helpers'
 import { useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
@@ -21,6 +21,9 @@ import { ApiKeyManagement } from '@/components/modules/ApiKeyManagement'
 import { PermissionsEditor } from '@/components/modules/PermissionsEditor'
 import { AuditLogViewer } from '@/components/modules/AuditLogViewer'
 import { WebhookManager } from '@/components/modules/WebhookManager'
+import dynamic from 'next/dynamic'
+
+const IndustryTemplates = dynamic(() => import('@/components/modules/IndustryTemplates').then(m => m.default), { ssr: false, loading: () => <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div> })
 import { themePresets } from '@/lib/theme-presets'
 import type { ThemeSettings } from '@/lib/theme'
 
@@ -546,7 +549,7 @@ export function Settings() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9 lg:w-[960px]">
+        <TabsList className="grid w-full grid-cols-10 lg:w-[1080px]">
           <TabsTrigger value="moduli" className="gap-1.5 text-xs sm:text-sm">
             <Blocks className="h-4 w-4 hidden sm:block" />
             <span className="hidden sm:inline">{t('settings.tab_modules')}</span>
@@ -582,6 +585,10 @@ export function Settings() {
           <TabsTrigger value="webhooks" className="gap-1.5 text-xs sm:text-sm">
             <Webhook className="h-4 w-4" />
             <span className="hidden sm:inline">Webhooks</span>
+          </TabsTrigger>
+          <TabsTrigger value="namene" className="gap-1.5 text-xs sm:text-sm">
+            <Compass className="h-4 w-4" />
+            <span className="hidden sm:inline">Namene</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1069,6 +1076,11 @@ export function Settings() {
         {/* ============ WEBHOOKS TAB ============ */}
         <TabsContent value="webhooks">
           <WebhookManager />
+        </TabsContent>
+
+        {/* ============ NAMENE (INDUSTRY TEMPLATES) TAB ============ */}
+        <TabsContent value="namene">
+          <IndustryTemplates />
         </TabsContent>
       </Tabs>
     </div>
