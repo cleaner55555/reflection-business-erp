@@ -4,7 +4,7 @@ import type { ComponentType } from 'react'
 export const logisticsModules: Record<string, () => Promise<ComponentType>> = {
   'shipping': () => import('@/components/modules/Shipping').then(m => m.Shipping),
   'fleet': () => import('@/components/modules/Fleet').then(m => m.Fleet),
-  'rent-a-car': () => import('@/components/modules/CarRental').then(m => m.CarRental),
+  'rent-a-car': () => import('@/components/modules/CarRental').then(m => m.RentACar),
   'delivery': () => import('@/components/modules/Delivery').then(m => m.Delivery),
   'routes': () => import('@/components/modules/Routes').then(m => m.Routes),
   'loading-dock': () => import('@/components/modules/LoadingDock').then(m => m.LoadingDock),

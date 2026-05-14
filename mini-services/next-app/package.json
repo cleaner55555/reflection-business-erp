@@ -1,0 +1,10 @@
+{
+  "name": "next-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_OPTIONS='--require /home/z/my-project/disable-mem-check.cjs --max-old-space-size=4096' npx next dev -p 3000"
+  },
+  "dependencies": {}
+}

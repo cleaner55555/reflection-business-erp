@@ -1,33 +1,108 @@
 'use client'
 
-import { useEffect } from 'react'
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
-import { AppSidebar } from '@/components/modules/AppSidebar'
-import { Footer } from '@/components/modules/Footer'
-import { AITeam } from '@/components/modules/AITeam'
-import { GlobalSearch } from '@/components/modules/GlobalSearch'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { NotificationBell } from '@/components/modules/NotificationBell'
-import { NotificationCenter } from '@/components/modules/NotificationCenter'
-import { AppLauncher, openAppLauncher } from '@/components/modules/AppLauncher'
-import { AISetupWizard, openAISetupWizard } from '@/components/modules/AISetupWizard'
-import { LandingPage } from '@/components/landing/LandingPage'
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
-import { OfflineIndicator } from '@/components/OfflineIndicator'
-import { KeyboardShortcutsProvider } from '@/components/KeyboardShortcuts'
-import { CompanySwitcher } from '@/components/modules/CompanySwitcher'
-import { UserMenu } from '@/components/modules/UserMenu'
+import dynamic from 'next/dynamic'
+import { useEffect, useState, Suspense } from 'react'
 import { useAppStore } from '@/lib/store'
-import { ModuleRenderer } from '@/lib/moduleMap'
 import { useThemeStore } from '@/lib/theme'
 import { I18nProvider, useTranslation, ALL_LANGUAGES, ContentTranslationProvider } from '@/lib/i18n'
 import { Separator } from '@/components/ui/separator'
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Languages, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+
+// ============================================================
+// ALL heavy components loaded lazily via next/dynamic
+// This prevents the initial compilation from processing 124+ modules
+// ============================================================
+
+const AppSidebar = dynamic(
+  () => import('@/components/modules/AppSidebar').then(m => ({ default: m.AppSidebar })),
+  { ssr: false, loading: () => <div className="w-64 border-r bg-muted animate-pulse" /> }
+)
+
+const Footer = dynamic(
+  () => import('@/components/modules/Footer').then(m => ({ default: m.Footer })),
+  { ssr: false }
+)
+
+const AITeam = dynamic(
+  () => import('@/components/modules/AITeam').then(m => ({ default: m.AITeam })),
+  { ssr: false }
+)
+
+const GlobalSearch = dynamic(
+  () => import('@/components/modules/GlobalSearch').then(m => ({ default: m.GlobalSearch })),
+  { ssr: false }
+)
+
+const ThemeToggle = dynamic(
+  () => import('@/components/theme-toggle').then(m => ({ default: m.ThemeToggle })),
+  { ssr: false }
+)
+
+const NotificationBell = dynamic(
+  () => import('@/components/modules/NotificationBell').then(m => ({ default: m.NotificationBell })),
+  { ssr: false }
+)
+
+const NotificationCenter = dynamic(
+  () => import('@/components/modules/NotificationCenter').then(m => ({ default: m.NotificationCenter })),
+  { ssr: false }
+)
+
+const AppLauncher = dynamic(
+  () => import('@/components/modules/AppLauncher').then(m => {
+    const Comp = m.AppLauncher
+    return { default: () => <Comp /> }
+  }),
+  { ssr: false }
+)
+
+const AISetupWizard = dynamic(
+  () => import('@/components/modules/AISetupWizard').then(m => {
+    const Comp = m.AISetupWizard
+    return { default: () => <Comp /> }
+  }),
+  { ssr: false }
+)
+
+const LandingPage = dynamic(
+  () => import('@/components/landing/LandingPage').then(m => ({ default: m.LandingPage })),
+  { ssr: false }
+)
+
+const PWAInstallPrompt = dynamic(
+  () => import('@/components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })),
+  { ssr: false }
+)
+
+const OfflineIndicator = dynamic(
+  () => import('@/components/OfflineIndicator').then(m => ({ default: m.OfflineIndicator })),
+  { ssr: false }
+)
+
+const KeyboardShortcutsProvider = dynamic(
+  () => import('@/components/KeyboardShortcuts').then(m => ({ default: m.KeyboardShortcutsProvider })),
+  { ssr: false }
+)
+
+const CompanySwitcher = dynamic(
+  () => import('@/components/modules/CompanySwitcher').then(m => ({ default: m.CompanySwitcher })),
+  { ssr: false }
+)
+
+const UserMenu = dynamic(
+  () => import('@/components/modules/UserMenu').then(m => ({ default: m.UserMenu })),
+  { ssr: false }
+)
+
+const ModuleRenderer = dynamic(
+  () => import('@/lib/moduleMap').then(m => ({ default: m.ModuleRenderer })),
+  { ssr: false }
+)
+
+// ============================================================
 
 const DEFAULT_ACTIVE_LANGS = ['sr', 'sr-latn', 'en']
 

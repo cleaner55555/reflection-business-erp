@@ -9,7 +9,7 @@ export const itModules: Record<string, () => Promise<ComponentType>> = {
   'forum': () => import('@/components/modules/Forum').then(m => m.Forum),
   'spreadsheet': () => import('@/components/modules/Spreadsheet').then(m => m.Spreadsheet),
   'notes': () => import('@/components/modules/Notes').then(m => m.Notes),
-  'integrations': () => import('@/components/modules/Integracije').then(m => m.Integracije),
+  'integrations': () => import('@/components/modules/Integracije').then(m => m.Integrations),
   'backup': () => import('@/components/modules/Backup').then(m => m.Backup),
   'laws': () => import('@/components/modules/Laws').then(m => m.Laws),
   'iot': () => import('@/components/modules/IoT').then(m => m.IoT),
