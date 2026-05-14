@@ -25,8 +25,8 @@ interface SocialPost {
   platform: string
   content: string
   status: string
-  scheduledDate?: string
-  publishedDate?: string
+  scheduledAt?: string
+  publishedAt?: string
   likes?: number
   comments?: number
   shares?: number
@@ -52,10 +52,10 @@ const platformConfig: Record<string, { label: string; color: string; icon: strin
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  draft: { label: 'Nacrt', color: 'bg-gray-100 text-gray-700' },
-  scheduled: { label: 'Zakazano', color: 'bg-amber-100 text-amber-700' },
-  published: { label: 'Objavljeno', color: 'bg-green-100 text-green-700' },
-  failed: { label: 'Greška', color: 'bg-red-100 text-red-700' },
+  nacrt: { label: 'Nacrt', color: 'bg-gray-100 text-gray-700' },
+  zakazano: { label: 'Zakazano', color: 'bg-amber-100 text-amber-700' },
+  objavljeno: { label: 'Objavljeno', color: 'bg-green-100 text-green-700' },
+  neuspešno: { label: 'Greška', color: 'bg-red-100 text-red-700' },
 }
 
 export function SocialMedia() {
@@ -72,7 +72,7 @@ export function SocialMedia() {
   const [selected, setSelected] = useState<SocialPost | null>(null)
 
   const emptyForm = {
-    platform: 'facebook', content: '', scheduledDate: '', status: 'draft',
+    platform: 'facebook', content: '', scheduledAt: '', status: 'nacrt',
   }
   const [form, setForm] = useState(emptyForm)
 
@@ -86,8 +86,8 @@ export function SocialMedia() {
         setPosts(items)
         setDashboard({
           totalPosts: items.length,
-          publishedPosts: items.filter((p: SocialPost) => p.status === 'published').length,
-          scheduledPosts: items.filter((p: SocialPost) => p.status === 'scheduled').length,
+          publishedPosts: items.filter((p: SocialPost) => p.status === 'objavljeno').length,
+          scheduledPosts: items.filter((p: SocialPost) => p.status === 'zakazano').length,
           totalEngagement: items.reduce((sum: number, p: SocialPost) => sum + (p.likes || 0) + (p.comments || 0) + (p.shares || 0), 0),
           platformBreakdown: Object.entries(
             items.reduce<Record<string, number>>((acc, p: SocialPost) => { acc[p.platform] = (acc[p.platform] || 0) + 1; return acc }, {})
@@ -121,7 +121,7 @@ export function SocialMedia() {
   const handleDelete = async (id: string) => {
     if (!confirm('Obrisati objavu?')) return
     try {
-      const res = await fetch(`/api/social/posts?id=${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/social/posts/${id}`, { method: 'DELETE' })
       if (res.ok) loadPosts()
     } catch { /* silent */ }
   }
@@ -244,7 +244,7 @@ export function SocialMedia() {
                       <Separator className="my-3" />
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>❤️ {p.likes || 0}</span><span>💬 {p.comments || 0}</span><span>🔄 {p.shares || 0}</span>
-                        {p.scheduledDate && <span className="ml-auto">📅 {new Date(p.scheduledDate).toLocaleDateString('sr-RS')}</span>}
+                        {p.scheduledAt && <span className="ml-auto">📅 {new Date(p.scheduledAt).toLocaleDateString('sr-RS')}</span>}
                       </div>
                     </CardContent>
                   </Card>
@@ -268,7 +268,7 @@ export function SocialMedia() {
                   </Select>
                 </div>
                 <div className="space-y-2"><Label>Sadržaj</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={5} placeholder="Napišite sadržaj objave..." /></div>
-                <div className="space-y-2"><Label>Datum objave (opcionalno)</Label><Input type="date" value={form.scheduledDate} onChange={(e) => setForm({ ...form, scheduledDate: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Datum objave (opcionalno)</Label><Input type="date" value={form.scheduledAt} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} /></div>
               </div>
               <div className="flex justify-end gap-2 pt-4 border-t mt-4">
                 <Button variant="outline" onClick={() => setPostsSubTab('pregled')}>Otkaži</Button>

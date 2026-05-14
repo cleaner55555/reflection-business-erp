@@ -56,3 +56,25 @@ Stage Summary:
 - Memory usage: ~2.6GB (31% of 8GB) - sustainable
 - Dashboard API returns KPIs, companies API returns data
 - Page renders correctly with title "Reflection Business — ERP + CRM Sistem"
+
+---
+Task ID: 3
+Agent: main
+Task: Fix "Društvene Mreže" (Social Networks) module - loads but doesn't work
+
+Work Log:
+- Investigated the SocialMedia component at src/components/modules/SocialMedia/index.tsx
+- Found API routes exist: /api/social/posts (GET, POST) and /api/social/posts/[id] (PUT, DELETE)
+- Found Prisma model SocialPost with fields: scheduledAt, publishedAt, status (nacrt/zakazano/objavljeno/neuspešno)
+- Identified 3 mismatches between component and Prisma schema/API:
+  1. Field names: component used scheduledDate/publishedDate but Prisma has scheduledAt/publishedAt
+  2. Status values: component used English (draft/scheduled/published/failed) but DB uses Serbian (nacrt/zakazano/objavljeno/neuspešno)
+  3. DELETE URL: component used query param (?id=) but API expects path segment (/${id})
+- Fixed all 3 issues in the SocialMedia component
+- Dashboard computation also fixed: filter by 'objavljeno' and 'zakazano' instead of 'published' and 'scheduled'
+- Restarted dev server, confirmed GET / 200 in 7.1s, all APIs responding correctly
+
+Stage Summary:
+- SocialMedia component now correctly matches Prisma schema field names and status values
+- DELETE requests use correct URL format (/api/social/posts/${id})
+- Server running stable, page compiles in ~7s
