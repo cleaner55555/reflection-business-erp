@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/general/apps_modules.html",
+    "name": "Apps and modules — Odoo 19.0 documentation",
+    "snippet": "Odoo.sh · Getting started · Create a project · Branches · Builds · Settings · Online editor · Your first module; Advanced. Containers · Submodules · Frequent ...",
+    "host_name": "www.odoo.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/pricing-configurator",
+    "name": "Odoo Pricing Configurator",
+    "snippet": "Check our prices for on premise solutions using the option below. The monthly plan is only available to cloud hosting options (Standard or Odoo.sh)",
+    "host_name": "www.odoo.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/developer/tutorials/discover_js_framework/02_build_a_dashboard.html",
+    "name": "Chapter 2: Build a dashboard — Odoo 19.0 documentation",
+    "snippet": "Odoo.sh · Getting started · Create a project · Branches · Builds · Settings · Online editor · Your first module; Advanced. Containers · Submodules · Frequent ...",
+    "host_name": "www.odoo.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/slides",
+    "name": "Odoo Learn",
+    "snippet": "Odoo.sh Hosting · Support · Upgrade · Custom Developments · Education · Find an Accountant · Find a Partner · Become a Partner. About us. Our company · Brand ...",
+    "host_name": "www.odoo.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/essentials/export_import_data.html",
+    "name": "Export and import data — Odoo 19.0 documentation",
+    "snippet": "Odoo.sh · Getting started · Create a project · Branches · Builds · Settings · Online editor · Your first module; Advanced. Containers · Submodules · Frequent ...",
+    "host_name": "www.odoo.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0",
+    "name": "Odoo 19.0 documentation",
+    "snippet": "Learn how to install, deploy and upgrade Odoo on premise or on Odoo.sh. Top Links. Installing Odoo · Bugfix updates · Upgrading Odoo · Odoo.sh: The Odoo Cloud ...",
+    "host_name": "www.odoo.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/inventory_and_mrp/manufacturing.html",
+    "name": "Manufacturing — Odoo 19.0 documentation",
+    "snippet": "Odoo.sh · Getting started · Create a project · Branches · Builds · Settings · Online editor · Your first module; Advanced. Containers · Submodules · Frequent ...",
+    "host_name": "www.odoo.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/general/companies/multi_company.html",
+    "name": "Multi-company — Odoo 19.0 documentation",
+    "snippet": "Odoo.sh · Getting started · Create a project · Branches · Builds · Settings · Online editor · Your first module; Advanced. Containers · Submodules · Frequent ...",
+    "host_name": "www.odoo.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/industries/clothing-store",
+    "name": "Clothing Store | Industry - Odoo",
+    "snippet": "Odoo works like a charm across tablets, laptops, desktops, and industrial machines. ... Odoo.sh Hosting · Support · Upgrade · Custom Developments · Education ...",
+    "host_name": "www.odoo.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/essentials/contacts.html",
+    "name": "Contacts — Odoo 19.0 documentation",
+    "snippet": "Odoo.sh · Getting started · Create a project · Branches · Builds · Settings · Online editor · Your first module; Advanced. Containers · Submodules · Frequent ...",
+    "host_name": "www.odoo.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

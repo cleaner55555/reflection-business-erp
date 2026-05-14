@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/general/apps_modules.html",
+    "name": "Apps and modules — Odoo 19.0 documentation",
+    "snippet": "Apps and modules¶. Install, upgrade and uninstall any needed apps and modules from the Apps dashboard. By default, an Apps filter is applied.",
+    "host_name": "www.odoo.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/app/website",
+    "name": "The #1 free, open-source Website Builder | Odoo",
+    "snippet": "No technical skills required. Dream it? Build it! Let the AI suggest your website layout and content based on your industry.",
+    "host_name": "www.odoo.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/developer/tutorials/server_framework_101/01_architecture.html",
+    "name": "Chapter 1: Architecture Overview — Odoo 19.0 documentation",
+    "snippet": "Odoo modules can either add brand new business logic to an Odoo system or alter and extend existing business logic. One module can be created to add your ...",
+    "host_name": "www.odoo.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://apps.odoo.com/apps/modules/9.0/website_template_pages",
+    "name": "Website Template Pages - Odoo Apps Store",
+    "snippet": "Odoo is a suite of open source business apps that cover all your company needs: CRM, eCommerce, accounting, inventory, point of sale, project management, etc.",
+    "host_name": "apps.odoo.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=5MP50W8VBho",
+    "name": "How To Create A Website With Odoo (For Beginners) - YouTube",
+    "snippet": "... worked for you! Don't forget to subscribe for more daily videos! See you in the next video! Thank you! For business inquiries, contact ...",
+    "host_name": "www.youtube.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mastersoftwaresolutions.com/an-overview-of-odoo-website-development",
+    "name": "An Overview of Odoo Website Development",
+    "snippet": "Odoo is an open-source enterprise resource planning system that includes designing and developing great websites.",
+    "host_name": "www.mastersoftwaresolutions.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/documentation/19.0/applications/studio/models_modules_apps.html",
+    "name": "Models, modules, and apps — Odoo 19.0 documentation",
+    "snippet": "Models, modules, and apps¶. Models determine the logical structure of a database and how data is stored, organized, and manipulated. In other words, a model ...",
+    "host_name": "www.odoo.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.cybrosys.com/blog/odoo-website-module-the-best-website-management-tool",
+    "name": "Odoo Website Module: The Best Website Management Tool",
+    "snippet": "The website module will create and craft well-defined websites with a no-code approach using the Odoo Website builder operation tool. This ...",
+    "host_name": "www.cybrosys.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://hsxtech.net/a-comprehensive-guide-on-the-odoo-website-builder",
+    "name": "A Comprehensive Guide On The Odoo Website Builder - HSxTech",
+    "snippet": "The Website Builder from Odoo is a no-code, drag-and-drop platform which lets you create beautiful, responsive websites from right within your Odoo system.",
+    "host_name": "hsxtech.net",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.odoo.com/forum/help-1/how-to-use-my-own-template-90948",
+    "name": "How to use my own template? - Odoo",
+    "snippet": "I create a new theme module, extended 'web.main.Home' controller, and tried to render my own template: I get error: Template 'theme.login' ...",
+    "host_name": "www.odoo.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
