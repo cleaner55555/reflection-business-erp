@@ -1,9 +1,10 @@
 // Lazy ModuleRenderer - loads module group files on demand
 // Each group file contains loader functions for named exports, keeping the bundler happy
+// Pre-warms all module chunks in background after login for instant switching
 
 'use client'
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react'
+import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react'
 import type { ComponentType } from 'react'
 import { moduleGroupMap } from './module-groups/index'
 
@@ -20,6 +21,10 @@ type ModuleMap = Record<string, () => Promise<ComponentType>>
 
 // Cache for loaded module groups
 const groupCache = new Map<string, ModuleMap>()
+// Pre-warmed flag
+let prewarmed = false
+// Pre-warm progress (for UI feedback)
+let prewarmProgress = { done: 0, total: 0, error: false }
 
 const groupLoaders: Record<string, () => Promise<ModuleMap>> = {
   core: () => import('./module-groups/core').then(m => m.coreModules),
@@ -36,6 +41,61 @@ const groupLoaders: Record<string, () => Promise<ModuleMap>> = {
   medical: () => import('./module-groups/other').then(m => m.medicalModules),
   services: () => import('./module-groups/other').then(m => m.servicesModules),
   retail: () => import('./module-groups/other').then(m => m.retailModules),
+}
+
+// Get unique group names from moduleGroupMap
+const allGroupNames = [...new Set(Object.values(moduleGroupMap))]
+
+/**
+ * Pre-warm all module groups: load group files and resolve individual module imports.
+ * This tells Turbopack to compile all chunks upfront, so clicking any module is instant.
+ */
+export async function prewarmModules(): Promise<void> {
+  if (prewarmed) return
+  prewarmed = true
+  prewarmProgress = { done: 0, total: allGroupNames.length * 2, error: false }
+
+  const moduleKeys = Object.keys(moduleGroupMap)
+
+  try {
+    // Phase 1: Load all group files (12 imports)
+    for (const groupName of allGroupNames) {
+      const loader = groupLoaders[groupName]
+      if (!loader) continue
+      try {
+        const modules = await loader()
+        groupCache.set(groupName, modules)
+        prewarmProgress.done++
+      } catch (err) {
+        console.warn(`[prewarm] Failed to load group "${groupName}":`, err)
+      }
+    }
+
+    // Phase 2: For each module, trigger the inner import() to compile the component chunk
+    // Do this sequentially with small delays to avoid overwhelming Turbopack
+    for (const key of moduleKeys) {
+      const groupName = moduleGroupMap[key]
+      const groupModules = groupCache.get(groupName)
+      if (!groupModules) continue
+      const moduleLoader = groupModules[key]
+      if (!moduleLoader) continue
+      try {
+        await moduleLoader()
+        prewarmProgress.done++
+      } catch (err) {
+        // Individual module fail is OK - it will retry on actual click
+      }
+      // Small delay between modules to let Turbopack breathe
+      await new Promise(r => setTimeout(r, 100))
+    }
+  } catch (err) {
+    console.warn('[prewarm] Error during pre-warming:', err)
+    prewarmProgress.error = true
+  }
+}
+
+export function getPrewarmProgress() {
+  return prewarmProgress
 }
 
 export function ModuleRenderer({ moduleKey }: { moduleKey: string }) {
