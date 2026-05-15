@@ -9,7 +9,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Compass, Search, Star, Check, Loader2, ChevronRight, Building2, Palette, GraduationCap, PartyPopper, UtensilsCrossed, Heart, Hotel, Factory, ShoppingBag, Wrench, Briefcase, X, Shield, Eye, Crown, RotateCcw } from 'lucide-react'
+import {
+  Compass, Search, Star, Check, Loader2, ChevronRight, Building2, Palette, GraduationCap,
+  PartyPopper, UtensilsCrossed, Heart, Hotel, Factory, ShoppingBag, Wrench, Briefcase,
+  X, Shield, Eye, Crown, RotateCcw, ShieldCheck, Scale, Code2, BookOpen, Frame,
+  Camera, PenTool, Laptop, UserCheck, Trophy, Dumbbell, Medal, Ring, Beer, Wine,
+  Burger, Mountain, Glasses, Activity, Pill, Syringe, Sparkles, Flower2, Waves,
+  Home, Building, Car, Sprout, Shirt, Package, Monitor, ShoppingCart, Sofa, Puzzle,
+  Bike, SprayCan, Zap, Screwdriver, Footprints, Map, ChefHat, Truck, Warehouse,
+  Gift, Armchair, Cog, Scissors, Grape, Crane, HardHat, Thermometer, Sun,
+  Megaphone, Landmark, Tent, Music, Drama, Lock, Trees, Disc, Cabin, Fuel, Leaf,
+  UserSearch, LayoutDashboard, Circle, SquareSigma
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/helpers'
@@ -77,7 +88,7 @@ const MODULE_LABELS: Record<string, string> = {
 // ============ ICON MAP ============
 
 const ICON_MAP: Record<string, React.ElementType> = {
-  Calculator, ShieldCheck, Scale, Code2, BookOpen, Frame, Camera, PenTool,
+  Calculator: SquareSigma, ShieldCheck, Scale, Code2, BookOpen, Frame, Camera, PenTool,
   Laptop, PartyPopper, UserCheck, Heart, Trophy, Dumbbell, Medal, Ring,
   Beer, Wine, UtensilsCrossed, Burger, ShoppingBag, Mountain, Glasses,
   Activity, Pill, Syringe, Sparkles, Flower2, Waves, Home, Building,
