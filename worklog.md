@@ -269,3 +269,30 @@ Stage Summary:
 - Removed react-grid-layout and react-resizable from project
 - ESLint passes (pre-existing errors in Chat module only)
 - Dev server compiles successfully
+
+---
+Task ID: 1
+Agent: Main
+Task: Fix dashboard grid layout — make it look like original card sizes but with drag-and-drop and resize
+
+Work Log:
+- Read current Dashboard component (still using @dnd-kit section-only sorting from previous session revert)
+- Installed react-grid-layout@1.4.4 (v1 with WidthProvider HOC, compatible with React 19 via nodeRef)
+- Created TypeScript type declarations at src/types/react-grid-layout.d.ts
+- Rewrote Dashboard with react-grid-layout: 9 panels (kpi, alerts, health-goals-receivables, metrics, revenue-chart, charts, products-cashflow, invoices-partners, lowstock-tasks-activity)
+- Configured layout: 12 columns, rowHeight=20, margin=[12,12], all panels default to w=12 (full width)
+- Edit mode toggle: Lock/Unlock button shows drag handles and enables drag/resize
+- localStorage persistence for custom layouts with reset option
+- Added CSS for react-grid-layout: grid container, items, placeholder, resize handle, edit mode styling
+- Clean look when not in edit mode (no borders/backgrounds)
+- Visual appearance matches original dashboard (same sections, same content, same card sizes)
+- Removed @dnd-kit imports, no longer needed
+- Dev server compiled successfully (GET / 200)
+
+Stage Summary:
+- Dashboard now supports drag-and-drop and resize for all 9 panels
+- Visual appearance matches the original dashboard layout
+- Edit mode with drag handles and resize handles (bottom-right corner)
+- Layout saved to localStorage, reset to default available
+- Files modified: src/components/modules/Dashboard/index.tsx, src/app/globals.css
+- Files created: src/types/react-grid-layout.d.ts

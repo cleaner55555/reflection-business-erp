@@ -20,53 +20,67 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts'
-import {
-  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core'
-import {
-  SortableContext, useSortable, verticalListSortingStrategy, arrayMove,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import RGL, { WidthProvider } from 'react-grid-layout'
+import type { Layout } from 'react-grid-layout'
 import {
   formatRSD, formatRSDShort, formatDate, formatDateTime,
-  getStatusLabel, getStatusColor, getMonthLabel,
+  getStatusLabel, getStatusColor, getMonthLabel, cn,
 } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
 import { useAppStore, type ModuleType } from '@/lib/store'
 import {
-  KPICard, AlertCard, SectionCard, Sparkline, HealthScoreCard,
+  KPICard, AlertCard, Sparkline, HealthScoreCard,
   GoalTrackerCard, ReceivablesCard,
 } from './components'
 import { PIE_COLORS, STATUS_COLORS, DEAL_STAGE_COLORS, CHART_COLORS } from './data'
 import type { DashboardData, ActivityItem, LowStockProduct } from './types'
 
-// ============ SECTION ORDER ============
-const DEFAULT_SECTION_ORDER = [
-  'kpi',
-  'alerts',
-  'health-goals-receivables',
-  'metrics',
-  'revenue-chart',
-  'charts',
-  'products-cashflow',
-  'invoices-partners',
-  'lowstock-tasks-activity',
-] as const
+// ============ REACT GRID LAYOUT SETUP ============
+const GridLayout = WidthProvider(RGL)
 
-const SECTION_ORDER_KEY = 'dashboard_section_order_v1'
+// ============ LAYOUT CONFIGURATION ============
+const STORAGE_KEY = 'dashboard_grid_layout_v2'
 
-function getStoredSectionOrder(): string[] | null {
-  if (typeof window === 'undefined') return null
+const DEFAULT_LAYOUT: Layout[] = [
+  { i: 'kpi', x: 0, y: 0, w: 12, h: 5, minW: 4, minH: 4 },
+  { i: 'alerts', x: 0, y: 5, w: 12, h: 4, minW: 4, minH: 3 },
+  { i: 'health-goals-receivables', x: 0, y: 9, w: 12, h: 7, minW: 6, minH: 5 },
+  { i: 'metrics', x: 0, y: 16, w: 12, h: 3, minW: 4, minH: 2 },
+  { i: 'revenue-chart', x: 0, y: 19, w: 12, h: 11, minW: 6, minH: 8 },
+  { i: 'charts', x: 0, y: 30, w: 12, h: 9, minW: 6, minH: 6 },
+  { i: 'products-cashflow', x: 0, y: 39, w: 12, h: 10, minW: 4, minH: 6 },
+  { i: 'invoices-partners', x: 0, y: 49, w: 12, h: 8, minW: 4, minH: 6 },
+  { i: 'lowstock-tasks-activity', x: 0, y: 57, w: 12, h: 11, minW: 6, minH: 8 },
+]
+
+function loadLayout(): Layout[] {
+  if (typeof window === 'undefined') return DEFAULT_LAYOUT
   try {
-    const stored = localStorage.getItem(SECTION_ORDER_KEY)
-    return stored ? JSON.parse(stored) : null
-  } catch { return null }
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+  } catch { /* ignore */ }
+  return DEFAULT_LAYOUT
 }
 
-function isDefaultOrder(order: string[]): boolean {
-  if (order.length !== DEFAULT_SECTION_ORDER.length) return false
-  return order.every((id, i) => id === DEFAULT_SECTION_ORDER[i])
+function saveLayout(layout: Layout[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(layout))
+  } catch { /* ignore */ }
+}
+
+function isDefaultLayout(layout: Layout[]): boolean {
+  return layout.length === DEFAULT_LAYOUT.length &&
+    layout.every((item, i) =>
+      item.i === DEFAULT_LAYOUT[i].i &&
+      item.x === DEFAULT_LAYOUT[i].x &&
+      item.y === DEFAULT_LAYOUT[i].y &&
+      item.w === DEFAULT_LAYOUT[i].w &&
+      item.h === DEFAULT_LAYOUT[i].h
+    )
 }
 
 // ============ QUICK ACTIONS ============
@@ -78,94 +92,23 @@ const quickActions = [
   { labelKey: 'dashboard.newProduct', icon: PackagePlus, module: 'magacin' as ModuleType },
 ]
 
-// ============ SORTABLE SECTION WRAPPER ============
-function SortableSection({
-  id,
-  isEditMode,
-  children,
-}: {
-  id: string
-  isEditMode: boolean
-  children: ReactNode
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id, disabled: !isEditMode })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 50 : undefined,
-    opacity: isDragging ? 0.85 : 1,
-  }
-
-  return (
-    <div ref={setNodeRef} style={style} className="relative">
-      {isEditMode && (
-        <div
-          {...attributes}
-          {...listeners}
-          className="absolute -left-1 top-1/2 -translate-y-1/2 z-10 rounded-md bg-background border shadow-sm p-1 cursor-grab active:cursor-grabbing hover:bg-muted transition-colors"
-          title="Povuci za premeštanje"
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
-        </div>
-      )}
-      {children}
-    </div>
-  )
-}
-
 // ============ MAIN COMPONENT ============
 export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [lowStock, setLowStock] = useState<LowStockProduct[]>([])
   const [loading, setLoading] = useState(true)
-  const [sectionOrder, setSectionOrder] = useState<string[]>(DEFAULT_SECTION_ORDER)
+  const [layout, setLayout] = useState<Layout[]>(DEFAULT_LAYOUT)
   const [isEditMode, setIsEditMode] = useState(false)
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const { setActiveModule } = useAppStore()
 
-  // Load section order from localStorage
+  // Load layout from localStorage
   useEffect(() => {
-    const stored = getStoredSectionOrder()
-    if (stored) setSectionOrder(stored)
+    setLayout(loadLayout())
   }, [])
 
-  // Save section order
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(SECTION_ORDER_KEY, JSON.stringify(sectionOrder))
-    }
-  }, [sectionOrder])
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor)
-  )
-
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event
-    if (over && active.id !== over.id) {
-      setSectionOrder(prev => {
-        const oldIndex = prev.indexOf(String(active.id))
-        const newIndex = prev.indexOf(String(over.id))
-        return arrayMove(prev, oldIndex, newIndex)
-      })
-    }
-  }, [])
-
-  const handleResetOrder = useCallback(() => {
-    setSectionOrder([...DEFAULT_SECTION_ORDER])
-    localStorage.removeItem(SECTION_ORDER_KEY)
-  }, [])
-
+  // Fetch data
   useEffect(() => {
     Promise.all([
       fetch('/api/dashboard').then(r => r.json()),
@@ -177,6 +120,7 @@ export function Dashboard() {
     })
   }, [])
 
+  // Translate content
   useEffect(() => {
     if (!data && lowStock.length === 0) return
     const texts: string[] = []
@@ -230,6 +174,21 @@ export function Dashboard() {
     return groups.filter(g => g.items.length > 0)
   }, [activityFeed, t])
 
+  // Layout handlers
+  const handleLayoutChange = useCallback((newLayout: Layout[]) => {
+    setLayout(newLayout)
+    saveLayout(newLayout)
+  }, [])
+
+  const handleResetLayout = useCallback(() => {
+    setLayout(DEFAULT_LAYOUT)
+    localStorage.removeItem(STORAGE_KEY)
+  }, [])
+
+  const toggleEditMode = useCallback(() => {
+    setIsEditMode(prev => !prev)
+  }, [])
+
   if (loading || !data) return <DashboardSkeleton />
 
   const { kpis, recentInvoices, monthlyChart, expensesByCategory } = data
@@ -238,103 +197,47 @@ export function Dashboard() {
   const dealStages = data.dealsByStage.filter(d => d.stage !== 'won' && d.stage !== 'lost').map(d => ({ name: getStatusLabel(d.stage), value: d.value, count: d.count, fill: DEAL_STAGE_COLORS[d.stage] || '#6b7280' }))
   const overdueAndDueToday = data.overdueCount + data.todayDueInvoices.length
   const todayStr = new Date().toLocaleDateString('sr-RS', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-  const isCustomOrder = !isDefaultOrder(sectionOrder)
+  const isCustomLayout = !isDefaultLayout(layout)
 
-  // Section renderers
+  // ============ SECTION RENDERERS ============
   const sectionMap: Record<string, ReactNode> = {
     'kpi': (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <WidgetCard title="Prihodi" icon={<TrendingUp className="h-4 w-4 text-emerald-500" />}>
-          <KPICard
-            title={t('dashboard.totalRevenue')}
-            value={formatRSD(kpis.totalRevenue)}
-            change={kpis.revenueGrowth}
-            icon={<TrendingUp className="h-4 w-4 text-emerald-600" />}
-            iconBg="bg-emerald-50"
-            sparkline={revenueSparkline}
-          />
-        </WidgetCard>
-        <WidgetCard title="Rashodi" icon={<TrendingDown className="h-4 w-4 text-red-500" />}>
-          <KPICard
-            title={t('dashboard.totalExpenses')}
-            value={formatRSD(kpis.totalExpenses)}
-            change={kpis.revenueGrowth !== 0 ? -kpis.revenueGrowth * 0.6 : null}
-            icon={<TrendingDown className="h-4 w-4 text-red-500" />}
-            iconBg="bg-red-50"
-            sparkline={expenseSparkline}
-          />
-        </WidgetCard>
-        <WidgetCard title="Profit" icon={<DollarSign className="h-4 w-4 text-emerald-500" />}>
-          <KPICard
-            title={t('dashboard.netProfit')}
-            value={formatRSD(kpis.netProfit)}
-            icon={<DollarSign className="h-4 w-4 text-emerald-600" />}
-            iconBg="bg-emerald-50"
-          />
-        </WidgetCard>
-        <WidgetCard title="Blagajna" icon={<Banknote className="h-4 w-4 text-sky-500" />}>
-          <KPICard
-            title={t('dashboard.cashBalance')}
-            value={formatRSD(kpis.cashBalance)}
-            change={kpis.invoiceCountGrowth}
-            icon={<Banknote className="h-4 w-4 text-sky-600" />}
-            iconBg="bg-sky-50"
-            sparkline={cashFlowSparkline}
-          />
-        </WidgetCard>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 h-full">
+        <KPICard title={t('dashboard.totalRevenue')} value={formatRSD(kpis.totalRevenue)} change={kpis.revenueGrowth} icon={<TrendingUp className="h-4 w-4 text-emerald-600" />} iconBg="bg-emerald-50" sparkline={revenueSparkline} />
+        <KPICard title={t('dashboard.totalExpenses')} value={formatRSD(kpis.totalExpenses)} change={kpis.revenueGrowth !== 0 ? -kpis.revenueGrowth * 0.6 : null} icon={<TrendingDown className="h-4 w-4 text-red-500" />} iconBg="bg-red-50" sparkline={expenseSparkline} />
+        <KPICard title={t('dashboard.netProfit')} value={formatRSD(kpis.netProfit)} icon={<DollarSign className="h-4 w-4 text-emerald-600" />} iconBg="bg-emerald-50" />
+        <KPICard title={t('dashboard.cashBalance')} value={formatRSD(kpis.cashBalance)} change={kpis.invoiceCountGrowth} icon={<Banknote className="h-4 w-4 text-sky-600" />} iconBg="bg-sky-50" sparkline={cashFlowSparkline} />
       </div>
     ),
 
     'alerts': (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <WidgetCard title={t('dashboard.overdueCount')}>
-          <AlertCard label={t('dashboard.overdueCount')} value={data.overdueCount} color="red" icon={<AlertCircle className="h-4 w-4" />} />
-        </WidgetCard>
-        <WidgetCard title={t('dashboard.lowStockCount')}>
-          <AlertCard label={t('dashboard.lowStockCount')} value={kpis.lowStockProducts} color="amber" icon={<BoxIcon className="h-4 w-4" />} />
-        </WidgetCard>
-        <WidgetCard title={t('dashboard.unpaidAmount')}>
-          <AlertCard label={t('dashboard.unpaidAmount')} value={formatRSDShort(kpis.unpaidInvoiceAmount)} color="orange" icon={<DollarSign className="h-4 w-4" />} />
-        </WidgetCard>
-        <WidgetCard title={t('dashboard.newPartnersMonth')}>
-          <AlertCard label={t('dashboard.newPartnersMonth')} value={data.newPartnersThisMonth} color="sky" icon={<Users className="h-4 w-4" />} />
-        </WidgetCard>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 h-full">
+        <AlertCard label={t('dashboard.overdueCount')} value={data.overdueCount} color="red" icon={<AlertCircle className="h-4 w-4" />} />
+        <AlertCard label={t('dashboard.lowStockCount')} value={kpis.lowStockProducts} color="amber" icon={<BoxIcon className="h-4 w-4" />} />
+        <AlertCard label={t('dashboard.unpaidAmount')} value={formatRSDShort(kpis.unpaidInvoiceAmount)} color="orange" icon={<DollarSign className="h-4 w-4" />} />
+        <AlertCard label={t('dashboard.newPartnersMonth')} value={data.newPartnersThisMonth} color="sky" icon={<Users className="h-4 w-4" />} />
       </div>
     ),
 
     'health-goals-receivables': (
-      <div className="grid gap-4 lg:grid-cols-3">
-        <WidgetCard title="Zdravlje biznisa">
-          <HealthScoreCard score={data.businessHealthScore.score} profitMargin={data.businessHealthScore.profitMargin} stockHealth={data.businessHealthScore.stockHealth} collectionRate={data.businessHealthScore.collectionRate} unpaidRatio={data.businessHealthScore.unpaidRatio} />
-        </WidgetCard>
-        <WidgetCard title="Ciljevi meseca">
-          <GoalTrackerCard goals={data.monthlyGoals} />
-        </WidgetCard>
-        <WidgetCard title="Naplate po dospeću">
-          <ReceivablesCard aging={data.receivablesAging} />
-        </WidgetCard>
+      <div className="grid gap-3 lg:grid-cols-3 h-full">
+        <HealthScoreCard score={data.businessHealthScore.score} profitMargin={data.businessHealthScore.profitMargin} stockHealth={data.businessHealthScore.stockHealth} collectionRate={data.businessHealthScore.collectionRate} unpaidRatio={data.businessHealthScore.unpaidRatio} />
+        <GoalTrackerCard goals={data.monthlyGoals} />
+        <ReceivablesCard aging={data.receivablesAging} />
       </div>
     ),
 
     'metrics': (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <WidgetCard title={t('dashboard.totalPartners')}>
-          <MiniMetricCard icon={<Users className="h-4 w-4 text-violet-600" />} iconBg="bg-violet-50" label={t('dashboard.totalPartners')} value={String(kpis.partnerCount)} />
-        </WidgetCard>
-        <WidgetCard title={t('dashboard.totalProducts')}>
-          <MiniMetricCard icon={<BoxIcon className="h-4 w-4 text-slate-600" />} iconBg="bg-slate-100" label={t('dashboard.totalProducts')} value={String(kpis.productCount)} />
-        </WidgetCard>
-        <WidgetCard title="Aktivni projekti">
-          <MiniMetricCard icon={<FolderKanban className="h-4 w-4 text-emerald-600" />} iconBg="bg-emerald-50" label="Aktivni projekti" value={String(data.activeProjects.count)} />
-        </WidgetCard>
-        <WidgetCard title="CRM Pipeline">
-          <MiniMetricCard icon={<Heart className="h-4 w-4 text-sky-600" />} iconBg="bg-sky-50" label="CRM Pipeline" value={formatRSDShort(dealStages.reduce((s, d) => s + d.value, 0))} />
-        </WidgetCard>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 h-full">
+        <MiniMetricCard icon={<Users className="h-4 w-4 text-violet-600" />} iconBg="bg-violet-50" label={t('dashboard.totalPartners')} value={String(kpis.partnerCount)} />
+        <MiniMetricCard icon={<BoxIcon className="h-4 w-4 text-slate-600" />} iconBg="bg-slate-100" label={t('dashboard.totalProducts')} value={String(kpis.productCount)} />
+        <MiniMetricCard icon={<FolderKanban className="h-4 w-4 text-emerald-600" />} iconBg="bg-emerald-50" label="Aktivni projekti" value={String(data.activeProjects.count)} />
+        <MiniMetricCard icon={<Heart className="h-4 w-4 text-sky-600" />} iconBg="bg-sky-50" label="CRM Pipeline" value={formatRSDShort(dealStages.reduce((s, d) => s + d.value, 0))} />
       </div>
     ),
 
     'revenue-chart': (
-      <Card>
+      <Card className="h-full overflow-hidden">
         <div className="px-5 pt-4 pb-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <TrendingUp className="h-4 w-4 text-emerald-500 shrink-0" />
@@ -344,8 +247,8 @@ export function Dashboard() {
             </div>
           </div>
         </div>
-        <CardContent className="px-5 pb-5">
-          <div className="h-[300px]">
+        <CardContent className="px-5 pb-4">
+          <div className="h-[calc(100%-50px)] min-h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyChart}>
                 <defs>
@@ -373,12 +276,12 @@ export function Dashboard() {
     ),
 
     'charts': (
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-3 h-full">
         <WidgetCard title="Status faktura" subtitle="Raspodela po statusu" icon={<FileText className="h-4 w-4 text-sky-500" />}>
-          <div className="min-h-[200px]">
+          <div className="min-h-[180px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={invoiceStatusData} cx="50%" cy="45%" innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value">
+                <Pie data={invoiceStatusData} cx="50%" cy="45%" innerRadius={38} outerRadius={58} paddingAngle={2} dataKey="value">
                   {invoiceStatusData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                 </Pie>
                 <Tooltip formatter={(value: number) => formatRSD(value)} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
@@ -396,15 +299,15 @@ export function Dashboard() {
         </WidgetCard>
         <WidgetCard title="CRM Pipeline" subtitle={`Ukupno ${formatRSDShort(dealStages.reduce((s, d) => s + d.value, 0))}`} icon={<Heart className="h-4 w-4 text-rose-500" />} action={<Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveModule('crm')}><ArrowUpRight className="h-3 w-3" /> CRM</Button>}>
           {dealStages.length === 0 ? (
-            <div className="flex items-center justify-center min-h-[200px]"><p className="text-sm text-muted-foreground">{t('common.noData')}</p></div>
+            <div className="flex items-center justify-center min-h-[180px]"><p className="text-sm text-muted-foreground">{t('common.noData')}</p></div>
           ) : (
-            <div className="min-h-[200px]">
+            <div className="min-h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dealStages} layout="vertical" margin={{ left: 0, right: 20 }}>
                   <XAxis type="number" tickFormatter={formatRSDShort} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip formatter={(value: number) => formatRSD(value)} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={22}>
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
                     {dealStages.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                   </Bar>
                 </BarChart>
@@ -413,10 +316,10 @@ export function Dashboard() {
           )}
         </WidgetCard>
         <WidgetCard title={t('dashboard.expensesByCategory')} subtitle={t('dashboard.expenseDistribution')} icon={<TrendingDown className="h-4 w-4 text-rose-500" />}>
-          <div className="min-h-[200px]">
+          <div className="min-h-[180px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="45%" innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value">
+                <Pie data={pieData} cx="50%" cy="45%" innerRadius={38} outerRadius={58} paddingAngle={2} dataKey="value">
                   {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                 </Pie>
                 <Tooltip formatter={(value: number) => formatRSD(value)} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
@@ -429,16 +332,16 @@ export function Dashboard() {
     ),
 
     'products-cashflow': (
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-2 h-full">
         <WidgetCard title="Top proizvodi" subtitle="Po iznosu fakturisanja" icon={<BarChart3 className="h-4 w-4 text-violet-500" />}>
           <div className="space-y-2 overflow-y-auto">
             {data.topProducts.length === 0 ? (
-              <div className="flex items-center justify-center h-32"><p className="text-sm text-muted-foreground">{t('common.noData')}</p></div>
+              <div className="flex items-center justify-center h-24"><p className="text-sm text-muted-foreground">{t('common.noData')}</p></div>
             ) : (
               data.topProducts.map((p, i) => (
-                <div key={p.productId} className="flex items-center justify-between gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white', i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-slate-400' : i === 2 ? 'bg-amber-700' : 'bg-muted text-muted-foreground')}>{i + 1}</span>
+                <div key={p.productId} className="flex items-center justify-between gap-3 rounded-lg border p-2.5 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <span className={cn('flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white', i === 0 ? 'bg-amber-500' : i === 1 ? 'bg-slate-400' : i === 2 ? 'bg-amber-700' : 'bg-muted text-muted-foreground')}>{i + 1}</span>
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{tc(p.name)}</p>
                       <p className="text-xs text-muted-foreground">{p.quantity} kom</p>
@@ -451,7 +354,7 @@ export function Dashboard() {
           </div>
         </WidgetCard>
         <WidgetCard title="Dnevni tok novca" subtitle="Ulazi vs izlazi — poslednjih 30 dana" icon={<Zap className="h-4 w-4 text-cyan-500" />} action={<Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveModule('finance')}><ArrowUpRight className="h-3 w-3" /> Finansije</Button>}>
-          <div className="h-[250px]">
+          <div className="min-h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.dailyCashFlow}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
@@ -469,7 +372,7 @@ export function Dashboard() {
     ),
 
     'invoices-partners': (
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-3 h-full">
         <div className="lg:col-span-2">
           <WidgetCard title={t('dashboard.recentInvoices')} subtitle={t('dashboard.recentInvoicesSubtitle')} icon={<FileText className="h-4 w-4 text-emerald-500" />} action={<Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveModule('invoices')}><ArrowUpRight className="h-3 w-3" /> Fakture</Button>}>
             <div className="overflow-auto">
@@ -482,7 +385,7 @@ export function Dashboard() {
                   <TableHead className="text-xs text-right">{t('common.amount')}</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
-                  {recentInvoices.slice(0, 8).map(inv => (
+                  {recentInvoices.slice(0, 6).map(inv => (
                     <TableRow key={inv.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setActiveModule('invoices')}>
                       <TableCell className="text-xs font-medium">{inv.number}</TableCell>
                       <TableCell className="text-xs hidden sm:table-cell max-w-[180px] truncate">{tc(inv.partner?.name || '-')}</TableCell>
@@ -522,14 +425,14 @@ export function Dashboard() {
     ),
 
     'lowstock-tasks-activity': (
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-3 h-full">
         <WidgetCard title={t('dashboard.lowStock')} icon={<AlertTriangle className="h-4 w-4 text-amber-500" />} action={lowStock.length > 0 && <Badge variant="destructive" className="text-xs">{lowStock.length}</Badge>}>
           <div className="space-y-2 overflow-y-auto">
             {lowStock.length === 0 ? (
               <div className="flex items-center justify-center h-16"><p className="text-sm text-muted-foreground">{t('dashboard.stockOk')}</p></div>
             ) : (
-              lowStock.slice(0, 6).map(p => (
-                <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50/50 px-3 py-2.5">
+              lowStock.slice(0, 5).map(p => (
+                <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50/50 px-3 py-2">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{tc(p.name)}</p>
                     <p className="text-xs text-muted-foreground truncate">{p.sku}</p>
@@ -553,8 +456,8 @@ export function Dashboard() {
                 <p className="text-sm text-muted-foreground pl-5">{t('dashboard.noOverdue')}</p>
               ) : (
                 <div className="space-y-1.5">
-                  {data.overdueInvoices.slice(0, 4).map(inv => (
-                    <div key={inv.id} className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50/50 px-3 py-2.5">
+                  {data.overdueInvoices.slice(0, 3).map(inv => (
+                    <div key={inv.id} className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50/50 px-3 py-2">
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{inv.number}</p>
                         <p className="text-xs text-muted-foreground truncate">{tc(inv.partner?.name || '-')} · {formatDate(inv.dueDate)}</p>
@@ -574,8 +477,8 @@ export function Dashboard() {
                 <p className="text-sm text-muted-foreground pl-5">{t('dashboard.noTasks')}</p>
               ) : (
                 <div className="space-y-1.5">
-                  {data.todayDueInvoices.map(inv => (
-                    <div key={inv.id} className="flex items-center justify-between gap-3 rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2.5">
+                  {data.todayDueInvoices.slice(0, 3).map(inv => (
+                    <div key={inv.id} className="flex items-center justify-between gap-3 rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2">
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{inv.number}</p>
                         <p className="text-xs text-muted-foreground truncate">{tc(inv.partner?.name || '-')}</p>
@@ -600,7 +503,7 @@ export function Dashboard() {
           </div>
         </WidgetCard>
         <WidgetCard title={t('dashboard.activityFeed')} icon={<Activity className="h-4 w-4 text-sky-500" />} action={<CircleDot className="h-4 w-4 text-muted-foreground" />}>
-          <ScrollArea className="max-h-[400px]">
+          <ScrollArea className="max-h-[350px]">
             {groupedActivity.length === 0 ? (
               <div className="flex items-center justify-center"><p className="text-sm text-muted-foreground">{t('common.noData')}</p></div>
             ) : (
@@ -609,8 +512,8 @@ export function Dashboard() {
                   <div key={group.label}>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{group.label}</p>
                     <div className="space-y-2">
-                      {group.items.slice(0, 5).map(a => (
-                        <div key={a.id} className="flex items-start gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                      {group.items.slice(0, 4).map(a => (
+                        <div key={a.id} className="flex items-start gap-3 rounded-lg border p-2.5 hover:bg-muted/50 transition-colors">
                           <div className={cn('rounded-lg p-1.5 mt-0.5 shrink-0', a.icon === 'invoice' ? 'bg-emerald-100' : a.icon === 'partner' ? 'bg-violet-100' : 'bg-amber-100')}>
                             {a.icon === 'invoice' ? <FileText className="h-3.5 w-3.5 text-emerald-600" />
                               : a.icon === 'partner' ? <Users className="h-3.5 w-3.5 text-violet-600" />
@@ -658,16 +561,16 @@ export function Dashboard() {
             variant={isEditMode ? 'default' : 'outline'}
             size="sm"
             className="h-9 gap-2 text-xs rounded-lg"
-            onClick={() => setIsEditMode(!isEditMode)}
+            onClick={toggleEditMode}
             title={isEditMode ? 'Zaključaj dashboard' : 'Podesi raspored'}
           >
             {isEditMode ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
             <span className="hidden sm:inline">{isEditMode ? 'Zaključano' : 'Podesi'}</span>
           </Button>
 
-          {/* Reset order */}
-          {isEditMode && isCustomOrder && (
-            <Button variant="ghost" size="sm" className="h-9 gap-2 text-xs rounded-lg text-muted-foreground hover:text-foreground" onClick={handleResetOrder} title="Resetuj raspored">
+          {/* Reset layout */}
+          {isEditMode && isCustomLayout && (
+            <Button variant="ghost" size="sm" className="h-9 gap-2 text-xs rounded-lg text-muted-foreground hover:text-foreground" onClick={handleResetLayout} title="Resetuj raspored">
               <RotateCcw className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Resetuj</span>
             </Button>
@@ -699,18 +602,42 @@ export function Dashboard() {
         </ScrollArea>
       </div>
 
-      {/* ============ SORTABLE SECTIONS ============ */}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
-          <div className="space-y-4">
-            {sectionOrder.map(sectionId => (
-              <SortableSection key={sectionId} id={sectionId} isEditMode={isEditMode}>
-                {sectionMap[sectionId]}
-              </SortableSection>
-            ))}
+      {/* ============ GRID LAYOUT ============ */}
+      <GridLayout
+        layout={layout}
+        cols={12}
+        rowHeight={20}
+        margin={[12, 12]}
+        containerPadding={[0, 0]}
+        isDraggable={isEditMode}
+        isResizable={isEditMode}
+        compactType="vertical"
+        draggableHandle=".dashboard-drag-handle"
+        onLayoutChange={handleLayoutChange}
+        useCSSTransforms
+        resizeHandles={['se']}
+      >
+        {layout.map(item => (
+          <div key={item.i} className={cn(
+            'dashboard-grid-item rounded-xl overflow-hidden transition-shadow',
+            isEditMode ? 'border-2 border-dashed border-primary/30 bg-primary/[0.02]' : 'border border-transparent'
+          )}>
+            {/* Drag handle — only visible in edit mode */}
+            {isEditMode && (
+              <div className="dashboard-drag-handle flex items-center gap-2 px-4 py-1.5 bg-primary/5 cursor-grab active:cursor-grabbing select-none">
+                <GripVertical className="h-3.5 w-3.5 text-primary/60" />
+                <span className="text-[11px] font-medium text-primary/70 uppercase tracking-wider">
+                  {item.i.replace(/-/g, ' ')}
+                </span>
+              </div>
+            )}
+            {/* Panel content */}
+            <div className={cn(isEditMode ? 'p-3' : '')}>
+              {sectionMap[item.i]}
+            </div>
           </div>
-        </SortableContext>
-      </DndContext>
+        ))}
+      </GridLayout>
     </div>
   )
 }
@@ -720,8 +647,8 @@ function WidgetCard({ title, subtitle, icon, action, children }: { title?: strin
   return (
     <Card className="h-full overflow-hidden transition-shadow hover:shadow-sm">
       {title && (
-        <div className="px-5 pt-4 pb-2 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="px-4 pt-3 pb-1.5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
             {icon && <div className="shrink-0">{icon}</div>}
             <div className="min-w-0">
               <p className="text-sm font-semibold tracking-tight truncate">{title}</p>
@@ -731,7 +658,7 @@ function WidgetCard({ title, subtitle, icon, action, children }: { title?: strin
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <CardContent className="px-5 pb-4 min-w-0">
+      <CardContent className="px-4 pb-3 min-w-0">
         {children}
       </CardContent>
     </Card>
@@ -741,8 +668,8 @@ function WidgetCard({ title, subtitle, icon, action, children }: { title?: strin
 // ============ MINI METRIC CARD ============
 function MiniMetricCard({ icon, iconBg, label, value }: { icon: React.ReactNode; iconBg: string; label: string; value: string }) {
   return (
-    <Card className="overflow-hidden transition-shadow hover:shadow-sm">
-      <CardContent className="p-3.5 flex items-center gap-3">
+    <Card className="overflow-hidden transition-shadow hover:shadow-sm h-full">
+      <CardContent className="p-3 flex items-center gap-3">
         <div className={cn('rounded-lg p-2 shrink-0', iconBg)}>{icon}</div>
         <div className="min-w-0 flex-1">
           <p className="text-xs text-muted-foreground truncate">{label}</p>
@@ -751,11 +678,6 @@ function MiniMetricCard({ icon, iconBg, label, value }: { icon: React.ReactNode;
       </CardContent>
     </Card>
   )
-}
-
-// ============ HELPERS ============
-function cn(...inputs: (string | undefined | null | false)[]) {
-  return inputs.filter(Boolean).join(' ')
 }
 
 // ============ SKELETON ============
@@ -773,26 +695,64 @@ function DashboardSkeleton() {
           ))}
         </div>
       </div>
+
+      {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}><CardContent className="p-5 space-y-3">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-8 w-36" />
-            <Skeleton className="h-3 w-20" />
-          </CardContent></Card>
+          <Skeleton key={i} className="h-[130px] rounded-xl" />
         ))}
       </div>
+
+      {/* Alert row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>
+          <Skeleton key={i} className="h-[80px] rounded-xl" />
         ))}
       </div>
+
+      {/* Health/Goals/Receivables */}
       <div className="grid gap-4 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}><CardContent className="p-5 space-y-3"><Skeleton className="h-4 w-32" /><Skeleton className="h-32 w-full" /></CardContent></Card>
+          <Skeleton key={i} className="h-[200px] rounded-xl" />
         ))}
       </div>
-      <Card><CardContent className="p-5"><Skeleton className="h-72 w-full" /></CardContent></Card>
+
+      {/* Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-[70px] rounded-xl" />
+        ))}
+      </div>
+
+      {/* Revenue chart */}
+      <Skeleton className="h-[340px] rounded-xl" />
+
+      {/* Charts */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-[260px] rounded-xl" />
+        ))}
+      </div>
+
+      {/* Products + Cashflow */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <Skeleton key={i} className="h-[260px] rounded-xl" />
+        ))}
+      </div>
+
+      {/* Invoices + Partners */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Skeleton className="h-[240px] rounded-xl lg:col-span-2" />
+        <Skeleton className="h-[240px] rounded-xl" />
+      </div>
+
+      {/* Low stock + Tasks + Activity */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-[340px] rounded-xl" />
+        ))}
+      </div>
     </div>
   )
 }

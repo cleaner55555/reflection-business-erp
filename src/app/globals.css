@@ -374,5 +374,83 @@ body::before {
   }
 }
 
-/* ========== DASHBOARD SORTABLE SECTIONS ========== */
+/* ========== REACT GRID LAYOUT - DASHBOARD ========== */
+
+/* Grid container */
+.react-grid-layout {
+  position: relative;
+  transition: height 200ms ease;
+}
+
+/* Grid items */
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
+
+.react-grid-item.cssTransforms {
+  transition-property: transform, width, height;
+}
+
+.react-grid-item.resizing {
+  opacity: 0.85;
+  z-index: 10;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 10;
+  opacity: 0.9;
+  box-shadow: 0 8px 25px -5px oklch(0 0 0 / 0.15);
+}
+
+/* Placeholder during drag */
+.react-grid-placeholder {
+  background: oklch(0.55 0.17 155 / 0.08);
+  border: 2px dashed oklch(0.55 0.17 155 / 0.25);
+  border-radius: 0.75rem;
+  opacity: 1;
+  transition-duration: 100ms;
+  z-index: 5;
+}
+
+/* Resize handle — bottom-right corner */
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+  z-index: 20;
+}
+
+.react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid oklch(0.55 0.17 155 / 0.4);
+  border-bottom: 2px solid oklch(0.55 0.17 155 / 0.4);
+  border-radius: 0 0 2px 0;
+  transition: border-color 0.2s ease;
+}
+
+.react-resizable-handle:hover::after {
+  border-color: oklch(0.55 0.17 155 / 0.8);
+}
+
+/* Dashboard grid item wrapper */
+.dashboard-grid-item {
+  height: 100%;
+}
+
+/* When NOT in edit mode — clean look */
+.dashboard-grid-item:not(:has(.dashboard-drag-handle)) {
+  border: none !important;
+  background: none !important;
+  border-radius: 0 !important;
+}
 
