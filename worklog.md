@@ -189,3 +189,32 @@ Stage Summary:
 - Reset button restores default layout
 - Drag handles appear on hover (left side of each section)
 - Visual feedback: shadow, ring, scale when dragging; opacity reduction
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Full drag-and-drop + resizable grid dashboard with react-grid-layout
+
+Work Log:
+- Removed max-w-7xl constraint from page.tsx content area for full-width dashboard
+- Installed react-grid-layout v1.5.3 (v2 had incompatible API, downgraded to v1)
+- Created complete grid layout system with 28 independently draggable/resizable widgets
+- Defined responsive layouts for 4 breakpoints: lg (12col), md (12col), sm (4col), xs (4col)
+- Each widget has minW/minH constraints to prevent collapsing
+- WidgetCard component with drag handle (header area) and resize handle (bottom-right corner)
+- Implemented Lock/Unlock toggle to prevent accidental layout changes
+- Reset layout button restores default arrangement
+- Layout persistence to localStorage per breakpoint
+- Added dashboard-grid CSS styles: smooth transitions, drag shadows, resize handles, dark mode support
+- Placeholder styling (dashed border) when dragging widgets
+- Tables use .widget-no-drag class to allow row clicks without triggering drag
+- Charts use min-h-[160px-200px] and h-full to fill widget space when resized
+
+Stage Summary:
+- Dashboard is now full-width, utilizing all available screen space
+- Every widget is independently draggable (grab header to move)
+- Every widget is independently resizable (grab bottom-right corner)
+- Responsive layouts for mobile/tablet/desktop
+- Lock button prevents accidental changes
+- Layout saved to localStorage and persists across sessions
+- Compiled successfully, no errors

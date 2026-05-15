@@ -287,7 +287,7 @@ function AppContent() {
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8"
+              className="px-3 py-4 sm:px-4 sm:py-6"
             >
               <ModuleRenderer moduleKey={activeModule} />
             </motion.div>
