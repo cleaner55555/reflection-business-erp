@@ -26,37 +26,106 @@ import dynamic from 'next/dynamic'
 const IndustryTemplates = dynamic(() => import('@/components/modules/IndustryTemplates').then(m => m.default), { ssr: false, loading: () => <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div> })
 import { themePresets } from '@/lib/theme-presets'
 import type { ThemeSettings } from '@/lib/theme'
+import { moduleGroupMap } from '@/lib/module-groups'
+import { menuGroups } from '@/components/modules/AppSidebar'
+import { useAppStore } from '@/lib/store'
 
-// ============ MODULE DEFINITIONS ============
+// ============ MODULE DEFINITIONS (from sidebar + moduleGroupMap) ============
 
-interface ModuleDef {
-  key: string
-  name: string
-  descriptionKey: string
-  icon: string
-  enabled: boolean
+// Collect all sidebar modules with their labels/icons
+const SIDEBAR_MODULES = menuGroups.flatMap(g => g.items)
+
+// Group labels (SR)
+const GROUP_LABELS: Record<string, string> = {
+  'sidebar.group_overview': 'Pregled',
+  'sidebar.group_business': 'Poslovanje',
+  'sidebar.group_crm': 'CRM & Partneri',
+  'sidebar.group_organization': 'Organizacija',
 }
 
-const MODULES_DEFAULTS: Omit<ModuleDef, 'enabled'>[] = [
-  { key: 'module_finansije_enabled', name: 'Finansije', descriptionKey: 'settings.mod_finansije', icon: '💰' },
-  { key: 'module_fakture_enabled', name: 'Fakture', descriptionKey: 'settings.mod_fakture', icon: '📄' },
-  { key: 'module_magacin_enabled', name: 'Magacin', descriptionKey: 'settings.mod_magacin', icon: '🏭' },
-  { key: 'module_partneri_enabled', name: 'Partneri', descriptionKey: 'settings.mod_partneri', icon: '🤝' },
-  { key: 'module_nabavka_enabled', name: 'Nabavka', descriptionKey: 'settings.mod_nabavka', icon: '🛒' },
-  { key: 'module_crm_enabled', name: 'CRM', descriptionKey: 'settings.mod_crm', icon: '❤️' },
-  { key: 'module_kalendar_enabled', name: 'Kalendar', descriptionKey: 'settings.mod_kalendar', icon: '📅' },
-  { key: 'module_zaposleni_enabled', name: 'Zaposleni', descriptionKey: 'settings.mod_zaposleni', icon: '👥' },
-  { key: 'module_projekti_enabled', name: 'Projekti', descriptionKey: 'settings.mod_projekti', icon: '📁' },
-  { key: 'module_sredstva_enabled', name: 'Osnovna sredstva', descriptionKey: 'settings.mod_sredstva', icon: '🏗️' },
-  { key: 'module_dokumenta_enabled', name: 'Dokumenta', descriptionKey: 'settings.mod_dokumenta', icon: '📂' },
-  { key: 'module_knjigovodstvo_enabled', name: 'Knjigovodstvo', descriptionKey: 'settings.mod_knjigovodstvo', icon: '📒' },
-  { key: 'module_protokol_enabled', name: 'Protokol', descriptionKey: 'settings.mod_protokol', icon: '📬' },
-  { key: 'module_edukacija_enabled', name: 'Edukacija', descriptionKey: 'settings.mod_edukacija', icon: '🎓' },
-  { key: 'module_vozni_park_enabled', name: 'Vozni park', descriptionKey: 'settings.mod_vozni_park', icon: '🚗' },
-  { key: 'module_rent_a_car_enabled', name: 'Rent a car', descriptionKey: 'settings.mod_rent_a_car', icon: '🚙' },
-  { key: 'module_kafe_restoran_enabled', name: 'Kafe restoran', descriptionKey: 'settings.mod_kafe_restoran', icon: '☕' },
-  { key: 'module_email_marketing_enabled', name: 'Email Marketing', descriptionKey: 'settings.mod_email_marketing', icon: '✉️' },
-]
+// Module group labels (SR)
+const MODULE_GROUP_LABELS: Record<string, string> = {
+  'core': 'Core', 'hr': 'HR', 'finance': 'Finansije', 'sales': 'Prodaja',
+  'projects': 'Projekti', 'it': 'IT', 'logistics': 'Logistika', 'education': 'Edukacija',
+  'hospitality': 'Ugostiteljstvo', 'construction': 'Građevina', 'property': 'Nekretnine',
+  'medical': 'Medicina', 'services': 'Servisi', 'retail': 'Trgovina',
+}
+
+// Module labels (SR) for all 124 modules
+const ALL_MODULE_LABELS: Record<string, string> = {
+  // Core
+  'dashboard': 'Kontrolna ploča', 'finance': 'Finansije', 'invoices': 'Fakture',
+  'inventory': 'Magacin', 'contacts': 'Partneri', 'reports': 'Izveštaji',
+  'settings': 'Podešavanja', 'calendar': 'Kalendar', 'documents': 'Dokumenta',
+  'offers': 'Ponude', 'expenses': 'Troškovi', 'automation': 'Automatizacija',
+  // HR
+  'employees': 'Zaposleni', 'recruitment': 'Regrutacija', 'leave': 'Odsustva',
+  'skills': 'Veštine', 'approvals': 'Odobrenja', 'workforce-planner': 'Planer radne snage',
+  'visitors': 'Posetioci', 'suggestions': 'Predlozi', 'time-tracking': 'Praćenje vremena',
+  'time-billing': 'Fakturisanje vremena', 'gamification': 'Gamifikacija', 'signatures': 'Potpisi',
+  // Finance
+  'accounting': 'Knjigovodstvo', 'bank-sync': 'Banka', 'payments': 'Plaćanja',
+  'cash-register': 'Blagajna', 'pos': 'POS', 'subscriptions': 'Pretplate',
+  'contracts': 'Ugovori', 'procurement': 'Nabavka', 'procurement-manager': 'Menadžer nabavke',
+  'returns': 'Povrati', 'coupons': 'Kuponi', 'price-lists': 'Cenovnici',
+  // Sales
+  'crm': 'CRM', 'support': 'Podrška', 'email-marketing': 'Email marketing',
+  'sms-marketing': 'SMS marketing', 'social-media': 'Društvene mreže',
+  'marketing-automation': 'Marketing auto.', 'surveys': 'Ankete', 'events': 'Događaji',
+  'loyalty': 'Lojalnost', 'ratings': 'Ocene', 'referrals': 'Preporuke',
+  'complaints': 'Žalbe',
+  // Projects
+  'projects': 'Projekti', 'assets': 'Osnovna sredstva',
+  'maintenance': 'Održavanje', 'manufacturing': 'Proizvodnja', 'quality': 'Kvalitet',
+  'protocol': 'Protokol', 'plm': 'PLM', 'standards': 'Standardi',
+  'labels': 'Etikete', 'barcode': 'Barkod', 'tenders': 'Tenderi', 'warranty': 'Garancije',
+  // IT
+  'chat': 'Chat', 'knowledge-base': 'Baza znanja', 'website': 'Web sajt',
+  'blog': 'Blog', 'forum': 'Forum', 'spreadsheet': 'Tabela', 'notes': 'Beleške',
+  'integrations': 'Integracije', 'backup': 'Backup', 'laws': 'Zakoni',
+  'iot': 'IoT', 'voip': 'VoIP',
+  // Logistics
+  'shipping': 'Isporuka', 'fleet': 'Vozni park',
+  'rent-a-car': 'Rent a car', 'delivery': 'Dostava', 'routes': 'Rute',
+  'loading-dock': 'Rampa utovar', 'customs-docs': 'Carinski dok.', 'trucks': 'Kamioni',
+  'packaging': 'Pakovanje', 'measurements': 'Merenja', 'marketplace': 'Marketplace',
+  'ecommerce': 'E-commerce',
+  // Education
+  'education': 'Edukacija', 'homework': 'Domaći zadaci',
+  'enrollment': 'Upis', 'timetable': 'Raspored', 'library': 'Biblioteka',
+  'classroom': 'Učionica', 'tuition': 'Školovanje',
+  // Hospitality
+  'restaurant': 'Restoran', 'reservations': 'Rezervacije', 'menu': 'Meni',
+  'kitchen': 'Kuhinja', 'orders': 'Porudžbine',
+  // Construction
+  'construction-site': 'Gradilište', 'blueprints': 'Nacrti', 'subcontractors': 'Podizvođači',
+  'safety': 'Bezbednost',
+  // Property
+  'property': 'Nekretnine', 'rentals': 'Iznajmljivanje',
+  'property-viewings': 'Pregledi', 'utilities': 'Komunalije', 'work-orders': 'Radni nalozi',
+  'valuation': 'Procena',
+  // Medical
+  'patients': 'Pacijenti', 'medical-records': 'Zdrav. kartoni',
+  'prescriptions': 'Recepti', 'lab': 'Laboratorija', 'health-fund': 'Zdrav. fond',
+  // Services
+  'service-center': 'Servis', 'field-service': 'Terenski servis',
+  'appointments': 'Zakazivanja', 'scheduler': 'Planer', 'compliance': 'Usklađenost',
+  // Retail
+  'stores': 'Poslovnice', 'client-portal': 'Klijentski portal', 'seo': 'SEO',
+  'reviews': 'Recenzije', 'cms': 'CMS', 'geolocation': 'Geolokacija',
+  'cameras': 'Kamere', 'messaging': 'Poruke',
+}
+
+// Get all unique module keys
+const ALL_MODULE_KEYS = Object.keys(moduleGroupMap)
+
+// Group modules by their moduleGroupMap group
+const modulesByGroup = ALL_MODULE_KEYS.reduce((acc, key) => {
+  const group = moduleGroupMap[key]
+  if (!acc[group]) acc[group] = []
+  acc[group].push(key)
+  return acc
+}, {} as Record<string, string[]>)
 
 // ============ COMPANY SETTINGS ============
 
@@ -226,12 +295,11 @@ export function Settings() {
     resetTheme,
   } = useThemeStore()
 
-  // Modules state
-  const [modules, setModules] = useState<ModuleDef[]>(
-    MODULES_DEFAULTS.map((m) => ({ ...m, enabled: true }))
-  )
+  // Modules state — now uses all 124 modules from moduleGroupMap
+  const [enabledModuleKeys, setEnabledModuleKeys] = useState<Set<string>>(new Set(ALL_MODULE_KEYS))
   const [modulesLoading, setModulesLoading] = useState(true)
   const [modulesSaving, setModulesSaving] = useState(false)
+  const [moduleSearch, setModuleSearch] = useState('')
 
   // Company state
   const [company, setCompany] = useState<CompanySettings>({ ...COMPANY_DEFAULTS })
@@ -308,12 +376,10 @@ export function Settings() {
     // Fetch modules settings
     fetchSettings('modules').then((data) => {
       if (data.length > 0) {
-        setModules((prev) =>
-          prev.map((m) => ({
-            ...m,
-            enabled: data.find((s) => s.key === m.key)?.value === 'true',
-          }))
-        )
+        const enabledKeys = data
+          .filter((s) => s.value === 'true')
+          .map((s) => s.key)
+        setEnabledModuleKeys(new Set(enabledKeys))
       }
       setModulesLoading(false)
     })
@@ -364,13 +430,20 @@ export function Settings() {
   const handleSaveModules = async () => {
     setModulesSaving(true)
     try {
-      const items = modules.map((m) => ({
-        key: m.key, value: String(m.enabled), label: m.name, type: 'boolean', group: 'modules',
+      const items = ALL_MODULE_KEYS.map((key) => ({
+        key,
+        value: String(enabledModuleKeys.has(key)),
+        label: ALL_MODULE_LABELS[key] || key,
+        type: 'boolean',
+        group: 'modules',
       }))
       const res = await fetch('/api/settings', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(items),
       })
       if (!res.ok) throw new Error('Greška')
+      // Also sync to Zustand store so sidebar updates immediately
+      const { setEnabledModules } = useAppStore.getState()
+      setEnabledModules([...enabledModuleKeys])
       toast.success(t('settings.modulesSaved'))
     } catch {
       toast.error(t('settings.modulesSaveError'))
@@ -496,7 +569,33 @@ export function Settings() {
 
   // ============ HELPERS ============
 
-  const enabledCount = modules.filter((m) => m.enabled).length
+  const enabledCount = enabledModuleKeys.size
+  const totalModules = ALL_MODULE_KEYS.length
+
+  // Filter modules by search
+  const filteredGroups = Object.entries(modulesByGroup)
+    .map(([group, keys]) => ({
+      group,
+      label: MODULE_GROUP_LABELS[group] || group,
+      modules: keys.filter(key => {
+        if (!moduleSearch) return true
+        const label = (ALL_MODULE_LABELS[key] || key).toLowerCase()
+        return label.includes(moduleSearch.toLowerCase())
+      }),
+    }))
+    .filter(g => g.modules.length > 0)
+
+  const toggleModule = (key: string) => {
+    setEnabledModuleKeys(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  const enableAllModules = () => setEnabledModuleKeys(new Set(ALL_MODULE_KEYS))
+  const disableAllModules = () => setEnabledModuleKeys(new Set())
 
   const MONTH_LABELS: Record<string, string> = {
     '1': 'Januar', '2': 'Februar', '3': 'Mart', '4': 'April',
@@ -594,67 +693,109 @@ export function Settings() {
 
         {/* ============ MODULI TAB ============ */}
         <TabsContent value="moduli" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <p className="text-sm text-muted-foreground">{t('settings.modulesSubtitle')}</p>
               <Badge variant="secondary" className="text-xs">
-                {enabledCount}/{modules.length} {t('settings.active')}
+                {enabledCount}/{totalModules} {t('settings.active')}
               </Badge>
             </div>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => openAISetupWizard()}>
-              <Sparkles className="h-3.5 w-3.5" />
-              AI Setup
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => openAISetupWizard()}>
+                <Sparkles className="h-3.5 w-3.5" />
+                AI Setup
+              </Button>
+            </div>
+          </div>
+
+          {/* Search + Bulk actions */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Pretraži module..."
+                value={moduleSearch}
+                onChange={(e) => setModuleSearch(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="text-xs gap-1" onClick={enableAllModules}>
+                <Check className="h-3 w-3" /> Aktiviraj sve
+              </Button>
+              <Button variant="outline" size="sm" className="text-xs gap-1" onClick={disableAllModules}>
+                <X className="h-3 w-3" /> Deaktiviraj sve
+              </Button>
+            </div>
           </div>
 
           {modulesLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-4">
-                    <div className="h-5 w-24 bg-muted rounded mb-2" />
-                    <div className="h-4 w-full bg-muted rounded mb-3" />
-                    <div className="h-5 w-10 bg-muted rounded" />
-                  </CardContent>
-                </Card>
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-5 w-32 bg-muted rounded mb-3" />
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {Array.from({ length: 3 }).map((_, j) => (
+                      <div key={j} className="h-12 bg-muted rounded" />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {modules.map((mod) => (
-                <Card
-                  key={mod.key}
-                  className={cn(
-                    'transition-all duration-200 hover:shadow-md border',
-                    mod.enabled ? 'border-primary/20 bg-primary/[0.02]' : 'opacity-60 hover:opacity-100'
-                  )}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <span className="text-xl mt-0.5 shrink-0">{mod.icon}</span>
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-sm text-foreground leading-tight">{mod.name}</h3>
-                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
-                            {t(mod.descriptionKey)}
-                          </p>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={mod.enabled}
-                        onCheckedChange={(checked) =>
-                          setModules((prev) => prev.map((m) => (m.key === mod.key ? { ...m, enabled: checked } : m)))
-                        }
-                        className="shrink-0"
-                      />
+            <div className="space-y-6">
+              {filteredGroups.map(({ group, label, modules: groupModules }) => {
+                const enabledInGroup = groupModules.filter(k => enabledModuleKeys.has(k)).length
+                return (
+                  <div key={group}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-sm font-semibold text-foreground">{label}</h3>
+                      <Badge variant="secondary" className="text-[10px] px-1.5">
+                        {enabledInGroup}/{groupModules.length}
+                      </Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {groupModules.map(key => {
+                        const isEnabled = enabledModuleKeys.has(key)
+                        const modLabel = ALL_MODULE_LABELS[key] || key
+                        const isInSidebar = SIDEBAR_MODULES.some(m => m.module === key)
+
+                        return (
+                          <div
+                            key={key}
+                            className={cn(
+                              'flex items-center justify-between gap-2 px-3 py-2 rounded-lg border transition-all',
+                              isEnabled
+                                ? 'border-primary/20 bg-primary/[0.02]'
+                                : 'border-border opacity-50 hover:opacity-80'
+                            )}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              {isInSidebar && (
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" title="U sidebar-u" />
+                              )}
+                              <span className="text-sm text-foreground truncate">{modLabel}</span>
+                            </div>
+                            <Switch
+                              checked={isEnabled}
+                              onCheckedChange={() => toggleModule(key)}
+                              className="shrink-0 scale-90"
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
 
-          <div className="flex justify-end pt-2">
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-xs text-muted-foreground">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary mr-1" />
+              = modul u sidebar-u
+            </p>
             <Button onClick={handleSaveModules} disabled={modulesSaving}>
               {modulesSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               {t('settings.saveModules')}
