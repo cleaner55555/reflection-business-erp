@@ -281,7 +281,14 @@ function AppContent() {
         </header>
         <div className="flex-1 overflow-y-auto overflow-x-hidden bg-background/50">
           <AnimatePresence mode="wait">
-            <motion.div key={activeModule} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+            <motion.div
+              key={activeModule}
+              initial={{ opacity: 0, y: 12, filter: 'blur(2px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8"
+            >
               <ModuleRenderer moduleKey={activeModule} />
             </motion.div>
           </AnimatePresence>

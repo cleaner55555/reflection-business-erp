@@ -211,6 +211,157 @@ body::before {
   }
 }
 
+/* ========== GLOBAL ANIMATIONS ========== */
+
+/* Fade in from below — for cards, sections, page content */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade in — general purpose */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Scale in — for modals, dialogs, popovers */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Slide in from right — for notifications, toasts */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Subtle pulse for live indicators */
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Smooth count-up placeholder */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger delay utility classes */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+.stagger-7 { animation-delay: 350ms; }
+.stagger-8 { animation-delay: 400ms; }
+
+/* ========== ANIMATION UTILITY CLASSES ========== */
+
+/* Use on cards, list items, table rows for smooth entrance */
+.animate-fade-in-up {
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Shimmer for skeleton loading states */
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, oklch(0.93 0.005 155 / 0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+.dark .animate-shimmer {
+  background: linear-gradient(90deg, transparent, oklch(0.30 0.01 155 / 0.4), transparent);
+  background-size: 200% 100%;
+}
+
+/* Live dot indicator */
+.animate-subtle-pulse {
+  animation: subtlePulse 2s ease-in-out infinite;
+}
+
+/* ========== INTERACTIVE HOVER ANIMATIONS ========== */
+
+/* Smooth hover lift for clickable cards */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px oklch(0 0 0 / 0.1),
+              0 4px 10px -4px oklch(0 0 0 / 0.06);
+}
+.dark .hover-lift:hover {
+  box-shadow: 0 8px 25px -5px oklch(0 0 0 / 0.4),
+              0 4px 10px -4px oklch(0 0 0 / 0.2);
+}
+
+/* Subtle press effect for buttons */
+.hover-press {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-press:active {
+  transform: scale(0.97);
+}
+
+/* Smooth border glow on hover */
+.hover-glow {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 0 3px oklch(0.55 0.17 155 / 0.12);
+}
+
+/* ========== LIST/GRID STAGGER ========== */
+
+/* Apply to parent container, children with .animate-fade-in-up get stagger */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 30ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 90ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 210ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 270ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(11) { animation-delay: 330ms; }
+.stagger-children > *:nth-child(12) { animation-delay: 360ms; }
+/* Reset for items beyond 12 */
+.stagger-children > *:nth-child(n+13) { animation-delay: 380ms; }
+
+/* ========== SMOOTH FOCUS RINGS ========== */
+
+/* Better focus transition for inputs and buttons */
+.focus-ring-smooth {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.focus-ring-smooth:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+}
+
 /* ========== PWA ANIMATIONS ========== */
 @keyframes slideDown {
   from {
