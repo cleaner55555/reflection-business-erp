@@ -105,3 +105,31 @@ Stage Summary:
 - Categories: Biznis servisi (10), Kultura i umetnost (8), Obrazovanje (4), Događaji i zajednica (9), Hrana i piće (10), Zdravlje i wellness (9), Ugostiteljstvo i turizam (10), Proizvodnja i logistika (9), Nekretnine i građevina (9), Trgovina (13), Zanati i kućni servisi (8)
 - 13 featured industries highlighted
 - Server compiles and API returns all templates correctly
+- Fixed invalid module keys (production→manufacturing, removed housekeeping/warehouse/search/gallery/tasks)
+
+---
+Task ID: 4b
+Agent: main
+Task: Restore Industry Templates files that were lost between sessions
+
+Work Log:
+- Discovered that previous session's IndustryTemplates component and data file were not persisted
+- Found Prisma model IndustryTemplate and API route already existed in DB
+- Found Settings module already had "Namene" tab and dynamic import
+- Recreated /src/lib/industry-templates-data.ts with all 99 industry templates across 11 categories
+- Recreated /src/components/modules/IndustryTemplates/index.tsx with full UI:
+  - Browse/Featured tabs with search and category filter pills
+  - Card grid layout with Lucide icons, module count badges, category badges
+  - Preview dialog showing all modules with Serbian labels
+  - Apply button that updates company.modules via POST /api/industry-templates
+- Fixed invalid module keys that don't exist in module-groups/index.ts
+- Verified API returns 109 templates (99 new + 10 from prior session)
+- Verified category filter, featured filter, and search all work
+- ESLint passes on new files
+- Dev server compiles successfully (GET / 200 in 17.7s)
+
+Stage Summary:
+- Complete Industry Templates ("Namene") system restored and functional
+- 99 templates across 11 categories, 12 featured templates
+- Available in Settings > Namene tab
+- Apply action updates company.modules to activate relevant modules per industry
