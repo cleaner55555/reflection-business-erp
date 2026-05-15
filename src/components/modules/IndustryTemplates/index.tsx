@@ -13,13 +13,13 @@ import {
   Compass, Search, Star, Check, Loader2, ChevronRight, Building2, Palette, GraduationCap,
   PartyPopper, UtensilsCrossed, Heart, Hotel, Factory, ShoppingBag, Wrench, Briefcase,
   X, Shield, Eye, Crown, RotateCcw, ShieldCheck, Scale, Code2, BookOpen, Frame,
-  Camera, PenTool, Laptop, UserCheck, Trophy, Dumbbell, Medal, Ring, Beer, Wine,
-  Burger, Mountain, Glasses, Activity, Pill, Syringe, Sparkles, Flower2, Waves,
+  Camera, PenTool, Laptop, UserCheck, Trophy, Dumbbell, Medal, Beer, Wine,
+  Sandwich, Mountain, Glasses, Activity, Pill, Syringe, Sparkles, Flower2, Waves,
   Home, Building, Car, Sprout, Shirt, Package, Monitor, ShoppingCart, Sofa, Puzzle,
-  Bike, SprayCan, Zap, Screwdriver, Footprints, Map, ChefHat, Truck, Warehouse,
-  Gift, Armchair, Cog, Scissors, Grape, Crane, HardHat, Thermometer, Sun,
-  Megaphone, Landmark, Tent, Music, Drama, Lock, Trees, Disc, Cabin, Fuel, Leaf,
-  UserSearch, LayoutDashboard, Circle, SquareSigma
+  Bike, SprayCan, Zap, Footprints, Map, ChefHat, Truck, Warehouse,
+  Gift, Armchair, Cog, Scissors, Grape, HardHat, Thermometer, Sun,
+  Megaphone, Landmark, Tent, Music, Drama, Lock, Trees, Disc, Fuel, Leaf,
+  UserSearch, LayoutDashboard, Circle, SquareSigma, Gem, Construction
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
@@ -90,13 +90,14 @@ const MODULE_LABELS: Record<string, string> = {
 const ICON_MAP: Record<string, React.ElementType> = {
   Calculator: SquareSigma, ShieldCheck, Scale, Code2, BookOpen, Frame, Camera, PenTool,
   Laptop, PartyPopper, UserCheck, Heart, Trophy, Dumbbell, Medal, Ring,
-  Beer, Wine, UtensilsCrossed, Burger, ShoppingBag, Mountain, Glasses,
+  Beer, Wine, UtensilsCrossed, Sandwich, ShoppingBag, Mountain, Glasses,
   Activity, Pill, Syringe, Sparkles, Flower2, Waves, Home, Building,
   Car, Sprout, Shirt, Package, Monitor, ShoppingCart, Sofa, Wrench, Puzzle,
-  Bike, SprayCan, Zap, Screwdriver, Footprints, Map, ChefHat, Truck,
-  Warehouse, Gift, Armchair, Cog, Scissors, Grape, Crane, HardHat,
+  Screwdriver: Wrench, Crane: Construction, Ring: Gem, Cabin: Home,
+  Bike, SprayCan, Zap, Footprints, Map, ChefHat, Truck,
+  Warehouse, Gift, Armchair, Cog, Scissors, Grape, HardHat,
   Thermometer, Sun, Hotel, Building2, Briefcase, Palette, GraduationCap,
-  Megaphone, Landmark, Tent, Music, Drama, Lock, Trees, Disc, Cabin,
+  Megaphone, Landmark, Tent, Music, Drama, Lock, Trees, Disc,
   Fuel, Leaf, UserSearch, LayoutDashboard, Circle, Compass,
 }
 
