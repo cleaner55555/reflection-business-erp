@@ -41,7 +41,7 @@ import 'react-resizable/css/styles.css'
 const ResponsiveGridLayout = WidthProvider(Responsive)
 
 // ============ LAYOUT STORAGE ============
-const LAYOUT_KEY = 'dashboardGridLayout'
+const LAYOUT_KEY = 'dashboardGridLayout_v2'
 
 export interface WidgetLayout {
   i: string
@@ -59,69 +59,70 @@ type Layouts = { [breakpoint: string]: WidgetLayout[] }
 
 const DEFAULT_LAYOUTS: Layouts = {
   lg: [
-    // Row 1: 4 KPI cards
-    { i: 'kpi-revenue', x: 0, y: 0, w: 3, h: 2, minW: 2, minH: 2 },
-    { i: 'kpi-expenses', x: 3, y: 0, w: 3, h: 2, minW: 2, minH: 2 },
-    { i: 'kpi-profit', x: 6, y: 0, w: 3, h: 2, minW: 2, minH: 2 },
-    { i: 'kpi-cash', x: 9, y: 0, w: 3, h: 2, minW: 2, minH: 2 },
-    // Row 2: 4 alerts
-    { i: 'alert-overdue', x: 0, y: 2, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'alert-lowstock', x: 3, y: 2, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'alert-unpaid', x: 6, y: 2, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'alert-partners', x: 9, y: 2, w: 3, h: 1.5, minW: 2, minH: 1 },
-    // Row 3: Health + Goals + Receivables + Secondary
-    { i: 'health-score', x: 0, y: 4, w: 4, h: 3.5, minW: 3, minH: 3 },
-    { i: 'goals', x: 4, y: 4, w: 4, h: 3.5, minW: 3, minH: 3 },
-    { i: 'receivables', x: 8, y: 4, w: 4, h: 3.5, minW: 3, minH: 3 },
-    // Row 4: Secondary metrics
-    { i: 'metrics-partners', x: 0, y: 8, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-products', x: 3, y: 8, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-projects', x: 6, y: 8, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-crm', x: 9, y: 8, w: 3, h: 1.5, minW: 2, minH: 1 },
-    // Row 5: Revenue chart full width
-    { i: 'revenue-chart', x: 0, y: 10, w: 12, h: 5, minW: 6, minH: 4 },
-    // Row 6: 3 charts
-    { i: 'chart-invoices', x: 0, y: 15, w: 4, h: 5, minW: 3, minH: 4 },
-    { i: 'chart-crm', x: 4, y: 15, w: 4, h: 5, minW: 3, minH: 4 },
-    { i: 'chart-expenses', x: 8, y: 15, w: 4, h: 5, minW: 3, minH: 4 },
-    // Row 7: Top products + Cash flow
-    { i: 'top-products', x: 0, y: 20, w: 6, h: 5, minW: 4, minH: 4 },
-    { i: 'cash-flow', x: 6, y: 20, w: 6, h: 5, minW: 4, minH: 4 },
-    // Row 8: Invoices + Partners + Low Stock
-    { i: 'recent-invoices', x: 0, y: 25, w: 7, h: 5, minW: 5, minH: 4 },
-    { i: 'top-partners', x: 7, y: 25, w: 5, h: 5, minW: 3, minH: 4 },
-    { i: 'low-stock', x: 7, y: 30, w: 5, h: 4, minW: 3, minH: 3 },
-    // Row 9: Tasks + Activity
-    { i: 'tasks', x: 0, y: 30, w: 7, h: 5, minW: 5, minH: 4 },
-    { i: 'activity', x: 0, y: 35, w: 6, h: 5, minW: 4, minH: 4 },
+    // 4 KPI cards
+    { i: 'kpi-revenue', x: 0, y: 0, w: 3, h: 2.5, minW: 2, minH: 2 },
+    { i: 'kpi-expenses', x: 3, y: 0, w: 3, h: 2.5, minW: 2, minH: 2 },
+    { i: 'kpi-profit', x: 6, y: 0, w: 3, h: 2.5, minW: 2, minH: 2 },
+    { i: 'kpi-cash', x: 9, y: 0, w: 3, h: 2.5, minW: 2, minH: 2 },
+    // 4 alerts
+    { i: 'alert-overdue', x: 0, y: 2.5, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'alert-lowstock', x: 3, y: 2.5, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'alert-unpaid', x: 6, y: 2.5, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'alert-partners', x: 9, y: 2.5, w: 3, h: 1.5, minW: 2, minH: 1 },
+    // Health + Goals + Receivables
+    { i: 'health-score', x: 0, y: 4, w: 4, h: 3, minW: 3, minH: 2 },
+    { i: 'goals', x: 4, y: 4, w: 4, h: 3, minW: 3, minH: 2 },
+    { i: 'receivables', x: 8, y: 4, w: 4, h: 3, minW: 3, minH: 2 },
+    // 4 mini metrics
+    { i: 'metrics-partners', x: 0, y: 7, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-products', x: 3, y: 7, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-projects', x: 6, y: 7, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-crm', x: 9, y: 7, w: 3, h: 1.5, minW: 2, minH: 1 },
+    // Revenue chart full width
+    { i: 'revenue-chart', x: 0, y: 8.5, w: 12, h: 4.5, minW: 6, minH: 3 },
+    // 3 charts
+    { i: 'chart-invoices', x: 0, y: 13, w: 4, h: 4, minW: 3, minH: 3 },
+    { i: 'chart-crm', x: 4, y: 13, w: 4, h: 4, minW: 3, minH: 3 },
+    { i: 'chart-expenses', x: 8, y: 13, w: 4, h: 4, minW: 3, minH: 3 },
+    // Top products + Cash flow
+    { i: 'top-products', x: 0, y: 17, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'cash-flow', x: 6, y: 17, w: 6, h: 4, minW: 3, minH: 3 },
+    // Invoices + Partners
+    { i: 'recent-invoices', x: 0, y: 21, w: 7, h: 4, minW: 4, minH: 3 },
+    { i: 'top-partners', x: 7, y: 21, w: 5, h: 4, minW: 3, minH: 3 },
+    // Low stock
+    { i: 'low-stock', x: 7, y: 25, w: 5, h: 3, minW: 3, minH: 2 },
+    // Tasks + Activity
+    { i: 'tasks', x: 0, y: 25, w: 7, h: 4, minW: 4, minH: 3 },
+    { i: 'activity', x: 0, y: 29, w: 6, h: 4, minW: 4, minH: 3 },
   ],
   md: [
-    { i: 'kpi-revenue', x: 0, y: 0, w: 4, h: 2, minW: 2, minH: 2 },
-    { i: 'kpi-expenses', x: 4, y: 0, w: 4, h: 2, minW: 2, minH: 2 },
-    { i: 'kpi-profit', x: 8, y: 0, w: 4, h: 2, minW: 2, minH: 2 },
-    { i: 'kpi-cash', x: 0, y: 2, w: 4, h: 2, minW: 2, minH: 2 },
-    { i: 'alert-overdue', x: 4, y: 2, w: 4, h: 1.5, minW: 2, minH: 1 },
-    { i: 'alert-lowstock', x: 8, y: 2, w: 4, h: 1.5, minW: 2, minH: 1 },
+    { i: 'kpi-revenue', x: 0, y: 0, w: 4, h: 2.5, minW: 2, minH: 2 },
+    { i: 'kpi-expenses', x: 4, y: 0, w: 4, h: 2.5, minW: 2, minH: 2 },
+    { i: 'kpi-profit', x: 8, y: 0, w: 4, h: 2.5, minW: 2, minH: 2 },
+    { i: 'kpi-cash', x: 0, y: 2.5, w: 4, h: 2.5, minW: 2, minH: 2 },
+    { i: 'alert-overdue', x: 4, y: 2.5, w: 4, h: 1.5, minW: 2, minH: 1 },
+    { i: 'alert-lowstock', x: 8, y: 2.5, w: 4, h: 1.5, minW: 2, minH: 1 },
     { i: 'alert-unpaid', x: 4, y: 4, w: 4, h: 1.5, minW: 2, minH: 1 },
     { i: 'alert-partners', x: 8, y: 4, w: 4, h: 1.5, minW: 2, minH: 1 },
-    { i: 'health-score', x: 0, y: 5, w: 4, h: 3.5, minW: 3, minH: 3 },
-    { i: 'goals', x: 4, y: 5, w: 4, h: 3.5, minW: 3, minH: 3 },
-    { i: 'receivables', x: 8, y: 5, w: 4, h: 3.5, minW: 3, minH: 3 },
-    { i: 'metrics-partners', x: 0, y: 9, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-products', x: 3, y: 9, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-projects', x: 6, y: 9, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-crm', x: 9, y: 9, w: 3, h: 1.5, minW: 2, minH: 1 },
-    { i: 'revenue-chart', x: 0, y: 11, w: 12, h: 5, minW: 6, minH: 4 },
-    { i: 'chart-invoices', x: 0, y: 16, w: 6, h: 5, minW: 3, minH: 4 },
-    { i: 'chart-crm', x: 6, y: 16, w: 6, h: 5, minW: 3, minH: 4 },
-    { i: 'chart-expenses', x: 0, y: 21, w: 6, h: 5, minW: 3, minH: 4 },
-    { i: 'top-products', x: 6, y: 21, w: 6, h: 5, minW: 4, minH: 4 },
-    { i: 'cash-flow', x: 0, y: 26, w: 6, h: 5, minW: 4, minH: 4 },
-    { i: 'recent-invoices', x: 6, y: 26, w: 6, h: 5, minW: 4, minH: 4 },
-    { i: 'top-partners', x: 0, y: 31, w: 6, h: 5, minW: 3, minH: 4 },
-    { i: 'low-stock', x: 6, y: 31, w: 6, h: 4, minW: 3, minH: 3 },
-    { i: 'tasks', x: 0, y: 35, w: 6, h: 5, minW: 4, minH: 4 },
-    { i: 'activity', x: 6, y: 35, w: 6, h: 5, minW: 4, minH: 4 },
+    { i: 'health-score', x: 0, y: 5.5, w: 4, h: 3, minW: 3, minH: 2 },
+    { i: 'goals', x: 4, y: 5.5, w: 4, h: 3, minW: 3, minH: 2 },
+    { i: 'receivables', x: 8, y: 5.5, w: 4, h: 3, minW: 3, minH: 2 },
+    { i: 'metrics-partners', x: 0, y: 8.5, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-products', x: 3, y: 8.5, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-projects', x: 6, y: 8.5, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-crm', x: 9, y: 8.5, w: 3, h: 1.5, minW: 2, minH: 1 },
+    { i: 'revenue-chart', x: 0, y: 10, w: 12, h: 4.5, minW: 6, minH: 3 },
+    { i: 'chart-invoices', x: 0, y: 14.5, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'chart-crm', x: 6, y: 14.5, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'chart-expenses', x: 0, y: 18.5, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'top-products', x: 6, y: 18.5, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'cash-flow', x: 0, y: 22.5, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'recent-invoices', x: 6, y: 22.5, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'top-partners', x: 0, y: 26.5, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'low-stock', x: 6, y: 26.5, w: 6, h: 3, minW: 3, minH: 2 },
+    { i: 'tasks', x: 0, y: 29.5, w: 6, h: 4, minW: 3, minH: 3 },
+    { i: 'activity', x: 6, y: 29.5, w: 6, h: 4, minW: 3, minH: 3 },
   ],
   sm: [
     { i: 'kpi-revenue', x: 0, y: 0, w: 4, h: 2, minW: 2, minH: 2 },
@@ -130,26 +131,26 @@ const DEFAULT_LAYOUTS: Layouts = {
     { i: 'kpi-cash', x: 0, y: 6, w: 4, h: 2, minW: 2, minH: 2 },
     { i: 'alert-overdue', x: 0, y: 8, w: 2, h: 1.5, minW: 2, minH: 1 },
     { i: 'alert-lowstock', x: 2, y: 8, w: 2, h: 1.5, minW: 2, minH: 1 },
-    { i: 'alert-unpaid', x: 0, y: 10, w: 2, h: 1.5, minW: 2, minH: 1 },
-    { i: 'alert-partners', x: 2, y: 10, w: 2, h: 1.5, minW: 2, minH: 1 },
-    { i: 'health-score', x: 0, y: 12, w: 4, h: 3.5, minW: 3, minH: 3 },
-    { i: 'goals', x: 0, y: 16, w: 4, h: 3.5, minW: 3, minH: 3 },
-    { i: 'receivables', x: 0, y: 20, w: 4, h: 3.5, minW: 3, minH: 3 },
-    { i: 'metrics-partners', x: 0, y: 24, w: 2, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-products', x: 2, y: 24, w: 2, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-projects', x: 0, y: 26, w: 2, h: 1.5, minW: 2, minH: 1 },
-    { i: 'metrics-crm', x: 2, y: 26, w: 2, h: 1.5, minW: 2, minH: 1 },
-    { i: 'revenue-chart', x: 0, y: 28, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'chart-invoices', x: 0, y: 33, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'chart-crm', x: 0, y: 38, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'chart-expenses', x: 0, y: 43, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'top-products', x: 0, y: 48, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'cash-flow', x: 0, y: 53, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'recent-invoices', x: 0, y: 58, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'top-partners', x: 0, y: 63, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'low-stock', x: 0, y: 68, w: 4, h: 4, minW: 4, minH: 3 },
-    { i: 'tasks', x: 0, y: 72, w: 4, h: 5, minW: 4, minH: 4 },
-    { i: 'activity', x: 0, y: 77, w: 4, h: 5, minW: 4, minH: 4 },
+    { i: 'alert-unpaid', x: 0, y: 9.5, w: 2, h: 1.5, minW: 2, minH: 1 },
+    { i: 'alert-partners', x: 2, y: 9.5, w: 2, h: 1.5, minW: 2, minH: 1 },
+    { i: 'health-score', x: 0, y: 11, w: 4, h: 3, minW: 3, minH: 2 },
+    { i: 'goals', x: 0, y: 14, w: 4, h: 3, minW: 3, minH: 2 },
+    { i: 'receivables', x: 0, y: 17, w: 4, h: 3, minW: 3, minH: 2 },
+    { i: 'metrics-partners', x: 0, y: 20, w: 2, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-products', x: 2, y: 20, w: 2, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-projects', x: 0, y: 21.5, w: 2, h: 1.5, minW: 2, minH: 1 },
+    { i: 'metrics-crm', x: 2, y: 21.5, w: 2, h: 1.5, minW: 2, minH: 1 },
+    { i: 'revenue-chart', x: 0, y: 23, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'chart-invoices', x: 0, y: 27, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'chart-crm', x: 0, y: 31, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'chart-expenses', x: 0, y: 35, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'top-products', x: 0, y: 39, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'cash-flow', x: 0, y: 43, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'recent-invoices', x: 0, y: 47, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'top-partners', x: 0, y: 51, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'low-stock', x: 0, y: 55, w: 4, h: 3, minW: 4, minH: 2 },
+    { i: 'tasks', x: 0, y: 58, w: 4, h: 4, minW: 4, minH: 3 },
+    { i: 'activity', x: 0, y: 62, w: 4, h: 4, minW: 4, minH: 3 },
   ],
   xs: [
     { i: 'kpi-revenue', x: 0, y: 0, w: 4, h: 2, minW: 4, minH: 2 },
@@ -392,9 +393,9 @@ export function Dashboard() {
         isResizable={!isLocked}
         draggableHandle=".widget-drag-handle"
         draggableCancel=".widget-no-drag"
-        rowHeight={52}
+        rowHeight={28}
         cols={{ lg: 12, md: 12, sm: 4, xs: 4 }}
-        margin={{ lg: [16, 16], md: [14, 14], sm: [10, 10], xs: [8, 8] }}
+        margin={{ lg: [12, 12], md: [10, 10], sm: [8, 8], xs: [6, 6] }}
         containerPadding={{ lg: [0, 0], md: [0, 0], sm: [0, 0], xs: [0, 0] }}
         compactType="vertical"
         useCSSTransforms
