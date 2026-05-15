@@ -218,3 +218,54 @@ Stage Summary:
 - Lock button prevents accidental changes
 - Layout saved to localStorage and persists across sessions
 - Compiled successfully, no errors
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Rewrite Dashboard to remove react-grid-layout and use Tailwind grid + @dnd-kit
+
+Work Log:
+- Analyzed current Dashboard (918 lines) which used react-grid-layout with 28 individually draggable/resizable widgets
+- Identified the problem: react-grid-layout makes widgets too big, user wants compact Tailwind grid ("kao pre") with drag-and-drop section reordering
+- Confirmed @dnd-kit packages already installed: core@6.3.1, sortable@10.0.0, utilities@3.2.2
+- Complete rewrite of Dashboard component:
+  - Removed ALL react-grid-layout code: imports, ResponsiveGridLayout, WidgetLayout interface, Layouts type, DEFAULT_LAYOUTS (4 breakpoints × 28 widgets), getStoredLayouts(), isDefaultLayout(), WidgetWrapper component
+  - Removed CSS imports: react-grid-layout/css/styles.css, react-resizable/css/styles.css
+  - Replaced ResponsiveGridLayout wrapper with Tailwind CSS grid layout using native divs
+  - Defined 9 sortable sections with compact Tailwind grids:
+    - KPI: grid grid-cols-2 lg:grid-cols-4 gap-4
+    - Alerts: grid grid-cols-2 lg:grid-cols-4 gap-3
+    - Health/Goals/Receivables: grid gap-4 lg:grid-cols-3
+    - Metrics: grid grid-cols-2 lg:grid-cols-4 gap-3
+    - Revenue chart: full-width Card
+    - Charts (invoices/CRM/expenses): grid gap-4 lg:grid-cols-3
+    - Products+Cashflow: grid gap-4 lg:grid-cols-2
+    - Invoices+Partners: grid gap-4 lg:grid-cols-3 (invoices col-span-2)
+    - LowStock+Tasks+Activity: grid gap-4 lg:grid-cols-3
+  - Added @dnd-kit drag-and-drop for section reordering:
+    - DndContext with PointerSensor (8px activation distance) and KeyboardSensor
+    - SortableContext with verticalListSortingStrategy
+    - SortableSection wrapper with GripVertical drag handle (visible only in edit mode)
+    - Section order persisted to localStorage (key: 'dashboard_section_order_v1')
+    - arrayMove from @dnd-kit/sortable for reordering
+  - Updated WidgetCard: removed widget-drag-handle and widget-no-drag classes, removed h-full className handling, removed title-only rendering
+  - Removed max-h constraints from charts/lists that were needed for react-grid-layout
+  - Removed unused imports: Maximize2, React, type Layout, useCallback
+  - Kept: Lock/Unlock toggle (renamed to Podesi/Zaključano), Quick Actions, RotateCcw for reset
+  - Reset button only shows when: in edit mode AND custom order detected
+  - Kept ALL widget content exactly the same (KPIs, alerts, charts, tables, activity feed)
+  - DashboardSkeleton unchanged
+- Cleaned up globals.css: removed all react-grid-layout CSS (~100 lines)
+- Uninstalled react-grid-layout and react-resizable packages
+
+Stage Summary:
+- Dashboard now uses compact Tailwind CSS grid layout (no more oversized widgets)
+- 9 sections can be reordered via drag-and-drop when in "Podesi" (edit) mode
+- GripVertical drag handle appears on left side of each section in edit mode
+- Section order saved to localStorage and persists across sessions
+- Lock/Unlock toggle button controls edit mode
+- Reset button restores default section order (only visible in edit mode when customized)
+- All widget content unchanged - same KPIs, charts, tables, activity feed
+- Removed react-grid-layout and react-resizable from project
+- ESLint passes (pre-existing errors in Chat module only)
+- Dev server compiles successfully
