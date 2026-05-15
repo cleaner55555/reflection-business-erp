@@ -445,12 +445,14 @@ body::before {
 /* Dashboard grid item wrapper */
 .dashboard-grid-item {
   height: 100%;
+  cursor: grab;
+}
+.dashboard-grid-item:active {
+  cursor: grabbing;
 }
 
-/* When NOT in edit mode — clean look */
-.dashboard-grid-item:not(:has(.dashboard-drag-handle)) {
-  border: none !important;
-  background: none !important;
-  border-radius: 0 !important;
+/* Subtle hover indicator so users know widgets are interactive */
+.dashboard-grid-item:hover {
+  box-shadow: 0 0 0 2px oklch(0.55 0.17 155 / 0.15);
 }
 

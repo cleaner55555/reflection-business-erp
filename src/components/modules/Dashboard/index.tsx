@@ -14,7 +14,7 @@ import {
   TrendingUp, TrendingDown, DollarSign, AlertTriangle, FilePlus2, BoxIcon,
   UserPlus, Wallet, ShoppingCart, PackagePlus, Clock, FileText, Users,
   AlertCircle, CircleDot, Activity, Banknote, ArrowUpRight, FolderKanban,
-  Heart, Receipt, BarChart3, Zap, Lock, Unlock, GripVertical, RotateCcw, LayoutDashboard,
+  Heart, Receipt, BarChart3, Zap, RotateCcw, LayoutDashboard,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -164,7 +164,7 @@ export function Dashboard() {
   const [lowStock, setLowStock] = useState<LowStockProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [layout, setLayout] = useState<Layout[]>(DEFAULT_LAYOUT)
-  const [isEditMode, setIsEditMode] = useState(false)
+
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const { setActiveModule } = useAppStore()
@@ -249,10 +249,6 @@ export function Dashboard() {
   const handleResetLayout = useCallback(() => {
     setLayout(DEFAULT_LAYOUT)
     localStorage.removeItem(STORAGE_KEY)
-  }, [])
-
-  const toggleEditMode = useCallback(() => {
-    setIsEditMode(prev => !prev)
   }, [])
 
   if (loading || !data) return <DashboardSkeleton />
@@ -660,20 +656,8 @@ export function Dashboard() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Edit mode toggle */}
-          <Button
-            variant={isEditMode ? 'default' : 'outline'}
-            size="sm"
-            className="h-9 gap-2 text-xs rounded-lg"
-            onClick={toggleEditMode}
-            title={isEditMode ? 'Zaključaj dashboard' : 'Podesi raspored'}
-          >
-            {isEditMode ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
-            <span className="hidden sm:inline">{isEditMode ? 'Zaključano' : 'Podesi'}</span>
-          </Button>
-
           {/* Reset layout */}
-          {isEditMode && isCustomLayout && (
+          {isCustomLayout && (
             <Button variant="ghost" size="sm" className="h-9 gap-2 text-xs rounded-lg text-muted-foreground hover:text-foreground" onClick={handleResetLayout} title="Resetuj raspored">
               <RotateCcw className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Resetuj</span>
@@ -713,33 +697,18 @@ export function Dashboard() {
         rowHeight={8}
         margin={[16, 16]}
         containerPadding={[0, 0]}
-        isDraggable={isEditMode}
-        isResizable={isEditMode}
+        isDraggable={true}
+        isResizable={true}
         compactType="vertical"
-        draggableHandle=".dashboard-drag-handle"
         onLayoutChange={handleLayoutChange}
         useCSSTransforms
         resizeHandles={['se']}
       >
         {layout.map(item => (
-          <div key={item.i} className={cn(
-            'dashboard-grid-item rounded-xl overflow-hidden transition-shadow',
-            isEditMode ? 'border-2 border-dashed border-primary/30 bg-primary/[0.02]' : ''
-          )}>
-            {/* Drag handle — only visible in edit mode */}
-            {isEditMode && (
-              <div className="dashboard-drag-handle flex items-center gap-2 px-4 py-1.5 bg-primary/5 cursor-grab active:cursor-grabbing select-none">
-                <GripVertical className="h-3.5 w-3.5 text-primary/60" />
-                <span className="text-[11px] font-medium text-primary/70 uppercase tracking-wider">
-                  {WIDGET_LABELS[item.i] || item.i}
-                </span>
-              </div>
-            )}
+          <div key={item.i} className="dashboard-grid-item rounded-xl overflow-hidden transition-shadow">
             {/* Widget content — fills remaining height */}
-            <div className={cn(isEditMode ? 'px-1 pb-1' : '', 'h-full')}>
-              <div className="h-full">
-                {renderWidget(item.i)}
-              </div>
+            <div className="h-full">
+              {renderWidget(item.i)}
             </div>
           </div>
         ))}
