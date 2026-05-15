@@ -168,7 +168,7 @@ const moduleLabelKeys: Record<string, string> = {
 }
 
 function AppContent() {
-  const { activeModule, currentUser, activeCompanyId } = useAppStore()
+  const { activeModule, currentUser, activeCompanyId, setEnabledModules } = useAppStore()
 
   useEffect(() => {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
@@ -182,6 +182,32 @@ function AppContent() {
   useEffect(() => {
     if (!seeded) { setSeeded(true); fetch('/api/seed', { method: 'POST' }).catch(() => {}) }
   }, [seeded])
+
+  // Sync company.modules → enabledModules on login/company switch
+  // Admin (isSuperAdmin) always sees all modules
+  useEffect(() => {
+    if (!currentUser || !activeCompanyId) return
+    if (currentUser.isSuperAdmin) {
+      setEnabledModules([])
+      return
+    }
+    fetch(`/api/companies`, { headers: { 'x-company-id': activeCompanyId } })
+      .then(res => res.ok ? res.json() : null)
+      .then((company: any) => {
+        if (!company) return
+        try {
+          const modules = JSON.parse(company.modules || '[]')
+          if (Array.isArray(modules) && modules.length > 0) {
+            setEnabledModules(modules)
+          } else {
+            setEnabledModules([]) // empty = all enabled
+          }
+        } catch {
+          setEnabledModules([])
+        }
+      })
+      .catch(() => {})
+  }, [currentUser, activeCompanyId, setEnabledModules])
 
   useEffect(() => {
     if (!currentUser || !activeCompanyId) return

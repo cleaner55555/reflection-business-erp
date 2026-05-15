@@ -133,3 +133,33 @@ Stage Summary:
 - 99 templates across 11 categories, 12 featured templates
 - Available in Settings > Namene tab
 - Apply action updates company.modules to activate relevant modules per industry
+
+---
+Task ID: 5
+Agent: main
+Task: Connect Industry Templates to sidebar filtering + accordion UI + admin/client roles
+
+Work Log:
+- Discovered store already has `enabledModules`, `setEnabledModules`, `isModuleEnabled` - sidebar already filters!
+- Added useEffect in page.tsx to sync company.modules → enabledModules on login/company switch
+  - Admin (isSuperAdmin) → setEnabledModules([]) = sees ALL modules
+  - Client → setEnabledModules(company.modules) = only purchased modules
+- Updated POST /api/industry-templates to:
+  - Always include 'dashboard' and 'settings' in final modules
+  - Support slug='__reset__' to clear modules (show all)
+- Rebuilt IndustryTemplates UI with:
+  - Accordion by category (click to expand, cards inside)
+  - Featured strip at top with horizontal scroll
+  - Active state indicator (shows which template is currently applied)
+  - "Poništi namenu" button to reset
+  - Admin info badge (amber Crown icon) explaining admin sees all
+  - Search across all templates
+- Tested full flow: apply "Fitnes centar" → 12 modules saved to DB → sidebar shows only those modules
+
+Stage Summary:
+- Click on industry template → sidebar immediately shows only relevant modules
+- Admin always sees all modules (SuperAdmin bypass)
+- Client sees only modules from their purchased template
+- Accordion UI for 99 templates organized by 11 categories
+- Dashboard and Settings always included in every template
+- Reset button restores all modules

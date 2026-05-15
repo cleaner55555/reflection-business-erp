@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { industryTemplatesData } from '@/lib/industry-templates-data'
 
-// GET /api/industry-templates - List all templates, optionally by category
+// GET /api/industry-templates - List all templates
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const category = searchParams.get('category') || ''
@@ -40,11 +40,11 @@ export async function GET(req: NextRequest) {
     orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }],
   })
 
-  // Get unique categories
+  // Get unique categories (preserve order from data)
   const categories = await db.industryTemplate.findMany({
     distinct: ['category'],
     select: { category: true },
-    orderBy: { category: 'asc' },
+    orderBy: { sortOrder: 'asc' },
   })
 
   return NextResponse.json({
@@ -56,12 +56,25 @@ export async function GET(req: NextRequest) {
   })
 }
 
-// POST /api/industry-templates/apply - Apply an industry template to company
+// POST /api/industry-templates - Apply template or reset
 export async function POST(req: NextRequest) {
   const { slug, companyId } = await req.json()
 
   if (!companyId) {
     return NextResponse.json({ error: 'companyId je obavezan' }, { status: 400 })
+  }
+
+  // Reset to all modules
+  if (slug === '__reset__') {
+    await db.company.update({
+      where: { id: companyId },
+      data: { modules: '[]' },
+    })
+    return NextResponse.json({
+      success: true,
+      modules: [],
+      message: 'Namena poništena — svi moduli su aktivni',
+    })
   }
 
   const template = await db.industryTemplate.findUnique({ where: { slug } })
@@ -71,16 +84,19 @@ export async function POST(req: NextRequest) {
 
   const modules = JSON.parse(template.modules)
 
-  // Update company's active modules
+  // Always include dashboard and settings
+  const finalModules = [...new Set(['dashboard', 'settings', ...modules])]
+
+  // Update company's active modules in DB
   await db.company.update({
     where: { id: companyId },
-    data: { modules: JSON.stringify(modules) },
+    data: { modules: JSON.stringify(finalModules) },
   })
 
   return NextResponse.json({
     success: true,
     template: template.name,
-    modules,
-    message: `Namena "${template.name}" primenjena (${modules.length} modula)`,
+    modules: finalModules,
+    message: `Namena "${template.name}" primenjena (${finalModules.length} modula)`,
   })
 }
