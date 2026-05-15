@@ -163,3 +163,29 @@ Stage Summary:
 - Accordion UI for 99 templates organized by 11 categories
 - Dashboard and Settings always included in every template
 - Reset button restores all modules
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Implement drag-and-drop dashboard with @dnd-kit/sortable
+
+Work Log:
+- Analyzed current dashboard structure (835 lines, 9 major sections)
+- Confirmed @dnd-kit/core@6.3.1, @dnd-kit/sortable@10.0.0, @dnd-kit/utilities@3.2.2 already installed
+- Verified dnd-kit API compatibility (SortableContext, useSortable, arrayMove all available)
+- Checked existing CSS animations (animate-fade-in-up already in globals.css)
+- Rewrote Dashboard component with drag-and-drop support
+- Created SortableSection wrapper component with drag handle (GripVertical icon, appears on hover)
+- Defined 9 sortable sections: kpi-cards, alert-cards, health-goals-receivables, secondary-metrics, revenue-chart, charts-row, top-products-cash-flow, bottom-row, tasks-activity
+- Implemented layout persistence to localStorage (key: 'dashboardLayout')
+- Added reset layout button (appears only when layout is customized)
+- Replaced framer-motion variants with CSS animations (animate-fade-in-up with stagger delays)
+- Enhanced header with LayoutDashboard icon
+- Verified compilation: no errors, ✓ Compiled successfully
+
+Stage Summary:
+- Dashboard now supports drag-and-drop reordering of all 9 sections
+- Layout saved to localStorage and persists across sessions
+- Reset button restores default layout
+- Drag handles appear on hover (left side of each section)
+- Visual feedback: shadow, ring, scale when dragging; opacity reduction
