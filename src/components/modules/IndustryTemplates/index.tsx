@@ -89,7 +89,7 @@ const MODULE_LABELS: Record<string, string> = {
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Calculator: SquareSigma, ShieldCheck, Scale, Code2, BookOpen, Frame, Camera, PenTool,
-  Laptop, PartyPopper, UserCheck, Heart, Trophy, Dumbbell, Medal, Ring,
+  Laptop, PartyPopper, UserCheck, Heart, Trophy, Dumbbell, Medal, Gem,
   Beer, Wine, UtensilsCrossed, Sandwich, ShoppingBag, Mountain, Glasses,
   Activity, Pill, Syringe, Sparkles, Flower2, Waves, Home, Building,
   Car, Sprout, Shirt, Package, Monitor, ShoppingCart, Sofa, Wrench, Puzzle,
