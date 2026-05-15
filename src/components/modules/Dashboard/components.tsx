@@ -27,7 +27,7 @@ export function KPICard({
   const isPositive = change !== null && change !== undefined && change >= 0
 
   return (
-    <Card className="relative overflow-hidden transition-shadow hover:shadow-md">
+    <Card className="relative overflow-hidden hover-lift transition-shadow hover:shadow-md">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-2 flex-1">
