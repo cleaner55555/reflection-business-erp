@@ -28,7 +28,7 @@ import {
   getStatusLabel, getStatusColor, getMonthLabel, cn,
 } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
-import { useAppStore, type ModuleType } from '@/lib/store'
+import { useAppStore, type ModuleType, type PendingAction } from '@/lib/store'
 import {
   KPICard, AlertCard, Sparkline, HealthScoreCard,
   GoalTrackerCard, ReceivablesCard,
@@ -791,7 +791,10 @@ export function Dashboard() {
               {/* Quick actions */}
               <div className="hidden lg:flex items-center gap-1">
                 {quickActions.slice(0, 2).map(action => (
-                  <Button key={action.module} variant="outline" size="sm" className="h-9 gap-1.5 text-xs rounded-lg font-medium" onClick={() => setActiveModule(action.module)}>
+                  <Button key={action.module} variant="outline" size="sm" className="h-9 gap-1.5 text-xs rounded-lg font-medium" onClick={() => {
+                    const pending: PendingAction | undefined = 'action' in action ? { module: action.module, action: action.action } : undefined
+                    setActiveModule(action.module, pending)
+                  }}>
                     <action.icon className="h-3.5 w-3.5" />
                     {t(action.labelKey)}
                   </Button>
@@ -805,7 +808,10 @@ export function Dashboard() {
             <ScrollArea className="w-full">
               <div className="flex gap-2 pb-1">
                 {quickActions.map(action => (
-                  <Button key={action.module} variant="outline" size="sm" className="flex-shrink-0 h-9 gap-1.5 text-xs rounded-lg" onClick={() => setActiveModule(action.module)}>
+                  <Button key={action.module} variant="outline" size="sm" className="flex-shrink-0 h-9 gap-1.5 text-xs rounded-lg" onClick={() => {
+                    const pending: PendingAction | undefined = 'action' in action ? { module: action.module, action: action.action } : undefined
+                    setActiveModule(action.module, pending)
+                  }}>
                     <action.icon className="h-3.5 w-3.5" />
                     {t(action.labelKey)}
                   </Button>

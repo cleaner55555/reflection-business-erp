@@ -53,6 +53,7 @@ import { RecurringInvoices } from '@/components/modules/RecurringInvoices'
 import { RateOtplateTab, FiskalizacijaTab } from '@/components/modules/InvoicesEnhanced'
 import { formatRSD, formatDate, formatDateTime, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { useAppStore } from '@/lib/store'
 import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton'
 import { generateInvoicePDF, downloadPDF, type InvoiceData } from '@/lib/reports/pdf-generator'
 
@@ -328,6 +329,15 @@ function FaktureTab() {
   const printRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
+  const { pendingAction, clearPendingAction } = useAppStore()
+
+  // Auto-open create form when navigated from dashboard quick action
+  useEffect(() => {
+    if (pendingAction?.module === 'invoices' && pendingAction.action === 'create') {
+      setActiveTab('dodaj')
+      clearPendingAction()
+    }
+  }, [pendingAction, clearPendingAction])
 
   // Form state
   const [lineItems, setLineItems] = useState<LineItem[]>([

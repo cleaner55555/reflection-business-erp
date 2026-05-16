@@ -160,10 +160,18 @@ export interface CompanyInfo {
   jobTitle?: string
 }
 
+export interface PendingAction {
+  module: ModuleType
+  action: 'create' | 'edit'
+  id?: string
+}
+
 interface AppState {
   // Module navigation
   activeModule: ModuleType
-  setActiveModule: (module: ModuleType) => void
+  setActiveModule: (module: ModuleType, action?: PendingAction) => void
+  pendingAction: PendingAction | null
+  clearPendingAction: () => void
 
   // Industry set
   industrySet: IndustryId | null
@@ -193,7 +201,9 @@ interface AppState {
 export const useAppStore = create<AppState>((set, get) => ({
   // Module navigation
   activeModule: 'dashboard',
-  setActiveModule: (module) => set({ activeModule: module }),
+  pendingAction: null,
+  setActiveModule: (module, action) => set({ activeModule: module, pendingAction: action || null }),
+  clearPendingAction: () => set({ pendingAction: null }),
 
   // Industry set
   industrySet: (() => {

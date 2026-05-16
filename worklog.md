@@ -346,3 +346,27 @@ Stage Summary:
 - Edit Mode: sticky bar, drag handles (GripVertical), resize, remove (X), restore palette
 - Layout persists to localStorage, hidden widgets tracked separately
 - All 26 widgets preserved with identical rendering
+
+---
+Task ID: 4
+Agent: Main
+Task: Fix Nova faktura, Novi partner, and Desktop Mode
+
+Work Log:
+- Investigated three bugs: quick actions wrong module names, no create action, missing desktop mode
+- Fixed quickActions module names: 'fakture'→'invoices', 'partneri'→'contacts', 'finansije'→'finance', 'nabavka'→'procurement', 'magacin'→'inventory'
+- Added PendingAction type to store.ts with module/action/id fields
+- Updated setActiveModule to accept optional PendingAction parameter
+- Added pendingAction state + clearPendingAction to store
+- Updated Dashboard quick action buttons to pass create action when applicable
+- Added useEffect in Invoices/index.tsx to auto-switch to 'dodaj' tab when pendingAction.invoice.create
+- Added useEffect in Contacts/index.tsx to auto-switch to 'form' viewMode when pendingAction.contacts.create
+- Re-added DesktopMode to page.tsx: imported useWindowManager, added DesktopMode dynamic import
+- Added DesktopMode conditional render (if isDesktopMode → return DesktopMode)
+- Added Desktop toggle button (Monitor icon) in the header bar
+
+Stage Summary:
+- Nova faktura button: navigates to Invoices module AND auto-opens the create form
+- Novi partner button: navigates to Contacts module AND auto-opens the create form
+- Desktop Mode: toggle button visible in header (Monitor icon + "Desktop" label), switches between normal sidebar view and OS-like desktop layout
+- All 5 quick action buttons now navigate to correct modules (no more error pages)

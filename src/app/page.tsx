@@ -4,12 +4,13 @@ import dynamic from 'next/dynamic'
 import { useEffect, useState, Suspense } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useThemeStore } from '@/lib/theme'
+import { useWindowManager } from '@/lib/windowManager'
 import { I18nProvider, useTranslation, ALL_LANGUAGES, ContentTranslationProvider } from '@/lib/i18n'
 import { Separator } from '@/components/ui/separator'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Languages, Loader2 } from 'lucide-react'
+import { Languages, Loader2, Monitor } from 'lucide-react'
 
 // ============================================================
 // ALL heavy components loaded lazily via next/dynamic
@@ -74,6 +75,11 @@ const LandingPage = dynamic(
 
 const PWAInstallPrompt = dynamic(
   () => import('@/components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })),
+  { ssr: false }
+)
+
+const DesktopMode = dynamic(
+  () => import('@/components/window-manager/DesktopModeWrapper').then(m => ({ default: m.DesktopModeWrapper })),
   { ssr: false }
 )
 
@@ -169,6 +175,7 @@ const moduleLabelKeys: Record<string, string> = {
 
 function AppContent() {
   const { activeModule, currentUser, activeCompanyId, setEnabledModules } = useAppStore()
+  const { isDesktopMode, toggleDesktopMode } = useWindowManager()
 
   useEffect(() => {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
@@ -238,6 +245,8 @@ function AppContent() {
     return () => clearTimeout(timer)
   }, [currentUser])
 
+  if (isDesktopMode) return <DesktopMode />
+
   if (showAuth || !currentUser) return <LandingPage />
 
   return (
@@ -276,6 +285,10 @@ function AppContent() {
                 <span className="hidden sm:inline">{headerLanguages[0]?.nativeName || 'SR'}</span>
               </button>
             )}
+            <button onClick={toggleDesktopMode} className="hidden sm:flex h-8 min-h-[44px] sm:min-h-0 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-2 sm:px-2.5 text-xs hover:bg-accent transition-colors" title="Desktop režim">
+              <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="hidden lg:inline">Desktop</span>
+            </button>
             <GlobalSearch /><NotificationBell /><ThemeToggle /><UserMenu />
           </div>
         </header>

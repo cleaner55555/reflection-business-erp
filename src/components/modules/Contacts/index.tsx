@@ -28,6 +28,7 @@ import {
 import { toast } from 'sonner'
 import { formatRSD, formatDate, getStatusLabel, getStatusColor } from '@/lib/helpers'
 import { useTranslation, useContentTranslation } from '@/lib/i18n'
+import { useAppStore } from '@/lib/store'
 import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton'
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -402,6 +403,16 @@ function PartneriListTab() {
   const [statusFilter, setStatusFilter] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null)
+  const { pendingAction, clearPendingAction } = useAppStore()
+
+  // Auto-open create form when navigated from dashboard quick action
+  useEffect(() => {
+    if (pendingAction?.module === 'contacts' && pendingAction.action === 'create') {
+      setViewMode('form')
+      setEditingPartner(null)
+      clearPendingAction()
+    }
+  }, [pendingAction, clearPendingAction])
   const [submitting, setSubmitting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Partner | null>(null)
