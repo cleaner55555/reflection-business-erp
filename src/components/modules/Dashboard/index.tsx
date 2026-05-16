@@ -146,11 +146,11 @@ function saveHiddenWidgets(widgets: string[]) {
 
 // ============ QUICK ACTIONS ============
 const quickActions = [
-  { labelKey: 'dashboard.newInvoice', icon: FilePlus2, module: 'fakture' as ModuleType },
-  { labelKey: 'dashboard.newPartner', icon: UserPlus, module: 'partneri' as ModuleType },
-  { labelKey: 'dashboard.cashEntry', icon: Wallet, module: 'finansije' as ModuleType },
-  { labelKey: 'dashboard.newOrder', icon: ShoppingCart, module: 'nabavka' as ModuleType },
-  { labelKey: 'dashboard.newProduct', icon: PackagePlus, module: 'magacin' as ModuleType },
+  { labelKey: 'dashboard.newInvoice', icon: FilePlus2, module: 'invoices' as ModuleType, action: 'create' as const },
+  { labelKey: 'dashboard.newPartner', icon: UserPlus, module: 'contacts' as ModuleType, action: 'create' as const },
+  { labelKey: 'dashboard.cashEntry', icon: Wallet, module: 'finance' as ModuleType },
+  { labelKey: 'dashboard.newOrder', icon: ShoppingCart, module: 'procurement' as ModuleType },
+  { labelKey: 'dashboard.newProduct', icon: PackagePlus, module: 'inventory' as ModuleType },
 ]
 
 // ============ WIDGET LABEL MAP ============
