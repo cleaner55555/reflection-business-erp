@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://grafana.com/docs/grafana/latest/visualizations/panels-visualizations/panel-editor-overview",
+    "name": "Panel editor | Grafana documentation",
+    "snippet": "In the panel editor, you can update all the elements of a visualization including the data source, queries, time range, and visualization display options.",
+    "host_name": "grafana.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://grafana.com/docs/grafana/latest/visualizations/panels-visualizations",
+    "name": "Panels and visualizations | Grafana documentation",
+    "snippet": "Overview. Panels are the basic building block in Grafana dashboards, composed of a query and a visualization, a graphical representation of query results.",
+    "host_name": "grafana.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://grafana.com/docs/grafana/latest/visualizations/dashboards/build-dashboards/create-dashboard",
+    "name": "Create dashboards | Grafana documentation",
+    "snippet": "Click the Add new element icon (blue plus sign) and click or drag a panel onto the dashboard. Empty dashboard with sidebar open. On the new panel, select one of ...",
+    "host_name": "grafana.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=Gaw4HqS7GBY",
+    "name": "05-Grafana 11 course (UDEMY): Add a panel to the dashboard",
+    "snippet": "This is an example video of my course \"GRAFANA from scratch to advanced\" that I have published on Udemy. It is 10 hours long and has ...",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://grafana.com/docs/grafana/latest/visualizations/dashboards/build-dashboards/manage-library-panels",
+    "name": "Manage library panels | Grafana documentation",
+    "snippet": "In the top-right corner of the dashboard, click Edit. Hover over any part of the panel you want to share to display the actions menu on the top right corner.",
+    "host_name": "grafana.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://grafana.com/docs/grafana/latest/visualizations/dashboards",
+    "name": "Dashboards | Grafana documentation",
+    "snippet": "A panel is the container that displays the visualization and provides you with various controls to manipulate it. Panel options let you customize many aspects ...",
+    "host_name": "grafana.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=KnaPBKoXuEw",
+    "name": "Build a panel plugin, part 1 | Grafana Crash Course for Developers",
+    "snippet": "... Grafana instance. 6:29 Step 7. Login into Grafana UI. 6:53 Step 8. Create a dashboard. 7:33 Step 9. Provisioning. 10:21 Step 10. Rebuild the ...",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.grafana.com/t/quick-lock-edit-mode-of-dashboards-for-tablet-view/70191",
+    "name": "Quick lock/edit mode of dashboards for tablet view",
+    "snippet": "I would like to request a feature to make dashboards have a quick toggle readonly mode. It is near impossible to scroll on a dashboard on a phone or tablet ...",
+    "host_name": "community.grafana.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

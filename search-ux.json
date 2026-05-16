@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://www.pencilandpaper.io/articles/ux-pattern-drag-and-drop",
+    "name": "Drag & Drop UX Design Best Practices - Pencil & Paper",
+    "snippet": "A comprehensive guide on drag and drop UI/UX design, including pattern UX examples and UI demos.",
+    "host_name": "www.pencilandpaper.io",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://uxpilot.ai/blogs/dashboard-design-principles",
+    "name": "12 Dashboard Design Principles For Better UX - UX Pilot",
+    "snippet": "I will cover 12 dashboard design principles, from understanding your users to measuring performance, to help you build more actionable ones. Why ...",
+    "host_name": "uxpilot.ai",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.pencilandpaper.io/articles/ux-pattern-analysis-data-dashboards",
+    "name": "Dashboard Design UX Patterns Best Practices - Pencil & Paper",
+    "snippet": "Data dashboard UX is tricky, but hopefully we can help. In this article we'll share the dashboard design UX best practices we've learned over the years.",
+    "host_name": "www.pencilandpaper.io",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/rubrik-design/customizable-dashboard-framework-design-step-by-step-c04fc75e1cb5",
+    "name": "Customizable Dashboard Framework Design — Step by Step",
+    "snippet": "In this article, I would like to give a few insights and guidelines based on our recent experience creating a new customizable dashboard.",
+    "host_name": "medium.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.eleken.co/blog-posts/drag-and-drop-ui",
+    "name": "Drag and drop UI examples and UX tips [from SaaS products] - Eleken",
+    "snippet": "Master drag and drop UI design with expert-backed tips, SaaS examples, tools, and visual best practices to streamline your product.",
+    "host_name": "www.eleken.co",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://smart-interface-design-patterns.com/articles/drag-and-drop-ux",
+    "name": "Drag-and-Drop UX: Guidelines and Best Practices",
+    "snippet": "Guidelines for designing a better drag-and-drop UX. With practical guidelines on accessibility and design states.",
+    "host_name": "smart-interface-design-patterns.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://lab.interface-design.co.uk/data-dashboards-ux-design-patterns-benchmarking-1c0cf4642778",
+    "name": "Data Dashboards UX — Design Patterns & Benchmarking",
+    "snippet": "By selecting the \"Edit\" mode, users can modify any widget on their dashboard. The platform provides excellent control over all aspects of the ...",
+    "host_name": "lab.interface-design.co.uk",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://excited.agency/blog/dashboard-ux-design",
+    "name": "Effective Dashboard UX: Design Principles & Best Practices",
+    "snippet": "Improve your data dashboard UX! Explore essential dashboard design principles and best practices for creating effective and user-friendly ...",
+    "host_name": "excited.agency",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

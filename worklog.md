@@ -319,3 +319,30 @@ Stage Summary:
 - Layout matches original visual appearance: KPI (4-col), Alerts (4-col), Health/Goals/Recv (3-col), Metrics (4-col), Revenue (full), Charts (3-col), Products/Cashflow (2-col), Invoices (8+4), LowStock/Tasks/Activity (3-col)
 - Edit mode (Podesi button) enables drag handles, resize handles, and dashed borders
 - Layout persists to localStorage, with Reset button to restore defaults
+
+---
+Task ID: 3
+Agent: Main
+Task: Research dashboard UX patterns and rewrite with proper Edit Mode
+
+Work Log:
+- Researched how Grafana, Notion, Monday.com, and other professional dashboard apps implement drag-and-drop
+- Found that ALL major apps use an Edit Mode toggle (not always-on drag/resize)
+- Grafana: "Edit dashboard" button → drag panels, resize → Save
+- Notion: Toggle edit mode → drag widgets from sidebar → save
+- Monday.com: Widget picker modal, drag-and-drop arrangement
+- DataDashboards UX benchmark: Edit mode toggle is the standard
+- Rewrote Dashboard with proper Edit Mode pattern:
+  - View Mode: clean read-only dashboard, prominent "Uredi dashboard" button
+  - Edit Mode: sticky amber bar with Save/Cancel, drag handles on widgets, resize, remove, restore palette
+- Added hiddenWidgets state with localStorage persistence
+- Added widget palette to restore removed widgets in edit mode
+- Bumped STORAGE_KEY to v5 for fresh layout
+- Updated CSS: drag handle cursor, edit mode dashed borders, removed always-grab cursor
+
+Stage Summary:
+- Dashboard now follows industry-standard Edit Mode pattern (like Grafana)
+- View Mode: clean, clickable, no drag/resize
+- Edit Mode: sticky bar, drag handles (GripVertical), resize, remove (X), restore palette
+- Layout persists to localStorage, hidden widgets tracked separately
+- All 26 widgets preserved with identical rendering

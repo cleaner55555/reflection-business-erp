@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo, useCallback, type ReactNode } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef, type ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,6 +15,7 @@ import {
   UserPlus, Wallet, ShoppingCart, PackagePlus, Clock, FileText, Users,
   AlertCircle, CircleDot, Activity, Banknote, ArrowUpRight, FolderKanban,
   Heart, Receipt, BarChart3, Zap, RotateCcw, LayoutDashboard,
+  Settings2, GripVertical, X, Save, Pencil,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -39,54 +40,55 @@ import type { DashboardData, ActivityItem, LowStockProduct } from './types'
 const GridLayout = WidthProvider(RGL)
 
 // ============ LAYOUT CONFIGURATION ============
-const STORAGE_KEY = 'dashboard_grid_layout_v3'
+const STORAGE_KEY = 'dashboard_grid_layout_v5'
+const HIDDEN_WIDGETS_KEY = 'dashboard_hidden_widgets_v1'
 
 // Each widget is independently draggable & resizable
-// rowHeight=8, margin=[16,16] → item height = h*8 + (h-1)*16 = 24h - 16
+// rowHeight=12, margin=[16,16] → item height = h*12 + (h-1)*16 = 28h - 16
 const DEFAULT_LAYOUT: Layout[] = [
   // ── KPI row: 4 cards ──
-  { i: 'kpi-revenue',    x: 0,  y: 0,  w: 3, h: 6, minW: 2, minH: 5 },
-  { i: 'kpi-expenses',   x: 3,  y: 0,  w: 3, h: 6, minW: 2, minH: 5 },
-  { i: 'kpi-profit',     x: 6,  y: 0,  w: 3, h: 6, minW: 2, minH: 5 },
-  { i: 'kpi-cash',       x: 9,  y: 0,  w: 3, h: 6, minW: 2, minH: 5 },
+  { i: 'kpi-revenue',    x: 0,  y: 0,  w: 3, h: 7, minW: 2, minH: 5 },
+  { i: 'kpi-expenses',   x: 3,  y: 0,  w: 3, h: 7, minW: 2, minH: 5 },
+  { i: 'kpi-profit',     x: 6,  y: 0,  w: 3, h: 7, minW: 2, minH: 5 },
+  { i: 'kpi-cash',       x: 9,  y: 0,  w: 3, h: 7, minW: 2, minH: 5 },
 
   // ── Alert row: 4 cards ──
-  { i: 'alert-overdue',    x: 0,  y: 6,  w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'alert-lowstock',   x: 3,  y: 6,  w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'alert-unpaid',     x: 6,  y: 6,  w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'alert-partners',   x: 9,  y: 6,  w: 3, h: 4, minW: 2, minH: 3 },
+  { i: 'alert-overdue',    x: 0,  y: 7,  w: 3, h: 5, minW: 2, minH: 4 },
+  { i: 'alert-lowstock',   x: 3,  y: 7,  w: 3, h: 5, minW: 2, minH: 4 },
+  { i: 'alert-unpaid',     x: 6,  y: 7,  w: 3, h: 5, minW: 2, minH: 4 },
+  { i: 'alert-partners',   x: 9,  y: 7,  w: 3, h: 5, minW: 2, minH: 4 },
 
   // ── Health / Goals / Receivables: 3 cards ──
-  { i: 'health',       x: 0,  y: 10, w: 4, h: 9, minW: 3, minH: 7 },
-  { i: 'goals',        x: 4,  y: 10, w: 4, h: 9, minW: 3, minH: 7 },
-  { i: 'receivables',  x: 8,  y: 10, w: 4, h: 9, minW: 3, minH: 7 },
+  { i: 'health',       x: 0,  y: 12, w: 4, h: 10, minW: 3, minH: 7 },
+  { i: 'goals',        x: 4,  y: 12, w: 4, h: 10, minW: 3, minH: 7 },
+  { i: 'receivables',  x: 8,  y: 12, w: 4, h: 10, minW: 3, minH: 7 },
 
   // ── Metrics row: 4 mini cards ──
-  { i: 'metric-partners',  x: 0,  y: 19, w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'metric-products',  x: 3,  y: 19, w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'metric-projects',  x: 6,  y: 19, w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'metric-crm',       x: 9,  y: 19, w: 3, h: 4, minW: 2, minH: 3 },
+  { i: 'metric-partners',  x: 0,  y: 22, w: 3, h: 5, minW: 2, minH: 4 },
+  { i: 'metric-products',  x: 3,  y: 22, w: 3, h: 5, minW: 2, minH: 4 },
+  { i: 'metric-projects',  x: 6,  y: 22, w: 3, h: 5, minW: 2, minH: 4 },
+  { i: 'metric-crm',       x: 9,  y: 22, w: 3, h: 5, minW: 2, minH: 4 },
 
   // ── Revenue chart: full width ──
-  { i: 'revenue-chart', x: 0,  y: 23, w: 12, h: 15, minW: 6, minH: 10 },
+  { i: 'revenue-chart', x: 0,  y: 27, w: 12, h: 16, minW: 6, minH: 10 },
 
   // ── 3 chart cards ──
-  { i: 'chart-invoices',  x: 0,  y: 38, w: 4, h: 12, minW: 3, minH: 8 },
-  { i: 'chart-crm',       x: 4,  y: 38, w: 4, h: 12, minW: 3, minH: 8 },
-  { i: 'chart-expenses',  x: 8,  y: 38, w: 4, h: 12, minW: 3, minH: 8 },
+  { i: 'chart-invoices',  x: 0,  y: 43, w: 4, h: 13, minW: 3, minH: 8 },
+  { i: 'chart-crm',       x: 4,  y: 43, w: 4, h: 13, minW: 3, minH: 8 },
+  { i: 'chart-expenses',  x: 8,  y: 43, w: 4, h: 13, minW: 3, minH: 8 },
 
   // ── Products + Cashflow ──
-  { i: 'top-products',    x: 0,  y: 50, w: 6, h: 12, minW: 3, minH: 8 },
-  { i: 'daily-cashflow',  x: 6,  y: 50, w: 6, h: 12, minW: 3, minH: 8 },
+  { i: 'top-products',    x: 0,  y: 56, w: 6, h: 13, minW: 3, minH: 8 },
+  { i: 'daily-cashflow',  x: 6,  y: 56, w: 6, h: 13, minW: 3, minH: 8 },
 
   // ── Invoices + Partners ──
-  { i: 'recent-invoices', x: 0,  y: 62, w: 8, h: 12, minW: 4, minH: 8 },
-  { i: 'top-partners',    x: 8,  y: 62, w: 4, h: 12, minW: 3, minH: 6 },
+  { i: 'recent-invoices', x: 0,  y: 69, w: 8, h: 13, minW: 4, minH: 8 },
+  { i: 'top-partners',    x: 8,  y: 69, w: 4, h: 13, minW: 3, minH: 6 },
 
   // ── Low Stock / Tasks / Activity ──
-  { i: 'low-stock', x: 0,  y: 74, w: 4, h: 14, minW: 3, minH: 8 },
-  { i: 'tasks',     x: 4,  y: 74, w: 4, h: 14, minW: 3, minH: 8 },
-  { i: 'activity',  x: 8,  y: 74, w: 4, h: 14, minW: 3, minH: 8 },
+  { i: 'low-stock', x: 0,  y: 82, w: 4, h: 15, minW: 3, minH: 8 },
+  { i: 'tasks',     x: 4,  y: 82, w: 4, h: 15, minW: 3, minH: 8 },
+  { i: 'activity',  x: 8,  y: 82, w: 4, h: 15, minW: 3, minH: 8 },
 ]
 
 function loadLayout(): Layout[] {
@@ -117,6 +119,29 @@ function isDefaultLayout(layout: Layout[]): boolean {
       item.w === DEFAULT_LAYOUT[i].w &&
       item.h === DEFAULT_LAYOUT[i].h
     )
+}
+
+function loadHiddenWidgets(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(HIDDEN_WIDGETS_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed)) return parsed
+    }
+  } catch { /* ignore */ }
+  return []
+}
+
+function saveHiddenWidgets(widgets: string[]) {
+  if (typeof window === 'undefined') return
+  try {
+    if (widgets.length === 0) {
+      localStorage.removeItem(HIDDEN_WIDGETS_KEY)
+    } else {
+      localStorage.setItem(HIDDEN_WIDGETS_KEY, JSON.stringify(widgets))
+    }
+  } catch { /* ignore */ }
 }
 
 // ============ QUICK ACTIONS ============
@@ -164,14 +189,19 @@ export function Dashboard() {
   const [lowStock, setLowStock] = useState<LowStockProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [layout, setLayout] = useState<Layout[]>(DEFAULT_LAYOUT)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editLayout, setEditLayout] = useState<Layout[]>([])
+  const [hiddenWidgets, setHiddenWidgets] = useState<string[]>([])
+  const preEditLayoutRef = useRef<Layout[]>([])
 
   const { t } = useTranslation()
   const { tc, translateTexts } = useContentTranslation()
   const { setActiveModule } = useAppStore()
 
-  // Load layout from localStorage
+  // Load layout + hidden widgets from localStorage
   useEffect(() => {
     setLayout(loadLayout())
+    setHiddenWidgets(loadHiddenWidgets())
   }, [])
 
   // Fetch data
@@ -248,8 +278,65 @@ export function Dashboard() {
 
   const handleResetLayout = useCallback(() => {
     setLayout(DEFAULT_LAYOUT)
+    setHiddenWidgets([])
+    saveLayout(DEFAULT_LAYOUT)
+    saveHiddenWidgets([])
     localStorage.removeItem(STORAGE_KEY)
   }, [])
+
+  // Edit mode handlers
+  const handleEnterEditMode = useCallback(() => {
+    preEditLayoutRef.current = [...layout]
+    setEditLayout(layout.filter(item => !hiddenWidgets.includes(item.i)))
+    setIsEditMode(true)
+  }, [layout, hiddenWidgets])
+
+  const handleSaveEditMode = useCallback(() => {
+    setLayout(editLayout)
+    saveLayout(editLayout)
+    setIsEditMode(false)
+  }, [editLayout])
+
+  const handleCancelEditMode = useCallback(() => {
+    setLayout(preEditLayoutRef.current)
+    setIsEditMode(false)
+  }, [])
+
+  const handleRemoveWidget = useCallback((widgetId: string) => {
+    setHiddenWidgets(prev => {
+      const next = [...prev, widgetId]
+      saveHiddenWidgets(next)
+      return next
+    })
+    setEditLayout(prev => prev.filter(item => item.i !== widgetId))
+  }, [])
+
+  const handleRestoreWidget = useCallback((widgetId: string) => {
+    // Find the default layout entry for this widget
+    const defaultEntry = DEFAULT_LAYOUT.find(item => item.i === widgetId)
+    if (!defaultEntry) return
+
+    setHiddenWidgets(prev => {
+      const next = prev.filter(id => id !== widgetId)
+      saveHiddenWidgets(next)
+      return next
+    })
+
+    // Also update the main layout if not in edit mode
+    if (!isEditMode) {
+      setLayout(prev => [...prev, { ...defaultEntry }])
+      saveLayout([...layout.filter(item => item.i !== widgetId), defaultEntry])
+    }
+
+    // Add back to edit layout with a position at the end
+    setEditLayout(prev => [...prev, { ...defaultEntry }])
+  }, [isEditMode, layout])
+
+  // Compute visible layout (filter out hidden widgets in view mode)
+  const visibleLayout = useMemo(() => {
+    if (isEditMode) return editLayout
+    return layout.filter(item => !hiddenWidgets.includes(item.i))
+  }, [layout, hiddenWidgets, editLayout, isEditMode])
 
   if (loading || !data) return <DashboardSkeleton />
 
@@ -259,7 +346,7 @@ export function Dashboard() {
   const dealStages = data.dealsByStage.filter(d => d.stage !== 'won' && d.stage !== 'lost').map(d => ({ name: getStatusLabel(d.stage), value: d.value, count: d.count, fill: DEAL_STAGE_COLORS[d.stage] || '#6b7280' }))
   const overdueAndDueToday = data.overdueCount + data.todayDueInvoices.length
   const todayStr = new Date().toLocaleDateString('sr-RS', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-  const isCustomLayout = !isDefaultLayout(layout)
+  const isCustomLayout = !isDefaultLayout(layout) || hiddenWidgets.length > 0
 
   // ============ WIDGET RENDERER ============
   const renderWidget = (widgetId: string): ReactNode => {
@@ -642,70 +729,153 @@ export function Dashboard() {
     }
   }
 
+  // Hidden widgets available to restore
+  const availableWidgets = hiddenWidgets.filter(id => WIDGET_LABELS[id])
+
   return (
-    <div className="space-y-4">
-      {/* ============ HEADER ============ */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2">
-            <LayoutDashboard className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5 capitalize">{todayStr}</p>
+    <div className={cn('space-y-4', isEditMode && 'dashboard-edit-mode')}>
+      {/* ============ EDIT MODE BAR ============ */}
+      {isEditMode && (
+        <div className="sticky top-0 z-50 -mx-4 px-4 -mt-4 sm:-mx-6 sm:px-6">
+          <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 rounded-b-lg px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-amber-100 dark:bg-amber-900/50 p-2">
+                <Pencil className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Uredi raspored</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400">Povuci widgete za premeštanje, uglove za promenu veličine</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button size="sm" className="h-9 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={handleSaveEditMode}>
+                <Save className="h-3.5 w-3.5" />
+                Sačuvaj promene
+              </Button>
+              <Button size="sm" variant="ghost" className="h-9 gap-2 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30" onClick={handleCancelEditMode}>
+                Otkaži
+              </Button>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Reset layout */}
-          {isCustomLayout && (
-            <Button variant="ghost" size="sm" className="h-9 gap-2 text-xs rounded-lg text-muted-foreground hover:text-foreground" onClick={handleResetLayout} title="Resetuj raspored">
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Resetuj</span>
-            </Button>
-          )}
+      )}
 
-          {/* Quick actions */}
-          <div className="flex items-center gap-1">
-            {quickActions.slice(0, 3).map(action => (
-              <Button key={action.module} variant="outline" size="sm" className="hidden md:flex h-9 gap-1.5 text-xs rounded-lg font-medium" onClick={() => setActiveModule(action.module)}>
-                <action.icon className="h-3.5 w-3.5" />
-                {t(action.labelKey)}
+      {/* ============ VIEW MODE HEADER ============ */}
+      {!isEditMode && (
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <LayoutDashboard className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+                <p className="text-sm text-muted-foreground mt-0.5 capitalize">{todayStr}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Reset layout */}
+              {isCustomLayout && (
+                <Button variant="ghost" size="sm" className="h-9 gap-2 text-xs rounded-lg text-muted-foreground hover:text-foreground" onClick={handleResetLayout} title="Resetuj raspored">
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Resetuj</span>
+                </Button>
+              )}
+
+              {/* Edit dashboard button */}
+              <Button variant="outline" size="sm" className="h-9 gap-2 text-xs rounded-lg font-medium" onClick={handleEnterEditMode}>
+                <Settings2 className="h-3.5 w-3.5" />
+                Uredi dashboard
               </Button>
-            ))}
+
+              {/* Quick actions */}
+              <div className="hidden lg:flex items-center gap-1">
+                {quickActions.slice(0, 2).map(action => (
+                  <Button key={action.module} variant="outline" size="sm" className="h-9 gap-1.5 text-xs rounded-lg font-medium" onClick={() => setActiveModule(action.module)}>
+                    <action.icon className="h-3.5 w-3.5" />
+                    {t(action.labelKey)}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
+
+          {/* Mobile Quick Actions */}
+          <div className="lg:hidden">
+            <ScrollArea className="w-full">
+              <div className="flex gap-2 pb-1">
+                {quickActions.map(action => (
+                  <Button key={action.module} variant="outline" size="sm" className="flex-shrink-0 h-9 gap-1.5 text-xs rounded-lg" onClick={() => setActiveModule(action.module)}>
+                    <action.icon className="h-3.5 w-3.5" />
+                    {t(action.labelKey)}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        </>
+      )}
+
+      {/* ============ WIDGET PALETTE (Edit Mode) ============ */}
+      {isEditMode && availableWidgets.length > 0 && (
+        <div className="bg-muted/40 border border-dashed border-amber-300 dark:border-amber-700 rounded-lg p-3">
+          <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+            <PackagePlus className="h-3.5 w-3.5" />
+            Dostupni widgeti — kliknite da dodate nazad
+          </p>
+          <ScrollArea className="w-full">
+            <div className="flex gap-2 pb-1">
+              {availableWidgets.map(widgetId => (
+                <Button
+                  key={widgetId}
+                  variant="outline"
+                  size="sm"
+                  className="flex-shrink-0 h-8 gap-1.5 text-xs rounded-md border-amber-200 dark:border-amber-800 bg-white dark:bg-card hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                  onClick={() => handleRestoreWidget(widgetId)}
+                >
+                  <Zap className="h-3 w-3 text-amber-600" />
+                  {WIDGET_LABELS[widgetId] || widgetId}
+                </Button>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
-      </div>
-
-      {/* Mobile Quick Actions */}
-      <div className="md:hidden">
-        <ScrollArea className="w-full">
-          <div className="flex gap-2 pb-1">
-            {quickActions.map(action => (
-              <Button key={action.module} variant="outline" size="sm" className="flex-shrink-0 h-9 gap-1.5 text-xs rounded-lg" onClick={() => setActiveModule(action.module)}>
-                <action.icon className="h-3.5 w-3.5" />
-                {t(action.labelKey)}
-              </Button>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
+      )}
 
       {/* ============ GRID LAYOUT ============ */}
       <GridLayout
-        layout={layout}
+        layout={isEditMode ? editLayout : visibleLayout}
         cols={12}
-        rowHeight={8}
+        rowHeight={12}
         margin={[16, 16]}
         containerPadding={[0, 0]}
-        isDraggable={true}
-        isResizable={true}
+        isDraggable={isEditMode}
+        isResizable={isEditMode}
         compactType="vertical"
-        onLayoutChange={handleLayoutChange}
+        onLayoutChange={isEditMode ? setEditLayout : handleLayoutChange}
         useCSSTransforms
+        draggableHandle={isEditMode ? '.widget-drag-handle' : undefined}
         resizeHandles={['se']}
       >
-        {layout.map(item => (
-          <div key={item.i} className="dashboard-grid-item rounded-xl overflow-hidden transition-shadow">
+        {(isEditMode ? editLayout : visibleLayout).map(item => (
+          <div key={item.i} className="dashboard-grid-item rounded-xl transition-shadow relative">
+            {/* Edit mode overlay controls */}
+            {isEditMode && (
+              <>
+                {/* Drag handle — top-left */}
+                <div className="widget-drag-handle absolute top-2 left-2 z-10 flex items-center justify-center w-7 h-7 rounded-md bg-white/90 dark:bg-card/90 border border-amber-200 dark:border-amber-800 shadow-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors">
+                  <GripVertical className="h-4 w-4" />
+                </div>
+                {/* Remove button — top-right */}
+                <button
+                  className="absolute top-2 right-2 z-10 flex items-center justify-center w-7 h-7 rounded-md bg-white/90 dark:bg-card/90 border border-red-200 dark:border-red-800 shadow-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-400 transition-colors"
+                  onClick={() => handleRemoveWidget(item.i)}
+                  title="Ukloni widget"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </>
+            )}
             {/* Widget content — fills remaining height */}
             <div className="h-full">
               {renderWidget(item.i)}

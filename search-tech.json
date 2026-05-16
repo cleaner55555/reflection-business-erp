@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://www.ilert.com/blog/building-interactive-dashboards-why-react-grid-layout-was-our-best-choice",
+    "name": "Interactive Dashboards: Why React-Grid-Layout Was Our Best Choice",
+    "snippet": "We chose React-Grid-Layout for its built-in drag-and-drop functionality, seamless React integration, active maintenance, and efficient grid support.",
+    "host_name": "www.ilert.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1bm4ime/which_draganddrop_library_to_choose_for_your_next",
+    "name": "Which Drag-and-Drop Library to Choose for Your Next Project?",
+    "snippet": "I use dndkit with react grid layout (dashboards use case). Dangerous ... Anyone used react-grid-layout drag and drop? r/nextjs - Anyone ...",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@ndhamani2002/simplifying-drag-and-drop-in-react-applications-with-react-dnd-kit-62916a8995c5",
+    "name": "Simplifying Drag-and-Drop in React Applications with React DnD Kit",
+    "snippet": "React DnD Kit is a lightweight and performant drag-and-drop library specifically designed for React. It provides powerful APIs and features that ...",
+    "host_name": "medium.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://puckeditor.com/blog/top-5-drag-and-drop-libraries-for-react",
+    "name": "Top 5 Drag-and-Drop Libraries for React in 2026 - Puck",
+    "snippet": "Here's a breakdown of the top five React drag-and-drop libraries we explored, their pros and cons, and when you should (or shouldn't) use them.",
+    "host_name": "puckeditor.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/clauderic/dnd-kit/discussions/1560",
+    "name": "Can DND do the react-grid-layout showcase? #1560 - GitHub",
+    "snippet": "DND-kit looks preferable over React Grid Layout because its newer and uses TypeScript. However, their Showcase has some desirable features that I'd like to ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://npmtrends.com/@dnd-kit/core-vs-react-grid-layout",
+    "name": "@dnd-kit/core vs react-grid-layout | npm trends",
+    "snippet": "Comparing trends for .",
+    "host_name": "npmtrends.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/arshadayvid/how-to-implement-drag-and-drop-in-react-using-dnd-kit-204h",
+    "name": "How to implement drag and drop in React using dnd-kit",
+    "snippet": "In this tutorial, you'll learn how to implement drag and drop easily in React or Nextjs applications, enabling you track and respond to user interactions ...",
+    "host_name": "dev.to",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://zoer.ai/posts/zoer/best-react-drag-drop-libraries-comparison",
+    "name": "Best React Drag and Drop Libraries 2025: Complete Guide - Zoer",
+    "snippet": "react-grid-layout specializes in resizable, draggable grid layouts—think analytics dashboards or widget-based interfaces. It handles both ...",
+    "host_name": "zoer.ai",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]
