@@ -180,6 +180,16 @@ function getSefStatusColor(status: string | null): string {
 
 export function Invoices() {
   const { t } = useTranslation()
+  const [tab, setTab] = useState('pregled')
+  const { pendingAction } = useAppStore()
+
+  // Auto-switch to "fakture" tab when navigated from dashboard quick action
+  useEffect(() => {
+    if (pendingAction?.module === 'invoices') {
+      setTab('fakture')
+    }
+  }, [pendingAction])
+
   return (
     <div className="space-y-6">
       <div>
@@ -189,7 +199,7 @@ export function Invoices() {
         </p>
       </div>
 
-      <Tabs defaultValue="pregled" className="space-y-4">
+      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="pregled" className="gap-1.5"><BarChart3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Pregled</span></TabsTrigger>
           <TabsTrigger value="fakture" className="gap-1.5"><FileText className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('efakture.tabInvoices')}</span></TabsTrigger>

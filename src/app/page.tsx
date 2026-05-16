@@ -285,7 +285,7 @@ function AppContent() {
                 <span className="hidden sm:inline">{headerLanguages[0]?.nativeName || 'SR'}</span>
               </button>
             )}
-            <button onClick={toggleDesktopMode} className="hidden sm:flex h-8 min-h-[44px] sm:min-h-0 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-2 sm:px-2.5 text-xs hover:bg-accent transition-colors" title="Desktop režim">
+            <button onClick={toggleDesktopMode} className="flex h-8 min-h-[44px] sm:min-h-0 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-2 sm:px-2.5 text-xs hover:bg-accent transition-colors" title="Desktop režim">
               <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="hidden lg:inline">Desktop</span>
             </button>

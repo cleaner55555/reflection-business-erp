@@ -370,3 +370,20 @@ Stage Summary:
 - Novi partner button: navigates to Contacts module AND auto-opens the create form
 - Desktop Mode: toggle button visible in header (Monitor icon + "Desktop" label), switches between normal sidebar view and OS-like desktop layout
 - All 5 quick action buttons now navigate to correct modules (no more error pages)
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix three bugs: "Nova faktura" button, "Novi partner" button, and Desktop mode toggle
+
+Work Log:
+- Analyzed the root cause: `pendingAction` mechanism was already implemented in store and consumed by `FaktureTab`/`PartneriListTab`, BUT these components are inside non-default Tabs (Tab value "fakture"/"partneri" while default is "pregled"), so they never mount when navigating from dashboard
+- Fixed `Invoices` component (`src/components/modules/Invoices/index.tsx`): Changed uncontrolled Tabs (`defaultValue="pregled"`) to controlled Tabs (`value={tab} onValueChange={setTab}`), added `useEffect` that watches `pendingAction` and auto-switches to "fakture" tab when module matches
+- Fixed `Contacts` component (`src/components/modules/Contacts/index.tsx`): Same pattern — changed to controlled Tabs, added `useEffect` to auto-switch to "partneri" tab when pendingAction module is 'contacts'
+- Fixed Desktop mode toggle visibility: Changed button class from `hidden sm:flex` to `flex` so it's visible on all screen sizes including mobile
+- The flow now works: Dashboard quick action → setActiveModule with PendingAction → Parent component switches to correct tab → Child component mounts and consumes PendingAction to open create form
+
+Stage Summary:
+- Three bugs fixed with minimal, targeted changes
+- `pendingAction` store mechanism was already correct, only the tab routing was missing
+- Desktop mode button now visible on all breakpoints

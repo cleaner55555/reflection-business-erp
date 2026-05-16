@@ -134,6 +134,16 @@ function getTagColor(index: number) {
 
 export function Contacts() {
   const { t } = useTranslation()
+  const [tab, setTab] = useState('pregled')
+  const { pendingAction } = useAppStore()
+
+  // Auto-switch to "partneri" tab when navigated from dashboard quick action
+  useEffect(() => {
+    if (pendingAction?.module === 'contacts') {
+      setTab('partneri')
+    }
+  }, [pendingAction])
+
   return (
     <div className="space-y-6">
       <div>
@@ -143,7 +153,7 @@ export function Contacts() {
         </p>
       </div>
 
-      <Tabs defaultValue="pregled" className="space-y-4">
+      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="pregled" className="gap-1.5">
             <BarChart3 className="h-3.5 w-3.5" />
