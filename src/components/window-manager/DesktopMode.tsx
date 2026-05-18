@@ -6,7 +6,7 @@ import { useWindowManager, type DesktopShortcut, type WallpaperStyle, DOCK_HEIGH
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { useThemeStore } from '@/lib/theme'
-import { menuGroups } from '@/components/modules/AppSidebar'
+import { menuGroups } from '@/lib/menuGroupsData'
 import { WindowFrame } from './WindowFrame'
 import { AppDrawer } from './AppDrawer'
 import { DesktopSettingsPanel } from './DesktopSettingsPanel'

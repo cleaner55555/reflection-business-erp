@@ -27,7 +27,7 @@ const IndustryTemplates = dynamic(() => import('@/components/modules/IndustryTem
 import { themePresets } from '@/lib/theme-presets'
 import type { ThemeSettings } from '@/lib/theme'
 import { moduleGroupMap } from '@/lib/module-groups'
-import { menuGroups } from '@/components/modules/AppSidebar'
+import { menuGroups } from '@/lib/menuGroupsData'
 import { useAppStore } from '@/lib/store'
 
 // ============ MODULE DEFINITIONS (from sidebar + moduleGroupMap) ============

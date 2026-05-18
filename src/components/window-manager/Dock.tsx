@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useWindowManager, DOCK_HEIGHT, STATUS_BAR_HEIGHT } from '@/lib/windowManager'
-import { menuGroups } from '@/components/modules/AppSidebar'
+import { menuGroups } from '@/lib/menuGroupsData'
 import { useTranslation } from '@/lib/i18n'
 import {
   Grid3X3,

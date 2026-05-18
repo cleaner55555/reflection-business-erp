@@ -1,4 +1,5 @@
 // PermissionsEditor module – static data & configuration maps
+import { menuGroups } from '@/lib/menuGroupsData'
 
 export const MODULE_LABELS: Record<string, { label: string; icon: string }> = {
   dashboard: { label: "Dashboard", icon: "📊" },
@@ -37,51 +38,51 @@ export const ACTION_LABELS: Record<string, string> = {
   delete: "Brisanje",
 };
 
+const SIDEBAR_GROUP_LABELS: Record<string, string> = {
+  'sidebar.group_overview': 'Pregled',
+  'sidebar.group_business': 'Poslovanje',
+  'sidebar.group_crm': 'CRM & Partneri',
+  'sidebar.group_organization': 'Organizacija',
+  'sidebar.group_education': 'Edukacija',
+  'sidebar.group_healthcare': 'Zdravstvo',
+  'sidebar.group_hospitality': 'Ugostiteljstvo',
+  'sidebar.group_construction': 'Građevina',
+  'sidebar.group_logistics': 'Logistika',
+  'sidebar.group_realestate': 'Nekretnine',
+  'sidebar.group_production': 'Proizvodnja',
+  'sidebar.group_retail': 'Trgovina',
+  'sidebar.group_services': 'Servisi',
+  'sidebar.group_analytics': 'Analitika',
+  'sidebar.group_system': 'Sistem',
+}
+
+const SIDEBAR_GROUP_ICONS: Record<string, string> = {
+  'sidebar.group_overview': '📊',
+  'sidebar.group_business': '💰',
+  'sidebar.group_crm': '❤️',
+  'sidebar.group_organization': '🏢',
+  'sidebar.group_education': '🎓',
+  'sidebar.group_healthcare': '🏥',
+  'sidebar.group_hospitality': '🍽️',
+  'sidebar.group_construction': '🏗️',
+  'sidebar.group_logistics': '🚚',
+  'sidebar.group_realestate': '🏠',
+  'sidebar.group_production': '⚙️',
+  'sidebar.group_retail': '🛍️',
+  'sidebar.group_services': '🔧',
+  'sidebar.group_analytics': '📈',
+  'sidebar.group_system': '⚙️',
+}
+
 export const MODULE_GROUPS: Array<{
   label: string;
   icon: string;
   modules: string[];
-}> = [
-  { label: "Pregled", icon: "📊", modules: ["dashboard"] },
-  {
-    label: "Finansije",
-    icon: "💰",
-    modules: [
-      "finansije",
-      "fakture",
-      "knjigovodstvo",
-      "bank-sync",
-      "izvestaji",
-    ],
-  },
-  {
-    label: "Prodaja & CRM",
-    icon: "❤️",
-    modules: ["crm", "partneri", "kalendar"],
-  },
-  { label: "Lanac snabdevanja", icon: "🏭", modules: ["magacin", "nabavka"] },
-  {
-    label: "Organizacija",
-    icon: "👥",
-    modules: ["zaposleni", "projekti", "sredstva", "dokumenta", "protokol"],
-  },
-  {
-    label: "Servisi",
-    icon: "🔧",
-    modules: [
-      "edukacija",
-      "vozni-park",
-      "kafe-restoran",
-      "email-marketing",
-      "rent-a-car",
-    ],
-  },
-  {
-    label: "Sistem",
-    icon: "⚙️",
-    modules: ["podesavanja", "integracije", "notifications", "zakoni"],
-  },
-];
+}> = menuGroups.map((group) => ({
+  label: SIDEBAR_GROUP_LABELS[group.labelKey] || group.labelKey.replace('sidebar.group_', ''),
+  icon: SIDEBAR_GROUP_ICONS[group.labelKey] || '📦',
+  modules: group.items.map((item) => item.module),
+}))
 
 export const ROLE_COLORS: Record<string, string> = {
   admin: "bg-red-100 text-red-700 border-red-200",

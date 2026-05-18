@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useWindowManager } from '@/lib/windowManager'
 import { useTranslation } from '@/lib/i18n'
-import { menuGroups } from '@/components/modules/AppSidebar'
+import { menuGroups } from '@/lib/menuGroupsData'
 import { Search, X, Plus, Settings, Monitor } from 'lucide-react'
 import type { ModuleType } from '@/lib/store'
 
