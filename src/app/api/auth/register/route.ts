@@ -3,23 +3,43 @@ import { NextResponse } from 'next/server'
 import { hashPassword } from '@/lib/seed'
 import { signToken } from '@/lib/jwt'
 import { registerSchema, validateRequest } from '@/lib/validations'
+import { registerLimiter, getClientIp } from '@/lib/rate-limit'
+import { validatePassword } from '@/lib/password-policy'
 
-// POST /api/auth/register - Register new user
+// POST /api/auth/register
 export async function POST(req: Request) {
   try {
+    // Rate limiting
+    const ip = getClientIp(req)
+    const rl = registerLimiter(`register:${ip}`)
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Previše pokušaja registracije. Pokušajte ponovo kasnije.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+      )
+    }
+
     const body = await req.json()
+
+    // Password policy check
+    const pwCheck = validatePassword(body.password || '')
+    if (!pwCheck.valid) {
+      return NextResponse.json(
+        { error: pwCheck.errors.join('; '), details: { password: pwCheck.errors } },
+        { status: 400 }
+      )
+    }
+
     const validation = validateRequest(registerSchema, body)
     if (!validation.success) return validation.response
 
     const { email, password, firstName, lastName, phone } = validation.data
 
-    // Check if user exists
     const existingUser = await db.user.findUnique({ where: { email } })
     if (existingUser) {
       return NextResponse.json({ error: 'Korisnik sa ovim email-om već postoji' }, { status: 409 })
     }
 
-    // Create user
     const passwordHash = await hashPassword(password)
     const user = await db.user.create({
       data: {
@@ -32,10 +52,8 @@ export async function POST(req: Request) {
       },
     })
 
-    // Get default role
     const defaultRole = await db.role.findFirst({ where: { isDefault: true } })
 
-    // Get first company (or create a personal one)
     let company = await db.company.findFirst({ where: { isActive: true } })
     if (!company) {
       company = await db.company.create({
@@ -47,7 +65,6 @@ export async function POST(req: Request) {
       })
     }
 
-    // Link user to company
     if (defaultRole) {
       await db.userCompany.create({
         data: {
@@ -61,7 +78,6 @@ export async function POST(req: Request) {
 
     const { passwordHash: _, ...safeUser } = user
 
-    // Generate JWT token
     const token = await signToken({
       userId: user.id,
       email: user.email,

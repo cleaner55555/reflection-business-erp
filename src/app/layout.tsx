@@ -23,12 +23,12 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Reflection Business — ERP + CRM Sistem",
-  description: "Kompletni ERP + CRM sistem za upravljanje poslovanjem. Finansije, magacin, fakture, nabavka, CRM, HR, projekti, dokumenta i izveštaji. 148 modula, 82 zemlje, 82 jezika.",
-  keywords: ["ERP", "CRM", "Reflection Business", "poslovanje", "finansije", "magacin", "fakture", "Srbija", "148 modula"],
+  description: "Kompletni ERP + CRM sistem za upravljanje poslovanjem. Finansije, magacin, fakture, nabavka, CRM, HR, projekti, dokumenta i izveštaji. 127 modula, 90+ jezika.",
+  keywords: ["ERP", "CRM", "Reflection Business", "poslovanje", "finansije", "magacin", "fakture", "Srbija"],
   authors: [{ name: "Reflection Business Team" }],
   openGraph: {
     title: "Reflection Business — ERP + CRM Sistem",
-    description: "Modularni ERP + CRM sistem za efikasno upravljanje poslovanjem. 148 modula, 82 zemlje, 82 jezika.",
+    description: "Modularni ERP + CRM sistem za efikasno upravljanje poslovanjem. 127 modula, 90+ jezika.",
     type: "website",
     locale: "sr_RS",
   },
@@ -48,7 +48,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: "#059669",
+  themeColor: "#09090b",
 };
 
 export default function RootLayout({
@@ -57,9 +57,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="sr" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} antialiased bg-background text-foreground`}

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { validatePassword } from './password-policy'
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -9,11 +10,26 @@ export const loginSchema = z.object({
 
 export const registerSchema = z.object({
   email: z.string().email('Email adresa nije ispravna'),
-  password: z.string().min(6, 'Lozinka mora imati najmanje 6 karaktera'),
+  password: z.string().min(8, 'Lozinka mora imati najmanje 8 karaktera'),
   firstName: z.string().min(1, 'Ime je obavezno'),
   lastName: z.string().min(1, 'Prezime je obavezno'),
   phone: z.string().optional(),
+}).refine(data => {
+  const result = validatePassword(data.password)
+  return result.valid
+}, { message: 'Lozinka ne ispunjava bezbednosne zahteve', path: ['password'] })
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Email adresa nije ispravna'),
 })
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Token je obavezan'),
+  password: z.string().min(8, 'Lozinka mora imati najmanje 8 karaktera'),
+}).refine(data => {
+  const result = validatePassword(data.password)
+  return result.valid
+}, { message: 'Lozinka ne ispunjava bezbednosne zahteve', path: ['password'] })
 
 // ─── Invoices ─────────────────────────────────────────────────────────────────
 

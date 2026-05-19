@@ -241,6 +241,7 @@ export const menuGroups: MenuGroup[] = [
     items: [
       { module: 'settings', icon: Settings, labelKey: 'sidebar.settings' },
       { module: 'backup', icon: DatabaseBackup, labelKey: 'sidebar.backup' },
+      { module: 'api-docs', icon: FileCode, labelKey: 'sidebar.apiDocs' },
     ],
   },
 ]
@@ -308,7 +309,7 @@ const MODULE_CODE_GROUP: Record<string, string> = {
   // IT
   chat: 'it', 'knowledge-base': 'it', website: 'it', blog: 'it',
   forum: 'it', spreadsheet: 'it', notes: 'it', integrations: 'it',
-  backup: 'it', laws: 'it', iot: 'it', voip: 'it',
+  backup: 'it', 'api-docs': 'it', laws: 'it', iot: 'it', voip: 'it',
   // Logistics
   shipping: 'logistics', fleet: 'logistics', 'rent-a-car': 'logistics',
   delivery: 'logistics', routes: 'logistics', 'loading-dock': 'logistics',

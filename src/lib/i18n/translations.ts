@@ -431,6 +431,7 @@ export const translations: Record<string, TranslationMap> = {
       automation: 'Аутоматизација',
       branches: 'Пословнице',
       backup: 'Бекап',
+      apiDocs: 'API Документација',
     },
 
     dock: {
@@ -2536,6 +2537,7 @@ export const translations: Record<string, TranslationMap> = {
       automation: 'Automatizacija',
       branches: 'Poslovnice',
       backup: 'Bekap',
+      apiDocs: 'API Dokumentacija',
     },
 
     dock: {
@@ -4512,6 +4514,7 @@ export const translations: Record<string, TranslationMap> = {
       automation: 'Automation',
       branches: 'Branches',
       backup: 'Backup',
+      apiDocs: 'API Documentation',
     },
 
     dock: {

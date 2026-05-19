@@ -3,10 +3,21 @@ import { NextResponse } from 'next/server'
 import { hashPassword, verifyPassword } from '@/lib/seed'
 import { signToken } from '@/lib/jwt'
 import { loginSchema, validateRequest } from '@/lib/validations'
+import { authLimiter, getClientIp } from '@/lib/rate-limit'
 
 // POST /api/auth/login
 export async function POST(req: Request) {
   try {
+    // Rate limiting
+    const ip = getClientIp(req)
+    const rl = authLimiter(`login:${ip}`)
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Previše pokušaja prijave. Pokušajte ponovo kasnije.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } }
+      )
+    }
+
     const body = await req.json()
     const validation = validateRequest(loginSchema, body)
     if (!validation.success) return validation.response

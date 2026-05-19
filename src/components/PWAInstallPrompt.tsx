@@ -1,39 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { X, Download, Smartphone, Monitor } from 'lucide-react'
-import { cn } from '@/lib/helpers'
+import { Download, X } from 'lucide-react'
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-}
+const DISMISS_KEY = 'pwa-install-dismissed'
+const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000 // 7 days
 
-export function PWAInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [showPrompt, setShowPrompt] = useState(false)
-  const [dismissed, setDismissed] = useState(false)
+export default function PWAInstallPrompt() {
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null)
+  const [show, setShow] = useState(false)
 
   useEffect(() => {
-    // Check if already dismissed
-    if (typeof window !== 'undefined') {
-      const wasDismissed = localStorage.getItem('pwa_install_dismissed')
-      if (wasDismissed) {
-        const dismissTime = parseInt(wasDismissed, 10)
-        // Show again after 7 days
-        if (Date.now() - dismissTime < 7 * 24 * 60 * 60 * 1000) {
-          setDismissed(true)
-          return
-        }
-      }
+    // Check if previously dismissed
+    const dismissed = localStorage.getItem(DISMISS_KEY)
+    if (dismissed) {
+      const dismissedAt = parseInt(dismissed, 10)
+      if (Date.now() - dismissedAt < DISMISS_DURATION) return
     }
 
     const handler = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
-      // Show after a short delay
-      setTimeout(() => setShowPrompt(true), 3000)
+      setDeferredPrompt(e)
+      setShow(true)
     }
 
     window.addEventListener('beforeinstallprompt', handler)
@@ -42,63 +31,41 @@ export function PWAInstallPrompt() {
 
   const handleInstall = async () => {
     if (!deferredPrompt) return
-    await deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-    if (outcome === 'accepted') {
-      setShowPrompt(false)
-      setDeferredPrompt(null)
-    }
+    ;(deferredPrompt as unknown as { prompt: () => void }).prompt()
+    await (deferredPrompt as unknown as { userChoice: Promise<{ outcome: string }> }).userChoice
+    setDeferredPrompt(null)
+    setShow(false)
   }
 
   const handleDismiss = () => {
-    setShowPrompt(false)
-    setDismissed(true)
-    localStorage.setItem('pwa_install_dismissed', String(Date.now()))
+    setShow(false)
+    localStorage.setItem(DISMISS_KEY, String(Date.now()))
   }
 
-  if (!showPrompt || dismissed || !deferredPrompt) return null
+  if (!show) return null
 
   return (
-    <div className="fixed bottom-24 left-4 right-4 sm:left-auto sm:right-6 sm:w-80 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
-      <div className="rounded-xl border bg-background shadow-xl p-4 space-y-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-              <Download className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Instaliraj aplikaciju</p>
-              <p className="text-xs text-muted-foreground">
-                Pristupajte brže sa ikone na početnom ekranu
-              </p>
-            </div>
+    <div className="fixed bottom-4 left-4 right-4 z-50 sm:left-auto sm:right-4 sm:max-w-sm">
+      <div className="rounded-lg border bg-card p-4 shadow-lg">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Download className="h-5 w-5" />
           </div>
-          <button
-            onClick={handleDismiss}
-            className="h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Instaliraj Reflection Business</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Dodajte aplikaciju na početni ekran za brži pristup i rad van mreže.
+            </p>
+          </div>
+          <button onClick={handleDismiss} className="text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Smartphone className="h-3.5 w-3.5" />
-          <span>Radi offline · Brže učitavanje · Native osećaj</span>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            className="flex-1 gap-1.5"
-            onClick={handleInstall}
-          >
-            <Download className="h-3.5 w-3.5" />
+        <div className="mt-3 flex gap-2">
+          <Button size="sm" onClick={handleInstall} className="flex-1">
             Instaliraj
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDismiss}
-          >
+          <Button size="sm" variant="ghost" onClick={handleDismiss}>
             Kasnije
           </Button>
         </div>

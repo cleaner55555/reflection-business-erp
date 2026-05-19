@@ -11,6 +11,7 @@ export const itModules: Record<string, () => Promise<ComponentType>> = {
   'notes': () => import('@/components/modules/Notes').then(m => m.Notes),
   'integrations': () => import('@/components/modules/Integracije').then(m => m.Integrations),
   'backup': () => import('@/components/modules/Backup').then(m => m.Backup),
+  'api-docs': () => import('@/components/modules/ApiDocs').then(m => m.default),
   'laws': () => import('@/components/modules/Laws').then(m => m.Laws),
   'iot': () => import('@/components/modules/IoT').then(m => m.IoT),
   'voip': () => import('@/components/modules/VoIP').then(m => m.VoIP),

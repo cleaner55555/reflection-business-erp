@@ -170,7 +170,7 @@ const moduleLabelKeys: Record<string, string> = {
   returns: 'sidebar.returns', 'cash-register': 'sidebar.cashRegister',
   'time-tracking': 'sidebar.timeTracking', 'time-billing': 'sidebar.timeBilling',
   'client-portal': 'sidebar.clientPortal', automation: 'sidebar.automation',
-  stores: 'sidebar.branches', backup: 'sidebar.backup',
+  stores: 'sidebar.branches', backup: 'sidebar.backup', 'api-docs': 'sidebar.apiDocs',
 }
 
 function AppContent() {

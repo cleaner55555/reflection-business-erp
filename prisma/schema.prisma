@@ -189,6 +189,7 @@ model Company {
   plmProducts          PlmProduct[]
   utilities            Utility[]
   apiUsageLogs         ApiUsageLog[]
+  files                File[]
 }
 
 // ============ API USAGE TRACKING ============
@@ -660,6 +661,7 @@ model User {
   companyRoles      UserCompany[]
   ownedApiKeys      ApiKey[]      @relation("ApiKeyOwner")
   createdJobs       IntegrationJob[]  @relation("JobCreator")
+  files             File[]
 }
 
 model Role {
@@ -4092,4 +4094,29 @@ model IndustryTemplate {
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// ============ FILE STORAGE ============
+
+model File {
+  id           String   @id @default(uuid())
+  companyId    String?
+  userId       String?
+  name         String
+  originalName String
+  mimeType     String
+  size         Int
+  path         String
+  url          String?
+  category     String?
+  entity       String?
+  entityId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  company      Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([entity, entityId])
+  @@index([userId])
 }
