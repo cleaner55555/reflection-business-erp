@@ -43,7 +43,7 @@ export function AuthPage() {
         return
       }
 
-      login(data.user, data.companies)
+      login(data.user, data.companies, data.token)
 
       // Set default company
       const defaultCompany = data.companies.find((c: { isDefault: boolean }) => c.isDefault) || data.companies[0]

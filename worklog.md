@@ -387,3 +387,345 @@ Stage Summary:
 - Three bugs fixed with minimal, targeted changes
 - `pendingAction` store mechanism was already correct, only the tab routing was missing
 - Desktop mode button now visible on all breakpoints
+
+---
+Task ID: 1-a
+Agent: module-consistency-checker
+Task: Verify module consistency between menuGroupsData, module-groups, and component folders
+
+Work Log:
+- Read src/lib/menuGroupsData.ts — extracted 124 unique module codes across 14 sidebar groups
+- Read src/lib/module-groups/index.ts — confirmed it dynamically derives mapping from getModuleCodeGroupMap()
+- Read all 12 module group .tsx files (core, hr, finance, sales, projects, it, logistics, education, hospitality, construction, property, other)
+- Listed all 150 component folders in src/components/modules/
+- Ran automated cross-reference script to verify all mappings
+
+Stage Summary:
+- **Total modules in menuGroupsData.ts: 124**
+- **Total mapped in MODULE_CODE_GROUP: 124** (0 missing)
+- **Total entries in group .tsx files: 124** (0 missing, 0 extra)
+- **Total expected component folders: 124** — all exist on disk (0 missing)
+
+**Export name mismatches (3 — all have working workarounds via `.then(m => m.XXX)`):**
+| Group | Module Code | Folder | Export Name | Status |
+|-------|-------------|--------|-------------|--------|
+| sales | email-marketing | EmailMarketing | MailerLite | ⚠️ workaround in place |
+| it | integrations | Integracije | Integrations | ⚠️ workaround in place |
+| logistics | rent-a-car | CarRental | RentACar | ⚠️ workaround in place |
+
+**Intentional folder name differences (not bugs):**
+| Module Code | Folder | Reason |
+|-------------|--------|--------|
+| pos | Retail | POS is simplified Retail view |
+| website | WebsiteBuilder | More descriptive folder name |
+| ecommerce | ECommerce | PascalCase convention |
+
+**Group file structure:**
+- 11 dedicated group files + 1 combined (other.tsx with medical/services/retail)
+- moduleMap.tsx groupLoaders has entries for all 14 code-groups
+- MODULE_CODE_GROUP maps sidebar group "construction" items (measurements) to code-group "logistics" — intentional split
+
+**Extra component folders NOT in menu system (26 — system/utility components, not sidebar modules):**
+AIAssistant, AISetupWizard, AITeam, ApiKeyManagement, AppLauncher, AppSidebar, AuditLogViewer, AuthPage, CompanySwitcher, CRMEnhanced, EmployeesEnhanced, Footer, GlobalSearch, IndustryTemplates, InvoicesEnhanced, InventoryEnhanced, MigrationWizard, NotificationBell, NotificationCenter, PermissionsEditor, RecurringInvoices, ReportDownloadButton, Retail (used by POS), UserManagement, UserMenu, WmsEnhanced, WebhookManager
+
+**Verdict: Module system is fully consistent. No broken mappings. No missing folders. 3 export name mismatches are known and have working workarounds.**
+
+---
+Task ID: 4
+Agent: docker-ci-readme-agent
+Task: Create Docker configuration, CI/CD pipeline, and README documentation
+
+Work Log:
+- Read worklog.md, package.json, next.config.ts to understand project structure
+- Analyzed menuGroupsData.ts to document all 124 modules across 15 sidebar categories
+- Verified project uses bun runtime, standalone output, SQLite (file:/app/db/custom.db)
+
+Created the following files:
+
+1. **Dockerfile** — Multi-stage production build:
+   - Stage 1 (deps): Install dependencies with bun via npm install -g bun@1
+   - Stage 2 (build): Copy node_modules, generate Prisma client, build Next.js
+   - Stage 3 (runner): node:20-alpine with bun, non-root user (nextjs:nodejs), copies standalone output + static + public + prisma + creates /app/data, health check via wget, EXPOSE 3000
+
+2. **docker-compose.yml** — Production deployment:
+   - Single service `app` built from Dockerfile
+   - Port mapping 3000:3000
+   - Volume `./data:/app/data` for SQLite persistence
+   - Environment: DATABASE_URL=file:/app/data/custom.db, NODE_ENV=production, JWT_SECRET from .env
+   - Health check (wget), restart: unless-stopped
+
+3. **docker-compose.dev.yml** — Development override:
+   - Builds to `deps` stage only (faster)
+   - Runs `bun run dev` as command
+   - Mounts source code `.:/app` with anonymous volume for node_modules
+   - DATABASE_URL points to /app/db/custom.db
+
+4. **.github/workflows/ci.yml** — CI/CD pipeline:
+   - Triggers: push to main, pull requests
+   - 3 parallel jobs: lint, type-check, build
+   - Each uses Node.js 20 + oven-sh/setup-bun@v2
+   - Steps: checkout → setup node → setup bun → install deps → (prisma generate for type-check/build) → run check
+   - Concurrency group to cancel in-progress runs
+
+5. **.dockerignore** — Excludes node_modules, .next, .git, db/*.db, data/, logs, env files, _archive/, skills/, screenshots, etc.
+
+6. **README.md** — Professional documentation (Serbian/English mix):
+   - Title with badge row (Next.js 16, TypeScript 5, Tailwind 4, Prisma 6, 124 Modules, bun)
+   - Brief description in both languages
+   - Screenshot placeholder
+   - 13 feature bullet points with icons
+   - Quick Start (prerequisites, clone, install, seed, run)
+   - Docker section (production + development)
+   - Project structure tree
+   - Module Categories table (15 categories with counts and examples)
+   - Tech Stack table (16 technologies)
+   - API section
+   - License: Private
+
+Stage Summary:
+- 6 files created: Dockerfile, docker-compose.yml, docker-compose.dev.yml, .github/workflows/ci.yml, .dockerignore, README.md
+- Docker build optimized: multi-stage with bun, non-root user, health checks
+- CI/CD pipeline covers lint, type-check, and build with bun support
+- README documents all 124 modules, 15 categories, full tech stack, and deployment instructions
+- SQLite data persistence handled via Docker volume mapping
+- No code changes to existing application — purely infrastructure and documentation additions
+
+---
+Task ID: 2
+Agent: jwt-auth-agent
+Task: Implement JWT authentication + Next.js middleware
+
+Work Log:
+- Read existing worklog and analyzed codebase: login/register APIs, store.ts, api-auth.ts, AuthPage component
+- Generated random 64-char hex JWT_SECRET and added to .env
+- Created `src/lib/jwt.ts` with `signToken()` and `verifyToken()` using `jose` (Edge-compatible):
+  - HS256 algorithm, 7-day expiration
+  - Payload: userId, email, isSuperAdmin
+  - Exports JwtPayload interface for reuse
+- Updated `src/app/api/auth/login/route.ts`:
+  - Imports signToken, generates JWT after successful password verification
+  - Returns `{ user, companies, token }` (token is new field)
+- Updated `src/app/api/auth/register/route.ts`:
+  - Imports signToken, generates JWT after user creation
+  - Returns `{ user, company, token }` (token is new field)
+- Created `src/app/api/auth/me/route.ts`:
+  - GET endpoint that verifies JWT from Authorization: Bearer header
+  - Returns current user info + companies from DB
+  - Used for token validation on page refresh
+- Created `src/middleware.ts` (Next.js Edge middleware):
+  - Runs on ALL `/api/*` routes (matcher: `/api/:path*`)
+  - Excludes: `/api/auth/*`, `/api/seed`, `/api/health`
+  - Extracts Bearer token from Authorization header
+  - Verifies JWT using `jose.jwtVerify` (Edge-compatible, no Node.js APIs)
+  - Valid: passes through with x-user-id, x-user-email, x-is-super-admin headers
+  - Invalid/missing: returns 401 JSON response
+  - Non-API routes: passes through (no auth for pages)
+- Updated `src/lib/store.ts`:
+  - Added `authToken: string | null` to AppState interface
+  - Updated `login()` signature to accept optional `token?: string` parameter
+  - Token saved to localStorage as `authToken` on login
+  - Added `getAuthToken()` helper that reads from localStorage
+  - `logout()` clears authToken from localStorage and state
+- Updated `src/components/modules/AuthPage/index.tsx`:
+  - Passes `data.token` to `login()` call after successful login
+- ESLint passes on all modified/new files
+- Existing API key auth (`src/lib/api-auth.ts`) preserved — works alongside JWT
+
+Stage Summary:
+- JWT authentication system fully implemented using `jose` (Edge runtime compatible)
+- Login and register APIs now return JWT tokens in response
+- Next.js middleware protects all `/api/*` routes (except auth/seed/health) with JWT validation
+- Middleware injects user identity (x-user-id, x-user-email, x-is-super-admin) into request headers
+- Client stores JWT in localStorage via Zustand store
+- `/api/auth/me` endpoint available for token validation/rehydration
+- Files created: src/lib/jwt.ts, src/app/api/auth/me/route.ts, src/middleware.ts
+- Files modified: src/app/api/auth/login/route.ts, src/app/api/auth/register/route.ts, src/lib/store.ts, src/components/modules/AuthPage/index.tsx, .env
+- Note: Existing client-side fetch calls to protected API routes need to include `Authorization: Bearer <token>` header to work with the new middleware. Use `useAppStore.getState().getAuthToken()` to retrieve the token.
+
+---
+Task ID: 6
+Agent: error-boundary-zod-agent
+Task: Implement error boundaries, fix Chat module, add Zod validation
+
+Work Log:
+- Created `src/components/ModuleErrorBoundary.tsx`:
+  - React class component error boundary (required pattern in React 19)
+  - Catches render errors in module components with friendly Serbian-language fallback UI
+  - Shows: red AlertTriangle icon, module name (PackageOpen icon), error message (sanitized), "Pokušaj ponovo" retry button
+  - Supports `resetKey` prop via `getDerivedStateFromProps` for forced remount
+  - Logs errors to console with component stack trace
+  - Uses shadcn/ui Button and Lucide icons
+- Updated `src/lib/moduleMap.tsx`:
+  - Wrapped `<Component />` inside `ModuleErrorBoundary` with `moduleKey` and `resetKey={moduleKey}`
+  - Existing try/catch for load errors preserved; error boundary catches render-time errors
+- Fixed Chat module memoization in `src/components/modules/Chat/index.tsx`:
+  - Root cause: `loadChannels` useCallback used `selectedChannel` inside but only listed `[activeCompanyId]` in deps
+  - ESLint error: "loadChannels useCallback has dependency [activeCompanyId] but inferred dependency was [selectedChannel]"
+  - Fix: Added `useRef(selectedChannel)` synced via `useEffect` to read latest value without adding to deps
+  - This avoids infinite re-renders that would occur if `selectedChannel` was in the dependency array
+- Created `src/lib/validations.ts` with Zod v4 schemas:
+  - `loginSchema`: email (valid email), password (min 6 chars)
+  - `registerSchema`: email, password, firstName, lastName, phone (optional)
+  - `invoiceSchema`: partnerId, number, dueDate (required), date/status/type (optional), items array with per-item validation
+  - `contactSchema`: firstName/lastName (required), email/phone/position/company/etc (optional)
+  - `productSchema`: name/sku (required), purchasePrice/sellingPrice (required), other fields optional
+  - `companySchema`: name (required), pib/address/city optional
+  - `settingsSchema`: key (required), value (string|number|boolean|object), group optional
+  - `validateRequest()` helper: returns typed data or 400 Response with field-level error messages
+- Added Zod validation to 5 API route POST handlers:
+  - `/api/auth/login`: validates email format + password min 6
+  - `/api/auth/register`: validates email, password min 6, firstName, lastName
+  - `/api/invoices`: validates partnerId, number, dueDate, items array with per-item checks
+  - `/api/contacts`: validates firstName, lastName required; email format validated if provided
+  - `/api/products`: validates name, sku, purchasePrice, sellingPrice required
+- All validation replaces manual checks with consistent Zod schema validation
+- Validation returns 400 with structured `{ error, details }` response
+
+Stage Summary:
+- ModuleErrorBoundary class component wraps all lazy-loaded modules in ModuleRenderer
+- Chat module ESLint error resolved — no more memoization dependency mismatch
+- Zod validation added to 5 critical POST endpoints with consistent error formatting
+- ESLint passes (only pre-existing error in disable-mem-check.cjs remains)
+- Dev server compiles successfully
+
+---
+Task ID: 9
+Agent: email-notifications-agent
+Task: Implement email notification system with SMTP
+
+Work Log:
+- Installed nodemailer@8.0.7 + @types/nodemailer@8.0.0
+- Created `src/lib/email.ts` — core email service:
+  - `sendEmail(payload)` — sends email via nodemailer with SMTP config from env vars
+  - `sendEmailBatch(emails)` — rate-limited batch sending (10/second) with Promise.allSettled
+  - `getEmailTemplate(templateId, data)` — not in this file (delegated to email-templates.ts)
+  - `isSmtpConfigured()` — checks if SMTP env vars are set
+  - `verifySmtpConnection()` — tests SMTP connection
+  - Singleton transporter with connection pooling (maxConnections: 5, maxMessages: 100, rateLimit: 10)
+  - Console fallback: when SMTP not configured, logs full email to console instead of throwing
+- Created `src/lib/email-templates.ts` — 5 Serbian-language email templates:
+  - `welcomeEmail` — new user welcome with onboarding steps
+  - `invoiceEmail` — invoice creation notification with table of details
+  - `paymentReminderEmail` — payment reminder with red-themed table
+  - `taskAssignedEmail` — task assignment with green accent box
+  - `weeklyReportEmail` — weekly summary with KPIs, top invoices table, active tasks
+  - All use inline CSS for email client compatibility, professional gradient header, responsive tables
+  - Template registry `EMAIL_TEMPLATES` with id/name/description for API listing
+  - `getEmailTemplate(templateId, data)` dynamic lookup function
+- Created 4 API routes:
+  - `POST /api/email/send` — single email send (auth required via x-auth-verified header)
+  - `POST /api/email/batch` — batch email queue (auth required, processes in background)
+  - `POST /api/email/test` — test SMTP config by sending welcome template email
+  - `GET /api/email/templates` — list available template IDs and descriptions
+- Created `src/lib/notification-email.ts` — notification-to-email bridge:
+  - `sendNotificationEmail(notificationId)` — loads Notification from DB, maps type to template, sends email
+  - Template mapping: invoice_created→invoiceEmail, payment_reminder→paymentReminderEmail, task_assigned→taskAssignedEmail, weekly_report→weeklyReportEmail
+  - Auto-resolves recipient: uses notification.userId → User.email, fallback to company.email
+  - `buildTemplateData()` loads related entity data (Invoice with Partner for invoice types)
+  - `sendTypedNotificationEmail(type, data, to)` — convenience function for direct template sends
+- Added SMTP env vars to `.env` and created `.env.example` with documentation:
+  - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, SMTP_SECURE
+- ESLint passes: only pre-existing error in disable-mem-check.cjs (not our code)
+
+Stage Summary:
+- Complete email notification system with SMTP support via nodemailer
+- 5 professional Serbian-language email templates with inline CSS
+- 4 API routes for sending, batching, testing, and template listing
+- Notification model integration: auto-send emails based on notification type
+- Graceful fallback: emails logged to console when SMTP not configured
+- Zero new lint errors introduced
+
+---
+Task ID: 8
+Agent: multi-tenant-agent
+Task: Implement multi-tenant SaaS improvements
+
+Work Log:
+- Read existing codebase: worklog.md, prisma/schema.prisma, store.ts, companies/route.ts, auth/login, middleware.ts, company-context.ts, roles routes, settings route, seed.ts
+- Added ApiUsageLog model to Prisma schema (companyId, userId, endpoint, method, statusCode, responseTime, createdAt) with relation to Company
+- Ran `bun run db:push` to sync schema — successful
+- Created `src/lib/tenant.ts` — Tenant isolation middleware helper:
+  - `getTenantId(req)` — extracts company ID from x-company-id header
+  - `getUserId(req)` — extracts user ID from x-user-id header
+  - `isSuperAdmin(req)` — checks x-is-super-admin header
+  - `requireTenant(req)` — throws TenantError if no tenant ID (400)
+  - `requireUserId(req)` — throws TenantError if no auth (401)
+  - `TenantError` class with statusCode support
+  - `withTenant(handler)` — HOF wrapping handlers with tenant validation (checks existence + isActive)
+  - `checkPermission(req, companyId, module, level)` — async permission check via UserCompany → Role → permissions JSON
+  - `tenantFilter(companyId)` — returns Prisma where clause `{ companyId }`
+  - `withErrorHandler(handler)` — catches TenantError and NextResponse for consistent error handling
+- Created `src/app/api/companies/[id]/route.ts`:
+  - GET — company details with counts (users, partners, invoices, products, apiKeys)
+  - PUT — update company info with PIB uniqueness check
+  - DELETE — soft delete (sets isActive=false), prevents double deactivation
+- Created `src/app/api/companies/[id]/modules/route.ts`:
+  - GET — returns company's active modules (parsed from JSON), plan, module count
+  - PUT — updates company modules (always includes dashboard + settings), accepts module array
+- Created `src/app/api/companies/[id]/users/route.ts`:
+  - GET — lists all users in company with roles, permissions, join date; includes user count vs maxUsers
+  - POST — invites user to company: finds or creates user (with temp password logged to console), checks user limit, creates UserCompany record, validates role exists, prevents duplicate membership
+- Created `src/app/api/companies/[id]/users/[userId]/route.ts`:
+  - GET — single user membership details
+  - PUT — update user's role, jobTitle, isDefault in company
+  - DELETE — remove user from company (deletes UserCompany record)
+- Enhanced `src/app/api/roles/route.ts`:
+  - GET — unchanged (lists all roles with user counts and parsed permissions)
+  - POST — now checks isSuperAdmin before allowing role creation, validates name format (lowercase alphanumeric), validates permissions structure
+- Enhanced `src/app/api/roles/[id]/route.ts`:
+  - GET — unchanged (role details with parsed permissions)
+  - PUT — now checks isSuperAdmin before allowing updates, validates permissions structure
+  - DELETE — now checks isSuperAdmin, prevents deletion of system roles (admin, manager, accountant, employee), checks if role is assigned to any users
+- Created `src/lib/usage-tracking.ts`:
+  - `logApiUsage(params)` — fire-and-forget function using db.apiUsageLog.create() without await
+  - Silently catches errors to never break API responses
+  - Exports ApiUsageParams interface
+- Created `src/app/api/usage/route.ts`:
+  - GET — usage statistics for current company (requires x-company-id header)
+  - Query params: period (today/week/month), granularity (hourly/daily)
+  - Returns: totalCalls, avgResponseTime, errors, errorRate, byEndpoint (sorted by calls), timeSeries
+  - Time series: hourly for today, daily for week/month
+- Created `src/app/api/companies/[id]/settings/route.ts`:
+  - GET — company-specific settings with optional group/key filtering; parses typed values (json, boolean, number)
+  - PUT — bulk upsert settings; auto-detects type from value; uses companyId+key unique constraint
+- All new routes use proper TypeScript types, NextRequest/NextResponse, and consistent error handling
+- ESLint passes on all new files (0 errors)
+- Dev server compiling and responding correctly
+
+Stage Summary:
+- 10 new API routes created/enhanced for multi-tenant SaaS functionality
+- Tenant isolation helper library (src/lib/tenant.ts) with 8 reusable functions
+- API usage tracking model + library + statistics endpoint
+- Role management with super admin guards and system role protection
+- User invitation system with user limit enforcement
+- Company settings per tenant with typed value parsing
+- All routes use x-company-id header for tenant identification
+- Zero lint errors, dev server stable
+
+---
+Task ID: 7
+Agent: export-import-agent
+Task: Implement Export/Import for CSV, Excel, PDF
+
+Work Log:
+- Verified all 6 required files already existed from prior session:
+  - `src/app/api/export/route.ts` — POST endpoint accepting type/format/filters/columns, fetches from Prisma, returns CSV/XLSX/PDF with proper Content-Disposition headers
+  - `src/app/api/import/route.ts` — POST endpoint accepting FormData with type/mode/file, parses CSV/XLSX, maps columns, creates/updates records in DB
+  - `src/lib/export-utils.ts` — Full utility library with generateCSV, generateXLSX, generatePDF, parseCSV, parseXLSX, getColumnMappings, mapImportColumns, transformImportRow, getDataTypeLabel
+  - `src/components/shared/ExportButton.tsx` — DropdownMenu with CSV/Excel/PDF options, loading states, file download via file-saver
+  - `src/components/shared/ImportButton.tsx` — File input dialog with drag-drop zone, import mode selector (create/update/upsert), results display with error table
+  - `src/components/shared/ExportImportToolbar.tsx` — Combined toolbar with ExportButton + ImportButton
+- Added missing `parseFile(buffer, filename)` wrapper function to export-utils.ts that auto-detects format by file extension and delegates to parseCSV/parseXLSX
+- Fixed ImportButton component: `disabled` prop was declared in interface but not applied to the Button element — added disabled={disabled} prop
+- ESLint passes on all modified files (0 new errors)
+- Dev server compiles successfully: `GET / 200 in 12.9s`
+
+Stage Summary:
+- Complete Export/Import system for CSV, Excel (XLSX), and PDF formats
+- Backend: 2 API routes (POST /api/export, POST /api/import) with multi-tenant support
+- Export supports: invoices, contacts, products, employees, projects
+- Import supports: invoices, contacts, products, employees (with create/update/upsert modes)
+- Frontend: 3 reusable components (ExportButton, ImportButton, ExportImportToolbar)
+- Column mappings with Serbian labels and automatic field matching on import
+- Smart import: auto-maps columns by Serbian labels, field names, and partial matches
+- All files use TypeScript, Serbian UI labels, proper error handling

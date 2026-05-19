@@ -1,15 +1,17 @@
 import { db } from '@/lib/db'
 import { NextResponse } from 'next/server'
 import { hashPassword, verifyPassword } from '@/lib/seed'
+import { signToken } from '@/lib/jwt'
+import { loginSchema, validateRequest } from '@/lib/validations'
 
 // POST /api/auth/login
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json()
+    const body = await req.json()
+    const validation = validateRequest(loginSchema, body)
+    if (!validation.success) return validation.response
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email i lozinka su obavezni' }, { status: 400 })
-    }
+    const { email, password } = validation.data
 
     const user = await db.user.findUnique({
       where: { email },
@@ -41,6 +43,13 @@ export async function POST(req: Request) {
     // Return user data (without password hash)
     const { passwordHash, ...safeUser } = user
 
+    // Generate JWT token
+    const token = await signToken({
+      userId: user.id,
+      email: user.email,
+      isSuperAdmin: user.isSuperAdmin,
+    })
+
     return NextResponse.json({
       user: safeUser,
       companies: user.companyRoles.map(uc => ({
@@ -52,6 +61,7 @@ export async function POST(req: Request) {
         isDefault: uc.isDefault,
         jobTitle: uc.jobTitle,
       })),
+      token,
     })
   } catch (error) {
     console.error('Login error:', error)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { invoiceSchema, validateRequest } from '@/lib/validations';
 
 // GET /api/invoices?search=...&status=...&type=...&partnerId=...&dateFrom=...&dateTo=...
 export async function GET(request: NextRequest) {
@@ -70,24 +71,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { partnerId, number, date, dueDate, status, type, discountPct, notes, paymentMethod, items } = body;
+    const validation = validateRequest(invoiceSchema, body);
+    if (!validation.success) return validation.response;
 
-    if (!partnerId || !number || !dueDate) {
-      return NextResponse.json({ error: 'partnerId, number, and dueDate are required' }, { status: 400 });
-    }
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: 'At least one invoice item is required' }, { status: 400 });
-    }
-
-    for (const item of items) {
-      if (!item.productId || !item.productName || !item.quantity || !item.unitPrice) {
-        return NextResponse.json(
-          { error: 'Each item must have productId, productName, quantity, and unitPrice' },
-          { status: 400 }
-        );
-      }
-    }
+    const { partnerId, number, date, dueDate, status, type, discountPct, notes, paymentMethod, items } = validation.data;
 
     // Check for duplicate invoice number
     const existingInvoice = await db.invoice.findUnique({ where: { number } });

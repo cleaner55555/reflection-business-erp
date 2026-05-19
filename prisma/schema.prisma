@@ -188,6 +188,22 @@ model Company {
   voipExtensions      VoipExtension[]
   plmProducts          PlmProduct[]
   utilities            Utility[]
+  apiUsageLogs         ApiUsageLog[]
+}
+
+// ============ API USAGE TRACKING ============
+
+model ApiUsageLog {
+  id            String   @id @default(cuid())
+  companyId     String
+  userId        String?
+  endpoint      String
+  method        String
+  statusCode    Int
+  responseTime  Int
+  createdAt     DateTime @default(now())
+
+  company       Company  @relation(fields: [companyId], references: [id])
 }
 
 // ============ NARUDŽBE (GENERALNE) ============

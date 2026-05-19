@@ -7,6 +7,7 @@
 import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react'
 import type { ComponentType } from 'react'
 import { moduleGroupMap } from './module-groups/index'
+import { ModuleErrorBoundary } from '@/components/ModuleErrorBoundary'
 
 const Loader = () => (
   <div className="flex items-center justify-center h-64">
@@ -173,8 +174,10 @@ export function ModuleRenderer({ moduleKey }: { moduleKey: string }) {
   if (loading || !Component) return <Loader />
 
   return (
-    <Suspense fallback={<Loader />}>
-      <Component />
-    </Suspense>
+    <ModuleErrorBoundary moduleKey={moduleKey} resetKey={moduleKey}>
+      <Suspense fallback={<Loader />}>
+        <Component />
+      </Suspense>
+    </ModuleErrorBoundary>
   )
 }

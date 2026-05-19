@@ -1,5 +1,6 @@
 import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
+import { contactSchema, validateRequest } from '@/lib/validations'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -29,9 +30,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { firstName, lastName, email, phone, position, company, partnerId, notes, tags, isClient, isSupplier, isLead } = body
-  if (!firstName || !lastName) return NextResponse.json({ error: 'Ime i prezime su obavezni' }, { status: 400 })
+  const validation = validateRequest(contactSchema, body)
+  if (!validation.success) return validation.response
 
+  const { firstName, lastName, email, phone, position, company, partnerId, notes, tags, isClient, isSupplier, isLead } = validation.data
   const contact = await db.contact.create({
     data: { firstName, lastName, email, phone, position, company, partnerId, notes, tags, isClient: !!isClient, isSupplier: !!isSupplier, isLead: isLead !== false },
   })

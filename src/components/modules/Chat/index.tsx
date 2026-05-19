@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTranslation } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -63,6 +63,10 @@ export function Chat() {
   const emptyForm = { name: '', description: '', type: 'general' }
   const [form, setForm] = useState(emptyForm)
 
+  // Use ref to read latest selectedChannel without adding it to useCallback deps
+  const selectedChannelRef = useRef(selectedChannel)
+  useEffect(() => { selectedChannelRef.current = selectedChannel })
+
   const loadChannels = useCallback(async () => {
     if (!activeCompanyId) return
     setLoading(true)
@@ -72,7 +76,7 @@ export function Chat() {
         const data = await res.json()
         const items = data.items || data || []
         setChannels(items)
-        if (!selectedChannel && items.length > 0) setSelectedChannel(items[0])
+        if (!selectedChannelRef.current && items.length > 0) setSelectedChannel(items[0])
       }
     } catch { /* silent */ }
     setLoading(false)

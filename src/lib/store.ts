@@ -193,9 +193,11 @@ interface AppState {
   currentUser: UserInfo | null
   userCompanies: CompanyInfo[]
   permissions: Record<string, string[]>
-  login: (user: UserInfo, companies: CompanyInfo[]) => void
+  authToken: string | null
+  login: (user: UserInfo, companies: CompanyInfo[], token?: string) => void
   logout: () => void
   hasPermission: (module: string, level: string) => boolean
+  getAuthToken: () => string | null
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -287,10 +289,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   })(),
 
-  login: (user, companies) => {
+  login: (user, companies, token) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('currentUser', JSON.stringify(user))
       localStorage.setItem('userCompanies', JSON.stringify(companies))
+      if (token) {
+        localStorage.setItem('authToken', token)
+      }
     }
 
     // Set active company from default or first
@@ -336,7 +341,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       localStorage.setItem('userPermissions', JSON.stringify(permissions))
     }
 
-    set({ currentUser: user, userCompanies: companies, permissions })
+    set({ currentUser: user, userCompanies: companies, permissions, authToken: token || null })
   },
 
   logout: () => {
@@ -344,14 +349,23 @@ export const useAppStore = create<AppState>((set, get) => ({
       localStorage.removeItem('currentUser')
       localStorage.removeItem('userCompanies')
       localStorage.removeItem('userPermissions')
+      localStorage.removeItem('authToken')
       // Keep company selection
     }
     set({
       currentUser: null,
       userCompanies: [],
       permissions: {},
+      authToken: null,
       activeModule: 'dashboard',
     })
+  },
+
+  getAuthToken: () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authToken')
+    }
+    return null
   },
 
   hasPermission: (module: string, level: string) => {

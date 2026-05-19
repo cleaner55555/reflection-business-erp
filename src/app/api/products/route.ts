@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { productSchema, validateRequest } from '@/lib/validations';
 
 // GET /api/products?search=...&category=...&lowStock=true
 export async function GET(request: NextRequest) {
@@ -49,14 +50,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { name, sku, barcode, category, unit, purchasePrice, sellingPrice, minStock, currentStock, description } = body;
+    const validation = validateRequest(productSchema, body);
+    if (!validation.success) return validation.response;
 
-    if (!name || !sku || purchasePrice === undefined || sellingPrice === undefined) {
-      return NextResponse.json(
-        { error: 'Name, SKU, purchasePrice, and sellingPrice are required' },
-        { status: 400 }
-      );
-    }
+    const { name, sku, barcode, category, unit, purchasePrice, sellingPrice, minStock, currentStock, description } = validation.data;
+
+    // Check for duplicate SKU
 
     const existingProduct = await db.product.findUnique({ where: { sku } });
     if (existingProduct) {

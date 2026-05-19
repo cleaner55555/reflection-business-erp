@@ -1,25 +1,17 @@
 import { db } from '@/lib/db'
 import { NextResponse } from 'next/server'
 import { hashPassword } from '@/lib/seed'
+import { signToken } from '@/lib/jwt'
+import { registerSchema, validateRequest } from '@/lib/validations'
 
 // POST /api/auth/register - Register new user
 export async function POST(req: Request) {
   try {
-    const { email, password, firstName, lastName, phone } = await req.json()
+    const body = await req.json()
+    const validation = validateRequest(registerSchema, body)
+    if (!validation.success) return validation.response
 
-    if (!email || !password || !firstName || !lastName) {
-      return NextResponse.json(
-        { error: 'Email, lozinka, ime i prezime su obavezni' },
-        { status: 400 }
-      )
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Lozinka mora imati najmanje 6 karaktera' },
-        { status: 400 }
-      )
-    }
+    const { email, password, firstName, lastName, phone } = validation.data
 
     // Check if user exists
     const existingUser = await db.user.findUnique({ where: { email } })
@@ -69,9 +61,17 @@ export async function POST(req: Request) {
 
     const { passwordHash: _, ...safeUser } = user
 
+    // Generate JWT token
+    const token = await signToken({
+      userId: user.id,
+      email: user.email,
+      isSuperAdmin: user.isSuperAdmin,
+    })
+
     return NextResponse.json({
       user: safeUser,
       company: { companyId: company.id, companyName: company.name },
+      token,
     }, { status: 201 })
   } catch (error) {
     console.error('Registration error:', error)

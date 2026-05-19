@@ -1,0 +1,24 @@
+# ============================================================
+# Reflection Business ERP — Development Docker Compose Override
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# ============================================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    container_name: reflection-erp-dev
+    command: bun run dev
+    volumes:
+      # Mount source code for hot-reload development
+      - .:/app
+      # Prevent container's node_modules from overwriting host's
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:/app/db/custom.db
+      - NEXT_TELEMETRY_DISABLED=1
+    ports:
+      - "3000:3000"

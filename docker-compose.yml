@@ -1,0 +1,27 @@
+# ============================================================
+# Reflection Business ERP — Production Docker Compose
+# ============================================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reflection-erp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/custom.db
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production-use-a-long-random-string}
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      # Persist SQLite database across container restarts
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
