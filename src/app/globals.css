@@ -362,6 +362,18 @@ body::before {
   box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
 }
 
+/* ========== ONBOARDING WIZARD STEP TRANSITIONS ========== */
+
+@keyframes stepFadeInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes stepFadeInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 /* ========== PWA ANIMATIONS ========== */
 @keyframes slideDown {
   from {

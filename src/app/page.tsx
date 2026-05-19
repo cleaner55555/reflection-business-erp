@@ -93,6 +93,11 @@ const KeyboardShortcutsProvider = dynamic(
   { ssr: false }
 )
 
+const OnboardingWizard = dynamic(
+  () => import('@/components/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })),
+  { ssr: false }
+)
+
 const CompanySwitcher = dynamic(
   () => import('@/components/modules/CompanySwitcher').then(m => ({ default: m.CompanySwitcher })),
   { ssr: false }
@@ -309,7 +314,7 @@ function AppContent() {
         <Footer />
       </SidebarInset>
     </SidebarProvider>
-    <AITeam /><AppLauncher /><AISetupWizard /><PWAInstallPrompt />
+    <AITeam /><AppLauncher /><AISetupWizard /><OnboardingWizard /><PWAInstallPrompt />
     </>
   )
 }
