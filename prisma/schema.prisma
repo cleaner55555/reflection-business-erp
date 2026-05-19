@@ -640,22 +640,26 @@ model LoadingDock {
 // ============ USER ACCOUNTS & ROLES ============
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String
-  firstName     String
-  lastName      String
-  avatar        String?
-  phone         String?
-  isActive      Boolean  @default(true)
-  isSuperAdmin  Boolean  @default(false)
-  lastLoginAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  avatar            String?
+  phone             String?
+  isActive          Boolean   @default(true)
+  isSuperAdmin      Boolean   @default(false)
+  lastLoginAt       DateTime?
+  emailVerified     Boolean   @default(false)
+  emailVerifyToken  String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  companyRoles  UserCompany[]
-  ownedApiKeys  ApiKey[]      @relation("ApiKeyOwner")
-  createdJobs   IntegrationJob[]  @relation("JobCreator")
+  companyRoles      UserCompany[]
+  ownedApiKeys      ApiKey[]      @relation("ApiKeyOwner")
+  createdJobs       IntegrationJob[]  @relation("JobCreator")
 }
 
 model Role {
