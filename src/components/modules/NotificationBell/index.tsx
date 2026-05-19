@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from '@/lib/i18n'
 import { useAppStore, type ModuleType } from '@/lib/store'
+import { useRealtime } from '@/hooks/useRealtime'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -20,6 +21,8 @@ import {
   Clock,
   Info,
   CheckCircle2,
+  Wifi,
+  WifiOff,
 } from 'lucide-react'
 
 export interface Notification {
@@ -83,14 +86,66 @@ function formatTimeAgo(dateStr: string, t: (key: string) => string): string {
   return date.toLocaleDateString('sr-RS')
 }
 
+// Sound effect for new notifications (using Web Audio API)
+function playNotificationSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    const oscillator = ctx.createOscillator()
+    const gain = ctx.createGain()
+    oscillator.connect(gain)
+    gain.connect(ctx.destination)
+    oscillator.frequency.setValueAtTime(800, ctx.currentTime)
+    oscillator.frequency.setValueAtTime(600, ctx.currentTime + 0.1)
+    gain.gain.setValueAtTime(0.1, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 0.3)
+  } catch {
+    // Audio not available
+  }
+}
+
+// Request browser notification permission
+function requestNotificationPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission()
+  }
+}
+
+// Show browser push notification
+function showBrowserNotification(title: string, body: string, url?: string) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, {
+      body,
+      icon: '/icons/icon-192.svg',
+      badge: '/icons/icon-72.svg',
+      tag: 'reflection-notification',
+      data: { url: url || '/' },
+    })
+  }
+}
+
 export function NotificationBell() {
   const { t } = useTranslation()
-  const { setActiveModule } = useAppStore()
+  const { setActiveModule, currentUser, activeCompanyId } = useAppStore()
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [pulseNew, setPulseNew] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
+  const prevUnreadRef = useRef(0)
+
+  // WebSocket for real-time notifications
+  const { connected: realtimeConnected, on, off } = useRealtime({
+    companyId: activeCompanyId || undefined,
+    userId: currentUser?.id || undefined,
+  })
+
+  // Request notification permission on mount
+  useEffect(() => {
+    requestNotificationPermission()
+  }, [])
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -99,6 +154,7 @@ export function NotificationBell() {
         const data = await res.json()
         setNotifications(data.notifications || [])
         setUnreadCount(data.unreadCount || 0)
+        prevUnreadRef.current = data.unreadCount || 0
       }
     } catch {
       // Silent fail
@@ -110,6 +166,55 @@ export function NotificationBell() {
   useEffect(() => {
     fetchNotifications()
   }, [fetchNotifications])
+
+  // WebSocket: listen for real-time notifications
+  useEffect(() => {
+    if (!realtimeConnected) return
+
+    const handleNotification = (data: Notification) => {
+      // Add to top of list
+      setNotifications(prev => [data, ...prev].slice(0, 20))
+      if (!data.isRead) {
+        setUnreadCount(prev => prev + 1)
+        // Visual pulse
+        setPulseNew(true)
+        setTimeout(() => setPulseNew(false), 600)
+        // Sound
+        playNotificationSound()
+        // Browser push notification
+        showBrowserNotification(data.title, data.message, data.actionUrl || undefined)
+      }
+    }
+
+    const handleNotificationRead = (data: { id: string }) => {
+      setNotifications(prev => prev.map(n => n.id === data.id ? { ...n, isRead: true } : n))
+      setUnreadCount(prev => Math.max(0, prev - 1))
+    }
+
+    const handleNotificationDeleted = (data: { id: string }) => {
+      setNotifications(prev => {
+        const n = prev.find(x => x.id === data.id)
+        if (n && !n.isRead) setUnreadCount(c => Math.max(0, c - 1))
+        return prev.filter(x => x.id !== data.id)
+      })
+    }
+
+    const handleCountUpdate = (data: { unreadCount: number }) => {
+      setUnreadCount(data.unreadCount)
+    }
+
+    on('notification', handleNotification)
+    on('notification:read', handleNotificationRead)
+    on('notification:deleted', handleNotificationDeleted)
+    on('notification:count', handleCountUpdate)
+
+    return () => {
+      off('notification', handleNotification)
+      off('notification:read', handleNotificationRead)
+      off('notification:deleted', handleNotificationDeleted)
+      off('notification:count', handleCountUpdate)
+    }
+  }, [realtimeConnected, on, off])
 
   // Close on Escape
   useEffect(() => {
@@ -188,7 +293,12 @@ export function NotificationBell() {
         aria-label={t('notifications.title')}
       >
         {unreadCount > 0 ? (
-          <BellDot className="h-4 w-4" />
+          <motion.div
+            animate={pulseNew ? { scale: [1, 1.3, 1] } : {}}
+            transition={{ duration: 0.4 }}
+          >
+            <BellDot className="h-4 w-4" />
+          </motion.div>
         ) : (
           <Bell className="h-4 w-4" />
         )}
@@ -200,6 +310,14 @@ export function NotificationBell() {
           </Badge>
         )}
       </Button>
+
+      {/* Real-time connection indicator (tiny dot) */}
+      <div
+        className={`absolute -bottom-0.5 -left-0.5 h-2 w-2 rounded-full border border-background transition-colors ${
+          realtimeConnected ? 'bg-emerald-500' : 'bg-muted-foreground/40'
+        }`}
+        title={realtimeConnected ? 'Real-time connected' : 'Real-time disconnected'}
+      />
 
       <AnimatePresence>
         {isOpen && (
@@ -224,6 +342,14 @@ export function NotificationBell() {
                 )}
               </div>
               <div className="flex items-center gap-1">
+                {/* Real-time status */}
+                <div className="flex items-center gap-1 mr-1 text-[10px] text-muted-foreground">
+                  {realtimeConnected ? (
+                    <Wifi className="h-3 w-3 text-emerald-500" />
+                  ) : (
+                    <WifiOff className="h-3 w-3 text-muted-foreground/50" />
+                  )}
+                </div>
                 {unreadCount > 0 && (
                   <Button
                     variant="ghost"
@@ -260,8 +386,11 @@ export function NotificationBell() {
               ) : (
                 <div className="divide-y">
                   {notifications.map((notif) => (
-                    <div
+                    <motion.div
                       key={notif.id}
+                      initial={notif.isRead ? {} : { backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
+                      animate={{ backgroundColor: 'rgba(0,0,0,0)' }}
+                      transition={{ duration: 2 }}
                       className={`group relative flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/50 cursor-pointer ${
                         !notif.isRead ? 'bg-accent/20' : ''
                       }`}
@@ -310,7 +439,7 @@ export function NotificationBell() {
                           <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                         </button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}

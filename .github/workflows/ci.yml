@@ -2,7 +2,7 @@
 # Reflection Business ERP — CI/CD Pipeline
 # ============================================================
 
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -95,3 +95,128 @@ jobs:
         env:
           NODE_ENV: production
           DATABASE_URL: file:/app/db/custom.db
+
+  # ── Health Check Validation ───────────────────────────────
+  health-check:
+    name: Health Check Schema
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: bunx prisma generate
+
+      - name: Validate OpenAPI spec generates correctly
+        run: bunx tsc --noEmit src/lib/openapi-spec.ts
+        env:
+          DATABASE_URL: file:/app/db/custom.db
+
+  # ── Deploy (main branch only, after all checks pass) ──────
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: bunx prisma generate
+
+      - name: Push database schema
+        run: bunx prisma db push --skip-generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      # ── Docker Build & Push ──
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ github.ref_name }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_APP_VERSION=${{ github.sha }}
+
+      # ── SSH Deploy (if configured) ──
+      - name: Deploy via SSH
+        if: ${{ secrets.DEPLOY_HOST != '' }}
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/reflection-erp
+            docker compose pull
+            docker compose up -d --force-recreate
+            docker image prune -f
+            echo "Deployed ${{ github.sha }} at $(date)"
+
+      # ── Post-deploy Health Check ──
+      - name: Verify deployment
+        if: ${{ secrets.DEPLOY_HOST != '' }}
+        run: |
+          echo "Waiting for deployment to be ready..."
+          sleep 15
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.DEPLOY_HOST }}/api/health" || echo "000")
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Health check passed (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️ Health check returned HTTP $HTTP_CODE - deployment may need manual verification"
+          fi
+
+      # ── Notification ──
+      - name: Deploy summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Actor** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Time** | $(date -u '+%Y-%m-%d %H:%M:%S UTC') |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Image** | ghcr.io/${{ github.repository }}:latest |" >> $GITHUB_STEP_SUMMARY

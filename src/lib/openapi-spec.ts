@@ -77,6 +77,7 @@ function getTag(path: string): string {
 function getDescription(path: string, method: string): string {
   const p = path.replace('/api/', '').replace(/\[.*?\]/g, ':id')
   const pathMap: Record<string, Record<string, string>> = {
+    '/health': { get: 'Provera stanja sistema (baza, storage, memorija)' },
     '/auth/login': { post: 'Prijavljivanje korisnika — vraća JWT token' },
     '/auth/register': { post: 'Registracija novog korisnika' },
     '/auth/forgot-password': { post: 'Zahtev za resetovanje lozinke' },
@@ -113,6 +114,8 @@ export function generateOpenAPISpec() {
 
   // All API routes
   const routes = [
+    // Health
+    { path: '/api/health', methods: ['GET'] },
     // Auth
     { path: '/api/auth/login', methods: ['POST'] },
     { path: '/api/auth/register', methods: ['POST'] },
@@ -605,17 +608,129 @@ export function generateOpenAPISpec() {
         Error: {
           type: 'object',
           properties: {
+            success: { type: 'boolean', example: false },
             error: { type: 'string', description: 'Poruka o grešci' },
             details: { type: 'object', description: 'Detalji greške (validaciona greška)' },
           },
+          required: ['success', 'error'],
         },
         Pagination: {
           type: 'object',
           properties: {
+            success: { type: 'boolean', example: true },
             data: { type: 'array', items: { type: 'object' } },
-            total: { type: 'number' },
-            page: { type: 'number' },
-            limit: { type: 'number' },
+            meta: { type: 'object', properties: {
+              total: { type: 'number' },
+              page: { type: 'number' },
+              limit: { type: 'number' },
+              totalPages: { type: 'number' },
+              hasNextPage: { type: 'boolean' },
+              hasPrevPage: { type: 'boolean' },
+            }},
+          },
+        },
+        HealthCheck: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', enum: ['healthy', 'degraded', 'unhealthy'] },
+            timestamp: { type: 'string', format: 'date-time' },
+            uptime: { type: 'number' },
+            version: { type: 'string' },
+            environment: { type: 'string' },
+            responseTime: { type: 'string' },
+            memory: { type: 'object', properties: {
+              used: { type: 'string' },
+              total: { type: 'string' },
+              rss: { type: 'string' },
+            }},
+            checks: { type: 'object', properties: {
+              database: { type: 'object', properties: { status: { type: 'string' }, latencyMs: { type: 'number' } }},
+              storage: { type: 'object', properties: { status: { type: 'string' }, latencyMs: { type: 'number' } }},
+            }},
+          },
+        },
+        Invoice: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            number: { type: 'string', example: 'Fak-2024-001' },
+            date: { type: 'string', format: 'date-time' },
+            dueDate: { type: 'string', format: 'date-time' },
+            partnerId: { type: 'string' },
+            status: { type: 'string', enum: ['nacrt', 'poslata', 'placena', 'otkazana'] },
+            type: { type: 'string', enum: ['izlazna', 'ulazna', 'predracun', 'avansna'] },
+            totalAmount: { type: 'number' },
+            taxAmount: { type: 'number' },
+            baseAmount: { type: 'number' },
+            currency: { type: 'string', default: 'RSD' },
+            items: { type: 'array', items: { type: 'object' } },
+            notes: { type: 'string' },
+          },
+        },
+        Partner: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            pib: { type: 'string' },
+            maticniBr: { type: 'string' },
+            address: { type: 'string' },
+            city: { type: 'string' },
+            phone: { type: 'string' },
+            email: { type: 'string' },
+            type: { type: 'string', enum: ['kupac', 'dobavljac', 'partner'] },
+            isActive: { type: 'boolean' },
+          },
+        },
+        Product: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            sku: { type: 'string' },
+            barcode: { type: 'string' },
+            category: { type: 'string' },
+            unit: { type: 'string', default: 'kom' },
+            purchasePrice: { type: 'number' },
+            sellingPrice: { type: 'number' },
+            currentStock: { type: 'number' },
+            minStock: { type: 'number' },
+          },
+        },
+        LoginRequest: {
+          type: 'object',
+          properties: {
+            email: { type: 'string', format: 'email' },
+            password: { type: 'string', minLength: 6 },
+          },
+          required: ['email', 'password'],
+        },
+        LoginResponse: {
+          type: 'object',
+          properties: {
+            token: { type: 'string', description: 'JWT token' },
+            user: { type: 'object', properties: {
+              id: { type: 'string' },
+              email: { type: 'string' },
+              firstName: { type: 'string' },
+              lastName: { type: 'string' },
+              isSuperAdmin: { type: 'boolean' },
+            }},
+          },
+        },
+        Notification: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            type: { type: 'string' },
+            title: { type: 'string' },
+            message: { type: 'string' },
+            priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'] },
+            isRead: { type: 'boolean' },
+            entityType: { type: 'string' },
+            entityId: { type: 'string' },
+            actionUrl: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
           },
         },
       },

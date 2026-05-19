@@ -1,30 +1,59 @@
 {
-  "name": "Reflection Business — ERP Platform",
+  "name": "Reflection Business — Enterprise ERP Platform",
   "short_name": "Reflection",
-  "description": "Kompletna ERP/CRM platforma za sve industrije. 127 modula, 90+ jezika.",
+  "description": "Najkompletnija ERP/CRM platforma — 127 modula, 391 API endpointa, multi-tenant SaaS, real-time, PWA",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#09090b",
   "orientation": "any",
   "scope": "/",
+  "id": "/",
   "icons": [
     { "src": "/icons/icon-72.svg", "sizes": "72x72", "type": "image/svg+xml" },
     { "src": "/icons/icon-96.svg", "sizes": "96x96", "type": "image/svg+xml" },
     { "src": "/icons/icon-128.svg", "sizes": "128x128", "type": "image/svg+xml" },
     { "src": "/icons/icon-144.svg", "sizes": "144x144", "type": "image/svg+xml" },
     { "src": "/icons/icon-152.svg", "sizes": "152x152", "type": "image/svg+xml" },
-    { "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "maskable" },
     { "src": "/icons/icon-384.svg", "sizes": "384x384", "type": "image/svg+xml" },
-    { "src": "/icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
   ],
-  "categories": ["business", "productivity", "finance"],
+  "categories": ["business", "productivity", "finance", "utilities"],
   "lang": "sr",
   "dir": "ltr",
+  "prefer_related_applications": false,
   "shortcuts": [
-    { "name": "Dashboard", "url": "/?module=dashboard", "description": "Glavni pregled" },
-    { "name": "Fakture", "url": "/?module=invoices", "description": "Fakturisanje" },
-    { "name": "CRM", "url": "/?module=crm", "description": "Partneri i CRM" },
-    { "name": "Skladište", "url": "/?module=inventory", "description": "Zalihe i proizvodi" }
-  ]
+    { "name": "Dashboard", "short_name": "Dashboard", "url": "/?module=dashboard", "description": "Glavni pregled", "icons": [{ "src": "/icons/icon-96.svg", "sizes": "96x96" }] },
+    { "name": "Fakture", "short_name": "Fakture", "url": "/?module=invoices", "description": "Fakturisanje", "icons": [{ "src": "/icons/icon-96.svg", "sizes": "96x96" }] },
+    { "name": "CRM", "short_name": "CRM", "url": "/?module=crm", "description": "Partneri i CRM", "icons": [{ "src": "/icons/icon-96.svg", "sizes": "96x96" }] },
+    { "name": "Skladište", "short_name": "Skladište", "url": "/?module=inventory", "description": "Zalihe i proizvodi", "icons": [{ "src": "/icons/icon-96.svg", "sizes": "96x96" }] },
+    { "name": "Kalendar", "short_name": "Kalendar", "url": "/?module=calendar", "description": "Kalendar", "icons": [{ "src": "/icons/icon-96.svg", "sizes": "96x96" }] },
+    { "name": "POS", "short_name": "POS", "url": "/?module=pos", "description": "Point of Sale", "icons": [{ "src": "/icons/icon-96.svg", "sizes": "96x96" }] },
+    { "name": "Zaposleni", "short_name": "HR", "url": "/?module=employees", "description": "Zaposleni", "icons": [{ "src": "/icons/icon-96.svg", "sizes": "96x96" }] },
+    { "name": "Izveštaji", "short_name": "Izveštaji", "url": "/?module=reports", "description": "Izveštaji", "icons": [{ "src": "/icons/icon-96.svg", "sizes": "96x96" }] }
+  ],
+  "share_target": {
+    "action": "/?module=documents",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": "files"
+    }
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+reflection",
+      "url": "/?module=%s"
+    }
+  ],
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
