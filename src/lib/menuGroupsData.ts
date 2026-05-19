@@ -18,7 +18,8 @@ import {
   BookOpenCheck, ClipboardPlus, Library, School, UserRound, FileHeart, Pill, Microscope,
   CalendarCheck, ChefHat, ArrowLeftRight, Stamp, Route, PackageCheck, Building, KeyRound, Eye, Zap,
   Ruler, Move, TruckIcon, ScanBarcode, ListChecks, Ticket, StarHalf, SearchCode, Bot, DatabaseBackup, Calculator, Clock, Timer,
-  HardHat, RotateCcw, Tag, FileCheck,
+  HardHat, RotateCcw, Tag, FileCheck, Activity,
+  Smartphone,
 } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -242,6 +243,8 @@ export const menuGroups: MenuGroup[] = [
       { module: 'settings', icon: Settings, labelKey: 'sidebar.settings' },
       { module: 'backup', icon: DatabaseBackup, labelKey: 'sidebar.backup' },
       { module: 'api-docs', icon: FileCode, labelKey: 'sidebar.apiDocs' },
+      { module: 'monitoring', icon: Activity, labelKey: 'sidebar.monitoring' },
+      { module: 'mobile-app', icon: Smartphone, labelKey: 'sidebar.mobileApp' },
     ],
   },
 ]
@@ -309,7 +312,7 @@ const MODULE_CODE_GROUP: Record<string, string> = {
   // IT
   chat: 'it', 'knowledge-base': 'it', website: 'it', blog: 'it',
   forum: 'it', spreadsheet: 'it', notes: 'it', integrations: 'it',
-  backup: 'it', 'api-docs': 'it', laws: 'it', iot: 'it', voip: 'it',
+  backup: 'it', 'api-docs': 'it', laws: 'it', iot: 'it', voip: 'it', monitoring: 'it', 'mobile-app': 'it',
   // Logistics
   shipping: 'logistics', fleet: 'logistics', 'rent-a-car': 'logistics',
   delivery: 'logistics', routes: 'logistics', 'loading-dock': 'logistics',

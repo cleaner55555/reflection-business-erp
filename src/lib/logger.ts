@@ -112,16 +112,42 @@ class Logger {
         break
     }
 
-    // In production, could send to external logging service (Sentry, Datadog, etc.)
-    if (process.env.NODE_ENV === 'production' && (level === 'error' || level === 'fatal')) {
+    // Forward to monitoring system (all environments for full observability)
+    if (level === 'error' || level === 'fatal') {
       this.sendToExternal(entry)
     }
   }
 
-  private sendToExternal(_entry: LogEntry) {
-    // Placeholder for external logging integration
-    // Example: Sentry.captureException, Datadog.log, etc.
-    // Currently no-ops to avoid external dependencies
+  private sendToExternal(entry: LogEntry) {
+    // Forward errors/warnings to the built-in monitoring system
+    try {
+      // Dynamic import to avoid circular dependency in non-server contexts
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { errorTracker } = require('./monitoring/error-tracker')
+      if (errorTracker) {
+        const severity = entry.level === 'fatal' ? 'critical'
+          : entry.level === 'error' ? 'error'
+          : entry.level === 'warn' ? 'warning' : 'info'
+
+        if (entry.error) {
+          const err = new Error(entry.error.message)
+          err.stack = entry.error.stack
+          errorTracker.captureError(err, {
+            endpoint: this.context.requestId,
+            userId: this.context.userId,
+            companyId: this.context.companyId,
+          }, severity)
+        } else {
+          errorTracker.captureMessage(entry.message, {
+            endpoint: this.context.requestId,
+            userId: this.context.userId,
+            companyId: this.context.companyId,
+          }, severity)
+        }
+      }
+    } catch {
+      // Monitoring not available — silently continue
+    }
   }
 
   debug(message: string, ctx?: LogContext) {

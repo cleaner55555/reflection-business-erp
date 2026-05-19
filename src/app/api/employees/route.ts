@@ -1,7 +1,8 @@
 import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
+import { withMonitoring } from '@/lib/monitoring/profiler'
 
-export async function GET(req: NextRequest) {
+export const GET = withMonitoring('GET /api/employees', async (req: NextRequest) => {
   const { searchParams } = new URL(req.url)
   const search = searchParams.get('search') || ''
   const department = searchParams.get('department') || ''
@@ -20,9 +21,9 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'desc' },
   })
   return NextResponse.json(employees)
-}
+})
 
-export async function POST(req: NextRequest) {
+export const POST = withMonitoring('POST /api/employees', async (req: NextRequest) => {
   const body = await req.json()
   const { firstName, lastName, email, phone, position, department, baseSalary, bankAccount, partnerId, isActive, managerId, contractType, contractEndDate, benefits } = body
   if (!firstName || !lastName) return NextResponse.json({ error: 'Ime i prezime obavezni' }, { status: 400 })
@@ -39,4 +40,4 @@ export async function POST(req: NextRequest) {
     },
   })
   return NextResponse.json(employee, { status: 201 })
-}
+})

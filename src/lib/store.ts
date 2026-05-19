@@ -135,6 +135,8 @@ export type ModuleType =
   | 'automation'
   | 'stores'
   | 'backup'
+  | 'monitoring'
+  | 'mobile-app'
 
 import { type IndustryId } from './industrySets'
 
@@ -332,7 +334,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         'property', 'rentals', 'property-viewings', 'utilities',
         'work-orders', 'standards', 'labels',
         'barcode', 'price-lists', 'coupons', 'reviews', 'seo', 'payments', 'returns', 'cash-register',
-        'time-tracking', 'time-billing', 'client-portal', 'automation', 'stores', 'backup'
+        'time-tracking', 'time-billing', 'client-portal', 'automation', 'stores', 'backup',
+        'monitoring', 'mobile-app'
       ]
       modules.forEach(m => { permissions[m] = ['read', 'write', 'delete', 'admin'] })
     }

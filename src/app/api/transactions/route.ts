@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { withMonitoring } from '@/lib/monitoring/profiler';
 
 // GET /api/transactions?type=...&category=...&dateFrom=...&dateTo=...&search=...
-export async function GET(request: NextRequest) {
+export const GET = withMonitoring('GET /api/transactions', async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || '';
@@ -48,10 +49,10 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching transactions:', error);
     return NextResponse.json({ error: 'Failed to fetch transactions' }, { status: 500 });
   }
-}
+});
 
 // POST /api/transactions
-export async function POST(request: NextRequest) {
+export const POST = withMonitoring('POST /api/transactions', async (request: NextRequest) => {
   try {
     const body = await request.json();
 
@@ -98,4 +99,4 @@ export async function POST(request: NextRequest) {
     console.error('Error creating transaction:', error);
     return NextResponse.json({ error: 'Failed to create transaction' }, { status: 500 });
   }
-}
+});

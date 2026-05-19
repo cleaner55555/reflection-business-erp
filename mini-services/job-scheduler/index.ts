@@ -78,6 +78,18 @@ const jobs: Job[] = [
     status: 'idle',
     logs: [],
   },
+  {
+    id: 'scheduled-backup',
+    name: 'Zakazani bekapi',
+    description: 'Proverava raspored bekapa i pokreće zakazane bekape + čisti istekle',
+    schedule: 'Svakih 5 minuta',
+    intervalMs: 5 * 60_000,
+    endpoint: '/api/backups/scheduled-tick',
+    method: 'POST',
+    enabled: true,
+    status: 'idle',
+    logs: [],
+  },
 ]
 
 // ─── Job Execution ──────────────────────────────────────────────────────────

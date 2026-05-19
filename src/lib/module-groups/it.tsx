@@ -15,4 +15,6 @@ export const itModules: Record<string, () => Promise<ComponentType>> = {
   'laws': () => import('@/components/modules/Laws').then(m => m.Laws),
   'iot': () => import('@/components/modules/IoT').then(m => m.IoT),
   'voip': () => import('@/components/modules/VoIP').then(m => m.VoIP),
+  'monitoring': () => import('@/components/modules/Monitoring').then(m => m.Monitoring),
+  'mobile-app': () => import('@/components/modules/MobileApp').then(m => m.MobileApp),
 }

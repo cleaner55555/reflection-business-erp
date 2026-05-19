@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Preload script to disable Next.js aggressive memory threshold restart
 // Next.js restarts when heap usage > 80% of limit, which is too aggressive
 // for large projects with 124+ modules

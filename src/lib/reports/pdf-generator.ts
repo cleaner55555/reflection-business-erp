@@ -921,3 +921,49 @@ function convertHundreds(n: number): string {
 export function downloadPDF(doc: jsPDF, filename: string) {
   doc.save(filename)
 }
+
+// ==================== ADVANCED REPORT GENERATORS ====================
+
+// Re-export template generators
+export { generateFinancialSummaryPDF } from './templates/financial'
+export type { FinancialSummaryData } from './templates/financial'
+
+export { generateSalesAnalyticsPDF } from './templates/sales'
+export type { SalesAnalyticsData } from './templates/sales'
+
+export { generateInventoryStatusPDF } from './templates/inventory'
+export type { InventoryStatusData } from './templates/inventory'
+
+export { generateEmployeePerformancePDF } from './templates/employee'
+export type { EmployeePerformanceData } from './templates/employee'
+
+export { generateInvoiceSummaryPDF } from './templates/invoice'
+export type { InvoiceSummaryData } from './templates/invoice'
+
+export { generateProjectProgressPDF } from './templates/project'
+export type { ProjectProgressData } from './templates/project'
+
+export { generateCustomerAnalysisPDF } from './templates/customer'
+export type { CustomerAnalysisData } from './templates/customer'
+
+// Re-export chart drawing utilities
+export {
+  drawBarChart,
+  drawLineChart,
+  drawPieChart,
+  drawAreaChart,
+  drawMultiLineChart,
+  drawHorizontalBarChart,
+  CHART_COLORS,
+  EMERALD,
+  CYAN,
+  ORANGE,
+  VIOLET,
+} from './chart-drawing'
+export type {
+  BarChartOptions,
+  LineChartOptions,
+  PieChartOptions,
+  AreaChartOptions,
+  ChartColor,
+} from './chart-drawing'

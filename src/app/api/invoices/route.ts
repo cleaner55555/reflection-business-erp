@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { invoiceSchema, validateRequest } from '@/lib/validations';
+import { withMonitoring } from '@/lib/monitoring/profiler';
 
 // GET /api/invoices?search=...&status=...&type=...&partnerId=...&dateFrom=...&dateTo=...
-export async function GET(request: NextRequest) {
+export const GET = withMonitoring('GET /api/invoices', async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
@@ -64,10 +65,10 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching invoices:', error);
     return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 });
   }
-}
+});
 
 // POST /api/invoices
-export async function POST(request: NextRequest) {
+export const POST = withMonitoring('POST /api/invoices', async (request: NextRequest) => {
   try {
     const body = await request.json();
 
@@ -136,4 +137,4 @@ export async function POST(request: NextRequest) {
     console.error('Error creating invoice:', error);
     return NextResponse.json({ error: 'Failed to create invoice' }, { status: 500 });
   }
-}
+});

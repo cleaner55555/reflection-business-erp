@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { productSchema, validateRequest } from '@/lib/validations';
+import { withMonitoring } from '@/lib/monitoring/profiler';
 
 // GET /api/products?search=...&category=...&lowStock=true
-export async function GET(request: NextRequest) {
+export const GET = withMonitoring('GET /api/products', async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
@@ -43,10 +44,10 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching products:', error);
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
-}
+});
 
 // POST /api/products
-export async function POST(request: NextRequest) {
+export const POST = withMonitoring('POST /api/products', async (request: NextRequest) => {
   try {
     const body = await request.json();
 
@@ -82,4 +83,4 @@ export async function POST(request: NextRequest) {
     console.error('Error creating product:', error);
     return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
   }
-}
+});

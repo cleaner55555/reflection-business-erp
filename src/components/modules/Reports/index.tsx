@@ -52,17 +52,24 @@ import {
   DollarSign,
   PieChart as PieChartIcon,
   FileText,
-  Filter,
+  FileSpreadsheet,
+ FolderKanban,
+  UserCheck,
+ Filter,
   Save,
   Play,
   Plus,
   Trash2,
   Eye,
   ArrowLeft,
+  Loader2,
+  CheckCircle2,
+  Printer,
 } from 'lucide-react'
 import { formatRSD, formatRSDShort, getStatusLabel, getMonthLabel } from '@/lib/helpers'
 import { useTranslation } from '@/lib/i18n'
 import { ReportDownloadButton } from '@/components/modules/ReportDownloadButton'
+import { toast } from 'sonner'
 
 // ── Constants ──────────────────────────────────────────────────────
 const COLORS = ['#059669', '#0891b2', '#7c3aed', '#ea580c', '#db2777', '#0284c7', '#ca8a04']
@@ -96,6 +103,27 @@ interface Product {
   currentStock: number
   minStock?: number
 }
+
+interface GeneratedReport {
+  id: string
+  type: string
+  typeLabel: string
+  format: 'pdf' | 'excel'
+  dateFrom: string
+  dateTo: string
+  generatedAt: string
+  downloadUrl: string
+}
+
+const REPORT_TYPES = [
+  { value: 'financial', label: 'Finansijski izveštaj', icon: DollarSign, desc: 'Prihodi, rashodi, dobit, mesečni pregled' },
+  { value: 'sales', label: 'Analitika prodaje', icon: TrendingUp, desc: 'Prodaja po kategorijama, trend, top proizvodi' },
+  { value: 'inventory', label: 'Status inventara', icon: Package, desc: 'Nivo zaliha, upozorenja, pokretljivost' },
+  { value: 'employee', label: 'Izveštaj o zaposlenima', icon: Users, desc: 'Performanse, prisutnost, departmenti' },
+  { value: 'invoice', label: 'Izveštaj faktura', icon: FileText, desc: 'Status, neplaćene fakture, kašnjenja' },
+  { value: 'project', label: 'Napredak projekata', icon: FolderKanban, desc: 'Status, budžet, napredak projekata' },
+  { value: 'customer', label: 'Analiza klijenata', icon: UserCheck, desc: 'Rast, segmenti, top klijenti' },
+]
 
 interface SavedReport {
   id: string
@@ -453,6 +481,18 @@ export function Reports() {
   const [customSubTab, setCustomSubTab] = useState<'pregled' | 'dodaj'>('pregled')
   const { t } = useTranslation()
 
+  // PDF Report Generator state
+  const [pdfReportType, setPdfReportType] = useState('financial')
+  const [pdfDateFrom, setPdfDateFrom] = useState(() => {
+    const d = new Date()
+    d.setMonth(0); d.setDate(1)
+    return d.toISOString().split('T')[0]
+  })
+  const [pdfDateTo, setPdfDateTo] = useState(() => new Date().toISOString().split('T')[0])
+  const [pdfFormat, setPdfFormat] = useState<'pdf' | 'excel'>('pdf')
+  const [pdfGenerating, setPdfGenerating] = useState(false)
+  const [generatedReports, setGeneratedReports] = useState<GeneratedReport[]>([])
+
   useEffect(() => {
     Promise.all([
       fetch('/api/dashboard').then((r) => r.json()),
@@ -568,6 +608,58 @@ export function Reports() {
     setActiveTab('custom')
   }
 
+  // PDF Report Generator handler
+  const handleGeneratePDFReport = async () => {
+    setPdfGenerating(true)
+    try {
+      const params = new URLSearchParams({
+        type: pdfReportType,
+        format: pdfFormat,
+        ...(pdfDateFrom ? { from: pdfDateFrom } : {}),
+        ...(pdfDateTo ? { to: pdfDateTo } : {}),
+      })
+      const res = await fetch(`/api/reports/generate?${params.toString()}`)
+      if (!res.ok) {
+        toast.error('Greška pri generisanju izveštaja')
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const reportType = REPORT_TYPES.find((r) => r.value === pdfReportType)
+      const newReport: GeneratedReport = {
+        id: String(Date.now()),
+        type: pdfReportType,
+        typeLabel: reportType?.label || pdfReportType,
+        format: pdfFormat,
+        dateFrom: pdfDateFrom,
+        dateTo: pdfDateTo,
+ generatedAt: new Date().toLocaleString('sr-RS'),
+        downloadUrl: url,
+      }
+      setGeneratedReports((prev) => [newReport, ...prev])
+
+      // Auto-download
+      const link = document.createElement('a')
+      link.href = url
+      const ext = pdfFormat === 'pdf' ? 'pdf' : 'xlsx'
+      link.download = `${reportType?.label || pdfReportType}_${pdfDateFrom}_${pdfDateTo}.${ext}`
+      link.click()
+      toast.success('Izveštaj uspešno generisan i preuzet')
+    } catch {
+    toast.error('Greška pri generisanju izveštaja')
+  } finally {
+    setPdfGenerating(false)
+  }
+ }
+
+  const handleDownloadReport = (report: GeneratedReport) => {
+    const link = document.createElement('a')
+    link.href = report.downloadUrl
+    const ext = report.format === 'pdf' ? 'pdf' : 'xlsx'
+    link.download = `${report.typeLabel}_${report.dateFrom}_${report.dateTo}.${ext}`
+    link.click()
+ }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -614,6 +706,10 @@ export function Reports() {
           <TabsTrigger value="custom" className="gap-1.5 text-xs sm:text-sm">
             <FileText className="h-3.5 w-3.5 hidden sm:block" />
             {t('reports.tabCustom')}
+          </TabsTrigger>
+          <TabsTrigger value="pdf-reports" className="gap-1.5 text-xs sm:text-sm">
+            <Printer className="h-3.5 w-3.5 hidden sm:block" />
+            PDF Izveštaji
           </TabsTrigger>
         </TabsList>
 
@@ -1774,6 +1870,161 @@ export function Reports() {
             </SectionCard>
           </div>
         </TabsContent>
+        {/* ─── Tab: PDF Report Generator ──────────────────── */}
+        <TabsContent value="pdf-reports">
+          <div className="space-y-6">
+            <SectionCard
+              title="Generisanje PDF/Excel izveštaja"
+              subtitle="Odaberite tip izveštaja, period i format za generisanje profesionalnog dokumenta sa grafikonima i tabelama."
+            >
+              {/* Report Type Selector */}
+              <div className="mb-5">
+                <Label className="text-xs font-medium mb-2 block">Tip izveštaja</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {REPORT_TYPES.map((rt) => {
+                    const Icon = rt.icon
+                    return (
+                      <button
+                        key={rt.value}
+                        onClick={() => setPdfReportType(rt.value)}
+                        className={`flex flex-col items-center gap-2 rounded-lg border-2 p-3 transition-all hover:shadow-md text-left ${pdfReportType === rt.value ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30' : 'border-transparent bg-muted/50 hover:bg-muted'}`}
+                      >
+                        <div className={`rounded-lg p-2 ${pdfReportType === rt.value ? 'bg-emerald-500 text-white' : 'bg-muted'}`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold truncate">{rt.label}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{rt.desc}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Date Range & Format */}
+              <div className="flex flex-col sm:flex-row items-end gap-4">
+                <div className="flex items-end gap-3 flex-1">
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <Label className="text-xs">Od</Label>
+                    <Input
+                      type="date"
+                      value={pdfDateFrom}
+                      onChange={(e) => setPdfDateFrom(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5 flex-1 min-w-0">
+                    <Label className="text-xs">Do</Label>
+                    <Input
+                      type="date"
+                      value={pdfDateTo}
+                      onChange={(e) => setPdfDateTo(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Format</Label>
+                  <Select value={pdfFormat} onValueChange={(v) => setPdfFormat(v as 'pdf' | 'excel')}>
+                    <SelectTrigger className="w-[130px] h-9 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pdf">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-3.5 w-3.5 text-red-500" />
+                          <span>PDF dokument</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="excel">
+                        <div className="flex items-center gap-2">
+                          <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
+                          <span>Excel tabela</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleGeneratePDFReport}
+                  disabled={pdfGenerating}
+                  className="gap-2 h-9 px-6"
+                >
+                  {pdfGenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {pdfGenerating ? 'Generisanje...' : 'Generiši izveštaj'}
+                </Button>
+              </div>
+            </SectionCard>
+
+            {/* Generated Reports List */}
+            <SectionCard
+              title={`Generisani izveštaji (${generatedReports.length})`}
+              subtitle="Preuzmite ranije generisane izveštaje ili generišite nove."
+            >
+              {generatedReports.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                  <Printer className="h-10 w-10 mb-3 opacity-20" />
+                  <p className="text-sm">Nemate generisanih izveštaja</p>
+                  <p className="text-xs mt-1">Odaberite tip, period i format iznad za generisanje.</p>
+                </div>
+              ) : (
+                <div className="max-h-[400px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs">Izveštaj</TableHead>
+                        <TableHead className="text-xs">Period</TableHead>
+                        <TableHead className="text-xs text-center">Format</TableHead>
+                        <TableHead className="text-xs">Datum</TableHead>
+                        <TableHead className="text-xs text-right">Akcija</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {generatedReports.map((r) => (
+                        <TableRow key={r.id}>
+                          <TableCell className="text-xs font-medium">{r.typeLabel}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {r.dateFrom === r.dateTo ? r.dateFrom : `${r.dateFrom} — ${r.dateTo}`}
+                          </TableCell>
+                          <TableCell className="text-xs text-center">
+                            <Badge variant={r.format === 'pdf' ? 'default' : 'secondary'} className="text-xs px-2 py-0">
+                              {r.format === 'pdf' ? 'PDF' : 'XLSX'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{r.generatedAt}</TableCell>
+                          <TableCell className="text-xs text-right">
+                            <Button variant="ghost" size="sm" className="h-7 gap-1" onClick={() => handleDownloadReport(r)}>
+                              <Download className="h-3 w-3" />
+                              <span className="hidden sm:inline">Preuzmi</span>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </SectionCard>
+
+            {/* Info Box */}
+            <Card className="p-4 bg-muted/30 border-dashed">
+              <div className="flex gap-3">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">Profesionalni izveštaji sa grafičkim prikazom</p>
+                  <p>Svaki izveštaj sadrži KPI kartice, grafikone (bar, linija, torta), i detaljne tabele sa podacima. Podaci se uvek generišu iz baze podataka kada su dostupni, uz fallback na demo podatke.</p>
+                  <p>Podržani formati: PDF (sa grafikonima) i Excel (sa tabelama).</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </TabsContent>
+
       </Tabs>
     </div>
   )
