@@ -263,3 +263,28 @@ Stage Summary:
 - Exports: OnboardingWizard (component), useOnboarding (hook)
 - Zero new dependencies — uses existing shadcn/ui, lucide-react, and project data modules
 - TypeScript compilation: clean (no errors)
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Implement multi-tenant Organization Management UI
+
+Work Log:
+- Analyzed existing multi-tenant backend (Company, UserCompany, Role models, 6 API routes, tenant isolation library)
+- Found all backend was already complete: CRUD, user invites, module config, settings, permissions
+- Found CompanySwitcher dropdown existed but lacked plan badges and user counts
+- Created OrganizationManager component (1,743 lines) with:
+  - Organization list with plan badges (free/starter/pro/enterprise), stats, active indicator
+  - Create organization dialog with plan selection, max-users slider
+  - Edit organization dialog with 3 tabs (basic info, plan/limits, localization)
+  - Members management sheet (invite, change role, remove with confirmation)
+  - Module configuration per org (7 groups, bulk enable/disable)
+- Added "Organizacije" tab to Settings module (11th tab with Network icon)
+- Enhanced CompanySwitcher dropdown with plan badges, user count, city, org count header
+- All text in Serbian, dark mode support, responsive, loading states
+
+Stage Summary:
+- Created: src/components/modules/OrganizationManager/index.tsx (1,743 lines)
+- Updated: src/components/modules/Settings/index.tsx (added Org tab, 11 cols)
+- Updated: src/components/modules/CompanySwitcher/index.tsx (enhanced with plan badges, user counts)
+- Multi-tenant UI is now feature-complete with full CRUD, member management, and per-org module config

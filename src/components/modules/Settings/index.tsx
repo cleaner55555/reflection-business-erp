@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Settings as SettingsIcon, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook, Sparkles, Compass, X } from 'lucide-react'
+import { Settings as SettingsIcon, Save, Building2, Blocks, SlidersHorizontal, Loader2, Palette, Upload, RotateCcw, Check, ImageIcon, Search, Users, Key, Shield, History, Webhook, Sparkles, Compass, X, Network } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/helpers'
 import { useTranslation, ALL_LANGUAGES } from '@/lib/i18n'
@@ -22,6 +22,8 @@ import { PermissionsEditor } from '@/components/modules/PermissionsEditor'
 import { AuditLogViewer } from '@/components/modules/AuditLogViewer'
 import { WebhookManager } from '@/components/modules/WebhookManager'
 import dynamic from 'next/dynamic'
+
+const OrganizationManager = dynamic(() => import('@/components/modules/OrganizationManager').then(m => ({ default: m.OrganizationManager })), { ssr: false, loading: () => <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div> })
 
 const IndustryTemplates = dynamic(() => import('@/components/modules/IndustryTemplates').then(m => m.default), { ssr: false, loading: () => <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div> })
 import { themePresets } from '@/lib/theme-presets'
@@ -648,7 +650,7 @@ export function Settings() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10 lg:w-[1080px]">
+        <TabsList className="grid w-full grid-cols-11 lg:w-[1200px]">
           <TabsTrigger value="moduli" className="gap-1.5 text-xs sm:text-sm">
             <Blocks className="h-4 w-4 hidden sm:block" />
             <span className="hidden sm:inline">{t('settings.tab_modules')}</span>
@@ -688,6 +690,10 @@ export function Settings() {
           <TabsTrigger value="namene" className="gap-1.5 text-xs sm:text-sm">
             <Compass className="h-4 w-4" />
             <span className="hidden sm:inline">Namene</span>
+          </TabsTrigger>
+          <TabsTrigger value="org" className="gap-1.5 text-xs sm:text-sm">
+            <Network className="h-4 w-4" />
+            <span className="hidden sm:inline">Organizacije</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1222,6 +1228,11 @@ export function Settings() {
         {/* ============ NAMENE (INDUSTRY TEMPLATES) TAB ============ */}
         <TabsContent value="namene">
           <IndustryTemplates />
+        </TabsContent>
+
+        {/* ============ ORGANIZACIJE TAB ============ */}
+        <TabsContent value="org">
+          <OrganizationManager />
         </TabsContent>
       </Tabs>
     </div>

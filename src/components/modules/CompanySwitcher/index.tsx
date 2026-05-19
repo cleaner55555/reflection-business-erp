@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,14 +11,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Building2, Plus, ChevronRight, Check, Settings, Users, Loader2, ArrowLeft } from 'lucide-react'
+import {
+  Building2, Plus, ChevronRight, Check, Users, Loader2, ArrowLeft,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Company {
@@ -25,6 +25,7 @@ interface Company {
   name: string
   pib?: string
   city?: string
+  plan?: string
   isActive: boolean
   _count?: {
     users: number
@@ -34,10 +35,16 @@ interface Company {
   }
 }
 
+const PLAN_STYLES: Record<string, { label: string; className: string }> = {
+  free:        { label: 'Free',        className: 'bg-muted text-muted-foreground' },
+  starter:     { label: 'Starter',     className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  pro:         { label: 'Pro',         className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  enterprise:  { label: 'Enterprise',  className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+}
+
 export function CompanySwitcher() {
   const { activeCompanyId, activeCompanyName, setActiveCompany } = useAppStore()
   const [companies, setCompanies] = useState<Company[]>([])
-  const [loading, setLoading] = useState(false)
 
   // New company form state
   const [subTab, setSubTab] = useState<'list' | 'dodaj'>('list')
@@ -120,43 +127,60 @@ export function CompanySwitcher() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs max-w-[180px]">
+          <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs max-w-[200px]">
             <Building2 className="h-3.5 w-3.5 shrink-0 text-primary" />
             <span className="truncate font-medium">{activeCompanyName || 'Izaberi firmu'}</span>
             <ChevronRight className="h-3 w-3 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuContent align="start" className="w-72">
           <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
-            Kompanije
+            Organizacije ({companies.length})
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
 
-          {companies.map((company) => (
-            <DropdownMenuItem
-              key={company.id}
-              onClick={() => setActiveCompany(company.id, company.name)}
-              className="flex items-center justify-between gap-2 cursor-pointer"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{company.name}</p>
-                  {company.pib && (
-                    <p className="text-xs text-muted-foreground">PIB: {company.pib}</p>
-                  )}
+          {companies.map((company) => {
+            const plan = PLAN_STYLES[company.plan || 'free'] || PLAN_STYLES.free
+            const isActive = company.id === activeCompanyId
+            return (
+              <DropdownMenuItem
+                key={company.id}
+                onClick={() => setActiveCompany(company.id, company.name)}
+                className={`flex items-center justify-between gap-2 cursor-pointer py-2.5 ${isActive ? 'bg-accent' : ''}`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium truncate">{company.name}</p>
+                      {isActive && <Check className="h-3 w-3 shrink-0 text-primary" />}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 h-4 ${plan.className}`}>
+                        {plan.label}
+                      </Badge>
+                      {company._count && (
+                        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                          <Users className="h-2.5 w-2.5" />
+                          {company._count.users}
+                        </span>
+                      )}
+                      {company.city && (
+                        <span className="text-[10px] text-muted-foreground">{company.city}</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              {company.id === activeCompanyId && (
-                <Check className="h-4 w-4 shrink-0 text-primary" />
-              )}
-            </DropdownMenuItem>
-          ))}
+              </DropdownMenuItem>
+            )
+          })}
 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setSubTab('dodaj')} className="text-primary cursor-pointer">
             <Plus className="h-4 w-4 mr-2" />
-            Nova kompanija
+            Nova organizacija
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -168,14 +192,14 @@ export function CompanySwitcher() {
               <Button variant="ghost" size="icon" onClick={() => setSubTab('list')}><ArrowLeft className="h-4 w-4" /></Button>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-primary" />
-                Nova kompanija
+                Nova organizacija
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="company-name">Naziv kompanije *</Label>
+                <Label htmlFor="company-name">Naziv organizacije *</Label>
                 <Input
                   id="company-name"
                   value={newName}
@@ -241,7 +265,7 @@ export function CompanySwitcher() {
                 {creating ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Kreiranje...</>
                 ) : (
-                  <><Plus className="mr-2 h-4 w-4" /> Kreiraj kompaniju</>
+                  <><Plus className="mr-2 h-4 w-4" /> Kreiraj organizaciju</>
                 )}
               </Button>
             </div>
