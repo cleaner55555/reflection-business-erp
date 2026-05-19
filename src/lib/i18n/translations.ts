@@ -6087,4 +6087,4 @@ export const LOCALE_NAMES: Record<Locale, string> = {
 
 export const SUPPORTED_LOCALES: Locale[] = ['sr', 'sr-latn', 'en']
 
-export const DEFAULT_LOCALE: Locale = 'sr'
+export const DEFAULT_LOCALE: Locale = 'en'
