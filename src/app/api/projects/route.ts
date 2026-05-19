@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const projects = await db.project.findMany({
     where: Object.keys(where).length > 0 ? where : undefined,
     include: {
-      tasks: { orderBy: { orderNum: 'asc', createdAt: 'asc' } },
+      tasks: { orderBy: [{ orderNum: 'asc' }, { createdAt: 'asc' }] },
       partner: { select: { id: true, name: true } },
       timesheetEntries: true,
     },
