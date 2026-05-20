@@ -1,19 +1,27 @@
 #!/bin/bash
-exec &>> /home/z/my-project/dev.log
+# Reflection Business ERP - Dev Server Launcher
+# Usage: ./start.sh
+# This script starts the Next.js dev server with memory-optimized settings
 
-# Start tax-update-service in background
-cd /home/z/my-project/mini-services/tax-update-service
-echo "[$(date)] Starting tax-update-service..."
-nohup bun --hot index.ts > /home/z/my-project/tax-update-service.log 2>&1 &
-TAX_PID=$!
-echo "[$(date)] Tax-update-service started (PID: $TAX_PID)"
+set -e
 
-# Start Next.js main server
-while true; do
-  echo "[$(date)] Starting Next.js..."
-  cd /home/z/my-project
-  npx next dev -p 3000 -H 0.0.0.0 2>&1
-  EXIT_CODE=$?
-  echo "[$(date)] Next.js exited with code $EXIT_CODE, restarting in 2s..."
-  sleep 2
-done
+cd "$(dirname "$0")"
+
+echo "🚀 Starting Reflection Business ERP Dev Server..."
+echo "   Memory optimization: No prewarm, CDN Tailwind, HMR disabled"
+echo ""
+
+# Kill any existing dev server
+pkill -f "next-server" 2>/dev/null || true
+sleep 1
+
+# Clean build cache if needed
+if [ "$1" = "--clean" ]; then
+  echo "🧹 Cleaning .next cache..."
+  rm -rf .next
+fi
+
+# Start with optimized settings
+NEXT_HMR_DISABLED=1 \
+NODE_OPTIONS="--max-old-space-size=2048" \
+npx next dev -p 3000 2>&1 | tee dev.log
