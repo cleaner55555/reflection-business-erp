@@ -24,4 +24,4 @@ fi
 # Start with optimized settings
 NEXT_HMR_DISABLED=1 \
 NODE_OPTIONS="--max-old-space-size=2048" \
-npx next dev -p 3000 2>&1 | tee dev.log
+npx next dev -p 3000 --turbopack=false 2>&1 | tee dev.log
