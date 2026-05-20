@@ -85,6 +85,8 @@ export default function RootLayout({
   return (
     <html lang="sr" suppressHydrationWarning>
       <head>
+        {/* Tailwind CSS CDN - dev mode only (avoids oxide worker OOM) */}
+        <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
         {/* Apple touch icons for iOS home screen */}
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.svg" />

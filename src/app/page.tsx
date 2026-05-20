@@ -113,14 +113,6 @@ const ModuleRenderer = dynamic(
   { ssr: false }
 )
 
-// Pre-warm: load prewarmModules lazily so it doesn't block the initial page
-let prewarmPromise: Promise<void> | null = null
-function triggerPrewarm() {
-  if (!prewarmPromise) {
-    prewarmPromise = import('@/lib/moduleMap').then(m => m.prewarmModules()).catch(() => {})
-  }
-}
-
 // ============================================================
 
 const DEFAULT_ACTIVE_LANGS = ['sr', 'sr-latn', 'en']
@@ -243,13 +235,6 @@ function AppContent() {
 
   useEffect(() => { ensureLoaded() }, [ensureLoaded])
   const headerLanguages = ALL_LANGUAGES.filter((l) => activeLangs.includes(l.code))
-
-  // Pre-warm all module chunks in background after login (3s delay to not block initial render)
-  useEffect(() => {
-    if (!currentUser) return
-    const timer = setTimeout(() => triggerPrewarm(), 3000)
-    return () => clearTimeout(timer)
-  }, [currentUser])
 
   if (isDesktopMode) return <DesktopMode />
 
